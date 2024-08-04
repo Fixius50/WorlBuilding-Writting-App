@@ -15,9 +15,9 @@ public class Main extends Application {
         root.getStyleClass().add("custom-pane");
 
         WebView webView = new WebView();
-        File htmlFile = new File("../html/index.html");
-        if (htmlFile.exists()) {
-            webView.getEngine().load(htmlFile.toURI().toString());
+        File htmlFileMenuInicialLog = new File("default\\code\\html\\menuInicialLog.html");
+        if (htmlFileMenuInicialLog.exists()) {
+            webView.getEngine().load(htmlFileMenuInicialLog.toURI().toString());
         } else {
             System.out.println("Error: El archivo HTML no se encuentra en la ruta especificada.");
         }

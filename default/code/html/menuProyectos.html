@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventana Proyectos</title>
+</head>
+<style>
+    .panel0{
+        border: 1px solid black;
+        position: fixed;
+        width: calc(9.9vw*10);
+        height: auto;
+        display: grid;
+        grid-template-areas: 'menu navtop'
+                             '. centro';
+        grid-template-columns: 10em 1fr;
+    }
+    .menu-desplegable{
+        grid-area: menu;
+        border: 1px solid rgb(78, 110, 255);
+        text-align: center;
+    }
+    .nav-top{
+        grid-area: navtop;
+        border: 1px solid rgb(207, 11, 11);
+        text-align: center;
+    }
+    .centro{
+        grid-area: centro;
+        border: 1px solid rgb(249, 249, 0);
+        width: 100%;
+        height: auto;
+    }
+</style>
+<body>
+    <!-- Aquí entra todo los bloques que se vayan a 
+         poner y para que se centre en la pantalla bien.
+         Más tarde se editará para mejorarlo.-->
+    <div class="panel0">
+        <!-- Aquí entra el menú con opciones, 
+         de las cuales te llevan a ventanas de distintas cosas.
+         El menú es desplegable, debajo me gustaría meter una imagen guapa.
+         Más tarde se editará para mejorarlo.-->
+        <div class="menu-desplegable">
+            <b>MENÚ</b>
+        </div>
+        <!-- Aquí entra algo que ya veré que hacer.
+         Más tarde se editará para mejorarlo.-->
+        <nav class="nav-top">
+            <a>Ver que poner por aquí</a>
+        </nav>
+        <!-- Aquí entra las cosas del proyecto para que se vean visualmente.
+         Más tarde se editará para mejorarlo.-->
+        <section class="centro">
+            Prueba a poner cosas. El ancho y alto están configurados ya.
+        </section>
+    </div>
+</body>
+</html>
