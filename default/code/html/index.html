@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventana Principal</title>
+</head>
+<style>
+    body{
+        background-color: black;
+    }
+    .plantilla-0{
+        border: 1px solid black;
+        width: 99vw;
+        height: 98vh;
+        position:absolute;
+        display: grid;
+        grid-template-areas: '. . .'
+                             '. panel1 .'
+                             '. . .';
+        background-color: yellow;
+    }
+    .panel1{
+        border: 1px solid black;
+        width: 100%;
+        height: 100%;
+        grid-area: panel1;
+        display: grid;
+        grid-template-areas: '. header .'
+                             '. nav .'
+                             '. nav .'
+                             '. nav .'
+                             '. nav .'
+                             '. nav .'
+                             '. nav .'
+                             '. nav .'
+                             '. nav .'
+                             '. nav .'
+                             '. nav .';
+        background-color: aqua;
+    }
+    header{
+        grid-area: header;
+        border: 1px solid black;
+        text-align: center;
+        background-color: greenyellow;
+    }
+    nav{
+        border: 1px solid black;
+        grid-area: nav;
+        background-color: gray;
+        display: flex;
+        flex-wrap: wrap;
+        align-content: flex-start;
+    }
+    button{
+        width: 50%;
+        height: 25%;
+        flex-basis: 50%;
+        flex-grow: 1;
+        gap: 10%;
+    }
+</style>
+<body>
+    <section class="plantilla-0">
+        <!-- Aquí entra todo los bloques que se vayan a 
+         poner y para que se centre en la pantalla bien.
+         Más tarde se editará para mejorarlo.-->
+        <section class="panel1">
+            <header>
+                <h1>Escoja una opción</h1>
+            </header>
+            <nav>
+                <button type="button">Crear proyecto</button>
+                <button type="button">Abrir proyecto</button>
+                <button type="button">Salir de la aplicación</button>
+            </nav>
+        </section>
+    </section>
+</body>
+</html>
