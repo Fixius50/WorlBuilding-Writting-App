@@ -12,14 +12,14 @@
         width: calc(9.9vw*10);
         height: auto;
         display: grid;
-        grid-template-areas: 'menu navtop'
+        grid-template-areas: 'menu headertop'
                              'menu centro';
         grid-template-columns: 10em 1fr;
+        grid-template-rows: auto 1fr 5fr;
     }
     .menu-desplegable{
         grid-area: menu;
         border: 1px solid rgb(78, 110, 255);
-        float: left;
         margin: 1%;
         .menu{
             text-align: center;
@@ -29,18 +29,25 @@
         display: flex;
         flex-direction: column;
         transition-timing-function: ease;
+        transition-duration: 1ms;
+        flex-wrap: wrap;
+        background-color:royalblue;
+        
     }
     .option{
-        width: 35%;
+        width: 1%;
         transition: width 2s;
         background-color: aqua;
+        a{
+            font-size: 20px;
+        }
     }
     .option:hover{
         width: 100%;
-        text-align: right;
+        text-align: center;
     }
-    .nav-top{
-        grid-area: navtop;
+    .header-top{
+        grid-area: headertop;
         border: 1px solid rgb(207, 11, 11);
         text-align: center;
     }
@@ -66,25 +73,36 @@
                <hr>
             </div>
             <div class="content">
+                <!-- Hacer que la letra se esconda hasta que se pase el ratón por encima.
+                 Luego hacer que se quede el último recuadro del cual se haya puesto el ratón y no se vaya-->
                 <button class="option">
-                    <a>Ajustes</a>
+                    <a>Crear</a>
+                </button>
+                <button class="option">
+                    <a>Importar</a>
+                </button>
+                <button class="option">
+                    <a>Exportar</a>
+                </button>
+                <button class="option">
+                    <a>Wiki</a>
+                </button>
+                <button class="option">
+                    <a>Apuntes</a>
                 </button>
                 <button class="option">
                     <a>Ajustes</a>
                 </button>
                 <button class="option">
-                    <a>Ajustes</a>
-                </button>
-                <button class="option">
-                    <a>Ajustes</a>
+                    <a>Inicio</a>
                 </button>
             </div>
         </div>
         <!-- Aquí entra algo que ya veré que hacer.
          Más tarde se editará para mejorarlo.-->
-        <nav class="nav-top">
-            <a>Ver que poner por aquí</a>
-        </nav>
+        <header class="header-top">
+            <a>Ver que poner por aquí. A lo mejor un gif animado</a>
+        </header>
         <!-- Aquí entra las cosas del proyecto para que se vean visualmente.
          Más tarde se editará para mejorarlo.-->
         <section class="centro">
