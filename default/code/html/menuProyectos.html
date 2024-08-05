@@ -13,13 +13,32 @@
         height: auto;
         display: grid;
         grid-template-areas: 'menu navtop'
-                             '. centro';
+                             'menu centro';
         grid-template-columns: 10em 1fr;
     }
     .menu-desplegable{
         grid-area: menu;
         border: 1px solid rgb(78, 110, 255);
+        float: left;
+        margin: 1%;
+        display: flex;
+        flex-direction: column;
+        .menu{
+            text-align: center;
+        }
+    }
+    @keyframes mymove {
+        from {left: 0px;}
+        to {left: 50px;}
+    }
+    .color0{
+        display: block;
+    }
+    .color0:hover{
+        background-color: aqua;
         text-align: center;
+        position: relative;
+        animation: mymove 5s ease 3s infinite normal backwards;
     }
     .nav-top{
         grid-area: navtop;
@@ -43,7 +62,13 @@
          El menú es desplegable, debajo me gustaría meter una imagen guapa.
          Más tarde se editará para mejorarlo.-->
         <div class="menu-desplegable">
-            <b>MENÚ</b>
+            <div class="menu">
+               <b>MENÚ</b>
+               <hr>
+            </div>
+            <div class="color0">
+                <a>Ajustes</a>
+            </div>
         </div>
         <!-- Aquí entra algo que ya veré que hacer.
          Más tarde se editará para mejorarlo.-->
