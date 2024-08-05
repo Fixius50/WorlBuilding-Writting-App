@@ -12,50 +12,80 @@
         width: calc(9.9vw*10);
         height: auto;
         display: grid;
-        grid-template-areas: 'menu headertop'
-                             'menu centro';
+        grid-template-areas: 
+            'menu headertop'
+            '. centro'
+            '. centro';
         grid-template-columns: 10em 1fr;
-        grid-template-rows: auto 1fr 5fr;
+        grid-template-rows: 5vh 1fr auto;
     }
     .menu-desplegable{
         grid-area: menu;
         border: 1px solid rgb(78, 110, 255);
         margin: 1%;
-        .menu{
-            text-align: center;
-        }
+        z-index: 0;
+        /*Hacer que la altura se ajuste solo a las opciones y 
+        no con lo del otro lado.
+        */
+    }
+    .menu{
+        text-align: center;
     }
     .content{
         display: flex;
         flex-direction: column;
-        transition-timing-function: ease;
-        transition-duration: 1ms;
-        flex-wrap: wrap;
-        background-color:royalblue;
-        
+        transition: visibility 0.5s, max-height 1s; /* Añadir transición para visibilidad y altura */
+        max-height: 0;
+        overflow: hidden;
+        visibility: hidden;
+    }
+    .menu:hover .content {
+        visibility: visible;
+        max-height: 500px; /* Ajustar el valor según el contenido */
     }
     .option{
         width: 1%;
-        transition: width 2s;
+        transition: width 2s, background-color 0.5s; /* Añadir transición para background-color */
         background-color: aqua;
-        a{
-            font-size: 20px;
-        }
+        overflow: hidden;
+        white-space: nowrap; /* Evitar que el texto se desborde */
+    }
+    .option a{
+        font-size: 20px;
+        text-decoration: none; /* Eliminar subrayado del enlace */
+        color: black;
+        display: block;
+        padding: 5px;
     }
     .option:hover{
         width: 100%;
-        text-align: center;
+        text-align: right;
+        background-color:rgb(166, 65, 225);
     }
     .header-top{
         grid-area: headertop;
         border: 1px solid rgb(207, 11, 11);
         text-align: center;
+        z-index: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     .centro{
+        z-index: 0;
         grid-area: centro;
         border: 1px solid rgb(249, 249, 0);
+        width: auto;
+        height: auto;
+        display: flex;
+        justify-content:baseline;
+    }
+    .navTop{
         width: 100%;
         height: auto;
+        border: 1px solid rgb(207, 11, 11);
+        text-align: center;
+        box-sizing: border-box;
     }
 </style>
 <body>
@@ -69,44 +99,58 @@
          Más tarde se editará para mejorarlo.-->
         <div class="menu-desplegable">
             <div class="menu">
-               <b>MENÚ</b>
-               <hr>
-            </div>
-            <div class="content">
-                <!-- Hacer que la letra se esconda hasta que se pase el ratón por encima.
-                 Luego hacer que se quede el último recuadro del cual se haya puesto el ratón y no se vaya-->
-                <button class="option">
-                    <a>Crear</a>
-                </button>
-                <button class="option">
-                    <a>Importar</a>
-                </button>
-                <button class="option">
-                    <a>Exportar</a>
-                </button>
-                <button class="option">
-                    <a>Wiki</a>
-                </button>
-                <button class="option">
-                    <a>Apuntes</a>
-                </button>
-                <button class="option">
-                    <a>Ajustes</a>
-                </button>
-                <button class="option">
-                    <a>Inicio</a>
-                </button>
+               <b>MENÚ</b><!-- Meter imagen símbolo abajo-->
+               <div class="content">
+                    <!-- Hacer que la letra se esconda hasta que se pase el ratón por encima.
+                    Luego hacer que se quede el último recuadro del cual se haya puesto el ratón y no se vaya-->
+                    <button class="option">
+                        <a>Crear</a>
+                    </button>
+                    <button class="option">
+                        <a>Importar</a>
+                    </button>
+                    <button class="option">
+                        <a>Exportar</a>
+                    </button>
+                    <button class="option">
+                        <a>Wiki</a>
+                    </button>
+                    <button class="option">
+                        <a>Apuntes</a>
+                    </button>
+                    <button class="option">
+                        <a>Ajustes</a>
+                    </button>
+                    <button class="option">
+                        <a>Inicio</a>
+                    </button>
+                </div>
             </div>
         </div>
-        <!-- Aquí entra algo que ya veré que hacer.
+        <!-- Aquí entra algo que ya veré que hacer. A lo mejor un gif animado o
+         la autoría con el nombre del proyecto.
          Más tarde se editará para mejorarlo.-->
         <header class="header-top">
-            <a>Ver que poner por aquí. A lo mejor un gif animado</a>
+            <a>Ver que poner por aquí.</a>
         </header>
         <!-- Aquí entra las cosas del proyecto para que se vean visualmente.
          Más tarde se editará para mejorarlo.-->
         <section class="centro">
-            Prueba a poner cosas. El ancho y alto están configurados ya.
+            <nav class="navTop">
+                <hr>
+                <header>Construcción</header>
+                <hr>
+            </nav>
+            <nav class="navTop">
+                <hr>
+                <header>Estado</header>
+                <hr>
+            </nav>
+            <nav class="navTop">
+                <hr>
+                <header>Algo</header>
+                <hr>
+            </nav>
         </section>
     </div>
 </body>
