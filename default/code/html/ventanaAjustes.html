@@ -4,56 +4,99 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ventana Ajustes</title>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-        .panel {
-            border: 1px solid black;
-            background-color: red;
-            position: fixed;
-            width: calc(9.9vw * 10);
-            height: auto;
-            display: flex;
-            justify-content: space-around; /* Distribuye el espacio entre los elementos */
-            align-items: center;
-            padding: 1%; /* Añade algo de padding si es necesario */
-        }
-        .panelSec {
-            border: 1px solid black;
-            background-color: aqua;
-            width: 48%; /* Ajusta el ancho de los recuadros */
-            height: auto;
-            text-align: center;
-            position: relative; /* Necesario para el posicionamiento absoluto de los contenidos */
-        }
-        .contenido1, .contenido2 {
-            border: 1px solid black;
-            width: 100%;
-            height: auto;
-            z-index: 1;
-            display: none;
-            position: absolute; /* Posiciona el contenido fuera del flujo normal */
-            top: 100%; /* Asegura que el contenido aparezca debajo del panel */
-            left: 0%;
-            background-color: white; /* Ajusta el color de fondo si es necesario */
-        }
-        .panelSec:hover .contenido1,
-        .panelSec:hover .contenido2 {
-            display: flex;
-        }
-    </style>
 </head>
+<style>
+    * {
+        box-sizing: border-box;
+    }
+    .panel {
+        border: 1px solid black;
+        background-color: red;
+        /*Lo de arriba borrar al acabar*/
+        position: fixed;
+        width: calc(9.9vw * 10);
+        height: auto;
+        display: flex;
+        justify-content: space-around; /* Distribuye el espacio entre los elementos */
+        align-items: center;
+        padding: 1%; /* Añade algo de padding si es necesario */
+    }
+    .panelSec {
+        border: 1px solid black;
+        background-color: aqua;
+        width: 48%; /* Ajusta el ancho de los recuadros */
+        height: auto;
+        text-align: center;
+        position: relative; /* Necesario para el posicionamiento absoluto de los contenidos */
+    }
+    .contenido1, .contenido2 {
+        border: 1px solid black;
+        width: 100%;
+        height: auto;
+        z-index: 1;
+        display: none;
+        position: absolute; /* Posiciona el contenido fuera del flujo normal */
+        top: 100%; /* Asegura que el contenido aparezca debajo del panel */
+        left: 0%;
+        background-color: white; /* Ajusta el color de fondo si es necesario */
+    }
+    .panelSec:hover .contenido1,
+    .panelSec:hover .contenido2 {
+        display: flex;
+        flex-direction: row;
+        align-items: baseline;
+    }
+    .opt {
+        background-color: red; /* Fondo del contenedor */
+        width: 80%;
+        height: auto;
+        border-radius: 15px;
+        position: relative;
+        cursor: pointer;
+        display: flex;
+        flex-direction: row;
+        justify-content:space-evenly;
+    }
+
+    .opt-cambio {
+        background-color: rgb(117, 128, 0); /* Fondo del recuadro */
+        width: 50%; /* Ancho del recuadro en estado inicial */
+        height: 100%;
+        border-radius: 15px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        transition: all 0.2s ease; /* Transición suave */
+    }
+
+    .opt input[type="checkbox"] {
+        display: none; /* Ocultar el checkbox */
+    }
+
+    .opt input[type="checkbox"]:checked + .opt-cambio {
+        left: 50%; /* Mover el recuadro a la derecha */
+    }
+</style>
 <body>
     <div class="panel">
         <section class="panelSec">
-            <a>hola1</a>
+            <a>Aplicación</a>
             <div class="contenido1">
-                <a>Contenido 1</a>
+                <a>Ejemplo 1</a>
+                <!-- Poner varias formas de las opciones -->
+                <div class="opt">
+                    <!-- Muestra de botón deslizante de 2 opciones -->
+                    <b>habilitado</b>
+                    <input type="checkbox" id="toggle">
+                    <label for="toggle" class="opt-cambio">
+                    </label>
+                    <b>deshabilitado</b>
+                </div>
+                <!-- Muestra de lista de opciones seleccionables -->
             </div>
         </section>
         <section class="panelSec">
-            <a>hola2</a>
+            <a>Proyecto</a>
             <div class="contenido2">
                 <a>Contenido 2</a>
             </div>
