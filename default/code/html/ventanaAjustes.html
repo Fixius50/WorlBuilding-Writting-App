@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventana Ajustes</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        .panel {
+            border: 1px solid black;
+            background-color: red;
+            position: fixed;
+            width: calc(9.9vw * 10);
+            height: auto;
+            display: flex;
+            justify-content: space-around; /* Distribuye el espacio entre los elementos */
+            align-items: center;
+            padding: 1%; /* Añade algo de padding si es necesario */
+        }
+        .panelSec {
+            border: 1px solid black;
+            background-color: aqua;
+            width: 48%; /* Ajusta el ancho de los recuadros */
+            height: auto;
+            text-align: center;
+            position: relative; /* Necesario para el posicionamiento absoluto de los contenidos */
+        }
+        .contenido1, .contenido2 {
+            border: 1px solid black;
+            width: 100%;
+            height: auto;
+            z-index: 1;
+            display: none;
+            position: absolute; /* Posiciona el contenido fuera del flujo normal */
+            top: 100%; /* Asegura que el contenido aparezca debajo del panel */
+            left: 0%;
+            background-color: white; /* Ajusta el color de fondo si es necesario */
+        }
+        .panelSec:hover .contenido1,
+        .panelSec:hover .contenido2 {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <section class="panelSec">
+            <a>hola1</a>
+            <div class="contenido1">
+                <a>Contenido 1</a>
+            </div>
+        </section>
+        <section class="panelSec">
+            <a>hola2</a>
+            <div class="contenido2">
+                <a>Contenido 2</a>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
