@@ -14,55 +14,44 @@
             height: auto;
             border: 1px solid black;
             padding: 1px;
-            grid-template-areas: 'tlt tlt tlt'
-                                 'nav form form'
-                                 'nav form form';
-            grid-auto-columns: 1fr 4fr;
+            grid-template-areas: 'tlt'
+                                 'form';
         }
         .title {
             grid-area: tlt;
             text-align: center;
         }
-        .nav0 {
-            grid-area: nav;
-            border: inherit;
-            width: 100%;
-            height: auto;
+        .form0{
+            grid-area: form;
             display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            position: relative; /* Necessary to position .ocultar correctly */
         }
-        .ocultar {
-            position: absolute;
-            top: 0;
-            left: 100%;
-            width: 80vw;
-            height: 100%;
-            background-color: rgb(255, 255, 255);
-            z-index: 2;
-            transition: opacity 0.5s linear;
-            opacity: 1; /* Start as invisible */
-        }
-        .opt0:hover .ocultar {
-            z-index: -1;
+        .nav0 {
+            border: inherit;
+            width: auto;
+            display: flex;
+            flex-direction: column;
+            align-content: flex-start;
         }
         .opt0 {
             background-color: aqua;
             padding: 10px;
         }
+        .entity{
+            border: inherit;
+            margin: 2vw;
+        }
+
         form {
-            grid-area: form;
             border: inherit;
             position: relative;
-            z-index: 0; /* Ensure form is above the .ocultar container */
-        }
-        .hidden {
-            display: none;
         }
         div {
             display: inline;
         }
+        .hidden {
+            display: none;
+        }
+        
         .highlight {
             color: yellow;
         }
@@ -71,53 +60,48 @@
 <body>
     <div class="contenedor">
         <h1 class="title">ZONA DE CREACIÓN</h1>
-        <nav class="nav0">
-            <!-- Recuadros para que desplieguen las secciones de abajo -->
-            <div class="opt0"><h3>ENTIDADES</h3>
-                <div class="ocultar"></div>
-            </div>
-            <div class="opt1"><h3>ZONAS</h3></div>
-            <div class="opt2"><h3>VER AÚN</h3></div>
-            <div class="opt3"><h3>VER AÚN</h3></div>
-        </nav>
         <form class="form0">
-            <b>Entidad: </b>
-            <label for="entity">
+            <nav class="nav0">
+                <!-- Recuadros para que desplieguen las secciones de abajo -->
+                <div class="opt0"><h3>ENTIDADES</h3></div>
+                <div class="opt1"><h3>ZONAS</h3></div>
+                <div class="opt2"><h3>VER AÚN</h3></div>
+                <div class="opt3"><h3>VER AÚN</h3></div>
+            </nav>
+            <label for="entity" class="entity">
+                <b>Entidad: </b>
                 <select name="entity" id="entity" onchange="toggleOptions()">
                     <option value="" disabled>Seleccione una opción</option>
                     <option value="colectivo">Colectivo</option>
                     <option value="individuo">Individuo</option>
                 </select>
-            </label>
-
-            <!-- Opciones para Colectivo -->
-            <div id="colectivoOptions" class="hidden">
-                <label for="colectivo" id="colectivoLabel">
-                    <select name="Colectivo" id="colectivo">
-                        <option value="Inerte">Inerte</option>
-                        <option value="Abstracto">Abstracto</option>
-                        <option value="Vivo">Vivo</option>
-                    </select>
+                <!-- Opciones para Colectivo -->
+                <div id="colectivoOptions" class="hidden">
+                    <label for="colectivo" id="colectivoLabel">
+                        <select name="Colectivo" id="colectivo">
+                            <option value="Inerte">Inerte</option>
+                            <option value="Abstracto">Abstracto</option>
+                            <option value="Vivo">Vivo</option>
+                        </select>
+                    </label>
+                </div>
+                <!-- Opciones para Individuo -->
+                <div id="individuoOptions" class="hidden">
+                    <label for="individuo" id="individuoLabel">
+                        <select name="Individuo" id="individuo">
+                            <option value="Inerte">Inerte</option>
+                            <option value="Abstracto">Abstracto</option>
+                            <option value="Muerto">Muerto</option>
+                            <option value="Vivo">Vivo</option>
+                        </select>
+                    </label>
+                </div>
+                <br><br>
+                <b>Nombre: </b>
+                <input type="text" name="name" id="nameInput">
+                <b>Descripción: </b>
+                <textarea name="description" id="description" disabled></textarea>
                 </label>
-            </div>
-
-            <!-- Opciones para Individuo -->
-            <div id="individuoOptions" class="hidden">
-                <label for="individuo" id="individuoLabel">
-                    <select name="Individuo" id="individuo">
-                        <option value="Inerte">Inerte</option>
-                        <option value="Abstracto">Abstracto</option>
-                        <option value="Muerto">Muerto</option>
-                        <option value="Vivo">Vivo</option>
-                    </select>
-                </label>
-            </div>
-
-            <br><br>
-            <b>Nombre: </b>
-            <input type="text" name="name" id="nameInput">
-            <b>Descripción: </b>
-            <textarea name="description" id="description" disabled></textarea>
         </form>
     </div>
 
