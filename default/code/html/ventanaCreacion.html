@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventana Creación</title>
+    <style>
+        *{
+            box-sizing: border-box;
+        }
+        .contenedor{
+            display: flex;
+            width: calc(9.9vw * 10);
+            height: auto;
+            border: 1px solid black;
+            flex-direction: column;
+            padding: 1px;
+        }
+        .nav0{
+            border: inherit;
+            width: 100%;
+            height: auto;
+            display: flex;
+            align-items: center;
+        }
+        .opt{
+
+        }
+        .form{
+            border: inherit;
+        }
+        .hidden {
+            display: none;
+        }
+        div{
+            display: inline;
+        }
+        .highlight {
+            color: yellow;
+        }
+    </style>
+</head>
+<body>
+    <div class="contenedor">
+        <h1>Formulario de prueba de creación</h1>
+        <nav class="na0">
+            <!-- Aquí van recuadros para que desplieguen las secciones de abajo
+                Recuadro "Entidades" despliega el recuadro junto a sus opciones y para rellenar -->
+            <div class="opt">Hola</div>
+            <div class="opt">Hola</div>
+            <div class="opt">Hola</div>
+            <div class="opt">Hola</div>
+        </nav>
+        <form class="form">
+            <b>Entidad: </b>
+            <label for="entity">
+                <select name="entity" id="entity" onchange="toggleOptions()">
+                    <option value="" disabled>Seleccione una opción</option>
+                    <option value="colectivo">Colectivo</option>
+                    <option value="individuo">Individuo</option>
+                </select>
+            </label>
+
+            <!-- Opciones para Colectivo -->
+            <div id="colectivoOptions" class="hidden">
+                <label for="colectivo" id="colectivoLabel">
+                    <select name="Colectivo" id="colectivo">
+                        <option value="Inerte">Inerte</option>
+                        <option value="Abstracto">Abstracto</option>
+                        <option value="Vivo">Vivo</option>
+                    </select>
+                </label>
+            </div>
+
+            <!-- Opciones para Individuo -->
+            <div id="individuoOptions" class="hidden">
+                <label for="individuo" id="individuoLabel">
+                    <select name="Individuo" id="individuo">
+                        <option value="Inerte">Inerte</option>
+                        <option value="Abstracto">Abstracto</option>
+                        <option value="Muerto">Muerto</option>
+                        <option value="Vivo">Vivo</option>
+                    </select>
+                </label>
+            </div>
+
+            <br><br>
+            <b>Nombre: </b>
+            <input type="text" name="name" id="nameInput">
+            <b>Descripción: </b>
+            <textarea name="description" id="description" disabled></textarea>
+
+        </form>
+    </div>
+
+    <script>
+        /*Dejar esto de ejemplo y ya más adelante mejorarlo*/
+        function toggleOptions() {
+            const entityType = document.getElementById('entity').value;
+            const colectivoOptions = document.getElementById('colectivoOptions');
+            const individuoOptions = document.getElementById('individuoOptions');
+            const colectivoLabel = document.getElementById('colectivoLabel');
+            const individuoLabel = document.getElementById('individuoLabel');
+
+            colectivoOptions.classList.add('hidden');
+            individuoOptions.classList.add('hidden');
+            colectivoLabel.classList.remove('highlight');
+            individuoLabel.classList.remove('highlight');
+
+            if (entityType === 'colectivo') {
+                colectivoOptions.classList.remove('hidden');
+                colectivoLabel.classList.add('highlight');
+            } else if (entityType === 'individuo') {
+                individuoOptions.classList.remove('hidden');
+                individuoLabel.classList.add('highlight');
+            }
+        }
+    </script>
+</body>
+</html>
