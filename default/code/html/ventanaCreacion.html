@@ -5,34 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ventana Creación</title>
     <style>
-        *{
+        * {
             box-sizing: border-box;
         }
-        .contenedor{
-            display: flex;
+        .contenedor {
+            display: grid;
             width: calc(9.9vw * 10);
             height: auto;
             border: 1px solid black;
-            flex-direction: column;
             padding: 1px;
+            grid-template-areas: 'tlt tlt tlt'
+                                 'nav form form'
+                                 'nav form form';
+            grid-auto-columns: 1fr 4fr;
         }
-        .nav0{
+        .title {
+            grid-area: tlt;
+            text-align: center;
+        }
+        .nav0 {
+            grid-area: nav;
             border: inherit;
             width: 100%;
             height: auto;
             display: flex;
-            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: relative; /* Necessary to position .ocultar correctly */
         }
-        .opt{
-
+        .ocultar {
+            position: absolute;
+            top: 0;
+            left: 100%;
+            width: 80vw;
+            height: 100%;
+            background-color: rgb(255, 255, 255);
+            z-index: 2;
+            transition: opacity 0.5s linear;
+            opacity: 1; /* Start as invisible */
         }
-        .form{
+        .opt0:hover .ocultar {
+            z-index: -1;
+        }
+        .opt0 {
+            background-color: aqua;
+            padding: 10px;
+        }
+        form {
+            grid-area: form;
             border: inherit;
+            position: relative;
+            z-index: 0; /* Ensure form is above the .ocultar container */
         }
         .hidden {
             display: none;
         }
-        div{
+        div {
             display: inline;
         }
         .highlight {
@@ -42,16 +70,17 @@
 </head>
 <body>
     <div class="contenedor">
-        <h1>Formulario de prueba de creación</h1>
-        <nav class="na0">
-            <!-- Aquí van recuadros para que desplieguen las secciones de abajo
-                Recuadro "Entidades" despliega el recuadro junto a sus opciones y para rellenar -->
-            <div class="opt">Hola</div>
-            <div class="opt">Hola</div>
-            <div class="opt">Hola</div>
-            <div class="opt">Hola</div>
+        <h1 class="title">ZONA DE CREACIÓN</h1>
+        <nav class="nav0">
+            <!-- Recuadros para que desplieguen las secciones de abajo -->
+            <div class="opt0"><h3>ENTIDADES</h3>
+                <div class="ocultar"></div>
+            </div>
+            <div class="opt1"><h3>ZONAS</h3></div>
+            <div class="opt2"><h3>VER AÚN</h3></div>
+            <div class="opt3"><h3>VER AÚN</h3></div>
         </nav>
-        <form class="form">
+        <form class="form0">
             <b>Entidad: </b>
             <label for="entity">
                 <select name="entity" id="entity" onchange="toggleOptions()">
@@ -89,7 +118,6 @@
             <input type="text" name="name" id="nameInput">
             <b>Descripción: </b>
             <textarea name="description" id="description" disabled></textarea>
-
         </form>
     </div>
 
