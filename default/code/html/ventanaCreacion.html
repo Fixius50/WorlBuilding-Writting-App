@@ -24,32 +24,40 @@
             font-size: xxx-large;
         }
         
-        .form0{
+        form{
             grid-area: form;
             display: flex;
             width: auto;
             height: auto;
             align-items:baseline;
-            justify-content:center;
+            justify-content:space-around;
         }
-        .nav0 {
+        nav {
             border: inherit;
             border-style: groove;
             width: auto;
-            display: flex;
+            display: inline-flex;
             flex-direction: column;
             align-content: flex-start;
+            text-transform: uppercase;
         }
         .opt0 {
             width: inherit;
             background-color: aqua;
             height: auto;
         }
-        .entity{
-            border: inherit;
+        label{
             border-style:groove dashed;
             margin: 2vw;
-            padding: 2%;
+            padding: 1%;
+            display:flex;
+            flex-wrap: wrap;
+            flex-grow: 1;
+        }
+
+        #colectivo, #individuo{
+            border-style: none;
+            width: 100%;
         }
 
         .panelContenido{
@@ -59,21 +67,13 @@
 
         textarea{
             width: 100%;
-            height: calc(100vw / 2);
+            height: calc(100vw / 5);
             resize: none;
             margin-top: 1%;
-            
-        }
-
-        #Descripcion{
-            width: inherit + 1000px;
         }
 
         /*No borrar lo de abajo*/
 
-        div {
-            display: inline;
-        }
         .hidden {
             display: none;
         }
@@ -85,16 +85,18 @@
         <header class="title">
             <b>zona de creación</b>
         </header>
-        <form class="form0">
-            <nav class="nav0">
+        <form>
+            <nav>
                 <!-- Recuadros para que desplieguen las secciones de abajo -->
-                <div class="opt0"><h3>ENTIDADES</h3></div>
-                <div class="opt1"><h3>ZONAS</h3></div>
-                <div class="opt2"><h3>VER AÚN</h3></div>
-                <div class="opt3"><h3>VER AÚN</h3></div>
+                <div class="opt0"><h3>entidades</h3></div>
+                <div class="opt1"><h3>zonas</h3></div>
+                <div class="opt2"><h3>construcción</h3></div>
+                <div class="opt3"><h3>otros</h3></div>
+                <div class="opt2"><h3>ver aún</h3></div>
+                <div class="opt3"><h3>ver aún</h3></div>
             </nav>
-            <label for="entity" class="entity">
-                <div class="panelOpciones">
+            <label for="entity">
+                <section class="panelOpciones">
                     <b>Entidad: </b>
                     <select name="entity" id="entity" onchange="toggleOptions()">
                         <option value="DefaultEntity" disabled>Seleccione una opción</option>
@@ -102,44 +104,51 @@
                         <option value="individuo">Individuo</option>
                     </select>
                     <!-- Opciones para Colectivo -->
-                    <div id="colectivoOptions" class="hidden">
+                    <section id="colectivoOptions" class="hidden">
                         <label for="colectivo" id="colectivoLabel">
                             <select name="Colectivo" id="colectivo">
-                                <option value="Inerte">Inerte</option>
-                                <option value="Abstracto">Abstracto</option>
-                                <option value="Vivo">Vivo</option>
-                            </select>
-                        </label>
-                    </div>
-                    <!-- Opciones para Individuo -->
-                    <div id="individuoOptions" class="hidden">
-                        <label for="individuo" id="individuoLabel">
-                            <select name="Individuo" id="individuo">
                                 <option value="Inerte">Inerte</option>
                                 <option value="Abstracto">Abstracto</option>
                                 <option value="Muerto">Muerto</option>
                                 <option value="Vivo">Vivo</option>
                             </select>
                         </label>
-                    </div>
-                </div>
+                    </section>
+                    <!-- Opciones para Individuo -->
+                    <section id="individuoOptions" class="hidden">
+                        <label for="individuo" id="individuoLabel">
+                            <select name="Individuo" id="individuo">
+                                <option value="Inerte">Inerte</option>
+                                <option value="Abstracto">Abstracto</option>
+                                <option value="Eterno">Eterno</option>
+                                <option value="Muerto">Muerto</option>
+                                <option value="Vivo">Vivo</option>
+                            </select>
+                        </label>
+                    </section>
+                </section>
 
-                <div class="panelContenido">
+                <section class="panelContenido">
 
                     <hr>
                     <b>Nombre: </b>
                     <input type="text" name="name" id="nameInput">
                     <br><br>
-                    <b>Apellido: </b>
+                    <b>Tipo o raza: </b>
                     <input type="text" name="name" id="nameInput">
                     <hr>
                     
-                    <h1>Descripción:</h1>
-                    <textarea name="descriction" id="descripcion"></textarea>
+                    <section class="desc">
+                        <h1>Descripción:</h1>
+                        <textarea name="descriction" id="descripcion"></textarea>
+                    </section>
                     
-                    <h1>Características:</h1>
-                    <textarea name="caracteristicas" id="caracteristicas"></textarea>
-                </div>
+                    <section class="carac">
+                        <h1>Características:</h1>
+                        <textarea name="caracteristicas" id="caracteristicas"></textarea>
+                    </section>
+                    
+                </section>
                 
             </label>
         </form>
