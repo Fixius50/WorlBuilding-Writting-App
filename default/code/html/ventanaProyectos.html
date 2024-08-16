@@ -20,7 +20,7 @@
             '. centro-arriba'
             'centro centro';
         grid-template-columns: 1fr 8fr;
-        grid-template-rows: 5vw;
+        grid-template-rows: 1fr 6fr;
         align-items: flex-start;
         justify-items: center;
     }
@@ -33,14 +33,15 @@
         width: fit-content;
         height: auto;
         background-color: bisque;
+        position: absolute;
         margin: 1%;
-        z-index: 1;
         padding: 1%;
     }
     .menu{
         text-align: center;
         width: 10vw;
         height: auto;
+        visibility: visible;
     }
     .menu:hover .content{
         visibility: visible;
@@ -56,11 +57,12 @@
         max-height: 0;
         overflow: hidden;
         visibility: hidden;
+        align-items: center;
     }
     .option{
         /*De aquí establece como cambian las opciones. */
-        width: 2.5vw;
-        transition: width 1s, background-color 0.5s; /* Añadir transición para background-color */
+        width: 5vw;
+        transition: width 0.5s, background-color 0.5s; /* Añadir transición para background-color */
         background-color: aqua;
         overflow:hidden;
         white-space: nowrap; /* Evitar que el texto se desborde */
@@ -81,10 +83,8 @@
         grid-area: headertop;
         border: 1px solid rgb(207, 11, 11);
         text-align: center;
-        z-index: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: inline;
+        width: fit-content;
     }
     
     .navTop{
@@ -92,10 +92,15 @@
         height: auto;
         border: 1px solid rgb(207, 11, 11);
         grid-area: centro-arriba;
-        z-index: 0;
         display: flex;
+        justify-content: space-around;
+    }
+
+    .nv{
+        text-align: center;
+        width: max-content;
+        border: 1px solid blue;
         flex-grow: 1;
-        flex-wrap: wrap;
     }
 
     .area-central{
@@ -156,13 +161,12 @@
          Más tarde se editará para mejorarlo.-->
         
         <nav class="navTop">
-            <header class="nv1">Construcción</header>
-        </nav>
-        <nav class="navTop">
-            <header class="nv2">Estado</header>
-        </nav>
-        <nav class="navTop">
-            <header class="nv3">Algo</header>
+            <header class="nv">Construcción</header>
+            <header class="nv">Algo</header>
+            <header class="nv">Estado</header>
+            <header class="nv">Construcción</header>
+            <header class="nv">Algo</header>
+            <header class="nv">Estado</header>
         </nav>
         <div class="area-central">
             <!-- Aquí se despliegan las opciones de "nav-top" según lo que sean -->
