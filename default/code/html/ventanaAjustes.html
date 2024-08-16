@@ -20,87 +20,99 @@
         justify-content: space-around; /* Distribuye el espacio entre los elementos */
         align-items: center;
         padding: 1%; /* Añade algo de padding si es necesario */
+        z-index: 1;
     }
     .panelSec {
         border: 1px solid black;
         background-color: aqua;
-        width: 48%; /* Ajusta el ancho de los recuadros */
+        width: auto;
         height: auto;
-        text-align: center;
         position: relative; /* Necesario para el posicionamiento absoluto de los contenidos */
+        cursor: pointer;
+        /* Más adelante meterle animación */
     }
     .contenido1, .contenido2 {
         border: 1px solid black;
-        width: 100%;
+        width: auto;
         height: auto;
-        z-index: 1;
+        z-index: 2;
         display: none;
-        position: absolute; /* Posiciona el contenido fuera del flujo normal */
-        top: 100%; /* Asegura que el contenido aparezca debajo del panel */
-        left: 0%;
-        background-color: white; /* Ajusta el color de fondo si es necesario */
     }
-    .panelSec:hover .contenido1,
-    .panelSec:hover .contenido2 {
-        display: flex;
-        flex-direction: row;
-        align-items: baseline;
-    }
-    .opt {
-        background-color: red; /* Fondo del contenedor */
-        width: 80%;
-        height: auto;
-        border-radius: 15px;
+
+    .cuerpo{
+        border: 1px solid rgb(29, 41, 201);
         position: relative;
+        width: calc(9.9vw * 10);
+        height: calc(9.5vh * 10);
         display: flex;
-        flex-direction: row;
-        justify-content:space-evenly;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: aqua;
+        z-index: 0;
+    }
+    
+    .cuerpo > h1{
+        /*Decoración del texto*/
     }
 
-    .opt-cambio {
-        background-color: rgb(117, 128, 0); /* Fondo del recuadro */
-        width: 50%; /* Ancho del recuadro en estado inicial */
-        height: 100%;
-        border-radius: 15px;
-        position: absolute;
-        top: 0;
-        left: 0;
-        transition: all 0.2s ease; /* Transición suave */
-        cursor: pointer;
+    .sec1, .sec2{
+        /*Tamaño del recuadro*/
+        width: 80%;
+        height: 85%;
+        position: relative;
     }
-
-    .opt input[type="checkbox"] {
-        display: none; /* Ocultar el checkbox */
-    }
-
-    .opt input[type="checkbox"]:checked + .opt-cambio {
-        left: 50%; /* Mover el recuadro a la derecha */
-    }
+    
 </style>
 <body>
     <div class="panel">
-        <section class="panelSec">
+        <button popovertarget="cuerpo1" popovertargetaction="toggle" type="button" class="panelSec">
             <a>Aplicación</a>
-            <div class="contenido1">
-                <a>Ejemplo 1</a>
-                <!-- Poner varias formas de las opciones -->
-                <div class="opt">
-                    <!-- Muestra de botón deslizante de 2 opciones -->
-                    <b>habilitado</b>
-                    <input type="checkbox" id="toggle">
-                    <label for="toggle" class="opt-cambio">
-                    </label>
-                    <b>deshabilitado</b>
-                </div>
-                <!-- Muestra de lista de opciones seleccionables -->
-            </div>
-        </section>
-        <section class="panelSec">
+        </button> 
+        <button popovertarget="cuerpo2" popovertargetaction="toggle" type="button" class="panelSec">
             <a>Proyecto</a>
-            <div class="contenido2">
-                <a>Contenido 2</a>
-            </div>
-        </section>
+        </button>
+        <button popovertarget="cuerpo1" popovertargetaction="toggle" type="button" class="panelSec">
+            <a>Meter más</a>
+        </button> 
+        <button popovertarget="cuerpo2" popovertargetaction="toggle" type="button" class="panelSec">
+            <a>Meter más</a>
+        </button> 
     </div>
+    <section class="cuerpo">
+        <h1>SELECCIONA UNA OPCIÓN</h1>
+        <section popover id="cuerpo1" class="sec1" >
+            <fieldset>
+                <legend><h1>Ajustes generales de la aplicación</h1></legend>
+                <label for="section1">Ajuste 1</label>
+                <input type="text" name="opcion1" id="a1">
+            </fieldset>
+            <fieldset>
+                <legend><h1>Ajustes al iniciar la aplicación</h1></legend>
+                <label for="section1">Inicio automático de sesión</label>
+                <b>SI</b>
+                <input type="radio" value="SI">
+                <b>NO</b>
+                <input type="radio" value="NO">
+            </fieldset>
+            <fieldset>
+                <legend><h1>Ajustes de apariencia</h1></legend>
+                <label for="section1">Tamaño de la fuente:</label>
+                <b>16px</b>
+                <input type="range" name="range" id="">
+                <b>32px</b>
+            </fieldset>
+        </section>
+        <section popover id="cuerpo2" class="sec2" >
+            <fieldset>
+                <legend><h1>Hola Mundo</h1></legend>
+                <label for="section1">Opción 1</label>
+                <input type="text" name="opcion1" id="">
+            </fieldset>
+        </section>
+        <div class="guardar">
+            <input type="submit" value="Guardar cambios" name="guardar">
+        </div>
+    </section>
 </body>
 </html>

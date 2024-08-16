@@ -39,13 +39,14 @@
             display: inline-flex;
             flex-direction: column;
             align-content: flex-start;
+            text-align: center;
             text-transform: uppercase;
         }
-        .opt0 {
-            width: inherit;
+        .opt0:hover, .opt1:hover, .opt2:hover, .opt3:hover, .opt4:hover, .opt5:hover {
             background-color: aqua;
-            height: auto;
+            cursor: pointer;
         }
+        
         label{
             border-style:groove dashed;
             margin: 2vw;
@@ -55,9 +56,15 @@
             flex-grow: 1;
         }
 
-        #colectivo, #individuo{
+        #colectivo, #individuo, #entity{
             border-style: none;
             width: 100%;
+            
+        }
+
+        #colectivoOptions, #individuoOptions{
+            width: 100%;
+            float: inline-start;
         }
 
         .panelContenido{
@@ -88,14 +95,14 @@
         <form>
             <nav>
                 <!-- Recuadros para que desplieguen las secciones de abajo -->
-                <div class="opt0"><h3>entidades</h3></div>
+                <div class="opt0" id="showEntity"><h3>entidades</h3></div>
                 <div class="opt1"><h3>zonas</h3></div>
                 <div class="opt2"><h3>construcción</h3></div>
                 <div class="opt3"><h3>otros</h3></div>
-                <div class="opt2"><h3>ver aún</h3></div>
-                <div class="opt3"><h3>ver aún</h3></div>
+                <div class="opt4"><h3>ver aún</h3></div>
+                <div class="opt5"><h3>ver aún</h3></div>
             </nav>
-            <label for="entity">
+            <label for="entity" class="entity">
                 <section class="panelOpciones">
                     <b>Entidad: </b>
                     <select name="entity" id="entity" onchange="toggleOptions()">
@@ -179,6 +186,11 @@
                     print("Hello World");
                 break;
             }
+
+            document.getElementById('showEntity').addEventListener('click', function() {
+                // Mostrar el panel de entidades
+                document.querySelector('.entity').classList.remove('hidden');
+            });
 
         }
     </script>

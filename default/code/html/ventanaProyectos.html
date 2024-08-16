@@ -19,54 +19,64 @@
             'menu headertop'
             '. centro-arriba'
             'centro centro';
-        grid-template-columns: 10em 1fr;
-        grid-template-rows: 5vh 1fr auto;
+        grid-template-columns: 1fr 8fr;
+        grid-template-rows: 5vw;
+        align-items: flex-start;
+        justify-items: center;
     }
+
+    /*Aquí empezaría los recuadros de arriba que son el Menú desplegable*/
+
     .menu-desplegable{
         grid-area: menu;
         border: 1px solid rgb(78, 110, 255);
-        width: 100%;
-        height: fit-content;
+        width: fit-content;
+        height: auto;
         background-color: bisque;
         margin: 1%;
-        z-index: 0;
-        /*Hacer que la altura se ajuste solo a las opciones y 
-        no con lo del otro lado.
-        */
+        z-index: 1;
+        padding: 1%;
     }
     .menu{
         text-align: center;
+        width: 10vw;
+        height: auto;
+    }
+    .menu:hover .content{
+        visibility: visible;
+        max-height: 100vh; /* Ajustar el valor según el contenido */
     }
     .content{
+        /*De aquí establece como se distribuyen las opciones según su posición. */
         display: flex;
-        flex-direction: column;
+        flex-direction:column;
+        align-items: flex-start;
+        /*Hasta aquí*/
         transition: visibility 1s, max-height 1s; /* Añadir transición para visibilidad y altura */
         max-height: 0;
         overflow: hidden;
         visibility: hidden;
     }
-    .menu:hover .content{
-        visibility: visible;
-        max-height: 500px; /* Ajustar el valor según el contenido */
-    }
     .option{
-        width: 10%;
-        transition: width 2s, background-color 0.5s; /* Añadir transición para background-color */
+        /*De aquí establece como cambian las opciones. */
+        width: 2.5vw;
+        transition: width 1s, background-color 0.5s; /* Añadir transición para background-color */
         background-color: aqua;
-        overflow: hidden;
+        overflow:hidden;
         white-space: nowrap; /* Evitar que el texto se desborde */
     }
     .option a{
         font-size: 20px;
         color: black;
-        display: block;
-        padding: 5%;
     }
     .option:hover{
         width: 100%;
-        text-align: right;
+        text-align: center;
         background-color:rgb(166, 65, 225);
     }
+
+    /*Aquí empezaría los recuadros de arriba que no son el Menú desplegable*/
+
     .header-top{
         grid-area: headertop;
         border: 1px solid rgb(207, 11, 11);
@@ -76,22 +86,18 @@
         align-items: center;
         justify-content: center;
     }
-    .centro-arriba{
-        z-index: 0;
-        grid-area: centro-arriba;
-        border: 1px solid rgb(249, 249, 0);
-        width: auto;
-        height: auto;
-        display: flex;
-        justify-content:baseline;
-    }
+    
     .navTop{
         width: 100%;
         height: auto;
         border: 1px solid rgb(207, 11, 11);
-        text-align: center;
-        box-sizing: border-box;
+        grid-area: centro-arriba;
+        z-index: 0;
+        display: flex;
+        flex-grow: 1;
+        flex-wrap: wrap;
     }
+
     .area-central{
         width: 100%;
         height: 85vh;
@@ -140,32 +146,26 @@
             </div>
         </div>
         <!-- Aquí entra algo que ya veré que hacer. A lo mejor un gif animado o
-         la autoría con el nombre del proyecto.
-         Más tarde se editará para mejorarlo.-->
+         la autoría con el nombre del proyecto. Más tarde se editará para mejorarlo.-->
+         
         <header class="header-top">
             <a>Ver que poner por aquí.</a>
         </header>
         <!-- Aquí entra las cosas del proyecto para que se vean visualmente.
+         Se despliegan en el área central.
          Más tarde se editará para mejorarlo.-->
-        <section class="centro-arriba">
-            <nav class="navTop">
-                <hr>
-                <header class="nv1">Construcción</header>
-                <hr>
-            </nav>
-            <nav class="navTop">
-                <hr>
-                <header class="nv2">Estado</header>
-                <hr>
-            </nav>
-            <nav class="navTop">
-                <hr>
-                <header class="nv3">Algo</header>
-                <hr>
-            </nav>
-        </section>
+        
+        <nav class="navTop">
+            <header class="nv1">Construcción</header>
+        </nav>
+        <nav class="navTop">
+            <header class="nv2">Estado</header>
+        </nav>
+        <nav class="navTop">
+            <header class="nv3">Algo</header>
+        </nav>
         <div class="area-central">
-
+            <!-- Aquí se despliegan las opciones de "nav-top" según lo que sean -->
         </div>
     </div>
 </body>
