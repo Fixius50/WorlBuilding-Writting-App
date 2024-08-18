@@ -61,24 +61,24 @@
         transition: visibility 1s, max-height 1s; /* Añadir transición para visibilidad y altura */
         max-height: 0;
         overflow: hidden;
-        visibility: hidden;
-        align-items: center;
     }
-    .option{
-        /*De aquí establece como cambian las opciones. */
-        width: 5vw;
+    .optionA{ /*No borrar*/
+        width: 100%;
+    }
+    .option{/*De aquí establece como cambian las opciones. */
+        /*El ancho cambia de estar a la derecha y fuera a estar en el centro pero
+        estirando los lados si las unidades relativas las cambias de "vw" a "%" */
+        width: 30%;
         transition: width 0.5s, background-color 0.5s; /* Añadir transición para background-color */
         background-color: aqua;
-        overflow:hidden;
+        overflow: hidden;
         white-space: nowrap; /* Evitar que el texto se desborde */
     }
     .option a{
-        font-size: 20px;
         color: black;
     }
     .option:hover{
         width: 100%;
-        text-align: center;
         background-color:rgb(166, 65, 225);
     }
 
@@ -128,27 +128,13 @@
                <div class="content">
                     <!-- Hacer que la letra se esconda hasta que se pase el ratón por encima.
                     Luego hacer que se quede el último recuadro del cual se haya puesto el ratón y no se vaya-->
-                    <button class="option">
-                        <a>Crear</a>
-                    </button>
-                    <button class="option">
-                        <a>Importar</a>
-                    </button>
-                    <button class="option">
-                        <a>Exportar</a>
-                    </button>
-                    <button class="option">
-                        <a>Wiki</a>
-                    </button>
-                    <button class="option">
-                        <a>Apuntes</a>
-                    </button>
-                    <button class="option">
-                        <a>Ajustes</a>
-                    </button>
-                    <button class="option">
-                        <a>Inicio</a>
-                    </button>
+                    <a href="ventanaCreacion.html" target="_parent" class="optionA"><button class="option">Crear</button></a>
+                    <a href="" class="optionA"><button class="option">Importar</button></a>
+                    <a href="" class="optionA"><button class="option">Exportar</button></a>
+                    <a href="" target="_parent" class="optionA"><button class="option">Wiki</button></a>
+                    <a href="" class="optionA"><button class="option">Apuntes</button></a>
+                    <a href="ventanaAjustes.html" target="_parent" class="optionA"><button class="option">Ajustes</button></a>
+                    <a href="menuInicialLog.html" target="_parent" class="optionA"><button class="option">Inicio</button></a>
                 </div>
             </div>
         </div>

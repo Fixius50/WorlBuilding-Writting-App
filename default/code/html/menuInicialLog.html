@@ -48,10 +48,13 @@
         flex-wrap: wrap;
         flex-grow: 1;
     }
-    button{
+    .button{
         width: 100%;
         height: auto;
-        flex-grow: 1;
+    }
+    button{
+        width: 100%;
+        height: 100%;
         cursor: pointer;
     }
     button:hover{
@@ -70,9 +73,9 @@
                 <h1>BIENVENIDO/A</h1>
             </header>
             <nav>
-                <button type="button">Abrir proyecto</button>
-                <button type="button">Crear proyecto</button>
-                <button type="button">Salir de la aplicación</button>
+                <a href="ventanaProyectos.html" class="button"><button type="button">Abrir proyecto</button></a>
+                <a href="ventanaCreacion.html" class="button"><button type="button">Crear proyecto</button></a>
+                <a href="" class="button"><button type="button">Salir de la aplicación</button></a>
             </nav>
         </section>
     </section>
