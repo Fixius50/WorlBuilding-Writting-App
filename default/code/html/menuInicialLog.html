@@ -62,6 +62,25 @@
         font-size: large;
         color: burlywood;
     }
+
+    /*Esto de crear es el panel de registro donde se pide el nombre de usuario, la contraseña
+    y el nombre del proyecto. Está junto a un botón de guardar.
+    
+    Hacer lo mismo para la de abrir proyecto.
+
+    Más tarde mejorará.
+
+    */
+
+    .crear{
+        z-index: 1;
+        position: absolute;
+        border: inherit;
+        width: 50%;
+        height: 50%;
+        display: none;
+    }
+
 </style>
 <body>
     <section class="plantilla-0">
@@ -74,10 +93,23 @@
             </header>
             <nav>
                 <a href="ventanaProyectos.html" class="button"><button type="button">Abrir proyecto</button></a>
-                <a href="ventanaCreacion.html" class="button"><button type="button">Crear proyecto</button></a>
+                <a class="button"><button type="button" onclick="mostrar()" popovertarget="crear" popovertargetaction="show">Crear nuevo proyecto</button></a>
                 <a href="" class="button"><button type="button">Salir de la aplicación</button></a>
+                <div class="crear" id="crear" popover>
+                    
+                </div>
             </nav>
         </section>
     </section>
+    <script>
+        function mostrar() {
+            document.getElementById('crear').style.display = 'flex';
+        }
+
+        function ocultar() {
+            document.getElementById('crear').classList.add('hidden')
+        }
+
+    </script>
 </body>
 </html>

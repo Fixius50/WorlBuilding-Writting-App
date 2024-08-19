@@ -37,26 +37,26 @@
         position: absolute;
         margin: 1%;
         padding: 1%;
-    }
-    .menu{
-        text-align: center;
-        width: 10vw;
-        height: auto;
-        visibility: visible;
-    }
-    .menu:hover .content{
-        visibility: visible;
-        max-height: 100vh; /* Ajustar el valor según el contenido */
         background-image: url(../../other/imagenes/casting-spell.gif);
         background-repeat: no-repeat;
         background-size: cover;
         background-position: center;
+        text-align: center;
     }
+    .menu-desplegable:hover{
+        width: 100%;
+    }
+    
+    .menu-desplegable:hover .content{
+        width: 100%;
+        max-height: 100vh; /* Ajustar el valor según el contenido */
+    }
+    
     .content{
         /*De aquí establece como se distribuyen las opciones según su posición. */
         display: flex;
         flex-direction:column;
-        align-items: flex-start;
+        align-items: center;
         /*Hasta aquí*/
         transition: visibility 1s, max-height 1s; /* Añadir transición para visibilidad y altura */
         max-height: 0;
@@ -64,22 +64,22 @@
     }
     .optionA{ /*No borrar*/
         width: 100%;
+        cursor:default;
+        overflow: hidden;
     }
     .option{/*De aquí establece como cambian las opciones. */
         /*El ancho cambia de estar a la derecha y fuera a estar en el centro pero
         estirando los lados si las unidades relativas las cambias de "vw" a "%" */
-        width: 30%;
+        width: 50%;
         transition: width 0.5s, background-color 0.5s; /* Añadir transición para background-color */
         background-color: aqua;
         overflow: hidden;
         white-space: nowrap; /* Evitar que el texto se desborde */
     }
-    .option a{
-        color: black;
-    }
     .option:hover{
         width: 100%;
         background-color:rgb(166, 65, 225);
+        cursor: pointer;
     }
 
     /*Aquí empezaría los recuadros de arriba que no son el Menú desplegable*/
@@ -122,20 +122,18 @@
     <div class="panel0">
         <!-- Aquí entra el menú con opciones, 
          de las cuales te llevan a ventanas de distintas cosas. -->
-        <div class="menu-desplegable">
-            <div class="menu">
-               <b>MENÚ</b><!-- Meter imagen símbolo abajo-->
-               <div class="content">
-                    <!-- Hacer que la letra se esconda hasta que se pase el ratón por encima.
-                    Luego hacer que se quede el último recuadro del cual se haya puesto el ratón y no se vaya-->
-                    <a href="ventanaCreacion.html" target="_parent" class="optionA"><button class="option">Crear</button></a>
-                    <a href="" class="optionA"><button class="option">Importar</button></a>
-                    <a href="" class="optionA"><button class="option">Exportar</button></a>
-                    <a href="" target="_parent" class="optionA"><button class="option">Wiki</button></a>
-                    <a href="" class="optionA"><button class="option">Apuntes</button></a>
-                    <a href="ventanaAjustes.html" target="_parent" class="optionA"><button class="option">Ajustes</button></a>
-                    <a href="menuInicialLog.html" target="_parent" class="optionA"><button class="option">Inicio</button></a>
-                </div>
+        <div class="menu-desplegable">   
+            <b>MENÚ</b>
+            <div class="content">
+                <!-- Hacer que la letra se esconda hasta que se pase el ratón por encima.
+                Luego hacer que se quede el último recuadro del cual se haya puesto el ratón y no se vaya-->
+                <a href="ventanaCreacion.html" target="_parent" class="optionA"><button class="option">Crear</button></a>
+                <a href="" class="optionA"><button class="option">Importar</button></a>
+                <a href="" class="optionA"><button class="option">Exportar</button></a>
+                <a href="" target="_parent" class="optionA"><button class="option">Wiki</button></a>
+                <a href="" class="optionA"><button class="option">Apuntes</button></a>
+                <a href="ventanaAjustes.html" target="_parent" class="optionA"><button class="option">Ajustes</button></a>
+                <a href="menuInicialLog.html" target="_parent" class="optionA"><button class="option">Inicio</button></a>
             </div>
         </div>
         <!-- Aquí entra algo que ya veré que hacer. A lo mejor un gif animado o
