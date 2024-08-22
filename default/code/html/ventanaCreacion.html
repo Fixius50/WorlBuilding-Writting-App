@@ -44,8 +44,6 @@
             display: none;
         }
 
-        /*Lo de abajo es para las "ENTIDADES"*/
-
         #divEntity, #divZones, #divConstructions, #divOthers {
             border-style: groove dashed;
             margin: 2vw;
@@ -68,6 +66,14 @@
             opacity: 1;
         }
 
+        textarea {
+            width: 100%;
+            height: 30vh;
+            resize: none;
+        }
+
+        /*Lo de abajo es para las "ENTIDADES"*/
+
         #colectivo, #individuo, #entity {
             border-style: none; /*Para eliminar el borde el botón desplegable*/
             width: max-content;
@@ -79,25 +85,31 @@
             float: inline-start;
         }
 
-        #opcionesGenerales, #panelOpcionesEntidades, #colectivoLabel, #individuoLabel{
+        #colectivoLabel, #individuoLabel{
             display: flex;
             flex-direction: row;
-            width: auto;
+            width: max-content;
             align-items: center;
-            #colectivoLabel, #individuoLabel{
-                margin-left: 5%;
-            }
-        }
-
-        textarea {
-            width: 100%;
-            height: 30vh;
-            resize: none;
+            margin-left: 5%;
         }
 
         /*Lo de abajo es para las "ZONAS"*/
 
+        #zones, #newType, #notNewType, #extensionType, #variantType{
+            border-style: none; /*Para eliminar el borde el botón desplegable*/
+            width: max-content;
+            margin: 1%;
+        }
 
+        #newLabel, #notNewOptionsDisplay, #notNewLabel{
+            display: flex;
+            flex-direction: row;
+            width: max-content;
+            align-items: center;
+            margin-left: 5%;
+        }
+
+        /*Hacer como lo de arriba pero para sus etiquetas*/
 
     </style>
 </head>
@@ -116,11 +128,12 @@
                 <a href="menuInicialLog.html" target="_self"><button class="opt5" type="button"><h3>Volver a inicio</h3></button></a>
             </nav>
             <div id="divEntity">
-                <section class="panelOpcionesEntidades" id="panelOpcionesEntidades" onchange=""> 
+                <!-- Contenido para Entidades -->
+                <section class="panelOpcionesEntidades" id="panelOpcionesEntidades"> 
                     <section id="opcionesGenerales">
                         <b>Entidad: </b>
                         <label for="entity" class="entity">    
-                            <select name="entity" id="entity" onchange="toggleOptions()">
+                            <select name="entity" id="entity" onchange="toggleEntityOptions()">
                                 <option value="" autofocus>Seleccione una opción</option>
                                 <option value="colectivo">Colectivo</option>
                                 <option value="individuo">Individuo</option>
@@ -131,12 +144,6 @@
                     <!-- Opciones para Colectivo -->
                     <section id="colectivoOptions" class="hidden">
                         <label for="colectivo" id="colectivoLabel">
-                            <select name="Colectivo" id="colectivo">
-                                <option value="Inerte">Inerte</option>
-                                <option value="Abstracto">Abstracto</option>
-                                <option value="Muerto">Muerto</option>
-                                <option value="Vivo">Vivo</option>
-                            </select>
                             <select name="Colectivo" id="colectivo">
                                 <option value="Inerte">Inerte</option>
                                 <option value="Abstracto">Abstracto</option>
@@ -155,13 +162,6 @@
                                 <option value="Muerto">Muerto</option>
                                 <option value="Vivo">Vivo</option>
                             </select>
-                            <select name="Individuo" id="individuo">
-                                <option value="Inerte">Inerte</option>
-                                <option value="Abstracto">Abstracto</option>
-                                <option value="Eterno">Eterno</option>
-                                <option value="Muerto">Muerto</option>
-                                <option value="Vivo">Vivo</option>
-                            </select>
                         </label>
                     </section>
                 </section>
@@ -169,13 +169,6 @@
                     <hr>
                     <b>Nombre: </b>
                     <input type="text" name="name" id="nameInput">
-                    <br> <br>
-                    <b>Tipo o raza: </b>
-                    <input type="text" name="name" id="nameInput">
-                    <br><br>
-                    <b>Nombre: </b>
-                    <input type="text" name="name" id="nameInput">
-                    <br> <br>
                     <b>Tipo o raza: </b>
                     <input type="text" name="name" id="nameInput">
                     <hr>  
@@ -191,14 +184,14 @@
             </div>
             <div id="divZones">
                 <!-- Contenido para Zonas -->
-                <section class="panelOpcionesZonas" id="panelOpcionesZonas" onchange=""> 
+                <section class="panelOpcionesZonas" id="panelOpcionesZonas"> 
                     <section id="opcionesGenerales">
                         <b>Zona: </b>
-                        <label for="entity" class="entity">    
-                            <select name="entity" id="entity" onchange="toggleOptions()">
-                                <option value="" autofocus>Seleccione una opción</option>
-                                <option value="colectivo">No existente (nueva)</option>
-                                <option value="individuo">Existente</option>
+                        <label for="zones" class="zones">
+                            <select name="zones" id="zones" onchange="toggleZoneOptions()">
+                                <option value="">Seleccione una opción</option>
+                                <option value="new">No existente (nueva)</option>
+                                <option value="existing">Existente</option>
                             </select>
                         </label>
                     </section>
@@ -206,36 +199,44 @@
                     <!-- Opciones para Nueva -->
                     <section id="newOptions" class="hidden">
                         <label for="new" id="newLabel">
-                            <select name="new" id="new">
+                            <select name="new" id="newType">
                                 <option value="Natural">Natural</option>
                                 <option value="Artificial">Artificial</option>
                                 <option value="Mixta">Mixta</option>
                             </select>
                         </label>    
                     </section>
+
                     <!-- Opciones para Existente -->
                     <section id="notNewOptions" class="hidden">
-                        <label for="notNewOptionsDsiplay" id="notNewOptionsDsiplay">
-                            <select name="notNew" id="notNew">
-                                <option value="Extensión de zona">Extensión de zona</option>
-                                <option value="Variante de zona">Variante de zona</option>
-                            </select> 
-                        </label>
-                        <!-- En cuanto se selecciona una de las dos de arriba, se despliega una de las dos de abajo -->
-                        <label for="notNewExtension" id="notNewLabel">
-                            <select name="notNew" id="notNew">
-                                <option value="Natural">Natural</option>
-                                <option value="Artificial">Artificial</option>
-                                <option value="Abstracta">Abstracta</option>
-                                <option value="Mixta">Mixta</option>
+                        <label for="notNewOptionsDisplay" id="notNewOptionsDisplay">
+                            <select name="notNew" id="notNewType" onchange="toggleZoneOptions()">
+                                <option value="extension">Extensión de zona</option>
+                                <option value="variant">Variante de zona</option>
                             </select>
                         </label>
-                        <label for="notNewVariant" id="notNewLabel">
-                            <select name="notNew" id="notNew">
-                                <option value="Afectada por">Afectada por</option>
-                                <input type="text" name="name" id="nameInput">
-                            </select>
-                        </label>
+                        
+                        <!-- Subopciones para Extensión de zona -->
+                        <section id="extensionOptions" class="hidden">
+                            <label for="notNewExtension" id="notNewLabel">
+                                <select name="extensionType" id="extensionType">
+                                    <option value="Natural">Natural</option>
+                                    <option value="Artificial">Artificial</option>
+                                    <option value="Abstracta">Abstracta</option>
+                                    <option value="Mixta">Mixta</option>
+                                </select>
+                            </label>
+                        </section>
+
+                        <!-- Subopciones para Variante de zona -->
+                        <section id="variantOptions" class="hidden">
+                            <label for="notNewVariant" id="notNewLabel">
+                                <select name="variantType" id="variantType">
+                                    <option value="Afectada por">Afectada por</option>
+                                </select>
+                                <input type="text" name="variantInput" id="variantInput" placeholder="Ingrese detalles">
+                            </label>
+                        </section>
                     </section>
                 </section>
                 <section class="panelContenidoZonas">
@@ -276,7 +277,7 @@
             document.getElementById(panelToShow).style.display = 'flex';
         }
 
-        function toggleOptions() {
+        function toggleEntityOptions() {
             /*Para las entidades*/
             const entityType = document.getElementById('entity').value;
             const colectivoOptions = document.getElementById('colectivoOptions');
@@ -295,11 +296,53 @@
                 default:
                     break;
             }
-
-            /*Para las zonas*/
-
-
         }
+
+        function toggleZoneOptions() {
+            /*Para las zonas*/
+            const zoneType = document.getElementById('zones').value;
+            const newOptions = document.getElementById('newOptions');
+            const notNewOptions = document.getElementById('notNewOptions');
+
+            // Ocultar todas las opciones al inicio
+            newOptions.classList.add('hidden');
+            notNewOptions.classList.add('hidden');
+
+            // Mostrar la opción correspondiente según la selección
+            switch (zoneType) {
+                case 'new':
+                    newOptions.classList.remove('hidden');
+                    break;
+                case 'existing':
+                    notNewOptions.classList.remove('hidden');
+                    break;
+                default:
+                    break;
+            }
+
+            //para las zonas existentes:
+
+            const notNewType = document.getElementById('notNewType').value;
+            const extensionOptions = document.getElementById('extensionOptions');
+            const variantOptions = document.getElementById('variantOptions');
+
+            // Ocultar ambas subopciones al inicio
+            extensionOptions.classList.add('hidden');
+            variantOptions.classList.add('hidden');
+
+            // Mostrar la subopción correspondiente según la selección
+            switch (notNewType) {
+                case 'extension':
+                    extensionOptions.classList.remove('hidden');
+                    break;
+                case 'variant':
+                    variantOptions.classList.remove('hidden');
+                    break;
+                default:
+                    break;
+            }
+        }
+
     </script>
 </body>
 </html>

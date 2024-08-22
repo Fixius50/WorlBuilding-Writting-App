@@ -28,43 +28,53 @@
         background-position: center;
     }
     .panel1{
-        border: 1px solid black;
         width: 100%;
         height: auto;
         grid-area: panel1;
-        display: flex;
-        flex-direction: column;
-        background-color: aqua;
+        display: grid;
+        grid-template-areas: 'header'
+                             'nav'
+                             'nav';
+        grid-template-columns: max-content;
+        justify-content: space-evenly;
+        justify-items: center;
+        align-content:space-evenly;
+        align-items: center;
     }
     header{
+        grid-area: header;
         border: inherit;
         text-align: center;
         background-color: greenyellow;
+        position: absolute;
+        margin-bottom: 25vh;
     }
     nav{
         grid-area: nav;
         background-color: gray;
         display: flex;
         flex-wrap: wrap;
-        flex-grow: 1;
+        align-content: center;
+        width: 100%;
+        height: 50%;
+    }
+    nav a{
+        width: 100%;
+        height: 100%;
     }
     .button{
-        width: 100%;
-        height: auto;
-    }
-    button{
         width: 100%;
         height: 100%;
         cursor: pointer;
     }
-    button:hover{
+    .button:hover{
         background-color: blueviolet;
         font-size: large;
         color: burlywood;
     }
 
-    /*Esto de crear es el panel de registro donde se pide el nombre de usuario, la contraseña
-    y el nombre del proyecto. Está junto a un botón de guardar.
+    /*Esto de crear es el panel de registro donde se pide el nombre de usuario, 
+    la contraseña y el nombre del proyecto. Está junto a un botón de guardar.
     
     Hacer lo mismo para la de abrir proyecto.
 
@@ -76,29 +86,46 @@
         z-index: 1;
         position: absolute;
         border: inherit;
+        background-color: aliceblue;
         width: 50%;
         height: 50%;
-        display: none;
+        display: flex; /*poner en nione para que esté oculto*/
+        flex-direction: row;
+        align-content: center;
+        
+    }
+
+    #crear-0{
+        grid-area: crear0;
+    }
+
+    #crear-1{
+        grid-area: crear1;
+        width: 100%;
+        height: 100px;
+        background-color: aquamarine;
     }
 
 </style>
 <body>
     <section class="plantilla-0">
-        <!-- Aquí entra todo los bloques que se vayan a 
-         poner y para que se centre en la pantalla bien.
-         Más tarde se editará para mejorarlo.-->
         <section class="panel1">
             <header>
                 <h1>BIENVENIDO/A</h1>
             </header>
             <nav>
-                <a href="ventanaProyectos.html" class="button"><button type="button">Abrir proyecto</button></a>
-                <a class="button"><button type="button" onclick="mostrar()" popovertarget="crear" popovertargetaction="show">Crear nuevo proyecto</button></a>
-                <a href="" class="button"><button type="button">Salir de la aplicación</button></a>
-                <div class="crear" id="crear" popover>
-                    
-                </div>
+                <a href="ventanaProyectos.html"><button class="button" type="button">Abrir proyecto</button></a>
+                <a><button class="button" type="button" onclick="mostrar()">Crear nuevo proyecto</button></a>
+                <a href=""><button class="button" type="button">Salir de la aplicación</button></a>
             </nav>
+            <div class="crear" id="crear">
+                <section id="crear-0">
+                    <button type="small-button" onclick="ocultar()">Cerrar panel</button>
+                </section>
+                <aside id="crear-1">
+                    
+                </aside>
+            </div>
         </section>
     </section>
     <script>
@@ -107,7 +134,7 @@
         }
 
         function ocultar() {
-            document.getElementById('crear').classList.add('hidden')
+            document.getElementById('crear').style.display = 'none';
         }
 
     </script>
