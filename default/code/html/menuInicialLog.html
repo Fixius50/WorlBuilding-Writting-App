@@ -31,32 +31,24 @@
         width: 100%;
         height: auto;
         grid-area: panel1;
-        display: grid;
-        grid-template-areas: 'header'
-                             'nav'
-                             'nav';
-        grid-template-columns: max-content;
-        justify-content: space-evenly;
-        justify-items: center;
-        align-content:space-evenly;
-        align-items: center;
+        display: flex;
+        flex-direction: column;
+
     }
     header{
         grid-area: header;
         border: inherit;
         text-align: center;
         background-color: greenyellow;
-        position: absolute;
-        margin-bottom: 25vh;
+        /*Mejorar esto con más elementos como el sombreado*/
     }
     nav{
         grid-area: nav;
         background-color: gray;
         display: flex;
         flex-wrap: wrap;
-        align-content: center;
-        width: 100%;
-        height: 50%;
+        width: auto;
+        height: auto;
     }
     nav a{
         width: 100%;
@@ -75,35 +67,47 @@
 
     /*Esto de crear es el panel de registro donde se pide el nombre de usuario, 
     la contraseña y el nombre del proyecto. Está junto a un botón de guardar.
-    
-    Hacer lo mismo para la de abrir proyecto.
-
-    Más tarde mejorará.
 
     */
 
     .crear{
         z-index: 1;
         position: absolute;
+        margin-left: 25vw;
+        margin-top: 25vh;
         border: inherit;
         background-color: aliceblue;
         width: 50%;
         height: 50%;
         display: flex; /*poner en nione para que esté oculto*/
         flex-direction: row;
-        align-content: center;
-        
+        align-items: center;
+        justify-items: center;
     }
 
     #crear-0{
         grid-area: crear0;
+        background-color: blueviolet;
+        height: 100%;
+        display: flex;
+        flex-direction: column-reverse;
+        justify-content: flex-end;
+    }
+
+    #crear-0 .fondo{
+        border: 1px solid rgb(16, 204, 50);
+        height: 100%;
+        background: url(../../other/imagenes/sword-fantasy-sword.gif) center/cover;
     }
 
     #crear-1{
         grid-area: crear1;
         width: 100%;
-        height: 100px;
+        height: 100%;
         background-color: aquamarine;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
 </style>
@@ -118,15 +122,44 @@
                 <a><button class="button" type="button" onclick="mostrar()">Crear nuevo proyecto</button></a>
                 <a href=""><button class="button" type="button">Salir de la aplicación</button></a>
             </nav>
-            <div class="crear" id="crear">
-                <section id="crear-0">
-                    <button type="small-button" onclick="ocultar()">Cerrar panel</button>
-                </section>
-                <aside id="crear-1">
-                    
-                </aside>
-            </div>
         </section>
+        <div class="crear" id="crear">
+            <section id="crear-0">
+                <button type="small-button" onclick="ocultar()">Cerrar panel</button>
+                <div class="fondo"></div>
+            </section>
+            <aside id="crear-1">
+                <h1>Rellene los datos</h1>
+                <form name="form-login">
+                    <label for="form-login">Nombre del proyecto:</label>
+                    <input type="text" name="proyect-txt" id="proyect-txt">
+                    <br><br>
+                    <label for="form-login">Usuario:</label>
+                    <input type="text" name="user-txt" id="user-txt">
+                    <br><br>
+                    <label for="form-login">Contraseña:</label>
+                    <input type="text" name="password-txt" id="password-txt">
+                    <hr>
+                </form>
+                <form name="form-registry">
+                    <i>¿Aún no se ha registrado? Rellena lo siguiente:</i>
+                    <br><br>
+                    <label for="form-registry">Usuario nuevo</label>
+                    <input type="text" name="newUser-txt" id="newUser-txt">
+                    <br><br>
+                    <label for="form-registry">Contraseña nueva</label>
+                    <input type="text" name="newPassword-txt" id="newPassword-txt">
+                    <br><br>
+                    <label for="form-registry">Repita contraseña</label>
+                    <input type="text" name="newPassword-txt" id="newPassword-txt">
+                    <br><br>
+                </form>
+                <div class="buttonNew">
+                    <button type="reset">Reiniciar</button>
+                    <button type="submit">Aceptar</button>
+                </div>
+            </aside>
+        </div>
     </section>
     <script>
         function mostrar() {
