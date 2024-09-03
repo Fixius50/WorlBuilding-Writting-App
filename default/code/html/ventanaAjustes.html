@@ -9,50 +9,50 @@
     * {
         box-sizing: border-box;
     }
+    .cuerpo{
+        border: 1px solid rgb(29, 41, 201);
+        position: relative;
+        width: 100%;
+        height: 99vh;
+        left: 0%;
+        top: 0%;
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        grid-template-rows: 100%;
+        background-color: aqua;
+        z-index: 0;
+    }
     .panel {
         border: 1px solid black;
         background-color: red;
         /*Lo de arriba borrar al acabar*/
-        position: fixed;
-        width: calc(9.9vw * 10);
-        height: auto;
+        position: relative;
+        width: 100%;
+        height: 100%;
         display: flex;
-        justify-content: space-around; /* Distribuye el espacio entre los elementos */
-        align-items: center;
-        padding: 1%; /* Añade algo de padding si es necesario */
+        flex-direction: row;
+        /* Distribuye el espacio entre los elementos */
+        flex-wrap: wrap;
+        padding: 5%; /* Añade algo de padding si es necesario */
         z-index: 1;
     }
-    .panelSec {
+    .panelButton {
         border: 1px solid black;
         background-color: aqua;
-        width: auto;
+        width: 50%;
         height: auto;
         position: relative; /* Necesario para el posicionamiento absoluto de los contenidos */
         cursor: pointer;
         /* Más adelante meterle animación */
     }
-    .contenido1, .contenido2 {
-        border: 1px solid black;
-        width: auto;
-        height: auto;
-        z-index: 2;
-        display: none;
-    }
 
-    .cuerpo{
-        border: 1px solid rgb(29, 41, 201);
-        position: relative;
-        width: calc(9.9vw * 10);
-        height: calc(9.5vh * 10);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        background-color: aqua;
-        z-index: 0;
+    .guardar{
+        border: inherit;
+        width: 100%;
+
     }
     
-    .cuerpo > h1{
+    .guardar > h1{
         /*Decoración del texto*/
     }
 
@@ -65,22 +65,38 @@
     
 </style>
 <body>
-    <div class="panel">
-        <button popovertarget="cuerpo1" popovertargetaction="toggle" type="button" class="panelSec">
-            <a>Aplicación</a>
-        </button> 
-        <button popovertarget="cuerpo2" popovertargetaction="toggle" type="button" class="panelSec">
-            <a>Proyecto</a>
-        </button>
-        <button popovertarget="cuerpo1" popovertargetaction="toggle" type="button" class="panelSec">
-            <a>Meter más</a>
-        </button> 
-        <button popovertarget="cuerpo2" popovertargetaction="toggle" type="button" class="panelSec">
-            <a>Meter más</a>
-        </button> 
-    </div>
     <section class="cuerpo">
-        <h1>SELECCIONA UNA OPCIÓN</h1>
+        <section class="panel">
+            <!-- De aquí sería solo meter el hover y ya. Loes elementos repetidos se  posicionan solos -->
+            <button class="panelButton" popovertarget="cuerpo1" popovertargetaction="toggle" type="button">
+                <a>Aplicación</a>
+            </button> 
+            <button class="panelButton" popovertarget="cuerpo2" popovertargetaction="toggle" type="button">
+                <a>Proyecto</a>
+            </button>
+            <button class="panelButton" popovertarget="cuerpo1" popovertargetaction="toggle" type="button">
+                <a>Meter más</a>
+            </button> 
+            <button class="panelButton" popovertarget="cuerpo2" popovertargetaction="toggle" type="button">
+                <a>Meter más</a>
+            </button>
+            <button class="panelButton" popovertarget="cuerpo1" popovertargetaction="toggle" type="button">
+                <a>Meter más</a>
+            </button> 
+            <button class="panelButton" popovertarget="cuerpo2" popovertargetaction="toggle" type="button">
+                <a>Meter más</a>
+            </button>
+            <button class="panelButton" popovertarget="cuerpo1" popovertargetaction="toggle" type="button">
+                <a>Meter más</a>
+            </button> 
+            <button class="panelButton" popovertarget="cuerpo2" popovertargetaction="toggle" type="button">
+                <a>Meter más</a>
+            </button> 
+        </section>
+        <div class="guardar">
+            <h1>SELECCIONA UNA OPCIÓN</h1>
+            <input type="submit" value="Guardar cambios" name="guardar">
+        </div>
         <section popover id="cuerpo1" class="sec1" >
             <fieldset>
                 <legend><h1>Ajustes generales de la aplicación</h1></legend>
@@ -90,10 +106,10 @@
             <fieldset>
                 <legend><h1>Ajustes al iniciar la aplicación</h1></legend>
                 <label for="section1">Inicio automático de sesión</label>
-                <b>SI</b>
-                <input type="radio" value="SI">
-                <b>NO</b>
-                <input type="radio" value="NO">
+                <label for="SI">SI</label>
+                <input type="radio" value="SI" name="opt">
+                <label for="NO">NO</label>
+                <input type="radio" value="NO" name="opt">
             </fieldset>
             <fieldset>
                 <legend><h1>Ajustes de apariencia</h1></legend>
@@ -110,9 +126,6 @@
                 <input type="text" name="opcion1" id="">
             </fieldset>
         </section>
-        <div class="guardar">
-            <input type="submit" value="Guardar cambios" name="guardar">
-        </div>
     </section>
 </body>
 </html>

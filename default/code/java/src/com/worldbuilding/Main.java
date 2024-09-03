@@ -8,6 +8,11 @@ import javafx.stage.Stage;
 
 import java.io.File;
 
+/**
+ * @see Main
+ * Clase que se dedica a iniciar la aplicación.
+*/
+
 public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {

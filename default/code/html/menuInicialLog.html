@@ -28,41 +28,108 @@
         background-position: center;
     }
     .panel1{
+        position: absolute;
         width: 100%;
-        height: auto;
+        height: 100%;
         grid-area: panel1;
         display: flex;
-        flex-direction: column;
-
+        flex-direction: row;
     }
     header{
         grid-area: header;
         border: inherit;
         text-align: center;
         background-color: greenyellow;
-        /*Mejorar esto con más elementos como el sombreado*/
-    }
-    nav{
-        grid-area: nav;
-        background-color: gray;
         display: flex;
+        flex-direction: column;
         flex-wrap: wrap;
-        width: auto;
-        height: auto;
+        justify-content: flex-end;
+        /*Mejorar esto con más elementos como el sombreado*/
+        width: 20%;
+    }
+    header h1{
+        width: 100%;
+    }
+    header button{
+        width: 100%;
+    }
+
+    .contenido{
+        border: indianred;
+        display: flex;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        flex-grow: 1;
+    }
+
+    nav{
+        width: 100%;
+        grid-area: nav;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        flex-grow: 1;
     }
     nav a{
         width: 100%;
-        height: 100%;
     }
     .button{
         width: 100%;
-        height: 100%;
         cursor: pointer;
     }
-    .button:hover{
+    button:hover{
         background-color: blueviolet;
-        font-size: large;
         color: burlywood;
+    }
+
+    .sec{
+        width: 100%;
+        height: 100%;
+        border: inherit;
+    }
+
+    /*Esto de abrir proyecto es el panel de donde se pide el nombre de usuario, 
+    la contraseña y el nombre del proyecto. Está junto a un botón de guardar.
+
+    Aquí debe buscar si se encuentra el proyecto y el usuario en la carpeta
+    de "users". Si está te lleva a la ventana de creación del proyecto; si no,
+    sale un error de que no está disponible.
+
+    */
+
+    .abrir{
+        border: inherit;
+        background-color: aliceblue;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: none; /*poner en none para que esté oculto*/
+        flex-direction: row;
+        align-items: center;
+        justify-items: center;
+    }
+
+    #abrir-0{
+        background-color: blueviolet;
+        height: 100%;
+        display: flex;
+        flex-direction: column-reverse;
+        justify-content: flex-end;
+    }
+
+    #abrir-0 .fondo{
+        border: 1px solid rgb(16, 204, 50);
+        height: 100%;
+        background: url(../../other/imagenes/sword-fantasy-sword.gif) center/cover;
+    }
+
+    #abrir-1{
+        width: 100%;
+        height: 100%;
+        background-color: aquamarine;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
     /*Esto de crear es el panel de registro donde se pide el nombre de usuario, 
@@ -71,22 +138,17 @@
     */
 
     .crear{
-        z-index: 1;
-        position: absolute;
-        margin-left: 25vw;
-        margin-top: 25vh;
         border: inherit;
         background-color: aliceblue;
-        width: 50%;
-        height: 50%;
-        display: flex; /*poner en nione para que esté oculto*/
+        width: 100%;
+        height: 100%;
+        display: none; /*poner en none para que esté oculto*/
         flex-direction: row;
         align-items: center;
         justify-items: center;
     }
 
     #crear-0{
-        grid-area: crear0;
         background-color: blueviolet;
         height: 100%;
         display: flex;
@@ -101,7 +163,6 @@
     }
 
     #crear-1{
-        grid-area: crear1;
         width: 100%;
         height: 100%;
         background-color: aquamarine;
@@ -116,59 +177,103 @@
         <section class="panel1">
             <header>
                 <h1>BIENVENIDO/A</h1>
-            </header>
-            <nav>
-                <a href="ventanaProyectos.html"><button class="button" type="button">Abrir proyecto</button></a>
-                <a><button class="button" type="button" onclick="mostrar()">Crear nuevo proyecto</button></a>
                 <a href=""><button class="button" type="button">Salir de la aplicación</button></a>
-            </nav>
+            </header>
+            <div class="contenido">
+                <nav>
+                    <a><button class="button" type="button" onclick="mostrarAbrirProyecto()">Abrir proyecto</button></a>
+                    <a><button class="button" type="button" onclick="mostrarCrearProyecto()">Crear nuevo proyecto</button></a>
+                </nav>
+                <section class="sec">
+                    <div class="abrir" id="abrir">
+                        <section id="abrir-0">
+                            <button type="small-button" onclick="ocultarAbrirProyecto()">Cerrar panel</button>
+                            <div class="fondo"></div>
+                        </section>
+                        <aside id="abrir-1">
+                            <h1>Rellene los datos</h1>
+                            <form name="form-login">
+                                <label for="form-login">Nombre del proyecto:</label>
+                                <input type="text" name="proyect-txt" id="proyect-txt">
+                                <br><br>
+                                <label for="form-login">Usuario:</label>
+                                <input type="text" name="user-txt" id="user-txt">
+                                <br><br>
+                                <label for="form-login">Contraseña:</label>
+                                <input type="text" name="password-txt" id="password-txt">
+                                <hr>
+                            </form>
+                            <div class="buttonNew">
+                                <button type="reset">Reiniciar</button>
+                                <button type="submit">Confirmar</button>
+                            </div>
+                        </aside>
+                    </div>
+                    <div class="crear" id="crear">
+                        <section id="crear-0">
+                            <button type="small-button" onclick="ocultarCrearProyecto()">Cerrar panel</button>
+                            <div class="fondo"></div>
+                        </section>
+                        <aside id="crear-1">
+                            <h1>Rellene los datos</h1>
+                            <form name="form-login">
+                                <label for="form-login">Nombre del proyecto:</label>
+                                <input type="text" name="proyect-txt" id="proyect-txt">
+                                <br><br>
+                                <label for="form-login">Usuario:</label>
+                                <input type="text" name="user-txt" id="user-txt">
+                                <br><br>
+                                <label for="form-login">Contraseña:</label>
+                                <input type="text" name="password-txt" id="password-txt">
+                                <hr>
+                            </form>
+                            <form name="form-registry">
+                                <i>¿Aún no se ha registrado? Rellena lo siguiente:</i>
+                                <br><br>
+                                <label for="form-registry">Usuario nuevo</label>
+                                <input type="text" name="newUser-txt" id="newUser-txt">
+                                <br><br>
+                                <label for="form-registry">Contraseña nueva</label>
+                                <input type="text" name="newPassword-txt" id="newPassword-txt">
+                                <br><br>
+                                <label for="form-registry">Repita contraseña</label>
+                                <input type="text" name="newPassword-txt" id="newPassword-txt">
+                                <br><br>
+                            </form>
+                            <div class="buttonNew">
+                                <button type="reset">Reiniciar</button>
+                                <button type="submit">Confirmar</button>
+                            </div>
+                        </aside>
+                    </div>
+                </section>
+            </div>
         </section>
-        <div class="crear" id="crear">
-            <section id="crear-0">
-                <button type="small-button" onclick="ocultar()">Cerrar panel</button>
-                <div class="fondo"></div>
-            </section>
-            <aside id="crear-1">
-                <h1>Rellene los datos</h1>
-                <form name="form-login">
-                    <label for="form-login">Nombre del proyecto:</label>
-                    <input type="text" name="proyect-txt" id="proyect-txt">
-                    <br><br>
-                    <label for="form-login">Usuario:</label>
-                    <input type="text" name="user-txt" id="user-txt">
-                    <br><br>
-                    <label for="form-login">Contraseña:</label>
-                    <input type="text" name="password-txt" id="password-txt">
-                    <hr>
-                </form>
-                <form name="form-registry">
-                    <i>¿Aún no se ha registrado? Rellena lo siguiente:</i>
-                    <br><br>
-                    <label for="form-registry">Usuario nuevo</label>
-                    <input type="text" name="newUser-txt" id="newUser-txt">
-                    <br><br>
-                    <label for="form-registry">Contraseña nueva</label>
-                    <input type="text" name="newPassword-txt" id="newPassword-txt">
-                    <br><br>
-                    <label for="form-registry">Repita contraseña</label>
-                    <input type="text" name="newPassword-txt" id="newPassword-txt">
-                    <br><br>
-                </form>
-                <div class="buttonNew">
-                    <button type="reset">Reiniciar</button>
-                    <button type="submit">Aceptar</button>
-                </div>
-            </aside>
-        </div>
     </section>
     <script>
-        function mostrar() {
-            document.getElementById('crear').style.display = 'flex';
-        }
+        /*Esto es lo de abrir proyecto*/
 
-        function ocultar() {
+        function mostrarAbrirProyecto() {
+            document.getElementById('abrir').style.display = 'flex';
             document.getElementById('crear').style.display = 'none';
         }
+
+        function ocultarAbrirProyecto() {
+            document.getElementById('abrir').style.display = 'none';
+        }
+
+        /*Esto es lo de crear proyecto*/
+
+        function mostrarCrearProyecto() {
+            document.getElementById('crear').style.display = 'flex';
+            document.getElementById('abrir').style.display = 'none';
+        }
+
+        function ocultarCrearProyecto() {
+            document.getElementById('crear').style.display = 'none';
+        }
+
+        // Aquí va la recopilación de la información para enviarlo.
 
     </script>
 </body>

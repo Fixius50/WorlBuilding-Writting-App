@@ -116,7 +116,22 @@
         border: 1px solid rgb(207, 11, 11);
         grid-area: centro;
         display: flex;
+        flex-direction: row;
     }
+
+    .objects, .ground{
+        border: 1px solid black;
+        height: auto;
+    }
+
+    .objects{
+        width: 12.5%;
+    }
+
+    .ground{
+        width: 100%;
+    }
+
 </style>
 <body>
     <div class="panel0">
@@ -140,7 +155,7 @@
          la autoría con el nombre del proyecto. Más tarde se editará para mejorarlo.-->
          
         <header class="header-top">
-            <a>Ver que poner por aquí.</a>
+            <a>Aquí va el nombre del proyecto junto al usuario.</a>
         </header>
         <!-- Aquí entra las cosas del proyecto para que se vean visualmente.
          Se despliegan en el área central.
@@ -155,7 +170,12 @@
             <header class="nv">Estado</header>
         </nav>
         <div class="area-central">
-            <!-- Aquí se despliegan las opciones de "nav-top" según lo que sean -->
+            <section class="objects">
+                
+            </section>
+            <section class="ground">
+                <!-- Aquí se despliegan las opciones de "nav-top" según lo que sean -->
+            </section>
         </div>
     </div>
 </body>
