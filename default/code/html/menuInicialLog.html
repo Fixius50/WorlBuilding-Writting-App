@@ -28,23 +28,24 @@
         background-position: center;
     }
     .panel1{
-        position: absolute;
+        position: relative;
         width: 100%;
         height: 100%;
         grid-area: panel1;
         display: flex;
         flex-direction: row;
+        /*meter sombreado*/
     }
     header{
         grid-area: header;
-        border: inherit;
         text-align: center;
-        background-color: greenyellow;
+        background-image: url(../../other/imagenes/sword-fantasy-sword.gif);
+        background-size: cover;
+        background-position: center;
         display: flex;
         flex-direction: column;
         flex-wrap: wrap;
         justify-content: flex-end;
-        /*Mejorar esto con más elementos como el sombreado*/
         width: 20%;
     }
     header h1{
@@ -54,28 +55,29 @@
         width: 100%;
     }
 
-    .contenido{
-        border: indianred;
+    nav{
         display: flex;
-        justify-content: flex-start;
-        flex-wrap: wrap;
+        flex-direction: column;
+        width: max-content;
         flex-grow: 1;
     }
 
-    nav{
+    .contenido{
+        position: relative;
         width: 100%;
-        grid-area: nav;
-        display: flex;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        flex-grow: 1;
-    }
-    nav a{
-        width: 100%;
+        border: inherit;
+        background-image: url(../../other/imagenes/wooden-plank-texture-wall.jpg);
+        background-size: contain;
+        background-position: center;
+        background-repeat:repeat;
     }
     .button{
         width: 100%;
         cursor: pointer;
+        border: none;
+        background-image: url(../../other/imagenes/ornamental-frame.jpg);
+        background-size: cover;
+        background-position: center;
     }
     button:hover{
         background-color: blueviolet;
@@ -83,9 +85,16 @@
     }
 
     .sec{
-        width: 100%;
-        height: 100%;
+        margin: 1%;
+    }
+
+    form *{
         border: inherit;
+        font-size: large;
+        background-image: url(../../other/imagenes/ornamental-frame.jpg);
+        background-size: cover;
+        background-position: center;
+        background-repeat:repeat;
     }
 
     /*Esto de abrir proyecto es el panel de donde se pide el nombre de usuario, 
@@ -98,35 +107,17 @@
     */
 
     .abrir{
-        border: inherit;
-        background-color: aliceblue;
         position: absolute;
-        width: 100%;
-        height: 100%;
+        border: inherit;
         display: none; /*poner en none para que esté oculto*/
         flex-direction: row;
-        align-items: center;
+        align-items: flex-start;
         justify-items: center;
     }
 
-    #abrir-0{
-        background-color: blueviolet;
-        height: 100%;
-        display: flex;
-        flex-direction: column-reverse;
-        justify-content: flex-end;
-    }
-
-    #abrir-0 .fondo{
-        border: 1px solid rgb(16, 204, 50);
-        height: 100%;
-        background: url(../../other/imagenes/sword-fantasy-sword.gif) center/cover;
-    }
-
     #abrir-1{
-        width: 100%;
-        height: 100%;
-        background-color: aquamarine;
+        
+        height: max-content;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -138,34 +129,17 @@
     */
 
     .crear{
+        position: absolute;
         border: inherit;
-        background-color: aliceblue;
-        width: 100%;
-        height: 100%;
         display: none; /*poner en none para que esté oculto*/
         flex-direction: row;
-        align-items: center;
+        align-items: flex-start;
         justify-items: center;
-    }
-
-    #crear-0{
-        background-color: blueviolet;
-        height: 100%;
-        display: flex;
-        flex-direction: column-reverse;
-        justify-content: flex-end;
-    }
-
-    #crear-0 .fondo{
-        border: 1px solid rgb(16, 204, 50);
-        height: 100%;
-        background: url(../../other/imagenes/sword-fantasy-sword.gif) center/cover;
     }
 
     #crear-1{
         width: 100%;
-        height: 100%;
-        background-color: aquamarine;
+        height: max-content;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -176,22 +150,16 @@
     <section class="plantilla-0">
         <section class="panel1">
             <header>
-                <h1>BIENVENIDO/A</h1>
                 <a href=""><button class="button" type="button">Salir de la aplicación</button></a>
             </header>
+            <nav>
+                <a><button class="button" type="button" onclick="mostrarAbrirProyecto()">Abrir proyecto</button></a>
+                <a><button class="button" type="button" onclick="mostrarCrearProyecto()">Crear nuevo proyecto</button></a>
+            </nav>
             <div class="contenido">
-                <nav>
-                    <a><button class="button" type="button" onclick="mostrarAbrirProyecto()">Abrir proyecto</button></a>
-                    <a><button class="button" type="button" onclick="mostrarCrearProyecto()">Crear nuevo proyecto</button></a>
-                </nav>
                 <section class="sec">
                     <div class="abrir" id="abrir">
-                        <section id="abrir-0">
-                            <button type="small-button" onclick="ocultarAbrirProyecto()">Cerrar panel</button>
-                            <div class="fondo"></div>
-                        </section>
                         <aside id="abrir-1">
-                            <h1>Rellene los datos</h1>
                             <form name="form-login">
                                 <label for="form-login">Nombre del proyecto:</label>
                                 <input type="text" name="proyect-txt" id="proyect-txt">
@@ -210,34 +178,26 @@
                         </aside>
                     </div>
                     <div class="crear" id="crear">
-                        <section id="crear-0">
-                            <button type="small-button" onclick="ocultarCrearProyecto()">Cerrar panel</button>
-                            <div class="fondo"></div>
-                        </section>
                         <aside id="crear-1">
-                            <h1>Rellene los datos</h1>
-                            <form name="form-login">
-                                <label for="form-login">Nombre del proyecto:</label>
+                            <form name="form-open">
+                                <label for="form-open">Nombre del proyecto:</label>
                                 <input type="text" name="proyect-txt" id="proyect-txt">
                                 <br><br>
-                                <label for="form-login">Usuario:</label>
+                                <label for="form-open">Usuario:</label>
                                 <input type="text" name="user-txt" id="user-txt">
                                 <br><br>
-                                <label for="form-login">Contraseña:</label>
+                                <label for="form-open">Contraseña:</label>
                                 <input type="text" name="password-txt" id="password-txt">
                                 <hr>
                             </form>
-                            <form name="form-registry">
-                                <i>¿Aún no se ha registrado? Rellena lo siguiente:</i>
+                            <form name="form-create">
+                                <i>Tipo/enfoque del proyecto</i>
                                 <br><br>
-                                <label for="form-registry">Usuario nuevo</label>
-                                <input type="text" name="newUser-txt" id="newUser-txt">
-                                <br><br>
-                                <label for="form-registry">Contraseña nueva</label>
-                                <input type="text" name="newPassword-txt" id="newPassword-txt">
-                                <br><br>
-                                <label for="form-registry">Repita contraseña</label>
-                                <input type="text" name="newPassword-txt" id="newPassword-txt">
+                                <label for="form-create">Usuario nuevo</label>
+                                <select name="select" id="select">
+                                    <option value="Escribir Novelas">Novelas</option>
+                                    <option value="Escribir Trabajo">Trabajo</option>
+                                </select>
                                 <br><br>
                             </form>
                             <div class="buttonNew">
