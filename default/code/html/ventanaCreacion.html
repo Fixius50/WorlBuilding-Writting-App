@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ventana Creación</title>
     <style>
+
+        /*TAREA: 
+        
+        Refactorizar todo lo posible el CSS para hacerlo más ameno, como el 
+        uso de etiquetas en vez de hacerlo más legible (ya que aunque se sepa 
+        que etiqueta va a una zona, si funciona igual que la otra no tiene sentido).
+        
+        */
+
         * {
             box-sizing: border-box;
         }
@@ -74,6 +83,21 @@
 
         /*Lo de abajo es para las "ENTIDADES"*/
 
+        .panelOpcionesEntidades{
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+
+        #opcionesGenerales{
+            width: 20%;
+        }
+
+        #colectivoOptions, #individuoOptions{
+            
+            width: max-content;
+        }
+
         #colectivo, #individuo, #entity {
             border-style: none; /*Para eliminar el borde el botón desplegable*/
             width: max-content;
@@ -83,14 +107,6 @@
         option {
             width: 100%;
             float: inline-start;
-        }
-
-        #colectivoLabel, #individuoLabel{
-            display: flex;
-            flex-direction: row;
-            width: max-content;
-            align-items: center;
-            margin-left: 5%;
         }
 
         /*Lo de abajo es para las "ZONAS"*/
@@ -132,7 +148,7 @@
                 <section class="panelOpcionesEntidades" id="panelOpcionesEntidades"> 
                     <section id="opcionesGenerales">
                         <b>Entidad: </b>
-                        <label for="entity" class="entity">    
+                        <label for="entity" class="entity">
                             <select name="entity" id="entity" onchange="toggleEntityOptions()">
                                 <option value="" autofocus>Seleccione una opción</option>
                                 <option value="colectivo">Colectivo</option>

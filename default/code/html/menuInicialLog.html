@@ -21,10 +21,10 @@
         grid-template-areas: '. . .'
                              '. panel1 .'
                              '. . .';
-        /*Configurar la imágen la imágen*/
+        /*Configurar la imágen*/
         background-image: url(../../other/imagenes/Fondo-Tierra-Menu-Inicial.jpg);
         background-repeat: no-repeat;
-        background-size: cover;
+        background-size: cover; /*Cambia totalmente de "cover" a "contain"*/
         background-position: center;
     }
     .panel1{
@@ -44,34 +44,11 @@
         background-position: center;
         display: flex;
         flex-direction: column;
-        flex-wrap: wrap;
         justify-content: flex-end;
-        width: 20%;
+        width: 25%;
+        border: 1px solid rgb(211, 20, 20);
     }
-    header h1{
-        width: 100%;
-    }
-    header button{
-        width: 100%;
-    }
-
-    nav{
-        display: flex;
-        flex-direction: column;
-        width: max-content;
-        flex-grow: 1;
-    }
-
-    .contenido{
-        position: relative;
-        width: 100%;
-        border: inherit;
-        background-image: url(../../other/imagenes/wooden-plank-texture-wall.jpg);
-        background-size: contain;
-        background-position: center;
-        background-repeat:repeat;
-    }
-    .button{
+    header .button0{
         width: 100%;
         cursor: pointer;
         border: none;
@@ -79,9 +56,48 @@
         background-size: cover;
         background-position: center;
     }
+
+    nav{
+        border: 1px solid black;
+        width: 20%;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+    }
+
+    nav .button{
+        position: relative;
+        width: 100%;
+        height: auto;
+        cursor: pointer;
+        border: none;
+        background-image: url(../../other/imagenes/ornamental-frame.jpg);
+        background-size: cover;
+        background-position: center;
+    }
+
+    nav .button:hover{
+        left: 15%;
+    }
+
     button:hover{
         background-color: blueviolet;
         color: burlywood;
+    }
+
+    .buttonNew button{
+        border: none;
+    }
+
+    .contenido{
+        margin-left: 5%;
+        width: 100%;
+        border: inherit;
+        background-image: url(../../other/imagenes/wooden-plank-texture-wall.jpg);
+        background-size: contain;
+        background-position: center;
+        background-repeat:repeat;
     }
 
     .sec{
@@ -97,8 +113,7 @@
         background-repeat:repeat;
     }
 
-    /*Esto de abrir proyecto es el panel de donde se pide el nombre de usuario, 
-    la contraseña y el nombre del proyecto. Está junto a un botón de guardar.
+    /*
 
     Aquí debe buscar si se encuentra el proyecto y el usuario en la carpeta
     de "users". Si está te lleva a la ventana de creación del proyecto; si no,
@@ -123,8 +138,8 @@
         align-items: center;
     }
 
-    /*Esto de crear es el panel de registro donde se pide el nombre de usuario, 
-    la contraseña y el nombre del proyecto. Está junto a un botón de guardar.
+    /*Esto de crear es el panel de registro donde se pide 
+    el nombre del proyecto. Está junto a un botón de guardar.
 
     */
 
@@ -150,11 +165,11 @@
     <section class="plantilla-0">
         <section class="panel1">
             <header>
-                <a href=""><button class="button" type="button">Salir de la aplicación</button></a>
+                <button class="button0" type="button">Salir de la aplicación</button>
             </header>
             <nav>
-                <a><button class="button" type="button" onclick="mostrarAbrirProyecto()">Abrir proyecto</button></a>
-                <a><button class="button" type="button" onclick="mostrarCrearProyecto()">Crear nuevo proyecto</button></a>
+                <button class="button" type="button" onclick="mostrarAbrirProyecto()">Abrir proyecto</button>
+                <button class="button" type="button" onclick="mostrarCrearProyecto()">Crear nuevo proyecto</button>
             </nav>
             <div class="contenido">
                 <section class="sec">
@@ -164,12 +179,6 @@
                                 <label for="form-login">Nombre del proyecto:</label>
                                 <input type="text" name="proyect-txt" id="proyect-txt">
                                 <br><br>
-                                <label for="form-login">Usuario:</label>
-                                <input type="text" name="user-txt" id="user-txt">
-                                <br><br>
-                                <label for="form-login">Contraseña:</label>
-                                <input type="text" name="password-txt" id="password-txt">
-                                <hr>
                             </form>
                             <div class="buttonNew">
                                 <button type="reset">Reiniciar</button>
@@ -183,12 +192,6 @@
                                 <label for="form-open">Nombre del proyecto:</label>
                                 <input type="text" name="proyect-txt" id="proyect-txt">
                                 <br><br>
-                                <label for="form-open">Usuario:</label>
-                                <input type="text" name="user-txt" id="user-txt">
-                                <br><br>
-                                <label for="form-open">Contraseña:</label>
-                                <input type="text" name="password-txt" id="password-txt">
-                                <hr>
                             </form>
                             <form name="form-create">
                                 <i>Tipo/enfoque del proyecto</i>
