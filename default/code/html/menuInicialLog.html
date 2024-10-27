@@ -176,13 +176,14 @@
                     <div class="abrir" id="abrir">
                         <aside id="abrir-1">
                             <form name="form-login">
+                                <a href="ventanaProyectos.html">click</a>
                                 <label for="form-login">Nombre del proyecto:</label>
                                 <input type="text" name="proyect-txt" id="proyect-txt">
                                 <br><br>
                             </form>
                             <div class="buttonNew">
                                 <button type="reset">Reiniciar</button>
-                                <button type="submit">Confirmar</button>
+                                <button type="submit" onclick="llamarJava()">Confirmar</button>
                             </div>
                         </aside>
                     </div>
@@ -205,7 +206,7 @@
                             </form>
                             <div class="buttonNew">
                                 <button type="reset">Reiniciar</button>
-                                <button type="submit">Confirmar</button>
+                                <button type="submit" onclick="llamarJava()">Confirmar</button>
                             </div>
                         </aside>
                     </div>
@@ -238,6 +239,14 @@
 
         // Aquí va la recopilación de la información para enviarlo.
 
+        function llamarJava() {
+            if (javaConnector) {
+                // Llamar al método de MenuInicial 'mostrarMensaje'
+                javaConnector.mostrarMensaje("¡Hola desde JavaScript!");
+            } else {
+                alert("El conector Java no está disponible.");
+            }
+        }
     </script>
 </body>
 </html>

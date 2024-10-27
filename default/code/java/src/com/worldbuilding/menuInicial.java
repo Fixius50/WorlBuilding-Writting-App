@@ -1,16 +1,21 @@
 package com.worldbuilding;
-import java.io.*;
 
-/**
- * @see menuInicial
- * @see Main
- * Clase que se encarga de la interacción con el menú principal de
- * la pantalla de inicio. Especificamente lee los archivos creados por JavaScript
- * y los inserta en un SQL para la gestión de los datos.
- */
+import javafx.scene.web.WebEngine;
 
-public class menuInicial {
-    public static void main(String[] args) {
+public class MenuInicial {
+    private WebEngine webEngine;
+
+    // Constructor que recibe WebEngine
+    public MenuInicial(WebEngine webEngine) {
+        this.webEngine = webEngine;
+    }
+
+    // Método que será llamado desde JavaScript
+    public void mostrarMensaje(String mensaje) {
+        // Mostrar el mensaje en la consola de Java
+        System.out.println("Mensaje desde JavaScript: " + mensaje);
         
+        // Opcional: enviar una respuesta de vuelta a JavaScript
+        // webEngine.executeScript("alert('Mensaje recibido: " + mensaje + "');");
     }
 }
