@@ -13,7 +13,7 @@ import java.io.File;
  * @see Main
  * Clase que se dedica a iniciar la aplicación.
  */
-public class Main extends Application {
+public class Main extends Application{
     @Override
     public void start(Stage primaryStage) {
         VBox root = new VBox();
@@ -59,6 +59,8 @@ public class Main extends Application {
         primaryStage.setFullScreen(false);
         
         primaryStage.show();
+
+        
     }
 
     public static void main(String[] args) { // Función donde se inicia la app
