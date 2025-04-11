@@ -14,6 +14,7 @@ import java.io.File;
  * Clase que se dedica a iniciar la aplicación.
  */
 public class Main extends Application{
+    // Aquí se desarrolla la aplicación de inicio
     @Override
     public void start(Stage primaryStage) {
         VBox root = new VBox();
@@ -24,7 +25,7 @@ public class Main extends Application{
 
         // Cargar el archivo HTML
         File htmlFileMenuInicialLog = new File("default\\code\\html\\menuInicialLog.html");
-        
+
         if (htmlFileMenuInicialLog.exists()) {
             webEngine.load(htmlFileMenuInicialLog.toURI().toString());
         } else {
@@ -34,36 +35,39 @@ public class Main extends Application{
         // Crear una instancia de MenuInicial y pasar el WebEngine
         MenuInicial menuInicial = new MenuInicial(webEngine);
 
-        // Exponer el objeto MenuInicial para que JavaScript pueda llamarlo
-        webEngine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
-            if (newState == javafx.concurrent.Worker.State.SUCCEEDED) {
-                // Exponer el objeto como 'javaConnector'
-                webEngine.executeScript("window.javaConnector = " + menuInicial);
-            }
-        });
-
         int ancho = (int) primaryStage.getMaxWidth();
         int alto = (int) primaryStage.getMaxHeight();
 
         Scene scene = new Scene(root, alto, ancho);
-        
-        // scene.getStylesheets().add("file:default/code/css/style.css");
-        // La línea de arriba es para cuando se quieren enlazar el html al css y
-        // que se ejecute bien java. Solo para ese caso se debe poner.
+        /*
+         * scene.getStylesheets().add("file:default/code/css/style.css");
+         * La línea de arriba es para cuando se quieren enlazar el html al css y
+         * que se ejecute bien java. Solo para ese caso se debe poner.
+         */
 
         root.getChildren().add(webView);
         primaryStage.setTitle("Aplicación WorldBuilding"); // Título de la app
         primaryStage.setScene(scene);
-        
-        // Configurar la ventana para que se ponga en pantalla completa
+
+        // Configurar la ventana para que NO se pueda redimensionar
+        primaryStage.setResizable(false);
+
+        // Configurar la ventana para que se ponga en pantalla completa (esto lo puedes mantener o quitar)
         primaryStage.setFullScreen(false);
-        
+        primaryStage.centerOnScreen();
         primaryStage.show();
 
-        
+        operacionesMenuIicial(webEngine);
+
     }
 
-    public static void main(String[] args) { // Función donde se inicia la app
+    public static void operacionesMenuIicial(WebEngine webEngine){
+        MenuInicial menuInicial = new MenuInicial(null);
+
+    }
+
+    // No borrar esta función. Aquí se inicia la aplicación
+    public static void main(String[] args) {
         launch(args);
     }
 }
