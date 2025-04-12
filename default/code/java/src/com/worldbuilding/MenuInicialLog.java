@@ -125,10 +125,6 @@ public class MenuInicialLog {
 
     // Constructor de la clase
 
-    public MenuInicialLog(){ // Debe estar así para que reciba los datos
-        this.nombreProyecto = null;
-        this.directorioProyecto = null;
-        this.tipoProyecto = null;
-    }
+    public MenuInicialLog(){} // Debe estar así para que reciba los datos
 
 }

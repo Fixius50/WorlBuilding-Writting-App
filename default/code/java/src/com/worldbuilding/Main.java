@@ -57,6 +57,10 @@ public class Main extends Application {
      * @param webEngine
      */
     public void controladoraDeEventos(Stage primaryStage, WebEngine webEngine){
+        eventButonClose(primaryStage, webEngine); // para la clase MenuInicialLog
+    }
+
+    public void eventButonClose(Stage primaryStage, WebEngine webEngine){
         // Aquí recibe los parámetros de JavaScript del MenuInicialLog y se los envía a su clase
         MenuInicialLog controlador = new MenuInicialLog();
 
