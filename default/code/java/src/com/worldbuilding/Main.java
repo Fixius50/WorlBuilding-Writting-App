@@ -33,18 +33,19 @@ public class Main extends Application{
             System.out.println("Error: El archivo HTML no se encuentra en la ruta especificada.");
         }
 
-        // --- NUEVO: Inyectar el objeto JavaBridge en la ventana JS ---
-        webEngine.documentProperty().addListener((obs, oldDoc, newDoc) -> {
-            if (newDoc != null) {
-                JSObject window = (JSObject) webEngine.executeScript("window");
-                window.setMember("app", new JavaBridge(primaryStage));
-            }
-        });
-        // --- FIN NUEVO ---
+        /*
+         * Aquí recibe los parámetros de javaScript del MenuInicialLog y se los envía a su clase
+         */
 
+        MenuInicialLog controlador = new MenuInicialLog();
+
+        JSObject window = (JSObject) webEngine.executeScript("window");
+        window.setMember("javaConnector", controlador);  // NUEVO
+        System.out.println("Objeto Java expuesto como 'javaConnector' en JS.");
+
+        // Continuación de la app
         int ancho = (int) primaryStage.getMaxWidth();
         int alto = (int) primaryStage.getMaxHeight();
-
         Scene scene = new Scene(root, alto, ancho);
 
         root.getChildren().add(webView);
