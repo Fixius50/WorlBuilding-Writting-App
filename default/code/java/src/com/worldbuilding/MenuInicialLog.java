@@ -2,6 +2,8 @@ package com.worldbuilding;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+
+import javafx.application.Platform;
 import javafx.stage.Stage;
 
 
@@ -13,6 +15,7 @@ public class MenuInicialLog {
     private String nombreProyecto;
     private String directorioProyecto;
     private String tipoProyecto;
+    private boolean closeRequested = false; // Variable para saber si se ha solicitado el cierre
 
     // Getters y setters
     
@@ -40,10 +43,18 @@ public class MenuInicialLog {
         this.tipoProyecto = tipoProyecto;
     }
 
+    public void setCloseRequest(boolean requested) {
+        this.closeRequested = requested;
+    }
+
+    public boolean isCloseRequested() {
+        return closeRequested;
+    }
+
     // métodos
 
     /*
-     * Este método crea el proyecto que se haya pasado por JavaScript
+     * Crea el proyecto que se haya pasado por JavaScript
      */
     public void crearProyectoNuevo(Stage stage) {
         if (nombreProyecto == null || tipoProyecto == null || directorioProyecto == null) {
@@ -101,6 +112,15 @@ public class MenuInicialLog {
      */
     public void abreProyecto(Stage stage){
 
+    }
+
+    /*
+     * Este método indica que se quiere cerrar el programa que se haya pasado por JavaScript
+     */
+    public void cerrarPrograma() {
+        System.out.println("Saliendo del programa...");
+        closeRequested = true;
+        Platform.exit();  // Esto termina la aplicación sin mostrar nada en la consola
     }
 
     // Constructor de la clase

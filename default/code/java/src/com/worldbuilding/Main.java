@@ -24,27 +24,13 @@ public class Main extends Application {
 
         // Cargar el archivo HTML
         File htmlFileMenuInicialLog = new File("default\\code\\html\\menuInicialLog.html");
-
         if (htmlFileMenuInicialLog.exists()) {
             webEngine.load(htmlFileMenuInicialLog.toURI().toString());
         }
 
-        /*
-         * Aquí recibe los parámetros de JavaScript del MenuInicialLog y se los envía a su clase
-         */
-        MenuInicialLog controlador = new MenuInicialLog();
-
-        // Escuchar cuando se haya cargado el documento HTML y exponer el objeto Java a JavaScript
-        webEngine.documentProperty().addListener((obs, oldDoc, newDoc) -> {
-            if (newDoc != null) {
-                JSObject window = (JSObject) webEngine.executeScript("window");
-                window.setMember("javaConnector", controlador);  // Exponer la clase Java como "javaConnector"
-            }
-        });
-
-        primaryStage.setOnCloseRequest(e -> {
-            cerrarPrograma();
-        });
+        // ------------------------------------------------
+        controladoraDeEventos(primaryStage, webEngine);
+        // ------------------------------------------------
 
         // Continuación de la app
         int ancho = (int) primaryStage.getMaxWidth();
@@ -64,12 +50,29 @@ public class Main extends Application {
         primaryStage.show();
     }
 
-    /*
-     * Este método indica que se quiere cerrar el programa que se haya pasado por JavaScript
+    /**
+     * controladoraDeEventos(): Función donde se van a gestionar el resto del código, como eventos u otros componentes.
+     *                          A este se le va a ir metiendo más funciones.
+     * @param primaryStage
+     * @param webEngine
      */
-    public void cerrarPrograma() {
-        System.out.println("Saliendo del programa...");
-        Platform.exit();  // Esto termina la aplicación sin mostrar nada en la consola
+    public void controladoraDeEventos(Stage primaryStage, WebEngine webEngine){
+        // Aquí recibe los parámetros de JavaScript del MenuInicialLog y se los envía a su clase
+        MenuInicialLog controlador = new MenuInicialLog();
+
+        // Escuchar cuando se haya cargado el documento HTML
+        webEngine.documentProperty().addListener(e -> {
+            if (e != null) {
+                JSObject window = (JSObject) webEngine.executeScript("window");
+                window.setMember("javaConnector", controlador);  // Exponer la clase Java como "javaConnector"
+            }
+        });
+
+        primaryStage.setOnCloseRequest(event -> {
+            if (controlador.isCloseRequested()) {
+                controlador.cerrarPrograma();
+            }
+        });
     }
 
     // No borrar esta función. Aquí se inicia la aplicación
