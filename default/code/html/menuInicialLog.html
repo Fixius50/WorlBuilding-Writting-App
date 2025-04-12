@@ -3,212 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/menuInicialLog.css">
     <title>Ventana Principal</title>
 </head>
-<style>
-    *{
-        box-sizing: border-box;
-    }
-    body{
-       background-color: black; 
-    }
-    .plantilla-0{
-        border: 1px solid rgb(255, 255, 255);
-        width: 99vw;
-        height: 99vh;
-        position:absolute;
-        display: grid;
-        grid-template-areas: '. . .'
-                             '. panel1 .'
-                             '. . .';
-        /*Configurar la imágen*/
-        background-image: url(../../other/imagenes/Fondo-Tierra-Menu-Inicial.jpg);
-        background-repeat: no-repeat;
-        background-size: cover; /*Cambia totalmente de "cover" a "contain"*/
-        background-position: center;
-    }
-    .panel1{
-        position: relative;
-        width: 100%;
-        height: 100%;
-        grid-area: panel1;
-        display: flex;
-        flex-direction: row;
-        /*meter sombreado*/
-    }
-    header{
-        grid-area: header;
-        text-align: center;
-        background-image: url(../../other/imagenes/sword-fantasy-sword.gif);
-        background-size: cover;
-        background-position: center;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        width: 25%;
-        border: 1px solid rgb(211, 20, 20);
-    }
-    header .button0{
-        width: 100%;
-        cursor: pointer;
-        border: none;
-        background-image: url(../../other/imagenes/ornamental-frame.jpg);
-        background-size: cover;
-        background-position: center;
-    }
-
-    nav{
-        border: 1px solid black;
-        width: 20%;
-        height: auto;
-        display: flex;
-        flex-direction: column;
-        position: absolute;
-    }
-
-    nav .button{
-        position: relative;
-        width: 100%;
-        height: auto;
-        cursor: pointer;
-        border: none;
-        background-image: url(../../other/imagenes/ornamental-frame.jpg);
-        background-size: cover;
-        background-position: center;
-    }
-
-    nav .button:hover{
-        left: 15%;
-    }
-
-    button:hover{
-        background-color: blueviolet;
-        color: burlywood;
-    }
-
-    .buttonNew button{
-        border: none;
-    }
-
-    .contenido{
-        margin-left: 5%;
-        width: 100%;
-        border: inherit;
-        background-image: url(../../other/imagenes/wooden-plank-texture-wall.jpg);
-        background-size: contain;
-        background-position: center;
-        background-repeat:repeat;
-    }
-
-    .sec{
-        margin: 1%;
-    }
-
-    form *{
-        border: inherit;
-        font-size: large;
-        background-image: url(../../other/imagenes/ornamental-frame.jpg);
-        background-size: cover;
-        background-position: center;
-        background-repeat:repeat;
-    }
-
-    /*
-
-    Aquí debe buscar si se encuentra el proyecto y el usuario en la carpeta
-    de "users". Si está te lleva a la ventana de creación del proyecto; si no,
-    sale un error de que no está disponible.
-
-    */
-
-    .abrir{
-        position: absolute;
-        border: inherit;
-        display: none; /*poner en none para que esté oculto*/
-        flex-direction: row;
-        align-items: flex-start;
-        justify-items: center;
-    }
-
-    #abrir-1{
-        
-        height: max-content;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    /*Esto de crear es el panel de registro donde se pide 
-    el nombre del proyecto. Está junto a un botón de guardar.
-
-    */
-
-    .crear{
-        position: absolute;
-        border: inherit;
-        display: none; /*poner en none para que esté oculto*/
-        flex-direction: row;
-        align-items: flex-start;
-        justify-items: center;
-    }
-
-    #crear-1{
-        width: 100%;
-        height: max-content;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-</style>
 <body>
     <section class="plantilla-0">
         <section class="panel1">
             <header>
-                <button class="button0" type="button">Salir de la aplicación</button>
+                <button class="button0" type="button" onclick="cerrarPrograma()">Salir de la aplicación</button>
             </header>
-            <nav>
-                <button class="button" type="button" onclick="mostrarAbrirProyecto()">Abrir proyecto</button>
-                <button class="button" type="button" onclick="mostrarCrearProyecto()">Crear nuevo proyecto</button>
-            </nav>
             <div class="contenido">
+                <nav>
+                    <button class="button" type="button" onclick="mostrarAbrirProyecto()">Abrir proyecto</button>
+                    <button class="button" type="button" onclick="mostrarCrearProyecto()">Crear  proyecto</button>
+                </nav>
                 <section class="sec">
                     <div class="abrir" id="abrir">
                         <aside id="abrir-1">
-                            <form name="form-login">
-                                <a href="ventanaProyectos.html">click</a>
+                            <form name="form-login" action="#">
                                 <label for="form-login">Nombre del proyecto:</label>
-                                <input type="text" name="proyect-txt" id="proyect-txt">
+                                <input type="text" name="proyect-txt" id="proyect-txt-existente">
                                 <br><br>
                             </form>
-                            <div class="buttonNew">
-                                <button type="reset">Reiniciar</button>
-                                <button type="submit" onclick="llamarJava()">Confirmar</button>
-                            </div>
                         </aside>
+                        <div class="buttonNew">
+                            <!-- <button type="reset">Reiniciar</button> -->
+                            <button type="button" onclick="abrirProyectoExistente()">Confirmar</button>
+                        </div>
                     </div>
                     <div class="crear" id="crear">
                         <aside id="crear-1">
-                            <form name="form-open">
-                                <label for="form-open">Nombre del proyecto:</label>
-                                <input type="text" name="proyect-txt" id="proyect-txt">
+                            <form name="form-create" action="#">
+                                <div class="c1">
+                                    <label for="form-create">Nombre del proyecto:</label>
+                                    <input type="text" name="proyect-txt" id="proyect-txt-nuevo">
+                                </div>
                                 <br><br>
+                                <div class="c2">
+                                    <label for="form-create"><i>Tipo/enfoque del proyecto:</i></label>
+                                    <br><br>
+                                    <select name="select" id="enfoqueProyecto">
+                                        <option value="Escribir Novelas">Novelas</option>
+                                        <option value="Escribir Trabajo">Trabajo</option>
+                                        <option value="Escribir Otras cosas">Otros</option>
+                                    </select>
+                                </div>
                             </form>
-                            <form name="form-create">
-                                <i>Tipo/enfoque del proyecto</i>
-                                <br><br>
-                                <label for="form-create">Usuario nuevo</label>
-                                <select name="select" id="select">
-                                    <option value="Escribir Novelas">Novelas</option>
-                                    <option value="Escribir Trabajo">Trabajo</option>
-                                </select>
-                                <br><br>
-                            </form>
-                            <div class="buttonNew">
-                                <button type="reset">Reiniciar</button>
-                                <button type="submit" onclick="llamarJava()">Confirmar</button>
-                            </div>
                         </aside>
+                        <div class="buttonNew">
+                            <!-- <button type="reset">Reiniciar</button> -->
+                            <button type="button" id="botonCrear" onclick="crearProyectoNuevo()">Confirmar</button>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -237,15 +82,28 @@
             document.getElementById('crear').style.display = 'none';
         }
 
-        // Aquí va la recopilación de la información para enviarlo.
-
-        function llamarJava() {
-            if (javaConnector) {
-                // Llamar al método de MenuInicial 'mostrarMensaje'
-                javaConnector.mostrarMensaje("¡Hola desde JavaScript!");
-            } else {
-                alert("El conector Java no está disponible.");
+    </script>
+    <script>// Aquí va la recopilación de la información para enviarlo.
+        function abrirProyectoExistente(){ // Función que envía los datos para abrir el proyecto si lo encuentra
+            const send = () => {
+                let nombreProyecto = document.querySelector('#proyect-txt-existente').value;
             }
+            document.querySelector('button').addEventListener('click', send);
+        }
+
+        function crearProyectoNuevo() { // Función que envía los datos para crear el proyecto si está todo rellenado
+            const send = () => {
+                let nombreProyecto = document.querySelector('#proyect-txt-nuevo').value;
+                let enfoqueProyecto = document.querySelector('#enfoqueProyecto').value;
+            }
+            document.querySelector('button').addEventListener('click', send);
+        }
+
+        function cerrarPrograma(){
+            const send = () => {
+                let salir = document.getElementsByClassName('button0');
+            }
+            document.querySelector('button').addEventListener('click', send);
         }
     </script>
 </body>

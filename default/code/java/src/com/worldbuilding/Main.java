@@ -46,11 +46,6 @@ public class Main extends Application{
         int alto = (int) primaryStage.getMaxHeight();
 
         Scene scene = new Scene(root, alto, ancho);
-        /*
-         * scene.getStylesheets().add("file:default/code/css/style.css");
-         * La línea de arriba es para cuando se quieren enlazar el html al css y
-         * que se ejecute bien java. Solo para ese caso se debe poner.
-         */
 
         root.getChildren().add(webView);
         primaryStage.setTitle("Aplicación WorldBuilding"); // Título de la app
@@ -64,9 +59,7 @@ public class Main extends Application{
         primaryStage.centerOnScreen();
         primaryStage.show();
 
-
     }
-
 
     // No borrar esta función. Aquí se inicia la aplicación
     public static void main(String[] args) {
