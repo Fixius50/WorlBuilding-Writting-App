@@ -13,7 +13,7 @@ public class JavaBridge {
     }
 
     public void crearProyecto(String nombre, String tipo) {
-            // Abre un selector de directorios
+        // Abre un selector de directorios
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Seleccionar directorio para guardar el proyecto");
         File selectedDirectory = directoryChooser.showDialog(stage);

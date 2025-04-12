@@ -6,6 +6,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import netscape.javascript.JSObject;
 
 import java.io.File;
 
@@ -32,8 +33,14 @@ public class Main extends Application{
             System.out.println("Error: El archivo HTML no se encuentra en la ruta especificada.");
         }
 
-        // Crear una instancia de MenuInicial y pasar el WebEngine
-        MenuInicial menuInicial = new MenuInicial(webEngine);
+        // --- NUEVO: Inyectar el objeto JavaBridge en la ventana JS ---
+        webEngine.documentProperty().addListener((obs, oldDoc, newDoc) -> {
+            if (newDoc != null) {
+                JSObject window = (JSObject) webEngine.executeScript("window");
+                window.setMember("app", new JavaBridge(primaryStage));
+            }
+        });
+        // --- FIN NUEVO ---
 
         int ancho = (int) primaryStage.getMaxWidth();
         int alto = (int) primaryStage.getMaxHeight();
@@ -57,9 +64,9 @@ public class Main extends Application{
         primaryStage.centerOnScreen();
         primaryStage.show();
 
+
     }
 
-    
 
     // No borrar esta función. Aquí se inicia la aplicación
     public static void main(String[] args) {
