@@ -68,7 +68,8 @@ public class Main extends Application {
         webEngine.documentProperty().addListener(e -> {
             if (e != null) {
                 JSObject window = (JSObject) webEngine.executeScript("window");
-                window.setMember("javaConnector", controlador);  // Exponer la clase Java como "javaConnector"
+                window.setMember("javaConnector", controlador);  
+                // Exponer la clase Java como "javaConnector"
             }
         });
 
