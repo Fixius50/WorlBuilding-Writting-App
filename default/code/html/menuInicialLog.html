@@ -100,10 +100,9 @@
         }
 
         function cerrarPrograma(){
-            const send = () => {
-                let salir = document.getElementsByClassName('button0');
-            }
-            document.querySelector('button').addEventListener('click', send);
+            document.querySelector('.button0').addEventListener('click', function() {
+                javaConnector.cerrarPrograma();  // Aquí se invoca al método de Java
+            });
         }
     </script>
 </body>

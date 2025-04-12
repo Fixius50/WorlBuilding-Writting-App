@@ -1,6 +1,7 @@
 package com.worldbuilding;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
@@ -10,11 +11,8 @@ import netscape.javascript.JSObject;
 
 import java.io.File;
 
-/**
- * @see Main
- * Clase que se dedica a iniciar la aplicación.
- */
-public class Main extends Application{
+public class Main extends Application {
+
     // Aquí se desarrolla la aplicación de inicio
     @Override
     public void start(Stage primaryStage) {
@@ -29,19 +27,24 @@ public class Main extends Application{
 
         if (htmlFileMenuInicialLog.exists()) {
             webEngine.load(htmlFileMenuInicialLog.toURI().toString());
-        } else {
-            System.out.println("Error: El archivo HTML no se encuentra en la ruta especificada.");
         }
 
         /*
-         * Aquí recibe los parámetros de javaScript del MenuInicialLog y se los envía a su clase
+         * Aquí recibe los parámetros de JavaScript del MenuInicialLog y se los envía a su clase
          */
-
         MenuInicialLog controlador = new MenuInicialLog();
 
-        JSObject window = (JSObject) webEngine.executeScript("window");
-        window.setMember("javaConnector", controlador);  // NUEVO
-        System.out.println("Objeto Java expuesto como 'javaConnector' en JS.");
+        // Escuchar cuando se haya cargado el documento HTML y exponer el objeto Java a JavaScript
+        webEngine.documentProperty().addListener((obs, oldDoc, newDoc) -> {
+            if (newDoc != null) {
+                JSObject window = (JSObject) webEngine.executeScript("window");
+                window.setMember("javaConnector", controlador);  // Exponer la clase Java como "javaConnector"
+            }
+        });
+
+        primaryStage.setOnCloseRequest(e -> {
+            cerrarPrograma();
+        });
 
         // Continuación de la app
         int ancho = (int) primaryStage.getMaxWidth();
@@ -59,7 +62,14 @@ public class Main extends Application{
         primaryStage.setFullScreen(false);
         primaryStage.centerOnScreen();
         primaryStage.show();
+    }
 
+    /*
+     * Este método indica que se quiere cerrar el programa que se haya pasado por JavaScript
+     */
+    public void cerrarPrograma() {
+        System.out.println("Saliendo del programa...");
+        Platform.exit();  // Esto termina la aplicación sin mostrar nada en la consola
     }
 
     // No borrar esta función. Aquí se inicia la aplicación

@@ -4,6 +4,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import javafx.stage.Stage;
 
+
+/*
+ * Clase dedicada al primer archivo html, el del menú inicial para iniciar un proyecto, crearlo, o cerrar el programa
+ */
 public class MenuInicialLog {
     
     private String nombreProyecto;
@@ -98,13 +102,6 @@ public class MenuInicialLog {
     public void abreProyecto(Stage stage){
 
     }
-
-    /*
-     * Este método indica que se quiere cerrar el programa que se haya pasado por JavaScript
-     */
-     public void cerrarPrograma(Stage stage){
-        
-     }
 
     // Constructor de la clase
 
