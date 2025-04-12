@@ -45,7 +45,7 @@ public class Main extends Application {
         primaryStage.setResizable(false);
 
         // Configurar la ventana para que se ponga en pantalla completa (esto lo puedes mantener o quitar)
-        primaryStage.setFullScreen(false);
+        primaryStage.setFullScreen(true);
         primaryStage.centerOnScreen();
         primaryStage.show();
     }
