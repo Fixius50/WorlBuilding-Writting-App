@@ -57,14 +57,9 @@ public class Main extends Application{
         primaryStage.centerOnScreen();
         primaryStage.show();
 
-        operacionesMenuIicial(webEngine);
-
     }
 
-    public static void operacionesMenuIicial(WebEngine webEngine){
-        MenuInicial menuInicial = new MenuInicial(null);
-
-    }
+    
 
     // No borrar esta función. Aquí se inicia la aplicación
     public static void main(String[] args) {
