@@ -3,172 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/ventanaProyectos.css">
     <title>Ventana Proyectos</title>
 </head>
-<style>
-    *{
-        box-sizing:border-box;
-    }
-    .panel0{
-        border: 1px solid black;
-        position: fixed;
-        width: calc(9.9vw*10);
-        height: auto;
-        display: grid;
-        grid-template-areas: 
-            'menu headertop'
-            '. centro-arriba'
-            'centro centro';
-        grid-template-columns: 1fr 8fr;
-        grid-template-rows: 1fr 2fr;
-        align-items: flex-start;
-        justify-items: center;
-    }
-
-    /*Aquí empezaría los recuadros de arriba que son el Menú desplegable*/
-
-    .menu-desplegable{
-        grid-area: menu;
-        border: 1px solid rgb(78, 110, 255);
-        width: auto;
-        height: auto;
-        color: white;
-        background-color: black;
-        position: absolute;
-        margin: 1%;
-        padding: 1%;
-        background-image: url(../../other/imagenes/casting-spell.gif);
-        background-repeat: no-repeat;
-        background-size: cover;
-        background-position: center;
-        text-align: center;
-    }
-    .menu-desplegable:hover{
-        width: 100%;
-    }
-    
-    .menu-desplegable:hover .content{
-        width: 100%;
-        max-height: 100vh; /* Ajustar el valor según el contenido */
-    }
-    
-    .content{
-        /*De aquí establece como se distribuyen las opciones según su posición. */
-        display: flex;
-        flex-direction:column;
-        align-items: center;
-        /*Hasta aquí*/
-        transition: visibility 1s, max-height 1s; /* Añadir transición para visibilidad y altura */
-        max-height: 0;
-        overflow: hidden;
-    }
-    .optionA{ /*No borrar*/
-        width: 100%;
-        cursor:default;
-        overflow: hidden;
-    }
-    .option{/*De aquí establece como cambian las opciones. */
-        /*El ancho cambia de estar a la derecha y fuera a estar en el centro pero
-        estirando los lados si las unidades relativas las cambias de "vw" a "%" */
-        width: 50%;
-        transition: width 0.5s, background-color 0.5s; /* Añadir transición para background-color */
-        background-color: aqua;
-        overflow: hidden;
-        white-space: nowrap; /* Evitar que el texto se desborde */
-    }
-    .option:hover{
-        width: 100%;
-        background-color:rgb(166, 65, 225);
-        cursor: pointer;
-    }
-
-    /*Aquí empezaría los recuadros de arriba que no son el Menú desplegable*/
-
-    .header-top{
-        grid-area: headertop;
-        border: 1px solid rgb(207, 11, 11);
-        text-align: center;
-        display: inline;
-        width: fit-content;
-    }
-    
-    .navTop{
-        width: 100%;
-        height: auto;
-        border: 1px solid rgb(207, 11, 11);
-        grid-area: centro-arriba;
-        display: flex;
-        justify-content: space-around;
-    }
-
-    .nv{
-        text-align: center;
-        width: max-content;
-        border: 1px solid blue;
-        flex-grow: 1;
-    }
-
-    /*Aquí empezaría los recuadros del centro que dependen de lo de arriba*/
-
-    .area-central{
-        width: 100%;
-        height: 85vh;
-        border: 1px solid rgb(207, 11, 11);
-        grid-area: centro;
-        display: flex;
-        flex-direction: row;
-    }
-
-    .objects, .ground{
-        border: 1px solid black;
-        height: auto;
-    }
-
-    .objects{
-        width: 12.5%;
-    }
-
-    .ground{
-        width: 100%;
-    }
-
-</style>
 <body>
     <div class="panel0">
         <!-- Aquí entra el menú con opciones, 
          de las cuales te llevan a ventanas de distintas cosas. -->
-        <div class="menu-desplegable">   
-            <b>MENÚ</b>
-            <div class="content">
-                <!-- Hacer que la letra se esconda hasta que se pase el ratón por encima.
-                Luego hacer que se quede el último recuadro del cual se haya puesto el ratón y no se vaya-->
-                <a href="ventanaCreacion.html" target="_parent" class="optionA"><button class="option">Crear</button></a>
-                <a href="" class="optionA"><button class="option">Importar</button></a>
-                <a href="" class="optionA"><button class="option">Exportar</button></a>
-                <a href="" target="_parent" class="optionA"><button class="option">Wiki</button></a>
-                <a href="" class="optionA"><button class="option">Apuntes</button></a>
-                <a href="ventanaAjustes.html" target="_parent" class="optionA"><button class="option">Ajustes</button></a>
-                <a href="menuInicialLog.html" target="_parent" class="optionA"><button class="option">Inicio</button></a>
+        <div class="top">
+            <div class="menu-desplegable">   
+                <b>MENÚ</b>
+                <div class="content">
+                    <!-- Hacer que la letra se esconda hasta que se pase el ratón por encima.
+                    Luego hacer que se quede el último recuadro del cual se haya puesto el ratón y no se vaya-->
+                    <a href="ventanaCreacion.html" target="_parent" class="optionA"><button class="option">Crear</button></a>
+                    <a href="" class="optionA"><button class="option">Importar</button></a>
+                    <a href="" class="optionA"><button class="option">Exportar</button></a>
+                    <a href="" target="_parent" class="optionA"><button class="option">Wiki</button></a>
+                    <a href="" class="optionA"><button class="option">Apuntes</button></a>
+                    <a href="ventanaAjustes.html" target="_parent" class="optionA"><button class="option">Ajustes</button></a>
+                    <a href="menuInicialLog.html" target="_parent" class="optionA"><button class="option">Inicio</button></a>
+                </div>
+            </div>
+            <!-- Aquí entra algo que ya veré que hacer. A lo mejor un gif animado o
+             la autoría con el nombre del proyecto. Más tarde se editará para mejorarlo.-->
+            <div class="infoTop">
+                <header class="header-top">
+                    <a>Aquí va el nombre del proyecto</a>
+                </header>
+                <!-- Aquí entra las cosas del proyecto para que se vean visualmente.
+                Se despliegan en el área central.
+                Más tarde se editará para mejorarlo.-->
+                
+                <nav class="navTop">
+                    <header class="nv">Construcción</header>
+                    <header class="nv">Algo</header>
+                    <header class="nv">Estado</header>
+                    <header class="nv">Construcción</header>
+                    <header class="nv">Algo</header>
+                    <header class="nv">Estado</header>
+                </nav>
             </div>
         </div>
-        <!-- Aquí entra algo que ya veré que hacer. A lo mejor un gif animado o
-         la autoría con el nombre del proyecto. Más tarde se editará para mejorarlo.-->
-         
-        <header class="header-top">
-            <a>Aquí va el nombre del proyecto junto al usuario.</a>
-        </header>
-        <!-- Aquí entra las cosas del proyecto para que se vean visualmente.
-         Se despliegan en el área central.
-         Más tarde se editará para mejorarlo.-->
-        
-        <nav class="navTop">
-            <header class="nv">Construcción</header>
-            <header class="nv">Algo</header>
-            <header class="nv">Estado</header>
-            <header class="nv">Construcción</header>
-            <header class="nv">Algo</header>
-            <header class="nv">Estado</header>
-        </nav>
         <div class="area-central">
             <section class="objects">
                 
