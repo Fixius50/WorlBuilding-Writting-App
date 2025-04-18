@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="patches">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Emuladores/pcsx2 (playstation2)/resources/patches.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
