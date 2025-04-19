@@ -22,7 +22,7 @@ public class Main extends Application {
         WebEngine webEngine = webView.getEngine();  // Obtener el WebEngine
 
         // Cargar el archivo HTML
-        File htmlFileMenuInicialLog = new File("default\\code\\html\\menuInicialLog.html");
+        File htmlFileMenuInicialLog = new File("default/code/html/menuInicialLog.html");
         if (htmlFileMenuInicialLog.exists()) {
             webEngine.load(htmlFileMenuInicialLog.toURI().toString());
         }
@@ -56,27 +56,26 @@ public class Main extends Application {
      * @param webEngine
      */
     public void controladoraDeEventos(Stage primaryStage, WebEngine webEngine){
-        eventButonClose(primaryStage, webEngine); // para la clase MenuInicialLog
+        eventButton(primaryStage, webEngine); // para la clase MenuInicialLog que maneja sus botones
     }
 
-    public void eventButonClose(Stage primaryStage, WebEngine webEngine){
+    public void eventButton(Stage primaryStage, WebEngine webEngine){
         // Aquí recibe los parámetros de JavaScript del MenuInicialLog y se los envía a su clase
         MenuInicialLog controlador = new MenuInicialLog();
 
         // Escuchar cuando se haya cargado el documento HTML
-        webEngine.documentProperty().addListener(e -> {
-            if (e != null) {
+        webEngine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
+            if (newState == javafx.concurrent.Worker.State.SUCCEEDED) {
                 JSObject window = (JSObject) webEngine.executeScript("window");
-                window.setMember("javaConnector", controlador);  
-                // Exponer la clase Java como "javaConnector"
+                window.setMember("javaConnector", controlador); // El miembro es como una función base que es llamada desde javaScript
             }
         });
 
         primaryStage.setOnCloseRequest(event -> {
-            if (controlador.isCloseRequested()) {
-                controlador.cerrarPrograma();
-            }
+            controlador.cerrarPrograma();
         });
+
+
     }
 
     // No borrar esta función. Aquí se inicia la aplicación

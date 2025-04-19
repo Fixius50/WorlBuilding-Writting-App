@@ -28,7 +28,7 @@
                         </aside>
                         <div class="buttonNew">
                             <!-- <button type="reset">Reiniciar</button> -->
-                            <button type="button" onclick="abrirProyectoExistente()">Confirmar</button>
+                            <button type="button" id="botonAbrir" onclick="abrirProyectoExistente()">Confirmar</button>
                         </div>
                     </div>
                     <div class="crear" id="crear">
@@ -84,26 +84,38 @@
 
     </script>
     <script>// Aquí va la recopilación de la información para enviarlo.
-        function abrirProyectoExistente(){ // Función que envía los datos para abrir el proyecto si lo encuentra
-            const send = () => {
-                let nombreProyecto = document.querySelector('#proyect-txt-existente').value;
-            }
-            document.querySelector('button').addEventListener('click', send);
-        }
 
-        function crearProyectoNuevo() { // Función que envía los datos para crear el proyecto si está todo rellenado
-            const send = () => {
+        document.addEventListener("DOMContentLoaded", function () {
+        // Espera a que todo el contenido del DOM esté completamente cargado
+
+            document.querySelector('#botonAbrir').addEventListener('click', function () {
+                // Función que envía los datos para abrir el proyecto si lo encuentra
+                let nombreProyecto = document.querySelector('#proyect-txt-existente').value;
+                if (nombreProyecto.trim() !== "") { // Verifica que el campo no esté vacío
+                    javaConnector.abreProyecto(nombreProyecto);
+                } else {
+                    alert("Por favor, escribe el nombre del proyecto existente.");
+                }
+            });
+
+            document.querySelector('#botonCrear').addEventListener('click', function () {
+                // Función que envía los datos para crear el proyecto si está todo rellenado
                 let nombreProyecto = document.querySelector('#proyect-txt-nuevo').value;
                 let enfoqueProyecto = document.querySelector('#enfoqueProyecto').value;
-            }
-            document.querySelector('button').addEventListener('click', send);
-        }
 
-        function cerrarPrograma(){
-            document.querySelector('.button0').addEventListener('click', function() {
-                javaConnector.cerrarPrograma();  // Aquí se invoca al método de Java
+                if (nombreProyecto.trim() !== "" && enfoqueProyecto.trim() !== "") {  // Verifica que el campo no esté vacío
+                    javaConnector.crearProyectoNuevo(nombreProyecto, enfoqueProyecto);
+                } else {
+                    alert("Por favor, completa todos los campos para crear el proyecto.");
+                }
             });
-        }
+
+        });
+
+        // Función para cerrar el programa
+        document.querySelector('.button0').addEventListener('click', function() {
+            javaConnector.cerrarPrograma();  // Llama al método de Java para cerrar el programa
+        });
     </script>
 </body>
 </html>
