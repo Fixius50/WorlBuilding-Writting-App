@@ -9,6 +9,7 @@ import javafx.stage.Stage;
 import netscape.javascript.JSObject;
 
 import java.io.File;
+import java.io.IOException;
 
 public class Main extends Application {
 
@@ -68,8 +69,42 @@ public class Main extends Application {
             if (newState == javafx.concurrent.Worker.State.SUCCEEDED) {
                 JSObject window = (JSObject) webEngine.executeScript("window");
                 window.setMember("javaConnector", controlador); // El miembro es como una función base que es llamada desde javaScript
+
+                // Ahora, verificamos si se ha activado alguna de las banderas de JavaScript
+                Boolean botonAbrirClicado = (Boolean) webEngine.executeScript("window.botonAbrirClicado");
+                Boolean botonCrearClicado = (Boolean) webEngine.executeScript("window.botonCrearClicado");
+
+                if (botonAbrirClicado != null && botonAbrirClicado) {
+                    System.out.println("Se ha clickeado 'Abrir Proyecto'.");
+                    // Aquí tu lógica para cuando se hace clic en "Abrir"
+                    // Puedes llamar a alguna función o manejar el estado.
+                    // Recoger la variable 'nombreProyecto' de JavaScript después de hacer clic en "Abrir"
+                    String nombreProyecto = (String) webEngine.executeScript("window.nombreProyecto");
+                    try {
+                        controlador.abreProyecto(nombreProyecto);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                if (botonCrearClicado != null && botonCrearClicado) {
+                    System.out.println("Se ha clickeado 'Crear Proyecto'.");
+                    // Aquí tu lógica para cuando se hace clic en "Crear"
+                    // Puedes llamar a alguna función o manejar el estado.
+                    String nombreProyecto = (String) webEngine.executeScript("window.nombreProyecto");
+                    String tipoProyecto = (String) webEngine.executeScript("window.tipoProyecto");
+                    try {
+                        controlador.crearProyectoNuevo(nombreProyecto, tipoProyecto);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
         });
+
+        if (controlador.compruebaProyecto()){
+            // Aquí se cambiaría de pestaña (queda hacer esto)
+        }
 
         primaryStage.setOnCloseRequest(event -> {
             controlador.cerrarPrograma();

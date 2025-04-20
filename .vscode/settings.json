@@ -1,7 +1,9 @@
 {
     "java.project.sourcePaths": [
         "default\\code\\java\\src\\com\\worldbuilding",
-        "default\\code\\javafx-sdk-22.0.2"
+        "default\\code\\javafx-sdk-22.0.2",
+        "out\\production\\Aplicación WorldBuilding\\com\\worldbuilding",
+        "default\\code\\java\\bin\\com\\worldbuilding"
     ],
     "java.project.referencedLibraries": [
         "c:\\Users\\Roberto\\Desktop\\Aplicación WorldBuilding\\default\\code\\javafx-sdk-22.0.2\\lib\\javafx.base.jar",

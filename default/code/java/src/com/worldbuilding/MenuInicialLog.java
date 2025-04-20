@@ -1,7 +1,6 @@
 package com.worldbuilding;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -13,7 +12,13 @@ import javafx.application.Platform;
  */
 public class MenuInicialLog {
 
+    private boolean proyectoCreado = false;
+
     // métodos
+
+    public boolean compruebaProyecto(){
+        return this.proyectoCreado;
+    }
 
     /*
      * Crea el proyecto
@@ -41,6 +46,7 @@ public class MenuInicialLog {
                 throw new IOException(e);
             }
         }
+        abreProyecto(nombreproyecto); // Una vez creado se debe abrir
     }
 
     /*
@@ -49,12 +55,7 @@ public class MenuInicialLog {
     public void abreProyecto(String nombreproyecto) throws IOException{
         File rutaCarpeta = new File("../../../users/" + nombreproyecto);
         if (rutaCarpeta.exists()){
-            try{
-                FileReader reader = new FileReader(rutaCarpeta);
-                reader.read();
-            } catch (IOException e){
-                throw new IOException(e);
-            }
+            this.proyectoCreado = true;
         }
     }
 
