@@ -75,7 +75,6 @@ public class Main extends Application {
             controlador.cerrarPrograma();
         });
 
-
     }
 
     // No borrar esta función. Aquí se inicia la aplicación

@@ -23,10 +23,17 @@ public class MenuInicialLog {
         (donde está src, build.gradle, etc).*/
 
         File rutaCarpeta = new File("../../../users/" + nombreproyecto);
+        File subCarpeta1 = new File(rutaCarpeta + "/xml");
+        File subCarpeta2 = new File(rutaCarpeta + "/json");
+        File subCarpeta3 = new File(rutaCarpeta + "/sql");
+        File[] subCarpetas = {subCarpeta1, subCarpeta2, subCarpeta3};
         File infoArchivo = new File(rutaCarpeta, "infoProyecto.txt");
         String descripcion = "Nombre del proyecto: " + nombreproyecto + "\nTipo de proyecto: " + tipoProyecto + "\n\nDISFRUTA DE LA ESCRITURA DE TU WORLBUILDING.\n\nPd: no borres esta carpeta";
         if (!rutaCarpeta.exists()){
             rutaCarpeta.mkdir();
+            for (File file : subCarpetas) {
+                file.mkdir();
+            }
             try{
                 FileWriter writer1 = new FileWriter(infoArchivo);
                 writer1.write(descripcion);
