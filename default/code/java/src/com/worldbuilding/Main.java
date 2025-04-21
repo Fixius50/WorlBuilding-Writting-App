@@ -104,6 +104,8 @@ public class Main extends Application {
 
         if (controlador.compruebaProyecto()){
             // Aquí se cambiaría de pestaña (queda hacer esto)
+            File htmlFile = new File("default/code/html/ventanaCreacion.html");
+            webEngine.load(htmlFile.toURI().toString());
         }
 
         primaryStage.setOnCloseRequest(event -> {
