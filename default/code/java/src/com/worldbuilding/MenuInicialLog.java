@@ -27,7 +27,7 @@ public class MenuInicialLog {
         /* Si corres tu programa desde un IDE, el working directory suele ser el directorio raíz del proyecto
         (donde está src, build.gradle, etc).*/
 
-        File rutaCarpeta = new File("../../../users/" + nombreproyecto);
+        File rutaCarpeta = new File("/users/" + nombreproyecto);
         File subCarpeta1 = new File(rutaCarpeta + "/xml");
         File subCarpeta2 = new File(rutaCarpeta + "/json");
         File subCarpeta3 = new File(rutaCarpeta + "/sql");
@@ -53,7 +53,7 @@ public class MenuInicialLog {
      * Este método abre el proyecto
      */
     public void abreProyecto(String nombreproyecto) throws IOException{
-        File rutaCarpeta = new File("../../../users/" + nombreproyecto);
+        File rutaCarpeta = new File("/users/" + nombreproyecto);
         if (rutaCarpeta.exists()){
             this.proyectoCreado = true;
         }
