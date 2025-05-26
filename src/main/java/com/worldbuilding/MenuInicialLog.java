@@ -27,13 +27,13 @@ public class MenuInicialLog {
         /* Si corres tu programa desde un IDE, el working directory suele ser el directorio raíz del proyecto
         (donde está src, build.gradle, etc).*/
 
-        File rutaCarpeta = new File("/users/" + nombreproyecto);
+        File rutaCarpeta = new File("src/main/users/" + nombreproyecto);
         File subCarpeta1 = new File(rutaCarpeta + "/xml");
         File subCarpeta2 = new File(rutaCarpeta + "/json");
         File subCarpeta3 = new File(rutaCarpeta + "/sql");
         File[] subCarpetas = {subCarpeta1, subCarpeta2, subCarpeta3};
         File infoArchivo = new File(rutaCarpeta, "infoProyecto.txt");
-        String descripcion = "Nombre del proyecto: " + nombreproyecto + "\nTipo de proyecto: " + tipoProyecto + "\n\nDISFRUTA DE LA ESCRITURA DE TU WORLBUILDING.\n\nPd: no borres esta carpeta";
+        String descripcion = "Nombre del proyecto: " + nombreproyecto + "\nTipo de proyecto: " + tipoProyecto + "\n\nDISFRUTA DE LA ESCRITURA DE TU WORLBUILDING.\n\nPd: no borres esta carpeta o perderás todo!!";
         if (!rutaCarpeta.exists()){
             rutaCarpeta.mkdir();
             for (File file : subCarpetas) {
@@ -52,12 +52,16 @@ public class MenuInicialLog {
     /*
      * Este método abre el proyecto
      */
-    public void abreProyecto(String nombreproyecto) throws IOException{
-        File rutaCarpeta = new File("/users/" + nombreproyecto);
+    public void abreProyecto(String nombreproyecto) throws IOException {
+        File rutaCarpeta = new File("src/main/users/" + nombreproyecto);
         if (rutaCarpeta.exists()){
             this.proyectoCreado = true;
+        } else {
+            this.proyectoCreado = false;
+            throw new IOException("El proyecto no existe");
         }
     }
+
 
     /*
      * Este método indica que se quiere cerrar el programa que se haya pasado por JavaScript

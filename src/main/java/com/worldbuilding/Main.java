@@ -10,6 +10,7 @@ import netscape.javascript.JSObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 public class Main extends Application {
 
@@ -23,9 +24,12 @@ public class Main extends Application {
         WebEngine webEngine = webView.getEngine();  // Obtener el WebEngine
 
         // Cargar el archivo HTML
-        File htmlFileMenuInicialLog = new File("default/code/html/menuInicialLog.html");
-        if (htmlFileMenuInicialLog.exists()) {
-            webEngine.load(htmlFileMenuInicialLog.toURI().toString());
+        // En vez de usar File y ruta absoluta
+        URL htmlUrl = getClass().getResource("/html/menuInicialLog.html");
+        if (htmlUrl != null) {
+            webEngine.load(htmlUrl.toExternalForm());
+        } else {
+            System.err.println("No se encontró el archivo HTML");
         }
 
         // ------------------------------------------------

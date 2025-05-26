@@ -14,7 +14,7 @@ body{
                          '. panel1 .'
                          '. . .';
     /*Configurar la imágen*/
-    background-image: url(../../other/imagenes/Fondo-Tierra-Menu-Inicial.jpg);
+    background-image: url(/imagenes/Fondo-Tierra-Menu-Inicial.jpg);
     background-repeat: no-repeat;
     background-size: cover; /*Cambia totalmente de "cover" a "contain"*/
     background-position: center;
@@ -31,7 +31,7 @@ body{
 header{
     grid-area: header;
     text-align: center;
-    background-image: url(../../other/imagenes/sword-fantasy-sword.gif);
+    background-image: url(/imagenes/sword-fantasy-sword.gif);
     background-size: cover;
     background-position: center;
     display: flex;
@@ -44,7 +44,7 @@ header .button0{
     width: 100%;
     cursor: pointer;
     border: none;
-    background-image: url(../../other/imagenes/ornamental-frame.jpg);
+    background-image: url(/imagenes/ornamental-frame.jpg);
     background-size: cover;
     background-position: center;
 }
@@ -52,7 +52,7 @@ header .button0{
 .contenido{
     margin-left: 0.5%;
     width: 100%;
-    background-image: url(../../other/imagenes/wooden-plank-texture-wall.jpg);
+    background-image: url(/imagenes/wooden-plank-texture-wall.jpg);
     background-size: contain;
     background-position: center;
     background-repeat: repeat;
@@ -70,7 +70,7 @@ header .button0{
 }
 
 nav .button{
-    background-image: url(../../other/imagenes/ornamental-frame.jpg);
+    background-image: url(/imagenes/ornamental-frame.jpg);
     background-size: cover;
     background-position: center;
     
@@ -99,7 +99,7 @@ button{
 form *{
     border: inherit;
     font-size: medium;
-    background-image: url(../../other/imagenes/ornamental-frame.jpg);
+    background-image: url(/imagenes/ornamental-frame.jpg);
     background-size: cover;
     background-position: center;
     background-repeat: repeat;
