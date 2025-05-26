@@ -27,7 +27,13 @@
       <artifactId>javafx-fxml</artifactId>
       <version>${javafx.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-web</artifactId>
+      <version>${javafx.version}</version>
+    </dependency>
     <!-- Agrega más módulos si los necesitas, como javafx-media, javafx-graphics, etc. -->
+    <!-- <scope>runtime</scope> poner esto debajo de cada version de cada dependencia si está el paquete en local-->
   </dependencies>
 
   <build>
@@ -39,8 +45,20 @@
         <version>0.0.8</version>
         <configuration>
           <mainClass>com.worldbuilding.Main</mainClass>
+          <options>
+            <option>--add-modules</option>
+            <option>javafx.controls,javafx.fxml,javafx.web</option> <!-- agrega javafx.web si usas WebView -->
+          </options>
         </configuration>
       </plugin>
     </plugins>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <includes>
+          <include>**/*</include>
+        </includes>
+      </resource>
+    </resources>
   </build>
 </project>
