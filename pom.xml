@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.worldbuilding</groupId>
@@ -12,7 +12,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
-    <javafx.version>24.0.1</javafx.version> <!-- o usa la versión que necesites -->
+    <javafx.version>24.0.1</javafx.version>
   </properties>
 
   <dependencies>
@@ -32,8 +32,6 @@
       <artifactId>javafx-web</artifactId>
       <version>${javafx.version}</version>
     </dependency>
-    <!-- Agrega más módulos si los necesitas, como javafx-media, javafx-graphics, etc. -->
-    <!-- <scope>runtime</scope> poner esto debajo de cada version de cada dependencia si está el paquete en local-->
   </dependencies>
 
   <build>
@@ -46,19 +44,13 @@
         <configuration>
           <mainClass>com.worldbuilding.Main</mainClass>
           <options>
+            <option>--module-path</option>
+            <option>${project.basedir}/extensiones/javafx/lib</option>
             <option>--add-modules</option>
-            <option>javafx.controls,javafx.fxml,javafx.web</option> <!-- agrega javafx.web si usas WebView -->
+            <option>javafx.controls,javafx.fxml,javafx.web</option>
           </options>
         </configuration>
       </plugin>
     </plugins>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <includes>
-          <include>**/*</include>
-        </includes>
-      </resource>
-    </resources>
   </build>
 </project>
