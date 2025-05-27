@@ -1,0 +1,10 @@
+[Como se compone el proyecto]
+
+La siguiente estructura no debe borrarse; primero se explica como es y luego se dice que se hace:
+
+- .gitignore y readme.md: es para el repositorio de github.
+- .idea; .mvn; y .vscode: son para ejecutar la app en distintos editores de código.
+- Target: es para que el proyecto se sincronice automáticamente con las carpetas y archivos de "src/main".
+- Extensiones: son para las extensiones de los lenguajes de programación usado en "src/main".
+- pom.xml: es para enlazar con el repositorio y poder ejecutar los archivos sin descargarlos y meterlos en "extensiones" (a no ser que no vaya).
+- src: es donde se crea el proyecto junto a todos los archivos, tanto de programación como multimedia.
