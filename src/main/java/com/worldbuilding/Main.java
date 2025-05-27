@@ -1,10 +1,13 @@
 package com.worldbuilding;
 
 import javafx.application.Application;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import netscape.javascript.JSObject;
 
@@ -32,26 +35,33 @@ public class Main extends Application {
             System.err.println("No se encontró el archivo HTML");
         }
 
-        // ------------------------------------------------
-        controladoraDeEventos(primaryStage, webEngine);
-        // ------------------------------------------------
-
-        // Continuación de la app
-        int ancho = (int) primaryStage.getMaxWidth();
-        int alto = (int) primaryStage.getMaxHeight();
-        Scene scene = new Scene(root, alto, ancho);
-
+        // Asegura que el WebView ocupe todo el espacio vertical
+        VBox.setVgrow(webView, Priority.ALWAYS);
         root.getChildren().add(webView);
-        primaryStage.setTitle("Aplicación WorldBuilding"); // Título de la app
+
+        // Obtener dimensiones de pantalla (sin bordes del sistema)
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        double width = screenBounds.getWidth();
+        double height = screenBounds.getHeight();
+
+        primaryStage.setX(screenBounds.getMinX());
+        primaryStage.setY(screenBounds.getMinY());
+        primaryStage.setWidth(width);
+        primaryStage.setHeight(height);
+
+        primaryStage.setTitle("Aplicación WorldBuilding");
+        Scene scene = new Scene(root, width, height);
         primaryStage.setScene(scene);
-
-        // Configurar la ventana para que NO se pueda redimensionar
-        primaryStage.setResizable(false);
-
-        // Configurar la ventana para que se ponga en pantalla completa (esto lo puedes mantener o quitar)
-        primaryStage.setFullScreen(true);
-        primaryStage.centerOnScreen();
+        
         primaryStage.show();
+
+        // Configura ventana a pantalla completa (opcional si usas screen bounds)
+        primaryStage.setResizable(true); // Para poder reescalar manualmente la pantalla
+        primaryStage.setFullScreen(true); // Para pantalla completa sin bordes
+        primaryStage.centerOnScreen(); // Para que la pantalla aparezca centrada
+        
+        // Pasa el WebEngine al controlador
+        controladoraDeEventos(primaryStage, webEngine);
     }
 
     /**
