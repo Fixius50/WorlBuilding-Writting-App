@@ -1,0 +1,78 @@
+package com.worldbuilding;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import javafx.application.Platform;
+
+
+/*
+ * Clase dedicada al primer archivo html, el del menú inicial para iniciar un proyecto, crearlo, o cerrar el programa
+ */
+public class MenuInicialLog {
+
+    private boolean proyectoCreado = false;
+
+    // métodos
+
+    public boolean compruebaProyecto(){
+        return this.proyectoCreado;
+    }
+
+    /*
+     * Crea el proyecto
+     */
+    public void crearProyectoNuevo(String nombreproyecto, String tipoProyecto) throws IOException {
+        /* Si corres tu programa desde un IDE, el working directory suele ser el directorio raíz del proyecto
+        (donde está src, build.gradle, etc).*/
+
+        File rutaCarpeta = new File("src/main/users/" + nombreproyecto);
+        File subCarpeta1 = new File(rutaCarpeta + "/xml");
+        File subCarpeta2 = new File(rutaCarpeta + "/json");
+        File subCarpeta3 = new File(rutaCarpeta + "/sql");
+        File[] subCarpetas = {subCarpeta1, subCarpeta2, subCarpeta3};
+        File infoArchivo = new File(rutaCarpeta, "infoProyecto.txt");
+        String descripcion = "Nombre del proyecto: " + nombreproyecto + "\nTipo de proyecto: " + tipoProyecto + "\n\nDISFRUTA DE LA ESCRITURA DE TU WORLBUILDING.\n\nPd: no borres esta carpeta o perderás todo!!";
+        if (!rutaCarpeta.exists()){
+            rutaCarpeta.mkdir();
+            for (File file : subCarpetas) {
+                file.mkdir();
+            }
+            try{
+                FileWriter writer1 = new FileWriter(infoArchivo);
+                writer1.write(descripcion);
+            } catch (IOException e) {
+                throw new IOException(e);
+            }
+        }
+        abreProyecto(nombreproyecto); // Una vez creado se debe abrir
+    }
+
+    /*
+     * Este método abre el proyecto
+     */
+    public void abreProyecto(String nombreproyecto) throws IOException {
+        File rutaCarpeta = new File("src/main/users/" + nombreproyecto);
+        if (rutaCarpeta.exists()){
+            this.proyectoCreado = true;
+        } else {
+            this.proyectoCreado = false;
+            throw new IOException("El proyecto no existe");
+        }
+    }
+
+
+    /*
+     * Este método indica que se quiere cerrar el programa que se haya pasado por JavaScript
+     */
+    public void cerrarPrograma() {
+        System.out.println("Saliendo del programa...");
+        Platform.exit();  // Esto termina la aplicación sin mostrar nada en la consola
+    }
+
+    // Constructor de la clase
+
+    public MenuInicialLog(){} // Debe estar así para que reciba los datos
+
+}

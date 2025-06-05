@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventana Creación</title>
+    <style>
+
+        /*TAREA: 
+        
+        Refactorizar todo lo posible el CSS para hacerlo más ameno, como el 
+        uso de etiquetas en vez de hacerlo más legible (ya que aunque se sepa 
+        que etiqueta va a una zona, si funciona igual que la otra no tiene sentido).
+        
+        */
+
+        * {
+            box-sizing: border-box;
+        }
+        .contenedor {
+            display: grid;
+            width: calc(9.9vw * 10);
+            height: auto;
+            border: 1px solid black;
+            padding: 1px;
+            grid-template-areas: 'tlt'
+                                 'form';
+        }
+        .title {
+            grid-area: tlt;
+            text-align: center;
+            text-transform: uppercase;
+            font-size: xxx-large;
+        }
+        form{
+            grid-area: form;
+            display: flex;
+            width: auto;
+            height: auto;
+            align-items: baseline;
+            justify-content: space-around;
+        }
+        nav {
+            border: inherit;
+            border-style: groove;
+            width: 25%;
+            margin-left: 1%;
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+        }
+        .hidden {
+            display: none;
+        }
+
+        #divEntity, #divZones, #divConstructions, #divOthers {
+            border-style: groove dashed;
+            margin: 2vw;
+            padding: 1%;
+            display: none; /* Ocultar todos los paneles por defecto */
+            flex-direction: column;
+            flex-wrap: wrap;
+            flex-grow: 1;
+        }
+
+        .opt0, .opt1, .opt2, .opt3, .opt4, .opt5{
+            width: 100%;
+            text-transform: uppercase;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        .opt0:hover, .opt1:hover, .opt2:hover, .opt3:hover, .opt4:hover, .opt5:hover {
+            background-color: aqua;
+            opacity: 1;
+        }
+
+        textarea {
+            width: 100%;
+            height: 30vh;
+            resize: none;
+        }
+
+        /*Lo de abajo es para las "ENTIDADES"*/
+
+        .panelOpcionesEntidades{
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+
+        #opcionesGenerales{
+            width: 20%;
+        }
+
+        #colectivoOptions, #individuoOptions{
+            
+            width: max-content;
+        }
+
+        #colectivo, #individuo, #entity {
+            border-style: none; /*Para eliminar el borde el botón desplegable*/
+            width: max-content;
+            margin: 1%;
+        }
+
+        option {
+            width: 100%;
+            float: inline-start;
+        }
+
+        /*Lo de abajo es para las "ZONAS"*/
+
+        #zones, #newType, #notNewType, #extensionType, #variantType{
+            border-style: none; /*Para eliminar el borde el botón desplegable*/
+            width: max-content;
+            margin: 1%;
+        }
+
+        #newLabel, #notNewOptionsDisplay, #notNewLabel{
+            display: flex;
+            flex-direction: row;
+            width: max-content;
+            align-items: center;
+            margin-left: 5%;
+        }
+
+        /*Hacer como lo de arriba pero para sus etiquetas*/
+
+    </style>
+</head>
+<body>
+    <div class="contenedor">
+        <header class="title">
+            <b>zona de creación</b>
+        </header>
+        <form>
+            <nav class="navPanel" id="panel">
+                <button class="opt0" type="button" onclick="mostrarOptionsPanel('divEntity')"><h3>entidades</h3></button>
+                <button class="opt1" type="button" onclick="mostrarOptionsPanel('divZones')"><h3>zonas</h3></button>
+                <button class="opt2" type="button" onclick="mostrarOptionsPanel('divConstructions')"><h3>construcción</h3></button>
+                <button class="opt3" type="button" onclick="mostrarOptionsPanel('divOthers')"><h3>otros</h3></button>
+                <a href="ventanaProyectos.html" target="_self"><button class="opt4" type="button"><h3>Volver al proyecto</h3></button></a>
+                <a href="menuInicialLog.html" target="_self"><button class="opt5" type="button"><h3>Volver a inicio</h3></button></a>
+            </nav>
+            <div id="divEntity">
+                <!-- Contenido para Entidades -->
+                <section class="panelOpcionesEntidades" id="panelOpcionesEntidades"> 
+                    <section id="opcionesGenerales">
+                        <b>Entidad: </b>
+                        <label for="entity" class="entity">
+                            <select name="entity" id="entity" onchange="toggleEntityOptions()">
+                                <option value="" autofocus>Seleccione una opción</option>
+                                <option value="colectivo">Colectivo</option>
+                                <option value="individuo">Individuo</option>
+                            </select>
+                        </label>
+                    </section>
+                    
+                    <!-- Opciones para Colectivo -->
+                    <section id="colectivoOptions" class="hidden">
+                        <label for="colectivo" id="colectivoLabel">
+                            <select name="Colectivo" id="colectivo">
+                                <option value="Inerte">Inerte</option>
+                                <option value="Abstracto">Abstracto</option>
+                                <option value="Muerto">Muerto</option>
+                                <option value="Vivo">Vivo</option>
+                            </select>
+                        </label>    
+                    </section>
+                    <!-- Opciones para Individuo -->
+                    <section id="individuoOptions" class="hidden">
+                        <label for="individuo" id="individuoLabel">
+                            <select name="Individuo" id="individuo">
+                                <option value="Inerte">Inerte</option>
+                                <option value="Abstracto">Abstracto</option>
+                                <option value="Eterno">Eterno</option>
+                                <option value="Muerto">Muerto</option>
+                                <option value="Vivo">Vivo</option>
+                            </select>
+                        </label>
+                    </section>
+                </section>
+                <section class="panelContenidoEntidades">
+                    <hr>
+                    <b>Nombre: </b>
+                    <input type="text" name="name" id="nameInput">
+                    <b>Tipo o raza: </b>
+                    <input type="text" name="name" id="nameInput">
+                    <hr>  
+                    <section class="desc">
+                        <h1>Descripción:</h1>
+                        <textarea name="descriction" id="descripcion"></textarea>
+                    </section> 
+                    <section class="carac">
+                        <h1>Características:</h1>
+                        <textarea name="caracteristicas" id="caracteristicas"></textarea>
+                    </section>
+                </section>
+            </div>
+            <div id="divZones">
+                <!-- Contenido para Zonas -->
+                <section class="panelOpcionesZonas" id="panelOpcionesZonas"> 
+                    <section id="opcionesGenerales">
+                        <b>Zona: </b>
+                        <label for="zones" class="zones">
+                            <select name="zones" id="zones" onchange="toggleZoneOptions()">
+                                <option value="">Seleccione una opción</option>
+                                <option value="new">No existente (nueva)</option>
+                                <option value="existing">Existente</option>
+                            </select>
+                        </label>
+                    </section>
+                    
+                    <!-- Opciones para Nueva -->
+                    <section id="newOptions" class="hidden">
+                        <label for="new" id="newLabel">
+                            <select name="new" id="newType">
+                                <option value="Natural">Natural</option>
+                                <option value="Artificial">Artificial</option>
+                                <option value="Mixta">Mixta</option>
+                            </select>
+                        </label>    
+                    </section>
+
+                    <!-- Opciones para Existente -->
+                    <section id="notNewOptions" class="hidden">
+                        <label for="notNewOptionsDisplay" id="notNewOptionsDisplay">
+                            <select name="notNew" id="notNewType" onchange="toggleZoneOptions()">
+                                <option value="extension">Extensión de zona</option>
+                                <option value="variant">Variante de zona</option>
+                            </select>
+                        </label>
+                        
+                        <!-- Subopciones para Extensión de zona -->
+                        <section id="extensionOptions" class="hidden">
+                            <label for="notNewExtension" id="notNewLabel">
+                                <select name="extensionType" id="extensionType">
+                                    <option value="Natural">Natural</option>
+                                    <option value="Artificial">Artificial</option>
+                                    <option value="Abstracta">Abstracta</option>
+                                    <option value="Mixta">Mixta</option>
+                                </select>
+                            </label>
+                        </section>
+
+                        <!-- Subopciones para Variante de zona -->
+                        <section id="variantOptions" class="hidden">
+                            <label for="notNewVariant" id="notNewLabel">
+                                <select name="variantType" id="variantType">
+                                    <option value="Afectada por">Afectada por</option>
+                                </select>
+                                <input type="text" name="variantInput" id="variantInput" placeholder="Ingrese detalles">
+                            </label>
+                        </section>
+                    </section>
+                </section>
+                <section class="panelContenidoZonas">
+                    <hr>
+                    <b>Nombre: </b>
+                    <input type="text" name="name" id="nameInput">
+                    <b>Estado de la zona: </b>
+                    <input type="text" name="name" id="nameInput">
+                    <hr>
+                    <section class="desc">
+                        <h1>Descripción:</h1>
+                        <textarea name="descriction" id="descripcion"></textarea>
+                    </section> 
+                    <section class="carac">
+                        <h1>Características:</h1>
+                        <textarea name="caracteristicas" id="caracteristicas"></textarea>
+                    </section>
+                </section>
+            </div>
+            <div id="divConstructions">
+                <!-- Contenido para Construcción -->
+            </div>
+            <div id="divOthers">
+                <!-- Contenido para Otros -->
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function mostrarOptionsPanel(panelToShow) {
+            // Ocultar todos los paneles
+            document.getElementById('divEntity').style.display = 'none';
+            document.getElementById('divZones').style.display = 'none';
+            document.getElementById('divConstructions').style.display = 'none';
+            document.getElementById('divOthers').style.display = 'none';
+
+            // Mostrar el panel seleccionado
+            document.getElementById(panelToShow).style.display = 'flex';
+        }
+
+        function toggleEntityOptions() {
+            /*Para las entidades*/
+            const entityType = document.getElementById('entity').value;
+            const colectivoOptions = document.getElementById('colectivoOptions');
+            const individuoOptions = document.getElementById('individuoOptions');
+
+            colectivoOptions.classList.add('hidden');
+            individuoOptions.classList.add('hidden');
+            
+            switch (entityType) {
+                case 'colectivo':
+                    colectivoOptions.classList.remove('hidden');
+                    break;
+                case 'individuo':
+                    individuoOptions.classList.remove('hidden');
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        function toggleZoneOptions() {
+            /*Para las zonas*/
+            const zoneType = document.getElementById('zones').value;
+            const newOptions = document.getElementById('newOptions');
+            const notNewOptions = document.getElementById('notNewOptions');
+
+            // Ocultar todas las opciones al inicio
+            newOptions.classList.add('hidden');
+            notNewOptions.classList.add('hidden');
+
+            // Mostrar la opción correspondiente según la selección
+            switch (zoneType) {
+                case 'new':
+                    newOptions.classList.remove('hidden');
+                    break;
+                case 'existing':
+                    notNewOptions.classList.remove('hidden');
+                    break;
+                default:
+                    break;
+            }
+
+            //para las zonas existentes:
+
+            const notNewType = document.getElementById('notNewType').value;
+            const extensionOptions = document.getElementById('extensionOptions');
+            const variantOptions = document.getElementById('variantOptions');
+
+            // Ocultar ambas subopciones al inicio
+            extensionOptions.classList.add('hidden');
+            variantOptions.classList.add('hidden');
+
+            // Mostrar la subopción correspondiente según la selección
+            switch (notNewType) {
+                case 'extension':
+                    extensionOptions.classList.remove('hidden');
+                    break;
+                case 'variant':
+                    variantOptions.classList.remove('hidden');
+                    break;
+                default:
+                    break;
+            }
+        }
+
+    </script>
+</body>
+</html>
