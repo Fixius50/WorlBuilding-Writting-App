@@ -1,16 +1,14 @@
+-- Active: 1749219000376@@127.0.0.1@3306
 -- Base de datos de la primera página llamada "menuInicialLog". 
-create database if not EXISTS menuInicialLog;
-use menuInicialLog;
-
--- Aquí se recogen los valores de las dos pestañas para seleccionar que son enviados a través de Java
-CREATE TABLE usuario(
-	nombre VARCHAR(10) PRIMARY KEY Not NULL,
-	apellido varchar(10),
-    identificadorUsuario INT(10)
+CREATE TABLE USUARIO (
+    nombre TEXT PRIMARY KEY NOT NULL,
+    apellido TEXT,
+    identificadorUsuario INTEGER
 );
 
--- Aquí se seleccionan qué valores van a ser añadidos
-insert into usuario values("Pepito", "Perez", null);
+INSERT INTO USUARIO (nombre, apellido, identificadorUsuario) VALUES ('Pepito', 'Perez', NULL);
+
+SELECT * FROM USUARIO;
 
 -- Aquí se devuelven/comprueban los resultados
 select * from usuario;
