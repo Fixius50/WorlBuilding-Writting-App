@@ -35,6 +35,17 @@ public class Main extends Application {
             System.err.println("No se encontró el archivo HTML");
         }
 
+        //Configuración de la pantalla principal de la aplicación
+        configuraciónPantallaAplicacion(primaryStage, root, webView);
+
+        primaryStage.setTitle("Aplicación WorldBuilding");
+        primaryStage.show();
+        
+        // Pasa el WebEngine al controlador
+        controladoraDeEventos(primaryStage, webEngine);
+    }
+
+    public static void configuraciónPantallaAplicacion(Stage primaryStage, VBox root, WebView webView){
         // Asegura que el WebView ocupe todo el espacio vertical
         VBox.setVgrow(webView, Priority.ALWAYS);
         root.getChildren().add(webView);
@@ -48,20 +59,13 @@ public class Main extends Application {
         primaryStage.setY(screenBounds.getMinY());
         primaryStage.setWidth(width);
         primaryStage.setHeight(height);
-
-        primaryStage.setTitle("Aplicación WorldBuilding");
-        Scene scene = new Scene(root, width, height);
-        primaryStage.setScene(scene);
         
-        primaryStage.show();
-
         // Configura ventana a pantalla completa (opcional si usas screen bounds)
         primaryStage.setResizable(true); // Para poder reescalar manualmente la pantalla
         primaryStage.setFullScreen(true); // Para pantalla completa sin bordes
         primaryStage.centerOnScreen(); // Para que la pantalla aparezca centrada
-        
-        // Pasa el WebEngine al controlador
-        controladoraDeEventos(primaryStage, webEngine);
+        Scene scene = new Scene(root, width, height);
+        primaryStage.setScene(scene);
     }
 
     /**
