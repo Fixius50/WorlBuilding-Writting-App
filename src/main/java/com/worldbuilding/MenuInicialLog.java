@@ -58,5 +58,6 @@ public class MenuInicialLog {
 
     public void cerrarPrograma() {
         System.out.println("Cerrando...");
+        System.exit(0);
     }
 }

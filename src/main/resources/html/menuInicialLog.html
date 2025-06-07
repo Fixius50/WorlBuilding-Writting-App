@@ -84,7 +84,11 @@
 
     </script>
     <script>// Aquí va la recopilación de la información para enviarlo.
-
+        function cerrarPrograma(){
+            // Función para cerrar el programa
+            window.javaConnector.cerrarPrograma();  // Llama al método de Java para cerrar el programa
+        }
+        
         document.addEventListener("DOMContentLoaded", function () {
         // Espera a que todo el contenido del DOM esté completamente cargado
 
@@ -117,11 +121,6 @@
                 }
             });
 
-        });
-
-        // Función para cerrar el programa
-        document.querySelector('.button0').addEventListener('click', function() {
-            javaConnector.cerrarPrograma();  // Llama al método de Java para cerrar el programa
         });
     </script>
 </body>
