@@ -4,11 +4,24 @@ import java.nio.file.*;
 
 public class SQLiteConnector {
     private String dbPath;
+    private String generalDbPath;
 
-    public SQLiteConnector() throws IOException {
+    private String getGeneralDbPath() {
+        Path generalDb = Paths.get(System.getProperty("user.home"), ".worldbuildingapp", "worldbuilding.db");
+        return generalDb.toString();
+    }
+
+    public String getDbPath() {
+        return dbPath;
+    }
+
+    // Métodos generales
+
+    public SQLiteConnector(String dbPath) throws IOException {
         // Copiar base general desde recursos a disco si no existe
         copyGeneralDatabaseIfNeeded();
-        this.dbPath = getGeneralDatabasePath();
+        this.generalDbPath = getGeneralDbPath();
+        this.dbPath = dbPath;
     }
 
     private void copyGeneralDatabaseIfNeeded() throws IOException {
@@ -26,15 +39,6 @@ public class SQLiteConnector {
         }
     }
 
-    private String getGeneralDatabasePath() {
-        Path generalDb = Paths.get(System.getProperty("user.home"), ".worldbuildingapp", "worldbuilding.db");
-        return generalDb.toString();
-    }
-
-    public String getDbPath() {
-        return dbPath;
-    }
-
     // Crear proyecto con base de datos propia
     public void crearProyecto(String nombreProyecto) throws IOException {
         Path projectsDir = Paths.get(System.getProperty("user.home"), ".worldbuildingapp", "projects");
@@ -49,7 +53,7 @@ public class SQLiteConnector {
 
         // Copiar base general como plantilla al nuevo proyecto
         if (!Files.exists(proyectoDb)) {
-            Path generalDb = Paths.get(getGeneralDatabasePath());
+            Path generalDb = Paths.get(getGeneralDbPath());
             Files.copy(generalDb, proyectoDb, StandardCopyOption.REPLACE_EXISTING);
         }
     }

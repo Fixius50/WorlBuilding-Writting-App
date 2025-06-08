@@ -28,7 +28,7 @@ public class Main extends Application {
 
         // Cargar el archivo HTML
         // En vez de usar File y ruta absoluta
-        URL htmlUrl = getClass().getResource("/html/menuInicialLog.html");
+        URL htmlUrl = getClass().getResource("/html/menuInicialLog.html"); //La ruta es porque siempre el proyecto lo abre desde src/main
         if (htmlUrl != null) {
             webEngine.load(htmlUrl.toExternalForm());
         } else {
@@ -42,7 +42,7 @@ public class Main extends Application {
         primaryStage.show();
         
         // Pasa el WebEngine al controlador
-        controladoraDeEventos(primaryStage, webEngine);
+        controladoraDeEventos(primaryStage, webView, webEngine);
     }
 
     public static void configuraciónPantallaAplicacion(Stage primaryStage, VBox root, WebView webView){
@@ -74,7 +74,7 @@ public class Main extends Application {
      * @param primaryStage
      * @param webEngine
      */
-    public void controladoraDeEventos(Stage primaryStage, WebEngine webEngine){
+    public void controladoraDeEventos(Stage primaryStage, WebView webView, WebEngine webEngine){
         eventButton(primaryStage, webEngine); // para la clase MenuInicialLog que maneja sus botones
     }
 
@@ -91,28 +91,21 @@ public class Main extends Application {
                 // Ahora, verificamos si se ha activado alguna de las banderas de JavaScript
                 Boolean botonAbrirClicado = (Boolean) webEngine.executeScript("window.botonAbrirClicado");
                 Boolean botonCrearClicado = (Boolean) webEngine.executeScript("window.botonCrearClicado");
-
+                String nombreProyecto = (String) webEngine.executeScript("window.nombreProyecto");
+                String tipoProyecto = (String) webEngine.executeScript("window.tipoProyecto");
+                
                 if (botonAbrirClicado != null && botonAbrirClicado) {
-                    System.out.println("Se ha clickeado 'Abrir Proyecto'.");
-                    // Aquí tu lógica para cuando se hace clic en "Abrir"
-                    // Puedes llamar a alguna función o manejar el estado.
-                    // Recoger la variable 'nombreProyecto' de JavaScript después de hacer clic en "Abrir"
-                    String nombreProyecto = (String) webEngine.executeScript("window.nombreProyecto");
                     try {
-                        controlador.abreProyecto(nombreProyecto);
+                        controlador.abreProyecto(webEngine, nombreProyecto);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 }
 
                 if (botonCrearClicado != null && botonCrearClicado) {
-                    System.out.println("Se ha clickeado 'Crear Proyecto'.");
-                    // Aquí tu lógica para cuando se hace clic en "Crear"
-                    // Puedes llamar a alguna función o manejar el estado.
-                    String nombreProyecto = (String) webEngine.executeScript("window.nombreProyecto");
-                    String tipoProyecto = (String) webEngine.executeScript("window.tipoProyecto");
                     try {
-                        controlador.crearProyectoNuevo(nombreProyecto, tipoProyecto);
+                        controlador.crearProyectoNuevo(webEngine, nombreProyecto, tipoProyecto);
+                        controlador.abreProyecto(webEngine, nombreProyecto);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
