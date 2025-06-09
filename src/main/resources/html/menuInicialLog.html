@@ -89,39 +89,23 @@
             window.javaConnector.cerrarPrograma();  // Llama al método de Java para cerrar el programa
         }
         
-        document.addEventListener("DOMContentLoaded", function () {
-        // Espera a que todo el contenido del DOM esté completamente cargado
-
-            document.querySelector('#botonAbrir').addEventListener('click', function () {
-                // Función que envía los datos para abrir el proyecto si lo encuentra
-                let nombreProyecto = document.querySelector('#proyect-txt-existente').value;
-                if (nombreProyecto.trim() !== "") { // Verifica que el campo no esté vacío
-                    // Almacena la variable dentro del objeto `window`
-                    window.botonAbrirClicado = true; // Establece una bandera cuando se hace clic en "Abrir"
-                    window.nombreProyecto = nombreProyecto;
-                    javaConnector.abreProyecto(nombreProyecto);
-                } else {
-                    alert("Por favor, escribe el nombre del proyecto existente.");
-                }
-            });
-
-            document.querySelector('#botonCrear').addEventListener('click', function () {
-                // Función que envía los datos para crear el proyecto si está todo rellenado
-                let nombreProyecto = document.querySelector('#proyect-txt-nuevo').value;
-                let enfoqueProyecto = document.querySelector('#enfoqueProyecto').value;
-
-                if (nombreProyecto.trim() !== "" && enfoqueProyecto.trim() !== "") {  // Verifica que el campo no esté vacío
-                    window.botonCrearClicado = true; // Establece una bandera cuando se hace clic en "Crear"
-                    // Almacena las variables dentro del objeto `window`
-                    window.nombreProyecto = nombreProyecto;
-                    window.tipoProyecto = tipoProyecto;
-                    javaConnector.crearProyectoNuevo(nombreProyecto, enfoqueProyecto);
-                } else {
-                    alert("Por favor, completa todos los campos para crear el proyecto.");
-                }
-            });
-
+        document.querySelector('#botonAbrir').addEventListener('click', function () {
+            let nombreProyecto = document.querySelector('#proyect-txt-existente').value;
+            if (nombreProyecto.trim() !== "") {
+                // Llama directamente a Java al hacer click
+                window.javaConnector.abreProyecto(nombreProyecto);
+            }
         });
+
+        document.querySelector('#botonCrear').addEventListener('click', function () {
+            let nombreProyecto = document.querySelector('#proyect-txt-nuevo').value;
+            let enfoqueProyecto = document.querySelector('#enfoqueProyecto').value;
+
+            if (nombreProyecto.trim() !== "" && enfoqueProyecto.trim() !== "") {
+                window.javaConnector.crearProyectoNuevo(nombreProyecto, enfoqueProyecto);
+            }
+        });
+
     </script>
 </body>
 </html>

@@ -1,6 +1,8 @@
 package com.worldbuilding;
 
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.concurrent.Worker;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.layout.Priority;
@@ -20,29 +22,31 @@ public class Main extends Application {
     // Aquí se desarrolla la aplicación de inicio
     @Override
     public void start(Stage primaryStage) {
-        VBox root = new VBox();
-        root.getStyleClass().add("custom-pane");
+        Platform.runLater(() ->{
+            VBox root = new VBox();
+            root.getStyleClass().add("custom-pane");
 
-        WebView webView = new WebView();
-        WebEngine webEngine = webView.getEngine();  // Obtener el WebEngine
+            WebView webView = new WebView();
+            WebEngine webEngine = webView.getEngine();  // Obtener el WebEngine
 
-        // Cargar el archivo HTML
-        // En vez de usar File y ruta absoluta
-        URL htmlUrl = getClass().getResource("/html/menuInicialLog.html"); //La ruta es porque siempre el proyecto lo abre desde src/main
-        if (htmlUrl != null) {
-            webEngine.load(htmlUrl.toExternalForm());
-        } else {
-            System.err.println("No se encontró el archivo HTML");
-        }
+            // Cargar el archivo HTML
+            // En vez de usar File y ruta absoluta, se usa URL
+            URL htmlUrl = getClass().getResource("/html/menuInicialLog.html"); //La ruta es porque siempre el proyecto lo abre desde src/main
+            if (htmlUrl != null) {
+                webEngine.load(htmlUrl.toExternalForm());
+            } else {
+                System.err.println("No se encontró el archivo HTML");
+            }
 
-        //Configuración de la pantalla principal de la aplicación
-        configuraciónPantallaAplicacion(primaryStage, root, webView);
+            //Configuración de la pantalla principal de la aplicación
+            configuraciónPantallaAplicacion(primaryStage, root, webView);
 
-        primaryStage.setTitle("Aplicación WorldBuilding");
-        primaryStage.show();
-        
-        // Pasa el WebEngine al controlador
-        controladoraDeEventos(primaryStage, webView, webEngine);
+            primaryStage.setTitle("Aplicación WorldBuilding");
+            primaryStage.show();
+            
+            // Pasa el WebEngine al controlador
+            controladoraDeEventos(primaryStage, webView, webEngine);
+        });
     }
 
     public static void configuraciónPantallaAplicacion(Stage primaryStage, VBox root, WebView webView){
@@ -79,54 +83,26 @@ public class Main extends Application {
     }
 
     public void eventButton(Stage primaryStage, WebEngine webEngine){
-        // Aquí recibe los parámetros de JavaScript del MenuInicialLog y se los envía a su clase
+        // Controlador con métodos que se llamarán desde JS
         MenuInicialLog controlador = new MenuInicialLog();
+        controlador.setWebEngine(webEngine);
 
-        // Escuchar cuando se haya cargado el documento HTML
+        // Puente JS -> Java (no se mete dentro nada más)
         webEngine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
-            if (newState == javafx.concurrent.Worker.State.SUCCEEDED) {
+            if (newState == Worker.State.SUCCEEDED) {
                 JSObject window = (JSObject) webEngine.executeScript("window");
-                window.setMember("javaConnector", controlador); // El miembro es como una función base que es llamada desde javaScript
-
-                // Ahora, verificamos si se ha activado alguna de las banderas de JavaScript
-                Boolean botonAbrirClicado = (Boolean) webEngine.executeScript("window.botonAbrirClicado");
-                Boolean botonCrearClicado = (Boolean) webEngine.executeScript("window.botonCrearClicado");
-                String nombreProyecto = (String) webEngine.executeScript("window.nombreProyecto");
-                String tipoProyecto = (String) webEngine.executeScript("window.tipoProyecto");
-                
-                if (botonAbrirClicado != null && botonAbrirClicado) {
-                    try {
-                        controlador.abreProyecto(webEngine, nombreProyecto);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-
-                if (botonCrearClicado != null && botonCrearClicado) {
-                    try {
-                        controlador.crearProyectoNuevo(webEngine, nombreProyecto, tipoProyecto);
-                        controlador.abreProyecto(webEngine, nombreProyecto);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
+                window.setMember("javaConnector", controlador);
             }
         });
 
-        if (controlador.compruebaProyecto()){
-            // Aquí se cambiaría de pestaña (queda hacer esto)
-            File htmlFile = new File("default/code/html/ventanaProyectos.html");
-            webEngine.load(htmlFile.toURI().toString());
-        }
-
+        // Aseguramos que al cerrar la ventana se cierre la app
         primaryStage.setOnCloseRequest(event -> {
             controlador.cerrarPrograma();
         });
-
     }
 
-    // No borrar esta función. Aquí se inicia la aplicación
-    public static void main(String[] args) {
-        launch(args);
-    }
+    /*
+     * Siempre que se llame a una funcion de java mediante JavaScript, no es necesario poner la lógica aquí
+     */
+
 }
