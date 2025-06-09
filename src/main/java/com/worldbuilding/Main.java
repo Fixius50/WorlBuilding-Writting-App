@@ -82,6 +82,9 @@ public class Main extends Application {
         eventButton(primaryStage, webEngine); // para la clase MenuInicialLog que maneja sus botones
     }
 
+    /*
+     * Siempre que se llame a una funcion de java mediante JavaScript, no es necesario poner la lógica aquí
+     */
     public void eventButton(Stage primaryStage, WebEngine webEngine){
         // Controlador con métodos que se llamarán desde JS
         MenuInicialLog controlador = new MenuInicialLog();
@@ -100,9 +103,4 @@ public class Main extends Application {
             controlador.cerrarPrograma();
         });
     }
-
-    /*
-     * Siempre que se llame a una funcion de java mediante JavaScript, no es necesario poner la lógica aquí
-     */
-
 }
