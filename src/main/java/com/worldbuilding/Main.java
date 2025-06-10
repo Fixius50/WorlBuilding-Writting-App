@@ -12,41 +12,32 @@ import javafx.scene.web.WebView;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import netscape.javascript.JSObject;
-
-import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 
-public class Main extends Application {
-
+public class Main extends Application implements NavegadorHTML {
+    private WebEngine webEngine;
+    private Stage primaryStage;
+    private WebView webView;
     // Aquí se desarrolla la aplicación de inicio
     @Override
     public void start(Stage primaryStage) {
-        Platform.runLater(() ->{
-            VBox root = new VBox();
-            root.getStyleClass().add("custom-pane");
+        this.primaryStage = primaryStage;
+        VBox root = new VBox();
+        root.getStyleClass().add("custom-pane");
 
-            WebView webView = new WebView();
-            WebEngine webEngine = webView.getEngine();  // Obtener el WebEngine
+        webView = new WebView();
+        webEngine = webView.getEngine();  // Obtener el WebEngine
 
-            // Cargar el archivo HTML
-            // En vez de usar File y ruta absoluta, se usa URL
-            URL htmlUrl = getClass().getResource("/html/menuInicialLog.html"); //La ruta es porque siempre el proyecto lo abre desde src/main
-            if (htmlUrl != null) {
-                webEngine.load(htmlUrl.toExternalForm());
-            } else {
-                System.err.println("No se encontró el archivo HTML");
-            }
+        //Configuración de la pantalla principal de la aplicación
+        configuraciónPantallaAplicacion(primaryStage, root, webView);
 
-            //Configuración de la pantalla principal de la aplicación
-            configuraciónPantallaAplicacion(primaryStage, root, webView);
+        primaryStage.setTitle("Aplicación WorldBuilding");
+        primaryStage.show();
 
-            primaryStage.setTitle("Aplicación WorldBuilding");
-            primaryStage.show();
-            
-            // Pasa el WebEngine al controlador
-            controladoraDeEventos(primaryStage, webView, webEngine);
-        });
+        cargarPagina("/html/menuInicialLog.html");  // Carga inicial
+
+        //Cargar el controlador
+        eventButton();
     }
 
     public static void configuraciónPantallaAplicacion(Stage primaryStage, VBox root, WebView webView){
@@ -72,23 +63,27 @@ public class Main extends Application {
         primaryStage.setScene(scene);
     }
 
-    /**
-     * controladoraDeEventos(): Función donde se van a gestionar el resto del código, como eventos u otros componentes.
-     *                          A este se le va a ir metiendo más funciones.
-     * @param primaryStage
-     * @param webEngine
-     */
-    public void controladoraDeEventos(Stage primaryStage, WebView webView, WebEngine webEngine){
-        eventButton(primaryStage, webEngine); // para la clase MenuInicialLog que maneja sus botones
+
+    @Override
+    public void cargarPagina(String rutaRelativa) {
+        Platform.runLater(() -> {
+            URL url = getClass().getResource(rutaRelativa);
+            if (url != null) {
+                System.out.println("✅ Cargando HTML: " + url.toExternalForm());
+                webEngine.load(url.toExternalForm());
+            } else {
+                System.err.println("❌ No se encontró el HTML: " + rutaRelativa);
+            }
+        });
     }
+
 
     /*
      * Siempre que se llame a una funcion de java mediante JavaScript, no es necesario poner la lógica aquí
      */
-    public void eventButton(Stage primaryStage, WebEngine webEngine){
+    public void eventButton(){
         // Controlador con métodos que se llamarán desde JS
-        MenuInicialLog controlador = new MenuInicialLog();
-        controlador.setWebEngine(webEngine);
+        MenuInicialLog controlador = new MenuInicialLog(this);
 
         // Puente JS -> Java (no se mete dentro nada más)
         webEngine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
@@ -99,8 +94,6 @@ public class Main extends Application {
         });
 
         // Aseguramos que al cerrar la ventana se cierre la app
-        primaryStage.setOnCloseRequest(event -> {
-            controlador.cerrarPrograma();
-        });
+        primaryStage.setOnCloseRequest(event -> controlador.cerrarPrograma());
     }
 }
