@@ -83,29 +83,31 @@
         }
 
     </script>
-    <script>// Aquí va la recopilación de la información para enviarlo.
-        function cerrarPrograma(){
-            // Función para cerrar el programa
-            window.javaConnector.cerrarPrograma();  // Llama al método de Java para cerrar el programa
+    <script>
+        window.inicializarEventos = function() {
+            // Botón para abrir proyecto
+            document.querySelector('#botonAbrir').addEventListener('click', function () {
+                let nombreProyecto = document.querySelector('#proyect-txt-existente').value;
+                if (nombreProyecto.trim() !== "") {
+                    window.javaConnector.abreProyecto(nombreProyecto);
+                }
+            });
+
+            // Botón para crear proyecto
+            document.querySelector('#botonCrear').addEventListener('click', function () {
+                let nombreProyecto = document.querySelector('#proyect-txt-nuevo').value;
+                let enfoqueProyecto = document.querySelector('#enfoqueProyecto').value;
+                if (nombreProyecto.trim() !== "" && enfoqueProyecto.trim() !== "") {
+                    window.javaConnector.crearProyectoNuevo(nombreProyecto, enfoqueProyecto);
+                }
+            });
         }
-        
-        document.querySelector('#botonAbrir').addEventListener('click', function () {
-            let nombreProyecto = document.querySelector('#proyect-txt-existente').value;
-            if (nombreProyecto.trim() !== "") {
-                // Llama directamente a Java al hacer click
-                window.javaConnector.abreProyecto(nombreProyecto);
+
+        function cerrarPrograma() {
+            if (window.javaConnector) {
+                window.javaConnector.cerrarPrograma();
             }
-        });
-
-        document.querySelector('#botonCrear').addEventListener('click', function () {
-            let nombreProyecto = document.querySelector('#proyect-txt-nuevo').value;
-            let enfoqueProyecto = document.querySelector('#enfoqueProyecto').value;
-
-            if (nombreProyecto.trim() !== "" && enfoqueProyecto.trim() !== "") {
-                window.javaConnector.crearProyectoNuevo(nombreProyecto, enfoqueProyecto);
-            }
-        });
-
+        }
     </script>
 </body>
 </html>
