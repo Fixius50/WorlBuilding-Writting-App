@@ -10,12 +10,14 @@
     <section class="plantilla-0">
         <section class="panel1">
             <header>
-                <button class="button0" type="button" onclick="cerrarPrograma()">Salir de la aplicación</button>
+                <!-- Botón "Salir de la aplicación": Se le añadió un ID para el listener -->
+                <button class="button0" type="button" id="btnSalirApp">Salir de la aplicación</button>
             </header>
             <div class="contenido">
                 <nav>
-                    <button class="button" type="button" onclick="mostrarAbrirProyecto()">Abrir proyecto</button>
-                    <button class="button" type="button" onclick="mostrarCrearProyecto()">Crear  proyecto</button>
+                    <!-- Botones de navegación: Se les añadió IDs para los listeners -->
+                    <button class="button" type="button" id="navAbrirProyecto">Abrir proyecto</button>
+                    <button class="button" type="button" id="navCrearProyecto">Crear proyecto</button>
                 </nav>
                 <section class="sec">
                     <div class="abrir" id="abrir">
@@ -27,8 +29,8 @@
                             </form>
                         </aside>
                         <div class="buttonNew">
-                            <!-- <button type="reset">Reiniciar</button> -->
-                            <button type="button" id="botonAbrir" onclick="abrirProyectoExistente()">Confirmar</button>
+                            <!-- Botón "Confirmar" de Abrir: Se le quitó el onclick -->
+                            <button type="button" id="botonAbrir">Confirmar</button>
                         </div>
                     </div>
                     <div class="crear" id="crear">
@@ -51,8 +53,8 @@
                             </form>
                         </aside>
                         <div class="buttonNew">
-                            <!-- <button type="reset">Reiniciar</button> -->
-                            <button type="button" id="botonCrear" onclick="crearProyectoNuevo()">Confirmar</button>
+                            <!-- Botón "Confirmar" de Crear: Se le quitó el onclick -->
+                            <button type="button" id="botonCrear">Confirmar</button>
                         </div>
                     </div>
                 </section>
@@ -60,54 +62,103 @@
         </section>
     </section>
     <script>
-        /*Esto es lo de abrir proyecto*/
-
-        function mostrarAbrirProyecto() {
-            document.getElementById('abrir').style.display = 'flex';
-            document.getElementById('crear').style.display = 'none';
-        }
-
-        function ocultarAbrirProyecto() {
-            document.getElementById('abrir').style.display = 'none';
-        }
-
-        /*Esto es lo de crear proyecto*/
-
-        function mostrarCrearProyecto() {
-            document.getElementById('crear').style.display = 'flex';
-            document.getElementById('abrir').style.display = 'none';
-        }
-
-        function ocultarCrearProyecto() {
-            document.getElementById('crear').style.display = 'none';
-        }
-
-    </script>
-    <script>
-        window.inicializarEventos = function() {
-            // Botón para abrir proyecto
-            document.querySelector('#botonAbrir').addEventListener('click', function () {
-                let nombreProyecto = document.querySelector('#proyect-txt-existente').value;
-                if (nombreProyecto.trim() !== "") {
-                    window.javaConnector.abreProyecto(nombreProyecto);
-                }
-            });
-
-            // Botón para crear proyecto
-            document.querySelector('#botonCrear').addEventListener('click', function () {
-                let nombreProyecto = document.querySelector('#proyect-txt-nuevo').value;
-                let enfoqueProyecto = document.querySelector('#enfoqueProyecto').value;
-                if (nombreProyecto.trim() !== "" && enfoqueProyecto.trim() !== "") {
-                    window.javaConnector.crearProyectoNuevo(nombreProyecto, enfoqueProyecto);
-                }
-            });
-        }
-
-        function cerrarPrograma() {
-            if (window.javaConnector) {
-                window.javaConnector.cerrarPrograma();
+        // Este script se ejecutará una vez que el DOM esté completamente cargado
+        document.addEventListener('DOMContentLoaded', function() {
+            /*Esto es lo de abrir proyecto*/
+            function mostrarAbrirProyecto() {
+                document.getElementById('abrir').style.display = 'flex';
+                document.getElementById('crear').style.display = 'none';
             }
-        }
+
+            // Esta función no se usa directamente con un botón, pero se mantiene si es parte de otra lógica
+            function ocultarAbrirProyecto() {
+                document.getElementById('abrir').style.display = 'none';
+            }
+
+            /*Esto es lo de crear proyecto*/
+            function mostrarCrearProyecto() {
+                document.getElementById('crear').style.display = 'flex';
+                document.getElementById('abrir').style.display = 'none';
+            }
+
+            // Esta función no se usa directamente con un botón, pero se mantiene si es parte de otra lógica
+            function ocultarCrearProyecto() {
+                document.getElementById('crear').style.display = 'none';
+            }
+
+            function abrirProyectoExistente() {
+                // Obtiene el valor del input del proyecto existente
+                let nombreProyecto = document.getElementById('proyect-txt-existente').value;
+                if (nombreProyecto.trim() !== "") {
+                    if (window.javaConnector) { // Verifica que el objeto Java esté disponible
+                        window.javaConnector.abreProyecto(nombreProyecto);
+                    } else {
+                        alert('Error: La conexión con la aplicación no está disponible. Intenta recargar.');
+                    }
+                } else {
+                    alert('Por favor, introduce el nombre del proyecto.');
+                }
+            }
+
+            function crearProyectoNuevo(){
+                // Obtiene los valores del nuevo proyecto
+                let nombreProyecto = document.getElementById('proyect-txt-nuevo').value;
+                let enfoqueProyecto = document.getElementById('enfoqueProyecto').value;
+                if (nombreProyecto.trim() !== "" && enfoqueProyecto.trim() !== "") {
+                    if (window.javaConnector) { // Verifica que el objeto Java esté disponible
+                        window.javaConnector.crearProyectoNuevo(nombreProyecto, enfoqueProyecto);
+                    } else {
+                        alert('Error: La conexión con la aplicación no está disponible. Intenta recargar.');
+                    }
+                } else {
+                    alert('Por favor, introduce el nombre y selecciona el enfoque del proyecto.');
+                }
+            }
+
+            function cerrarPrograma() {
+                if (window.javaConnector) { // Verifica que el objeto Java esté disponible
+                    window.javaConnector.cerrarPrograma();
+                } else {
+                    alert('Error: La conexión con la aplicación no está disponible. No se puede salir.');
+                }
+            }
+
+            // --- Asignación de Event Listeners a los botones ---
+            // Los botones ahora se seleccionan por su ID y se les añade un escuchador de eventos.
+
+            // Botón "Salir de la aplicación"
+            const btnSalirApp = document.getElementById('btnSalirApp');
+            if (btnSalirApp) { // Se asegura de que el botón exista antes de añadir el listener
+                btnSalirApp.addEventListener('click', cerrarPrograma);
+            }
+
+            // Botón de navegación "Abrir proyecto"
+            const navAbrirProyecto = document.getElementById('navAbrirProyecto');
+            if (navAbrirProyecto) {
+                navAbrirProyecto.addEventListener('click', mostrarAbrirProyecto);
+            }
+
+            // Botón de navegación "Crear proyecto"
+            const navCrearProyecto = document.getElementById('navCrearProyecto');
+            if (navCrearProyecto) {
+                navCrearProyecto.addEventListener('click', mostrarCrearProyecto);
+            }
+
+            // Botón "Confirmar" del formulario "Abrir proyecto"
+            const botonAbrir = document.getElementById('botonAbrir');
+            if (botonAbrir) {
+                botonAbrir.addEventListener('click', abrirProyectoExistente);
+            }
+
+            // Botón "Confirmar" del formulario "Crear proyecto"
+            const botonCrear = document.getElementById('botonCrear');
+            if (botonCrear) {
+                botonCrear.addEventListener('click', crearProyectoNuevo);
+            }
+
+            // Por defecto, mostrar la sección de abrir al cargar la página (opcional)
+            mostrarAbrirProyecto();
+        });
     </script>
 </body>
 </html>

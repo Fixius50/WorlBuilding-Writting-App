@@ -12,118 +12,153 @@ import javafx.scene.web.WebView;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import netscape.javascript.JSObject;
+
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
-public class Main extends Application{
-    private WebEngine webEngine;
-    private Stage primaryStage;
-    private WebView webView;
-    // Aquí se desarrolla la aplicación de inicio
-    @Override
-    public void start(Stage primaryStage) {
-        this.webView = new WebView();
-        this.webEngine = webView.getEngine();
-        this.primaryStage = primaryStage;
+import java.io.IOException;
 
-        VBox root = new VBox();
-        root.getStyleClass().add("custom-pane");
-        // root.getChildren().add(webView);
+public class Main extends Application {
 
-        //Configuración de la pantalla principal de la aplicación
-        configuraciónPantallaAplicacion(primaryStage, root, webView);
+    private final Map<String, Scene> escenas = new HashMap<>();
+    private final Map<String, WebEngine> motores = new HashMap<>(); // Stores pre-loaded WebEngines
+    private Stage mainStage;
 
-        cargarPaginaInicial();  // Carga inicial
+    // Métodos para que MenuInicialLog pueda interactuar con la UI de Main
+    // Se pasan como argumentos al constructor de MenuInicialLog o como setters
+    private void requestSceneChange(String htmlName) {
+        cambiarEscena(htmlName);
     }
 
-    public static void configuraciónPantallaAplicacion(Stage primaryStage, VBox root, WebView webView){
-        // Asegura que el WebView ocupe todo el espacio vertical
-        VBox.setVgrow(webView, Priority.ALWAYS);
-        root.getChildren().add(webView);
-
-        // Obtener dimensiones de pantalla (sin bordes del sistema)
-        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-        double width = screenBounds.getWidth();
-        double height = screenBounds.getHeight();
-
-        primaryStage.setX(screenBounds.getMinX());
-        primaryStage.setY(screenBounds.getMinY());
-        primaryStage.setWidth(width);
-        primaryStage.setHeight(height);
-        
-        // Configura ventana a pantalla completa (opcional si usas screen bounds)
-        primaryStage.setResizable(true); // Para poder reescalar manualmente la pantalla
-        primaryStage.setFullScreen(true); // Para pantalla completa sin bordes
-        primaryStage.centerOnScreen(); // Para que la pantalla aparezca centrada
-        Scene scene = new Scene(root, width, height);
-        primaryStage.setScene(scene);
-
-        // Establece el nombre de la ventana y lo muestra
-        primaryStage.setTitle("Aplicación WorldBuilding");
-        primaryStage.show();
-    }
-
-    private void cargarPaginaInicial() {
-        URL htmlUrl = getClass().getResource("/html/menuInicialLog.html");
-        if (htmlUrl != null) {
-            webEngine.load(htmlUrl.toExternalForm());
-            setJavaConnector();  // muy importante volver a establecerlo después de cada carga
-        }
-    }
-
-    private void cargarVentanaCreacion() {
-        URL htmlUrl = getClass().getResource("/html/ventanaCreacion.html");
-        if (htmlUrl != null) {
-            webEngine.load(htmlUrl.toExternalForm());
-        }
-    }
-
-    /*
-     * Siempre que se llame a una funcion de java mediante JavaScript, no es necesario poner la lógica aquí
-     */
-    private void setJavaConnector() {
-        MenuInicialLog menu = new MenuInicialLog();
-        
-        // Cuando la página esté completamente cargada
-        webEngine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
-            if (newState == Worker.State.SUCCEEDED) {
-                JSObject window = (JSObject) webEngine.executeScript("window");
-                /*
-                 * Esta funcion padre lo que hace es establecer el JSBridge a la ventana; el cual tiene funciones
-                 * hijas a las que llama JavaScript
-                 */
-                
-                Object javaConnector = new Object() {
-                    public void cerrarPrograma() {
-                        Platform.exit();
-                    }
-
-                    public void crearProyectoNuevo(String nombreProyecto, String enfoqueProyecto) {
-                        try {
-                            ProyectoSeleccionado proyecto = MenuInicialLog.crearProyecto(nombreProyecto, enfoqueProyecto);
-                            abreProyecto(nombreProyecto);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    public void abreProyecto(String nombreProyecto) {
-                        System.out.println("Intentando abrir: " + nombreProyecto);
-                        if (MenuInicialLog.existeProyecto(nombreProyecto)) {
-                            Platform.runLater(() -> cargarVentanaCreacion());
-                        } else {
-                            System.err.println("No existe el proyecto: " + nombreProyecto);
-                        }
-                    }
-                };
-                
-                window.setMember("javaConnector", javaConnector);
-
-                webEngine.executeScript("window.inicializarEventos && window.inicializarEventos()");
+    private void requestShowAlert(String message) {
+        Platform.runLater(() -> {
+            WebEngine currentEngine = getActiveWebEngine();
+            if (currentEngine != null) {
+                currentEngine.executeScript("alert('" + message.replace("'", "\\'") + "');");
             }
         });
     }
 
-    // Método que inicia la aplicación la aplicación
+    /**
+     * Helper method to safely get the WebEngine of the currently active WebView,
+     * for displaying alerts or executing JavaScript.
+     * @return The WebEngine, or null if not found or not applicable.
+     */
+    private WebEngine getActiveWebEngine() {
+        if (mainStage.getScene() != null && mainStage.getScene().getRoot() instanceof VBox) {
+            VBox rootVBox = (VBox) mainStage.getScene().getRoot();
+            if (!rootVBox.getChildren().isEmpty() && rootVBox.getChildren().get(0) instanceof WebView) {
+                return ((WebView) rootVBox.getChildren().get(0)).getEngine();
+            }
+        }
+        return null;
+    }
+
+
+    // javaConnector is private and now delegates logic to MenuInicialLog
+    private final Object javaConnector = new Object() {
+        public void cerrarPrograma() {
+            Platform.exit();
+        }
+
+        public void crearProyectoNuevo(String nombreProyecto, String enfoqueProyecto) {
+            // Delega la lógica principal a MenuInicialLog
+            MenuInicialLog.crearProyectoNuevoDesdeUI(nombreProyecto, enfoqueProyecto,
+                Main.this::requestSceneChange, // Pasa el callback para cambiar escena
+                Main.this::requestShowAlert   // Pasa el callback para mostrar alerta
+            );
+        }
+
+        public void abreProyecto(String nombreProyecto) {
+            // Delega la lógica principal a MenuInicialLog
+            MenuInicialLog.abreProyectoDesdeUI(nombreProyecto,
+                Main.this::requestSceneChange, // Pasa el callback para cambiar escena
+                Main.this::requestShowAlert   // Pasa el callback para mostrar alerta
+            );
+        }
+
+        public void cambiarEscena(String nombreHtml) {
+            // Delega a la función interna de Main para cambiar escena
+            requestSceneChange(nombreHtml);
+        }
+    };
+
+
+    @Override
+    public void start(Stage primaryStage) {
+        this.mainStage = primaryStage;
+
+        Platform.setImplicitExit(true); // Default behavior is to exit when last window closes.
+        mainStage.setOnCloseRequest(event -> {
+            System.out.println("Cerrando la aplicación por el botón 'X' de la ventana.");
+            Platform.exit(); // Explicitly exit when the main stage is closed by the user
+        });
+
+        // Asegurarse de que la base de datos general (plantilla) exista en el disco
+        try {
+            SQLiteConnector.copyGeneralDatabaseTemplateIfNeeded();
+        } catch (IOException e) {
+            System.err.println("Error al copiar la base de datos general: " + e.getMessage());
+            Platform.exit();
+            return;
+        }
+
+        // Pre-load all necessary scenes and WebEngines at startup
+        crearEscena("menuInicialLog.html");
+        crearEscena("ventanaAjustes.html");
+        crearEscena("ventanaCreacion.html");
+        crearEscena("ventanaProyectos.html"); // New target from login
+
+        mainStage.setTitle("Aplicación WorldBuilding");
+        mainStage.setFullScreen(true);
+        mainStage.setResizable(true);
+
+        cambiarEscena("menuInicialLog.html");
+        mainStage.show();
+    }
+
+    private void crearEscena(String nombreHtml) {
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        double width = screenBounds.getWidth();
+        double height = screenBounds.getHeight();
+
+        WebView webView = new WebView();
+        WebEngine webEngine = webView.getEngine();
+        motores.put(nombreHtml, webEngine);
+
+        VBox layout = new VBox();
+        VBox.setVgrow(webView, Priority.ALWAYS);
+        layout.getChildren().add(webView);
+
+        Scene escena = new Scene(layout, width, height);
+        escenas.put(nombreHtml, escena);
+
+        URL htmlUrl = getClass().getResource("/html/" + nombreHtml);
+        if (htmlUrl != null) {
+            webEngine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
+                if (newState == Worker.State.SUCCEEDED) {
+                    JSObject window = (JSObject) webEngine.executeScript("window");
+                    window.setMember("javaConnector", javaConnector);
+                    System.out.println("javaConnector injected into " + nombreHtml);
+                }
+            });
+            webEngine.load(htmlUrl.toExternalForm());
+        } else {
+            System.err.println("No se encontró el HTML: " + nombreHtml);
+        }
+    }
+
+    private void cambiarEscena(String nombreHtml) {
+        Scene escena = escenas.get(nombreHtml);
+        if (escena != null) {
+            mainStage.setScene(escena);
+            System.out.println("Cambiando a la escena: " + nombreHtml);
+        } else {
+            System.err.println("Escena no encontrada: " + nombreHtml);
+        }
+    }
+
     public static void main(String[] args) {
         launch(args);
     }
