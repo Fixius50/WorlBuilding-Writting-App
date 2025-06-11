@@ -1,4 +1,4 @@
-Aquí van las cosas que se han probado y que dan errores:
+Aquí van las cosas que se han probado:
 
-- No se puede cargar dos url locales con el mismo listener
+- Se puede cargar dos url locales con el mismo listener
 - Lo manejadores (handlers) no funcionan con scripts como HTML
