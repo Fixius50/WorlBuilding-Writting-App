@@ -21,7 +21,13 @@ public class Main extends Application {
     private WebView webView;
     private WebEngine webEngine;
 
-    private JavaScriptBridge javaConnector; // Establece el puente entre el HTML con JavaScript
+    private final JavaScriptBridge javaConnector = new JavaScriptBridge(); // Establece el puente entre el HTML con JavaScript
+
+    private static Main instance; // referencia global a la instancia en ejecución
+
+    public Main() {instance = this;} // se establece cuando JavaFX crea la instancia
+
+    public static Main getInstance() {return instance;}
 
     /**
      * Configura la ventana principal de la aplicación (Stage y Scene).
@@ -48,31 +54,13 @@ public class Main extends Application {
         mainStage.setOnCloseRequest(event -> Platform.exit());
     }
 
-    private void cambiarHTML(String nombreHtml) {
+    public void cambiarHTML(String nombreHtml) {
         URL htmlUrl = getClass().getResource("/html/" + nombreHtml);
         if (htmlUrl != null) {
             webEngine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
-                if (newState == Worker.State.SUCCEEDED) {
+                if (newState == javafx.concurrent.Worker.State.SUCCEEDED) {
                     JSObject window = (JSObject) webEngine.executeScript("window");
                     window.setMember("javaConnector", javaConnector);
-                    System.out.println("javaConnector injected into " + nombreHtml);
-                    /*
-                    // Desde Java, definimos las funciones en JS que luego se vinculan a los botones (no borrar)
-                    webEngine.executeScript("""
-                        document.getElementById('btnSalirApp').onclick = function() {
-                            javaConnector.cerrarPrograma();
-                        };
-                        document.getElementById('botonCrear').onclick = function() {
-                            let nombre = document.getElementById('proyect-txt-nuevo').value;
-                            let enfoque = document.getElementById('enfoqueProyecto').value;
-                            javaConnector.crearProyectoNuevo(nombre, enfoque);
-                        };
-                        document.getElementById('botonAbrir').onclick = function() {
-                            let nombre = document.getElementById('proyect-txt-existente').value;
-                            javaConnector.abreProyecto(nombre);
-                        };
-                    """);
-                    */
                 }
             });
             webEngine.load(htmlUrl.toExternalForm());
@@ -87,7 +75,6 @@ public class Main extends Application {
         this.webEngine = webView.getEngine();
         this.mainStage = primaryStage;
 
-        javaConnector = new JavaScriptBridge();
         javaConnector.setNavigationListener(() -> {
             System.out.println("Proyecto creado. Cargando pantallaProyecto.html...");
             cambiarHTML("ventanaProyectos.html");

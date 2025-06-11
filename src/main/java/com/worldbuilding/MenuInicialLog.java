@@ -25,7 +25,7 @@ public class MenuInicialLog {
      */
     public static void crearProyecto(String nombreProyecto, String tipoProyecto) throws IOException {
         // Crea el directorio donde se va a guardar la base de datos
-        File carpetaProyecto = new File("src/main/resources/data/" + nombreProyecto);
+        File carpetaProyecto = new File("src/main/resources/data/" + nombreProyecto); // Esa es la ruta que no hay que cambiar
         // Crea su base de datos
         File bdProyecto = new File(carpetaProyecto.getParent() + nombreProyecto + ".db");
         SQLiteConnector sqNuevo = new SQLiteConnector(nombreProyecto, tipoProyecto, bdProyecto);
@@ -52,11 +52,10 @@ public class MenuInicialLog {
      * @param webView
      * @param nombreProyecto
      */
-    public static void abrirProyecto(WebView webView, String nombreProyecto){ // Done
-        WebEngine webEngine = webView.getEngine();
+    public static void abrirProyecto(String nombreProyecto) {
         File carpetaProyecto = new File("src/main/resources/data/" + nombreProyecto);
         if (existeProyecto(carpetaProyecto)) {
-            webEngine.load(nombreProyecto);   
+            Main.getInstance().cambiarHTML("ventanaProyectos.html"); // o el HTML que necesites
         }
     }
 

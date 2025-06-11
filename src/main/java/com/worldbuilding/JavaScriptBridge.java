@@ -34,6 +34,9 @@ public class JavaScriptBridge {
     public void crearProyectoNuevo(String nombreProyecto, String enfoqueProyecto) {
         try {
             MenuInicialLog.crearProyecto(nombreProyecto, enfoqueProyecto);
+            if (listener != null) {
+                listener.onProyectoCreado(); // Cambia de HTML si el listener está presente
+            }
         } catch (IOException e) {
             System.err.println("Error al crear el proyecto: " + e.getMessage());
         }
@@ -45,6 +48,6 @@ public class JavaScriptBridge {
      */
     public void abreProyecto(String nombreProyecto) {
         // NOTA: Si necesitas pasar el WebView, tendrías que inyectarla o gestionarlo de otro modo
-        MenuInicialLog.abrirProyecto(null, nombreProyecto);
+        MenuInicialLog.abrirProyecto(nombreProyecto);
     }
 }
