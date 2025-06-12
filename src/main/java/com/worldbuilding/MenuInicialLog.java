@@ -5,9 +5,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
 /**
  * Esta clase se encarga de controlar el entorno de la pantalla del Login del usuario nada más arrancar la app.
  */
@@ -24,27 +21,36 @@ public class MenuInicialLog {
      * @throws SQLException Si ocurre un error de base de datos.
      */
     public static void crearProyecto(String nombreProyecto, String tipoProyecto) throws IOException {
-        // Crea el directorio donde se va a guardar la base de datos
-        File carpetaProyecto = new File("src/main/resources/data/" + nombreProyecto); // Esa es la ruta que no hay que cambiar
-        // Crea su base de datos
-        File bdProyecto = new File(carpetaProyecto.getParent() + nombreProyecto + ".db");
-        SQLiteConnector sqNuevo = new SQLiteConnector(nombreProyecto, tipoProyecto, bdProyecto);
-        if (!existeProyecto(carpetaProyecto)) { // Lo lógico es pensar que si no existe de primeras la carpeta, no existe lo de dentro
-            try {
-                carpetaProyecto.mkdir(); // Se crea la carpeta
-                FileWriter writer = new FileWriter(carpetaProyecto);
-                writer.write(bdProyecto.toString()); // Escribe la base de datos dentro de esa carpeta
-                writer.close();
-            } catch (IOException e) {
-                throw new IOException("Error de directorio: " + e.getMessage());
-            }finally{
-                System.out.println("Base de datos del proyecto copiada a: " + carpetaProyecto + "\nProyecto totalmente creado y listo para usarse en " + carpetaProyecto.toURI().toString());
-                ProyectoSeleccionado proyecto = new ProyectoSeleccionado(nombreProyecto, tipoProyecto, carpetaProyecto, sqNuevo);
-                numeroProyecto.add(proyecto); // Añade el proyecto a la lista en memoria
-            }
-        } else{
-            System.out.println("El proyecto ya existe.");
+        // Ruta del directorio del proyecto
+        File carpetaProyecto = new File("src/main/resources/data/" + nombreProyecto);
+
+        // Si el proyecto no existe, se crea la carpeta
+        if (!existeProyecto(carpetaProyecto)) {
+            carpetaProyecto.mkdirs();
         }
+
+        // Archivo de base de datos dentro de esa carpeta
+        File bdProyecto = new File(carpetaProyecto, nombreProyecto + ".db");
+
+        // Solo crea y escribe el archivo si no hay contenido
+        if (!existeContenido(carpetaProyecto)) {
+            try (FileWriter writer = new FileWriter(bdProyecto, true)) {
+                writer.write(""); // Crea el archivo
+            } catch (IOException e) {
+                throw new IOException("Error creando base de datos: " + e.getMessage());
+            }
+        }
+
+        // Crear conector SQLite (una vez que el archivo y carpeta existen)
+        SQLiteConnector sqNuevo = new SQLiteConnector(nombreProyecto, tipoProyecto, bdProyecto);
+
+        // Confirmación final
+        System.out.println("Base de datos del proyecto copiada a: " + carpetaProyecto +
+                        "\nProyecto totalmente creado y listo para usarse en " + carpetaProyecto.toURI());
+
+        // Añade el proyecto a la lista en memoria
+        ProyectoSeleccionado proyecto = new ProyectoSeleccionado(nombreProyecto, tipoProyecto, carpetaProyecto, sqNuevo);
+        numeroProyecto.add(proyecto);
     }
 
     /**
@@ -54,7 +60,7 @@ public class MenuInicialLog {
      */
     public static void abrirProyecto(String nombreProyecto) {
         File carpetaProyecto = new File("src/main/resources/data/" + nombreProyecto);
-        if (existeProyecto(carpetaProyecto)) {
+        if (existeProyecto(carpetaProyecto) && existeContenido(carpetaProyecto)) {
             Main.getInstance().cambiarHTML("ventanaProyectos.html"); // o el HTML que necesites
         }
     }
@@ -65,7 +71,13 @@ public class MenuInicialLog {
      * @param nombreProyecto El nombre del proyecto a verificar.
      * @return true si el proyecto existe y está cargado en memoria, false en caso contrario.
      */
-    public static boolean existeProyecto(File carpetaProyecto){ // Me falta verificar los datos internos
-        return carpetaProyecto.isDirectory() && carpetaProyecto.exists();
+    public static boolean existeProyecto(File carpetaProyecto) {
+        return carpetaProyecto.exists() && carpetaProyecto.isDirectory();
+    }
+
+    public static boolean existeContenido(File carpetaProyecto) {
+        return carpetaProyecto != null 
+            && carpetaProyecto.isDirectory()
+            && carpetaProyecto.listFiles() != null && carpetaProyecto.listFiles().length > 0;
     }
 }
