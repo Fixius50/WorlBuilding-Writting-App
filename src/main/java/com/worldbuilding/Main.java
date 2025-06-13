@@ -2,6 +2,8 @@ package com.worldbuilding;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.concurrent.Worker;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.layout.Priority;
@@ -21,7 +23,7 @@ public class Main extends Application {
     private WebEngine webEngine;
 
     private final JavaScriptBridge javaConnector = new JavaScriptBridge(); // Establece el puente entre el HTML con JavaScript
-
+    private ChangeListener<Worker.State> loadListener; // Para manejar acciones con javaScript
     private static Main instance; // referencia global a la instancia en ejecución
 
     public Main() {instance = this;} // se establece cuando JavaFX crea la instancia
@@ -53,10 +55,48 @@ public class Main extends Application {
         mainStage.setOnCloseRequest(event -> Platform.exit());
     }
 
+    public void resetearWebView() {
+        VBox parentLayout = (VBox) mainScene.getRoot();  // Recupera el layout raíz actual
+
+        // Elimina el WebView actual del layout
+        parentLayout.getChildren().remove(webView);
+
+        // Crea uno nuevo
+        webView = new WebView();
+        webEngine = webView.getEngine();
+
+        // Asegura que crezca con el layout
+        VBox.setVgrow(webView, Priority.ALWAYS);
+
+        // Vuelve a añadirlo al layout
+        parentLayout.getChildren().add(webView);
+    }
+
+    /**
+     * Función que hace una transición entre los distintos html de la aplicación.
+     * @param nombreHtml
+     */
     public void cambiarHTML(String nombreHtml) {
         URL htmlUrl = getClass().getResource("/html/" + nombreHtml);
         if (htmlUrl != null) {
-            webEngine.load(htmlUrl.toExternalForm());
+
+            // Limpia listener anterior si existe
+            if (loadListener != null) {
+                webEngine.getLoadWorker().stateProperty().removeListener(loadListener);
+            }
+
+            // Define y guarda el nuevo listener
+            loadListener = (obs, oldState, newState) -> {
+                if (newState == Worker.State.SUCCEEDED) {
+                    JSObject window = (JSObject) webEngine.executeScript("window");
+                    window.setMember("javaConnector", javaConnector);
+                }
+            };
+
+            webEngine.getLoadWorker().stateProperty().addListener(loadListener);
+
+            webEngine.load(htmlUrl.toExternalForm()); // Carga la página nueva
+
         } else {
             System.err.println("No se encontró el HTML: " + nombreHtml);
         }
@@ -79,6 +119,7 @@ public class Main extends Application {
 
         javaConnector.setNavigationListener(() -> {
             System.out.println("Proyecto creado. Cargando ventanaProyectos.html...");
+            resetearWebView();
             cambiarHTML("ventanaProyectos.html");
         });
 
