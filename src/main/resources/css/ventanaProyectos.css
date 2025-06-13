@@ -30,7 +30,7 @@
     position: absolute;
     z-index: 1;
     padding: 0.5%;
-    background-image: url(/other/imagenes/casting-spell.gif);
+    background-image: url(../imagenes/casting-spell.gif);
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
@@ -38,6 +38,9 @@
 }
 .menu-desplegable:hover{
     height: 25%;
+}
+.menu-desplegable, .menu-desplegable:hover{
+    transition: height 0.5s ease-in-out;
 }
 
 .menu-desplegable:hover .content{
@@ -48,14 +51,13 @@
 .content {
     max-height: 0;
     overflow: hidden;
-    position: absolute;
+    position: relative;
     margin-top: 5%;
     display: flex;
     flex-direction: column;
     align-content: flex-start; /* clave para alinear a la izquierda */
     width: 100%; /* Fijar ancho total del contenedor para que no cambie */
-    transition: visibility 1s, max-height 1s; /* Añadir transición para visibilidad y altura */
-    z-index: 2;
+    transition: visibility 0.5s ease-in-out, max-height 0.5s ease-in-out; /* Añadir transición para visibilidad y altura */
 }
 
 .option {
@@ -64,7 +66,6 @@
     overflow: hidden;
     white-space: nowrap;
     position: relative;
-    z-index: 3;
     margin-left: 0;
     padding-right: 0; /* para visual feedback */
 }
@@ -83,11 +84,13 @@
 /*Esta es la sección de arriba de la derecha*/
 
 .infoTop{
-    flex-grow: 1;
+    border: 2px solid green;
+    width: 90%;
+    margin-left: 10%;
     height: auto;
     position: relative;
     display: flex;
-    flex-direction: row-reverse;
+    flex-direction: row;
 }
 
 /*Este es el nombre del proyecto (y su ruta)*/
@@ -95,7 +98,7 @@
     border: 1px solid rgb(207, 11, 11);
     text-align: center;
     display: inline;
-    width: 10%;
+    width: 20%;
 }
 
 /*Aquí empezaría los recuadros de arriba que no son el Menú desplegable*/
@@ -108,7 +111,6 @@
     align-content: space-evenly;
     text-align: center;
     position: relative;
-
     background-image: url(/other/imagenes/flecha-abajo-unaLinea.png);
     background-position: center;
     background-size: 1%;
