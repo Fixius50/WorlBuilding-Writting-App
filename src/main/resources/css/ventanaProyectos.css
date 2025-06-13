@@ -24,11 +24,11 @@
 .menu-desplegable{
     border: 1px solid rgb(78, 110, 255);
     width: 10%;
-    height: 0%;
+    height: 4vh;
     color: white;
     background-color: black;
-    position: relative;
-    margin: 0.5%;
+    position: absolute;
+    z-index: 1;
     padding: 0.5%;
     background-image: url(/other/imagenes/casting-spell.gif);
     background-repeat: no-repeat;
@@ -37,43 +37,47 @@
     text-align: center;
 }
 .menu-desplegable:hover{
-    width: 10%;
-    z-index: 1;
+    height: 25%;
 }
 
 .menu-desplegable:hover .content{
-    width: 100%;
-    max-height: 200vh; /* Ajustar el valor según el contenido */
+    width: auto;
+    max-height: 100vh; /* Ajustar el valor según el contenido */
 }
 
-.content{
-    /*De aquí establece como se distribuyen las opciones según su posición. */
-    display: flex;
-    flex-direction:column;
-    align-items: center;
-    /*Hasta aquí*/
-    transition: visibility 1s, max-height 1s; /* Añadir transición para visibilidad y altura */
+.content {
     max-height: 0;
     overflow: hidden;
+    position: absolute;
+    margin-top: 5%;
+    display: flex;
+    flex-direction: column;
+    align-content: flex-start; /* clave para alinear a la izquierda */
+    width: 100%; /* Fijar ancho total del contenedor para que no cambie */
+    transition: visibility 1s, max-height 1s; /* Añadir transición para visibilidad y altura */
+    z-index: 2;
 }
-.optionA{ /*No borrar*/
-    width: 100%;
-    cursor:default;
+
+.option {
+    width: min-content; /* que se ajuste al contenedor, no use valores absolutos */
+    background-color: rgb(166, 65, 225);
     overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+    z-index: 3;
+    margin-left: 0;
+    padding-right: 0; /* para visual feedback */
 }
-.option{/*De aquí establece como cambian las opciones. */
-    /*El ancho cambia de estar a la derecha y fuera a estar en el centro pero
-    estirando los lados si las unidades relativas las cambias de "vw" a "%" */
-    width: 50%;
-    transition: width 0.5s, background-color 0.5s; /* Añadir transición para background-color */
-    background-color: aqua;
-    overflow: hidden;
-    white-space: nowrap; /* Evitar que el texto se desborde */
+.option:hover {
+    font-size: larger;
+    width: auto;
+    margin-left: 0.5vw;
+    padding-right: 3vw;
+    /* hace que crezca hacia la derecha */
+    background-color: yellow;
 }
-.option:hover{
-    width: 100%;
-    background-color:rgb(166, 65, 225);
-    cursor: pointer;
+.option, .option:hover{
+    transition: padding-right 0.5s ease-in-out, background-color 0.5s; /* Añadir transición para background-color */
 }
 
 /*Esta es la sección de arriba de la derecha*/
@@ -150,7 +154,7 @@
 }
 
 .objects{
-    width: 12.5%;
+    width: 10vw;
 }
 
 .ground{

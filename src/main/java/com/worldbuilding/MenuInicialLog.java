@@ -6,14 +6,18 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 /**
- * Esta clase se encarga de controlar el entorno de la pantalla del Login del usuario nada más arrancar la app.
+ * Esta clase se encarga de controlar la pantalla del Login del usuario nada más arrancar la app.
+ * @see crearProyecto: se usa para generar un proyecto nuevo y guardarlo en src/main/resources/data.
+ * @see abrirProyecto: se usa para abrir un proyecto guardado en src/main/resources/data.
+ * @see existeProyecto: se usa para comprobar si un proyecto existe en src/main/resources/data.
+ * @see existeContenido: se usa para comprobar si el contenido de un proyecto existe en src/main/resources/data/ + @param nombreCarpeta .
  */
 public class MenuInicialLog {
 
     public static ArrayList<ProyectoSeleccionado> numeroProyecto = new ArrayList<>(); // Almacena proyectos en memoria
 
     /**
-     * Crea un nuevo proyecto en el sistema de archivos y en memoria.
+     * Crea un nuevo proyecto en el proyecto.
      * @param nombreProyecto El nombre del nuevo proyecto.
      * @param tipoProyecto El tipo o enfoque del proyecto.
      * @return El objeto ProyectoSeleccionado creado.
@@ -66,15 +70,19 @@ public class MenuInicialLog {
     }
 
     /**
-     * Verifica si un proyecto existe (en memoria o en disco).
-     * Si existe en disco pero no en memoria, lo añade a la lista 'numeroProyecto'.
-     * @param nombreProyecto El nombre del proyecto a verificar.
+     * Verifica si un proyecto existe.
+     * @param carpetaProyecto El nombre del proyecto a verificar.
      * @return true si el proyecto existe y está cargado en memoria, false en caso contrario.
      */
     public static boolean existeProyecto(File carpetaProyecto) {
         return carpetaProyecto.exists() && carpetaProyecto.isDirectory();
     }
 
+    /**
+     * Verifica si el contenido de un proyecto existe.
+     * @param carpetaProyecto El nombre del proyecto a verificar.
+     * @return true si el proyecto tiene la base de datos y contenido, false en caso contrario.
+     */
     public static boolean existeContenido(File carpetaProyecto) {
         return carpetaProyecto != null 
             && carpetaProyecto.isDirectory()
