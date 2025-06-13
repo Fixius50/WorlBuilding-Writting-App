@@ -56,12 +56,6 @@ public class Main extends Application {
     public void cambiarHTML(String nombreHtml) {
         URL htmlUrl = getClass().getResource("/html/" + nombreHtml);
         if (htmlUrl != null) {
-            webEngine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
-                if (newState == javafx.concurrent.Worker.State.SUCCEEDED) {
-                    JSObject window = (JSObject) webEngine.executeScript("window");
-                    window.setMember("javaConnector", javaConnector);
-                }
-            });
             webEngine.load(htmlUrl.toExternalForm());
         } else {
             System.err.println("No se encontró el HTML: " + nombreHtml);
@@ -74,15 +68,23 @@ public class Main extends Application {
         this.webEngine = webView.getEngine();
         this.mainStage = primaryStage;
 
+        // Listener que inyecta javaConnector tras cada carga exitosa
+        webEngine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
+            if (newState == javafx.concurrent.Worker.State.SUCCEEDED) {
+                JSObject window = (JSObject) webEngine.executeScript("window");
+                window.setMember("javaConnector", javaConnector);
+                System.out.println("javaConnector inyectado en JavaScript");
+            }
+        });
+
         javaConnector.setNavigationListener(() -> {
-            System.out.println("Proyecto creado. Cargando pantallaProyecto.html...");
+            System.out.println("Proyecto creado. Cargando ventanaProyectos.html...");
             cambiarHTML("ventanaProyectos.html");
         });
 
-        configurarVentanaAplicacion(); // Llama a la función que configura la ventana
-
-        cambiarHTML("menuInicialLog.html"); // Carga la vista inicial
-        mainStage.show();                   // Muestra la ventana
+        configurarVentanaAplicacion();
+        cambiarHTML("menuInicialLog.html");
+        mainStage.show();
     }
 
     public static void main(String[] args) {

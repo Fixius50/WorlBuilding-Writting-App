@@ -14,7 +14,30 @@ import java.util.ArrayList;
  */
 public class MenuInicialLog {
 
-    public static ArrayList<ProyectoSeleccionado> numeroProyecto = new ArrayList<>(); // Almacena proyectos en memoria
+    private static ArrayList<ProyectoSeleccionado> numeroProyecto = new ArrayList<>(); // Almacena proyectos en memoria
+    private static ProyectoActual proyectoActual; // Proyecto activo
+
+    public static void setProyectoActual(String nombre, String tipo) {
+        proyectoActual = new ProyectoActual(nombre, tipo);
+    }
+
+    public static String getNombreProyecto() {
+        return proyectoActual.nombre;
+    }
+
+    public static String getTipoProyecto() {
+        return proyectoActual.tipo;
+    }
+
+    private static class ProyectoActual {
+        String nombre;
+        String tipo;
+
+        ProyectoActual(String nombre, String tipo) {
+            this.nombre = nombre;
+            this.tipo = tipo;
+        }
+    }
 
     /**
      * Crea un nuevo proyecto en el proyecto.
@@ -55,6 +78,7 @@ public class MenuInicialLog {
         // Añade el proyecto a la lista en memoria
         ProyectoSeleccionado proyecto = new ProyectoSeleccionado(nombreProyecto, tipoProyecto, carpetaProyecto, sqNuevo);
         numeroProyecto.add(proyecto);
+        setProyectoActual(nombreProyecto, tipoProyecto);
     }
 
     /**
@@ -65,7 +89,12 @@ public class MenuInicialLog {
     public static void abrirProyecto(String nombreProyecto) {
         File carpetaProyecto = new File("src/main/resources/data/" + nombreProyecto);
         if (existeProyecto(carpetaProyecto) && existeContenido(carpetaProyecto)) {
-            Main.getInstance().cambiarHTML("ventanaProyectos.html"); // o el HTML que necesites
+            for (ProyectoSeleccionado proyectoSeleccionado : numeroProyecto) {
+                if (proyectoSeleccionado.getNombreProyecto().equals(nombreProyecto)) {
+                    setProyectoActual(nombreProyecto, proyectoSeleccionado.getTipoProyecto()); // tipoProyecto debe recuperarse si lo tienes
+                }
+            }
+            Main.getInstance().cambiarHTML("ventanaProyectos.html");
         }
     }
 

@@ -28,8 +28,8 @@
             <!-- Aquí entra algo que ya veré que hacer. A lo mejor un gif animado o
              la autoría con el nombre del proyecto. Más tarde se editará para mejorarlo.-->
             <div class="infoTop">
-                <header class="header-top">
-                    <a>Aquí va el nombre del proyecto</a>
+                <header class="header-top"><!-- Aquí va el nombre del proyecto y el tipo -->
+                    <a id="nombre-proyecto"></a>
                 </header>
                 <!-- Aquí entra las cosas del proyecto para que se vean visualmente.
                 Se despliegan en el área central.
@@ -47,7 +47,7 @@
         </div>
         <div class="area-central">
             <section class="objects">
-                
+                <p>Aquí van como "bolsas" que agrupan contenido general</p>
             </section>
             <section class="ground">
                 <!-- Aquí se despliegan las opciones de "nav-top" según lo que sean -->
@@ -56,6 +56,20 @@
     </div>
 </body>
 <script>
-    
+    document.addEventListener('DOMContentLoaded', () => {
+        try {
+            if (window.javaConnector && typeof window.javaConnector.obtenerDatosProyecto === 'function') {
+                const info = window.javaConnector.obtenerDatosProyecto();
+                const display = document.getElementById('nombre-proyecto');
+                if (display) {
+                    display.textContent = info;
+                } else {
+                    console.warn("No se encontró el elemento con id 'nombre-proyecto'.");
+                }
+            }
+        } catch (e) {
+            console.error("Error al obtener datos desde Java: ", e);
+        }
+    });
 </script>
 </html>

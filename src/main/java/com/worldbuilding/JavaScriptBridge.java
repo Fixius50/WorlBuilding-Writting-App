@@ -50,4 +50,15 @@ public class JavaScriptBridge {
         // NOTA: Si necesitas pasar el WebView, tendrías que inyectarla o gestionarlo de otro modo
         MenuInicialLog.abrirProyecto(nombreProyecto);
     }
+
+    /**
+     * Devuelve el nombre del proyecto actualmente cargado.
+     * Este método puede ser llamado desde JavaScript: window.javaConnector.obtenerInfoProyecto()
+     * @return Nombre del proyecto actual.
+     */
+    public String obtenerDatosProyecto() {
+        String nombre = MenuInicialLog.getNombreProyecto();
+        String tipo = MenuInicialLog.getTipoProyecto();
+        return nombre + " - " + tipo;
+    }
 }
