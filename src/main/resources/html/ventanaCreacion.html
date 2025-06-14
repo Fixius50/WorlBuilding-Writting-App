@@ -21,7 +21,7 @@
             display: grid;
             width: calc(9.9vw * 10);
             height: auto;
-            border: 1px solid black;
+            
             padding: 1px;
             grid-template-areas: 'tlt'
                                  'form';
@@ -136,12 +136,11 @@
         </header>
         <form>
             <nav class="navPanel" id="panel">
-                <button class="opt0" type="button" onclick="mostrarOptionsPanel('divEntity')"><h3>entidades</h3></button>
-                <button class="opt1" type="button" onclick="mostrarOptionsPanel('divZones')"><h3>zonas</h3></button>
-                <button class="opt2" type="button" onclick="mostrarOptionsPanel('divConstructions')"><h3>construcción</h3></button>
-                <button class="opt3" type="button" onclick="mostrarOptionsPanel('divOthers')"><h3>otros</h3></button>
-                <a href="ventanaProyectos.html" target="_self"><button class="opt4" type="button"><h3>Volver al proyecto</h3></button></a>
-                <a href="menuInicialLog.html" target="_self"><button class="opt5" type="button"><h3>Volver a inicio</h3></button></a>
+                <button class="opt0" type="button" onclick="mostrarOptionsPanel('divEntity')"><h3>Entidades</h3></button>
+                <button class="opt1" type="button" onclick="mostrarOptionsPanel('divZones')"><h3>Zonas</h3></button>
+                <button class="opt2" type="button" onclick="mostrarOptionsPanel('divConstructions')"><h3>Construcción</h3></button>
+                <button class="opt3" type="button" onclick="mostrarOptionsPanel('divOthers')"><h3>Otros</h3></button>
+                <button class="opt4" type="button"><h3>Volver al proyecto</h3></button>
             </nav>
             <div id="divEntity">
                 <!-- Contenido para Entidades -->
