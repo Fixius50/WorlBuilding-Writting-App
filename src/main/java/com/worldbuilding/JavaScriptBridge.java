@@ -46,10 +46,10 @@ public class JavaScriptBridge {
      * Abre un proyecto existente por su nombre, desde JavaScript.
      * @param nombreProyecto Nombre del proyecto a abrir.
      */
-    public void abreProyecto(String nombreProyecto) {
-        // NOTA: Si necesitas pasar el WebView, tendrías que inyectarla o gestionarlo de otro modo
-        MenuInicialLog.abrirProyecto(nombreProyecto);
+    public void irAPagina(String nombreHtml) {
+        Platform.runLater(() -> Main.getInstance().navegarA(nombreHtml));
     }
+
 
     /**
      * Devuelve el nombre del proyecto actualmente cargado.

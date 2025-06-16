@@ -15,30 +15,36 @@
                 <b>MENÚ</b>
                 <div class="content">
                     <!-- Hacer que la letra se esconda hasta que se pase el ratón por encima.
-                    Luego hacer que se quede el último recuadro del cual se haya puesto el ratón y no se vaya-->
-                    <button class="option" id="bt1" onclick="">Generar &sc;</button>
+                    Luego hacer que se quede el último recuadro del cual se haya puesto el ratón y no se vaya--> 
+                    <button class="option" id="bt1" onclick="abrirVentanaCreacion()">Generar objetos&sc;</button>
+                    <!--
                     <button class="option" id="bt1" onclick="">Importar (no disponible) &sc;</button>
                     <button class="option" id="bt1" onclick="">Exportar (no disponible) &sc;</button>
                     <button class="option" id="bt1" onclick="">Wiki (no disponible) &sc;</button>
-                    <button class="option" id="bt1" onclick="">Apuntes (no disponible) &sc;</button>
-                    <button class="option" id="bt1" onclick="">Ajustes &sc;</button>
-                    <button class="option" id="bt1" onclick="">Inicio &sc;</button>
+                    <button class="option" id="bt1" onclick="">Apuntes (no disponible) &sc;</button> 
+                    -->
+                    <button class="option" id="bt1" onclick="abrirVentanaAjustes()">Ajustes del proyecto&sc;</button>
+                    <button class="option" id="bt1" onclick="abrirVentanaMenuInicial()">Página de inicio &sc;</button>
+                    <b>&dArr;</b>
                 </div>
             </div>
             <!-- Aquí entra algo que ya veré que hacer. A lo mejor un gif animado o
              la autoría con el nombre del proyecto. Más tarde se editará para mejorarlo.-->
             <div class="infoTop">
                 <header class="header-top"><!-- Aquí va el nombre del proyecto y el tipo -->
-                    <a id="nombre-proyecto"></a>
+                    <a id="nombre-proyecto" oninput="mostarInfoProyecto()"></a>
                 </header>
-                <!-- Aquí entra las cosas del proyecto para que se vean visualmente.
-                Se despliegan en el área central.
-                Más tarde se editará para mejorarlo.-->
                 
                 <nav class="navTop">
-                    <header class="nv">Construcción</header>
-                    <header class="nv">Algo</header>
-                    <header class="nv">Estado</header>
+                    <!-- Esto son pestañas que se despliegan. Los nombres indican cosas generales.
+                     Ej: la pestaña "Construcción" agrega dentro opciones relacionadas a la puesta
+                     de las cosas/fichas (personajes/objetos/lugares, etc...), como las subopciones:
+                     - Agregar
+                     - Editar
+                     - Eliminar -->
+                    <header class="construccion">Construcción</header>
+                    <header class="estado">Estado</header>
+                    <header class="nv">Eliminar</header>
                     <header class="nv">Construcción</header>
                     <header class="nv">Algo</header>
                     <header class="nv">Estado</header>
@@ -50,26 +56,48 @@
                 <p>Aquí van como "bolsas" que agrupan contenido general</p>
             </section>
             <section class="ground">
+                <h1>AQUÍ VA UN SCRIPT HECHO Y CARGADO POR JAVAFX</h1>
+                <p>Los elementos de "objects" se arrastran para colocarlos aquí.</p>
                 <!-- Aquí se despliegan las opciones de "nav-top" según lo que sean -->
             </section>
         </div>
     </div>
 </body>
 <script>
-    // Función para mostar la info del pryecto (arreglar).
+    function abrirVentanaCreacion() {
+        if (window.javaConnector && typeof window.javaConnector.irAPagina === 'function') {
+            window.javaConnector.irAPagina("ventanaCreacion.html");
+        } else {
+            console.error("javaConnector.irAPagina no está disponible.");
+        }
+    }
+
+    function abrirVentanaAjustes() {
+        if (window.javaConnector && typeof window.javaConnector.irAPagina === 'function') {
+            window.javaConnector.irAPagina("ventanaAjustes.html");
+        } else {
+            console.error("javaConnector.irAPagina no está disponible.");
+        }
+    }
+
+    function abrirVentanaMenuInicial() {
+        if (window.javaConnector && typeof window.javaConnector.irAPagina === 'function') {
+            window.javaConnector.irAPagina("menuInicialLog.html");
+        } else {
+            console.error("javaConnector.irAPagina no está disponible.");
+        }
+    }
+
+    // Esto sí puede quedar dentro de DOMContentLoaded
     document.addEventListener('DOMContentLoaded', () => {
         try {
-            if (window.javaConnector && typeof window.javaConnector.obtenerDatosProyecto === 'function') {
-                const info = window.javaConnector.obtenerDatosProyecto();
-                const display = document.getElementById('nombre-proyecto');
-                if (display) {
-                    display.textContent = info;
-                } else {
-                    console.warn("No se encontró el elemento con id 'nombre-proyecto'.");
-                }
+            const info = window.javaConnector.obtenerDatosProyecto();
+            const display = document.getElementById('nombre-proyecto');
+            if (display) {
+                display.textContent = info;
             }
         } catch (e) {
-            console.error("Error al obtener datos desde Java: ", e);
+            console.error("Error al mostrar info del proyecto:", e);
         }
     });
 </script>

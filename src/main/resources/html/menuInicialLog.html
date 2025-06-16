@@ -90,7 +90,7 @@
             let nombreProyecto = document.getElementById('proyect-txt-existente').value.trim();
             if (nombreProyecto !== "") {
                 if (window.javaConnector && typeof window.javaConnector.abreProyecto === 'function') {
-                    window.javaConnector.abreProyecto(nombreProyecto);
+                    window.javaConnector.irAPagina(nombreProyecto);
                 } else {
                     alert('Error: No se puede comunicar con la aplicación Java.');
                 }

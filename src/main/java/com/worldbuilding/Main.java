@@ -93,6 +93,7 @@ public class Main extends Application {
                 }
             };
 
+            // Carga el nuevo Listener
             webEngine.getLoadWorker().stateProperty().addListener(loadListener);
 
             webEngine.load(htmlUrl.toExternalForm()); // Carga la página nueva
@@ -102,6 +103,19 @@ public class Main extends Application {
         }
     }
 
+    /**
+     * Función general para navegar entre distintos documentos/ventanas de la aplicación
+     * @param nombreHtml
+     */
+    public void navegarA(String nombreHtml) {
+        resetearWebView();
+        cambiarHTML(nombreHtml);
+    }
+
+
+    /**
+     * Método principal donde se ejecuta y configura la aplicación
+     */
     @Override
     public void start(Stage primaryStage) {
         this.webView = new WebView();
@@ -118,10 +132,10 @@ public class Main extends Application {
         });
 
         javaConnector.setNavigationListener(() -> {
-            System.out.println("Proyecto creado. Cargando ventanaProyectos.html...");
-            resetearWebView();
-            cambiarHTML("ventanaProyectos.html");
+            System.out.println("Proyecto creado. Navegando a ventanaProyectos.html...");
+            navegarA("ventanaProyectos.html");
         });
+
 
         configurarVentanaAplicacion();
         cambiarHTML("menuInicialLog.html");
