@@ -2,8 +2,9 @@ package com.worldbuilding;
 
 import java.io.*;
 import java.sql.*;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -40,6 +41,15 @@ public class SQLiteConnector {
     public String rutaDBGeneral = "src/main/data/worldbuilding.db";
     public String rutaGlobal = "jdbc:sqlite:" + rutaDBGeneral;
 
+    // Columnas esperadas por cada tabla, para mantener orden y seguridad
+    private static final Map<String, List<String>> columnasPorTabla = Map.of(
+        "CONSTRUCCION", List.of("Nombre", "Apellidos", "Descripcion", "Tamaño", "Tipo", "ExtensionDeOtra"),
+        "EFECTOS", List.of("Nombre", "Apellidos", "Descripcion", "Origen", "Dureza", "Comportamiento"),
+        "ENTIDADINDIVIDUAL", List.of("Nombre", "Apellidos", "Descripcion", "Estado", "Tipo", "Origen", "Comportamiento"),
+        "ENTIDADCOLECTIVA", List.of("Nombre", "Apellidos", "Descripcion", "Estado", "Tipo", "Origen", "Comportamiento"),
+        "RELACION", List.of("Nombre", "Apellidos", "Descripcion", "Direccion", "TipoDeDireccion", "NumeroDeAfectados")
+    );
+
     //Métodos generales para la manipulación de los datos
     /**
      * @see insertarDatosDB(): inserta los datos en la base de datos del proyecto.
@@ -47,55 +57,37 @@ public class SQLiteConnector {
      * @param valores son los valores de cada uno de los datos de su propia tabla; este array será distinto 
      * según las tablas donde se vaya a insertar.
      */
-    public void insertarDatosDB(String queInserto, String[] valores) {
+    public void insertarDatosDB(String queInserto, Map<String, String> valores) {
         try (Connection conn = DriverManager.getConnection(rutaDBGeneral)) {
             Statement stmt = conn.createStatement();
 
-            // Adjuntar la base de datos del proyecto como 'global'
             stmt.execute("ATTACH DATABASE '" + rutaGlobal + "' AS global");
 
-            String tabla = "";
-            String columnas = "";
-            switch (queInserto.toUpperCase()) {
-                case "CONSTRUCCION":
-                    tabla = "Construccion";
-                    columnas = "(Nombre, Apellidos, Descripcion, Tamaño, Tipo, ExtensionDeOtra)";
-                break;
-                case "EFECTOS":
-                    tabla = "Efectos";
-                    columnas = "(Nombre, Apellidos, Descripcion, Origen, Dureza, Comportamiento)";
-                break;
-                case "ENTIDADINDIVIDUAL":
-                    tabla = "EntidadIndividual";
-                    columnas = "(Nombre, Apellidos, Descripcion, Estado, Tipo, Origen, Comportamiento)";
-                break;
-                case "ENTIDADCOLECTIVA":
-                    tabla = "EntidadColectiva";
-                    columnas = "(Nombre, Apellidos, Descripcion, Estado, Tipo, Origen, Comportamiento)";
-                break;
-                case "RELACION":
-                    tabla = "Relacion";
-                    columnas = "(Nombre, Apellidos, Descripcion, Direccion, TipoDeDireccion, NumeroDeAfectados)";
-                break;
-                default:
-                    System.out.println("Tipo de inserción no reconocido");
-                return;
+            List<String> columnas = columnasPorTabla.get(queInserto.toUpperCase());
+            if (columnas == null) {
+                throw new SQLException();
             }
 
-            // Construir las insercciones evitando las inyecciones SQL
-            StringBuilder placeholdersBuilder = new StringBuilder();
-            for (int i = 0; i < valores.length; i++) {
-                placeholdersBuilder.append("?");
-                if (i < valores.length - 1) {
-                    placeholdersBuilder.append(", ");
+            String tabla = queInserto;
+            StringBuilder columnasSQL = new StringBuilder("(");
+            StringBuilder placeholders = new StringBuilder("(");
+
+            for (int i = 0; i < columnas.size(); i++) {
+                columnasSQL.append(columnas.get(i));
+                placeholders.append("?");
+                if (i < columnas.size() - 1) {
+                    columnasSQL.append(", ");
+                    placeholders.append(", ");
                 }
             }
-            String placeholders = placeholdersBuilder.toString();
-            String query = "INSERT INTO " + tabla + " " + columnas + " VALUES (" + placeholders + ")";
+            columnasSQL.append(")");
+            placeholders.append(")");
+
+            String query = "INSERT INTO " + tabla + " " + columnasSQL + " VALUES " + placeholders;
 
             try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-                for (int i = 0; i < valores.length; i++) {
-                    pstmt.setString(i + 1, valores[i]);
+                for (int i = 0; i < columnas.size(); i++) {
+                    pstmt.setString(i + 1, valores.getOrDefault(columnas.get(i), null));
                 }
                 pstmt.executeUpdate();
             }
@@ -106,49 +98,117 @@ public class SQLiteConnector {
         }
     }
 
+
     /**
      * @see eliminarDatosDB(): elimina los datos en la base de datos del proyecto.
      * @param queElimino
-     * @param columnas
-     * @param valores
+     * @param condiciones
      */
-    public void eliminarDatosDB(String queElimino, String[] columnas, String[] valores) {
-        if (columnas.length != valores.length) {
-            throw new IllegalArgumentException("Las columnas y los valores deben tener la misma longitud");
-        }
-
+    public void eliminarDatosDB(String queElimino, Map<String, String> condiciones) {
         try (Connection conn = DriverManager.getConnection(rutaDBGeneral)) {
 
-            // Crear cláusula WHERE dinámica
+            if (condiciones == null || condiciones.isEmpty()) {
+                throw new SQLException("Se requieren condiciones para eliminar datos.");
+            }
+
             StringBuilder whereClause = new StringBuilder(" WHERE ");
-            for (int i = 0; i < columnas.length; i++) {
-                whereClause.append(columnas[i]).append(" = ?");
-                if (i < columnas.length - 1) {
-                    whereClause.append(" AND ");
+            int i = 0;
+            for (String col : condiciones.keySet()) {
+                whereClause.append(col).append(" = ?");
+                if (++i < condiciones.size()) whereClause.append(" AND ");
+            }
+
+            String query = "DELETE FROM " + queElimino + whereClause;
+
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                int index = 1;
+                for (String val : condiciones.values()) {
+                    pstmt.setString(index++, val);
                 }
+                pstmt.executeUpdate();
             }
-
-            String query = "DELETE FROM " + queElimino + whereClause.toString();
-
-            PreparedStatement pstmt = conn.prepareStatement(query);
-            for (int i = 0; i < valores.length; i++) {
-                pstmt.setString(i + 1, valores[i]);
-            }
-
-            pstmt.executeUpdate();
 
         } catch (SQLException e) {
             System.out.println("Error al eliminar datos: " + e.getMessage());
         }
     }
 
-    public String recogerDatosDB(String queRecojo){
-        String datos = "";
+    /**
+     * @see recogerDatosDB(): 
+     * @param queRecojo
+     * @param filtros
+     * @return
+     */
+    public String recogerDatosDB(String queRecojo, Map<String, String> filtros) {
+        StringBuilder datos = new StringBuilder();
+
         try (Connection conn = DriverManager.getConnection(rutaDBGeneral)) {
-            
+
+            // Verificamos que la tabla tenga un nombre válido para evitar SQL injection
+            Set<String> tablasPermitidas = Set.of(
+                "Construccion", "Efectos", "EntidadIndividual", "EntidadColectiva", "Relacion"
+            );
+            if (!tablasPermitidas.contains(queRecojo)) {
+                throw new SQLException();
+            }
+
+            // Construir la consulta SQL
+            StringBuilder query = new StringBuilder("SELECT * FROM " + queRecojo);
+            List<String> condiciones = new ArrayList<>();
+
+            if (filtros != null && !filtros.isEmpty()) {
+                for (String columna : filtros.keySet()) {
+                    condiciones.add(columna + " = ?");
+                }
+                query.append(" WHERE ").append(String.join(" AND ", condiciones));
+            }
+
+            PreparedStatement pstmt = conn.prepareStatement(query.toString());
+
+            // Establecer los parámetros del filtro
+            if (filtros != null && !filtros.isEmpty()) {
+                int index = 1;
+                for (String valor : filtros.values()) {
+                    pstmt.setString(index++, valor);
+                }
+            }
+
+            ResultSet rs = pstmt.executeQuery();
+            ResultSetMetaData meta = rs.getMetaData();
+            int columnas = meta.getColumnCount();
+
+            while (rs.next()) {
+                for (int i = 1; i <= columnas; i++) {
+                    datos.append(meta.getColumnName(i)).append(": ").append(rs.getString(i));
+                    if (i < columnas) datos.append(" | ");
+                }
+                datos.append("\n");
+            }
+
         } catch (SQLException e) {
-            System.out.println("Error en " + e.getMessage());
+            System.out.println("Error al recoger datos: " + e.getMessage());
         }
-        return datos;
+
+        return datos.toString();
     }
 }
+/*
+ *  SQLiteConnector db = new SQLiteConnector(); --> Constructor
+ * 
+ *  <-- INSERTAR DATOS -->
+ *  Map<String, String> datosConstruccion = new HashMap<>();
+    datosConstruccion.put("Nombre", "Castillo Negro");
+    datosConstruccion.put("Apellidos", "del Norte");
+    datosConstruccion.put("Descripcion", "Fortaleza en la muralla");
+    datosConstruccion.put("Tamaño", "Grande");
+    datosConstruccion.put("Tipo", "Defensiva");
+    datosConstruccion.put("ExtensionDeOtra", "Muralla");
+
+    db.insertarDatosDB("CONSTRUCCION", datosConstruccion);
+
+    <-- ELIMINAR DATOS -->
+    Map<String, String> condiciones = new HashMap<>();
+    condiciones.put("Nombre", "Castillo Negro");
+
+    db.eliminarDatosDB("CONSTRUCCION", condiciones);
+ */
