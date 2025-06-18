@@ -91,7 +91,7 @@ public class MenuInicialLog {
         if (existeProyecto(carpetaProyecto) && existeContenido(carpetaProyecto)) {
             for (ProyectoSeleccionado proyectoSeleccionado : numeroProyecto) {
                 if (proyectoSeleccionado.getNombreProyecto().equals(nombreProyecto)) {
-                    setProyectoActual(nombreProyecto, proyectoSeleccionado.getTipoProyecto()); // tipoProyecto debe recuperarse si lo tienes
+                    setProyectoActual(proyectoSeleccionado.getNombreProyecto(), proyectoSeleccionado.getTipoProyecto()); // tipoProyecto debe recuperarse si lo tienes
                 }
             }
             Main.getInstance().cambiarHTML("ventanaProyectos.html");

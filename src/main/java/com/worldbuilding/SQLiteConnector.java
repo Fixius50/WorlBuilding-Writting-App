@@ -58,6 +58,7 @@ public class SQLiteConnector {
      * según las tablas donde se vaya a insertar.
      */
     public void insertarDatosDB(String queInserto, Map<String, String> valores) {
+        // Establecemos la conexión
         try (Connection conn = DriverManager.getConnection(rutaDBGeneral)) {
             Statement stmt = conn.createStatement();
 
@@ -105,6 +106,7 @@ public class SQLiteConnector {
      * @param condiciones
      */
     public void eliminarDatosDB(String queElimino, Map<String, String> condiciones) {
+        // Establecemos la conexion
         try (Connection conn = DriverManager.getConnection(rutaDBGeneral)) {
 
             if (condiciones == null || condiciones.isEmpty()) {
@@ -141,7 +143,7 @@ public class SQLiteConnector {
      */
     public String recogerDatosDB(String queRecojo, Map<String, String> filtros) {
         StringBuilder datos = new StringBuilder();
-
+        // Establecemos la conexion
         try (Connection conn = DriverManager.getConnection(rutaDBGeneral)) {
 
             // Verificamos que la tabla tenga un nombre válido para evitar SQL injection
@@ -193,10 +195,10 @@ public class SQLiteConnector {
     }
 }
 /*
- *  SQLiteConnector db = new SQLiteConnector(); --> Constructor
- * 
- *  <-- INSERTAR DATOS -->
- *  Map<String, String> datosConstruccion = new HashMap<>();
+    SQLiteConnector db = new SQLiteConnector(); --> Constructor
+   
+    <-- INSERTAR DATOS -->
+    Map<String, String> datosConstruccion = new HashMap<>();
     datosConstruccion.put("Nombre", "Castillo Negro");
     datosConstruccion.put("Apellidos", "del Norte");
     datosConstruccion.put("Descripcion", "Fortaleza en la muralla");
@@ -211,4 +213,15 @@ public class SQLiteConnector {
     condiciones.put("Nombre", "Castillo Negro");
 
     db.eliminarDatosDB("CONSTRUCCION", condiciones);
+
+    <-- RECOGER DATOS (SIN FILTROS) -->
+    String resultados = db.recogerDatosDB("CONSTRUCCION", null);
+    System.out.println("Todos los datos:\n" + resultados);
+
+    <-- RECOGER DATOS (CON FILTROS) -->
+    Map<String, String> filtros = new HashMap<>();
+    filtros.put("Nombre", "Castillo Negro");
+
+    String resultadoFiltrado = db.recogerDatosDB("CONSTRUCCION", filtros);
+    System.out.println("Datos filtrados:\n" + resultadoFiltrado);
  */

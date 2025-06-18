@@ -61,4 +61,35 @@ public class JavaScriptBridge {
         String tipo = MenuInicialLog.getTipoProyecto();
         return nombre + " - " + tipo;
     }
+    /*
+        SQLiteConnector db = new SQLiteConnector(); --> Constructor
+    
+        <-- INSERTAR DATOS -->
+        Map<String, String> datosConstruccion = new HashMap<>();
+        datosConstruccion.put("Nombre", "Castillo Negro");
+        datosConstruccion.put("Apellidos", "del Norte");
+        datosConstruccion.put("Descripcion", "Fortaleza en la muralla");
+        datosConstruccion.put("Tamaño", "Grande");
+        datosConstruccion.put("Tipo", "Defensiva");
+        datosConstruccion.put("ExtensionDeOtra", "Muralla");
+
+        db.insertarDatosDB("CONSTRUCCION", datosConstruccion);
+
+        <-- ELIMINAR DATOS -->
+        Map<String, String> condiciones = new HashMap<>();
+        condiciones.put("Nombre", "Castillo Negro");
+
+        db.eliminarDatosDB("CONSTRUCCION", condiciones);
+
+        <-- RECOGER DATOS (SIN FILTROS) -->
+        String resultados = db.recogerDatosDB("CONSTRUCCION", null);
+        System.out.println("Todos los datos:\n" + resultados);
+
+        <-- RECOGER DATOS (CON FILTROS) -->
+        Map<String, String> filtros = new HashMap<>();
+        filtros.put("Nombre", "Castillo Negro");
+
+        String resultadoFiltrado = db.recogerDatosDB("CONSTRUCCION", filtros);
+        System.out.println("Datos filtrados:\n" + resultadoFiltrado);
+    */
 }
