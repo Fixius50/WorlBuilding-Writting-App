@@ -5,20 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ventana Creación</title>
     <style>
-
         * {
             box-sizing: content-box;
         }
-        
         body{
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-items: center;
-            /* background-color: #000000; Esto ponerlo como lo último*/
+            background-color: #000000;/*  Esto ponerlo como lo último*/
         }
         header{
-            border: 1px solid black;
             width: 50%;
             height: auto;
             text-align: center;
@@ -29,10 +26,17 @@
         header h1{
             text-decoration: underline;
         }
-        section{
-            border: 1px solid black;
-            margin-top: 2vh;
-            width: 100%;
+        .zona{
+            display: flex;
+            flex-direction: row;
+        }
+        .despliegue{
+            flex-grow: 1;
+            margin: 1vh;
+        }
+        .opciones{
+            margin: 2vh;
+            width: 25%;
             min-height: 25vh;
             display: flex;
             flex-direction: row;
@@ -40,11 +44,9 @@
             align-content: center;
             justify-content: center;
         }
-
-        section figure{
-            border: 1px solid black;
-            width: 25vh;
-            height: 25vh;
+        figure{
+            width: 30vh;
+            height: 30vh;
             margin: 5vh;
             display: flex;
             flex-direction: column;
@@ -54,13 +56,11 @@
             text-align: center;
             box-shadow: 0vw 0vw 0vw 0vw #000000 inset, 0vw 0vw 5vw 1vw #8000ff;
         }
-
         figure:hover{
-            width: 30vh;
-            height: 30vh;
+            width: 35vh;
+            height: 35vh;
             box-shadow: 0vw 0vw 0vw 1vw white, 0vw 0vw 5vw 1vw yellow;
         }
-
         figure, figure:hover{
             transition: width 0.5s ease-in-out, height 0.5s ease-in-out;
         }
@@ -77,7 +77,7 @@
         }
         
         figure:nth-child(2){ /*ENTIDADES COLECTIVAS*/
-            background: url(../imagenes/crear.jpg) center no-repeat;
+            background: url(../imagenes/colectivas.jpg) center no-repeat;
             background-size: cover;
             color: red;
             font-size: large;
@@ -91,14 +91,14 @@
         }
         
         figure:nth-child(4){ /*CONSTRUCCIONES*/
-            background: url(../imagenes/crear.jpg) center no-repeat;
+            background: url(../imagenes/construcciones.jpg) center no-repeat;
             background-size: cover;
             color: red;
             font-size: large;
         }
 
         figure:nth-child(5){ /*RELACIONES*/
-            background: url(../imagenes/crear.jpg) center no-repeat;
+            background: url(../imagenes/relaciones.jpg) center no-repeat;
             background-size: cover;
             color: red;
             font-size: large;
@@ -111,43 +111,61 @@
         <h1>ZONA DE CREACIÓN</h1>
         <code>Selecciona una carta y rellena los datos; luego guardalos para volver al proyecto.</code>
     </header>
-    <section>
-        <figure> <!-- Imagen de lo que es -->
-            <figcaption> <!-- Descripción de lo que es -->
-                <h1>ENTIDADES INDIVIDUALES</h1>
-            </figcaption>
-            <button type="button">SELECCIONAR</button>
-        </figure>
-        <figure> <!-- Imagen de lo que es -->
-            <figcaption> <!-- Descripción de lo que es -->
-                <h1>ENTIDADES COLECTIVAS</h1>
-            </figcaption>
-            <button type="button">SELECCIONAR</button>
-        </figure>
-        <figure> <!-- Imagen de lo que es -->
-            <figcaption> <!-- Descripción de lo que es -->
-                <h1>EFECTOS Y/O MAGIAS</h1>
-            </figcaption>
-            <button type="button">SELECCIONAR</button>
-        </figure>
-        <figure> <!-- Imagen de lo que es -->
-            <figcaption> <!-- Descripción de lo que es -->
-                <h1>CONSTRUCCIONES</h1>
-            </figcaption>
-            <button type="button">SELECCIONAR</button>
-        </figure>
-        <figure> <!-- Imagen de lo que es -->
-            <figcaption> <!-- Descripción de lo que es -->
-                <h1>RELACIONES</h1>
-            </figcaption>
-            <button type="button">SELECCIONAR</button>
-        </figure>
-    </section>
-    <section class="despliegue">
-
-    </section>
+    <div class="zona">
+        <section class="opciones">
+            <figure> <!-- Imagen de lo que es -->
+                <figcaption> <!-- Descripción de lo que es -->
+                    <h1>ENTIDADES INDIVIDUALES</h1>
+                </figcaption>
+                <button type="button" onclick="mostrarContenidoRelacionado('opciones/entidad-individual.html')">SELECCIONAR</button>
+            </figure>
+            <figure> <!-- Imagen de lo que es -->
+                <figcaption> <!-- Descripción de lo que es -->
+                    <h1>ENTIDADES COLECTIVAS</h1>
+                </figcaption>
+                <button type="button" onclick="mostrarContenidoRelacionado('opciones/entidad-colectiva.html')">SELECCIONAR</button>
+            </figure>
+            <figure> <!-- Imagen de lo que es -->
+                <figcaption> <!-- Descripción de lo que es -->
+                    <h1>EFECTOS Y/O MAGIAS</h1>
+                </figcaption>
+                <button type="button" onclick="mostrarContenidoRelacionado('opciones/efectos-magias.html')">SELECCIONAR</button>
+            </figure>
+            <figure> <!-- Imagen de lo que es -->
+                <figcaption> <!-- Descripción de lo que es -->
+                    <h1>CONSTRUCCIONES</h1>
+                </figcaption>
+                <button type="button" onclick="mostrarContenidoRelacionado('opciones/construcciones.html')">SELECCIONAR</button>
+            </figure>
+            <figure> <!-- Imagen de lo que es -->
+                <figcaption> <!-- Descripción de lo que es -->
+                    <h1>RELACIONES</h1>
+                </figcaption>
+                <button type="button" onclick="mostrarContenidoRelacionado('opciones/relaciones.html')">SELECCIONAR</button>
+            </figure>
+        </section>
+        <section class="despliegue"></section>
+    </div>
+    
 </body>
 <script>
-        
+    async function mostrarContenidoRelacionado(nombreArchivoHtml) {
+        const despliegue = document.querySelector('.despliegue');
+
+        // Limpia cualquier contenido previo
+        despliegue.innerHTML = '';
+
+        try {
+            const respuesta = await fetch(nombreArchivoHtml);
+            if (!respuesta.ok) {
+                throw new Error('No se pudo cargar el panel: ' + nombreArchivoHtml);
+            }
+
+            const contenido = await respuesta.text();
+            despliegue.innerHTML = contenido;
+        } catch (error) {
+            despliegue.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+        }
+    }
 </script>
 </html>
