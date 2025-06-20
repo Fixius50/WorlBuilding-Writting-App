@@ -53,8 +53,8 @@ public class SQLiteConnector {
     //Métodos generales para la manipulación de los datos
     /**
      * @see insertarDatosDB(): inserta los datos en la base de datos del proyecto.
-     * @param queInserto dice en qué tabla va a meter los datos (CONSTRUCCION, EFECTOS...)
-     * @param valores son los valores de cada uno de los datos de su propia tabla; este array será distinto 
+     * @param queInserto --> dice en qué tabla va a meter los datos (CONSTRUCCION, EFECTOS...)
+     * @param valores --> son los valores de cada uno de los datos de su propia tabla; este array será distinto 
      * según las tablas donde se vaya a insertar.
      */
     public void insertarDatosDB(String queInserto, Map<String, String> valores) {
@@ -102,8 +102,8 @@ public class SQLiteConnector {
 
     /**
      * @see eliminarDatosDB(): elimina los datos en la base de datos del proyecto.
-     * @param queElimino
-     * @param condiciones
+     * @param queElimino --> dice en qué tabla va a eliminar los datos.
+     * @param condiciones --> son los filtros que indican el qué se eliminará.
      */
     public void eliminarDatosDB(String queElimino, Map<String, String> condiciones) {
         // Establecemos la conexion
@@ -136,9 +136,9 @@ public class SQLiteConnector {
     }
 
     /**
-     * @see recogerDatosDB(): 
-     * @param queRecojo
-     * @param filtros
+     * @see recogerDatosDB(): recoge los datos de la base de datos.
+     * @param queRecojo --> dice en qué tabla va a recoger los datos.
+     * @param filtros --> son los filtros que indican el qué se eliminará.
      * @return
      */
     public String recogerDatosDB(String queRecojo, Map<String, String> filtros) {
