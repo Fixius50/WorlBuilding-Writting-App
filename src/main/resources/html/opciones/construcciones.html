@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulario de Entidad Individual</title>
+    <title>Formulario de Construcciones</title>
     <style>
         .formContent {
             background-color: white;
@@ -61,7 +61,7 @@
 <body>
     <div class="formContent">
         <div class="panel">
-            <h2>Entidad Individual</h2>
+            <h2>Construcciones</h2>
             <form>
                 <div class="el">
                     <div>
@@ -71,36 +71,30 @@
                         <input type="text" name="apellidos"><br>
                     </div>
                     <div>
-                        <label>¿En que estado de la existencia está?:</label>
+                        <label>¿Cuál es su tamaño o cuanto abarca?:</label>
                         <select name="estado" required>
                             <option value="" selected disabled>(selecciona una)</option>
-                            <option value="activo">Vivo</option>
-                            <option value="inactivo">Muerto</option>
-                            <option value="pendiente">Abstracto</option>
+                            <option value="activo">Pequeño</option>
+                            <option value="inactivo">Mediano</option>
+                            <option value="pendiente">Grande</option>
                         </select><br>
-                        <label>¿Cual es su tipo de longevidad?:</label>
+                        <label>¿Cual es su tipo?:</label>
                         <select name="tipo" required>
                             <option value="" selected disabled>(selecciona una)</option>
-                            <option value="mortal">Mortal</option>
-                            <option value="inmortal">Inmortal</option>
-                            <option value="eterno">Eterno</option>
-                            <option value="inerte">Inerte</option>
+                            <option value="natural">Natural</option>
+                            <option value="artificial">Artificial</option>
+                            <option value="abstracta">Abstracta</option>
+                            <option value="mixta">Mixta</option>
+                            <option value="otro">Otro</option>
                         </select>
                     </div>
                     <div>
-                        <label>¿Cual es su origen?:</label>
+                        <label>¿Cual es su desarrollo?:</label>
                         <select name="origen" required>
                             <option value="" selected disabled>(selecciona una)</option>
-                            <option value="realista">Realista</option>
-                            <option value="ficticio">Ficticio</option>
+                            <option value="realista">Extensión de una construcción</option>
+                            <option value="ficticio">Variante de una construcción</option>
                         </select><br>
-                        <label>¿Cual es su comportamiento?:</label>
-                        <select name="comportamiento" required>
-                            <option value="" selected disabled>(selecciona una)</option>
-                            <option value="activo">Activo</option>
-                            <option value="pasivo">Pasivo</option>
-                            <option value="otro">Otro</option>
-                        </select>
                     </div>
                 </div>
                 <br>

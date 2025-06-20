@@ -97,7 +97,14 @@
             font-size: large;
         }
 
-        figure:nth-child(5){ /*RELACIONES*/
+        figure:nth-child(5){ /*ZONAS*/
+            background: url(../imagenes/zonas.png) center no-repeat;
+            background-size: cover;
+            color: red;
+            font-size: large;
+        }
+
+        figure:nth-child(6){ /*RELACIONES*/
             background: url(../imagenes/relaciones.jpg) center no-repeat;
             background-size: cover;
             color: red;
@@ -127,7 +134,7 @@
             </figure>
             <figure> <!-- Imagen de lo que es -->
                 <figcaption> <!-- Descripción de lo que es -->
-                    <h1>EFECTOS Y/O MAGIAS</h1>
+                    <h1>EFECTOS Y/O MAGIAS/PODERES</h1>
                 </figcaption>
                 <button type="button" onclick="mostrarContenidoRelacionado('opciones/efectos-magias.html')">SELECCIONAR</button>
             </figure>
@@ -136,6 +143,12 @@
                     <h1>CONSTRUCCIONES</h1>
                 </figcaption>
                 <button type="button" onclick="mostrarContenidoRelacionado('opciones/construcciones.html')">SELECCIONAR</button>
+            </figure>
+            <figure> <!-- Imagen de lo que es -->
+                <figcaption> <!-- Descripción de lo que es -->
+                    <h1>ZONAS</h1>
+                </figcaption>
+                <button type="button" onclick="mostrarContenidoRelacionado('opciones/zonas.html')">SELECCIONAR</button>
             </figure>
             <figure> <!-- Imagen de lo que es -->
                 <figcaption> <!-- Descripción de lo que es -->
@@ -156,7 +169,8 @@
         despliegue.innerHTML = '';
 
         try {
-            const respuesta = await fetch(nombreArchivoHtml);
+            const respuesta = await fetch(new URL(nombreArchivoHtml, window.location.href));
+
             if (!respuesta.ok) {
                 throw new Error('No se pudo cargar el panel: ' + nombreArchivoHtml);
             }
