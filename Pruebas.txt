@@ -1,5 +1,0 @@
-Aquí van las cosas que se han probado:
-
-- Se puede cargar dos url locales con el mismo listener
-- Lo manejadores (handlers) no funcionan con scripts como HTML
-- Evitar usar gifs pesados porque ralentizan el programa bastante (arreglar en el futuro)
