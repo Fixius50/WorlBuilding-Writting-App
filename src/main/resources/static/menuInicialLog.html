@@ -64,57 +64,69 @@
 </body>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Mostrar panel "Abrir proyecto"
+
         function mostrarAbrirProyecto() {
             document.getElementById('abrir').style.display = 'flex';
             document.getElementById('crear').style.display = 'none';
         }
 
-        // Mostrar panel "Crear proyecto"
         function mostrarCrearProyecto() {
             document.getElementById('crear').style.display = 'flex';
             document.getElementById('abrir').style.display = 'none';
         }
 
-        // Ejecuta método Java para cerrar la app
         function cerrarPrograma() {
-            if (window.javaConnector && typeof window.javaConnector.cerrarPrograma === 'function') {
-                window.javaConnector.cerrarPrograma();
-            } else {
-                alert('Error: La conexión con Java no está disponible.');
-            }
+            window.location.href = "/"; // O a una pantalla de cierre, si querés
         }
 
-        // Ejecuta método Java para abrir un proyecto existente
         function abrirProyectoExistente() {
             let nombreProyecto = document.getElementById('proyect-txt-existente').value.trim();
             if (nombreProyecto !== "") {
-                if (window.javaConnector && typeof window.javaConnector.abreProyecto === 'function') {
-                    window.javaConnector.irAPagina(nombreProyecto);
-                } else {
-                    alert('Error: No se puede comunicar con la aplicación Java.');
-                }
+                fetch(`/api/proyectos/${encodeURIComponent(nombreProyecto)}`)
+                    .then(res => {
+                        if (res.ok) return res.json();
+                        throw new Error("Proyecto no encontrado");
+                    })
+                    .then(data => {
+                        // Redirigir a una página con los datos del proyecto, por ejemplo
+                        window.location.href = `/html/ventanaProyectos.html?nombre=${encodeURIComponent(data.nombre)}`;
+                    })
+                    .catch(err => {
+                        alert("Error: " + err.message);
+                    });
             } else {
                 alert('Por favor, introduce el nombre del proyecto.');
             }
         }
 
-        // Ejecuta método Java para crear un nuevo proyecto
         function crearProyectoNuevo() {
             let nombreProyecto = document.getElementById('proyect-txt-nuevo').value.trim();
             let enfoqueProyecto = document.getElementById('enfoqueProyecto').value;
             if (nombreProyecto !== "" && enfoqueProyecto !== "") {
-                if (window.javaConnector && typeof window.javaConnector.crearProyectoNuevo === 'function') {
-                    window.javaConnector.crearProyectoNuevo(nombreProyecto, enfoqueProyecto);
-                } else {
-                    alert('Error: No se puede comunicar con la aplicación Java.');
-                }
+                fetch('/api/proyectos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nombre: nombreProyecto,
+                        enfoque: enfoqueProyecto
+                    })
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error("No se pudo crear el proyecto");
+                    return res.json();
+                })
+                .then(data => {
+                    alert("Proyecto creado con éxito");
+                    window.location.href = `/html/ventanaProyectos.html?nombre=${encodeURIComponent(data.nombre)}`;
+                })
+                .catch(err => {
+                    alert("Error: " + err.message);
+                });
             } else {
                 alert('Por favor, introduce el nombre y el enfoque del proyecto.');
             }
         }
 
-        // Asignación de eventos a los botones
         document.getElementById('btnSalirApp')?.addEventListener('click', cerrarPrograma);
         document.getElementById('navAbrirProyecto')?.addEventListener('click', mostrarAbrirProyecto);
         document.getElementById('navCrearProyecto')?.addEventListener('click', mostrarCrearProyecto);
