@@ -2,8 +2,6 @@ package com.worldbuilding.WorldbuildingApp;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import java.awt.Desktop;
-import java.net.URI;
 
 @SpringBootApplication
 public class WorldbuildingAppApplication {

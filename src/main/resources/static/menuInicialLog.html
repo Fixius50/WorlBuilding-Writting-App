@@ -75,10 +75,6 @@
             document.getElementById('abrir').style.display = 'none';
         }
 
-        function cerrarPrograma() {
-            window.location.href = "/"; // O a una pantalla de cierre, si querés
-        }
-
         function abrirProyectoExistente() {
             let nombreProyecto = document.getElementById('proyect-txt-existente').value.trim();
             if (nombreProyecto !== "") {
@@ -88,7 +84,7 @@
                         throw new Error("Proyecto no encontrado");
                     })
                     .then(data => {
-                        // Redirigir a una página con los datos del proyecto, por ejemplo
+                        // Redirigir a ventanaProyectos vía controlador
                         window.location.href = `/html/ventanaProyectos.html?nombre=${encodeURIComponent(data.nombre)}`;
                     })
                     .catch(err => {
@@ -99,32 +95,13 @@
             }
         }
 
-        function crearProyectoNuevo() {
-            let nombreProyecto = document.getElementById('proyect-txt-nuevo').value.trim();
-            let enfoqueProyecto = document.getElementById('enfoqueProyecto').value;
-            if (nombreProyecto !== "" && enfoqueProyecto !== "") {
-                fetch('/api/proyectos', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        nombre: nombreProyecto,
-                        enfoque: enfoqueProyecto
-                    })
+        function cerrarPrograma() {
+            fetch('/api/exit', { method: 'POST' })
+                .then(() => {
+                    alert("Aplicación cerrándose...");
+                    window.close();  // Esto intenta cerrar la ventana navegador, puede que el navegador lo bloquee
                 })
-                .then(res => {
-                    if (!res.ok) throw new Error("No se pudo crear el proyecto");
-                    return res.json();
-                })
-                .then(data => {
-                    alert("Proyecto creado con éxito");
-                    window.location.href = `/html/ventanaProyectos.html?nombre=${encodeURIComponent(data.nombre)}`;
-                })
-                .catch(err => {
-                    alert("Error: " + err.message);
-                });
-            } else {
-                alert('Por favor, introduce el nombre y el enfoque del proyecto.');
-            }
+                .catch(() => alert("Error al cerrar la aplicación."));
         }
 
         document.getElementById('btnSalirApp')?.addEventListener('click', cerrarPrograma);
