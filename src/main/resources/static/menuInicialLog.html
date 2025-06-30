@@ -92,7 +92,8 @@
                 })
                 .then(() => {
                     alert('Proyecto abierto correctamente');
-                    window.location.href = '/html/ventanaProyectos.html';
+                    window.location.href = '/html/ventanaProyectos.html?proyecto=' + encodeURIComponent(nombreProyecto);
+
                 })
                 .catch(error => {
                     alert('Error: ' + error.message);
@@ -110,10 +111,10 @@
 
             fetch('/api/proyectos', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    nombreProyecto: nombreProyecto,
-                    enfoqueProyecto: enfoqueProyecto
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    nombre: nombreProyecto,
+                    enfoque: enfoqueProyecto
                 })
             })
             .then(response => {
@@ -124,7 +125,7 @@
             })
             .then(() => {
                 alert('Proyecto creado correctamente');
-                window.location.href = '/html/ventanaProyectos.html'; // o usa una redirección con el controller
+                window.location.href = '/html/ventanaProyectos.html?proyecto=' + encodeURIComponent(nombreProyecto);
             })
             .catch(error => {
                 alert('Error al crear el proyecto: ' + error.message);

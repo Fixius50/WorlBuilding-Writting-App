@@ -90,15 +90,26 @@
 
     // Esto sí puede quedar dentro de DOMContentLoaded
     document.addEventListener('DOMContentLoaded', () => {
-        try {
-            const info = window.javaConnector.obtenerDatosProyecto();
-            const display = document.getElementById('nombre-proyecto');
-            if (display) {
-                display.textContent = info;
-            }
-        } catch (e) {
-            console.error("Error al mostrar info del proyecto:", e);
+        const params = new URLSearchParams(window.location.search);
+        const nombre = params.get('nombre');
+
+        if (!nombre) {
+            alert("No se especificó el proyecto.");
+        } else{
+            fetch(`/api/proyectos/${encodeURIComponent(nombre)}`)
+            .then(res => {
+                if (!res.ok) throw new Error("Proyecto no encontrado");
+                return res.json();
+            })
+            .then(data => {
+                document.body.insertAdjacentHTML('afterbegin',
+                    `<h2>Proyecto: ${data.nombre}</h2><h3>Enfoque: ${data.enfoque}</h3>`);
+            })
+            .catch(err => {
+                alert("Error al cargar proyecto: " + err.message);
+            });
         }
+        
     });
 </script>
 </html>
