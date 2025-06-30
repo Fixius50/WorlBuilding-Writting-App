@@ -76,24 +76,61 @@
         }
 
         function abrirProyectoExistente() {
-            let nombreProyecto = document.getElementById('proyect-txt-existente').value.trim();
-            if (nombreProyecto !== "") {
-                fetch(`/api/proyectos/${encodeURIComponent(nombreProyecto)}`)
-                    .then(res => {
-                        if (res.ok) return res.json();
-                        throw new Error("Proyecto no encontrado");
-                    })
-                    .then(data => {
-                        // Redirigir a ventanaProyectos vía controlador
-                        window.location.href = `/html/ventanaProyectos.html?nombre=${encodeURIComponent(data.nombre)}`;
-                    })
-                    .catch(err => {
-                        alert("Error: " + err.message);
-                    });
-            } else {
+            const nombreProyecto = document.getElementById('proyect-txt-existente').value.trim();
+
+            if (nombreProyecto === "") {
                 alert('Por favor, introduce el nombre del proyecto.');
+                return;
             }
+
+            fetch(`/api/proyectos/${encodeURIComponent(nombreProyecto)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => { throw new Error(text); });
+                    }
+                    return response.text();
+                })
+                .then(() => {
+                    alert('Proyecto abierto correctamente');
+                    window.location.href = '/html/ventanaProyectos.html';
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
         }
+
+        function crearProyectoNuevo() {
+            const nombreProyecto = document.getElementById('proyect-txt-nuevo').value.trim();
+            const enfoqueProyecto = document.getElementById('enfoqueProyecto').value;
+
+            if (nombreProyecto === "" || enfoqueProyecto === "") {
+                alert('Por favor, introduce el nombre y el enfoque del proyecto.');
+                return;
+            }
+
+            fetch('/api/proyectos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nombreProyecto: nombreProyecto,
+                    enfoqueProyecto: enfoqueProyecto
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text); });
+                }
+                return response.text();
+            })
+            .then(() => {
+                alert('Proyecto creado correctamente');
+                window.location.href = '/html/ventanaProyectos.html'; // o usa una redirección con el controller
+            })
+            .catch(error => {
+                alert('Error al crear el proyecto: ' + error.message);
+            });
+        }
+
 
         function cerrarPrograma() {
             fetch('/api/exit', { method: 'POST' })

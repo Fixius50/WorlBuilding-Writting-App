@@ -1,11 +1,11 @@
 package com.worldbuilding.WorldbuildingApp.controladores;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/proyectos")
@@ -14,10 +14,16 @@ public class ProyectoController {
     private final String DATA_FOLDER = "src/main/resources/static/data";
 
     @PostMapping
-    public ResponseEntity<?> crearProyecto(@RequestBody ProyectoRequest proyectoRequest) {
+    public ResponseEntity<?> crearProyecto(@RequestBody Map<String, String> datos) {
+        String nombreProyecto = datos.get("nombreProyecto");
+        String enfoqueProyecto = datos.get("enfoqueProyecto");
+
+        if (nombreProyecto == null || enfoqueProyecto == null) {
+            return ResponseEntity.badRequest().body("Faltan datos del proyecto");
+        }
+
         try {
-            String nombre = proyectoRequest.getNombre();
-            Path proyectoDir = Paths.get(DATA_FOLDER, nombre);
+            Path proyectoDir = Paths.get(DATA_FOLDER, nombreProyecto);
 
             if (Files.exists(proyectoDir)) {
                 return ResponseEntity.badRequest().body("El proyecto ya existe");
@@ -26,10 +32,10 @@ public class ProyectoController {
             Files.createDirectories(proyectoDir);
 
             // Crear archivo SQL vacío
-            Path archivoSQL = proyectoDir.resolve(nombre + ".sql");
+            Path archivoSQL = proyectoDir.resolve(nombreProyecto + ".sql");
             Files.createFile(archivoSQL);
 
-            return ResponseEntity.ok(proyectoRequest);
+            return ResponseEntity.ok("Proyecto creado correctamente");
         } catch (IOException e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body("Error creando proyecto");
@@ -40,33 +46,9 @@ public class ProyectoController {
     public ResponseEntity<?> abrirProyecto(@PathVariable String nombre) {
         Path proyectoDir = Paths.get(DATA_FOLDER, nombre);
         if (Files.exists(proyectoDir) && Files.isDirectory(proyectoDir)) {
-            // Aquí devolveríamos info, o simplemente confirmamos que existe
-            return ResponseEntity.ok().body(new ProyectoResponse(nombre));
+            return ResponseEntity.ok("Proyecto encontrado: " + nombre);
         } else {
             return ResponseEntity.status(404).body("Proyecto no encontrado");
         }
-    }
-}
-
-class ProyectoRequest {
-    private String nombre;
-    private String enfoque;
-
-    // Getters y setters
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-    public String getEnfoque() { return enfoque; }
-    public void setEnfoque(String enfoque) { this.enfoque = enfoque; }
-}
-
-class ProyectoResponse {
-    private String nombre;
-
-    public ProyectoResponse(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public String getNombre() {
-        return nombre;
     }
 }
