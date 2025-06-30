@@ -1,3 +1,25 @@
+/*Transición entre páginas*/
+
+::view-transition-old(root) {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+::view-transition-new(root) {
+  opacity: 0;
+  transform: translateX(100%);
+  animation: fadeInSlide 500ms ease forwards;
+}
+
+@keyframes fadeInSlide {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/*-----------------------------------------------*/
+
 *{
     box-sizing:border-box;
 }

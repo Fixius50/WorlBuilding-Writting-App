@@ -88,6 +88,18 @@
         }
     }
 
+    //Transicón entre páginas
+    document.getElementById('bt1').onclick = () => {
+      if ('startViewTransition' in document) {
+        document.startViewTransition(() => {
+          window.location.href = 'ventanaCreacion.html';
+        });
+      } else {
+        // fallback sin transición
+        window.location.href = 'ventanaCreacion.html';
+      }
+    }
+
     // Esto sí puede quedar dentro de DOMContentLoaded
     document.addEventListener('DOMContentLoaded', () => {
         const params = new URLSearchParams(window.location.search);
