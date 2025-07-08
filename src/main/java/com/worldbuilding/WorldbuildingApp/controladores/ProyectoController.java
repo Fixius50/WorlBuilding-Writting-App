@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 
 @RestController
 @RequestMapping("/api/proyectos")
@@ -28,7 +29,9 @@ public class ProyectoController {
             Files.createDirectories(proyectoDir);
 
             Path archivoSQL = proyectoDir.resolve(nombre + ".sql");
-            Files.writeString(archivoSQL, "-- Proyecto: " + nombre + "\n-- Enfoque: " + enfoque);
+            String insertar = "-- Proyecto: " + nombre + "\n-- Enfoque: " + enfoque
+                                + "\nuse worldbuilding;\ninsert into crearProyecto values('" + nombre + "', '" + enfoque + "')";
+            Files.writeString(archivoSQL, insertar, StandardOpenOption.CREATE_NEW);
 
             return ResponseEntity.ok("Proyecto creado correctamente");
         } catch (IOException e) {
