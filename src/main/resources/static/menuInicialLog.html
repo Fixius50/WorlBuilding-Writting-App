@@ -84,19 +84,22 @@
             }
 
             fetch(`/api/proyectos/${encodeURIComponent(nombreProyecto)}`)
-                .then(response => {
-                    if (!response.ok) {
-                        return response.text().then(text => { throw new Error(text); });
-                    }
-                    return response.text();
+                .then(() => {
+                    // Establecer como activo también
+                    return fetch('/api/proyectos/activo', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({
+                            nombre: nombreProyecto,
+                            enfoque: 'Desconocido'  // Como no sabemos el enfoque aún
+                        })
+                    });
                 })
                 .then(() => {
-                    alert('Proyecto abierto correctamente');
                     window.location.href = '/html/ventanaProyectos.html?proyecto=' + encodeURIComponent(nombreProyecto);
-
                 })
                 .catch(error => {
-                    alert('Error: ' + error.message);
+                    alert('Error al abrir el proyecto: ' + error.message);
                 });
         }
 
@@ -117,21 +120,24 @@
                     enfoque: enfoqueProyecto
                 })
             })
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => { throw new Error(text); });
-                }
-                return response.text();
+            .then(() => {
+                // Establecer como activo también
+                return fetch('/api/proyectos/activo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        nombre: nombreProyecto,
+                        enfoque: enfoqueProyecto
+                    })
+                });
             })
             .then(() => {
-                alert('Proyecto creado correctamente');
                 window.location.href = '/html/ventanaProyectos.html?proyecto=' + encodeURIComponent(nombreProyecto);
             })
             .catch(error => {
                 alert('Error al crear el proyecto: ' + error.message);
             });
         }
-
 
         function cerrarPrograma() {
             fetch('/api/exit', { method: 'POST' })

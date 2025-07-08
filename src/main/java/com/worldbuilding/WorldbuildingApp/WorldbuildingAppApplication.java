@@ -15,6 +15,11 @@ public class WorldbuildingAppApplication {
         abrirNavegador("http://localhost:8080/menuInicialLog.html");
     }
 
+    /**
+     * abrirNavegador(): esta función carga e inicia el navegador. Primero se encarga de comprobar el tipo de sistema operativo
+     * con el que se está ejecutando la aplicación, y si es así, lo inicia. En caso contrario, daría error y no se iniciaría.
+     * @param url
+     */
     public static void abrirNavegador(String url) {
         try {
             String os = System.getProperty("os.name").toLowerCase();

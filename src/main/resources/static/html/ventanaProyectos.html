@@ -32,7 +32,7 @@
              la autoría con el nombre del proyecto. Más tarde se editará para mejorarlo.-->
             <div class="infoTop">
                 <header class="header-top"><!-- Aquí va el nombre del proyecto y el tipo -->
-                    <a id="nombre-proyecto" oninput="mostarInfoProyecto()"></a>
+                    <b id="nombre-proyecto" oninput="mostarInfoProyecto()"></b>
                 </header>
                 
                 <nav class="navTop">
@@ -56,7 +56,7 @@
                 <p>Aquí van como "bolsas" que agrupan contenido general</p>
             </section>
             <section class="ground">
-                <h1>AQUÍ VA UN SCRIPT HECHO Y CARGADO POR JAVAFX</h1>
+                <b>Aquí va un script para los mapas</b>
                 <p>Los elementos de "objects" se arrastran para colocarlos aquí.</p>
                 <!-- Aquí se despliegan las opciones de "nav-top" según lo que sean -->
             </section>
@@ -102,26 +102,18 @@
 
     // Esto sí puede quedar dentro de DOMContentLoaded
     document.addEventListener('DOMContentLoaded', () => {
-        const params = new URLSearchParams(window.location.search);
-        const nombre = params.get('nombre');
-
-        if (!nombre) {
-            alert("No se especificó el proyecto.");
-        } else{
-            fetch(`/api/proyectos/${encodeURIComponent(nombre)}`)
-            .then(res => {
-                if (!res.ok) throw new Error("Proyecto no encontrado");
-                return res.json();
-            })
-            .then(data => {
-                document.body.insertAdjacentHTML('afterbegin',
-                    `<h2>Proyecto: ${data.nombre}</h2><h3>Enfoque: ${data.enfoque}</h3>`);
-            })
-            .catch(err => {
-                alert("Error al cargar proyecto: " + err.message);
-            });
-        }
-        
+        fetch('/api/proyectos/activo')
+        .then(res => {
+            if (!res.ok) throw new Error("No hay proyecto activo");
+            return res.json();
+        })
+        .then(data => {
+            const { nombre, enfoque } = data;
+            document.getElementById("nombre-proyecto").innerText = `Nombre: ${nombre} | Enfoque: ${enfoque}`;
+        })
+        .catch(err => {
+            alert("Error al cargar proyecto activo: " + err.message);
+        });
     });
 </script>
 </html>
