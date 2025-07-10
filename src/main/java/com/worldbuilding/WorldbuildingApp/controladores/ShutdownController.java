@@ -5,6 +5,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Esta clase lo que hace es preparar el cierre de la aplicación y cerrarlo al cabo de un tiempo.
+ */
+
 @RestController
 public class ShutdownController {
 
