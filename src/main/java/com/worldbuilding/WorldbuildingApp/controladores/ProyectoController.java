@@ -10,6 +10,11 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Esta clase controla el proyecto que se va a usar o crear en la aplicación según una serie de funciones internas definidas. 
+ * @see crearProyecto
+ * @see abrirProyecto
+ */
 @RestController
 @RequestMapping("/api/proyectos")
 public class ProyectoController {
@@ -41,7 +46,7 @@ public class ProyectoController {
 
             return ResponseEntity.ok("Proyecto creado correctamente");
         } catch (IOException e) {
-            return ResponseEntity.status(500).body("Error creando proyecto");
+            return ResponseEntity.status(500).body("Error creando el proyecto");
         }
     }
 
@@ -57,6 +62,7 @@ public class ProyectoController {
     }
 
     // Lo de abajo es para saber que proyecto se está usando
+    // Esta variable lo que hace es actualizar automáticamente el proyecto
     private static final AtomicReference<ProyectoActivo> proyectoActivo = new AtomicReference<>();
 
     @PostMapping("/activo")
@@ -67,17 +73,13 @@ public class ProyectoController {
 
     @GetMapping("/activo")
     public ResponseEntity<?> getProyectoActivo() {
-        ProyectoActivo activo = proyectoActivo.get();
-        if (activo == null) {
-            return ResponseEntity.status(404).body("No hay proyecto activo");
-        }
-        return ResponseEntity.ok(activo);
+        ResponseEntity<?> response = (proyectoActivo.get() == null) ? ResponseEntity.status(404).body("No hay proyecto activo") : ResponseEntity.ok(proyectoActivo.get());
+        return response;
     }
 
     // Clase interna para representar el proyecto activo
     public static class ProyectoActivo {
-        public String nombre;
-        public String enfoque;
+        public String nombre, enfoque;
 
         public ProyectoActivo(String nombre, String enfoque) {
             this.nombre = nombre;

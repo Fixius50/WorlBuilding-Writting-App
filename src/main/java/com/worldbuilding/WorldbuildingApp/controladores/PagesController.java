@@ -3,6 +3,10 @@ package com.worldbuilding.WorldbuildingApp.controladores;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
+/**
+ * Esta clase lo que hace es mapear las páginas para cuando se estén cambiando entre estas en el proyecto
+ */
+
 @Controller
 public class PagesController {
 
