@@ -64,20 +64,32 @@
     </div>
 </body>
 <script>
+    let nombreProyectoGlobal = null;
+
     function abrirVentanaCreacion() {
-        
+        if (!nombreProyectoGlobal) {
+            alert("No hay proyecto activo");
+            return;
+        }
+        window.location.href = `ventanaCreacion.html?proyecto=${encodeURIComponent(nombreProyectoGlobal)}`;
     }
 
     function abrirVentanaAjustes() {
-        
+        if (!nombreProyectoGlobal) {
+            alert("No hay proyecto activo");
+            return;
+        }
+        window.location.href = `ventanaAjustes.html?proyecto=${encodeURIComponent(nombreProyectoGlobal)}`;
     }
 
     function abrirVentanaMenuInicial() {
-        
+        if (!nombreProyectoGlobal) {
+            alert("No hay proyecto activo");
+            return;
+        }
+        window.location.href = `../menuInicialLog.html`;
     }
 
-    // Esto sí puede quedar dentro de DOMContentLoaded
-    // Esta función lo que hace es poner el nombre y el tipo de proyecto dentro
     document.addEventListener('DOMContentLoaded', () => {
         fetch('/api/proyectos/activo')
         .then(res => {
@@ -86,7 +98,10 @@
         })
         .then(data => {
             const { nombre, enfoque } = data;
-            document.getElementById("nombre-proyecto").innerText = `Nombre: ${nombre} | Enfoque: ${enfoque}`;
+            nombreProyectoGlobal = nombre;
+            document.getElementById("nombre-proyecto").innerText = `Nombre: ${nombre} Enfoque: ${enfoque}`;
+            document.getElementById("nombre-proyecto").innerHTML = <br></br>;
+            document.getElementById("nombre-proyecto").innerText = `Enfoque: ${enfoque}`;
         })
         .catch(err => {
             alert("Error al cargar proyecto activo: " + err.message);

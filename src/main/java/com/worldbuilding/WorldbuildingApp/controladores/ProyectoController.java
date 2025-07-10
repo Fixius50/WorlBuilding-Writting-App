@@ -54,11 +54,32 @@ public class ProyectoController {
     public ResponseEntity<?> abrirProyecto(@PathVariable String nombre, HttpSession session) {
         Path proyectoDir = Paths.get(DATA_FOLDER, nombre);
         if (Files.exists(proyectoDir) && Files.isDirectory(proyectoDir)) {
-            session.setAttribute("proyectoActivo", nombre); // <-- GUARDAR PROYECTO ACTIVO
+            session.setAttribute("proyectoActivo", nombre);
+
+            Path archivoSQL = proyectoDir.resolve(nombre + ".sql");
+            if (Files.exists(archivoSQL)) {
+                try {
+                    String contenido = Files.readString(archivoSQL);
+                    String enfoque = extraerEnfoqueDesdeSQL(contenido);
+                    session.setAttribute("enfoqueProyectoActivo", enfoque);
+                } catch (IOException e) {
+                    return ResponseEntity.status(500).body("Error leyendo el archivo del proyecto");
+                }
+            }
+
             return ResponseEntity.ok("Proyecto abierto correctamente");
         } else {
             return ResponseEntity.status(404).body("Proyecto no encontrado");
         }
+    }
+
+    private String extraerEnfoqueDesdeSQL(String contenido) {
+        for (String linea : contenido.split("\n")) {
+            if (linea.startsWith("-- Enfoque:")) {
+                return linea.replace("-- Enfoque:", "").trim();
+            }
+        }
+        return null;
     }
 
     // Lo de abajo es para saber que proyecto se está usando
@@ -72,9 +93,22 @@ public class ProyectoController {
     }
 
     @GetMapping("/activo")
-    public ResponseEntity<?> getProyectoActivo() {
-        ResponseEntity<?> response = (proyectoActivo.get() == null) ? ResponseEntity.status(404).body("No hay proyecto activo") : ResponseEntity.ok(proyectoActivo.get());
-        return response;
+    public ResponseEntity<?> getProyectoActivo(HttpSession session) {
+        // Primero intentamos obtenerlo desde la sesión
+        String nombre = (String) session.getAttribute("proyectoActivo");
+        String enfoque = (String) session.getAttribute("enfoqueProyectoActivo");
+
+        if (nombre != null && enfoque != null) {
+            return ResponseEntity.ok(new ProyectoActivo(nombre, enfoque));
+        }
+
+        // Si no está en la sesión, intentamos desde el AtomicReference
+        ProyectoActivo activo = proyectoActivo.get();
+        if (activo != null) {
+            return ResponseEntity.ok(activo);
+        }
+
+        return ResponseEntity.status(404).body("No hay proyecto activo");
     }
 
     // Clase interna para representar el proyecto activo
