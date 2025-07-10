@@ -65,42 +65,19 @@
 </body>
 <script>
     function abrirVentanaCreacion() {
-        if (window.javaConnector && typeof window.javaConnector.irAPagina === 'function') {
-            window.javaConnector.irAPagina("ventanaCreacion.html");
-        } else {
-            console.error("javaConnector.irAPagina no está disponible.");
-        }
+        
     }
 
     function abrirVentanaAjustes() {
-        if (window.javaConnector && typeof window.javaConnector.irAPagina === 'function') {
-            window.javaConnector.irAPagina("ventanaAjustes.html");
-        } else {
-            console.error("javaConnector.irAPagina no está disponible.");
-        }
+        
     }
 
     function abrirVentanaMenuInicial() {
-        if (window.javaConnector && typeof window.javaConnector.irAPagina === 'function') {
-            window.javaConnector.irAPagina("menuInicialLog.html");
-        } else {
-            console.error("javaConnector.irAPagina no está disponible.");
-        }
-    }
-
-    //Transicón entre páginas
-    document.getElementById('bt1').onclick = () => {
-      if ('startViewTransition' in document) {
-        document.startViewTransition(() => {
-          window.location.href = 'ventanaCreacion.html';
-        });
-      } else {
-        // fallback sin transición
-        window.location.href = 'ventanaCreacion.html';
-      }
+        
     }
 
     // Esto sí puede quedar dentro de DOMContentLoaded
+    // Esta función lo que hace es poner el nombre y el tipo de proyecto dentro
     document.addEventListener('DOMContentLoaded', () => {
         fetch('/api/proyectos/activo')
         .then(res => {
