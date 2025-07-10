@@ -71,7 +71,7 @@
             alert("No hay proyecto activo");
             return;
         }
-        window.location.href = `ventanaCreacion.html?proyecto=${encodeURIComponent(nombreProyectoGlobal)}`;
+        window.location.href = `../html/ventanaCreacion.html?proyecto=${encodeURIComponent(nombreProyectoGlobal)}`;
     }
 
     function abrirVentanaAjustes() {
@@ -79,7 +79,7 @@
             alert("No hay proyecto activo");
             return;
         }
-        window.location.href = `ventanaAjustes.html?proyecto=${encodeURIComponent(nombreProyectoGlobal)}`;
+        window.location.href = `../html/ventanaAjustes.html?proyecto=${encodeURIComponent(nombreProyectoGlobal)}`;
     }
 
     function abrirVentanaMenuInicial() {
@@ -99,9 +99,7 @@
         .then(data => {
             const { nombre, enfoque } = data;
             nombreProyectoGlobal = nombre;
-            document.getElementById("nombre-proyecto").innerText = `Nombre: ${nombre} Enfoque: ${enfoque}`;
-            document.getElementById("nombre-proyecto").innerHTML = <br></br>;
-            document.getElementById("nombre-proyecto").innerText = `Enfoque: ${enfoque}`;
+            document.getElementById("nombre-proyecto").innerHTML = `Nombre: ${nombre}<br>Enfoque: ${enfoque}`;
         })
         .catch(err => {
             alert("Error al cargar proyecto activo: " + err.message);

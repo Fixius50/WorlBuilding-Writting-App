@@ -105,4 +105,55 @@
         </div>
     </div>
 </body>
+<script>
+    let proyectoActivo = null;
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        try {
+            const res = await fetch('/api/proyectos/activo');
+            if (!res.ok) throw new Error("No se pudo obtener el proyecto activo");
+            const data = await res.json();
+            proyectoActivo = data.nombre;
+        } catch (error) {
+            alert("Error cargando proyecto activo: " + error.message);
+        }
+
+        const formulario = document.querySelector("form");
+        if (formulario) {
+            formulario.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const formData = new FormData(formulario);
+                const datos = Object.fromEntries(formData.entries());
+                guardarEntidad(3, datos); // tabla 3 = Construcciones
+            });
+        }
+    });
+
+    function guardarEntidad(tablaId, datosObjeto) {
+        if (!proyectoActivo) {
+            alert("No hay proyecto activo");
+            return;
+        }
+
+        fetch('/api/proyectos/insertar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                proyecto: proyectoActivo,
+                tabla: tablaId,
+                datos: JSON.stringify(datosObjeto)
+            })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Error al insertar los datos");
+            return res.text();
+        })
+        .then(msg => {
+            alert("Construcción guardada correctamente.");
+        })
+        .catch(err => {
+            alert("Error al guardar: " + err.message);
+        });
+    }
+</script>
 </html>

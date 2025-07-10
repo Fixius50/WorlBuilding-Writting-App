@@ -191,10 +191,24 @@
     </div>
 </body>
 <script>
+    let proyectoActivo = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        fetch('/api/proyectos/activo')
+            .then(res => {
+                if (!res.ok) throw new Error("No hay proyecto activo");
+                return res.json();
+            })
+            .then(data => {
+                proyectoActivo = data.nombre;
+            })
+            .catch(err => {
+                alert("Error al obtener proyecto activo: " + err.message);
+            });
+    });
+
     async function mostrarContenidoRelacionado(nombreArchivoHtml) {
         const despliegue = document.querySelector('.despliegue');
-
-        // Limpia cualquier contenido previo
         despliegue.innerHTML = '';
 
         try {
@@ -210,9 +224,9 @@
             despliegue.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
         }
     }
+
     function volverAlProyectoActual(){
-        // Aquí se recoge de la base de datos el proyecto que se está usando actualmente
-        
+        window.location.href = "../html/ventanaProyectos.html";
     }
 </script>
 </html>
