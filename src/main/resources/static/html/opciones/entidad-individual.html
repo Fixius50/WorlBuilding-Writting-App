@@ -117,7 +117,7 @@
     // Obtener el proyecto activo al cargar
     document.addEventListener("DOMContentLoaded", async () => {
         try {
-            const res = await fetch('/api/proyectos/activo');
+            const res = await fetch('/api/bd/activo');
             if (!res.ok) throw new Error("No se pudo obtener el proyecto activo");
             const data = await res.json();
             proyectoActivo = data.nombre;
@@ -138,29 +138,28 @@
     });
 
     function guardarEntidad(tablaId, datosObjeto) {
-        if (!proyectoActivo) {
-            alert("No hay proyecto activo");
-            return;
-        }
-
-        fetch('/api/proyectos/insertar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+        
+        console.log("Enviando datos a BD:", datosObjeto);
+        fetch("/api/bd/insertar", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
             body: new URLSearchParams({
-                tabla: 0,
+                tabla: 0, // <- ejemplo: entidad individual
                 datos: Object.values(datosObjeto).join(",")
             })
         })
-        .then(res => {
-            if (!res.ok) throw new Error("Error al insertar los datos");
-            return res.text();
+        .then(async res => {
+            const text = await res.text();
+            console.log("Código de respuesta:", res.status);
+            console.log("Respuesta:", text);
         })
-        .then(msg => {
-            alert("Entidad guardada correctamente.");
+        .then(data => {
+            console.log("Respuesta del backend:", data);
         })
-        .catch(err => {
-            alert("Error al guardar: " + err.message);
-        });
+        .catch(err => console.error("Error en fetch:", err));
+
     }
 </script>
 </html>

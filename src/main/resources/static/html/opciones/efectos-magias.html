@@ -108,7 +108,7 @@
 
     document.addEventListener("DOMContentLoaded", async () => {
         try {
-            const res = await fetch('/api/proyectos/activo');
+            const res = await fetch('/api/bd/activo');
             if (!res.ok) throw new Error("No se pudo obtener el proyecto activo");
             const data = await res.json();
             proyectoActivo = data.nombre;
@@ -132,8 +132,8 @@
             alert("No hay proyecto activo");
             return;
         }
-
-        fetch('/api/proyectos/insertar', {
+        console.log("datos enviados:", datosObjeto);
+        fetch('/api/bd/insertar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: new URLSearchParams({
