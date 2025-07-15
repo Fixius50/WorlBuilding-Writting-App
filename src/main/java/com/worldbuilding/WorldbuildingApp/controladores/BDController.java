@@ -132,12 +132,12 @@ public class BDController {
             status = ResponseEntity.status(404).body("Archivo SQL del proyecto activo no encontrado");
         } else{
             String nombreFuncion = switch (tabla) {
-                case 0 -> "borrarEntidadIndividual";
-                case 1 -> "borrarEntidadColectiva";
-                case 2 -> "borrarEfecto";
-                case 3 -> "borrarConstruccion";
-                case 4 -> "borrarZona";
-                case 5 -> "borrarInteraccion";
+                case 0 -> "cambiarEstadoEntidadIndividual";
+                case 1 -> "cambiarEstadoEntidadColectiva";
+                case 2 -> "cambiarEstadoEfecto";
+                case 3 -> "cambiarEstadoConstruccion";
+                case 4 -> "cambiarEstadoZona";
+                case 5 -> "cambiarEstadoInteraccion";
                 default -> null;
             };
             if (nombreFuncion == null) {
