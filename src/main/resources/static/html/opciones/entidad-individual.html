@@ -62,7 +62,7 @@
     <div class="formContent">
         <div class="panel">
             <h2>Entidad Individual</h2>
-            <form>
+            <form id="form-entidad-individual">
                 <div class="el">
                     <div>
                         <label>Nombre/Pseudónimo:</label>
@@ -146,10 +146,9 @@
         fetch('/api/proyectos/insertar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                proyecto: proyectoActivo,
-                tabla: tablaId,
-                datos: JSON.stringify(datosObjeto)
+            body: new URLSearchParams({
+                tabla: 0,
+                datos: Object.values(datosObjeto).join(",")
             })
         })
         .then(res => {

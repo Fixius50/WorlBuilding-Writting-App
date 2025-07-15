@@ -1,6 +1,8 @@
 package com.worldbuilding.WorldbuildingApp.controladores;
 
 import jakarta.servlet.http.HttpSession;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,30 +36,168 @@ public class BDController {
             HttpSession session) {
 
         String proyectoActivo = (String) session.getAttribute("proyectoActivo");
+        Path archivoSQL = Paths.get(DATA_FOLDER, proyectoActivo, proyectoActivo + ".sql");
+        ResponseEntity<String> status;
+        if (proyectoActivo == null) {
+            status = ResponseEntity.status(400).body("No hay proyecto activo en sesión");
+        } else if (!Files.exists(archivoSQL)) {
+            status = ResponseEntity.status(404).body("Archivo SQL del proyecto activo no encontrado");
+        }else{
+            String llamadaFuncionSQL = llamadaFuncion(tabla, datos);
+
+            if (llamadaFuncionSQL == null) {
+                status = ResponseEntity.badRequest().body("Número de tabla inválido");
+            } else{
+                try {
+                    // Agrega la llamada al final del archivo con un salto de línea, sin borrar lo que ya estaba
+                    Files.writeString(archivoSQL, llamadaFuncionSQL + "\n", StandardOpenOption.APPEND);
+                    status = ResponseEntity.ok("Datos insertados correctamente en el archivo SQL");
+                } catch (IOException e) {
+                    status = ResponseEntity.status(500).body("Error escribiendo en el archivo SQL");
+                }
+            }
+        }
+        return status;
+    }
+
+    /**
+     * Borra datos llamando a las funciones SQL dentro del archivo .sql del proyecto activo
+     * @param tabla
+     * @param identificador
+     * @param session
+     * @return
+     */
+    @PostMapping("/borrar")
+    public ResponseEntity<?> borrarDatosDB(
+            @RequestParam int tabla,
+            @RequestParam String identificador, // ID o nombre de la entidad a borrar
+            HttpSession session) {
+
+        String proyectoActivo = (String) session.getAttribute("proyectoActivo");
+        Path archivoSQL = Paths.get(DATA_FOLDER, proyectoActivo, proyectoActivo + ".sql");
+        ResponseEntity<String> status;
 
         if (proyectoActivo == null) {
-            return ResponseEntity.status(400).body("No hay proyecto activo en sesión");
-        }
+            status = ResponseEntity.badRequest().body("No hay proyecto activo en sesión");
+        } else if (!Files.exists(archivoSQL)) {
+            status = ResponseEntity.status(404).body("Archivo SQL del proyecto activo no encontrado");
+        } else{
+            String nombreFuncion = switch (tabla) {
+                case 0 -> "borrarEntidadIndividual";
+                case 1 -> "borrarEntidadColectiva";
+                case 2 -> "borrarEfecto";
+                case 3 -> "borrarConstruccion";
+                case 4 -> "borrarZona";
+                case 5 -> "borrarInteraccion";
+                default -> null;
+            };
 
+            if (nombreFuncion == null) {
+                status = ResponseEntity.badRequest().body("Tabla inválida");
+            } else{
+                String llamada = String.format("CALL %s('%s');", nombreFuncion, identificador.replace("'", "''"));
+                try {
+                    Files.writeString(archivoSQL, llamada + "\n", StandardOpenOption.APPEND);
+                    status = ResponseEntity.ok("Borrado registrado correctamente");
+                } catch (IOException e) {
+                    status = ResponseEntity.status(500).body("Error escribiendo en el archivo SQL");
+                }
+            }
+        }
+        return status;
+    }
+
+    /**
+     * Función para activar o desactivar nodos 
+     * @param tabla
+     * @param identificador
+     * @param activo
+     * @param session
+     * @return
+     */
+    @PostMapping("/cambiarEstado")
+    public ResponseEntity<?> cambiarEstadoNodo(
+            @RequestParam int tabla,
+            @RequestParam String identificador,
+            @RequestParam boolean activo,
+            HttpSession session) {
+
+        String proyectoActivo = (String) session.getAttribute("proyectoActivo");
         Path archivoSQL = Paths.get(DATA_FOLDER, proyectoActivo, proyectoActivo + ".sql");
+        ResponseEntity<String> status;
 
-        if (!Files.exists(archivoSQL)) {
-            return ResponseEntity.status(404).body("Archivo SQL del proyecto activo no encontrado");
+        if (proyectoActivo == null) {
+            status = ResponseEntity.badRequest().body("No hay proyecto activo en sesión");
+        } else if (!Files.exists(archivoSQL)) {
+            status = ResponseEntity.status(404).body("Archivo SQL del proyecto activo no encontrado");
+        } else{
+            String nombreFuncion = switch (tabla) {
+                case 0 -> "borrarEntidadIndividual";
+                case 1 -> "borrarEntidadColectiva";
+                case 2 -> "borrarEfecto";
+                case 3 -> "borrarConstruccion";
+                case 4 -> "borrarZona";
+                case 5 -> "borrarInteraccion";
+                default -> null;
+            };
+            if (nombreFuncion == null) {
+                status =  ResponseEntity.badRequest().body("Tabla inválida");
+            } else{
+                String llamada = String.format(
+                    "CALL %s('%s', %b);", 
+                    nombreFuncion, 
+                    identificador.replace("'", "''"), 
+                    activo
+                );
+                try {
+                    Files.writeString(archivoSQL, llamada + "\n", StandardOpenOption.APPEND);
+                    status =  ResponseEntity.ok("Estado del nodo registrado correctamente");
+                } catch (IOException e) {
+                    status =  ResponseEntity.status(500).body("Error escribiendo en el archivo SQL");
+                }
+            }
         }
+        return status;
+    }
 
-        String llamadaFuncionSQL = llamadaFuncion(tabla, datos);
+    /**
+     * Función para relacionar elementos entre sí
+     * @param origen
+     * @param destino
+     * @param tipoRelacion
+     * @param session
+     * @return
+     */
+    @PostMapping("/relacionar")
+    public ResponseEntity<?> relacionarElementos(
+            @RequestParam String origen,
+            @RequestParam String destino,
+            @RequestParam String tipoRelacion, // puede ser amistad, dependencia, conexión, etc.
+            HttpSession session) {
 
-        if (llamadaFuncionSQL == null) {
-            return ResponseEntity.badRequest().body("Número de tabla inválido");
+        String proyectoActivo = (String) session.getAttribute("proyectoActivo");
+        Path archivoSQL = Paths.get(DATA_FOLDER, proyectoActivo, proyectoActivo + ".sql");
+        ResponseEntity<String> status;
+
+        if (proyectoActivo == null) {
+            status = ResponseEntity.badRequest().body("No hay proyecto activo en sesión");
+        } else if (!Files.exists(archivoSQL)) {
+            status = ResponseEntity.status(404).body("Archivo SQL del proyecto activo no encontrado");
+        } else{ 
+            String llamada = String.format(
+                "CALL crearRelacion('%s', '%s', '%s');",
+                origen.replace("'", "''"),
+                destino.replace("'", "''"),
+                tipoRelacion.replace("'", "''")
+            );
+            try {
+                Files.writeString(archivoSQL, llamada + "\n", StandardOpenOption.APPEND);
+                status = ResponseEntity.ok("Relación registrada correctamente");
+            } catch (IOException e) {
+                status = ResponseEntity.status(500).body("Error escribiendo en el archivo SQL");
+            }
         }
-
-        try {
-            // Agrega la llamada al final del archivo con un salto de línea, sin borrar lo que ya estaba
-            Files.writeString(archivoSQL, llamadaFuncionSQL + "\n", StandardOpenOption.APPEND);
-            return ResponseEntity.ok("Datos insertados correctamente en el archivo SQL");
-        } catch (IOException e) {
-            return ResponseEntity.status(500).body("Error escribiendo en el archivo SQL");
-        }
+        return status;
     }
 
     /**
@@ -71,18 +211,25 @@ public class BDController {
         switch (tabla) {
             case 0:
                 funcion = construirLlamada("crearEntidadIndividual", valores);
+                break;
             case 1:
                 funcion = construirLlamada("crearEntidadColectiva", valores);
+                break;
             case 2:
                 funcion = construirLlamada("crearEfectos", valores);
+                break;
             case 3:
                 funcion = construirLlamada("crearConstruccion", valores);
+                break;
             case 4:
                 funcion = construirLlamada("crearZona", valores);
+                break;
             case 5:
                 funcion = construirLlamada("crearInteraccion", valores);
+                break;
             default:
                 funcion = null;
+                break;
         }
         return funcion;
     }
@@ -102,7 +249,6 @@ public class BDController {
             }
         }
 
-        sb.append(");");
-        return sb.toString();
+        return sb.append(");").toString();
     }
 }

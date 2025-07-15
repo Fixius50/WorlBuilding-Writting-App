@@ -62,7 +62,7 @@
     <div class="formContent">
         <div class="panel">
             <h2>Relaciones</h2>
-            <form>
+            <form id="form-relaciones">
                 <div class="el">
                     <div>
                         <label>Nombre/Pseudónimo:</label>
@@ -115,6 +115,7 @@
     let proyectoActivo = null;
 
     document.addEventListener("DOMContentLoaded", async () => {
+        // Cargar proyecto activo
         try {
             const res = await fetch('/api/proyectos/activo');
             if (!res.ok) throw new Error("No se pudo obtener el proyecto activo");
@@ -124,13 +125,13 @@
             alert("Error cargando proyecto activo: " + error.message);
         }
 
-        const formulario = document.querySelector("form");
+        const formulario = document.getElementById("form-relaciones");
         if (formulario) {
             formulario.addEventListener("submit", function (e) {
                 e.preventDefault();
                 const formData = new FormData(formulario);
                 const datos = Object.fromEntries(formData.entries());
-                guardarEntidad(5, datos); // tabla 5 = Relaciones
+                guardarEntidad(5, datos); // Tabla 5: relaciones
             });
         }
     });
@@ -144,10 +145,9 @@
         fetch('/api/proyectos/insertar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                proyecto: proyectoActivo,
-                tabla: tablaId,
-                datos: JSON.stringify(datosObjeto)
+            body: new URLSearchParams({
+                tabla: 5,
+                datos: Object.values(datosObjeto).join(",")
             })
         })
         .then(res => {

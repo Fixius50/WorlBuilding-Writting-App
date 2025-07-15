@@ -62,7 +62,7 @@
     <div class="formContent">
         <div class="panel">
             <h2>Zonas</h2>
-            <form>
+            <form id="form-zonas">
                 <div class="el">
                     <div>
                         <label>Nombre/Pseudónimo:</label>
@@ -72,7 +72,7 @@
                     </div>
                     <div>
                         <label>¿Cuál es su tamaño o cuanto abarca?:</label>
-                        <select name="estado" required>
+                        <select name="tamano" required>
                             <option value="" selected disabled>(selecciona una)</option>
                             <option value="activo">Pequeño</option>
                             <option value="inactivo">Mediano</option>
@@ -90,7 +90,7 @@
                     </div>
                     <div>
                         <label>¿Cual es su desarrollo?:</label>
-                        <select name="origen" required>
+                        <select name="desarrollo" required>
                             <option value="" selected disabled>(selecciona una)</option>
                             <option value="realista">Extensión de una zona</option>
                             <option value="ficticio">Variante de una zona</option>
@@ -118,7 +118,7 @@
             alert("Error cargando proyecto activo: " + error.message);
         }
 
-        const formulario = document.querySelector("form");
+        const formulario = document.getElementById("form-zonas");
         if (formulario) {
             formulario.addEventListener("submit", function (e) {
                 e.preventDefault();
@@ -138,10 +138,9 @@
         fetch('/api/proyectos/insertar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                proyecto: proyectoActivo,
-                tabla: tablaId,
-                datos: JSON.stringify(datosObjeto)
+            body: new URLSearchParams({
+                tabla: 4,
+                datos: Object.values(datosObjeto).join(",")
             })
         })
         .then(res => {
