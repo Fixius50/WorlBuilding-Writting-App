@@ -67,23 +67,24 @@ public class BDController {
      */
     private String llamadaFuncion(int tabla, String datos) {
         String[] valores = datos.split(","); // asumo que datos están separados por coma
-
+        String funcion;
         switch (tabla) {
             case 0:
-                return construirLlamada("crearEntidadIndividual", valores);
+                funcion = construirLlamada("crearEntidadIndividual", valores);
             case 1:
-                return construirLlamada("crearEntidadColectiva", valores);
+                funcion = construirLlamada("crearEntidadColectiva", valores);
             case 2:
-                return construirLlamada("crearEfectos", valores);
+                funcion = construirLlamada("crearEfectos", valores);
             case 3:
-                return construirLlamada("crearConstruccion", valores);
+                funcion = construirLlamada("crearConstruccion", valores);
             case 4:
-                return construirLlamada("crearZona", valores);
+                funcion = construirLlamada("crearZona", valores);
             case 5:
-                return construirLlamada("crearInteraccion", valores);
+                funcion = construirLlamada("crearInteraccion", valores);
             default:
-                return null;
+                funcion = null;
         }
+        return funcion;
     }
 
     /**
