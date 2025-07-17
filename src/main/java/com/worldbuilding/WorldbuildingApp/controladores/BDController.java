@@ -2,6 +2,8 @@ package com.worldbuilding.WorldbuildingApp.controladores;
 
 import jakarta.servlet.http.HttpSession;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +23,7 @@ import java.util.Map;
 @RequestMapping("/api/bd")
 public class BDController {
 
+    private static final Logger logger = LoggerFactory.getLogger(BDController.class);
     private final String DATA_FOLDER = "src/main/resources/static/data";
 
     /**
@@ -39,6 +42,8 @@ public class BDController {
         Map<String, String> datos = request.getDatos();
 
         String proyectoActivo = (String) session.getAttribute("proyectoActivo");
+        logger.info("Intento de inserción. Proyecto activo en sesión: '{}'", proyectoActivo);
+
         Path archivoSQL = Paths.get(DATA_FOLDER, proyectoActivo, proyectoActivo + ".sql");
         ResponseEntity<String> status;
 
@@ -48,10 +53,12 @@ public class BDController {
             status = ResponseEntity.status(404).body("Archivo SQL del proyecto activo no encontrado");
         } else {
             String llamadaFuncionSQL = llamadaFuncion(tabla, datos);
+            logger.info("Ruta del archivo SQL: {}", archivoSQL.toAbsolutePath());
 
             if (llamadaFuncionSQL == null) {
                 status = ResponseEntity.badRequest().body("Número de tabla inválido");
             } else {
+                logger.info("Escribiendo comando SQL: {}", llamadaFuncionSQL);
                 try {
                     Files.writeString(archivoSQL, llamadaFuncionSQL + "\n", StandardOpenOption.APPEND);
                     status = ResponseEntity.ok("Datos insertados correctamente en el archivo SQL");

@@ -145,13 +145,19 @@
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                tabla: 0, // cambia según lo que estés enviando
-                datos: { // se envía como objeto completo
-                    nombre: "Castillo de Fuego",
-                    tipo: "Militar",
-                    ubicacion: "Colina Norte"
-                } 
+                tabla: tablaId,
+                datos: datosObjeto
             })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Error en la respuesta del servidor");
+            return res.text();
+        })
+        .then(msg => {
+            alert("Datos guardados correctamente:\n" + msg);
+        })
+        .catch(err => {
+            alert("Error al guardar datos:\n" + err.message);
         });
     }
 </script>
