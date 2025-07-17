@@ -137,28 +137,21 @@
     });
 
     function guardarEntidad(tablaId, datosObjeto) {
-        if (!proyectoActivo) {
-            alert("No hay proyecto activo");
-            return;
-        }
-        console.log("datos enviados:", datosObjeto);
-        fetch('/api/bd/insertar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: new URLSearchParams({
-                tabla: 5,
-                datos: Object.values(datosObjeto).join(",")
+        
+        console.log("Enviando datos a BD:", datosObjeto);
+        fetch("/api/bd/insertar", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                tabla: 0, // cambia según lo que estés enviando
+                datos: { // se envía como objeto completo
+                    nombre: "Castillo de Fuego",
+                    tipo: "Militar",
+                    ubicacion: "Colina Norte"
+                } 
             })
-        })
-        .then(res => {
-            if (!res.ok) throw new Error("Error al insertar los datos");
-            return res.text();
-        })
-        .then(msg => {
-            alert("Relación guardada correctamente.");
-        })
-        .catch(err => {
-            alert("Error al guardar: " + err.message);
         });
     }
 </script>

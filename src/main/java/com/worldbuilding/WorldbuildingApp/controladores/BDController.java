@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Map;
 
 /**
  * Esta clase se encarga de realizar las operaciones lógicas de la base de datos del proyecto actual.
@@ -31,25 +32,27 @@ public class BDController {
      */
     @PostMapping("/insertar")
     public ResponseEntity<?> insertarDatosDB(
-            @RequestParam int tabla,
-            @RequestParam String datos,
+            @RequestBody InsertarRequest request,
             HttpSession session) {
+
+        int tabla = request.getTabla();
+        Map<String, String> datos = request.getDatos();
 
         String proyectoActivo = (String) session.getAttribute("proyectoActivo");
         Path archivoSQL = Paths.get(DATA_FOLDER, proyectoActivo, proyectoActivo + ".sql");
         ResponseEntity<String> status;
+
         if (proyectoActivo == null) {
             status = ResponseEntity.status(400).body("No hay proyecto activo en sesión");
         } else if (!Files.exists(archivoSQL)) {
             status = ResponseEntity.status(404).body("Archivo SQL del proyecto activo no encontrado");
-        }else{
+        } else {
             String llamadaFuncionSQL = llamadaFuncion(tabla, datos);
 
             if (llamadaFuncionSQL == null) {
                 status = ResponseEntity.badRequest().body("Número de tabla inválido");
-            } else{
+            } else {
                 try {
-                    // Agrega la llamada al final del archivo con un salto de línea, sin borrar lo que ya estaba
                     Files.writeString(archivoSQL, llamadaFuncionSQL + "\n", StandardOpenOption.APPEND);
                     status = ResponseEntity.ok("Datos insertados correctamente en el archivo SQL");
                 } catch (IOException e) {
@@ -57,6 +60,7 @@ public class BDController {
                 }
             }
         }
+
         return status;
     }
 
@@ -205,27 +209,26 @@ public class BDController {
      * El formato depende de cómo tengas definidas las funciones SQL en el archivo.
      * Ejemplo: "CALL crearEntidadIndividual('dato1','dato2','dato3');"
      */
-    private String llamadaFuncion(int tabla, String datos) {
-        String[] valores = datos.split(","); // asumo que datos están separados por coma
+    private String llamadaFuncion(int tabla, Map<String, String> datos) {
         String funcion;
         switch (tabla) {
             case 0:
-                funcion = construirLlamada("crearEntidadIndividual", valores);
+                funcion = construirLlamada("crearEntidadIndividual", datos);
                 break;
             case 1:
-                funcion = construirLlamada("crearEntidadColectiva", valores);
+                funcion = construirLlamada("crearEntidadColectiva", datos);
                 break;
             case 2:
-                funcion = construirLlamada("crearEfectos", valores);
+                funcion = construirLlamada("crearEfectos", datos);
                 break;
             case 3:
-                funcion = construirLlamada("crearConstruccion", valores);
+                funcion = construirLlamada("crearConstruccion", datos);
                 break;
             case 4:
-                funcion = construirLlamada("crearZona", valores);
+                funcion = construirLlamada("crearZona", datos);
                 break;
             case 5:
-                funcion = construirLlamada("crearInteraccion", valores);
+                funcion = construirLlamada("crearInteraccion", datos);
                 break;
             default:
                 funcion = null;
@@ -238,17 +241,21 @@ public class BDController {
      * Construye el string con la llamada a la función SQL con los parámetros entre comillas simples y separados por coma.
      * Ejemplo de resultado: "CALL crearEntidadIndividual('valor1','valor2','valor3');"
      */
-    private String construirLlamada(String nombreFuncion, String[] valores) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("CALL ").append(nombreFuncion).append("(");
+        private String construirLlamada(String nombreFuncion, Map<String, String> datos) {
+        StringBuilder sb = new StringBuilder("CALL ");
+        sb.append(nombreFuncion).append("(");
 
-        for (int i = 0; i < valores.length; i++) {
-            sb.append("'").append(valores[i].trim().replace("'", "''")).append("'");
-            if (i < valores.length - 1) {
+        int i = 0;
+        for (String valor : datos.values()) {
+            sb.append("'").append(valor.trim().replace("'", "''")).append("'");
+            if (i < datos.size() - 1) {
                 sb.append(", ");
             }
+            i++;
         }
 
-        return sb.append(");").toString();
+        sb.append(");");
+        return sb.toString();
     }
+
 }

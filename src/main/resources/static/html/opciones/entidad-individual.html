@@ -143,23 +143,17 @@
         fetch("/api/bd/insertar", {
             method: "POST",
             headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
+                "Content-Type": "application/json"
             },
-            body: new URLSearchParams({
-                tabla: 0, // <- ejemplo: entidad individual
-                datos: Object.values(datosObjeto).join(",")
+            body: JSON.stringify({
+                tabla: 0, // cambia según lo que estés enviando
+                datos: { // se envía como objeto completo
+                    nombre: "Castillo de Fuego",
+                    tipo: "Militar",
+                    ubicacion: "Colina Norte"
+                } 
             })
-        })
-        .then(async res => {
-            const text = await res.text();
-            console.log("Código de respuesta:", res.status);
-            console.log("Respuesta:", text);
-        })
-        .then(data => {
-            console.log("Respuesta del backend:", data);
-        })
-        .catch(err => console.error("Error en fetch:", err));
-
+        });
     }
 </script>
 </html>
