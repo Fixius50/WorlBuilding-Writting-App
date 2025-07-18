@@ -108,7 +108,7 @@
 
     document.addEventListener("DOMContentLoaded", async () => {
         try {
-            const res = await fetch('/api/bd/activo');
+            const res = await fetch('/api/proyectos/activo');
             if (!res.ok) throw new Error("No se pudo obtener el proyecto activo");
             const data = await res.json();
             proyectoActivo = data.nombre;
