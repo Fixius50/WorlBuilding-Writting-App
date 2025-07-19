@@ -24,6 +24,7 @@ import java.util.Map;
 public class BDController {
 
     private static final Logger logger = LoggerFactory.getLogger(BDController.class);
+    // ADVERTENCIA: Esta ruta funcionará en el IDE, pero fallará al empaquetar en un JAR.
     private final String DATA_FOLDER = "src/main/resources/static/data";
 
     /**
@@ -44,14 +45,15 @@ public class BDController {
         String proyectoActivo = (String) session.getAttribute("proyectoActivo");
         logger.info("Intento de inserción. Proyecto activo en sesión: '{}'", proyectoActivo);
 
-        Path archivoSQL = Paths.get(DATA_FOLDER, proyectoActivo, proyectoActivo + ".sql");
         ResponseEntity<String> status;
 
         if (proyectoActivo == null) {
             status = ResponseEntity.status(400).body("No hay proyecto activo en sesión");
-        } else if (!Files.exists(archivoSQL)) {
-            status = ResponseEntity.status(404).body("Archivo SQL del proyecto activo no encontrado");
         } else {
+            Path archivoSQL = Paths.get(DATA_FOLDER, proyectoActivo + ".sql");
+            if (!Files.exists(archivoSQL)) {
+                return ResponseEntity.status(404).body("Archivo SQL del proyecto activo no encontrado: " + archivoSQL.toAbsolutePath());
+            }
             String llamadaFuncionSQL = llamadaFuncion(tabla, datos);
             logger.info("Ruta del archivo SQL: {}", archivoSQL.toAbsolutePath());
 
@@ -85,14 +87,15 @@ public class BDController {
             HttpSession session) {
 
         String proyectoActivo = (String) session.getAttribute("proyectoActivo");
-        Path archivoSQL = Paths.get(DATA_FOLDER, proyectoActivo, proyectoActivo + ".sql");
         ResponseEntity<String> status;
 
         if (proyectoActivo == null) {
             status = ResponseEntity.badRequest().body("No hay proyecto activo en sesión");
-        } else if (!Files.exists(archivoSQL)) {
-            status = ResponseEntity.status(404).body("Archivo SQL del proyecto activo no encontrado");
         } else{
+            Path archivoSQL = Paths.get(DATA_FOLDER, proyectoActivo + ".sql");
+            if (!Files.exists(archivoSQL)) {
+                return ResponseEntity.status(404).body("Archivo SQL del proyecto activo no encontrado");
+            }
             String nombreFuncion = switch (tabla) {
                 case 0 -> "borrarEntidadIndividual";
                 case 1 -> "borrarEntidadColectiva";
@@ -134,14 +137,15 @@ public class BDController {
             HttpSession session) {
 
         String proyectoActivo = (String) session.getAttribute("proyectoActivo");
-        Path archivoSQL = Paths.get(DATA_FOLDER, proyectoActivo, proyectoActivo + ".sql");
         ResponseEntity<String> status;
 
         if (proyectoActivo == null) {
             status = ResponseEntity.badRequest().body("No hay proyecto activo en sesión");
-        } else if (!Files.exists(archivoSQL)) {
-            status = ResponseEntity.status(404).body("Archivo SQL del proyecto activo no encontrado");
         } else{
+            Path archivoSQL = Paths.get(DATA_FOLDER, proyectoActivo + ".sql");
+            if (!Files.exists(archivoSQL)) {
+                return ResponseEntity.status(404).body("Archivo SQL del proyecto activo no encontrado");
+            }
             String nombreFuncion = switch (tabla) {
                 case 0 -> "cambiarEstadoEntidadIndividual";
                 case 1 -> "cambiarEstadoEntidadColectiva";
@@ -187,14 +191,15 @@ public class BDController {
             HttpSession session) {
 
         String proyectoActivo = (String) session.getAttribute("proyectoActivo");
-        Path archivoSQL = Paths.get(DATA_FOLDER, proyectoActivo, proyectoActivo + ".sql");
         ResponseEntity<String> status;
 
         if (proyectoActivo == null) {
             status = ResponseEntity.badRequest().body("No hay proyecto activo en sesión");
-        } else if (!Files.exists(archivoSQL)) {
-            status = ResponseEntity.status(404).body("Archivo SQL del proyecto activo no encontrado");
         } else{ 
+            Path archivoSQL = Paths.get(DATA_FOLDER, proyectoActivo + ".sql");
+            if (!Files.exists(archivoSQL)) {
+                return ResponseEntity.status(404).body("Archivo SQL del proyecto activo no encontrado");
+            }
             String llamada = String.format(
                 "CALL crearRelacion('%s', '%s', '%s');",
                 origen.replace("'", "''"),
@@ -219,27 +224,13 @@ public class BDController {
     private String llamadaFuncion(int tabla, Map<String, String> datos) {
         String funcion;
         switch (tabla) {
-            case 0:
-                funcion = construirLlamada("crearEntidadIndividual", datos);
-                break;
-            case 1:
-                funcion = construirLlamada("crearEntidadColectiva", datos);
-                break;
-            case 2:
-                funcion = construirLlamada("crearEfectos", datos);
-                break;
-            case 3:
-                funcion = construirLlamada("crearConstruccion", datos);
-                break;
-            case 4:
-                funcion = construirLlamada("crearZona", datos);
-                break;
-            case 5:
-                funcion = construirLlamada("crearInteraccion", datos);
-                break;
-            default:
-                funcion = null;
-                break;
+            case 0 -> funcion = construirLlamada("crearEntidadIndividual", datos);
+            case 1 -> funcion = construirLlamada("crearEntidadColectiva", datos);
+            case 2 -> funcion = construirLlamada("crearEfectos", datos);
+            case 3 -> funcion = construirLlamada("crearConstruccion", datos);
+            case 4 -> funcion = construirLlamada("crearZona", datos);
+            case 5 -> funcion = construirLlamada("crearInteraccion", datos);
+            default -> funcion = null;
         }
         return funcion;
     }

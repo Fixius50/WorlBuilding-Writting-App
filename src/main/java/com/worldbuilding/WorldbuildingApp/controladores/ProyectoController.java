@@ -18,8 +18,14 @@ import java.nio.file.StandardOpenOption;
 @RequestMapping("/api/proyectos")
 public class ProyectoController {
 
-    // Usar una carpeta de datos en el directorio home del usuario. Es más robusto y seguro.
-    private final Path DATA_FOLDER = Paths.get(System.getProperty("user.home"), "WorldbuildingAppProjects");
+    // ADVERTENCIA: Esta ruta funcionará en el IDE, pero fallará al empaquetar en un JAR.
+    private final String DATA_FOLDER = "src/main/resources/static/data";
+    public String nombre, enfoque;
+
+    public ProyectoController(String nombre, String enfoque) {
+        this.nombre = nombre;
+        this.enfoque = enfoque;
+    }
 
     @PostMapping
     public ResponseEntity<?> crearProyecto(
@@ -27,51 +33,52 @@ public class ProyectoController {
         @RequestParam String enfoque,
         HttpSession session
     ) {
+        ResponseEntity<String> entity;
         try {
-            Path proyectoDir = DATA_FOLDER.resolve(nombre);
+            Path archivoSQL = Paths.get(DATA_FOLDER, nombre + ".sql");
 
-            if (Files.exists(proyectoDir)) {
-                return ResponseEntity.badRequest().body("El proyecto ya existe");
+            if (Files.exists(archivoSQL)) {
+                entity = ResponseEntity.badRequest().body("El proyecto ya existe");
+                throw new IOException();
+            } else{
+                // Escapamos las comillas simples para prevenir inyección de SQL básica
+                String nombreSeguro = nombre.replace("'", "''");
+                String enfoqueSeguro = enfoque.replace("'", "''");
+                String insertar = "-- Proyecto: " + nombre + "\n-- Enfoque: " + enfoque + "\n"
+                                + "use worldbuilding;\ninsert into crearProyecto values('" + nombreSeguro + "', '" + enfoqueSeguro + "');";
+                Files.writeString(archivoSQL, insertar, StandardOpenOption.CREATE_NEW);
+
+                // GUARDAR PROYECTO ACTIVO EN LA SESIÓN
+                session.setAttribute("proyectoActivo", nombre);
+                session.setAttribute("enfoqueProyectoActivo", enfoque);
+
+                entity = ResponseEntity.ok("Proyecto creado correctamente");
             }
-
-            Files.createDirectories(proyectoDir);
-
-            Path archivoSQL = proyectoDir.resolve(nombre + ".sql");
-            String insertar = "-- Proyecto: " + nombre + "\n-- Enfoque: " + enfoque
-                            + "\nuse worldbuilding;\ninsert into crearProyecto values('" + nombre + "', '" + enfoque + "')";
-            Files.writeString(archivoSQL, insertar, StandardOpenOption.CREATE_NEW);
-
-            // GUARDAR PROYECTO ACTIVO EN LA SESIÓN
-            session.setAttribute("proyectoActivo", nombre);
-            session.setAttribute("enfoqueProyectoActivo", enfoque);
-
-            return ResponseEntity.ok("Proyecto creado correctamente");
         } catch (IOException e) {
-            return ResponseEntity.status(500).body("Error creando el proyecto");
+            entity = ResponseEntity.status(500).body("Error creando el proyecto");
         }
+        return entity;
     }
 
     @GetMapping("/{nombre}")
     public ResponseEntity<?> abrirProyecto(@PathVariable String nombre, HttpSession session) {
-        Path proyectoDir = DATA_FOLDER.resolve(nombre);
-        if (Files.exists(proyectoDir) && Files.isDirectory(proyectoDir)) {
+        Path archivoSQL = Paths.get(DATA_FOLDER, nombre + ".sql");
+        ResponseEntity<String> entity;
+        if (Files.exists(archivoSQL) && !Files.isDirectory(archivoSQL)) {
             session.setAttribute("proyectoActivo", nombre);
 
-            Path archivoSQL = proyectoDir.resolve(nombre + ".sql");
-            if (Files.exists(archivoSQL)) {
-                try {
-                    String contenido = Files.readString(archivoSQL);
-                    String enfoque = extraerEnfoqueDesdeSQL(contenido);
-                    session.setAttribute("enfoqueProyectoActivo", enfoque);
-                } catch (IOException e) {
-                    return ResponseEntity.status(500).body("Error leyendo el archivo del proyecto");
-                }
+            try {
+                String contenido = Files.readString(archivoSQL);
+                String enfoque = extraerEnfoqueDesdeSQL(contenido);
+                session.setAttribute("enfoqueProyectoActivo", enfoque);
+                entity = ResponseEntity.ok("Proyecto abierto correctamente");
+            } catch (IOException e) {
+                entity = ResponseEntity.status(500).body("Error leyendo el archivo del proyecto");
             }
-
-            return ResponseEntity.ok("Proyecto abierto correctamente");
         } else {
-            return ResponseEntity.status(404).body("Proyecto no encontrado");
+            entity = ResponseEntity.status(404).body("Proyecto no encontrado");
         }
+        return entity;
     }
 
     private String extraerEnfoqueDesdeSQL(String contenido) {
@@ -87,21 +94,12 @@ public class ProyectoController {
     public ResponseEntity<?> getProyectoActivo(HttpSession session) {
         String nombre = (String) session.getAttribute("proyectoActivo");
         String enfoque = (String) session.getAttribute("enfoqueProyectoActivo");
-
+        ResponseEntity<ProyectoController> entity;
         if (nombre != null && enfoque != null) {
-            return ResponseEntity.ok(new ProyectoActivo(nombre, enfoque));
+            entity = ResponseEntity.ok(new ProyectoController(nombre, enfoque));
+        } else{
+            entity = ResponseEntity.status(404).body(null);
         }
-
-        return ResponseEntity.status(404).body("No hay proyecto activo");
-    }
-
-    // Clase interna para representar el proyecto activo
-    public static class ProyectoActivo {
-        public String nombre, enfoque;
-
-        public ProyectoActivo(String nombre, String enfoque) {
-            this.nombre = nombre;
-            this.enfoque = enfoque;
-        }
+        return entity;
     }
 }
