@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.worldbuilding.WorldbuildingApp.modelos.ParametrosBaseDatos;
+import com.worldbuilding.WorldbuildingApp.modelos.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,14 +29,33 @@ public class BDController{
     private static final Logger logger = LoggerFactory.getLogger(BDController.class);
     // ADVERTENCIA: Esta ruta funcionará en el IDE, pero fallará al empaquetar en un JAR.
     private final String DATA_FOLDER = "src/main/resources/static/data";
-    /*
-     * Necesario para saber y comprobar que proyecto se está usando. 
-     * En este mapa se va a guardar primero el proyecto y luego se va a devolver todos sus parámetros.
-     * <ID, Tabla_referente_BD>
+    private ResponseEntity<?> status;
+    private String proyectoActivo;
+    
+    public boolean compruebaExistenciaProyecto() {
+        Path archivoSQL = Paths.get(DATA_FOLDER, proyectoActivo + ".sql");
+        return Files.exists(archivoSQL) && !Files.isDirectory(archivoSQL);
+    }
+
+    public static void sobreEscribirSQL(String nombre, String contenido) {
+        Path archivoSQL = Paths.get(DATA_FOLDER, nombre + ".sql");
+        try {
+            Files.writeString(archivoSQL, contenido, StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            logger.error("Error al sobreescribir el archivo SQL", e);
+        }
+    }
+
+    /**
+     * En este mapa se va a asignar por su proyecto actual los datos de la base de datos.
+     * K = Sesión actual o no
+     * V = 
+     * {
+     *      K = tabla
+     *      V = valores de esa tabla
+     * }
      */
-    private HashMap<String, ParametrosBaseDatos> parametrosDelProyecto = new HashMap<>();
-    public HashMap<String, ParametrosBaseDatos> getParametrosDelProyecto() {return parametrosDelProyecto;}
-    public void setParametrosDelProyecto(HashMap<String, ParametrosBaseDatos> parametrosDelProyecto) {this.parametrosDelProyecto = parametrosDelProyecto;}
+    private Map<HttpSession, HashMap<String, ParametrosBaseDatos>> tablasProyecto = new HashMap<>();
 
     /**
      * Inserta datos llamando a las funciones SQL dentro del archivo .sql del proyecto activo
@@ -46,39 +65,20 @@ public class BDController{
      * @return ResponseEntity con resultado
      */
     @PutMapping("/insertar")
-    public ResponseEntity<?> insertarDatosDB(
-            @RequestBody InsertarRequest request,
-            HttpSession session) {
-
-        int tabla = request.getTabla();
-        Map<String, String> datos = request.getDatos();
-
-        String proyectoActivo = (String) session.getAttribute("proyectoActivo");
-        logger.info("Intento de inserción. Proyecto activo en sesión: '{}'", proyectoActivo);
-
-        ResponseEntity<String> status;
-
-        if (proyectoActivo == null) {
-            status = ResponseEntity.status(400).body("No hay proyecto activo en sesión");
-        } else {
-            Path archivoSQL = Paths.get(DATA_FOLDER, proyectoActivo + ".sql");
-            if (!Files.exists(archivoSQL)) {
-                return ResponseEntity.status(404).body("Archivo SQL del proyecto activo no encontrado: " + archivoSQL.toAbsolutePath());
-            }
-            String llamadaFuncionSQL = llamadaFuncion(tabla, datos);
-            logger.info("Ruta del archivo SQL: {}", archivoSQL.toAbsolutePath());
-
-            if (llamadaFuncionSQL == null) {
-                status = ResponseEntity.badRequest().body("Número de tabla inválido");
-            } else {
-                logger.info("Escribiendo comando SQL: {}", llamadaFuncionSQL);
-                try {
-                    Files.writeString(archivoSQL, llamadaFuncionSQL + "\n", StandardOpenOption.APPEND);
-                    status = ResponseEntity.ok("Datos insertados correctamente en el archivo SQL");
-                } catch (IOException e) {
-                    status = ResponseEntity.status(500).body("Error escribiendo en el archivo SQL");
+    public ResponseEntity<?> insertarDatosDB(@RequestBody String[] datos, HttpSession session) throws IOException{
+        proyectoActivo = (String) session.getAttribute("proyectoActivo");
+        boolean correcto = proyectoActivo != null && datos != null && (datos.length > 6 && datos.length < 9); 
+        String tablaReferente = "";
+        try {
+            if (correcto) {
+                for (ParametrosBaseDatos parametros : parametrosDelProyecto.values()) {
+                    
                 }
+            } else{
+                throw new IOException("Error en los valores establecidos");
             }
+        } catch (IOException e) {
+            status = ResponseEntity.status(500).body(e.getMessage());
         }
 
         return status;
@@ -92,43 +92,8 @@ public class BDController{
      * @return
      */
     @DeleteMapping("/borrar")
-    public ResponseEntity<?> borrarDatosDB(
-            @RequestParam int tabla,
-            @RequestParam String identificador, // ID o nombre de la entidad a borrar
-            HttpSession session) {
+    public ResponseEntity<?> borrarDatosDB() {
 
-        String proyectoActivo = (String) session.getAttribute("proyectoActivo");
-        ResponseEntity<String> status;
-
-        if (proyectoActivo == null) {
-            status = ResponseEntity.badRequest().body("No hay proyecto activo en sesión");
-        } else{
-            Path archivoSQL = Paths.get(DATA_FOLDER, proyectoActivo + ".sql");
-            if (!Files.exists(archivoSQL)) {
-                return ResponseEntity.status(404).body("Archivo SQL del proyecto activo no encontrado");
-            }
-            String nombreFuncion = switch (tabla) {
-                case 0 -> "borrarEntidadIndividual";
-                case 1 -> "borrarEntidadColectiva";
-                case 2 -> "borrarEfecto";
-                case 3 -> "borrarConstruccion";
-                case 4 -> "borrarZona";
-                case 5 -> "borrarInteraccion";
-                default -> null;
-            };
-
-            if (nombreFuncion == null) {
-                status = ResponseEntity.badRequest().body("Tabla inválida");
-            } else{
-                String llamada = String.format("CALL %s('%s');", nombreFuncion, identificador.replace("'", "''"));
-                try {
-                    Files.writeString(archivoSQL, llamada + "\n", StandardOpenOption.APPEND);
-                    status = ResponseEntity.ok("Borrado registrado correctamente");
-                } catch (IOException e) {
-                    status = ResponseEntity.status(500).body("Error escribiendo en el archivo SQL");
-                }
-            }
-        }
         return status;
     }
 
@@ -141,48 +106,8 @@ public class BDController{
      * @return
      */
     @PatchMapping("/cambiarEstado")
-    public ResponseEntity<?> cambiarEstadoNodo(
-            @RequestParam int tabla,
-            @RequestParam String identificador,
-            @RequestParam boolean activo,
-            HttpSession session) {
+    public ResponseEntity<?> cambiarEstadoNodo() {
 
-        String proyectoActivo = (String) session.getAttribute("proyectoActivo");
-        ResponseEntity<String> status;
-
-        if (proyectoActivo == null) {
-            status = ResponseEntity.badRequest().body("No hay proyecto activo en sesión");
-        } else{
-            Path archivoSQL = Paths.get(DATA_FOLDER, proyectoActivo + ".sql");
-            if (!Files.exists(archivoSQL)) {
-                return ResponseEntity.status(404).body("Archivo SQL del proyecto activo no encontrado");
-            }
-            String nombreFuncion = switch (tabla) {
-                case 0 -> "cambiarEstadoEntidadIndividual";
-                case 1 -> "cambiarEstadoEntidadColectiva";
-                case 2 -> "cambiarEstadoEfecto";
-                case 3 -> "cambiarEstadoConstruccion";
-                case 4 -> "cambiarEstadoZona";
-                case 5 -> "cambiarEstadoInteraccion";
-                default -> null;
-            };
-            if (nombreFuncion == null) {
-                status =  ResponseEntity.badRequest().body("Tabla inválida");
-            } else{
-                String llamada = String.format(
-                    "CALL %s('%s', %b);", 
-                    nombreFuncion, 
-                    identificador.replace("'", "''"), 
-                    activo
-                );
-                try {
-                    Files.writeString(archivoSQL, llamada + "\n", StandardOpenOption.APPEND);
-                    status =  ResponseEntity.ok("Estado del nodo registrado correctamente");
-                } catch (IOException e) {
-                    status =  ResponseEntity.status(500).body("Error escribiendo en el archivo SQL");
-                }
-            }
-        }
         return status;
     }
 
@@ -195,76 +120,9 @@ public class BDController{
      * @return
      */
     @PostMapping("/relacionar")
-    public ResponseEntity<?> relacionarElementos(
-            @RequestParam String origen,
-            @RequestParam String destino,
-            @RequestParam String tipoRelacion, // puede ser amistad, dependencia, conexión, etc.
-            HttpSession session) {
+    public ResponseEntity<?> relacionarElementos() {
 
-        String proyectoActivo = (String) session.getAttribute("proyectoActivo");
-        ResponseEntity<String> status;
-
-        if (proyectoActivo == null) {
-            status = ResponseEntity.badRequest().body("No hay proyecto activo en sesión");
-        } else{ 
-            Path archivoSQL = Paths.get(DATA_FOLDER, proyectoActivo + ".sql");
-            if (!Files.exists(archivoSQL)) {
-                return ResponseEntity.status(404).body("Archivo SQL del proyecto activo no encontrado");
-            }
-            String llamada = String.format(
-                "CALL crearRelacion('%s', '%s', '%s');",
-                origen.replace("'", "''"),
-                destino.replace("'", "''"),
-                tipoRelacion.replace("'", "''")
-            );
-            try {
-                Files.writeString(archivoSQL, llamada + "\n", StandardOpenOption.APPEND);
-                status = ResponseEntity.ok("Relación registrada correctamente");
-            } catch (IOException e) {
-                status = ResponseEntity.status(500).body("Error escribiendo en el archivo SQL");
-            }
-        }
         return status;
-    }
-
-    /**
-     * Construye la llamada a la función SQL según el número de tabla y los datos recibidos.
-     * El formato depende de cómo tengas definidas las funciones SQL en el archivo.
-     * Ejemplo: "CALL crearEntidadIndividual('dato1','dato2','dato3');"
-     */
-    private String llamadaFuncion(int tabla, Map<String, String> datos) {
-        String funcion;
-        switch (tabla) {
-            case 0 -> funcion = construirLlamada("crearEntidadIndividual", datos);
-            case 1 -> funcion = construirLlamada("crearEntidadColectiva", datos);
-            case 2 -> funcion = construirLlamada("crearEfectos", datos);
-            case 3 -> funcion = construirLlamada("crearConstruccion", datos);
-            case 4 -> funcion = construirLlamada("crearZona", datos);
-            case 5 -> funcion = construirLlamada("crearInteraccion", datos);
-            default -> funcion = null;
-        }
-        return funcion;
-    }
-
-    /**
-     * Construye el string con la llamada a la función SQL con los parámetros entre comillas simples y separados por coma.
-     * Ejemplo de resultado: "CALL crearEntidadIndividual('valor1','valor2','valor3');"
-     */
-        private String construirLlamada(String nombreFuncion, Map<String, String> datos) {
-        StringBuilder sb = new StringBuilder("CALL ");
-        sb.append(nombreFuncion).append("(");
-
-        int i = 0;
-        for (String valor : datos.values()) {
-            sb.append("'").append(valor.trim().replace("'", "''")).append("'");
-            if (i < datos.size() - 1) {
-                sb.append(", ");
-            }
-            i++;
-        }
-
-        sb.append(");");
-        return sb.toString();
     }
 
 }

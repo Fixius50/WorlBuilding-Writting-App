@@ -1,5 +1,6 @@
 package com.worldbuilding.WorldbuildingApp.modelos;
 
+import com.worldbuilding.WorldbuildingApp.ParametrosBaseDatos;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

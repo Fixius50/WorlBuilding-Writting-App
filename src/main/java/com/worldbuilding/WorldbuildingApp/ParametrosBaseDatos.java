@@ -1,4 +1,4 @@
-package com.worldbuilding.WorldbuildingApp.modelos;
+package com.worldbuilding.WorldbuildingApp;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -16,7 +16,6 @@ public abstract class ParametrosBaseDatos {
 
     @Id @Column(name = "id") @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @Id @Column(name = "nombre") @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected String nombre;
     @Id @Column(name = "apellidos") @GeneratedValue(strategy = GenerationType.IDENTITY)
