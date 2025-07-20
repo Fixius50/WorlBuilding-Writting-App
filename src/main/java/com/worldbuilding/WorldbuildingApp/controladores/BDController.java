@@ -8,11 +8,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.worldbuilding.WorldbuildingApp.modelos.ParametrosBaseDatos;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -21,11 +24,19 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/bd")
-public class BDController {
+public class BDController{
 
     private static final Logger logger = LoggerFactory.getLogger(BDController.class);
     // ADVERTENCIA: Esta ruta funcionará en el IDE, pero fallará al empaquetar en un JAR.
     private final String DATA_FOLDER = "src/main/resources/static/data";
+    /*
+     * Necesario para saber y comprobar que proyecto se está usando. 
+     * En este mapa se va a guardar primero el proyecto y luego se va a devolver todos sus parámetros.
+     * <ID, Tabla_referente_BD>
+     */
+    private HashMap<String, ParametrosBaseDatos> parametrosDelProyecto = new HashMap<>();
+    public HashMap<String, ParametrosBaseDatos> getParametrosDelProyecto() {return parametrosDelProyecto;}
+    public void setParametrosDelProyecto(HashMap<String, ParametrosBaseDatos> parametrosDelProyecto) {this.parametrosDelProyecto = parametrosDelProyecto;}
 
     /**
      * Inserta datos llamando a las funciones SQL dentro del archivo .sql del proyecto activo
@@ -34,7 +45,7 @@ public class BDController {
      * @param session HttpSession para obtener proyecto activo
      * @return ResponseEntity con resultado
      */
-    @PostMapping("/insertar")
+    @PutMapping("/insertar")
     public ResponseEntity<?> insertarDatosDB(
             @RequestBody InsertarRequest request,
             HttpSession session) {
@@ -80,7 +91,7 @@ public class BDController {
      * @param session
      * @return
      */
-    @PostMapping("/borrar")
+    @DeleteMapping("/borrar")
     public ResponseEntity<?> borrarDatosDB(
             @RequestParam int tabla,
             @RequestParam String identificador, // ID o nombre de la entidad a borrar
@@ -129,7 +140,7 @@ public class BDController {
      * @param session
      * @return
      */
-    @PostMapping("/cambiarEstado")
+    @PatchMapping("/cambiarEstado")
     public ResponseEntity<?> cambiarEstadoNodo(
             @RequestParam int tabla,
             @RequestParam String identificador,
