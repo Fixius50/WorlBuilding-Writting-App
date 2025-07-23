@@ -10,11 +10,13 @@ import jakarta.persistence.Id;
 @Entity
 public class EntidadIndividual extends ParametrosBaseDatos{
 
-    @Id @Column(name = "estado") @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "estado")
     private String estado;
-    @Id @Column(name = "origen") @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "origen")
     private String origen;
-    @Id @Column(name = "comportamiento") @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "comportamiento")
     private String comportamiento;
 
     // Constructor

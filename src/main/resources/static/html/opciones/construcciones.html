@@ -124,23 +124,28 @@
                 e.preventDefault();
                 const formData = new FormData(formulario);
                 const datos = Object.fromEntries(formData.entries());
-                guardarEntidad(3, datos); // tabla 3 = Construcciones
+                guardarEntidad("Construccion", datos); // en vez de guardarEntidad(3, datos)
             });
         }
+        let dataFolder = null;
+
+        fetch('/api/config')
+            .then(res => res.json())
+            .then(config => {
+                dataFolder = config.dataFolder;
+                // Ahora puedes usar dataFolder en tu JS
+                console.log("Ruta dataFolder:", dataFolder);
+            });
     });
 
-    function guardarEntidad(tablaId, datosObjeto) {
-        
-        console.log("Enviando datos a BD:", datosObjeto);
-        fetch("/api/bd/insertar", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                tabla: tablaId,
-                datos: datosObjeto
-            })
+    function guardarEntidad(tablaNombre, datosObjeto) {
+        // Si no hay id, puedes ponerlo como null o dejar que el backend lo maneje
+        datosObjeto.id = null;
+
+        fetch(`/api/bd/insertar?proyecto=${encodeURIComponent(proyectoActivo)}&tabla=${tablaNombre}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datosObjeto)
         })
         .then(res => {
             if (!res.ok) throw new Error("Error en la respuesta del servidor");

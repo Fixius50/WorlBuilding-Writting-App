@@ -13,7 +13,7 @@ public class Construccion extends ParametrosBaseDatos {
 
     @Id @Column(name = "tamanno") @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String tamanno;
-    @Id @Column(name = "desarrollo") @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "desarrollo")
     private String desarrollo;
 
     // Constructor
@@ -23,4 +23,6 @@ public class Construccion extends ParametrosBaseDatos {
         this.desarrollo = desarrollo;
     }
 
+    public String getTamanno() { return tamanno; }
+    public String getDesarrollo() { return desarrollo; }
 }

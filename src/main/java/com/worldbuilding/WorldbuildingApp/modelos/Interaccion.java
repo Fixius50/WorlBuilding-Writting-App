@@ -9,9 +9,11 @@ import jakarta.persistence.Id;
 
 @Entity
 public class Interaccion extends ParametrosBaseDatos{
-    @Id @Column(name = "direccion") @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "direccion")
     private String direccion;
-    @Id @Column(name = "afectados") @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "afectados")
     private String afectados;
 
     // Constructor

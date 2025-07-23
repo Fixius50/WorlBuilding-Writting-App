@@ -199,13 +199,24 @@
         fetch('/api/proyectos/activo')
             .then(res => {
                 if (!res.ok) throw new Error("No hay proyecto activo");
-                return res.json();
+                return res.text();
             })
-            .then(data => {
-                proyectoActivo = data.nombre;
+            .then(texto => {
+                // Extraer nombre y enfoque del string recibido
+                // Ejemplo: "Proyecto activo: MiProyecto - Enfoque: Fantasía"
+                let nombre = "";
+                let enfoque = "";
+                const match = texto.match(/^Proyecto activo: (.+) - Enfoque: (.+)$/);
+                if (match) {
+                    nombre = match[1];
+                    enfoque = match[2];
+                }
+                // Usa nombre y enfoque como necesites
+                // Por ejemplo:
+                document.getElementById("nombre-proyecto").textContent = nombre + " (" + enfoque + ")";
             })
             .catch(err => {
-                alert("Error al obtener proyecto activo: " + err.message);
+                document.getElementById("nombre-proyecto").textContent = "Sin proyecto activo";
             });
     });
 
@@ -230,5 +241,14 @@
     function volverAlProyectoActual(){
         window.location.href = "../html/ventanaProyectos.html";
     }
+    let dataFolder = null;
+
+    fetch('/api/config')
+        .then(res => res.json())
+        .then(config => {
+            dataFolder = config.dataFolder;
+            // Ahora puedes usar dataFolder en tu JS
+            console.log("Ruta dataFolder:", dataFolder);
+        });
 </script>
 </html>

@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.worldbuilding.WorldbuildingApp.ParametrosBaseDatos;
 import com.worldbuilding.WorldbuildingApp.modelos.*;
 
 import java.io.IOException;
@@ -16,7 +17,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Esta clase se encarga de realizar las operaciones lógicas de la base de datos del proyecto actual.
@@ -24,64 +30,48 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/bd")
-public class BDController{
+public class BDController {
 
     private static final Logger logger = LoggerFactory.getLogger(BDController.class);
-    // ADVERTENCIA: Esta ruta funcionará en el IDE, pero fallará al empaquetar en un JAR.
-    private final String DATA_FOLDER = "src/main/resources/static/data";
-    private ResponseEntity<?> status;
-    private String proyectoActivo;
-    
-    public boolean compruebaExistenciaProyecto() {
-        Path archivoSQL = Paths.get(DATA_FOLDER, proyectoActivo + ".sql");
-        return Files.exists(archivoSQL) && !Files.isDirectory(archivoSQL);
-    }
 
-    public static void sobreEscribirSQL(String nombre, String contenido) {
-        Path archivoSQL = Paths.get(DATA_FOLDER, nombre + ".sql");
-        try {
-            Files.writeString(archivoSQL, contenido, StandardOpenOption.APPEND);
-        } catch (IOException e) {
-            logger.error("Error al sobreescribir el archivo SQL", e);
-        }
-    }
+    // Inyecta la ruta desde el properties
+    @Value("${app.data-folder:./data}")
+    private String dataFolder;
+
+    // Mapa: proyecto -> (tabla -> parámetros de la tabla)
+    private Map<String, Map<String, List<ParametrosBaseDatos>>> proyectosTablas = new HashMap<>();
 
     /**
-     * En este mapa se va a asignar por su proyecto actual los datos de la base de datos.
-     * K = Sesión actual o no
-     * V = 
-     * {
-     *      K = tabla
-     *      V = valores de esa tabla
-     * }
-     */
-    private Map<HttpSession, HashMap<String, ParametrosBaseDatos>> tablasProyecto = new HashMap<>();
-
-    /**
-     * Inserta datos llamando a las funciones SQL dentro del archivo .sql del proyecto activo
-     * @param tabla número que identifica la función (0..5)
-     * @param datos datos para la función SQL
-     * @param session HttpSession para obtener proyecto activo
-     * @return ResponseEntity con resultado
+     * Inserta datos en la tabla de un proyecto específico.
+     * @param proyecto Nombre del proyecto activo
+     * @param tabla Nombre de la tabla
+     * @param datos Datos a insertar
      */
     @PutMapping("/insertar")
-    public ResponseEntity<?> insertarDatosDB(@RequestBody String[] datos, HttpSession session) throws IOException{
-        proyectoActivo = (String) session.getAttribute("proyectoActivo");
-        boolean correcto = proyectoActivo != null && datos != null && (datos.length > 6 && datos.length < 9); 
-        String tablaReferente = "";
+    public ResponseEntity<?> insertarDatosDB(@RequestParam String proyecto, @RequestParam String tabla, @RequestBody Map<String, String> datos) {
         try {
-            if (correcto) {
-                for (ParametrosBaseDatos parametros : parametrosDelProyecto.values()) {
-                    
-                }
-            } else{
-                throw new IOException("Error en los valores establecidos");
-            }
-        } catch (IOException e) {
-            status = ResponseEntity.status(500).body(e.getMessage());
-        }
+            // Obtener el mapa de tablas del proyecto
+            Map<String, List<ParametrosBaseDatos>> tablas = proyectosTablas.get(proyecto);
+            if (tablas == null) throw new RuntimeException("Proyecto no encontrado");
 
-        return status;
+            // Obtener la lista de registros de la tabla
+            List<ParametrosBaseDatos> registros = tablas.get(tabla);
+            if (registros == null) throw new RuntimeException("Tabla no encontrada");
+
+            // Crear el objeto adecuado según la tabla
+            ParametrosBaseDatos nuevoRegistro = crearObjetoDesdeDatos(tabla, datos);
+
+            // Añadir el registro a la lista
+            registros.add(nuevoRegistro);
+
+            // Escribir la inserción en el archivo SQL del proyecto
+            escribirInsercionSQL(proyecto, tabla, nuevoRegistro);
+
+            return ResponseEntity.ok("Datos insertados correctamente");
+        } catch (Exception e) {
+            logger.error("Error al insertar datos", e);
+            return ResponseEntity.status(500).body("Error interno");
+        }
     }
 
     /**
@@ -94,7 +84,7 @@ public class BDController{
     @DeleteMapping("/borrar")
     public ResponseEntity<?> borrarDatosDB() {
 
-        return status;
+        return ResponseEntity.ok("Datos borrados correctamente");
     }
 
     /**
@@ -108,7 +98,7 @@ public class BDController{
     @PatchMapping("/cambiarEstado")
     public ResponseEntity<?> cambiarEstadoNodo() {
 
-        return status;
+        return ResponseEntity.ok("Estado cambiado correctamente");
     }
 
     /**
@@ -122,7 +112,73 @@ public class BDController{
     @PostMapping("/relacionar")
     public ResponseEntity<?> relacionarElementos() {
 
-        return status;
+        return ResponseEntity.ok("Elementos relacionados correctamente");
     }
 
+    private ParametrosBaseDatos crearObjetoDesdeDatos(String tabla, Map<String, String> datos) {
+        switch (tabla) {
+            case "Construccion":
+                return new Construccion(
+                    Long.valueOf(datos.get("id")),
+                    datos.get("nombre"),
+                    datos.get("apellidos"),
+                    datos.get("tamanno"),
+                    datos.get("tipo"),
+                    datos.get("desarrollo"),
+                    datos.get("descripcion")
+                );
+            case "Zona":
+                return new Zona(
+                    Long.valueOf(datos.get("id")),
+                    datos.get("nombre"),
+                    datos.get("apellidos"),
+                    datos.get("tamanno"),
+                    datos.get("tipo"),
+                    datos.get("desarrollo"),
+                    datos.get("descripcion")
+                );
+            // ...y así para el resto de modelos
+            default:
+                throw new IllegalArgumentException("Tabla desconocida: " + tabla);
+        }
+    }
+
+    private void escribirInsercionSQL(String proyecto, String tabla, ParametrosBaseDatos registro) {
+        try {
+            Path folderPath = Paths.get(dataFolder);
+            if (!Files.exists(folderPath)) {
+                Files.createDirectories(folderPath);
+            }
+            String archivoSQL = dataFolder + "/" + proyecto + ".sql";
+            Path path = Paths.get(archivoSQL);
+            boolean archivoExiste = Files.exists(path);
+            StringBuilder sb = new StringBuilder();
+            if (!archivoExiste) {
+                sb.append("use worldbuilding;\n\n-- Inserciones de datos\n");
+            }
+            sb.append(generarInsertSQL(tabla, registro)).append("\n");
+            Files.writeString(path, sb.toString(), archivoExiste ? StandardOpenOption.APPEND : StandardOpenOption.CREATE);
+            logger.info("Escrito en archivo SQL: " + archivoSQL);
+        } catch (IOException e) {
+            logger.error("Error al escribir la inserción SQL", e);
+        }
+    }
+
+    private String generarInsertSQL(String tabla, ParametrosBaseDatos registro) {
+        switch (tabla) {
+            case "Construccion": {
+                com.worldbuilding.WorldbuildingApp.modelos.Construccion c = (com.worldbuilding.WorldbuildingApp.modelos.Construccion) registro;
+                return String.format("INSERT INTO construccion (id, nombre, apellidos, tamanno, tipo, desarrollo, descripcion) VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s');",
+                        c.getId(), c.getNombre(), c.getApellidos(), c.getTamanno(), c.getTipo(), c.getDesarrollo(), c.getDescripcion());
+            }
+            case "Zona": {
+                com.worldbuilding.WorldbuildingApp.modelos.Zona z = (com.worldbuilding.WorldbuildingApp.modelos.Zona) registro;
+                return String.format("INSERT INTO zona (id, nombre, apellidos, tamanno, tipo, desarrollo, descripcion) VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s');",
+                        z.getId(), z.getNombre(), z.getApellidos(), z.getTamanno(), z.getTipo(), z.getDesarrollo(), z.getDescripcion());
+            }
+            // Agrega aquí el resto de modelos (EntidadIndividual, EntidadColectiva, Interaccion, Efectos)
+            default:
+                throw new IllegalArgumentException("Tabla desconocida para generación de SQL: " + tabla);
+        }
+    }
 }

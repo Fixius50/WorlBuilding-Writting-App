@@ -22,9 +22,15 @@ public class ProyectoController {
     private final String DATA_FOLDER = "src/main/resources/static/data";
     public String nombre, enfoque;
 
-    public ProyectoController(String nombre, String enfoque) {
-        this.nombre = nombre;
-        this.enfoque = enfoque;
+    // Elimina el constructor con parámetros para evitar problemas de inyección de dependencias
+    // Usa un DTO para las respuestas
+    public static class ProyectoDTO {
+        public String nombre;
+        public String enfoque;
+        public ProyectoDTO(String nombre, String enfoque) {
+            this.nombre = nombre;
+            this.enfoque = enfoque;
+        }
     }
 
     @PostMapping
@@ -94,9 +100,10 @@ public class ProyectoController {
     public ResponseEntity<?> getProyectoActivo(HttpSession session) {
         String nombre = (String) session.getAttribute("proyectoActivo");
         String enfoque = (String) session.getAttribute("enfoqueProyectoActivo");
-        ResponseEntity<ProyectoController> entity;
+        ResponseEntity<String> entity;
         if (nombre != null && enfoque != null) {
-            entity = ResponseEntity.ok(new ProyectoController(nombre, enfoque));
+            new ProyectoDTO(nombre, enfoque);
+            entity = ResponseEntity.ok("Proyecto activo: " + nombre + " - Enfoque: " + enfoque);
         } else{
             entity = ResponseEntity.status(404).body(null);
         }

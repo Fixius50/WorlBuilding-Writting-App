@@ -84,24 +84,20 @@
             }
 
             fetch(`/api/proyectos/${encodeURIComponent(nombreProyecto)}`)
-                .then(() => {
-                    // Establecer como activo también
-                    return fetch('/api/proyectos/activo', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: new URLSearchParams({
-                            nombre: nombreProyecto,
-                            enfoque: 'Desconocido'  // Como no sabemos el enfoque aún
-                        })
-                    });
-                })
-                .then(() => {
+                .then(res => {
+                    if (!res.ok) throw new Error("No se pudo abrir el proyecto");
                     window.location.href = '/html/ventanaProyectos.html?proyecto=' + encodeURIComponent(nombreProyecto);
                 })
                 .catch(error => {
                     alert('Error al abrir el proyecto: ' + error.message);
                 });
         }
+
+        document.getElementById('btnSalirApp')?.addEventListener('click', cerrarPrograma);
+        document.getElementById('navAbrirProyecto')?.addEventListener('click', mostrarAbrirProyecto);
+        document.getElementById('navCrearProyecto')?.addEventListener('click', mostrarCrearProyecto);
+        document.getElementById('botonAbrir')?.addEventListener('click', abrirProyectoExistente);
+        document.getElementById('botonCrear')?.addEventListener('click', crearProyectoNuevo);
 
         function crearProyectoNuevo() {
             const nombreProyecto = document.getElementById('proyect-txt-nuevo').value.trim();
@@ -120,18 +116,8 @@
                     enfoque: enfoqueProyecto
                 })
             })
-            .then(() => {
-                // Establecer como activo también
-                return fetch('/api/proyectos/activo', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({
-                        nombre: nombreProyecto,
-                        enfoque: enfoqueProyecto
-                    })
-                });
-            })
-            .then(() => {
+            .then(res => {
+                if (!res.ok) throw new Error("No se pudo crear el proyecto");
                 window.location.href = '/html/ventanaProyectos.html?proyecto=' + encodeURIComponent(nombreProyecto);
             })
             .catch(error => {
@@ -148,11 +134,28 @@
                 .catch(() => alert("Error al cerrar la aplicación."));
         }
 
-        document.getElementById('btnSalirApp')?.addEventListener('click', cerrarPrograma);
-        document.getElementById('navAbrirProyecto')?.addEventListener('click', mostrarAbrirProyecto);
-        document.getElementById('navCrearProyecto')?.addEventListener('click', mostrarCrearProyecto);
-        document.getElementById('botonAbrir')?.addEventListener('click', abrirProyectoExistente);
-        document.getElementById('botonCrear')?.addEventListener('click', crearProyectoNuevo);
-    });
+        // Mostrar proyecto activo
+        fetch('/api/proyectos/activo')
+            .then(res => {
+                if (!res.ok) throw new Error("No hay proyecto activo");
+                return res.text();
+            })
+            .then(texto => {
+                document.getElementById('proyecto-activo-info').textContent = texto;
+            })
+            .catch(() => {
+                document.getElementById('proyecto-activo-info').textContent = "Sin proyecto activo";
+            });
+
+        let dataFolder = null;
+
+        fetch('/api/config')
+            .then(res => res.json())
+            .then(config => {
+                dataFolder = config.dataFolder;
+                // Ahora puedes usar dataFolder en tu JS
+                console.log("Ruta dataFolder:", dataFolder);
+            });
+        });
 </script>
 </html>

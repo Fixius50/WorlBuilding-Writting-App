@@ -9,11 +9,13 @@ import jakarta.persistence.Id;
 
 @Entity
 public class Efectos extends ParametrosBaseDatos{
-    @Id @Column(name = "origen") @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "origen")
     private String origen;
-    @Id @Column(name = "dureza") @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "dureza")
     private String dureza;
-    @Id @Column(name = "dureza") @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "comportamiento")
     private String comportamiento;
 
     // Constructor

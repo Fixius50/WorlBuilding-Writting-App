@@ -125,5 +125,15 @@
         // Luego al hacer click a guardar, primero se envía a la base de datos general
         // Luego se devuelve a la pagina Proyectos
     });
+
+    let dataFolder = null;
+
+    fetch('/api/config')
+        .then(res => res.json())
+        .then(config => {
+            dataFolder = config.dataFolder;
+            // Ahora puedes usar dataFolder en tu JS
+            console.log("Ruta dataFolder:", dataFolder);
+        });
 </script>
 </html>

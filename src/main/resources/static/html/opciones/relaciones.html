@@ -115,9 +115,8 @@
     let proyectoActivo = null;
 
     document.addEventListener("DOMContentLoaded", async () => {
-        // Cargar proyecto activo
         try {
-            const res = await fetch('/api/proyectos/activo');
+            const res = await fetch('/api/bd/activo');
             if (!res.ok) throw new Error("No se pudo obtener el proyecto activo");
             const data = await res.json();
             proyectoActivo = data.nombre;
@@ -131,23 +130,28 @@
                 e.preventDefault();
                 const formData = new FormData(formulario);
                 const datos = Object.fromEntries(formData.entries());
-                guardarEntidad(5, datos); // Tabla 5: relaciones
+                guardarEntidad("Relaciones", datos); // en vez de guardarEntidad(3, datos)
             });
         }
+        let dataFolder = null;
+
+        fetch('/api/config')
+            .then(res => res.json())
+            .then(config => {
+                dataFolder = config.dataFolder;
+                // Ahora puedes usar dataFolder en tu JS
+                console.log("Ruta dataFolder:", dataFolder);
+            });
     });
 
-    function guardarEntidad(tablaId, datosObjeto) {
-        
-        console.log("Enviando datos a BD:", datosObjeto);
-        fetch("/api/bd/insertar", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                tabla: tablaId,
-                datos: datosObjeto
-            })
+    function guardarEntidad(tablaNombre, datosObjeto) {
+        // Si no hay id, puedes ponerlo como null o dejar que el backend lo maneje
+        datosObjeto.id = null;
+
+        fetch(`/api/bd/insertar?proyecto=${encodeURIComponent(proyectoActivo)}&tabla=${tablaNombre}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datosObjeto)
         })
         .then(res => {
             if (!res.ok) throw new Error("Error en la respuesta del servidor");

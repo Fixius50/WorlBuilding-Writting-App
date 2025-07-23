@@ -10,16 +10,19 @@ import jakarta.persistence.Id;
 @Entity
 public class EntidadColectiva extends ParametrosBaseDatos{
     
-    @Id @Column(name = "estado") @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "estado")
     private String estado;
-    @Id @Column(name = "origen") @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "origen")
     private String origen;
-    @Id @Column(name = "comportamiento") @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "comportamiento")
     private String comportamiento;
 
     // Constructor
     public EntidadColectiva(Long id, String nombre, String apellidos, String estado, String tipo, String origen, String comportamiento, String descripcion) {
         super(id, nombre, apellidos, tipo, descripcion);
+        this.id = id;
         this.estado = estado;
         this.origen = origen;
         this.comportamiento = comportamiento;
