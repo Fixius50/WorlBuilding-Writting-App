@@ -19,7 +19,7 @@ import java.nio.file.StandardOpenOption;
 public class ProyectoController {
 
     // ADVERTENCIA: Esta ruta funcionará en el IDE, pero fallará al empaquetar en un JAR.
-    private final String DATA_FOLDER = "src/main/resources/static/data";
+    private final String DATA_FOLDER = "src/main/data";
     public String nombre, enfoque;
 
     // Elimina el constructor con parámetros para evitar problemas de inyección de dependencias
