@@ -36,7 +36,7 @@ public class BDController {
 
     // Inyecta la ruta desde el properties
     @Value("${app.data-folder:./data}")
-    private String dataFolder;
+    private String dataFolder = "src/main/data";
 
     // Mapa: proyecto -> (tabla -> parámetros de la tabla)
     private Map<String, Map<String, List<ParametrosBaseDatos>>> proyectosTablas = new HashMap<>();
@@ -115,8 +115,46 @@ public class BDController {
         return ResponseEntity.ok("Elementos relacionados correctamente");
     }
 
+    // Endpoint para exponer la ruta dataFolder al frontend
+    @GetMapping("/api/config")
+    public Map<String, String> getConfig() {
+        return Map.of("dataFolder", dataFolder);
+    }
+
     private ParametrosBaseDatos crearObjetoDesdeDatos(String tabla, Map<String, String> datos) {
         switch (tabla) {
+            case "EntidadIndividual":
+                return new EntidadIndividual(
+                    Long.valueOf(datos.get("id")),
+                    datos.get("nombre"),
+                    datos.get("apellidos"),
+                    datos.get("estado"),
+                    datos.get("tipo"),
+                    datos.get("origen"),
+                    datos.get("comportamiento"),
+                    datos.get("descripcion")
+                );
+            case "EntidadColectiva":
+                return new EntidadIndividual(
+                    Long.valueOf(datos.get("id")),
+                    datos.get("nombre"),
+                    datos.get("apellidos"),
+                    datos.get("estado"),
+                    datos.get("tipo"),
+                    datos.get("origen"),
+                    datos.get("comportamiento"),
+                    datos.get("descripcion")
+                );
+            case "Efectos":
+                return new Efectos(
+                    Long.valueOf(datos.get("id")),
+                    datos.get("nombre"),
+                    datos.get("apellidos"),
+                    datos.get("origen"),
+                    datos.get("dureza"),
+                    datos.get("comportamiento"),
+                    datos.get("descripcion")
+                );
             case "Construccion":
                 return new Construccion(
                     Long.valueOf(datos.get("id")),
@@ -129,6 +167,16 @@ public class BDController {
                 );
             case "Zona":
                 return new Zona(
+                    Long.valueOf(datos.get("id")),
+                    datos.get("nombre"),
+                    datos.get("apellidos"),
+                    datos.get("tamanno"),
+                    datos.get("tipo"),
+                    datos.get("desarrollo"),
+                    datos.get("descripcion")
+                );
+            case "Interaccion":
+                return new Interaccion(
                     Long.valueOf(datos.get("id")),
                     datos.get("nombre"),
                     datos.get("apellidos"),

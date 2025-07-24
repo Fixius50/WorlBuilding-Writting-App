@@ -65,6 +65,10 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
 
+        // Oculta ambos paneles al inicio
+        document.getElementById('abrir').style.display = 'none';
+        document.getElementById('crear').style.display = 'none';
+
         function mostrarAbrirProyecto() {
             document.getElementById('abrir').style.display = 'flex';
             document.getElementById('crear').style.display = 'none';
@@ -92,12 +96,6 @@
                     alert('Error al abrir el proyecto: ' + error.message);
                 });
         }
-
-        document.getElementById('btnSalirApp')?.addEventListener('click', cerrarPrograma);
-        document.getElementById('navAbrirProyecto')?.addEventListener('click', mostrarAbrirProyecto);
-        document.getElementById('navCrearProyecto')?.addEventListener('click', mostrarCrearProyecto);
-        document.getElementById('botonAbrir')?.addEventListener('click', abrirProyectoExistente);
-        document.getElementById('botonCrear')?.addEventListener('click', crearProyectoNuevo);
 
         function crearProyectoNuevo() {
             const nombreProyecto = document.getElementById('proyect-txt-nuevo').value.trim();
@@ -129,10 +127,16 @@
             fetch('/api/exit', { method: 'POST' })
                 .then(() => {
                     alert("Aplicación cerrándose...");
-                    window.close();  // Esto intenta cerrar la ventana navegador, puede que el navegador lo bloquee
+                    window.close();
                 })
                 .catch(() => alert("Error al cerrar la aplicación."));
         }
+
+        document.getElementById('btnSalirApp')?.addEventListener('click', cerrarPrograma);
+        document.getElementById('navAbrirProyecto')?.addEventListener('click', mostrarAbrirProyecto);
+        document.getElementById('navCrearProyecto')?.addEventListener('click', mostrarCrearProyecto);
+        document.getElementById('botonAbrir')?.addEventListener('click', abrirProyectoExistente);
+        document.getElementById('botonCrear')?.addEventListener('click', crearProyectoNuevo);
 
         // Mostrar proyecto activo
         fetch('/api/proyectos/activo')
@@ -148,14 +152,12 @@
             });
 
         let dataFolder = null;
-
         fetch('/api/config')
             .then(res => res.json())
             .then(config => {
                 dataFolder = config.dataFolder;
-                // Ahora puedes usar dataFolder en tu JS
                 console.log("Ruta dataFolder:", dataFolder);
             });
-        });
+    });
 </script>
 </html>

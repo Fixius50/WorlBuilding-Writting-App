@@ -19,7 +19,7 @@ public class Efectos extends ParametrosBaseDatos{
     private String comportamiento;
 
     // Constructor
-    public Efectos(Long id, String nombre, String apellidos, String origen, String tipo, String comportamiento, String desarrollo, String descripcion) {
+    public Efectos(Long id, String nombre, String apellidos, String origen, String tipo, String comportamiento, String descripcion) {
         super(id, nombre, apellidos, tipo, descripcion);
         this.origen = origen;
         this.tipo = dureza;
