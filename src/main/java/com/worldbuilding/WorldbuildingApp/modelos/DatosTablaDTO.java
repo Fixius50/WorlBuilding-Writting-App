@@ -1,7 +1,10 @@
 package com.worldbuilding.WorldbuildingApp.modelos;
 
+import java.nio.file.Paths;
+
 import org.hibernate.exception.DataException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.jpa.domain.JpaSort.Path;
 
 import com.worldbuilding.WorldbuildingApp.MetodosBaseDatos;
 import com.worldbuilding.WorldbuildingApp.ParametrosBaseDatos;
@@ -9,7 +12,7 @@ import com.worldbuilding.WorldbuildingApp.ParametrosBaseDatos;
 /**
  * DTO para hacer inserciones y recoger datos de la base de datos. Lleva un generico de ProyectoDTO para indicar cual es el proyecto al que está.
  */
-public class DatosTablaDTO<ProyectoDTO> extends ParametrosBaseDatos implements MetodosBaseDatos{
+public class DatosTablaDTO<ProyectoDTO> extends ParametrosBaseDatos{
 
     // Constructor vacio que no debe hacer nada
     public DatosTablaDTO(){}
@@ -66,17 +69,4 @@ public class DatosTablaDTO<ProyectoDTO> extends ParametrosBaseDatos implements M
             default: throw new DataException("Error en los valores requeridos para la tabla o el tipo de tabla.", null);
         }
     }
-
-    // Inyecta la ruta desde el properties
-    @Value("${app.data-folder:./data}")
-    private String dataFolder = "src/main/data";
-
-    @Override
-    public void insertarDatosDTO(){};
-
-    @Override
-    public void eliminarDatosDTO(){};
-
-    @Override
-    public void modificarDatosDTO(){};
 }

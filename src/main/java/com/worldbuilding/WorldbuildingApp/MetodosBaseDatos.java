@@ -1,7 +1,7 @@
 package com.worldbuilding.WorldbuildingApp;
 
 public interface MetodosBaseDatos {
-    void insertarDatosDTO();
-    void eliminarDatosDTO();
-    void modificarDatosDTO();
+    void insertarDatosDTO(String[] valoresExtraTabla);
+    void eliminarDatosDTO(String[] valoresExtraTabla);
+    void modificarDatosDTO(String[] valoresExtraTabla);
 }

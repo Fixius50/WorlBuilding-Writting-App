@@ -1,10 +1,10 @@
 package com.worldbuilding.WorldbuildingApp.controladores;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import org.springframework.web.bind.annotation.RestController;
-
+import com.worldbuilding.WorldbuildingApp.MetodosBaseDatos;
 import com.worldbuilding.WorldbuildingApp.modelos.DatosTablaDTO;
 import com.worldbuilding.WorldbuildingApp.modelos.ProyectoDTO;
 
@@ -14,7 +14,13 @@ import com.worldbuilding.WorldbuildingApp.modelos.ProyectoDTO;
  */
 @RestController
 @RequestMapping("/api/bd")
-public class BDController{
+public class BDController implements MetodosBaseDatos{
+
+    public ProyectoController proyectoActual;
+
+    // Inyecta la ruta desde el properties
+    @Value("${app.data-folder:./data}")
+    private String dataFolder = "src/main/data";
 
     /**
      * Inserta datos en la tabla de un proyecto específico.
@@ -23,9 +29,10 @@ public class BDController{
      * @param datos Datos a insertar
      */
     @PutMapping("/insertar")
-    public ResponseEntity<DatosTablaDTO<ProyectoDTO>> insertarDatosDB(@RequestBody DatosTablaDTO<ProyectoDTO> request) {
-        
-        return new ResponseEntity<>(request);
+    @Override
+    public void insertarDatosDTO(String[] valoresExtraTabla) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'insertarDatosDTO'");
     }
 
     /**
@@ -35,10 +42,11 @@ public class BDController{
      * @param session
      * @return
      */
-    @DeleteMapping("/borrar")
-    public ResponseEntity<DatosTablaDTO<ProyectoDTO>> borrarDatosDB(@RequestBody DatosTablaDTO<ProyectoDTO> request) {
-
-        return ResponseEntity.ok("Datos borrados correctamente");
+    @DeleteMapping("/eliminar")
+    @Override
+    public void eliminarDatosDTO(String[] valoresExtraTabla) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'eliminarDatosDTO'");
     }
 
     /**
@@ -49,10 +57,11 @@ public class BDController{
      * @param session
      * @return
      */
-    @PatchMapping("/cambiarEstado")
-    public ResponseEntity<DatosTablaDTO<ProyectoDTO>> cambiarEstadoNodo(@RequestBody DatosTablaDTO<ProyectoDTO> request) {
-
-        return ResponseEntity.ok("Estado cambiado correctamente");
+    @PatchMapping("/modificar")
+    @Override
+    public void modificarDatosDTO(String[] valoresExtraTabla) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'modificarDatosDTO'");
     }
 
     /**
