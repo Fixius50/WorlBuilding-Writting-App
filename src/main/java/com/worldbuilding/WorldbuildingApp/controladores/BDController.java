@@ -5,6 +5,9 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import com.worldbuilding.WorldbuildingApp.modelos.DatosTablaDTO;
+import com.worldbuilding.WorldbuildingApp.modelos.ProyectoDTO;
+
 /**
  * Esta clase se encarga de realizar las operaciones lógicas de la base de datos del proyecto actual.
  * En lugar de insertar directamente en la DB, escribe llamadas a funciones SQL en el archivo .sql del proyecto activo.
@@ -20,9 +23,9 @@ public class BDController{
      * @param datos Datos a insertar
      */
     @PutMapping("/insertar")
-    public ResponseEntity<?> insertarDatosDB(@RequestParam String proyecto, @RequestParam String tabla, @RequestBody String[] datos) {
+    public ResponseEntity<DatosTablaDTO<ProyectoDTO>> insertarDatosDB(@RequestBody DatosTablaDTO<ProyectoDTO> request) {
         
-        return ResponseEntity.ok("Datos insertados correctamente");
+        return new ResponseEntity<>(request);
     }
 
     /**
@@ -33,7 +36,7 @@ public class BDController{
      * @return
      */
     @DeleteMapping("/borrar")
-    public ResponseEntity<?> borrarDatosDB() {
+    public ResponseEntity<DatosTablaDTO<ProyectoDTO>> borrarDatosDB(@RequestBody DatosTablaDTO<ProyectoDTO> request) {
 
         return ResponseEntity.ok("Datos borrados correctamente");
     }
@@ -47,7 +50,7 @@ public class BDController{
      * @return
      */
     @PatchMapping("/cambiarEstado")
-    public ResponseEntity<?> cambiarEstadoNodo() {
+    public ResponseEntity<DatosTablaDTO<ProyectoDTO>> cambiarEstadoNodo(@RequestBody DatosTablaDTO<ProyectoDTO> request) {
 
         return ResponseEntity.ok("Estado cambiado correctamente");
     }
@@ -61,7 +64,7 @@ public class BDController{
      * @return
      */
     @PostMapping("/relacionar")
-    public ResponseEntity<?> relacionarElementos() {
+    public ResponseEntity<DatosTablaDTO<ProyectoDTO>> relacionarElementos(@RequestBody DatosTablaDTO<ProyectoDTO> request) {
 
         return ResponseEntity.ok("Elementos relacionados correctamente");
     }
