@@ -3,6 +3,9 @@ package com.worldbuilding.WorldbuildingApp.controladores;
 import jakarta.servlet.http.HttpSession; // Librería que permite mantener el proyecto que se está usando
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.worldbuilding.WorldbuildingApp.modelos.ProyectoDTO;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,17 +24,6 @@ public class ProyectoController {
     // ADVERTENCIA: Esta ruta funcionará en el IDE, pero fallará al empaquetar en un JAR.
     private final String DATA_FOLDER = "src/main/data";
     public String nombre, enfoque;
-
-    // Elimina el constructor con parámetros para evitar problemas de inyección de dependencias
-    // Usa un DTO para las respuestas
-    public static class ProyectoDTO {
-        public String nombre;
-        public String enfoque;
-        public ProyectoDTO(String nombre, String enfoque) {
-            this.nombre = nombre;
-            this.enfoque = enfoque;
-        }
-    }
 
     @PostMapping
     public ResponseEntity<?> crearProyecto(
@@ -52,7 +44,7 @@ public class ProyectoController {
                 String enfoqueSeguro = enfoque.replace("'", "''");
                 String insertar = "-- Proyecto: " + nombre + "\n-- Enfoque: " + enfoque + "\n"
                                 + "use worldbuilding;\ninsert into crearProyecto values('" + nombreSeguro + "', '" + enfoqueSeguro + "');";
-                Files.writeString(archivoSQL, insertar, StandardOpenOption.CREATE_NEW);
+                Files.writeString(archivoSQL, insertar, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
 
                 // GUARDAR PROYECTO ACTIVO EN LA SESIÓN
                 session.setAttribute("proyectoActivo", nombre);

@@ -147,16 +147,9 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(datosObjeto)
         })
-        .then(res => {
-            if (!res.ok) throw new Error("Error en la respuesta del servidor");
-            return res.text();
-        })
-        .then(msg => {
-            alert("Datos guardados correctamente:\n" + msg);
-        })
-        .catch(err => {
-            alert("Error al guardar datos:\n" + err.message);
-        });
+        .then(res => {if (!res.ok) alert("Error en la respuesta del servidor");})
+        .then(msg => {alert("Datos guardados correctamente:\n" + msg);})
+        .catch(err => {alert("Error al guardar datos:\n" + err.message);});
     }
 </script>
 </html>

@@ -1,8 +1,5 @@
 package com.worldbuilding.WorldbuildingApp;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,25 +21,39 @@ public abstract class ParametrosBaseDatos {
     protected String tipo;
     @Id @Column(name = "descripcion") @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected String descripcion;
-
     
-    public ParametrosBaseDatos(Long id, String nombre, String apellidos, String tipo, String descripcion) {
-        this.id = id;
-        this.nombre = nombre;
-        this.apellidos = apellidos;
-        this.descripcion = descripcion;
-        this.tipo = tipo;
-    }
+    // Construcción
+    @Id @Column(name = "tamanno") @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private String tamanno_cons;
+    @Column(name = "desarrollo")
+    private String desarrollo_cons;
 
-    // Getters y Setters (comunes)
-    @JsonGetter("id")          public Long getId() {return id;}
-    @JsonSetter("id")          public void setId(Long id) {this.id = id;}
-    @JsonGetter("nombre")      public String getNombre() {return nombre;}
-    @JsonSetter("nombre")      public void setNombre(String nombre) {this.nombre = nombre;}
-    @JsonGetter("apellidos")   public String getApellidos() {return apellidos;}
-    @JsonSetter("apellidos")   public void setApellidos(String apellidos) {this.apellidos = apellidos;}
-    @JsonGetter("tipo")        public String getTipo() {return tipo;}
-    @JsonSetter("tipo")        public void setTipo(String tipo) {this.tipo = tipo;}
-    @JsonGetter("descripcion") public String getDescripcion() {return descripcion;}
-    @JsonSetter("descripcion") public void setDescripcion(String descripcion) {this.descripcion = descripcion;}
+    // Zona
+    @Id @Column(name = "tamanno") @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private String tamanno_zona;
+    @Column(name = "desarrollo")
+    private String desarrollo_zona;
+
+    // Efectos
+    @Column(name = "origen")
+    private String origen_efecto;
+    @Column(name = "dureza")
+    private String dureza;
+    @Column(name = "comportamiento")
+    private String comportamiento_efecto;
+
+    // Interacción
+    @Column(name = "direccion")
+    private String direccion;
+    @Column(name = "afectados")
+    private String afectados;
+
+    // Entidad individual y colectiva
+    @Column(name = "estado")
+    private String estado;
+    @Column(name = "origen")
+    private String origen_entidad;
+    @Column(name = "comportamiento")
+    private String comportamiento_entidad;
+    
 }

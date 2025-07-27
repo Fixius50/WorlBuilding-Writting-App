@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api/bd")
-public class BDController {
+public class BDController{
 
     private static final Logger logger = LoggerFactory.getLogger(BDController.class);
 
@@ -68,47 +68,6 @@ public class BDController {
             logger.error("Error al insertar datos", e);
             return ResponseEntity.status(500).body("Error interno");
         }
-    }
-
-    /**
-     * Borra datos llamando a las funciones SQL dentro del archivo .sql del proyecto activo
-     * @param tabla
-     * @param identificador
-     * @param session
-     * @return
-     */
-    @DeleteMapping("/borrar")
-    public ResponseEntity<?> borrarDatosDB() {
-
-        return ResponseEntity.ok("Datos borrados correctamente");
-    }
-
-    /**
-     * Función para activar o desactivar nodos 
-     * @param tabla
-     * @param identificador
-     * @param activo
-     * @param session
-     * @return
-     */
-    @PatchMapping("/cambiarEstado")
-    public ResponseEntity<?> cambiarEstadoNodo() {
-
-        return ResponseEntity.ok("Estado cambiado correctamente");
-    }
-
-    /**
-     * Función para relacionar elementos entre sí
-     * @param origen
-     * @param destino
-     * @param tipoRelacion
-     * @param session
-     * @return
-     */
-    @PostMapping("/relacionar")
-    public ResponseEntity<?> relacionarElementos() {
-
-        return ResponseEntity.ok("Elementos relacionados correctamente");
     }
 
     // Endpoint para exponer la ruta dataFolder al frontend
@@ -181,7 +140,6 @@ public class BDController {
                     datos.get("desarrollo"),
                     datos.get("descripcion")
                 );
-            // ...y así para el resto de modelos
             default:
                 throw new IllegalArgumentException("Tabla desconocida: " + tabla);
         }
@@ -195,14 +153,9 @@ public class BDController {
             }
             String archivoSQL = dataFolder + "/" + proyecto + ".sql";
             Path path = Paths.get(archivoSQL);
-            boolean archivoExiste = Files.exists(path);
             StringBuilder sb = new StringBuilder();
-            if (!archivoExiste) {
-                sb.append("use worldbuilding;\n\n-- Inserciones de datos\n");
-            }
-            sb.append(generarInsertSQL(tabla, registro)).append("\n");
-            Files.writeString(path, sb.toString(), archivoExiste ? StandardOpenOption.APPEND : StandardOpenOption.CREATE);
-            logger.info("Escrito en archivo SQL: " + archivoSQL);
+            sb.append(generarInsertSQL(tabla, registro)).append("\n").toString();
+            Files.writeString(path, sb, StandardOpenOption.APPEND);
         } catch (IOException e) {
             logger.error("Error al escribir la inserción SQL", e);
         }
@@ -224,5 +177,46 @@ public class BDController {
             default:
                 throw new IllegalArgumentException("Tabla desconocida para generación de SQL: " + tabla);
         }
+    }
+
+    /**
+     * Borra datos llamando a las funciones SQL dentro del archivo .sql del proyecto activo
+     * @param tabla
+     * @param identificador
+     * @param session
+     * @return
+     */
+    @DeleteMapping("/borrar")
+    public ResponseEntity<?> borrarDatosDB() {
+
+        return ResponseEntity.ok("Datos borrados correctamente");
+    }
+
+    /**
+     * Función para activar o desactivar nodos 
+     * @param tabla
+     * @param identificador
+     * @param activo
+     * @param session
+     * @return
+     */
+    @PatchMapping("/cambiarEstado")
+    public ResponseEntity<?> cambiarEstadoNodo() {
+
+        return ResponseEntity.ok("Estado cambiado correctamente");
+    }
+
+    /**
+     * Función para relacionar elementos entre sí
+     * @param origen
+     * @param destino
+     * @param tipoRelacion
+     * @param session
+     * @return
+     */
+    @PostMapping("/relacionar")
+    public ResponseEntity<?> relacionarElementos() {
+
+        return ResponseEntity.ok("Elementos relacionados correctamente");
     }
 }
