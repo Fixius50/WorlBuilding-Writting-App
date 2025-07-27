@@ -1,23 +1,8 @@
 package com.worldbuilding.WorldbuildingApp.controladores;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.worldbuilding.WorldbuildingApp.ParametrosBaseDatos;
-import com.worldbuilding.WorldbuildingApp.modelos.*;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -28,15 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/bd")
 public class BDController{
 
-    private static final Logger logger = LoggerFactory.getLogger(BDController.class);
-
-    // Inyecta la ruta desde el properties
-    @Value("${app.data-folder:./data}")
-    private String dataFolder = "src/main/data";
-
-    // Mapa: proyecto -> (tabla -> parámetros de la tabla)
-    private Map<String, Map<String, List<ParametrosBaseDatos>>> proyectosTablas = new HashMap<>();
-
     /**
      * Inserta datos en la tabla de un proyecto específico.
      * @param proyecto Nombre del proyecto activo
@@ -44,139 +20,9 @@ public class BDController{
      * @param datos Datos a insertar
      */
     @PutMapping("/insertar")
-    public ResponseEntity<?> insertarDatosDB(@RequestParam String proyecto, @RequestParam String tabla, @RequestBody Map<String, String> datos) {
-        try {
-            // Obtener el mapa de tablas del proyecto
-            Map<String, List<ParametrosBaseDatos>> tablas = proyectosTablas.get(proyecto);
-            if (tablas == null) throw new RuntimeException("Proyecto no encontrado");
-
-            // Obtener la lista de registros de la tabla
-            List<ParametrosBaseDatos> registros = tablas.get(tabla);
-            if (registros == null) throw new RuntimeException("Tabla no encontrada");
-
-            // Crear el objeto adecuado según la tabla
-            ParametrosBaseDatos nuevoRegistro = crearObjetoDesdeDatos(tabla, datos);
-
-            // Añadir el registro a la lista
-            registros.add(nuevoRegistro);
-
-            // Escribir la inserción en el archivo SQL del proyecto
-            escribirInsercionSQL(proyecto, tabla, nuevoRegistro);
-
-            return ResponseEntity.ok("Datos insertados correctamente");
-        } catch (Exception e) {
-            logger.error("Error al insertar datos", e);
-            return ResponseEntity.status(500).body("Error interno");
-        }
-    }
-
-    // Endpoint para exponer la ruta dataFolder al frontend
-    @GetMapping("/api/config")
-    public Map<String, String> getConfig() {
-        return Map.of("dataFolder", dataFolder);
-    }
-
-    private ParametrosBaseDatos crearObjetoDesdeDatos(String tabla, Map<String, String> datos) {
-        switch (tabla) {
-            case "EntidadIndividual":
-                return new EntidadIndividual(
-                    Long.valueOf(datos.get("id")),
-                    datos.get("nombre"),
-                    datos.get("apellidos"),
-                    datos.get("estado"),
-                    datos.get("tipo"),
-                    datos.get("origen"),
-                    datos.get("comportamiento"),
-                    datos.get("descripcion")
-                );
-            case "EntidadColectiva":
-                return new EntidadIndividual(
-                    Long.valueOf(datos.get("id")),
-                    datos.get("nombre"),
-                    datos.get("apellidos"),
-                    datos.get("estado"),
-                    datos.get("tipo"),
-                    datos.get("origen"),
-                    datos.get("comportamiento"),
-                    datos.get("descripcion")
-                );
-            case "Efectos":
-                return new Efectos(
-                    Long.valueOf(datos.get("id")),
-                    datos.get("nombre"),
-                    datos.get("apellidos"),
-                    datos.get("origen"),
-                    datos.get("dureza"),
-                    datos.get("comportamiento"),
-                    datos.get("descripcion")
-                );
-            case "Construccion":
-                return new Construccion(
-                    Long.valueOf(datos.get("id")),
-                    datos.get("nombre"),
-                    datos.get("apellidos"),
-                    datos.get("tamanno"),
-                    datos.get("tipo"),
-                    datos.get("desarrollo"),
-                    datos.get("descripcion")
-                );
-            case "Zona":
-                return new Zona(
-                    Long.valueOf(datos.get("id")),
-                    datos.get("nombre"),
-                    datos.get("apellidos"),
-                    datos.get("tamanno"),
-                    datos.get("tipo"),
-                    datos.get("desarrollo"),
-                    datos.get("descripcion")
-                );
-            case "Interaccion":
-                return new Interaccion(
-                    Long.valueOf(datos.get("id")),
-                    datos.get("nombre"),
-                    datos.get("apellidos"),
-                    datos.get("tamanno"),
-                    datos.get("tipo"),
-                    datos.get("desarrollo"),
-                    datos.get("descripcion")
-                );
-            default:
-                throw new IllegalArgumentException("Tabla desconocida: " + tabla);
-        }
-    }
-
-    private void escribirInsercionSQL(String proyecto, String tabla, ParametrosBaseDatos registro) {
-        try {
-            Path folderPath = Paths.get(dataFolder);
-            if (!Files.exists(folderPath)) {
-                Files.createDirectories(folderPath);
-            }
-            String archivoSQL = dataFolder + "/" + proyecto + ".sql";
-            Path path = Paths.get(archivoSQL);
-            StringBuilder sb = new StringBuilder();
-            sb.append(generarInsertSQL(tabla, registro)).append("\n").toString();
-            Files.writeString(path, sb, StandardOpenOption.APPEND);
-        } catch (IOException e) {
-            logger.error("Error al escribir la inserción SQL", e);
-        }
-    }
-
-    private String generarInsertSQL(String tabla, ParametrosBaseDatos registro) {
-        switch (tabla) {
-            case "Construccion": {
-                com.worldbuilding.WorldbuildingApp.modelos.Construccion c = (com.worldbuilding.WorldbuildingApp.modelos.Construccion) registro;
-                return String.format("INSERT INTO construccion (id, nombre, apellidos, tamanno, tipo, desarrollo, descripcion) VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s');",
-                        c.getId(), c.getNombre(), c.getApellidos(), c.getTamanno(), c.getTipo(), c.getDesarrollo(), c.getDescripcion());
-            }
-            case "Zona": {
-                com.worldbuilding.WorldbuildingApp.modelos.Zona z = (com.worldbuilding.WorldbuildingApp.modelos.Zona) registro;
-                return String.format("INSERT INTO zona (id, nombre, apellidos, tamanno, tipo, desarrollo, descripcion) VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s');",
-                        z.getId(), z.getNombre(), z.getApellidos(), z.getTamanno(), z.getTipo(), z.getDesarrollo(), z.getDescripcion());
-            }
-            // Agrega aquí el resto de modelos (EntidadIndividual, EntidadColectiva, Interaccion, Efectos)
-            default:
-                throw new IllegalArgumentException("Tabla desconocida para generación de SQL: " + tabla);
-        }
+    public ResponseEntity<?> insertarDatosDB(@RequestParam String proyecto, @RequestParam String tabla, @RequestBody String[] datos) {
+        
+        return ResponseEntity.ok("Datos insertados correctamente");
     }
 
     /**
