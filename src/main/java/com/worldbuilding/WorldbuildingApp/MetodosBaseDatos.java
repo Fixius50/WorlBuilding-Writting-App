@@ -1,7 +1,9 @@
 package com.worldbuilding.WorldbuildingApp;
 
+import org.springframework.http.ResponseEntity;
+
 public interface MetodosBaseDatos {
-    void insertarDatosDTO(String[] valoresExtraTabla);
-    void eliminarDatosDTO(String[] valoresExtraTabla);
-    void modificarDatosDTO(String[] valoresExtraTabla);
+    ResponseEntity<?> insertarDatosDTO(String[] valoresExtraTabla);
+    ResponseEntity<?> eliminarDatosDTO(String[] valoresExtraTabla);
+    ResponseEntity<?> modificarDatosDTO(String[] valoresExtraTabla);
 }

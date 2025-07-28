@@ -30,7 +30,7 @@ public class BDController implements MetodosBaseDatos{
      */
     @PutMapping("/insertar")
     @Override
-    public void insertarDatosDTO(String[] valoresExtraTabla) {
+    public ResponseEntity<?> insertarDatosDTO(String[] valoresExtraTabla) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'insertarDatosDTO'");
     }
@@ -44,7 +44,7 @@ public class BDController implements MetodosBaseDatos{
      */
     @DeleteMapping("/eliminar")
     @Override
-    public void eliminarDatosDTO(String[] valoresExtraTabla) {
+    public ResponseEntity<?> eliminarDatosDTO(String[] valoresExtraTabla) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'eliminarDatosDTO'");
     }
@@ -59,7 +59,7 @@ public class BDController implements MetodosBaseDatos{
      */
     @PatchMapping("/modificar")
     @Override
-    public void modificarDatosDTO(String[] valoresExtraTabla) {
+    public ResponseEntity<?> modificarDatosDTO(String[] valoresExtraTabla) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'modificarDatosDTO'");
     }
@@ -73,7 +73,7 @@ public class BDController implements MetodosBaseDatos{
      * @return
      */
     @PostMapping("/relacionar")
-    public ResponseEntity<DatosTablaDTO<ProyectoDTO>> relacionarElementos(@RequestBody DatosTablaDTO<ProyectoDTO> request) {
+    public ResponseEntity<?> relacionarElementos(@RequestBody DatosTablaDTO<ProyectoDTO> request) {
 
         return ResponseEntity.ok("Elementos relacionados correctamente");
     }

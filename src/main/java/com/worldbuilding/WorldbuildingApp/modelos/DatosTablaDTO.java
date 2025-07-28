@@ -1,12 +1,5 @@
 package com.worldbuilding.WorldbuildingApp.modelos;
 
-import java.nio.file.Paths;
-
-import org.hibernate.exception.DataException;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.jpa.domain.JpaSort.Path;
-
-import com.worldbuilding.WorldbuildingApp.MetodosBaseDatos;
 import com.worldbuilding.WorldbuildingApp.ParametrosBaseDatos;
 
 /**
