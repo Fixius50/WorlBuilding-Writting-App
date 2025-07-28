@@ -71,36 +71,33 @@
                         <input type="text" name="apellidos"><br>
                     </div>
                     <div>
-                        <label>¿En que estado de la existencia está?:</label>
-                        <select name="estado" required>
+                        <label>¿Cuál es la dirección de la relación?:</label>
+                        <select name="direccion" required>
                             <option value="" selected disabled>(selecciona una)</option>
-                            <option value="activo">Vivo</option>
-                            <option value="inactivo">Muerto</option>
-                            <option value="pendiente">Abstracto</option>
+                            <option value="unidireccional">Unidireccional</option>
+                            <option value="bidireccional">Bidireccional</option>
+                            <option value="multidireccional">Multidireccional</option>
                         </select><br>
-                        <label>¿Cual es su tipo de longevidad?:</label>
+                        <label>¿Cuál es el tipo de relación?:</label>
                         <select name="tipo" required>
                             <option value="" selected disabled>(selecciona una)</option>
-                            <option value="mortal">Mortal</option>
-                            <option value="inmortal">Inmortal</option>
-                            <option value="eterno">Eterno</option>
-                            <option value="inerte">Inerte</option>
+                            <option value="familiar">Familiar</option>
+                            <option value="amistad">Amistad</option>
+                            <option value="laboral">Laboral</option>
+                            <option value="romantica">Romántica</option>
+                            <option value="enemistad">Enemistad</option>
+                            <option value="otro">Otro</option>
                         </select>
                     </div>
                     <div>
-                        <label>¿Cual es su origen?:</label>
-                        <select name="origen" required>
+                        <label>¿Quiénes son los afectados?:</label>
+                        <select name="afectados" required>
                             <option value="" selected disabled>(selecciona una)</option>
-                            <option value="realista">Realista</option>
-                            <option value="ficticio">Ficticio</option>
+                            <option value="ambos">Ambos</option>
+                            <option value="origen">Solo origen</option>
+                            <option value="destino">Solo destino</option>
+                            <option value="terceros">Terceros</option>
                         </select><br>
-                        <label>¿Cual es su comportamiento?:</label>
-                        <select name="comportamiento" required>
-                            <option value="" selected disabled>(selecciona una)</option>
-                            <option value="activo">Activo</option>
-                            <option value="pasivo">Pasivo</option>
-                            <option value="otro">Otro</option>
-                        </select>
                     </div>
                 </div>
                 <br>
@@ -130,35 +127,39 @@
                 e.preventDefault();
                 const formData = new FormData(formulario);
                 const datos = Object.fromEntries(formData.entries());
-                guardarEntidad("Relaciones", datos); // en vez de guardarEntidad(3, datos)
+                guardarEntidad(datos);
             });
         }
-        let dataFolder = null;
-
-        fetch('/api/config')
-            .then(res => res.json())
-            .then(config => {
-                dataFolder = config.dataFolder;
-                // Ahora puedes usar dataFolder en tu JS
-                console.log("Ruta dataFolder:", dataFolder);
-            });
     });
 
-    function guardarEntidad(tablaNombre, datosObjeto) {
-        // Si no hay id, puedes ponerlo como null o dejar que el backend lo maneje
-        datosObjeto.id = null;
+    function guardarEntidad(datosObjeto) {
+        // Preparar los datos según el formato esperado por DatosTablaDTO
+        const datosParaEnviar = {
+            nombre: datosObjeto.nombre || "",
+            apellidos: datosObjeto.apellidos || "",
+            tipo: datosObjeto.tipo || "",
+            descripcion: datosObjeto.descripcion || "",
+            direccion: datosObjeto.direccion || "",
+            afectados: datosObjeto.afectados || ""
+        };
 
-        fetch(`/api/bd/insertar?proyecto=${encodeURIComponent(proyectoActivo)}&tabla=${tablaNombre}`, {
+        fetch('/api/bd/insertar', {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(datosObjeto)
+            body: JSON.stringify(datosParaEnviar)
         })
         .then(res => {
-            if (!res.ok) throw new Error("Error en la respuesta del servidor");
+            if (!res.ok) {
+                return res.text().then(text => {
+                    throw new Error(text || "Error en la respuesta del servidor");
+                });
+            }
             return res.text();
         })
         .then(msg => {
             alert("Datos guardados correctamente:\n" + msg);
+            // Limpiar formulario después de guardar exitosamente
+            document.getElementById("form-relaciones").reset();
         })
         .catch(err => {
             alert("Error al guardar datos:\n" + err.message);

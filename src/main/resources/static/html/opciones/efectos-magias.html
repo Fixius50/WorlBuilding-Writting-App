@@ -122,35 +122,40 @@
                 e.preventDefault();
                 const formData = new FormData(formulario);
                 const datos = Object.fromEntries(formData.entries());
-                guardarEntidad("Efectos", datos); // en vez de guardarEntidad(3, datos)
+                guardarEntidad(datos);
             });
         }
-        let dataFolder = null;
-
-        fetch('/api/config')
-            .then(res => res.json())
-            .then(config => {
-                dataFolder = config.dataFolder;
-                // Ahora puedes usar dataFolder en tu JS
-                console.log("Ruta dataFolder:", dataFolder);
-            });
     });
 
-    function guardarEntidad(tablaNombre, datosObjeto) {
-        // Si no hay id, puedes ponerlo como null o dejar que el backend lo maneje
-        datosObjeto.id = null;
+    function guardarEntidad(datosObjeto) {
+        // Preparar los datos según el formato esperado por DatosTablaDTO
+        const datosParaEnviar = {
+            nombre: datosObjeto.nombre || "",
+            apellidos: datosObjeto.apellidos || "",
+            tipo: "efecto", // Tipo por defecto para efectos
+            descripcion: datosObjeto.descripcion || "",
+            origen: datosObjeto.origen || "",
+            dureza: datosObjeto.dureza || "",
+            comportamiento: datosObjeto.comportamiento || ""
+        };
 
-        fetch(`/api/bd/insertar?proyecto=${encodeURIComponent(proyectoActivo)}&tabla=${tablaNombre}`, {
+        fetch('/api/bd/insertar', {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(datosObjeto)
+            body: JSON.stringify(datosParaEnviar)
         })
         .then(res => {
-            if (!res.ok) throw new Error("Error en la respuesta del servidor");
+            if (!res.ok) {
+                return res.text().then(text => {
+                    throw new Error(text || "Error en la respuesta del servidor");
+                });
+            }
             return res.text();
         })
         .then(msg => {
             alert("Datos guardados correctamente:\n" + msg);
+            // Limpiar formulario después de guardar exitosamente
+            document.getElementById("form-efectos-magias").reset();
         })
         .catch(err => {
             alert("Error al guardar datos:\n" + err.message);
