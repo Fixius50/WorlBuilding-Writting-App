@@ -43,5 +43,4 @@ public class WorldbuildingAppApplication {
             System.err.println("No se pudo abrir el navegador automáticamente: " + e.getMessage());
         }
     }
-
 }

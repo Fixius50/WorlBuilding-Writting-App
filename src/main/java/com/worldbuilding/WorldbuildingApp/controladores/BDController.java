@@ -40,11 +40,13 @@ public class BDController implements MetodosBaseDatos{
     @PutMapping("/insertar")
     @Override
     public ResponseEntity<?> insertarDatosDTO(@RequestBody Map<String, Object> requestBody, HttpSession session) {
+        ResponseEntity<String> mensaje;
         try {
             // Obtener el proyecto activo
             String nombreProyecto = (String) session.getAttribute("proyectoActivo");
             if (nombreProyecto == null) {
-                return ResponseEntity.badRequest().body("No hay proyecto activo");
+                mensaje = ResponseEntity.badRequest().body("No hay proyecto activo");
+                throw new DataException(mensaje.toString());
             }
 
             // Extraer datos del request
@@ -70,13 +72,14 @@ public class BDController implements MetodosBaseDatos{
             // Agregar la operación al archivo SQL del proyecto
             agregarOperacionAlArchivo(nombreProyecto, operacionSQL);
             
-            return ResponseEntity.ok("Datos insertados correctamente en " + tipoTabla + " del proyecto '" + nombreProyecto + "'");
+            mensaje = ResponseEntity.ok("Datos insertados correctamente en " + tipoTabla + " del proyecto '" + nombreProyecto + "'");
             
         } catch (DataException e) {
-            return ResponseEntity.badRequest().body("Error en los datos: " + e.getMessage());
+            mensaje = ResponseEntity.badRequest().body("Error en los datos: " + e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error interno: " + e.getMessage());
+            mensaje = ResponseEntity.internalServerError().body("Error interno: " + e.getMessage());
         }
+        return mensaje;
     }
 
     /**
@@ -88,10 +91,12 @@ public class BDController implements MetodosBaseDatos{
     @DeleteMapping("/eliminar")
     @Override
     public ResponseEntity<?> eliminarDatosDTO(@RequestBody Map<String, Object> requestBody, HttpSession session) {
+        ResponseEntity<String> mensaje;
         try {
             String nombreProyecto = (String) session.getAttribute("proyectoActivo");
             if (nombreProyecto == null) {
-                return ResponseEntity.badRequest().body("No hay proyecto activo");
+                mensaje = ResponseEntity.badRequest().body("No hay proyecto activo");
+                throw new Exception();
             }
 
             Long id = Long.valueOf(requestBody.get("id").toString());
@@ -103,11 +108,12 @@ public class BDController implements MetodosBaseDatos{
             // Agregar la operación al archivo SQL del proyecto
             agregarOperacionAlArchivo(nombreProyecto, operacionSQL);
             
-            return ResponseEntity.ok("Datos eliminados correctamente de " + tipoTabla + " del proyecto '" + nombreProyecto + "'");
+            mensaje = ResponseEntity.ok("Datos eliminados correctamente de " + tipoTabla + " del proyecto '" + nombreProyecto + "'");
             
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error al eliminar: " + e.getMessage());
+            mensaje = ResponseEntity.internalServerError().body("Error al eliminar: " + e.getMessage());
         }
+        return mensaje;
     }
 
     /**
@@ -119,10 +125,12 @@ public class BDController implements MetodosBaseDatos{
     @PatchMapping("/modificar")
     @Override
     public ResponseEntity<?> modificarDatosDTO(@RequestBody Map<String, Object> requestBody, HttpSession session) {
+        ResponseEntity<String> mensaje;
         try {
             String nombreProyecto = (String) session.getAttribute("proyectoActivo");
             if (nombreProyecto == null) {
-                return ResponseEntity.badRequest().body("No hay proyecto activo");
+                mensaje = ResponseEntity.badRequest().body("No hay proyecto activo");
+                throw new Exception();
             }
 
             Long id = Long.valueOf(requestBody.get("id").toString());
@@ -135,11 +143,12 @@ public class BDController implements MetodosBaseDatos{
             // Agregar la operación al archivo SQL del proyecto
             agregarOperacionAlArchivo(nombreProyecto, operacionSQL);
             
-            return ResponseEntity.ok("Datos modificados correctamente en " + tipoTabla + " del proyecto '" + nombreProyecto + "'");
+            mensaje = ResponseEntity.ok("Datos modificados correctamente en " + tipoTabla + " del proyecto '" + nombreProyecto + "'");
             
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error al modificar: " + e.getMessage());
+            mensaje = ResponseEntity.internalServerError().body("Error al modificar: " + e.getMessage());
         }
+        return mensaje;
     }
 
     /**
@@ -150,10 +159,12 @@ public class BDController implements MetodosBaseDatos{
      */
     @PostMapping("/relacionar")
     public ResponseEntity<?> relacionarElementos(@RequestBody DatosTablaDTO<ProyectoDTO> request, HttpSession session) {
+        ResponseEntity<String> mensaje;
         try {
             String nombreProyecto = (String) session.getAttribute("proyectoActivo");
             if (nombreProyecto == null) {
-                return ResponseEntity.badRequest().body("No hay proyecto activo");
+                mensaje = ResponseEntity.badRequest().body("No hay proyecto activo");
+                throw new Exception();
             }
 
             // Generar la operación SQL para crear relaciones
@@ -162,10 +173,11 @@ public class BDController implements MetodosBaseDatos{
             // Agregar la operación al archivo SQL del proyecto
             agregarOperacionAlArchivo(nombreProyecto, operacionSQL);
             
-            return ResponseEntity.ok("Elementos relacionados correctamente en el proyecto '" + nombreProyecto + "'");
+            mensaje = ResponseEntity.ok("Elementos relacionados correctamente en el proyecto '" + nombreProyecto + "'");
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error al relacionar: " + e.getMessage());
+            mensaje = ResponseEntity.internalServerError().body("Error al relacionar: " + e.getMessage());
         }
+        return mensaje;
     }
 
     /**
@@ -175,19 +187,21 @@ public class BDController implements MetodosBaseDatos{
      */
     @GetMapping("/activo")
     public ResponseEntity<?> obtenerProyectoActivo(HttpSession session) {
+        ResponseEntity<?> mensaje;
         try {
             String nombre = (String) session.getAttribute("proyectoActivo");
             String enfoque = (String) session.getAttribute("enfoqueProyectoActivo");
             
             if (nombre != null && enfoque != null) {
                 ProyectoDTO proyecto = new ProyectoDTO(nombre, enfoque);
-                return ResponseEntity.ok(proyecto);
+                mensaje = ResponseEntity.ok(proyecto);
             } else {
-                return ResponseEntity.status(404).body("No hay proyecto activo");
+                mensaje = ResponseEntity.status(404).body("No hay proyecto activo");
             }
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error al obtener proyecto activo: " + e.getMessage());
+            mensaje = ResponseEntity.internalServerError().body("Error al obtener proyecto activo: " + e.getMessage());
         }
+        return mensaje;
     }
 
     /**
@@ -196,18 +210,24 @@ public class BDController implements MetodosBaseDatos{
      * @return String con el tipo de tabla
      */
     private String determinarTipoTabla(Map<String, Object> requestBody) {
+        String tipo = "";
         // Determinar tipo basado en los campos específicos presentes
         if (requestBody.containsKey("estado") && requestBody.containsKey("origen") && requestBody.containsKey("comportamiento")) {
-            return "entidadIndividual"; // o "entidadColectiva" según otros criterios
+            if (requestBody.get("Entidad").equals("EntidadIndividual")) {
+                tipo = "entidadIndividual"; // o "entidadColectiva" según otros criterios
+            } else{
+                tipo = "entidadColectiva";
+            }
         } else if (requestBody.containsKey("tamano") && requestBody.containsKey("desarrollo")) {
-            return "construccion";
+            tipo = "construccion";
         } else if (requestBody.containsKey("origen") && requestBody.containsKey("dureza")) {
-            return "efectos";
+            tipo = "efectos";
         } else if (requestBody.containsKey("direccion") && requestBody.containsKey("afectados")) {
-            return "interaccion";
+            tipo = "interaccion";
         } else {
-            return "zona"; // Por defecto
+            tipo = "zona"; // Por defecto
         }
+        return tipo;
     }
 
     /**
@@ -227,11 +247,6 @@ public class BDController implements MetodosBaseDatos{
                     (String) requestBody.get("comportamiento")
                 };
             case "construccion":
-                return new String[]{
-                    tipoTabla,
-                    (String) requestBody.get("tamano"),
-                    (String) requestBody.get("desarrollo")
-                };
             case "zona":
                 return new String[]{
                     tipoTabla,
@@ -338,8 +353,7 @@ public class BDController implements MetodosBaseDatos{
      * @return Valor escapado
      */
     private String escapeSQL(String value) {
-        if (value == null) return "";
-        return value.replace("'", "''").replace("\\", "\\\\");
+        return (value == null) ? "" : value.replace("'", "''").replace("\\", "\\\\");
     }
 
     /**

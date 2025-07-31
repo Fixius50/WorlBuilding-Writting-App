@@ -5,6 +5,7 @@ import com.worldbuilding.WorldbuildingApp.ParametrosBaseDatos;
 /**
  * DTO para hacer inserciones y recoger datos de la base de datos. Lleva un generico de ProyectoDTO para indicar cual es el proyecto al que está.
  */
+@SuppressWarnings("hiding")
 public class DatosTablaDTO<ProyectoDTO> extends ParametrosBaseDatos{
 
     // Constructor vacio que no debe hacer nada
@@ -32,10 +33,6 @@ public class DatosTablaDTO<ProyectoDTO> extends ParametrosBaseDatos{
         this.descripcion = descripcion;
         switch (valoresExtraTabla[0]) {
             case "Entidad-Individual":
-                this.setEstado(valoresExtraTabla[1]);
-                this.setOrigen_entidad(valoresExtraTabla[2]);
-                this.setComportamiento_entidad(valoresExtraTabla[3]);
-            break;
             case "Entidad-Colectiva":
                 this.setEstado(valoresExtraTabla[1]);
                 this.setOrigen_entidad(valoresExtraTabla[2]);

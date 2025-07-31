@@ -58,6 +58,7 @@
     background-size: cover;
     background-position: center;
     text-align: center;
+    text-decoration: underline;
 }
 .menu-desplegable:hover{
     height: 25vh;
@@ -71,15 +72,19 @@
     max-height: 100%; /* Ajustar el valor según el contenido */
 }
 
+.menu-desplegable .simbolo{
+    position: absolute;
+    bottom: 0;
+}
+
 .content {
+    margin-top: 1vh;
     max-height: 0;
     overflow: hidden;
-    position: relative;
-    margin-top: 5%;
     display: flex;
     flex-direction: column;
     align-content: flex-start; /* clave para alinear a la izquierda */
-    width: 100%; /* Fijar ancho total del contenedor para que no cambie */
+    flex-grow: 1;
     transition: visibility 0.5s ease-in-out, max-height 0.5s ease-in-out; /* Añadir transición para visibilidad y altura */
 }
 
@@ -88,7 +93,6 @@
     background-color: rgb(166, 65, 225);
     overflow: hidden;
     white-space: nowrap;
-    position: relative;
     margin-left: 1%;
     padding-right: 0; /* para visual feedback */
 }
@@ -119,8 +123,12 @@
 /*Este es el nombre del proyecto (y su ruta)*/
 .header-top{
     border: 4px solid rgb(207, 11, 11);
-    width: 20%;
-    height: auto;
+    width: 10vw;
+    height: 5vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    word-wrap: break-word;
 }
 
 .header-top a{
@@ -155,15 +163,14 @@
     transition: height 0.5s ease-in-out, background-image 1s ease-in-out;
 }
 
-.nv{
+.navTop header{
     display: none;
     text-align: center;
     height: auto;
     visibility: collapse;
-    
 }
 
-.navTop:hover > .nv{
+.navTop:hover > header{
     transition: visibility 1s, max-height 1s; /* Añadir transición para visibilidad y altura */
     visibility: visible;
     overflow: hidden;

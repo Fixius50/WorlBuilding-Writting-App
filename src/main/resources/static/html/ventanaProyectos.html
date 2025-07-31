@@ -16,17 +16,17 @@
                 <div class="content">
                     <!-- Hacer que la letra se esconda hasta que se pase el ratón por encima.
                     Luego hacer que se quede el último recuadro del cual se haya puesto el ratón y no se vaya--> 
-                    <button class="option" id="bt1" onclick="abrirVentanaCreacion()">Generar objetos&sc;</button>
+                    <button class="option" id="bt1" onclick="abrirVentanaCreacion()">Generar objetos</button>
                     <!--
-                    <button class="option" id="bt1" onclick="">Importar (no disponible) &sc;</button>
-                    <button class="option" id="bt1" onclick="">Exportar (no disponible) &sc;</button>
-                    <button class="option" id="bt1" onclick="">Wiki (no disponible) &sc;</button>
-                    <button class="option" id="bt1" onclick="">Apuntes (no disponible) &sc;</button> 
+                    <button class="option" id="bt1" onclick="">Importar (proximamente) </button>
+                    <button class="option" id="bt1" onclick="">Exportar (proximamente) </button>
+                    <button class="option" id="bt1" onclick="">Wiki (proximamente) </button>
+                    <button class="option" id="bt1" onclick="">Apuntes (proximamente) </button> 
                     -->
-                    <button class="option" id="bt1" onclick="abrirVentanaAjustes()">Ajustes del proyecto&sc;</button>
-                    <button class="option" id="bt1" onclick="abrirVentanaMenuInicial()">Página de inicio &sc;</button>
-                    <b>&dArr;</b>
+                    <button class="option" id="bt1" onclick="abrirVentanaAjustes()">Ajustes proyecto</button>
+                    <button class="option" id="bt1" onclick="abrirVentanaMenuInicial()">Página inicial </button>
                 </div>
+                <b class="simbolo">&dArr;</b>
             </div>
             <!-- Aquí entra algo que ya veré que hacer. A lo mejor un gif animado o
              la autoría con el nombre del proyecto. Más tarde se editará para mejorarlo.-->
@@ -45,8 +45,8 @@
                     <header class="construccion">Construcción</header>
                     <header class="estado">Estado</header>
                     <header class="nv">Eliminar</header>
-                    <header class="nv">Construcción</header>
-                    <header class="nv">Algo</header>
+                    <header class="nv">Acciones</header>
+                    <header class="nv">Decisiones</header>
                     <header class="nv">Estado</header>
                 </nav>
             </div>
@@ -69,25 +69,25 @@
     function abrirVentanaCreacion() {
         if (!nombreProyectoGlobal) {
             alert("No hay proyecto activo");
-            return;
+        } else{
+            window.location.href = `../html/ventanaCreacion.html?proyecto=${encodeURIComponent(nombreProyectoGlobal)}`;
         }
-        window.location.href = `../html/ventanaCreacion.html?proyecto=${encodeURIComponent(nombreProyectoGlobal)}`;
     }
 
     function abrirVentanaAjustes() {
         if (!nombreProyectoGlobal) {
             alert("No hay proyecto activo");
-            return;
+        } else{
+            window.location.href = `../html/ventanaAjustes.html?proyecto=${encodeURIComponent(nombreProyectoGlobal)}`;
         }
-        window.location.href = `../html/ventanaAjustes.html?proyecto=${encodeURIComponent(nombreProyectoGlobal)}`;
     }
 
     function abrirVentanaMenuInicial() {
         if (!nombreProyectoGlobal) {
             alert("No hay proyecto activo");
-            return;
+        } else{
+            window.location.href = `../menuInicialLog.html`;
         }
-        window.location.href = `../menuInicialLog.html`;
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -101,14 +101,14 @@
             // Ejemplo: "Proyecto activo: MiProyecto - Enfoque: Fantasía"
             let nombre = "";
             let enfoque = "";
-            const match = texto.match(/^Proyecto activo: (.+) - Enfoque: (.+)$/);
+            const match = texto.match(/^Proyecto: (.+) - Enfoque: (.+)$/);
             if (match) {
                 nombre = match[1];
                 enfoque = match[2];
             }
             // Ahora puedes usar nombre y enfoque como antes
             nombreProyectoGlobal = nombre;
-            document.getElementById("nombre-proyecto").textContent = nombre + " (" + enfoque + ")";
+            document.getElementById("nombre-proyecto").textContent = nombre + " ( -" + enfoque + "- )";
         })
         .catch(err => {
             document.getElementById("nombre-proyecto").textContent = "Sin proyecto activo";
