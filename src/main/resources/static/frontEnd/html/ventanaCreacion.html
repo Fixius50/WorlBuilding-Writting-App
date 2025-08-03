@@ -199,21 +199,11 @@
         fetch('/api/proyectos/activo')
             .then(res => {
                 if (!res.ok) throw new Error("No hay proyecto activo");
-                return res.text();
+                return res.json();
             })
-            .then(texto => {
-                // Extraer nombre y enfoque del string recibido
-                // Ejemplo: "Proyecto activo: MiProyecto - Enfoque: Fantasía"
-                let nombre = "";
-                let enfoque = "";
-                const match = texto.match(/^Proyecto activo: (.+) - Enfoque: (.+)$/);
-                if (match) {
-                    nombre = match[1];
-                    enfoque = match[2];
-                }
-                // Usa nombre y enfoque como necesites
-                // Por ejemplo:
-                document.getElementById("nombre-proyecto").textContent = nombre + " (" + enfoque + ")";
+            .then(proyecto => {
+                // Ahora recibimos un objeto JSON con nombre y enfoque
+                document.getElementById("nombre-proyecto").textContent = proyecto.nombre + " (" + proyecto.enfoque + ")";
             })
             .catch(err => {
                 document.getElementById("nombre-proyecto").textContent = "Sin proyecto activo";

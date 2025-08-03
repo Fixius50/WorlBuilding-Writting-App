@@ -138,12 +138,10 @@ public class ProyectoController {
     public ResponseEntity<?> getProyectoActivo(HttpSession session) {
         String nombre = (String) session.getAttribute("proyectoActivo");
         String enfoque = (String) session.getAttribute("enfoqueProyectoActivo");
-        ResponseEntity<String> entity;
+        ResponseEntity<?> entity;
         if (nombre != null && enfoque != null) {
             ProyectoDTO proyecto = new ProyectoDTO(nombre, enfoque);
-            entity = ResponseEntity.ok("Proyecto activo: " + nombre + " - Enfoque: " + enfoque);
-            proyecto.setNombre(nombre);
-            proyecto.setEnfoque(enfoque);
+            entity = ResponseEntity.ok(proyecto);
         } else{
             entity = ResponseEntity.status(404).body("No hay proyecto activo");
         }

@@ -14,7 +14,7 @@ public class PagesController {
     // Página principal del proyecto
     @GetMapping("/")
     public String menuInicial() {
-        return "redirect:/menuInicialLog.html";
+        return "redirect:/frontEnd/menuInicialLog.html";
     }
     // Página principal del proyecto
     @GetMapping(carpeta + "/ventanaProyectos")
