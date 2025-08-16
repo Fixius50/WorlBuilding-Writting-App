@@ -27,25 +27,19 @@ public class ProyectoController {
     public String nombre, enfoque;
 
     @PostMapping
-    public ResponseEntity<?> crearProyecto(
-        @RequestParam String nombre,
-        @RequestParam String enfoque,
-        HttpSession session
-    ) {
+    public ResponseEntity<?> crearProyecto( @RequestParam String nombre, @RequestParam String enfoque, HttpSession session) {
         ResponseEntity<String> entity;
         try {
             Path archivoSQL = Paths.get(DATA_FOLDER, nombre + ".sql");
             Path worldBuildingSQL = Paths.get(DATA_FOLDER, WORLD_BUILDING_SQL);
 
             if (Files.exists(archivoSQL)) {
-                entity = ResponseEntity.badRequest().body("El proyecto ya existe");
-                return entity;
+                throw new RuntimeException("El proyecto ya existe");
             }
 
             // Verificar que existe worldbuilding.sql
             if (!Files.exists(worldBuildingSQL)) {
-                entity = ResponseEntity.status(500).body("Error: No se encuentra el archivo worldbuilding.sql");
-                return entity;
+                throw new RuntimeException("No se encuentra el archivo worldbuilding.sql");
             }
 
             // Escapamos las comillas simples para prevenir inyección de SQL básica
@@ -99,7 +93,7 @@ public class ProyectoController {
             entity = ResponseEntity.ok("Proyecto '" + nombre + "' creado correctamente con archivo SQL específico");
             
         } catch (IOException e) {
-            entity = ResponseEntity.status(500).body("Error creando el proyecto: " + e.getMessage());
+            entity = ResponseEntity.status(500).body(e.getMessage());
         }
         return entity;
     }
@@ -155,13 +149,10 @@ public class ProyectoController {
      * @return ResponseEntity con el resultado
      */
     @PostMapping("/agregar-operacion")
-    public ResponseEntity<?> agregarOperacionSQL(
-        @RequestParam String operacionSQL,
-        HttpSession session
-    ) {
+    public ResponseEntity<?> agregarOperacionSQL(@RequestParam String operacionSQL, HttpSession session) {
         String nombreProyecto = (String) session.getAttribute("proyectoActivo");
         if (nombreProyecto == null) {
-            return ResponseEntity.badRequest().body("No hay proyecto activo");
+            throw new RuntimeException("No hay proyecto activo");
         }
 
         try {
@@ -197,14 +188,13 @@ public class ProyectoController {
     public ResponseEntity<?> obtenerArchivoSQL(HttpSession session) {
         String nombreProyecto = (String) session.getAttribute("proyectoActivo");
         if (nombreProyecto == null) {
-            return ResponseEntity.badRequest().body("No hay proyecto activo");
+            throw new RuntimeException("No hay proyecto activo");
         }
 
         try {
             Path archivoSQL = Paths.get(DATA_FOLDER, nombreProyecto + ".sql");
-            
             if (!Files.exists(archivoSQL)) {
-                return ResponseEntity.status(404).body("Archivo del proyecto no encontrado");
+                throw new RuntimeException("Archivo del proyecto no encontrado");
             }
 
             String contenido = Files.readString(archivoSQL);

@@ -19,7 +19,7 @@ public class ShutdownController {
     public void shutdownContext() {
         Thread thread = new Thread(() -> {
             try {
-                Thread.sleep(1000); // Espera 1 seg para responder bien
+                Thread.sleep(500); // Espera 1 seg para responder bien
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

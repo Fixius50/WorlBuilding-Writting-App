@@ -19,6 +19,10 @@ public class WorldbuildingAppApplication {
         abrirNavegador("http://localhost:8080/frontEnd/menuInicialLog.html");
     }
 
+    /**
+     * corsConfigurer(): esta función se encarga de configurar los CORS (Cross-Origin Resource Sharing de React) para que la aplicación pueda ser accedida desde el frontend.
+     * @return
+     */
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
