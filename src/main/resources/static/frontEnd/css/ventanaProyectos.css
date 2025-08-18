@@ -195,9 +195,204 @@
 
 .objects{
     position: absolute;
-    width: 10vw; /*Mirar para cambiar el tamaño*/
+    width: 300px;
     height: auto;
     margin: 1vw;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* ===== ESTILOS PARA LA SECCIÓN DE OBJETOS ===== */
+
+.objects-container {
+    padding: 16px;
+}
+
+.objects-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #667eea;
+    padding-bottom: 8px;
+}
+
+.objects-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.reload-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: #667eea;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.reload-btn:hover {
+    background: #5a6fd8;
+    transform: rotate(180deg);
+}
+
+.reload-btn:active {
+    transform: rotate(180deg) scale(0.95);
+}
+
+.reload-btn.loading {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.object-category {
+    margin-bottom: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.category-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid #e0e0e0;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.category-header:hover {
+    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+}
+
+.category-icon {
+    font-size: 16px;
+    margin-right: 8px;
+}
+
+.category-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+.category-count {
+    background: #667eea;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+}
+
+.object-list {
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 8px;
+    background: #fff;
+}
+
+.draggable-object {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    margin-bottom: 4px;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    cursor: grab;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.draggable-object:hover {
+    background: #e9ecef;
+    border-color: #667eea;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.draggable-object:active {
+    cursor: grabbing;
+    transform: translateY(0);
+}
+
+.draggable-object.dragging {
+    opacity: 0.5;
+    transform: rotate(5deg);
+}
+
+.object-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: white;
+    flex-shrink: 0;
+}
+
+.object-name {
+    flex: 1;
+    font-size: 13px;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.object-type {
+    font-size: 11px;
+    color: #666;
+    margin-top: 2px;
+}
+
+.empty-category {
+    padding: 16px;
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    font-size: 12px;
+}
+
+/* Scrollbar personalizado para las listas */
+.object-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.object-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.object-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.object-list::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
 }
 
 .ground{
@@ -206,4 +401,175 @@
     align-content: center;
     flex-wrap: wrap;
     width: 100%;
+}
+
+/* ===== ESTILOS PARA EL MAPA INFINITO ===== */
+
+.map-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #f8f9fa;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.map-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.map-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.map-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.map-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.map-btn:active {
+    transform: translateY(0);
+}
+
+.map-area {
+    flex: 1;
+    position: relative;
+    min-height: 400px;
+    background: #f8f9fa;
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
+}
+
+#infinite-map-canvas {
+    width: 100% !important;
+    height: 100% !important;
+    border: none !important;
+    border-radius: 0 0 8px 8px;
+}
+
+.map-info {
+    padding: 12px 20px;
+    background: #fff;
+    border-top: 1px solid #e0e0e0;
+    font-size: 12px;
+    color: #666;
+}
+
+.map-info p {
+    margin: 0 0 8px 0;
+    font-weight: 600;
+}
+
+.map-info ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.map-info li {
+    margin-bottom: 4px;
+}
+
+/* Responsive design para el mapa */
+@media (max-width: 768px) {
+    .map-header {
+        padding: 8px 12px;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .map-header h3 {
+        font-size: 16px;
+    }
+    
+    .map-controls {
+        gap: 4px;
+    }
+    
+    .map-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+    
+    .map-info {
+        padding: 8px 12px;
+        font-size: 11px;
+    }
+    
+    .map-info ul {
+        padding-left: 16px;
+    }
+}
+
+/* Animaciones para el mapa */
+@keyframes mapFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.map-container {
+    animation: mapFadeIn 0.3s ease-out;
+}
+
+/* Estados de carga */
+.map-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #666;
+    font-style: italic;
+}
+
+.map-loading::after {
+    content: '';
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e0e0e0;
+    border-top: 2px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 8px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
