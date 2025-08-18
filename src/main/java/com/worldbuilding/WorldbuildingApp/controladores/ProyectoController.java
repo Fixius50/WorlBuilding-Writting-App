@@ -11,6 +11,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.*;
+import java.util.regex.*;
 
 /**
  * Esta clase controla el proyecto que se va a usar o crear en la aplicación según una serie de funciones internas definidas. 
@@ -203,5 +206,143 @@ public class ProyectoController {
         } catch (IOException e) {
             return ResponseEntity.status(500).body("Error leyendo archivo SQL: " + e.getMessage());
         }
+    }
+
+    /**
+     * Método para obtener todos los datos del proyecto activo ejecutando SELECT * en cada tabla
+     * @param session La sesión HTTP
+     * @return ResponseEntity con los datos estructurados de todas las tablas
+     */
+    @GetMapping("/datos-proyecto")
+    public ResponseEntity<?> obtenerDatosProyecto(HttpSession session) {
+        String nombreProyecto = (String) session.getAttribute("proyectoActivo");
+        ResponseEntity<?> entity;
+        try {
+            if (nombreProyecto == null) {
+                throw new IOException("No hay proyecto activo");
+            }
+            Path archivoSQL = Paths.get(DATA_FOLDER, nombreProyecto + ".sql");
+            if (!Files.exists(archivoSQL)) {
+                throw new IOException("Archivo del proyecto no encontrado");
+            }
+
+            String contenido = Files.readString(archivoSQL);
+            
+            // Crear objeto con los datos estructurados
+            java.util.Map<String, Object> datosProyecto = new java.util.HashMap<>();
+            datosProyecto.put("nombreProyecto", nombreProyecto);
+            datosProyecto.put("enfoque", session.getAttribute("enfoqueProyectoActivo"));
+            
+            // Extraer datos de cada tabla del contenido SQL
+            java.util.Map<String, java.util.List<java.util.Map<String, Object>>> tablas = new java.util.HashMap<>();
+            
+            // Tablas que queremos extraer
+            String[] nombresTablas = {
+                "entidadIndividual", "entidadColectiva", "construccion", 
+                "zona", "efectos", "interaccion"
+            };
+            
+            for (String tabla : nombresTablas) {
+                java.util.List<java.util.Map<String, Object>> datosTabla = extraerDatosDeTabla(contenido, tabla);
+                tablas.put(tabla, datosTabla);
+            }
+            
+            datosProyecto.put("tablas", tablas);
+            
+            entity = ResponseEntity.ok(datosProyecto);
+            
+        } catch (IOException e) {
+            entity = ResponseEntity.status(500).body(e.getMessage());
+        }
+        return entity;
+    }
+
+    /**
+     * Método auxiliar para extraer datos de una tabla específica del contenido SQL
+     * @param contenidoSQL El contenido del archivo SQL
+     * @param nombreTabla El nombre de la tabla a extraer
+     * @return Lista de mapas con los datos de la tabla
+     */
+    private List<Map<String, Object>> extraerDatosDeTabla(String contenidoSQL, String nombreTabla) {
+        List<Map<String, Object>> datos = new ArrayList<>();
+        
+        // Patrón mejorado para encontrar INSERT INTO tabla (columnas) VALUES (valores);
+        // Maneja múltiples líneas y espacios
+        String patron = "INSERT\\s+INTO\\s+" + nombreTabla + "\\s*\\(([^)]+)\\)\\s*VALUES\\s*\\(([^)]+)\\);";
+        Pattern pattern = Pattern.compile(patron, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(contenidoSQL);
+        
+        while (matcher.find()) {
+            String columnasStr = matcher.group(1);
+            String valoresStr = matcher.group(2);
+            
+            // Parsear columnas
+            String[] columnas = columnasStr.split(",");
+            for (int i = 0; i < columnas.length; i++) {
+                columnas[i] = columnas[i].trim();
+            }
+            
+            // Parsear valores
+            String[] valores = parsearValoresSQL(valoresStr);
+            
+            // Crear mapa de datos
+            Map<String, Object> fila = new HashMap<>();
+            for (int i = 0; i < columnas.length && i < valores.length; i++) {
+                // Limpiar comillas de los valores
+                String valor = valores[i];
+                if (valor.startsWith("'") && valor.endsWith("'")) {
+                    valor = valor.substring(1, valor.length() - 1);
+                }
+                fila.put(columnas[i], valor);
+            }
+            
+            datos.add(fila);
+        }
+        
+        return datos;
+    }
+
+    /**
+     * Método auxiliar para parsear valores SQL
+     * @param valoresStr String con los valores separados por comas
+     * @return Array of strings with the parsed values
+     */
+    private String[] parsearValoresSQL(String valoresStr) {
+        List<String> valores = new ArrayList<>();
+        StringBuilder valorActual = new StringBuilder();
+        boolean dentroComillas = false;
+        boolean escape = false;
+        char c;
+        for (int i = 0; i < valoresStr.length(); i++) {
+            c = valoresStr.charAt(i);
+            
+            if (escape) {
+                valorActual.append(c);
+                escape = false;
+            }
+            
+            if (c == '\\') {
+                escape = true;
+            }
+            
+            if (c == '\'') {
+                dentroComillas = !dentroComillas;
+                valorActual.append(c);
+            }
+            
+            if (c == ',' && !dentroComillas) {
+                valores.add(valorActual.toString().trim());
+                valorActual = new StringBuilder();
+            }
+            
+            valorActual.append(c);
+        }
+        
+        // Agregar el último valor
+        if (valorActual.length() > 0) {
+            valores.add(valorActual.toString().trim());
+        }
+        
+        return valores.toArray(new String[0]);
     }
 }

@@ -46,14 +46,17 @@ class ProjectDataLoader {
         try {
             console.log('🔄 Cargando datos del proyecto:', window.nombreProyectoGlobal);
             
-            // Obtener el contenido del archivo SQL del proyecto
-            const response = await fetch('/api/proyectos/archivo-sql');
+            // Obtener los datos estructurados del proyecto
+            const response = await fetch('/api/proyectos/datos-proyecto');
             if (!response.ok) {
                 throw new Error('Error obteniendo datos del proyecto');
             }
 
-            const sqlContent = await response.text();
-            this.parseSQLContent(sqlContent);
+            const datosProyecto = await response.json();
+            console.log('📄 Datos del proyecto obtenidos:', datosProyecto);
+            
+            // Procesar los datos estructurados
+            this.processStructuredData(datosProyecto);
             this.updateUI();
             
             console.log('✅ Datos del proyecto cargados correctamente');
@@ -65,7 +68,92 @@ class ProjectDataLoader {
     }
 
     /**
-     * Parsea el contenido SQL para extraer las entidades
+     * Procesa los datos estructurados del proyecto
+     */
+    processStructuredData(datosProyecto) {
+        // Limpiar datos anteriores
+        this.projectData = {
+            entidadesIndividuales: [],
+            entidadesColectivas: [],
+            construcciones: [],
+            zonas: [],
+            efectos: []
+        };
+
+        const tablas = datosProyecto.tablas || {};
+        
+        // Procesar entidades individuales
+        if (tablas.entidadIndividual) {
+            this.projectData.entidadesIndividuales = tablas.entidadIndividual.map(row => ({
+                id: row.id || this.generateId(),
+                nombre: row.nombre || '',
+                apellidos: row.apellidos || '',
+                tipo: row.tipo || '',
+                descripcion: row.descripcion || '',
+                estado: row.estado || '',
+                origen: row.origen || '',
+                comportamiento: row.comportamiento || ''
+            }));
+        }
+
+        // Procesar entidades colectivas
+        if (tablas.entidadColectiva) {
+            this.projectData.entidadesColectivas = tablas.entidadColectiva.map(row => ({
+                id: row.id || this.generateId(),
+                nombre: row.nombre || '',
+                apellidos: row.apellidos || '',
+                tipo: row.tipo || '',
+                descripcion: row.descripcion || '',
+                tamanno: row.tamanno || '',
+                desarrollo: row.desarrollo || ''
+            }));
+        }
+
+        // Procesar construcciones
+        if (tablas.construccion) {
+            this.projectData.construcciones = tablas.construccion.map(row => ({
+                id: row.id || this.generateId(),
+                nombre: row.nombre || '',
+                apellidos: row.apellidos || '',
+                tipo: row.tipo || '',
+                descripcion: row.descripcion || '',
+                tamanno: row.tamanno || '',
+                desarrollo: row.desarrollo || ''
+            }));
+        }
+
+        // Procesar zonas
+        if (tablas.zona) {
+            this.projectData.zonas = tablas.zona.map(row => ({
+                id: row.id || this.generateId(),
+                nombre: row.nombre || '',
+                apellidos: row.apellidos || '',
+                tipo: row.tipo || '',
+                descripcion: row.descripcion || '',
+                tamanno: row.tamanno || '',
+                desarrollo: row.desarrollo || ''
+            }));
+        }
+
+        // Procesar efectos
+        if (tablas.efectos) {
+            this.projectData.efectos = tablas.efectos.map(row => ({
+                id: row.id || this.generateId(),
+                nombre: row.nombre || '',
+                apellidos: row.apellidos || '',
+                tipo: row.tipo || '',
+                descripcion: row.descripcion || '',
+                origen: row.origen || '',
+                dureza: row.dureza || '',
+                comportamiento: row.comportamiento || ''
+            }));
+        }
+
+        console.log('📊 Datos procesados:', this.projectData);
+    }
+
+    /**
+     * Parsea el contenido SQL para extraer las entidades (método legacy)
      */
     parseSQLContent(sqlContent) {
         // Limpiar datos anteriores
@@ -402,14 +490,14 @@ class ProjectDataLoader {
         notification.textContent = message;
         notification.style.cssText = `
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: 1.25rem;
+            right: 1.25rem;
             background: #dc3545;
             color: white;
-            padding: 12px 20px;
-            border-radius: 6px;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.375rem;
             z-index: 10000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.2);
         `;
         
         document.body.appendChild(notification);
