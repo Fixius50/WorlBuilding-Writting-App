@@ -79,16 +79,20 @@ class FlowManager {
     }
 
     /**
-     * Carga los datos del proyecto desde el archivo SQL
+     * Carga los datos del proyecto desde el backend
      */
     async loadProjectData() {
         if (!this.projectActive) return;
 
         try {
-            const response = await fetch('/api/proyectos/archivo-sql');
+            console.log('🔄 Cargando datos del proyecto desde el backend...');
+            const response = await fetch('/api/proyectos/datos-proyecto');
             if (response.ok) {
-                const sqlContent = await response.text();
-                this.parseSQLToFlowData(sqlContent);
+                const datosProyecto = await response.json();
+                console.log('📄 Datos del proyecto obtenidos:', datosProyecto);
+                this.processStructuredData(datosProyecto);
+            } else {
+                console.warn('No se pudieron obtener los datos del proyecto');
             }
         } catch (error) {
             console.error('Error cargando datos del proyecto:', error);
@@ -96,131 +100,113 @@ class FlowManager {
     }
 
     /**
-     * Parsea el contenido SQL a datos de React Flow
+     * Procesa los datos estructurados del backend
      */
-    parseSQLToFlowData(sqlContent) {
-        // Extraer INSERT statements y convertirlos a nodos
-        const insertRegex = /INSERT INTO (\w+) \(.*?\) VALUES \(.*?\);/g;
-        let match;
+    processStructuredData(datosProyecto) {
+        const { tablas } = datosProyecto;
         
-        while ((match = insertRegex.exec(sqlContent)) !== null) {
-            const tableName = match[1];
-            const values = this.extractValuesFromSQL(match[0]);
-            
-            if (values) {
-                const node = this.createNodeFromSQLData(tableName, values);
-                if (node) {
-                    this.nodes.push(node);
-                }
-            }
+        // Procesar entidades individuales
+        if (tablas.entidadIndividual) {
+            this.processEntities(tablas.entidadIndividual, 'entidad-individual');
         }
-
-        // Extraer relaciones y convertirlas a edges
-        const relationRegex = /INSERT INTO relaciones \(.*?\) VALUES \(.*?\);/g;
-        while ((match = relationRegex.exec(sqlContent)) !== null) {
-            const values = this.extractValuesFromSQL(match[0]);
-            if (values) {
-                const edge = this.createEdgeFromSQLData(values);
-                if (edge) {
-                    this.edges.push(edge);
-                }
-            }
+        
+        // Procesar entidades colectivas
+        if (tablas.entidadColectiva) {
+            this.processEntities(tablas.entidadColectiva, 'entidad-colectiva');
         }
-
+        
+        // Procesar construcciones
+        if (tablas.construccion) {
+            this.processEntities(tablas.construccion, 'construccion');
+        }
+        
+        // Procesar zonas
+        if (tablas.zona) {
+            this.processEntities(tablas.zona, 'zona');
+        }
+        
+        // Procesar efectos
+        if (tablas.efectos) {
+            this.processEntities(tablas.efectos, 'efecto');
+        }
+        
+        // Procesar interacciones
+        if (tablas.interaccion) {
+            this.processInteractions(tablas.interaccion);
+        }
+        
+        console.log('✅ Datos del proyecto procesados correctamente');
         this.updateFlow();
     }
 
     /**
-     * Extrae valores de una sentencia SQL INSERT
+     * Procesa entidades y las convierte en nodos
      */
-    extractValuesFromSQL(sqlStatement) {
-        const valuesMatch = sqlStatement.match(/VALUES \((.*?)\)/);
-        if (valuesMatch) {
-            return valuesMatch[1].split(',').map(v => v.trim().replace(/'/g, ''));
-        }
-        return null;
-    }
-
-    /**
-     * Crea un nodo a partir de datos SQL
-     */
-    createNodeFromSQLData(tableName, values) {
-        const nodeType = this.mapTableToNodeType(tableName);
-        if (!nodeType) return null;
-
-        return {
-            id: values[0] || this.generateId(),
-            type: nodeType,
-            position: { x: Math.random() * 800, y: Math.random() * 600 },
-            data: {
-                nombre: values[1] || '',
-                apellidos: values[2] || '',
-                tipo: values[3] || '',
-                descripcion: values[4] || '',
-                ...this.extractExtraData(tableName, values)
+    processEntities(entities, nodeType) {
+        entities.forEach((entity, index) => {
+            const nodeId = `${nodeType}-${index}`;
+            const node = {
+                id: nodeId,
+                type: nodeType,
+                position: { x: 100 + (index * 250), y: 100 + (index * 150) },
+                data: {
+                    nombre: entity.nombre || 'Sin nombre',
+                    backendData: entity
+                }
+            };
+            
+            // Verificar si el nodo ya existe
+            const existingNodeIndex = this.nodes.findIndex(n => n.id === nodeId);
+            if (existingNodeIndex !== -1) {
+                this.nodes[existingNodeIndex] = node;
+            } else {
+                this.nodes.push(node);
             }
-        };
+        });
     }
 
     /**
-     * Mapea nombres de tabla a tipos de nodo
+     * Procesa interacciones y las convierte en conexiones
      */
-    mapTableToNodeType(tableName) {
-        const mapping = {
-            'entidades_individuales': 'entidad-individual',
-            'entidades_colectivas': 'entidad-colectiva',
-            'construcciones': 'construccion',
-            'zonas': 'zona',
-            'efectos': 'efecto'
-        };
-        return mapping[tableName] || null;
+    processInteractions(interactions) {
+        interactions.forEach((interaction, index) => {
+            const edgeId = `interaction-${index}`;
+            const edge = {
+                id: edgeId,
+                source: interaction.source || 'unknown',
+                target: interaction.target || 'unknown',
+                type: 'relacion-linea',
+                data: {
+                    nombre: interaction.nombre || 'Interacción',
+                    tipo: interaction.tipo || 'General',
+                    descripcion: interaction.descripcion || '',
+                    backendData: interaction
+                }
+            };
+            
+            // Verificar si la conexión ya existe
+            const existingEdgeIndex = this.edges.findIndex(e => e.id === edgeId);
+            if (existingEdgeIndex !== -1) {
+                this.edges[existingEdgeIndex] = edge;
+            } else {
+                this.edges.push(edge);
+            }
+        });
     }
 
     /**
-     * Extrae datos adicionales según el tipo de tabla
+     * Actualiza el flujo con los datos cargados
      */
-    extractExtraData(tableName, values) {
-        const extraData = {};
-        
-        switch (tableName) {
-            case 'entidades_individuales':
-            case 'entidades_colectivas':
-                extraData.estado = values[5] || '';
-                extraData.origen = values[6] || '';
-                extraData.comportamiento = values[7] || '';
-                break;
-            case 'construcciones':
-                extraData.tamanno = values[5] || '';
-                extraData.desarrollo = values[6] || '';
-                break;
-            case 'zonas':
-                extraData.tamanno = values[5] || '';
-                extraData.desarrollo = values[6] || '';
-                break;
-            case 'efectos':
-                extraData.origen = values[5] || '';
-                extraData.dureza = values[6] || '';
-                extraData.comportamiento = values[7] || '';
-                break;
+    updateFlow() {
+        if (this.flowInstance) {
+            this.flowInstance.setNodes(this.nodes);
+            this.flowInstance.setEdges(this.edges);
         }
         
-        return extraData;
-    }
-
-    /**
-     * Crea una conexión a partir de datos SQL
-     */
-    createEdgeFromSQLData(values) {
-        return {
-            id: `e${values[0]}`,
-            source: values[1],
-            target: values[2],
-            type: 'relacion-linea',
-            data: {
-                direccion: values[3] || '',
-                afectados: values[4] || ''
-            }
-        };
+        // Disparar evento de actualización
+        document.dispatchEvent(new CustomEvent('flowDataUpdated', {
+            detail: { nodes: this.nodes, edges: this.edges }
+        }));
     }
 
     /**
@@ -293,31 +279,47 @@ class FlowManager {
     }
 
     /**
-     * Crea un nuevo nodo
+     * Crea un nuevo nodo desde drag & drop
      */
     async createNode(nodeData) {
         try {
-            const response = await fetch('/api/bd/insertar', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(nodeData)
-            });
+            const { type, position, data } = nodeData;
             
-            if (response.ok) {
-                const newNode = {
-                    id: this.generateId(),
-                    type: this.mapTableToNodeType(nodeData.tipoTabla),
-                    position: { x: Math.random() * 800, y: Math.random() * 600 },
-                    data: nodeData
-                };
-                
-                this.nodes.push(newNode);
-                this.updateFlow();
-                return newNode;
-            }
+            // Crear el nodo localmente
+            const newNode = {
+                id: this.generateId(),
+                type: type,
+                position: position || { x: Math.random() * 800, y: Math.random() * 600 },
+                data: data || {}
+            };
+            
+            // Agregar el nodo a la lista local
+            this.nodes.push(newNode);
+            
+            // Actualizar el flujo
+            this.updateFlow();
+            
+            console.log('🎯 Nodo creado:', newNode);
+            return newNode;
+            
         } catch (error) {
             console.error('Error creando nodo:', error);
+            throw error;
         }
+    }
+
+    /**
+     * Mapea nombres de tabla a tipos de nodo (método legacy)
+     */
+    mapTableToNodeType(tableName) {
+        const mapping = {
+            'entidades_individuales': 'entidad-individual',
+            'entidades_colectivas': 'entidad-colectiva',
+            'construcciones': 'construccion',
+            'zonas': 'zona',
+            'efectos': 'efecto'
+        };
+        return mapping[tableName] || 'entidad-individual';
     }
 
     /**
@@ -345,8 +347,13 @@ class FlowManager {
      * Actualiza el flujo en la interfaz
      */
     updateFlow() {
+        if (this.flowInstance) {
+            this.flowInstance.setNodes(this.nodes);
+            this.flowInstance.setEdges(this.edges);
+        }
+        
         // Disparar evento para actualizar React Flow
-        const event = new CustomEvent('flowDataUpdate', {
+        const event = new CustomEvent('flowDataUpdated', {
             detail: { nodes: this.nodes, edges: this.edges }
         });
         document.dispatchEvent(event);

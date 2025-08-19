@@ -1,6 +1,6 @@
 /**
  * ProjectDataLoader.js - Cargador de datos del proyecto desde la base de datos
- * Maneja la carga de entidades y el drag & drop al mapa
+ * Maneja la carga de entidades y el drag & drop al mapa para crear nodos de React Flow
  */
 
 class ProjectDataLoader {
@@ -21,6 +21,26 @@ class ProjectDataLoader {
      */
     init() {
         this.setupEventListeners();
+        this.initializeCounters();
+    }
+
+    /**
+     * Inicializa los contadores con 0
+     */
+    initializeCounters() {
+        const categories = [
+            'entidades-individuales',
+            'entidades-colectivas',
+            'construcciones',
+            'zonas',
+            'efectos'
+        ];
+        
+        categories.forEach(category => {
+            this.updateCategoryCount(category, 0);
+        });
+        
+        console.log('🔢 Contadores inicializados con 0');
     }
 
     /**
@@ -104,8 +124,9 @@ class ProjectDataLoader {
                 apellidos: row.apellidos || '',
                 tipo: row.tipo || '',
                 descripcion: row.descripcion || '',
-                tamanno: row.tamanno || '',
-                desarrollo: row.desarrollo || ''
+                estado: row.estado || '',
+                origen: row.origen || '',
+                comportamiento: row.comportamiento || ''
             }));
         }
 
@@ -153,142 +174,24 @@ class ProjectDataLoader {
     }
 
     /**
-     * Parsea el contenido SQL para extraer las entidades (método legacy)
-     */
-    parseSQLContent(sqlContent) {
-        // Limpiar datos anteriores
-        this.projectData = {
-            entidadesIndividuales: [],
-            entidadesColectivas: [],
-            construcciones: [],
-            zonas: [],
-            efectos: []
-        };
-
-        // Buscar INSERT statements para cada tipo de tabla
-        this.extractEntities(sqlContent, 'entidades_individuales', 'entidadesIndividuales');
-        this.extractEntities(sqlContent, 'entidades_colectivas', 'entidadesColectivas');
-        this.extractEntities(sqlContent, 'construcciones', 'construcciones');
-        this.extractEntities(sqlContent, 'zonas', 'zonas');
-        this.extractEntities(sqlContent, 'efectos', 'efectos');
-    }
-
-    /**
-     * Extrae entidades de un tipo específico del SQL
-     */
-    extractEntities(sqlContent, tableName, dataKey) {
-        const regex = new RegExp(`INSERT INTO ${tableName} \\(.*?\\) VALUES \\((.*?)\\);`, 'g');
-        let match;
-
-        while ((match = regex.exec(sqlContent)) !== null) {
-            const values = this.parseSQLValues(match[1]);
-            if (values.length >= 5) {
-                const entity = {
-                    id: values[0] || this.generateId(),
-                    nombre: values[1] || '',
-                    apellidos: values[2] || '',
-                    tipo: values[3] || '',
-                    descripcion: values[4] || '',
-                    ...this.extractExtraFields(tableName, values)
-                };
-                
-                this.projectData[dataKey].push(entity);
-            }
-        }
-    }
-
-    /**
-     * Parsea los valores de una sentencia SQL INSERT
-     */
-    parseSQLValues(valuesString) {
-        // Dividir por comas, pero respetando las comillas
-        const values = [];
-        let current = '';
-        let inQuotes = false;
-        let escapeNext = false;
-
-        for (let i = 0; i < valuesString.length; i++) {
-            const char = valuesString[i];
-            
-            if (escapeNext) {
-                current += char;
-                escapeNext = false;
-                continue;
-            }
-
-            if (char === '\\') {
-                escapeNext = true;
-                continue;
-            }
-
-            if (char === "'") {
-                inQuotes = !inQuotes;
-                continue;
-            }
-
-            if (char === ',' && !inQuotes) {
-                values.push(current.trim());
-                current = '';
-                continue;
-            }
-
-            current += char;
-        }
-
-        // Agregar el último valor
-        if (current.trim()) {
-            values.push(current.trim());
-        }
-
-        return values;
-    }
-
-    /**
-     * Extrae campos adicionales según el tipo de tabla
-     */
-    extractExtraFields(tableName, values) {
-        const extraFields = {};
-        
-        switch (tableName) {
-            case 'entidades_individuales':
-            case 'entidades_colectivas':
-                if (values[5]) extraFields.estado = values[5];
-                if (values[6]) extraFields.origen = values[6];
-                if (values[7]) extraFields.comportamiento = values[7];
-                break;
-            case 'construcciones':
-                if (values[5]) extraFields.tamanno = values[5];
-                if (values[6]) extraFields.desarrollo = values[6];
-                break;
-            case 'zonas':
-                if (values[5]) extraFields.tamanno = values[5];
-                if (values[6]) extraFields.desarrollo = values[6];
-                break;
-            case 'efectos':
-                if (values[5]) extraFields.origen = values[5];
-                if (values[6]) extraFields.dureza = values[6];
-                if (values[7]) extraFields.comportamiento = values[7];
-                break;
-        }
-        
-        return extraFields;
-    }
-
-    /**
      * Actualiza la interfaz de usuario con los datos cargados
      */
     updateUI() {
+        // Actualizar contadores desde el backend
         this.updateCategoryCount('entidades-individuales', this.projectData.entidadesIndividuales.length);
         this.updateCategoryCount('entidades-colectivas', this.projectData.entidadesColectivas.length);
         this.updateCategoryCount('construcciones', this.projectData.construcciones.length);
         this.updateCategoryCount('zonas', this.projectData.zonas.length);
         this.updateCategoryCount('efectos', this.projectData.efectos.length);
 
+        // Renderizar listas de objetos
         this.renderObjectList('entidades-individuales', this.projectData.entidadesIndividuales);
         this.renderObjectList('entidades-colectivas', this.projectData.entidadesColectivas);
         this.renderObjectList('construcciones', this.projectData.construcciones);
         this.renderObjectList('zonas', this.projectData.zonas);
         this.renderObjectList('efectos', this.projectData.efectos);
+
+        console.log('🎨 Interfaz de usuario actualizada con datos del backend');
     }
 
     /**
@@ -298,6 +201,7 @@ class ProjectDataLoader {
         const countElement = document.getElementById(`count-${categoryId}`);
         if (countElement) {
             countElement.textContent = count;
+            console.log(`📊 Contador actualizado para ${categoryId}: ${count}`);
         }
     }
 
@@ -314,10 +218,11 @@ class ProjectDataLoader {
         }
 
         listElement.innerHTML = objects.map(obj => this.createObjectElement(obj, categoryId)).join('');
+        console.log(`🎯 Lista renderizada para ${categoryId}: ${objects.length} elementos`);
     }
 
     /**
-     * Crea un elemento HTML para un objeto
+     * Crea un elemento HTML para un objeto arrastrable
      */
     createObjectElement(obj, categoryId) {
         const icon = this.getCategoryIcon(categoryId);
@@ -328,13 +233,17 @@ class ProjectDataLoader {
                  draggable="true" 
                  data-id="${obj.id}" 
                  data-type="${categoryId}"
-                 data-object='${JSON.stringify(obj)}'>
+                 data-object='${JSON.stringify(obj)}'
+                 title="Arrastrar para crear nodo en el mapa">
                 <div class="object-icon" style="background-color: ${color}">
                     ${icon}
                 </div>
                 <div class="object-info">
                     <div class="object-name">${obj.nombre}</div>
-                    <div class="object-type">${obj.tipo}</div>
+                    <div class="object-type">${obj.tipo || this.getCategoryDisplayName(categoryId)}</div>
+                </div>
+                <div class="drag-hint">
+                    <i class="fas fa-arrows-alt"></i>
                 </div>
             </div>
         `;
@@ -346,12 +255,26 @@ class ProjectDataLoader {
     getCategoryIcon(categoryId) {
         const icons = {
             'entidades-individuales': '👤',
-            'entidades-colectivas': '🏛️',
-            'construcciones': '🏰',
+            'entidades-colectivas': '👥',
+            'construcciones': '🏗️',
             'zonas': '🗺️',
             'efectos': '✨'
         };
         return icons[categoryId] || '📦';
+    }
+
+    /**
+     * Obtiene el nombre de visualización para una categoría
+     */
+    getCategoryDisplayName(categoryId) {
+        const names = {
+            'entidades-individuales': 'Personaje',
+            'entidades-colectivas': 'Organización',
+            'construcciones': 'Construcción',
+            'zonas': 'Zona',
+            'efectos': 'Efecto'
+        };
+        return names[categoryId] || 'Elemento';
     }
 
     /**
@@ -378,13 +301,33 @@ class ProjectDataLoader {
         event.target.classList.add('dragging');
         
         const objectData = JSON.parse(event.target.dataset.object);
+        const categoryType = event.target.dataset.type;
+        
+        // Configurar datos para el drag & drop
         event.dataTransfer.setData('text/plain', JSON.stringify({
             id: objectData.id,
-            type: event.target.dataset.type,
-            object: objectData
+            type: categoryType,
+            object: objectData,
+            nodeType: this.mapCategoryToNodeType(categoryType)
         }));
         
         event.dataTransfer.effectAllowed = 'copy';
+        
+        console.log('🚀 Iniciando drag:', objectData.nombre, 'tipo:', categoryType);
+    }
+
+    /**
+     * Mapea la categoría del frontend al tipo de nodo de React Flow
+     */
+    mapCategoryToNodeType(categoryId) {
+        const mapping = {
+            'entidades-individuales': 'entidad-individual',
+            'entidades-colectivas': 'entidad-colectiva',
+            'construcciones': 'construccion',
+            'zonas': 'zona',
+            'efectos': 'efecto'
+        };
+        return mapping[categoryId] || 'entidad-individual';
     }
 
     /**
@@ -401,7 +344,10 @@ class ProjectDataLoader {
      * Maneja el drag over
      */
     handleDragOver(event) {
-        if (event.target.closest('#infinite-map-container')) {
+        // Permitir drop en el mapa y en el área de React Flow
+        if (event.target.closest('#infinite-map-container') || 
+            event.target.closest('.react-flow') ||
+            event.target.closest('.flow-container')) {
             event.preventDefault();
             event.dataTransfer.dropEffect = 'copy';
         }
@@ -410,29 +356,110 @@ class ProjectDataLoader {
     /**
      * Maneja el drop
      */
-    handleDrop(event) {
+    async handleDrop(event) {
         event.preventDefault();
         
-        const mapContainer = event.target.closest('#infinite-map-container');
-        if (!mapContainer || !this.draggedElement) return;
+        // Verificar si hay un FlowManager disponible
+        if (!window.flowManager) {
+            console.warn('❌ FlowManager no disponible, creando marcador en el mapa');
+            this.handleMapDrop(event);
+            return;
+        }
 
         try {
             const data = JSON.parse(event.dataTransfer.getData('text/plain'));
-            const rect = mapContainer.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
+            console.log('📥 Drop recibido:', data);
             
-            // Convertir coordenadas de pantalla a coordenadas del mundo
+            // Determinar si es drop en el mapa o en React Flow
+            const mapContainer = event.target.closest('#infinite-map-container');
+            const flowContainer = event.target.closest('.react-flow, .flow-container');
+            
+            if (mapContainer) {
+                // Drop en el mapa - crear marcador
+                this.handleMapDrop(event, data);
+            } else if (flowContainer) {
+                // Drop en React Flow - crear nodo
+                this.handleFlowDrop(event, data);
+            }
+            
+        } catch (error) {
+            console.error('Error procesando drop:', error);
+        }
+    }
+
+    /**
+     * Maneja el drop en el mapa
+     */
+    handleMapDrop(event, data = null) {
+        if (!data) {
+            try {
+                data = JSON.parse(event.dataTransfer.getData('text/plain'));
+            } catch (error) {
+                console.error('Error obteniendo datos del drop:', error);
+                return;
+            }
+        }
+
+        const mapContainer = event.target.closest('#infinite-map-container');
+        if (!mapContainer || !this.draggedElement) return;
+
+        const rect = mapContainer.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        
+        // Convertir coordenadas de pantalla a coordenadas del mundo
+        if (window.infiniteMap && window.infiniteMap.getWorldCoordinates) {
             const worldCoords = window.infiniteMap.getWorldCoordinates(x, y);
             
             // Agregar marcador al mapa
             this.addMarkerToMap(data.object, worldCoords.x, worldCoords.y);
             
-            console.log('📍 Marcador agregado:', data.object.nombre, 'en', worldCoords);
+            console.log('📍 Marcador agregado al mapa:', data.object.nombre, 'en', worldCoords);
+        }
+    }
+
+    /**
+     * Maneja el drop en React Flow
+     */
+    async handleFlowDrop(event, data) {
+        const flowContainer = event.target.closest('.react-flow, .flow-container');
+        if (!flowContainer || !this.draggedElement) return;
+
+        const rect = flowContainer.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        
+        try {
+            // Crear nodo en React Flow
+            const newNode = await this.createFlowNode(data, x, y);
+            console.log('🎯 Nodo creado en React Flow:', newNode);
             
         } catch (error) {
-            console.error('Error procesando drop:', error);
+            console.error('Error creando nodo en React Flow:', error);
+            this.showError('Error creando nodo en el diagrama');
         }
+    }
+
+    /**
+     * Crea un nodo en React Flow
+     */
+    async createFlowNode(data, x, y) {
+        if (!window.flowManager) {
+            throw new Error('FlowManager no disponible');
+        }
+
+        const nodeData = {
+            nombre: data.object.nombre,
+            backendData: data.object
+        };
+
+        const newNode = await window.flowManager.createNode({
+            type: data.nodeType,
+            position: { x, y },
+            data: nodeData
+        });
+
+        return newNode;
     }
 
     /**

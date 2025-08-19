@@ -1,27 +1,26 @@
 /**
- * EntidadIndividualNode.js - Nodo personalizado para entidades individuales
- * Representa personajes, NPCs y entidades individuales en el mundo
- * Ahora recibe datos del backend y se muestra como un recuadro expandible
+ * ZonaNode.js - Nodo personalizado para zonas
+ * Representa regiones, territorios y zonas geográficas en el mundo
+ * Recibe datos del backend y se muestra como un recuadro expandible
  */
 
-class EntidadIndividualNode {
+class ZonaNode {
     constructor() {
-        this.type = 'entidad-individual';
+        this.type = 'zona';
         this.defaultData = {
             nombre: '',
             apellidos: '',
-            tipo: 'Personaje',
-            descripcion: '',
-            estado: 'Vivo',
-            origen: '',
-            comportamiento: ''
+            tamanno: '',
+            tipo: 'Región',
+            desarrollo: '',
+            descripcion: ''
         };
         this.isExpanded = false;
     }
 
     /**
-     * Renderiza el nodo de entidad individual
-     * Ahora se muestra como un recuadro compacto que se expande al hacer click
+     * Renderiza el nodo de zona
+     * Se muestra como un recuadro compacto que se expande al hacer click
      */
     render(node) {
         const { data } = node;
@@ -30,16 +29,16 @@ class EntidadIndividualNode {
         const nodeData = this.mergeWithBackendData(data);
         
         return `
-            <div class="flow-node entidad-individual-node compact" data-node-id="${node.id}" onclick="toggleNodeExpansion('${node.id}')">
+            <div class="flow-node zona-node compact" data-node-id="${node.id}" onclick="toggleNodeExpansion('${node.id}')">
                 <div class="node-compact-view">
                     <div class="node-image-container">
                         <div class="node-image-placeholder">
-                            <i class="fas fa-user"></i>
+                            <i class="fas fa-map"></i>
                         </div>
                     </div>
                     <div class="node-name-container">
                         <h4 class="node-name">${nodeData.nombre || 'Sin nombre'}</h4>
-                        <span class="node-type">${nodeData.tipo || 'Personaje'}</span>
+                        <span class="node-type">${nodeData.tipo || 'Región'}</span>
                     </div>
                     <div class="node-expand-indicator">
                         <i class="fas fa-chevron-down"></i>
@@ -49,11 +48,11 @@ class EntidadIndividualNode {
                 <div class="node-expanded-content" style="display: none;">
                     <div class="node-header">
                         <div class="node-icon">
-                            <img src="/Otros/imagenes/mage.png" alt="Personaje" class="node-icon-img">
+                            <img src="/Otros/imagenes/zonas.png" alt="Zona" class="node-icon-img">
                         </div>
                         <div class="node-title">
                             <h3 class="node-name">${nodeData.nombre || 'Sin nombre'}</h3>
-                            <span class="node-type">${nodeData.tipo || 'Personaje'}</span>
+                            <span class="node-type">${nodeData.tipo || 'Región'}</span>
                         </div>
                         <div class="node-actions">
                             <button class="node-action-btn edit-btn" onclick="editNode('${node.id}')">
@@ -67,23 +66,18 @@ class EntidadIndividualNode {
                     
                     <div class="node-content">
                         <div class="node-section">
-                            <label class="node-label">Apellidos:</label>
+                            <label class="node-label">Alias:</label>
                             <span class="node-value">${nodeData.apellidos || 'N/A'}</span>
                         </div>
                         
                         <div class="node-section">
-                            <label class="node-label">Estado:</label>
-                            <span class="node-status ${this.getStatusClass(nodeData.estado)}">${nodeData.estado || 'Desconocido'}</span>
+                            <label class="node-label">Tamaño:</label>
+                            <span class="node-value">${nodeData.tamanno || 'N/A'}</span>
                         </div>
                         
                         <div class="node-section">
-                            <label class="node-label">Origen:</label>
-                            <span class="node-value">${nodeData.origen || 'N/A'}</span>
-                        </div>
-                        
-                        <div class="node-section">
-                            <label class="node-label">Comportamiento:</label>
-                            <span class="node-value">${nodeData.comportamiento || 'N/A'}</span>
+                            <label class="node-label">Desarrollo:</label>
+                            <span class="node-value">${nodeData.desarrollo || 'N/A'}</span>
                         </div>
                         
                         <div class="node-section description">
@@ -134,17 +128,17 @@ class EntidadIndividualNode {
             }
             
             const datosProyecto = await response.json();
-            const entidadesIndividuales = datosProyecto.tablas.entidadIndividual || [];
+            const zonas = datosProyecto.tablas.zona || [];
             
-            // Buscar la entidad específica por ID o nombre
-            const entidad = entidadesIndividuales.find(e => 
-                e.id === entityId || e.nombre === entityId || e.nombre === this.getNodeName(nodeId)
+            // Buscar la zona específica por ID o nombre
+            const zona = zonas.find(z => 
+                z.id === entityId || z.nombre === entityId || z.nombre === this.getNodeName(nodeId)
             );
             
-            if (entidad) {
+            if (zona) {
                 // Actualizar el nodo con los datos del backend
-                this.updateNodeWithBackendData(nodeId, entidad);
-                return entidad;
+                this.updateNodeWithBackendData(nodeId, zona);
+                return zona;
             }
             
             return null;
@@ -188,20 +182,6 @@ class EntidadIndividualNode {
     }
 
     /**
-     * Obtiene la clase CSS para el estado
-     */
-    getStatusClass(estado) {
-        const statusClasses = {
-            'Vivo': 'status-alive',
-            'Muerto': 'status-dead',
-            'Desaparecido': 'status-missing',
-            'Herido': 'status-injured',
-            'Enfermo': 'status-sick'
-        };
-        return statusClasses[estado] || 'status-unknown';
-    }
-
-    /**
      * Obtiene el número de conexiones del nodo
      */
     getConnectionCount(nodeId) {
@@ -219,14 +199,15 @@ class EntidadIndividualNode {
         return {
             nombre: data.nombre,
             apellidos: data.apellidos || '',
+            tamanno: data.tamanno || '',
             tipo: data.tipo,
+            desarrollo: data.desarrollo || '',
             descripcion: data.descripcion || '',
-            tipoTabla: 'entidades_individuales',
+            tipoTabla: 'zonas',
             valoresExtraTabla: [
-                'Entidad-Individual',
-                data.estado || '',
-                data.origen || '',
-                data.comportamiento || ''
+                'Zona',
+                data.tamanno || '',
+                data.desarrollo || ''
             ]
         };
     }
@@ -245,8 +226,8 @@ class EntidadIndividualNode {
         const nodeData = this.mergeWithBackendData(data);
         
         return `
-            <div class="edit-form entidad-individual-form">
-                <h3>Editar Personaje</h3>
+            <div class="edit-form zona-form">
+                <h3>Editar Zona</h3>
                 
                 <div class="form-group">
                     <label for="nombre-${nodeId}">Nombre *</label>
@@ -254,40 +235,32 @@ class EntidadIndividualNode {
                 </div>
                 
                 <div class="form-group">
-                    <label for="apellidos-${nodeId}">Apellidos</label>
+                    <label for="apellidos-${nodeId}">Alias</label>
                     <input type="text" id="apellidos-${nodeId}" value="${nodeData.apellidos || ''}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="tamanno-${nodeId}">Tamaño</label>
+                    <input type="text" id="tamanno-${nodeId}" value="${nodeData.tamanno || ''}">
                 </div>
                 
                 <div class="form-group">
                     <label for="tipo-${nodeId}">Tipo *</label>
                     <select id="tipo-${nodeId}" required>
-                        <option value="Personaje" ${nodeData.tipo === 'Personaje' ? 'selected' : ''}>Personaje</option>
-                        <option value="NPC" ${nodeData.tipo === 'NPC' ? 'selected' : ''}>NPC</option>
-                        <option value="Antagonista" ${nodeData.tipo === 'Antagonista' ? 'selected' : ''}>Antagonista</option>
-                        <option value="Protagonista" ${nodeData.tipo === 'Protagonista' ? 'selected' : ''}>Protagonista</option>
-                        <option value="Secundario" ${nodeData.tipo === 'Secundario' ? 'selected' : ''}>Secundario</option>
+                        <option value="Región" ${nodeData.tipo === 'Región' ? 'selected' : ''}>Región</option>
+                        <option value="Ciudad" ${nodeData.tipo === 'Ciudad' ? 'selected' : ''}>Ciudad</option>
+                        <option value="Bosque" ${nodeData.tipo === 'Bosque' ? 'selected' : ''}>Bosque</option>
+                        <option value="Montaña" ${nodeData.tipo === 'Montaña' ? 'selected' : ''}>Montaña</option>
+                        <option value="Desierto" ${nodeData.tipo === 'Desierto' ? 'selected' : ''}>Desierto</option>
+                        <option value="Mar" ${nodeData.tipo === 'Mar' ? 'selected' : ''}>Mar</option>
+                        <option value="Isla" ${nodeData.tipo === 'Isla' ? 'selected' : ''}>Isla</option>
+                        <option value="Otro" ${nodeData.tipo === 'Otro' ? 'selected' : ''}>Otro</option>
                     </select>
                 </div>
                 
                 <div class="form-group">
-                    <label for="estado-${nodeId}">Estado</label>
-                    <select id="estado-${nodeId}">
-                        <option value="Vivo" ${nodeData.estado === 'Vivo' ? 'selected' : ''}>Vivo</option>
-                        <option value="Muerto" ${nodeData.tipo === 'Muerto' ? 'selected' : ''}>Muerto</option>
-                        <option value="Desaparecido" ${nodeData.estado === 'Desaparecido' ? 'selected' : ''}>Desaparecido</option>
-                        <option value="Herido" ${nodeData.estado === 'Herido' ? 'selected' : ''}>Herido</option>
-                        <option value="Enfermo" ${nodeData.estado === 'Enfermo' ? 'selected' : ''}>Enfermo</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="origen-${nodeId}">Origen</label>
-                    <input type="text" id="origen-${nodeId}" value="${nodeData.origen || ''}">
-                </div>
-                
-                <div class="form-group">
-                    <label for="comportamiento-${nodeId}">Comportamiento</label>
-                    <textarea id="comportamiento-${nodeId}">${nodeData.comportamiento || ''}</textarea>
+                    <label for="desarrollo-${nodeId}">Desarrollo</label>
+                    <input type="text" id="desarrollo-${nodeId}" value="${nodeData.desarrollo || ''}">
                 </div>
                 
                 <div class="form-group">
@@ -308,8 +281,8 @@ class EntidadIndividualNode {
      */
     getCreateForm() {
         return `
-            <div class="create-form entidad-individual-form">
-                <h3>Crear Nuevo Personaje</h3>
+            <div class="create-form zona-form">
+                <h3>Crear Nueva Zona</h3>
                 
                 <div class="form-group">
                     <label for="nombre-new">Nombre *</label>
@@ -317,41 +290,33 @@ class EntidadIndividualNode {
                 </div>
                 
                 <div class="form-group">
-                    <label for="apellidos-new">Apellidos</label>
+                    <label for="apellidos-new">Alias</label>
                     <input type="text" id="apellidos-new">
+                </div>
+                
+                <div class="form-group">
+                    <label for="tamanno-new">Tamaño</label>
+                    <input type="text" id="tamanno-new">
                 </div>
                 
                 <div class="form-group">
                     <label for="tipo-new">Tipo *</label>
                     <select id="tipo-new" required>
                         <option value="">Seleccionar tipo</option>
-                        <option value="Personaje">Personaje</option>
-                        <option value="NPC">NPC</option>
-                        <option value="Antagonista">Antagonista</option>
-                        <option value="Protagonista">Protagonista</option>
-                        <option value="Secundario">Secundario</option>
+                        <option value="Región">Región</option>
+                        <option value="Ciudad">Ciudad</option>
+                        <option value="Bosque">Bosque</option>
+                        <option value="Montaña">Montaña</option>
+                        <option value="Desierto">Desierto</option>
+                        <option value="Mar">Mar</option>
+                        <option value="Isla">Isla</option>
+                        <option value="Otro">Otro</option>
                     </select>
                 </div>
                 
                 <div class="form-group">
-                    <label for="estado-new">Estado</label>
-                    <select id="estado-new">
-                        <option value="Vivo">Vivo</option>
-                        <option value="Muerto">Muerto</option>
-                        <option value="Desaparecido">Desaparecido</option>
-                        <option value="Herido">Herido</option>
-                        <option value="Enfermo">Enfermo</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="origen-new">Origen</label>
-                    <input type="text" id="origen-new">
-                </div>
-                
-                <div class="form-group">
-                    <label for="comportamiento-new">Comportamiento</label>
-                    <textarea id="comportamiento-new"></textarea>
+                    <label for="desarrollo-new">Desarrollo</label>
+                    <input type="text" id="desarrollo-new">
                 </div>
                 
                 <div class="form-group">
@@ -360,7 +325,7 @@ class EntidadIndividualNode {
                 </div>
                 
                 <div class="form-actions">
-                    <button type="button" onclick="createNewNode('entidad-individual')" class="btn btn-primary">Crear</button>
+                    <button type="button" onclick="createNewNode('zona')" class="btn btn-primary">Crear</button>
                     <button type="button" onclick="cancelCreateNode()" class="btn btn-secondary">Cancelar</button>
                 </div>
             </div>
@@ -389,8 +354,8 @@ window.toggleNodeExpansion = function(nodeId) {
             const nodes = flowManager.getNodes();
             const node = nodes.find(n => n.id === nodeId);
             if (node && !node.data.backendData) {
-                const entidadIndividualNode = new EntidadIndividualNode();
-                entidadIndividualNode.loadBackendData(nodeId, node.data.nombre);
+                const zonaNode = new ZonaNode();
+                zonaNode.loadBackendData(nodeId, node.data.nombre);
             }
         }
     } else {
@@ -402,4 +367,4 @@ window.toggleNodeExpansion = function(nodeId) {
 };
 
 // Exportar para uso global
-window.EntidadIndividualNode = EntidadIndividualNode;
+window.ZonaNode = ZonaNode;
