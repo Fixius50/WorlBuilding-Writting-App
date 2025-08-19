@@ -21,26 +21,15 @@ class ProjectDataLoader {
      */
     init() {
         this.setupEventListeners();
-        this.initializeCounters();
-    }
-
-    /**
-     * Inicializa los contadores con 0
-     */
-    initializeCounters() {
-        const categories = [
-            'entidades-individuales',
-            'entidades-colectivas',
-            'construcciones',
-            'zonas',
-            'efectos'
-        ];
         
-        categories.forEach(category => {
-            this.updateCategoryCount(category, 0);
-        });
-        
-        console.log('🔢 Contadores inicializados con 0');
+        // Esperar a que el DOM esté listo antes de inicializar contadores
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                this.initializeCounters();
+            });
+        } else {
+            this.initializeCounters();
+        }
     }
 
     /**
@@ -58,32 +47,57 @@ class ProjectDataLoader {
      * Carga los datos del proyecto desde la base de datos
      */
     async loadProjectData() {
+        // Verificar si hay proyecto activo
         if (!window.nombreProyectoGlobal) {
-            console.warn('No hay proyecto activo');
-            return;
+            console.warn('WARNING: No hay proyecto activo, intentando obtenerlo...');
+            
+            // Intentar obtener el proyecto activo
+            try {
+                const response = await fetch('/api/proyectos/activo');
+                if (response.ok) {
+                    const proyecto = await response.json();
+                    window.nombreProyectoGlobal = proyecto.nombre;
+                    console.log('SUCCESS: Proyecto activo obtenido:', window.nombreProyectoGlobal);
+                } else {
+                    console.error('ERROR: No se pudo obtener el proyecto activo');
+                    this.showError('No hay proyecto activo');
+                    return;
+                }
+            } catch (error) {
+                console.error('ERROR: Error obteniendo proyecto activo:', error);
+                this.showError('Error obteniendo proyecto activo');
+                return;
+            }
         }
 
         try {
-            console.log('🔄 Cargando datos del proyecto:', window.nombreProyectoGlobal);
+            console.log('LOADING: Cargando datos del proyecto:', window.nombreProyectoGlobal);
             
             // Obtener los datos estructurados del proyecto
             const response = await fetch('/api/proyectos/datos-proyecto');
             if (!response.ok) {
-                throw new Error('Error obteniendo datos del proyecto');
+                throw new Error(`Error obteniendo datos del proyecto: ${response.status} ${response.statusText}`);
             }
 
             const datosProyecto = await response.json();
-            console.log('📄 Datos del proyecto obtenidos:', datosProyecto);
+            console.log('DATA: Datos del proyecto obtenidos:', datosProyecto);
+            
+            // Verificar que los datos tengan la estructura esperada
+            if (!datosProyecto.tablas) {
+                console.warn('WARNING: Los datos no tienen la estructura esperada:', datosProyecto);
+                this.showError('Estructura de datos incorrecta');
+                return;
+            }
             
             // Procesar los datos estructurados
             this.processStructuredData(datosProyecto);
             this.updateUI();
             
-            console.log('✅ Datos del proyecto cargados correctamente');
+            console.log('SUCCESS: Datos del proyecto cargados correctamente');
             
         } catch (error) {
-            console.error('❌ Error cargando datos del proyecto:', error);
-            this.showError('Error cargando datos del proyecto');
+            console.error('ERROR: Error cargando datos del proyecto:', error);
+            this.showError(`Error cargando datos del proyecto: ${error.message}`);
         }
     }
 
@@ -91,6 +105,8 @@ class ProjectDataLoader {
      * Procesa los datos estructurados del proyecto
      */
     processStructuredData(datosProyecto) {
+        console.log('PROCESSING: Datos del proyecto:', datosProyecto);
+        
         // Limpiar datos anteriores
         this.projectData = {
             entidadesIndividuales: [],
@@ -101,9 +117,11 @@ class ProjectDataLoader {
         };
 
         const tablas = datosProyecto.tablas || {};
+        console.log('TABLES: Tablas disponibles:', Object.keys(tablas));
         
         // Procesar entidades individuales
-        if (tablas.entidadIndividual) {
+        if (tablas.entidadIndividual && Array.isArray(tablas.entidadIndividual)) {
+            console.log('INDIVIDUAL: Procesando entidades individuales:', tablas.entidadIndividual.length);
             this.projectData.entidadesIndividuales = tablas.entidadIndividual.map(row => ({
                 id: row.id || this.generateId(),
                 nombre: row.nombre || '',
@@ -114,10 +132,13 @@ class ProjectDataLoader {
                 origen: row.origen || '',
                 comportamiento: row.comportamiento || ''
             }));
+        } else {
+            console.log('WARNING: No hay entidades individuales o formato incorrecto');
         }
 
         // Procesar entidades colectivas
-        if (tablas.entidadColectiva) {
+        if (tablas.entidadColectiva && Array.isArray(tablas.entidadColectiva)) {
+            console.log('COLLECTIVE: Procesando entidades colectivas:', tablas.entidadColectiva.length);
             this.projectData.entidadesColectivas = tablas.entidadColectiva.map(row => ({
                 id: row.id || this.generateId(),
                 nombre: row.nombre || '',
@@ -128,10 +149,13 @@ class ProjectDataLoader {
                 origen: row.origen || '',
                 comportamiento: row.comportamiento || ''
             }));
+        } else {
+            console.log('WARNING: No hay entidades colectivas o formato incorrecto');
         }
 
         // Procesar construcciones
-        if (tablas.construccion) {
+        if (tablas.construccion && Array.isArray(tablas.construccion)) {
+            console.log('BUILDINGS: Procesando construcciones:', tablas.construccion.length);
             this.projectData.construcciones = tablas.construccion.map(row => ({
                 id: row.id || this.generateId(),
                 nombre: row.nombre || '',
@@ -141,10 +165,13 @@ class ProjectDataLoader {
                 tamanno: row.tamanno || '',
                 desarrollo: row.desarrollo || ''
             }));
+        } else {
+            console.log('WARNING: No hay construcciones o formato incorrecto');
         }
 
         // Procesar zonas
-        if (tablas.zona) {
+        if (tablas.zona && Array.isArray(tablas.zona)) {
+            console.log('ZONES: Procesando zonas:', tablas.zona.length);
             this.projectData.zonas = tablas.zona.map(row => ({
                 id: row.id || this.generateId(),
                 nombre: row.nombre || '',
@@ -154,10 +181,13 @@ class ProjectDataLoader {
                 tamanno: row.tamanno || '',
                 desarrollo: row.desarrollo || ''
             }));
+        } else {
+            console.log('WARNING: No hay zonas o formato incorrecto');
         }
 
         // Procesar efectos
-        if (tablas.efectos) {
+        if (tablas.efectos && Array.isArray(tablas.efectos)) {
+            console.log('EFFECTS: Procesando efectos:', tablas.efectos.length);
             this.projectData.efectos = tablas.efectos.map(row => ({
                 id: row.id || this.generateId(),
                 nombre: row.nombre || '',
@@ -168,15 +198,25 @@ class ProjectDataLoader {
                 dureza: row.dureza || '',
                 comportamiento: row.comportamiento || ''
             }));
+        } else {
+            console.log('WARNING: No hay efectos o formato incorrecto');
         }
 
-        console.log('📊 Datos procesados:', this.projectData);
+        console.log('PROCESSED: Datos procesados:', this.projectData);
+        console.log('SUMMARY: Resumen de elementos:');
+        console.log(`  INDIVIDUAL: Entidades individuales: ${this.projectData.entidadesIndividuales.length}`);
+        console.log(`  COLLECTIVE: Entidades colectivas: ${this.projectData.entidadesColectivas.length}`);
+        console.log(`  BUILDINGS: Construcciones: ${this.projectData.construcciones.length}`);
+        console.log(`  ZONES: Zonas: ${this.projectData.zonas.length}`);
+        console.log(`  EFFECTS: Efectos: ${this.projectData.efectos.length}`);
     }
 
     /**
      * Actualiza la interfaz de usuario con los datos cargados
      */
     updateUI() {
+        console.log('UI: Iniciando actualización de la interfaz de usuario...');
+        
         // Actualizar contadores desde el backend
         this.updateCategoryCount('entidades-individuales', this.projectData.entidadesIndividuales.length);
         this.updateCategoryCount('entidades-colectivas', this.projectData.entidadesColectivas.length);
@@ -191,7 +231,13 @@ class ProjectDataLoader {
         this.renderObjectList('zonas', this.projectData.zonas);
         this.renderObjectList('efectos', this.projectData.efectos);
 
-        console.log('🎨 Interfaz de usuario actualizada con datos del backend');
+        console.log('SUCCESS: Interfaz de usuario actualizada con datos del backend');
+        console.log('FINAL: Estado final de la interfaz:');
+        console.log(`  INDIVIDUAL: Contador entidades individuales: ${this.projectData.entidadesIndividuales.length}`);
+        console.log(`  COLLECTIVE: Contador entidades colectivas: ${this.projectData.entidadesColectivas.length}`);
+        console.log(`  BUILDINGS: Contador construcciones: ${this.projectData.construcciones.length}`);
+        console.log(`  ZONES: Contador zonas: ${this.projectData.zonas.length}`);
+        console.log(`  EFFECTS: Contador efectos: ${this.projectData.efectos.length}`);
     }
 
     /**
@@ -201,7 +247,11 @@ class ProjectDataLoader {
         const countElement = document.getElementById(`count-${categoryId}`);
         if (countElement) {
             countElement.textContent = count;
-            console.log(`📊 Contador actualizado para ${categoryId}: ${count}`);
+            console.log(`COUNTER: Contador actualizado para ${categoryId}: ${count}`);
+        } else {
+            console.error(`ERROR: Elemento contador no encontrado: count-${categoryId}`);
+            console.error(`SEARCHING: Elemento con ID: count-${categoryId}`);
+            console.error(`AVAILABLE: Elementos disponibles:`, document.querySelectorAll('[id^="count-"]'));
         }
     }
 
@@ -210,15 +260,26 @@ class ProjectDataLoader {
      */
     renderObjectList(categoryId, objects) {
         const listElement = document.getElementById(`list-${categoryId}`);
-        if (!listElement) return;
-
-        if (objects.length === 0) {
-            listElement.innerHTML = '<div class="empty-category">No hay elementos</div>';
+        if (!listElement) {
+            console.error(`ERROR: Elemento lista no encontrado: list-${categoryId}`);
+            console.error(`SEARCHING: Elemento con ID: list-${categoryId}`);
+            console.error(`AVAILABLE: Elementos disponibles:`, document.querySelectorAll('[id^="list-"]'));
             return;
         }
 
-        listElement.innerHTML = objects.map(obj => this.createObjectElement(obj, categoryId)).join('');
-        console.log(`🎯 Lista renderizada para ${categoryId}: ${objects.length} elementos`);
+        if (objects.length === 0) {
+            listElement.innerHTML = '<div class="empty-category">No hay elementos</div>';
+            console.log(`EMPTY: Lista vacía renderizada para ${categoryId}`);
+            return;
+        }
+
+        try {
+            listElement.innerHTML = objects.map(obj => this.createObjectElement(obj, categoryId)).join('');
+            console.log(`RENDERED: Lista renderizada para ${categoryId}: ${objects.length} elementos`);
+        } catch (error) {
+            console.error(`ERROR: Error renderizando lista para ${categoryId}:`, error);
+            listElement.innerHTML = '<div class="error-category">Error cargando elementos</div>';
+        }
     }
 
     /**
@@ -313,7 +374,7 @@ class ProjectDataLoader {
         
         event.dataTransfer.effectAllowed = 'copy';
         
-        console.log('🚀 Iniciando drag:', objectData.nombre, 'tipo:', categoryType);
+        console.log('DRAG: Iniciando drag:', objectData.nombre, 'tipo:', categoryType);
     }
 
     /**
@@ -361,14 +422,14 @@ class ProjectDataLoader {
         
         // Verificar si hay un FlowManager disponible
         if (!window.flowManager) {
-            console.warn('❌ FlowManager no disponible, creando marcador en el mapa');
+            console.warn('WARNING: FlowManager no disponible, creando marcador en el mapa');
             this.handleMapDrop(event);
             return;
         }
 
         try {
             const data = JSON.parse(event.dataTransfer.getData('text/plain'));
-            console.log('📥 Drop recibido:', data);
+            console.log('DROP: Drop recibido:', data);
             
             // Determinar si es drop en el mapa o en React Flow
             const mapContainer = event.target.closest('#infinite-map-container');
@@ -383,7 +444,7 @@ class ProjectDataLoader {
             }
             
         } catch (error) {
-            console.error('Error procesando drop:', error);
+            console.error('ERROR: Error procesando drop:', error);
         }
     }
 
@@ -395,7 +456,7 @@ class ProjectDataLoader {
             try {
                 data = JSON.parse(event.dataTransfer.getData('text/plain'));
             } catch (error) {
-                console.error('Error obteniendo datos del drop:', error);
+                console.error('ERROR: Error obteniendo datos del drop:', error);
                 return;
             }
         }
@@ -414,7 +475,7 @@ class ProjectDataLoader {
             // Agregar marcador al mapa
             this.addMarkerToMap(data.object, worldCoords.x, worldCoords.y);
             
-            console.log('📍 Marcador agregado al mapa:', data.object.nombre, 'en', worldCoords);
+            console.log('MARKER: Marcador agregado al mapa:', data.object.nombre, 'en', worldCoords);
         }
     }
 
@@ -432,10 +493,10 @@ class ProjectDataLoader {
         try {
             // Crear nodo en React Flow
             const newNode = await this.createFlowNode(data, x, y);
-            console.log('🎯 Nodo creado en React Flow:', newNode);
+            console.log('NODE: Nodo creado en React Flow:', newNode);
             
         } catch (error) {
-            console.error('Error creando nodo en React Flow:', error);
+            console.error('ERROR: Error creando nodo en React Flow:', error);
             this.showError('Error creando nodo en el diagrama');
         }
     }
@@ -498,6 +559,53 @@ class ProjectDataLoader {
             return 'efectos';
         }
         return 'entidades-individuales'; // Por defecto
+    }
+
+    /**
+     * Inicializa los contadores con 0
+     */
+    initializeCounters() {
+        console.log('INIT: Inicializando contadores...');
+        
+        const categories = [
+            'entidades-individuales',
+            'entidades-colectivas',
+            'construcciones',
+            'zonas',
+            'efectos'
+        ];
+        
+        // Verificar que todos los elementos del DOM estén disponibles
+        const missingElements = [];
+        categories.forEach(category => {
+            const countElement = document.getElementById(`count-${category}`);
+            const listElement = document.getElementById(`list-${category}`);
+            
+            if (!countElement) {
+                missingElements.push(`count-${category}`);
+            }
+            if (!listElement) {
+                missingElements.push(`list-${category}`);
+            }
+        });
+        
+        if (missingElements.length > 0) {
+            console.error('ERROR: Elementos del DOM no encontrados:', missingElements);
+            console.error('CHECKING: Verificando estado del DOM...');
+            console.error('DOM: Document readyState:', document.readyState);
+            console.error('COUNT: Elementos count disponibles:', document.querySelectorAll('[id^="count-"]'));
+            console.error('LIST: Elementos list disponibles:', document.querySelectorAll('[id^="list-"]'));
+            return;
+        }
+        
+        console.log('SUCCESS: Todos los elementos del DOM están disponibles');
+        
+        // Inicializar contadores
+        categories.forEach(category => {
+            this.updateCategoryCount(category, 0);
+        });
+        
+        console.log('SUCCESS: Contadores inicializados con 0');
     }
 
     /**

@@ -214,7 +214,7 @@
     flex-direction: column;
     align-content: space-between;
     flex-wrap: wrap;
-    overflow: scroll;
+    
 }
 
 .reload-btn {
