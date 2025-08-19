@@ -105,23 +105,6 @@ class EntidadIndividualNode {
     }
 
     /**
-     * Valida los datos del nodo
-     */
-    validateData(data) {
-        const errors = [];
-        
-        if (!data.nombre || data.nombre.trim() === '') {
-            errors.push('El nombre es obligatorio');
-        }
-        
-        if (!data.tipo || data.tipo.trim() === '') {
-            errors.push('El tipo es obligatorio');
-        }
-        
-        return errors;
-    }
-
-    /**
      * Formatea los datos para enviar al backend
      */
     formatDataForBackend(data) {
@@ -133,7 +116,7 @@ class EntidadIndividualNode {
             tipoTabla: 'entidades_individuales',
             valoresExtraTabla: [
                 'Entidad-Individual',
-                data.estado || 'Vivo',
+                data.estado || '',
                 data.origen || '',
                 data.comportamiento || ''
             ]

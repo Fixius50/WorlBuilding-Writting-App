@@ -7,9 +7,9 @@ class RelacionLinea {
     constructor() {
         this.type = 'relacion-linea';
         this.defaultData = {
-            direccion: 'Bidireccional',
+            direccion: '',
             afectados: '',
-            tipo: 'Relación'
+            tipo: ''
         };
     }
 
