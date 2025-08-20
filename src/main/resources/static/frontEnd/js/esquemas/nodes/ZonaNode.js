@@ -11,7 +11,7 @@ class ZonaNode {
             nombre: '',
             apellidos: '',
             tamanno: '',
-            tipo: 'Región',
+            tipo: '',
             desarrollo: '',
             descripcion: ''
         };

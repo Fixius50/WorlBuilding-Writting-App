@@ -11,7 +11,7 @@ class ConstruccionNode {
             nombre: '',
             apellidos: '',
             tamanno: '',
-            tipo: 'Edificio',
+            tipo: '',
             desarrollo: '',
             descripcion: ''
         };
