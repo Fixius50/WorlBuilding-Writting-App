@@ -204,23 +204,18 @@
     box-shadow: 0 0.125rem 0.625rem rgba(0, 0, 0, 0.1);
     overflow: hidden;
     z-index: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 /* ===== ESTILOS PARA LA SECCIÓN DE OBJETOS ===== */
 
-.objects-container {
-    padding: 1.5vw;
-    display: flex;
-    flex-direction: column;
-    align-content: space-between;
-    flex-wrap: wrap;
-    overflow: scroll;
-}
+/* Boton de recarga*/
 
 .reload-btn {
     position: absolute;
-    width: 2rem;
-    height: 2rem;
+    width: 3vh;
+    height: 3vh;
     border: none;
     border-radius: 50%;
     background: #667eea;
@@ -228,8 +223,8 @@
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.875rem;
-    left: 1%;
-    top: 1%;
+    bottom: 30%;
+    right: 1%;
 }
 
 .reload-btn:hover {
@@ -250,25 +245,35 @@
     100% { transform: rotate(360deg); }
 }
 
+/*------------------------------------------*/
+
+.objects-container {
+    padding: 1.5vw;
+    display: flex;
+    align-content: space-between;
+    flex-wrap: wrap;
+    overflow: scroll;
+}
+
 .object-category {
+    border: 1px solid blue;
+    border-radius: 0% 0% 10% 10%;
     display: flex;
     flex-direction: column;
     width: 100%;
     height: 10vh;
     justify-content: space-between;
     margin-bottom: 1rem;
-    border: 0.0625rem solid #e0e0e0;
-    border-radius: 0.375rem;
 }
 
 .category-header {
     display: flex;
-    width: 100%;
+    flex-direction: row;
     align-items: center;
-    padding: 0.5rem 0.75rem;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-bottom: 0.0625rem solid #e0e0e0;
-    cursor: pointer;
+    align-content: space-between;
+    padding: 0.5%;
+    background: whitesmoke;
+    border-bottom: 0.0625rem solid black;
     transition: background-color 0.2s ease;
 }
 
@@ -535,7 +540,7 @@
     margin-bottom: 0.25rem;
 }
 
-/* Responsive design para el mapa */
+/* Responsive design para el mapa 
 @media (max-width: 768px) {
     .map-header {
         padding: 0.5rem 0.75rem;
@@ -552,20 +557,14 @@
     }
     
     .map-btn {
-        width: 2rem;
-        height: 2rem;
-        font-size: 0.75rem;
+        bottom: 50%;
     }
     
     .map-info {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.6875rem;
+        padding: 1vw 1vw;
+        font-size: 2vw;
     }
-    
-    .map-info ul {
-        padding-left: 1rem;
-    }
-}
+}*/
 
 /* Animaciones para el mapa */
 @keyframes mapFadeIn {

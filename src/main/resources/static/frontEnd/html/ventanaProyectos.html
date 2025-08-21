@@ -117,9 +117,17 @@
                         </div>
                     </div>
                 </div>
+                <div class="map-info">
+                    <p><strong>Controles:</strong></p>
+                    <ul>
+                        <li><strong>Mouse:</strong> Arrastrar para mover, rueda para zoom</li>
+                        <li><strong>Teclado:</strong> Flechas para mover, +/- para zoom, 0 para reset</li>
+                    </ul>
+                </div>
             </section>
             <section class="ground">
                 <div class="map-container">
+                    <!-- Esto es el cabecero que sale con los botones de arriba del mapa -->
                     <div class="map-header">
                         <h3>🗺️ Mapa del Mundo</h3>
                         <div class="map-controls">
@@ -139,14 +147,6 @@
                     </div>
                     <div id="infinite-map-container" class="map-area">
                         <!-- El mapa se cargará aquí -->
-                    </div>
-                    <div class="map-info">
-                        <p>💡 <strong>Controles:</strong></p>
-                        <ul>
-                            <li><strong>Mouse:</strong> Arrastrar para mover, rueda para zoom</li>
-                            <li><strong>Teclado:</strong> Flechas para mover, +/- para zoom, 0 para reset</li>
-                            <li><strong>Touch:</strong> Deslizar para mover en dispositivos móviles</li>
-                        </ul>
                     </div>
                 </div>
             </section>
@@ -212,10 +212,10 @@
             });
         
         // Inicializar el mapa infinito
-        initializeInfiniteMap();
+        // initializeInfiniteMap(); Desmarcar cuando se quiera probar los nodos
         
         // Inicializar el cargador de datos del proyecto
-        initializeProjectDataLoader();
+        // initializeProjectDataLoader(); Desmarcar cuando se termine de modificar la página
     });
 
     // ===== FUNCIONES DEL MAPA INFINITO =====
