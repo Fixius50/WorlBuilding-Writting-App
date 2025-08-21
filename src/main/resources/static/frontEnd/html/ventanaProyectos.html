@@ -53,9 +53,6 @@
         </div>
         <div class="area-central">
             <section class="objects">
-                <button class="reload-btn" onclick="reloadProjectData()" title="Recargar datos">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
                 <div class="objects-container">
                     <!-- Entidades Individuales -->
                     <div class="object-category">
@@ -124,27 +121,29 @@
                         <li><strong>Teclado:</strong> Flechas para mover, +/- para zoom, 0 para reset</li>
                     </ul>
                 </div>
+                <!-- Esto es el cabecero que sale con los botones de arriba del mapa -->
+                <div class="map-header">
+                    <div class="map-controls">
+                        <button class="map-btn" onclick="resetMapView()" title="Resetear vista">
+                            <i class="fas fa-home"></i>
+                        </button>
+                        <button class="map-btn" onclick="zoomInMap()" title="Zoom +">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                        <button class="map-btn" onclick="zoomOutMap()" title="Zoom -">
+                            <i class="fas fa-search-minus"></i>
+                        </button>
+                        <button class="map-btn" onclick="toggleCoordinates()" title="Mostrar/Ocultar coordenadas">
+                            <i class="fas fa-crosshairs"></i>
+                        </button>
+                    </div>
+                </div>
+                <button class="reload-btn" onclick="reloadProjectData()" title="Recargar datos">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
             </section>
             <section class="ground">
                 <div class="map-container">
-                    <!-- Esto es el cabecero que sale con los botones de arriba del mapa -->
-                    <div class="map-header">
-                        <h3>🗺️ Mapa del Mundo</h3>
-                        <div class="map-controls">
-                            <button class="map-btn" onclick="resetMapView()" title="Resetear vista">
-                                <i class="fas fa-home"></i>
-                            </button>
-                            <button class="map-btn" onclick="zoomInMap()" title="Zoom +">
-                                <i class="fas fa-search-plus"></i>
-                            </button>
-                            <button class="map-btn" onclick="zoomOutMap()" title="Zoom -">
-                                <i class="fas fa-search-minus"></i>
-                            </button>
-                            <button class="map-btn" onclick="toggleCoordinates()" title="Mostrar/Ocultar coordenadas">
-                                <i class="fas fa-crosshairs"></i>
-                            </button>
-                        </div>
-                    </div>
                     <div id="infinite-map-container" class="map-area">
                         <!-- El mapa se cargará aquí -->
                     </div>
@@ -211,11 +210,11 @@
                 console.log("Ruta dataFolder:", dataFolder);
             });
         
-        // Inicializar el mapa infinito
-        // initializeInfiniteMap(); Desmarcar cuando se quiera probar los nodos
+        // Inicializar el mapa infinito. Desmarcar cuando se quiera probar los nodos
+        initializeInfiniteMap(); 
         
-        // Inicializar el cargador de datos del proyecto
-        // initializeProjectDataLoader(); Desmarcar cuando se termine de modificar la página
+        // Inicializar el cargador de datos del proyecto. Desmarcar cuando se termine de modificar la página
+        // initializeProjectDataLoader()
     });
 
     // ===== FUNCIONES DEL MAPA INFINITO =====

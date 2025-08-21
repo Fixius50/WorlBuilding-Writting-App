@@ -182,7 +182,7 @@
 
 .area-central{
     width: 100%;
-    height: 100%;
+    height: 93vh;
     margin-top: 5vh;
     border: 1px solid black;
     display: flex;
@@ -191,7 +191,7 @@
 
 .objects, .ground{
     border: 0.0625rem solid black;
-    height: 90vh;
+    height: auto;
 }
 
 .objects{
@@ -199,6 +199,7 @@
     width: 20rem;
     height: 30vh;
     margin: 1rem;
+    right: 1%;
     background: #fff;
     border-radius: 0.5rem;
     box-shadow: 0 0.125rem 0.625rem rgba(0, 0, 0, 0.1);
@@ -223,8 +224,8 @@
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.875rem;
-    bottom: 30%;
-    right: 1%;
+    bottom: 5%;
+    right: 5%;
 }
 
 .reload-btn:hover {
@@ -466,12 +467,6 @@
     border-bottom: 0.0625rem solid #e0e0e0;
 }
 
-.map-header h3 {
-    margin: 0;
-    font-size: 1.125rem;
-    font-weight: 600;
-}
-
 .map-controls {
     display: flex;
     gap: 0.5rem;
@@ -500,22 +495,6 @@
 
 .map-btn:active {
     transform: translateY(0);
-}
-
-.map-area {
-    flex: 1;
-    position: relative;
-    min-height: 25rem;
-    background: #f8f9fa;
-    border-radius: 0 0 0.5rem 0.5rem;
-    overflow: hidden;
-}
-
-#infinite-map-canvas {
-    width: 100% !important;
-    height: 100% !important;
-    border: none !important;
-    border-radius: 0 0 0.5rem 0.5rem;
 }
 
 .map-info {
@@ -566,22 +545,6 @@
     }
 }*/
 
-/* Animaciones para el mapa */
-@keyframes mapFadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-.map-container {
-    animation: mapFadeIn 0.3s ease-out;
-}
-
 /* Estados de carga */
 .map-loading {
     display: flex;
@@ -603,7 +566,34 @@
     margin-left: 0.5rem;
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+/* Animaciones para el mapa */
+@keyframes mapFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.map-container {
+    animation: mapFadeIn 0.3s ease-out;
+}
+
+.map-area {
+    flex: 1;
+    position: relative;
+    min-height: 25rem;
+    background: red;
+    border-radius: 0 0 0.5rem 0.5rem;
+    overflow: visible;
+}
+
+#infinite-map-canvas {
+    width: 100% !important;
+    height: 100% !important;
+    border: none !important;
+    border-radius: 0 0 0.5rem 0.5rem;
 }
