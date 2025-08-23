@@ -16,9 +16,57 @@
                 <i class="fas fa-chevron-down"></i>
             </button>
         </div>
-        <div class="node-expanded">
-            <!-- Contenido expandido -->
-        </div>
-    </div>
+        <article class="node-expanded">
+            <section>
+                <b class="node-b">Alias:</b>
+                <i class="node-value">${nodeData.alias || 'N/A'}</i>
+            </section>
+            <section>
+                <b class="node-b">Estado:</b>
+                <i class="node-value">${nodeData.estado || 'N/A'}</i>
+            </section>
+            <section>
+                <b class="node-b">Tipo:</b>
+                <i class="node-value">${nodeData.tipo || 'N/A'}</i>
+            </section>
+            <section>
+                <b class="node-b">Origen:</b>
+                <i class="node-value">${nodeData.origen || 'N/A'}</i>
+            </section>
+            <section>
+                <b class="node-b">Comportamiento:</b>
+                <i class="node-value">${nodeData.comportamiento || 'N/A'}</i>
+            </section>
+            <section class="description">
+                <b class="node-b">Descripción:</b>
+                <p class="node-description">${nodeData.descripcion || 'Sin descripción'}</p>
+            </section>
+        </article>
+        <article class="node-footer">
+            <section class="node-connections">
+                <b class="connection-count">Conexiones: ${this.getConnectionCount(node.id)}</b>
+            </section>
+        </article>
+    </button>
 </body>
+<script>
+    function toggleNodeExpansion() {
+        // getElementsByClassName devuelve una colección, necesitas especificar el índice
+        const nodeExpanded = document.getElementsByClassName("node-expanded")[0];
+        const despliegueBtn = document.getElementsByClassName("despliegue-datos")[0];
+
+        // Añadir el evento al botón, no dentro de la función
+        despliegueBtn.addEventListener("click", function() {
+            // Alternar entre mostrar y ocultar
+            if (nodeExpanded.style.display === "none" || nodeExpanded.style.display === "") {
+                nodeExpanded.style.display = "flex";
+            } else {
+                nodeExpanded.style.display = "none";
+            }
+        });
+    }
+
+    // Llamar a la función cuando el DOM esté cargado
+    document.addEventListener('DOMContentLoaded', toggleNodeExpansion);
+</script>
 </html>
