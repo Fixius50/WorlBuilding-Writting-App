@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../js/esquemas/FlowStyles.css">
+    <title>Document</title>
+</head>
+<body>
+    <div class="edit-form entidad-individual-form">
+                <h3>Editar Entidad Individual</h3>
+                <div class="form-group">
+                    <label for="nombre-${nodeId}">Nombre *</label>
+                    <input type="text" id="nombre-${nodeId}" value="${nodeData.nombre || ''}" required>
+                </div>
+                <div class="form-group">
+                    <label for="alias-${nodeId}">Alias</label>
+                    <input type="text" id="alias-${nodeId}" value="${nodeData.alias || ''}">
+                </div>
+                <div class="form-group">
+                    <label for="especie-${nodeId}">Especie</label>
+                    <input type="text" id="especie-${nodeId}" value="${nodeData.especie || ''}">
+                </div>
+                <div class="form-group">
+                    <label for="origen-${nodeId}">Origen</label>
+                    <input type="text" id="origen-${nodeId}" value="${nodeData.origen || ''}">
+                </div>
+                <div class="form-group">
+                    <label for="descripcion-${nodeId}">Descripción</label>
+                    <textarea id="descripcion-${nodeId}">${nodeData.descripcion || ''}</textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="saveNodeEdit('${nodeId}')" class="btn btn-primary">Guardar</button>
+                    <button type="button" onclick="cancelNodeEdit()" class="btn btn-secondary">Cancelar</button>
+                </div>
+            </div>
+        
+        <div class="create-form entidad-individual-form">
+                <h3>Crear Nueva Entidad Individual</h3>
+                <div class="form-group">
+                    <label for="nombre-new">Nombre *</label>
+                    <input type="text" id="nombre-new" required>
+                </div>
+                <div class="form-group">
+                    <label for="alias-new">Alias</label>
+                    <input type="text" id="alias-new">
+                </div>
+                <div class="form-group">
+                    <label for="especie-new">Especie</label>
+                    <input type="text" id="especie-new">
+                </div>
+                <div class="form-group">
+                    <label for="origen-new">Origen</label>
+                    <input type="text" id="origen-new">
+                </div>
+                <div class="form-group">
+                    <label for="descripcion-new">Descripción</label>
+                    <textarea id="descripcion-new"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="createNewNode('entidadIndividual')" class="btn btn-primary">Crear</button>
+                    <button type="button" onclick="cancelCreateNode()" class="btn btn-secondary">Cancelar</button>
+                </div>
+            </div>
+</body>
+</html>
