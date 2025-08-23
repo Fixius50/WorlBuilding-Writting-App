@@ -137,7 +137,7 @@ class RelacionLinea {
 
     /**
      * Obtiene el formulario de creación
-     */
+     
     getCreateForm(sourceId, targetId) {
         return `
             <div class="create-form relacion-form">
@@ -182,10 +182,11 @@ class RelacionLinea {
             </div>
         `;
     }
+    */
 
     /**
      * Obtiene los estilos CSS para la conexión
-     */
+     
     getStyles() {
         return `
             .relacion-linea-edge {
@@ -260,6 +261,7 @@ class RelacionLinea {
             }
         `;
     }
+        */
 }
 
 // Exportar para uso global

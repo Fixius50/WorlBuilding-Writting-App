@@ -1,0 +1,42 @@
+*{
+    box-sizing: border-box;
+}
+.despliegue-datos{
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+}
+.node-compact{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+.node-name{
+    flex-grow: 1;
+    font-size: 2.2rem;
+}
+.node-expanded{ /*Se despliega tras darle click a node-compact*/
+    display: none;
+    border: 1px solid black;
+    flex-wrap: wrap;
+}
+.node-expanded section{
+    width: 30vw;
+    padding: 1%;
+    font-size: large;
+}
+.node-expanded .description{
+    width: 100%;
+}
+.node-footer{
+    display: flex;
+    justify-content: center;
+    padding: 1%;
+    font-size: x-large;
+}
+img{
+    width: 25vw;
+    height: 25vw;
+}
