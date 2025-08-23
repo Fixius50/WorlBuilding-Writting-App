@@ -1,2 +1,5 @@
-# WorlBuilding-Writting-App
-App en desarrollo para la creación de mundos enfocados en una forma de crearlos como si estuvieras planificando una historia de DnD. Este proyecto es con mucha pasión y esfuerzo.
+# Progreso de la app
+
+## Día 25 de septiembre de 2025:
+- Entrada y salida de la app junto a ir a los distintos apartados ☑️
+- Manejo y creación de entidades con nodos y relaciones ☑️
