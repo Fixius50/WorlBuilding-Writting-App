@@ -2,7 +2,7 @@
     box-sizing: content-box;
 }
 body{
-    background-image: url(../../Otros/imagenes/Fondo-Tierra-Menu-Inicial.jpg);
+    background-image: url(../Otros/imagenes/Fondo-Tierra-Menu-Inicial.jpg);
     background-repeat: repeat;
     background-size: cover; /*Cambia totalmente de "cover" a "contain"*/
     background-position: center;
@@ -23,7 +23,7 @@ body{
     height: 50vh;
     display: flex;
     flex-direction: row;
-    background-image: url('../../Otros/imagenes/sword-fantasy-sword.gif');
+    background-image: url('../Otros/imagenes/sword-fantasy-sword.gif');
     background-size: cover;
     background-position: center;
 }
@@ -33,7 +33,7 @@ body{
 header{
     grid-area: header;
     text-align: center;
-    background-image: url('../../Otros/imagenes/sword-fantasy-sword.gif');
+    background-image: url('../Otros/imagenes/sword-fantasy-sword.gif');
     background-size: cover;
     background-position: center;
     display: flex;
@@ -46,7 +46,7 @@ header .button0{
     width: 100%;
     cursor: pointer;
     border: none;
-    background-image: url('../../Otros/imagenes/ornamental-frame.jpg');
+    background-image: url('../Otros/imagenes/ornamental-frame.jpg');
     background-size: cover;
     background-position: center;
 }
@@ -54,7 +54,7 @@ header .button0{
 .contenido{
     margin-left: 0.5%;
     width: 100%;
-    background-image: url('../../Otros/imagenes/wooden-plank-texture-wall.jpg');
+    background-image: url('../Otros/imagenes/wooden-plank-texture-wall.jpg');
     background-size: contain;
     background-position: center;
     background-repeat: repeat;
@@ -72,7 +72,7 @@ header .button0{
 }
 
 nav .button{
-    background-image: url('../../Otros/imagenes/ornamental-frame.jpg');
+    background-image: url('../Otros/imagenes/ornamental-frame.jpg');
     background-size: cover;
     background-position: center;
     

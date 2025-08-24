@@ -12,21 +12,21 @@ public class PagesController {
 
     @GetMapping("/")
     public String menuInicial() {
-        return "forward:/html/menuInicialLog.html";
+        return "forward:./menuInicialLog.html";
     }
 
     @GetMapping("/ventanaProyectos")
     public String ventanaProyectos() {
-        return "forward:/html/ventanaProyectos.html";
+        return "forward:html/ventanaProyectos.html";
     }
 
     @GetMapping("/ventanaCreacion")
     public String ventanaCreacion() {
-        return "forward:/html/ventanaCreacion.html";
+        return "forward:html/ventanaCreacion.html";
     }
 
     @GetMapping("/ventanaAjustes")
     public String ventanaAjustes() {
-        return "forward:/html/ventanaAjustes.html";
+        return "forward:html/ventanaAjustes.html";
     }
 }
