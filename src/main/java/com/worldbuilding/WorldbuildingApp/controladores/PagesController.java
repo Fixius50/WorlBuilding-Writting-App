@@ -10,25 +10,24 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class PagesController {
 
-    private final String carpeta = "/html";
     // Página principal del proyecto
     @GetMapping("/")
     public String menuInicial() {
         return "redirect:/frontEnd/menuInicialLog.html";
     }
     // Página principal del proyecto
-    @GetMapping(carpeta + "/ventanaProyectos")
+    @GetMapping("/ventanaProyectos")
     public String ventanaProyectos() {
-        return "html/ventanaProyectos.html";
+        return "forward:frontEnd/html/ventanaProyectos.html";
     }
     // Página principal de la creación del proyecto
-    @GetMapping(carpeta + "/ventanaCreacion")
+    @GetMapping("/ventanaCreacion")
     public String ventanaCreacion() {
-        return "html/ventanaCreacion.html";
+        return "forward:frontEnd/html/ventanaCreacion.html";
     }
     // Página principal de los ajustes del proyecto
-    @GetMapping(carpeta + "/ventanaAjustes")
+    @GetMapping("/ventanaAjustes")
     public String ventanaAjustes() {
-        return "html/ventanaAjustes.html";
+        return "forward:frontEnd/html/ventanaAjustes.html";
     }
 }

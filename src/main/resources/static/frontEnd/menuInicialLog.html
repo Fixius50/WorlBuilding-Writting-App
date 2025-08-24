@@ -5,25 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/menuInicialLog.css">
     <script defer src="../project_builder/main.30860cda.js"></script>
+    <script defer src="js/paginas/menuInicialLog.js"></script>
     <title>Menu Inicial</title>
 </head>
 <body>
     <div class="plantilla-0">
         <div class="panel1">
             <header>
-                <button type="button" class="button0" onclick="abrirVentanaAbrir()">ABRIR</button>
+                <button type="button" class="button0" onclick="abrirVentanaAbrir()">SALIR</button>
             </header>
             <div class="contenido">
                 <nav>
                     <button type="button" class="button" onclick="abrirVentanaCreacion()">
-                        <img src="Otros/imagenes/crear.jpg" alt="crear">CREAR
+                        <b>CREAR</b>
                     </button>
-                    <button type="button" class="button" onclick="abrirVentanaAjustes()">
-                        <img src="Otros/imagenes/ajustes.jpg" alt="ajustes">AJUSTES
+                    <button type="button" class="button" onclick="abrirVentanaAbrir()">
+                        <b>ABRIR</b>
                     </button>
                 </nav>
                 <section class="sec">
-                    <article id="abrir-1" class="abrir">
+                    <article id="abrir" class="abrir">
                         <aside>
                             <form>
                                 <label for="abrirNombre">Nombre del proyecto:</label>
@@ -35,7 +36,7 @@
                             <button type="button" class="button" onclick="cerrarVentanaAbrir()">CANCELAR</button>
                         </div>
                     </article>
-                    <article id="crear-1" class="crear">
+                    <article id="crear" class="crear">
                         <form>
                             <div class="c1">
                                 <label for="crearNombre">Nombre del proyecto:</label>
@@ -43,12 +44,7 @@
                             </div>
                             <div class="c2">
                                 <label for="crearTipo">Tipo de proyecto:</label>
-                                <select id="crearTipo">
-                                    <option value="fantasia">Fantasía</option>
-                                    <option value="cienciaFiccion">Ciencia Ficción</option>
-                                    <option value="terror">Terror</option>
-                                    <option value="otros">Otros</option>
-                                </select>
+                                <input type="text" id="crearTipo" required>
                             </div>
                             <div class="buttonNew">
                                 <button type="button" class="button" onclick="crearProyecto()">ACEPTAR</button>
