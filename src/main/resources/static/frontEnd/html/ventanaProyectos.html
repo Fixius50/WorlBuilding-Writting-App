@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../css/ventanaProyectos.css">
+    <link rel="stylesheet" href="/frontEnd/css/ventanaProyectos.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <title>Ventana Proyectos</title>
 </head>
@@ -154,8 +154,8 @@
 </body>
 
 <!-- Scripts necesarios para el mapa infinito y la carga de datos del proyecto -->
-<script src="../js/esquemas/InfiniteMap.js"></script>
-<script src="../js/esquemas/ProjectDataLoader.js"></script>
+<script src="/frontEnd/js/esquemas/InfiniteMap.js"></script>
+<script src="/frontEnd/js/esquemas/ProjectDataLoader.js"></script>
 
 <script>
     let nombreProyectoGlobal = null;
@@ -166,7 +166,7 @@
         if (!nombreProyectoGlobal) {
             alert("No hay proyecto activo");
         } else{
-            window.location.href = `../html/ventanaCreacion.html?proyecto=${encodeURIComponent(nombreProyectoGlobal)}`;
+            window.location.href = `../ventanaCreacion.html?proyecto=${encodeURIComponent(nombreProyectoGlobal)}`;
         }
     }
 
@@ -174,7 +174,7 @@
         if (!nombreProyectoGlobal) {
             alert("No hay proyecto activo");
         } else{
-            window.location.href = `../html/ventanaAjustes.html?proyecto=${encodeURIComponent(nombreProyectoGlobal)}`;
+            window.location.href = `../ventanaAjustes.html?proyecto=${encodeURIComponent(nombreProyectoGlobal)}`;
         }
     }
 

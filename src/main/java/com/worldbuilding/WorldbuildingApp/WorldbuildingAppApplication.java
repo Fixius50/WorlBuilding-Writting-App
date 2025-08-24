@@ -16,7 +16,7 @@ public class WorldbuildingAppApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(WorldbuildingAppApplication.class, args);
-        abrirNavegador("http://localhost:8080/frontEnd/menuInicialLog.html");
+        abrirNavegador("http://localhost:8080/menuInicialLog.html");
     }
 
     /**

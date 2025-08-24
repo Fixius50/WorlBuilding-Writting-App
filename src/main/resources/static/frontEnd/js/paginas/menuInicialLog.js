@@ -28,8 +28,8 @@ async function crearProyecto() {
         const mensaje = await response.text();
         alert(mensaje);
 
-        // Redirigir a la ventana de proyectos después de crear
-        window.location.href = "/ventanaProyectos";
+        // Redirigir con el proyecto en la URL
+        window.location.href = `/ventanaProyectos?proyecto=${encodeURIComponent(nombre)}`;
 
     } catch (err) {
         console.error("Error al crear proyecto:", err);
@@ -59,8 +59,8 @@ async function abrirProyecto() {
         const mensaje = await response.text();
         alert(mensaje);
 
-        // Redirigir a la ventana de proyectos al abrir
-        window.location.href = "/ventanaProyectos";
+        // Redirigir con el proyecto en la URL
+        window.location.href = `/ventanaProyectos?proyecto=${encodeURIComponent(nombre)}`;
 
     } catch (err) {
         console.error("Error al abrir proyecto:", err);
