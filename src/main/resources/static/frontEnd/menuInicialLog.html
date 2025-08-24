@@ -1,16 +1,64 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/menuInicialLog.css">
-    <title>Ventana Principal</title>
+    <script defer src="../project_builder/main.30860cda.js"></script>
+    <title>Menu Inicial</title>
 </head>
 <body>
-    <!-- Div root para React -->
-    <div id="root"></div>
-
-    <!-- Scripts de React -->
-    <script src="js/main.30860cda.js"></script>
+    <div class="plantilla-0">
+        <div class="panel1">
+            <header>
+                <button type="button" class="button0" onclick="abrirVentanaAbrir()">ABRIR</button>
+            </header>
+            <div class="contenido">
+                <nav>
+                    <button type="button" class="button" onclick="abrirVentanaCreacion()">
+                        <img src="Otros/imagenes/crear.jpg" alt="crear">CREAR
+                    </button>
+                    <button type="button" class="button" onclick="abrirVentanaAjustes()">
+                        <img src="Otros/imagenes/ajustes.jpg" alt="ajustes">AJUSTES
+                    </button>
+                </nav>
+                <section class="sec">
+                    <article id="abrir-1" class="abrir">
+                        <aside>
+                            <form>
+                                <label for="abrirNombre">Nombre del proyecto:</label>
+                                <input type="text" id="abrirNombre" required>
+                            </form>
+                        </aside>
+                        <div class="buttonNew">
+                            <button type="button" class="button" onclick="abrirProyecto()">ACEPTAR</button>
+                            <button type="button" class="button" onclick="cerrarVentanaAbrir()">CANCELAR</button>
+                        </div>
+                    </article>
+                    <article id="crear-1" class="crear">
+                        <form>
+                            <div class="c1">
+                                <label for="crearNombre">Nombre del proyecto:</label>
+                                <input type="text" id="crearNombre" required>
+                            </div>
+                            <div class="c2">
+                                <label for="crearTipo">Tipo de proyecto:</label>
+                                <select id="crearTipo">
+                                    <option value="fantasia">Fantasía</option>
+                                    <option value="cienciaFiccion">Ciencia Ficción</option>
+                                    <option value="terror">Terror</option>
+                                    <option value="otros">Otros</option>
+                                </select>
+                            </div>
+                            <div class="buttonNew">
+                                <button type="button" class="button" onclick="crearProyecto()">ACEPTAR</button>
+                                <button type="button" class="button" onclick="cerrarVentanaCrear()">CANCELAR</button>
+                            </div>
+                        </form>
+                    </article>
+                </section>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

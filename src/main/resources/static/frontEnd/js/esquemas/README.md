@@ -13,40 +13,37 @@ js/esquemas/
 ├── nodes/                      # Tipos de nodos personalizados
 │   ├── EntidadIndividualNode.js
 │   ├── EntidadColectivaNode.js
-│   ├── ConstruccionNode.js     # (Pendiente)
-│   ├── ZonaNode.js            # (Pendiente)
-│   └── EfectoNode.js          # (Pendiente)
+│   ├── ConstruccionNode.js
+│   ├── ZonaNode.js
+│   └── EfectoNode.js
 ├── edges/                      # Tipos de conexiones
 │   ├── RelacionLinea.js
-│   ├── JerarquiaEdge.js       # (Pendiente)
-│   ├── AlianzaEdge.js         # (Pendiente)
-│   └── ConflictoEdge.js       # (Pendiente)
 └── README.md                   # Esta documentación
 ```
 
-## 🚀 Características Principales
+## Características Principales
 
-### ✨ **Nodos Personalizados**
+### **Nodos Personalizados**
 - **Entidades Individuales**: Personajes, NPCs, protagonistas, antagonistas
 - **Entidades Colectivas**: Organizaciones, gremios, gobiernos, facciones
 - **Construcciones**: Edificios, estructuras, monumentos
 - **Zonas**: Regiones, territorios, reinos
 - **Efectos**: Magia, eventos, fenómenos
 
-### 🔗 **Conexiones Inteligentes**
+### **Conexiones Inteligentes**
 - **Relaciones**: Conexiones entre elementos
 - **Jerarquías**: Estructuras organizacionales
 - **Alianzas**: Acuerdos y cooperaciones
 - **Conflictos**: Enemistades y rivalidades
 
-### 🎨 **Interfaz Moderna**
+### **Interfaz Moderna**
 - Barra de herramientas intuitiva
 - Modales para edición
 - Drag & drop de elementos
 - Zoom y navegación
 - Exportación de diagramas
 
-## 🔧 Instalación y Uso
+## Instalación y Uso
 
 ### 1. **Inclusión en HTML**
 

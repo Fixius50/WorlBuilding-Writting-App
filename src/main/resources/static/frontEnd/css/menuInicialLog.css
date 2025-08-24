@@ -23,7 +23,9 @@ body{
     height: 50vh;
     display: flex;
     flex-direction: row;
-    /*meter sombreado*/
+    background-image: url('../../Otros/imagenes/sword-fantasy-sword.gif');
+    background-size: cover;
+    background-position: center;
 }
 .panel1:hover{
     opacity: 1;
@@ -31,7 +33,7 @@ body{
 header{
     grid-area: header;
     text-align: center;
-    background-image: url(../../Otros/imagenes/sword-fantasy-sword.gif);
+    background-image: url('../../Otros/imagenes/sword-fantasy-sword.gif');
     background-size: cover;
     background-position: center;
     display: flex;
@@ -44,7 +46,7 @@ header .button0{
     width: 100%;
     cursor: pointer;
     border: none;
-    background-image: url(../../Otros/imagenes/ornamental-frame.jpg);
+    background-image: url('../../Otros/imagenes/ornamental-frame.jpg');
     background-size: cover;
     background-position: center;
 }
@@ -52,7 +54,7 @@ header .button0{
 .contenido{
     margin-left: 0.5%;
     width: 100%;
-    background-image: url(../../Otros/imagenes/wooden-plank-texture-wall.jpg);
+    background-image: url('../../Otros/imagenes/wooden-plank-texture-wall.jpg');
     background-size: contain;
     background-position: center;
     background-repeat: repeat;
@@ -70,7 +72,7 @@ header .button0{
 }
 
 nav .button{
-    background-image: url(../../Otros/imagenes/ornamental-frame.jpg);
+    background-image: url('../../Otros/imagenes/ornamental-frame.jpg');
     background-size: cover;
     background-position: center;
     
@@ -86,7 +88,6 @@ button{
     width: auto;
     height: auto;
     cursor: pointer;
-    border: none;
 }
 
 .sec{
@@ -99,14 +100,6 @@ button{
 form *{
     border: inherit;
 }
-
-/*
-
-Aquí debe buscar si se encuentra el proyecto y el usuario en la carpeta
-de "users". Si está te lleva a la ventana de creación del proyecto; si no,
-sale un error de que no está disponible.
-
-*/
 
 .abrir{
     display: flex;
@@ -148,11 +141,6 @@ sale un error de que no está disponible.
     justify-content: center;
     align-items: center;
 }
-
-/*Esto de crear es el panel de registro donde se pide 
-el nombre del proyecto. Está junto a un botón de guardar.
-
-*/
 
 .crear{
     display: flex;
