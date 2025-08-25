@@ -163,25 +163,19 @@
     let projectDataLoader = null;
 
     function abrirVentanaCreacion() {
-        if (!nombreProyectoGlobal) {
-            alert("No hay proyecto activo");
-        } else{
-            window.location.href = `./ventanaCreacion.html?proyecto=${encodeURIComponent(nombreProyectoGlobal)}`;
+        if (nombreProyectoGlobal) {
+            window.location.href = `/html/ventanaCreacion.html?proyecto=${encodeURIComponent(nombreProyectoGlobal)}`;
         }
     }
 
     function abrirVentanaAjustes() {
-        if (!nombreProyectoGlobal) {
-            alert("No hay proyecto activo");
-        } else{
-            window.location.href = `./ventanaAjustes.html?proyecto=${encodeURIComponent(nombreProyectoGlobal)}`;
+        if (nombreProyectoGlobal) {
+            window.location.href = `/html/ventanaAjustes.html?proyecto=${encodeURIComponent(nombreProyectoGlobal)}`;
         }
     }
 
     function abrirVentanaMenuInicial() {
-        if (!nombreProyectoGlobal) {
-            alert("No hay proyecto activo");
-        } else{
+        if (nombreProyectoGlobal) {
             window.location.href = `../menuInicialLog.html`;
         }
     }
@@ -214,7 +208,7 @@
         initializeInfiniteMap(); 
         
         // Inicializar el cargador de datos del proyecto. Desmarcar cuando se termine de modificar la página
-        // initializeProjectDataLoader()
+        initializeProjectDataLoader()
     });
 
     // ===== FUNCIONES DEL MAPA INFINITO =====
