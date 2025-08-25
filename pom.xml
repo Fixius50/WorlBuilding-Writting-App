@@ -14,18 +14,28 @@
 	<name>WorldbuildingApp</name>
 	<description>Aplicación de worldbuilding</description>
 	<url/>
+	<!-- Esto de abajo hacerlo cuando este hecha la app
 	<licenses>
-		<license/>
+		<license>
+			<name>MIT License</name>
+			<url>https://opensource.org/licenses/MIT</url>
+			<distribution>repo</distribution>
+		</license>
 	</licenses>
 	<developers>
-		<developer/>
+		<developer>
+			<id>rober</id>
+			<name>Roberto</name>
+			<email>roberto@example.com</email>
+		</developer>
 	</developers>
 	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
+		<connection>scm:git:https://github.com/roberto/worldbuildingapp.git</connection>
+		<developerConnection>scm:git:https://github.com/roberto/worldbuildingapp.git</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/roberto/worldbuildingapp</url>
 	</scm>
+	-->
 	<properties>
 		<java.version>24</java.version>
 	</properties>
