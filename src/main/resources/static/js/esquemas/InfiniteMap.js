@@ -12,16 +12,16 @@ class InfiniteMap {
         
         // Configuración por defecto
         this.config = {
-            gridSize: options.gridSize || 50,
-            gridColor: options.gridColor || '#e0e0e0',
+            gridSize: options.gridSize || 100,
+            gridColor: options.gridColor || '#000000ff',
             gridOpacity: options.gridOpacity || 0.3,
-            backgroundColor: options.backgroundColor || '#f8f9fa',
+            backgroundColor: options.backgroundColor || '#007cf8ff',
             zoomLevel: options.zoomLevel || 1,
             minZoom: options.minZoom || 0.1,
             maxZoom: options.maxZoom || 5,
             panSpeed: options.panSpeed || 1,
             showCoordinates: options.showCoordinates || true,
-            coordinateColor: options.coordinateColor || '#666',
+            coordinateColor: options.coordinateColor || '#ff0000ff',
             coordinateFont: options.coordinateFont || '12px Arial',
             ...options
         };
@@ -66,7 +66,7 @@ class InfiniteMap {
         this.canvas = document.createElement('canvas');
         this.canvas.id = 'infinite-map-canvas';
         this.canvas.style.cssText = `
-            display: block;
+            display: flex;
             cursor: grab;
             background: ${this.config.backgroundColor};
             border: 1px solid #ddd;
@@ -194,47 +194,6 @@ class InfiniteMap {
     handleMouseLeave(event) {
         this.state.isDragging = false;
         this.canvas.style.cursor = 'grab';
-    }
-
-    /**
-     * Maneja eventos touch para dispositivos móviles
-     */
-    handleTouchStart(event) {
-        event.preventDefault();
-        if (event.touches.length === 1) {
-            const touch = event.touches[0];
-            this.state.isDragging = true;
-            this.state.lastMouseX = touch.clientX;
-            this.state.lastMouseY = touch.clientY;
-        }
-    }
-
-    /**
-     * Maneja eventos touch para dispositivos móviles
-     */
-    handleTouchMove(event) {
-        event.preventDefault();
-        if (event.touches.length === 1 && this.state.isDragging) {
-            const touch = event.touches[0];
-            const deltaX = touch.clientX - this.state.lastMouseX;
-            const deltaY = touch.clientY - this.state.lastMouseY;
-            
-            this.state.offsetX += deltaX * this.config.panSpeed;
-            this.state.offsetY += deltaY * this.config.panSpeed;
-            
-            this.state.lastMouseX = touch.clientX;
-            this.state.lastMouseY = touch.clientY;
-            
-            this.render();
-        }
-    }
-
-    /**
-     * Maneja eventos touch para dispositivos móviles
-     */
-    handleTouchEnd(event) {
-        event.preventDefault();
-        this.state.isDragging = false;
     }
 
     /**
@@ -600,18 +559,6 @@ class InfiniteMap {
         if (state.markers) this.markers = state.markers;
         
         this.render();
-    }
-
-    /**
-     * Destruye el mapa
-     */
-    destroy() {
-        if (this.canvas && this.canvas.parentNode) {
-            this.canvas.parentNode.removeChild(this.canvas);
-        }
-        
-        this.isInitialized = false;
-        console.log('🗺️ Mapa infinito destruido');
     }
 }
 

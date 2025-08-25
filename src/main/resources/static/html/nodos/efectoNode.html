@@ -7,15 +7,16 @@
     <link rel="stylesheet" href="../../css/Nodos/NodeStyle.css">
 </head>
 <body>
-    <div class="node">
-        <div class="node-compact">
-            <div class="node-image">
-                <img src="/Otros/imagenes/casting-spell.gif" alt="Efecto">
-            </div>
-            <button type="button" class="despliegue-datos" onclick="toggleNodeExpansion()">
-                <i class="fas fa-chevron-down"></i>
-            </button>
-        </div>
+    <button type="button" class="despliegue-datos" data-node-id="${node.id}">
+        <article class="node-compact">
+            <section class="node-image">
+                <img src="../../../Otros/imagenes/mage.png"></img>
+            </section>
+            <section class="node-name">
+                <b class="node-type">Efecto</b>
+                <h2 class="node-name">${nodeData.nombre || 'Sin nombre'}</h2>
+            </section>
+        </article>
         <article class="node-expanded">
             <section>
                 <b class="node-b">Alias:</b>

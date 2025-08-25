@@ -7,14 +7,15 @@
     <link rel="stylesheet" href="../../css/Nodos/NodeStyle.css">
 </head>
 <body>
-    <div class="node">
+    <button button type="button" class="despliegue-datos" data-node-id="${node.id}">
         <div class="node-compact">
             <div class="node-image">
-                <img src="/Otros/imagenes/construcciones.jpg" alt="Construcción">
+                <img src="../../../Otros/imagenes/construcciones.jpg">
             </div>
-            <button type="button" class="despliegue-datos" onclick="toggleNodeExpansion()">
-                <i class="fas fa-chevron-down"></i>
-            </button>
+            <section class="node-name">
+                <b class="node-type">Construccion</b>
+                <h2 class="node-name">${nodeData.nombre || 'Sin nombre'}</h2>
+            </section>
         </div>
         <article class="node-expanded">
             <section>
