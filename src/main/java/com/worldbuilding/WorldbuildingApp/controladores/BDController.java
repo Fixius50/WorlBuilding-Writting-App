@@ -5,17 +5,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.worldbuilding.WorldbuildingApp.MetodosBaseDatos;
-import com.worldbuilding.WorldbuildingApp.modelos.DatosTablaDTO;
-import com.worldbuilding.WorldbuildingApp.modelos.ProyectoDTO;
-import com.worldbuilding.WorldbuildingApp.modelos.DataException;
+import com.worldbuilding.WorldbuildingApp.modelos.*;
 
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.Map;
+import org.springframework.web.bind.annotation.GetMapping;
+
 
 /**
  * Esta clase se encarga de realizar las operaciones lógicas de la base de datos del proyecto actual.
@@ -112,6 +109,34 @@ public class BDController implements MetodosBaseDatos{
             
         } catch (Exception e) {
             mensaje = ResponseEntity.internalServerError().body("Error al eliminar: " + e.getMessage());
+        }
+        return mensaje;
+    }
+
+    @GetMapping("/obtener")
+    @Override
+    public ResponseEntity<?> obtenerDatosDTO(@RequestBody Map<String, Object> requestBody, HttpSession session){
+        ResponseEntity<String> mensaje;
+        try {
+            
+            String nombreProyecto = (String) session.getAttribute("proyectoActivo");
+            if (nombreProyecto == null) {
+                mensaje = ResponseEntity.badRequest().body("No hay proyecto activo");
+                throw new Exception();
+            }
+
+            Long id = Long.valueOf(requestBody.get("id").toString());
+            String tipoTabla = (String) requestBody.get("tipoTabla");
+
+            // Generar la operación SQL de eliminación
+            String operacionSQL = "SELECT * FROM " + tipoTabla + " WHERE id = " + id + ";";
+            
+            // Agregar la operación al archivo SQL del proyecto
+            agregarOperacionAlArchivo(nombreProyecto, operacionSQL);
+            mensaje = ResponseEntity.ok("Datos eliminados correctamente de " + tipoTabla + " del proyecto '" + nombreProyecto + "'");
+
+        } catch (Exception e) {
+            mensaje = ResponseEntity.internalServerError().body("Error al obtener datos de: " + e.getMessage());
         }
         return mensaje;
     }
