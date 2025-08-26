@@ -311,32 +311,35 @@
 .object-list {
     padding: 0.5rem;
     overflow-y: auto;
-    max-height: 10vh;
+    max-height: 20vh;
 }
 
 .draggable-object {
     display: flex;
     align-items: center;
+    justify-items: center;
+    text-align: center;
     padding: 0.5rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1%;
     background: #fff;
-    border: 0.0625rem solid #e0e0e0;
-    border-radius: 0.375rem;
+    border: 1px solid #ae0707;
+    border-radius: 0.5rem;
     cursor: grab;
     transition: all 0.2s ease;
     position: relative;
+    flex-grow: 1;
 }
 
 .draggable-object:hover {
-    background: #f8f9fa;
-    border-color: #667eea;
-    transform: translateY(-0.125rem);
-    box-shadow: 0 0.25rem 0.5rem rgba(102, 126, 234, 0.2);
+    background: #ffffff;
+    border-color: #77ff00;
+    transform: translateY(-0.2rem);
+    box-shadow: 0 1rem 1rem rgba(215, 187, 48, 0.2);
 }
 
 .draggable-object:active {
     cursor: grabbing;
-    transform: translateY(0);
+    transform: translateY(1);
 }
 
 .draggable-object.dragging {
@@ -346,8 +349,8 @@
 }
 
 .object-icon {
-    width: 2rem;
-    height: 2rem;
+    width: 3rem;
+    height: auto;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -359,22 +362,21 @@
 
 .object-info {
     flex: 1;
-    min-width: 0;
 }
 
 .object-name {
-    font-size: 0.875rem;
+    font-size: 1.2rem;
     font-weight: 600;
-    color: #333;
-    margin-bottom: 0.125rem;
+    color: #000000;
+    margin-bottom: 0.2rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .object-type {
-    font-size: 0.75rem;
-    color: #666;
+    font-size: 0.9rem;
+    color: #000000;
     font-style: italic;
 }
 
