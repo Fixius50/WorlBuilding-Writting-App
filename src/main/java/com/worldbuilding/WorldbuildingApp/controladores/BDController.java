@@ -214,7 +214,7 @@ public class BDController implements MetodosBaseDatos{
         // Determinar tipo basado en los campos específicos presentes
         if (requestBody.containsKey("estado") && requestBody.containsKey("origen") && requestBody.containsKey("comportamiento")) {
             if (requestBody.get("Entidad").equals("EntidadIndividual")) {
-                tipo = "entidadIndividual"; // o "entidadColectiva" según otros criterios
+                tipo = "entidadIndividual";
             } else{
                 tipo = "entidadColectiva";
             }
@@ -376,7 +376,7 @@ public class BDController implements MetodosBaseDatos{
         String nuevaOperacion = "\n-- Operación agregada: " + java.time.LocalDateTime.now() + "\n";
         nuevaOperacion += operacionSQL + "\n";
         
-        // Escribir el archivo actualizado
-        Files.writeString(archivoSQL, contenidoActual + nuevaOperacion, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+        // Escribir el archivo actualizado ; StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING
+        Files.writeString(archivoSQL, contenidoActual + nuevaOperacion, StandardOpenOption.APPEND);
     }
 }

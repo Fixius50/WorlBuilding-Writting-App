@@ -41,4 +41,4 @@ INSERT INTO zona (nombre, apellidos, tipo, descripcion, tamanno, desarrollo) VAL
 INSERT INTO efectos (nombre, apellidos, tipo, descripcion, origen, dureza, comportamiento) VALUES ('El Anillo Único', 'de Sauron', 'efecto', 'Un anillo que otorga poder pero corrompe', 'magia', 'duro', 'activo');
 
 -- Operación agregada: 2024-01-15T10:55:45
-INSERT INTO interaccion (nombre, apellidos, tipo, descripcion, direccion, afectados) VALUES ('Guerra del Anillo', 'Gran Conflicto', 'relacion', 'La lucha por el control del Anillo Único', 'bidireccional', 'ambos'); 
+INSERT INTO interaccion (nombre, apellidos, tipo, descripcion, direccion, afectados) VALUES ('Guerra del Anillo', 'Gran Conflicto', 'relacion', 'La lucha por el control del Anillo Único', 'bidireccional', 'ambos'); "prueba" 

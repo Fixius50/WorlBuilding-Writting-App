@@ -29,70 +29,44 @@ class ConstruccionNode {
         const nodeData = this.mergeWithBackendData(data);
         
         return `
-            <div class="flow-node construccion-node compact" data-node-id="${node.id}" onclick="toggleNodeExpansion('${node.id}')">
-                <div class="node-compact-view">
-                    <div class="node-image-container">
-                        <div class="node-image-placeholder">
-                            <i class="fas fa-building"></i>
-                        </div>
+            <button type="button" class="despliegue-datos" data-node-id="${node.id}" onclick="toggleNodeExpansion('${node.id}')">
+                <div class="node-compact">
+                    <div class="node-image">
+                        <img src="../../../Otros/imagenes/construcciones.jpg">
                     </div>
-                    <div class="node-name-container">
-                        <h4 class="node-name">${nodeData.nombre || 'Sin nombre'}</h4>
-                        <span class="node-type">${nodeData.tipo || 'Edificio'}</span>
-                    </div>
-                    <div class="node-expand-indicator">
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
+                    <section class="node-name">
+                        <b class="node-type">Construccion</b>
+                        <h2 class="node-name">${nodeData.nombre || 'Sin nombre'}</h2>
+                    </section>
                 </div>
-                
-                <div class="node-expanded-content" style="display: none;">
-                    <div class="node-header">
-                        <div class="node-icon">
-                            <img src="/Otros/imagenes/construcciones.jpg" alt="Construcción" class="node-icon-img">
-                        </div>
-                        <div class="node-title">
-                            <h3 class="node-name">${nodeData.nombre || 'Sin nombre'}</h3>
-                            <span class="node-type">${nodeData.tipo || 'Edificio'}</span>
-                        </div>
-                        <div class="node-actions">
-                            <button class="node-action-btn edit-btn" onclick="editNode('${node.id}')">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="node-action-btn delete-btn" onclick="deleteNode('${node.id}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="node-content">
-                        <div class="node-section">
-                            <label class="node-label">Alias:</label>
-                            <span class="node-value">${nodeData.apellidos || 'N/A'}</span>
-                        </div>
-                        
-                        <div class="node-section">
-                            <label class="node-label">Tamaño:</label>
-                            <span class="node-value">${nodeData.tamanno || 'N/A'}</span>
-                        </div>
-                        
-                        <div class="node-section">
-                            <label class="node-label">Desarrollo:</label>
-                            <span class="node-value">${nodeData.desarrollo || 'N/A'}</span>
-                        </div>
-                        
-                        <div class="node-section description">
-                            <label class="node-label">Descripción:</label>
-                            <p class="node-description">${nodeData.descripcion || 'Sin descripción'}</p>
-                        </div>
-                    </div>
-                    
-                    <div class="node-footer">
-                        <div class="node-connections">
-                            <span class="connection-count">${this.getConnectionCount(node.id)} conexiones</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                <article class="node-expanded">
+                    <section>
+                        <b class="node-b">Alias:</b>
+                        <i class="node-value">${nodeData.alias || 'N/A'}</i>
+                    </section>
+                    <section>
+                        <b class="node-b">Tamaño:</b>
+                        <i class="node-value">${nodeData.tamanno || 'N/A'}</i>
+                    </section>
+                    <section>
+                        <b class="node-b">Tipo:</b>
+                        <i class="node-value">${nodeData.tipo || 'N/A'}</i>
+                    </section>
+                    <section>
+                        <b class="node-b">Desarrollo:</b>
+                        <i class="node-value">${nodeData.desarrollo || 'N/A'}</i>
+                    </section>
+                    <section class="description">
+                        <b class="node-b">Descripción:</b>
+                        <p class="node-description">${nodeData.descripcion || 'Sin descripción'}</p>
+                    </section>
+                </article>
+                <article class="node-footer">
+                    <section class="node-connections">
+                        <b class="connection-count">Conexiones: ${this.getConnectionCount(node.id)}</b>
+                    </section>
+                </article>
+            </button>
         `;
     }
 

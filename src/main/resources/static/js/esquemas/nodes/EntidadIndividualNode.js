@@ -152,33 +152,48 @@ class EntidadIndividualNode {
         const { data } = node;
         const nodeData = this.mergeWithBackendData(data);
         return `
-            <div class="edit-form entidad-individual-form">
-                <h3>Editar Entidad Individual</h3>
-                <div class="form-group">
-                    <label for="nombre-${nodeId}">Nombre *</label>
-                    <input type="text" id="nombre-${nodeId}" value="${nodeData.nombre || ''}" required>
-                </div>
-                <div class="form-group">
-                    <label for="alias-${nodeId}">Alias</label>
-                    <input type="text" id="alias-${nodeId}" value="${nodeData.alias || ''}">
-                </div>
-                <div class="form-group">
-                    <label for="especie-${nodeId}">Especie</label>
-                    <input type="text" id="especie-${nodeId}" value="${nodeData.especie || ''}">
-                </div>
-                <div class="form-group">
-                    <label for="origen-${nodeId}">Origen</label>
-                    <input type="text" id="origen-${nodeId}" value="${nodeData.origen || ''}">
-                </div>
-                <div class="form-group">
-                    <label for="descripcion-${nodeId}">Descripción</label>
-                    <textarea id="descripcion-${nodeId}">${nodeData.descripcion || ''}</textarea>
-                </div>
-                <div class="form-actions">
-                    <button type="button" onclick="saveNodeEdit('${nodeId}')" class="btn btn-primary">Guardar</button>
-                    <button type="button" onclick="cancelNodeEdit()" class="btn btn-secondary">Cancelar</button>
-                </div>
-            </div>
+            <button type="button" class="despliegue-datos" data-node-id="${node.id}" onclick="toggleNodeExpansion('${node.id}')">
+                <article class="node-compact">
+                    <section class="node-image">
+                        <img src="../../../Otros/imagenes/mage.png"></img>
+                    </section>
+                    <section class="node-name">
+                        <b class="node-type">Entidad Individual</b>
+                        <h2 class="node-name">${nodeData.nombre || 'Sin nombre'}</h2>
+                    </section>
+                </article>
+                <article class="node-expanded">
+                    <section>
+                        <b class="node-b">Alias:</b>
+                        <i class="node-value">${nodeData.alias || 'N/A'}</i>
+                    </section>
+                    <section>
+                        <b class="node-b">Estado:</b>
+                        <i class="node-value">${nodeData.estado || 'N/A'}</i>
+                    </section>
+                    <section>
+                        <b class="node-b">Tipo:</b>
+                        <i class="node-value">${nodeData.tipo || 'N/A'}</i>
+                    </section>
+                    <section>
+                        <b class="node-b">Origen:</b>
+                        <i class="node-value">${nodeData.origen || 'N/A'}</i>
+                    </section>
+                    <section>
+                        <b class="node-b">Comportamiento:</b>
+                        <i class="node-value">${nodeData.comportamiento || 'N/A'}</i>
+                    </section>
+                    <section class="description">
+                        <b class="node-b">Descripción:</b>
+                        <p class="node-description">${nodeData.descripcion || 'Sin descripción'}</p>
+                    </section>
+                </article>
+                <article class="node-footer">
+                    <section class="node-connections">
+                        <b class="connection-count">Conexiones: ${this.getConnectionCount(node.id)}</b>
+                    </section>
+                </article>
+            </button>
         `;
     }
 
