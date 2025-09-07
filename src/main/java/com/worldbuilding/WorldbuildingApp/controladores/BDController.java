@@ -235,24 +235,26 @@ public class BDController implements MetodosBaseDatos{
      * @return String con el tipo de tabla
      */
     private String determinarTipoTabla(Map<String, Object> requestBody) {
-        String tipo = "";
-        // Determinar tipo basado en los campos específicos presentes
-        if (requestBody.containsKey("estado") && requestBody.containsKey("origen") && requestBody.containsKey("comportamiento")) {
-            if (requestBody.get("Entidad").equals("EntidadIndividual")) {
-                tipo = "entidadIndividual";
-            } else{
-                tipo = "entidadColectiva";
-            }
-        } else if (requestBody.containsKey("tamano") && requestBody.containsKey("desarrollo")) {
-            tipo = "construccion";
-        } else if (requestBody.containsKey("origen") && requestBody.containsKey("dureza")) {
-            tipo = "efectos";
-        } else if (requestBody.containsKey("direccion") && requestBody.containsKey("afectados")) {
-            tipo = "interaccion";
-        } else {
-            tipo = "zona"; // Por defecto
+        String tabla = "No se pudo determinar el tipo de tabla";
+        // Si tiene estado y comportamiento, es una entidad
+        if (requestBody.containsKey("estado") && requestBody.containsKey("comportamiento")) {
+            tabla = requestBody.containsKey("colectivo") ? "Entidad-Colectiva" : "Entidad-Individual";
+        } 
+        // Si tiene tamaño y desarrollo
+        else if (requestBody.containsKey("tamano") && requestBody.containsKey("desarrollo")) {
+            tabla = requestBody.containsKey("esZona") ? "Zona" : "Construccion";
+        } 
+        // Si tiene origen y dureza es un efecto
+        else if (requestBody.containsKey("origen") && requestBody.containsKey("dureza")) {
+            tabla = "Efecto";
+        } 
+        // Si tiene dirección y afectados es una relación
+        else if (requestBody.containsKey("direccion") && requestBody.containsKey("afectados")) {
+            tabla = "Relacion";
+        } else{
+            throw new IllegalArgumentException("No se pudo determinar el tipo de tabla");
         }
-        return tipo;
+        return tabla;
     }
 
     /**
@@ -263,31 +265,31 @@ public class BDController implements MetodosBaseDatos{
      */
     private String[] crearValoresExtraTabla(String tipoTabla, Map<String, Object> requestBody) {
         switch (tipoTabla) {
-            case "entidadIndividual":
-            case "entidadColectiva":
+            case "Entidad-Individual":
+            case "Entidad-Colectiva":
                 return new String[]{
-                    tipoTabla,
+                    tipoTabla,  // Tipo exacto que espera el DTO
                     (String) requestBody.get("estado"),
                     (String) requestBody.get("origen"),
                     (String) requestBody.get("comportamiento")
                 };
-            case "construccion":
-            case "zona":
+            case "Construccion":
+            case "Zona":
                 return new String[]{
-                    tipoTabla,
+                    tipoTabla,  // Tipo exacto que espera el DTO
                     (String) requestBody.get("tamano"),
                     (String) requestBody.get("desarrollo")
                 };
-            case "efectos":
+            case "Efecto":
                 return new String[]{
-                    tipoTabla,
+                    "Efecto",  // Tipo exacto que espera el DTO
                     (String) requestBody.get("origen"),
                     (String) requestBody.get("dureza"),
                     (String) requestBody.get("comportamiento")
                 };
-            case "interaccion":
+            case "Relacion":
                 return new String[]{
-                    tipoTabla,
+                    "Relacion",  // Tipo exacto que espera el DTO
                     (String) requestBody.get("direccion"),
                     (String) requestBody.get("afectados")
                 };
