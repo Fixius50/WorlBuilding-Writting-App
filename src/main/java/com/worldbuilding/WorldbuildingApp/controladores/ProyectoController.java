@@ -1,6 +1,8 @@
 package com.worldbuilding.WorldbuildingApp.controladores;
 
-import jakarta.servlet.http.HttpSession; // Librería que permite mantener el proyecto que se está usando
+import jakarta.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.*;
 import java.util.regex.*;
 
@@ -23,6 +24,9 @@ import java.util.regex.*;
 @RestController
 @RequestMapping("/api/proyectos")
 public class ProyectoController {
+
+    @Autowired
+    private BDController bdController;
 
     // ADVERTENCIA: Esta ruta funcionará en el IDE, pero fallará al empaquetar en un JAR.
     private final String DATA_FOLDER = "src/main/data";
@@ -79,12 +83,6 @@ public class ProyectoController {
             contenidoProyecto.append("-- ===========================================\n");
             contenidoProyecto.append("-- AQUÍ SE AGREGARÁN LAS OPERACIONES ESPECÍFICAS DEL PROYECTO\n");
             contenidoProyecto.append("-- ===========================================\n\n");
-            contenidoProyecto.append("-- Ejemplos de operaciones que se pueden agregar:\n");
-            contenidoProyecto.append("-- INSERT INTO entidadIndividual (nombre, apellidos, estado, tipo, origen, comportamiento, descripcion) VALUES (...);\n");
-            contenidoProyecto.append("-- INSERT INTO construccion (nombre, apellidos, tamanno, tipo, desarrollo, descripcion) VALUES (...);\n");
-            contenidoProyecto.append("-- INSERT INTO zona (nombre, apellidos, tamanno, tipo, desarrollo, descripcion) VALUES (...);\n");
-            contenidoProyecto.append("-- INSERT INTO efectos (nombre, apellidos, origen, dureza, comportamiento, descripcion) VALUES (...);\n");
-            contenidoProyecto.append("-- INSERT INTO interaccion (nombre, apellidos, direccion, tipo, afectados, descripcion) VALUES (...);\n\n");
             
             // Escribir el archivo del proyecto
             Files.writeString(archivoSQL, contenidoProyecto.toString(), StandardOpenOption.WRITE, StandardOpenOption.CREATE);
@@ -155,28 +153,12 @@ public class ProyectoController {
     public ResponseEntity<?> agregarOperacionSQL(@RequestParam String operacionSQL, HttpSession session) {
         String nombreProyecto = (String) session.getAttribute("proyectoActivo");
         if (nombreProyecto == null) {
-            throw new RuntimeException("No hay proyecto activo");
+            return ResponseEntity.status(404).body("No hay proyecto activo");
         }
 
         try {
-            Path archivoSQL = Paths.get(DATA_FOLDER, nombreProyecto + ".sql");
-            
-            if (!Files.exists(archivoSQL)) {
-                return ResponseEntity.status(404).body("Archivo del proyecto no encontrado");
-            }
-
-            // Leer el contenido actual
-            String contenidoActual = Files.readString(archivoSQL);
-            
-            // Agregar la nueva operación al final del archivo
-            String nuevaOperacion = "\n-- Operación agregada: " + java.time.LocalDateTime.now() + "\n";
-            nuevaOperacion += operacionSQL + "\n";
-            
-            // Escribir el archivo actualizado
-            Files.writeString(archivoSQL, contenidoActual + nuevaOperacion, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
-            
+            bdController.agregarOperacionAArchivo(nombreProyecto, operacionSQL);
             return ResponseEntity.ok("Operación SQL agregada correctamente al proyecto '" + nombreProyecto + "'");
-            
         } catch (IOException e) {
             return ResponseEntity.status(500).body("Error agregando operación SQL: " + e.getMessage());
         }
@@ -229,12 +211,12 @@ public class ProyectoController {
             String contenido = Files.readString(archivoSQL);
             
             // Crear objeto con los datos estructurados
-            java.util.Map<String, Object> datosProyecto = new java.util.HashMap<>();
+            Map<String, Object> datosProyecto = new HashMap<>();
             datosProyecto.put("nombreProyecto", nombreProyecto);
             datosProyecto.put("enfoque", session.getAttribute("enfoqueProyectoActivo"));
             
             // Extraer datos de cada tabla del contenido SQL
-            java.util.Map<String, java.util.List<java.util.Map<String, Object>>> tablas = new java.util.HashMap<>();
+            Map<String, List<Map<String, Object>>> tablas = new HashMap<>();
             
             // Tablas que queremos extraer
             String[] nombresTablas = {
@@ -243,106 +225,16 @@ public class ProyectoController {
             };
             
             for (String tabla : nombresTablas) {
-                java.util.List<java.util.Map<String, Object>> datosTabla = extraerDatosDeTabla(contenido, tabla);
+                List<Map<String, Object>> datosTabla = bdController.extraerDatosDeTabla(contenido, tabla);
                 tablas.put(tabla, datosTabla);
             }
             
             datosProyecto.put("tablas", tablas);
-            
             entity = ResponseEntity.ok(datosProyecto);
             
         } catch (IOException e) {
             entity = ResponseEntity.status(500).body(e.getMessage());
         }
         return entity;
-    }
-
-    /**
-     * Método auxiliar para extraer datos de una tabla específica del contenido SQL
-     * @param contenidoSQL El contenido del archivo SQL
-     * @param nombreTabla El nombre de la tabla a extraer
-     * @return Lista de mapas con los datos de la tabla
-     */
-    private List<Map<String, Object>> extraerDatosDeTabla(String contenidoSQL, String nombreTabla) {
-        List<Map<String, Object>> datos = new ArrayList<>();
-        
-        // Patrón mejorado para encontrar INSERT INTO tabla (columnas) VALUES (valores);
-        // Maneja múltiples líneas y espacios
-        String patron = "INSERT\\s+INTO\\s+" + nombreTabla + "\\s*\\(([^)]+)\\)\\s*VALUES\\s*\\(([^)]+)\\);";
-        Pattern pattern = Pattern.compile(patron, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-        Matcher matcher = pattern.matcher(contenidoSQL);
-        
-        while (matcher.find()) {
-            String columnasStr = matcher.group(1);
-            String valoresStr = matcher.group(2);
-            
-            // Parsear columnas
-            String[] columnas = columnasStr.split(",");
-            for (int i = 0; i < columnas.length; i++) {
-                columnas[i] = columnas[i].trim();
-            }
-            
-            // Parsear valores
-            String[] valores = parsearValoresSQL(valoresStr);
-            
-            // Crear mapa de datos
-            Map<String, Object> fila = new HashMap<>();
-            for (int i = 0; i < columnas.length && i < valores.length; i++) {
-                // Limpiar comillas de los valores
-                String valor = valores[i];
-                if (valor.startsWith("'") && valor.endsWith("'")) {
-                    valor = valor.substring(1, valor.length() - 1);
-                }
-                fila.put(columnas[i], valor);
-            }
-            
-            datos.add(fila);
-        }
-        
-        return datos;
-    }
-
-    /**
-     * Método auxiliar para parsear valores SQL
-     * @param valoresStr String con los valores separados por comas
-     * @return Array of strings with the parsed values
-     */
-    private String[] parsearValoresSQL(String valoresStr) {
-        List<String> valores = new ArrayList<>();
-        StringBuilder valorActual = new StringBuilder();
-        boolean dentroComillas = false;
-        boolean escape = false;
-        char c;
-        for (int i = 0; i < valoresStr.length(); i++) {
-            c = valoresStr.charAt(i);
-            
-            if (escape) {
-                valorActual.append(c);
-                escape = false;
-            }
-            
-            if (c == '\\') {
-                escape = true;
-            }
-            
-            if (c == '\'') {
-                dentroComillas = !dentroComillas;
-                valorActual.append(c);
-            }
-            
-            if (c == ',' && !dentroComillas) {
-                valores.add(valorActual.toString().trim());
-                valorActual = new StringBuilder();
-            }
-            
-            valorActual.append(c);
-        }
-        
-        // Agregar el último valor
-        if (valorActual.length() > 0) {
-            valores.add(valorActual.toString().trim());
-        }
-        
-        return valores.toArray(new String[0]);
     }
 }

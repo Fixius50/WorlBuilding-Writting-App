@@ -1,5 +1,6 @@
-create database if not exists worldbuilding;
-use worldbuilding;
+DROP DATABASE IF EXISTS worldbuilding;
+CREATE DATABASE worldbuilding;
+USE worldbuilding;
 
 /*
 Esta es la base de datos general para todas. Tmabién se le declaran los valores y cosas 
@@ -13,7 +14,7 @@ create table if not exists crearProyecto(
 );
 
 -- Esta función abre el proyecto. Esta contenida en un delimitador ya que el proyecto puede no existir.
-DELIMITER $$
+DELIMITER //
 	CREATE FUNCTION abrirProyecto(nombre VARCHAR(100))
 	RETURNS BOOLEAN
 	DETERMINISTIC
@@ -26,7 +27,7 @@ DELIMITER $$
 
 		RETURN existe;
 	END 
-$$ DELIMITER ;
+// DELIMITER ;
 
 /*
 	Estas tablas de abajo son las referentes a la pestaña de creación.
@@ -147,7 +148,7 @@ VALUES (1, 2, 'comparten_peligro');
 
 -- Procedimiento para activar un nodo:
 
-DELIMITER $$
+DELIMITER //
 
 CREATE PROCEDURE activarNodo(
     IN entidadID INT,
@@ -173,13 +174,11 @@ BEGIN
     PREPARE stmt FROM @sql;
     EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
-END$$
-
-DELIMITER ;
+END // DELIMITER ;
 
 -- Procedimiento para relacionar nodos con la misma característica:
 
-DELIMITER $$
+DELIMITER //
 
 CREATE PROCEDURE relacionarPorCaracteristica(
     IN caracteristica VARCHAR(100),
@@ -217,13 +216,11 @@ BEGIN
     END LOOP;
 
     CLOSE cur1;
-END$$
-
-DELIMITER ;
+END // DELIMITER ;
 
 -- Procedimiento para ver nodos relacionados:
 
-DELIMITER $$
+DELIMITER //
 
 CREATE PROCEDURE verRelacionados(
     IN nodoID INT
@@ -241,18 +238,4 @@ BEGIN
         OR
         (r.nodo_destino_id = nodoID AND n.id = r.nodo_origen_id)
     );
-END$$
-
-DELIMITER ;
-
-/*
--- Ejemplo de como usarlo:
-
-CALL activarNodo(3, 'zona', 'contaminacion');
-CALL activarNodo(7, 'construccion', 'contaminacion');
-
-CALL relacionarPorCaracteristica('contaminacion', 'vinculo_logico');
-
-CALL verRelacionados(1); -- Suponiendo que el nodo 1 es uno de los anteriores
-
-*/
+END // DELIMITER ;

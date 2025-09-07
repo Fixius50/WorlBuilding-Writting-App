@@ -13,7 +13,8 @@ import com.worldbuilding.WorldbuildingApp.modelos.*;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.*;
 import org.springframework.web.bind.annotation.GetMapping;
 
 
@@ -132,6 +133,30 @@ public class BDController implements MetodosBaseDatos{
             mensaje = ResponseEntity.internalServerError().body("Error al eliminar: " + e.getMessage());
         }
         return mensaje;
+    }
+
+    /**
+     * Método para agregar una operación SQL al archivo del proyecto
+     * @param nombreProyecto Nombre del proyecto al que agregar la operación
+     * @param operacionSQL La operación SQL a agregar
+     * @throws IOException Si hay error al escribir el archivo
+     */
+    public void agregarOperacionAArchivo(String nombreProyecto, String operacionSQL) throws IOException {
+        Path archivoSQL = Paths.get(dataFolder, nombreProyecto + ".sql");
+        
+        if (!Files.exists(archivoSQL)) {
+            throw new IOException("Archivo del proyecto no encontrado: " + nombreProyecto + ".sql");
+        }
+
+        // Agregar la nueva operación al final del archivo
+        String nuevaOperacion = "\n-- Operación agregada: " + java.time.LocalDateTime.now() + "\n";
+        nuevaOperacion += operacionSQL + "\n";
+        
+        // Escribir el archivo actualizado
+        Files.writeString(archivoSQL, nuevaOperacion, StandardOpenOption.APPEND);
+        
+        // Ejecutar la operación SQL en la base de datos
+        databaseService.ejecutarSQL(operacionSQL);
     }
 
     @GetMapping("/obtener")
@@ -420,6 +445,95 @@ public class BDController implements MetodosBaseDatos{
         // Aquí se implementaría la lógica para generar SQL de relaciones
         // Por ahora retornamos un placeholder
         return "-- Operación de relación: " + request.getNombre() + " -> " + request.getDescripcion();
+    }
+
+    /**
+     * Método auxiliar para extraer datos de una tabla específica del contenido SQL
+     * @param contenidoSQL El contenido del archivo SQL
+     * @param nombreTabla El nombre de la tabla a extraer
+     * @return Lista de mapas con los datos de la tabla
+     */
+    public List<Map<String, Object>> extraerDatosDeTabla(String contenidoSQL, String nombreTabla) {
+        List<Map<String, Object>> datos = new ArrayList<>();
+        
+        // Patrón mejorado para encontrar INSERT INTO tabla (columnas) VALUES (valores);
+        // Maneja múltiples líneas y espacios
+        String patron = "INSERT\\s+INTO\\s+" + nombreTabla + "\\s*\\(([^)]+)\\)\\s*VALUES\\s*\\(([^)]+)\\);";
+        Pattern pattern = Pattern.compile(patron, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(contenidoSQL);
+        
+        while (matcher.find()) {
+            String columnasStr = matcher.group(1);
+            String valoresStr = matcher.group(2);
+            
+            // Parsear columnas
+            String[] columnas = columnasStr.split(",");
+            for (int i = 0; i < columnas.length; i++) {
+                columnas[i] = columnas[i].trim();
+            }
+            
+            // Parsear valores
+            String[] valores = parsearValoresSQL(valoresStr);
+            
+            // Crear mapa de datos
+            Map<String, Object> fila = new HashMap<>();
+            for (int i = 0; i < columnas.length && i < valores.length; i++) {
+                // Limpiar comillas de los valores
+                String valor = valores[i];
+                if (valor.startsWith("'") && valor.endsWith("'")) {
+                    valor = valor.substring(1, valor.length() - 1);
+                }
+                fila.put(columnas[i], valor);
+            }
+            
+            datos.add(fila);
+        }
+        
+        return datos;
+    }
+
+    /**
+     * Método auxiliar para parsear valores SQL
+     * @param valoresStr String con los valores separados por comas
+     * @return Array of strings with the parsed values
+     */
+    private String[] parsearValoresSQL(String valoresStr) {
+        List<String> valores = new ArrayList<>();
+        StringBuilder valorActual = new StringBuilder();
+        boolean dentroComillas = false;
+        boolean escape = false;
+        char c;
+        for (int i = 0; i < valoresStr.length(); i++) {
+            c = valoresStr.charAt(i);
+            
+            if (escape) {
+                valorActual.append(c);
+                escape = false;
+            }
+            
+            if (c == '\\') {
+                escape = true;
+            }
+            
+            if (c == '\'') {
+                dentroComillas = !dentroComillas;
+                valorActual.append(c);
+            }
+            
+            if (c == ',' && !dentroComillas) {
+                valores.add(valorActual.toString().trim());
+                valorActual = new StringBuilder();
+            }
+            
+            valorActual.append(c);
+        }
+        
+        // Agregar el último valor
+        if (valorActual.length() > 0) {
+            valores.add(valorActual.toString().trim());
+        }
+        
+        return valores.toArray(new String[0]);
     }
 
     /**
