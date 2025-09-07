@@ -1,8 +1,11 @@
 package com.worldbuilding.WorldbuildingApp.controladores;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.worldbuilding.WorldbuildingApp.servicios.DatabaseService;
 
 import com.worldbuilding.WorldbuildingApp.MetodosBaseDatos;
 import com.worldbuilding.WorldbuildingApp.modelos.*;
@@ -24,6 +27,9 @@ public class BDController implements MetodosBaseDatos{
 
     public ProyectoController proyectoActual;
 
+    @Autowired
+    private DatabaseService databaseService;
+
     // Inyecta la ruta desde el properties
     @Value("${app.data-folder:./data}")
     private String dataFolder = "src/main/data";
@@ -39,8 +45,15 @@ public class BDController implements MetodosBaseDatos{
     public ResponseEntity<?> insertarDatosDTO(@RequestBody Map<String, Object> requestBody, HttpSession session) {
         ResponseEntity<String> mensaje;
         try {
+            // Log detallado de los datos recibidos
+            System.out.println("\n=== INICIANDO INSERCIÓN DE DATOS ===");
+            System.out.println("Datos recibidos completos: " + requestBody);
+            System.out.println("Campos encontrados: " + String.join(", ", requestBody.keySet()));
+            requestBody.forEach((key, value) -> System.out.println(key + ": " + value));
+            
             // Obtener el proyecto activo
             String nombreProyecto = (String) session.getAttribute("proyectoActivo");
+            System.out.println("\nProyecto activo: " + nombreProyecto);
             if (nombreProyecto == null) {
                 mensaje = ResponseEntity.badRequest().body("No hay proyecto activo");
                 throw new DataException(mensaje.toString());
@@ -54,17 +67,25 @@ public class BDController implements MetodosBaseDatos{
             
             // Determinar el tipo de tabla basado en los datos recibidos
             String tipoTabla = determinarTipoTabla(requestBody);
+            System.out.println("\nTipo de tabla determinado: " + tipoTabla);
             
             // Crear array de valores extra según el tipo de tabla
             String[] valoresExtraTabla = crearValoresExtraTabla(tipoTabla, requestBody);
+            System.out.println("Valores extra creados: " + String.join(", ", valoresExtraTabla));
             
             // Crear DTO con los datos
             DatosTablaDTO<ProyectoDTO> datosDTO = new DatosTablaDTO<>(
                 null, nombre, apellidos, tipo, descripcion, valoresExtraTabla
             );
+            System.out.println("\nDTO creado con datos:");
+            System.out.println("Nombre: " + datosDTO.getNombre());
+            System.out.println("Apellidos: " + datosDTO.getApellidos());
+            System.out.println("Tipo: " + datosDTO.getTipo());
+            System.out.println("Descripción: " + datosDTO.getDescripcion());
             
             // Generar la operación SQL
             String operacionSQL = generarOperacionSQL(tipoTabla, datosDTO);
+            System.out.println("\nOperación SQL generada: " + operacionSQL);
             
             // Agregar la operación al archivo SQL del proyecto
             agregarOperacionAlArchivo(nombreProyecto, operacionSQL);
@@ -282,14 +303,14 @@ public class BDController implements MetodosBaseDatos{
                 };
             case "Efecto":
                 return new String[]{
-                    "Efecto",  // Tipo exacto que espera el DTO
+                    "efectos",  // Nombre exacto de la tabla en DB
                     (String) requestBody.get("origen"),
                     (String) requestBody.get("dureza"),
                     (String) requestBody.get("comportamiento")
                 };
             case "Relacion":
                 return new String[]{
-                    "Relacion",  // Tipo exacto que espera el DTO
+                    "interaccion",  // Nombre exacto de la tabla en DB
                     (String) requestBody.get("direccion"),
                     (String) requestBody.get("afectados")
                 };
@@ -306,56 +327,83 @@ public class BDController implements MetodosBaseDatos{
      */
     private String generarOperacionSQL(String tipoTabla, DatosTablaDTO<ProyectoDTO> datosDTO) {
         StringBuilder sql = new StringBuilder();
-        sql.append("INSERT INTO ").append(tipoTabla).append(" (nombre, apellidos, tipo, descripcion");
+        // Usar el nombre exacto de la tabla según el tipo
+        String nombreTablaSQL;
+        switch (tipoTabla) {
+            case "Entidad-Individual":
+                nombreTablaSQL = "entidadIndividual";
+                break;
+            case "Entidad-Colectiva":
+                nombreTablaSQL = "entidadColectiva";
+                break;
+            case "Efecto":
+                nombreTablaSQL = "efectos";
+                break;
+            case "Relacion":
+                nombreTablaSQL = "interaccion";
+                break;
+            default:
+                nombreTablaSQL = tipoTabla.toLowerCase();
+        }
+
+        sql.append("INSERT INTO ").append(nombreTablaSQL).append(" (");
         
         // Agregar campos específicos según el tipo de tabla
         switch (tipoTabla) {
-            case "entidadIndividual":
-            case "entidadColectiva":
-                sql.append(", estado, origen, comportamiento");
+            case "Entidad-Individual":
+            case "Entidad-Colectiva":
+                sql.append("nombre, apellidos, estado, tipo, origen, comportamiento, descripcion");
                 break;
-            case "construccion":
-            case "zona":
-                sql.append(", tamanno, desarrollo");
+            case "Construccion":
+            case "Zona":
+                sql.append("nombre, apellidos, tamanno, tipo, desarrollo, descripcion");
                 break;
-            case "efectos":
-                sql.append(", origen, dureza, comportamiento");
+            case "Efecto":
+                sql.append("nombre, apellidos, origen, dureza, comportamiento, descripcion");
                 break;
-            case "interaccion":
-                sql.append(", direccion, afectados");
+            case "Relacion":
+                sql.append("nombre, apellidos, direccion, tipo, afectados, descripcion");
                 break;
         }
         
         sql.append(") VALUES (");
-        sql.append("'").append(escapeSQL(datosDTO.getNombre())).append("', ");
-        sql.append("'").append(escapeSQL(datosDTO.getApellidos())).append("', ");
-        sql.append("'").append(escapeSQL(datosDTO.getTipo())).append("', ");
-        sql.append("'").append(escapeSQL(datosDTO.getDescripcion())).append("'");
         
         // Agregar valores específicos según el tipo de tabla
         switch (tipoTabla) {
-            case "entidadIndividual":
-            case "entidadColectiva":
-                sql.append(", '").append(escapeSQL(datosDTO.getEstado())).append("'");
-                sql.append(", '").append(escapeSQL(datosDTO.getOrigen_entidad())).append("'");
-                sql.append(", '").append(escapeSQL(datosDTO.getComportamiento_entidad())).append("'");
+            case "Entidad-Individual":
+            case "Entidad-Colectiva":
+                sql.append("'").append(escapeSQL(datosDTO.getNombre())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getApellidos())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getEstado())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getTipo())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getOrigen_entidad())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getComportamiento_entidad())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getDescripcion())).append("'");
                 break;
-            case "construccion":
-                sql.append(", '").append(escapeSQL(datosDTO.getTamanno_cons())).append("'");
-                sql.append(", '").append(escapeSQL(datosDTO.getDesarrollo_cons())).append("'");
+            case "Construccion":
+            case "Zona":
+                sql.append("'").append(escapeSQL(datosDTO.getNombre())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getApellidos())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getTamanno_cons())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getTipo())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getDesarrollo_cons())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getDescripcion())).append("'");
                 break;
-            case "zona":
-                sql.append(", '").append(escapeSQL(datosDTO.getTamanno_zona())).append("'");
-                sql.append(", '").append(escapeSQL(datosDTO.getDesarrollo_zona())).append("'");
+            case "Efecto":
+                sql.append("'").append(escapeSQL(datosDTO.getNombre())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getApellidos())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getOrigen_efecto())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getDureza())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getComportamiento_efecto())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getDescripcion())).append("'");
                 break;
-            case "efectos":
-                sql.append(", '").append(escapeSQL(datosDTO.getOrigen_efecto())).append("'");
-                sql.append(", '").append(escapeSQL(datosDTO.getDureza())).append("'");
-                sql.append(", '").append(escapeSQL(datosDTO.getComportamiento_efecto())).append("'");
-                break;
-            case "interaccion":
-                sql.append(", '").append(escapeSQL(datosDTO.getDireccion())).append("'");
-                sql.append(", '").append(escapeSQL(datosDTO.getAfectados())).append("'");
+            case "Relacion":
+                sql.append("'").append(escapeSQL(datosDTO.getNombre())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getApellidos())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getDireccion())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getTipo())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getAfectados())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getDescripcion())).append("'");
                 break;
         }
         
@@ -392,18 +440,40 @@ public class BDController implements MetodosBaseDatos{
     private void agregarOperacionAlArchivo(String nombreProyecto, String operacionSQL) throws IOException {
         Path archivoSQL = Paths.get(dataFolder, nombreProyecto + ".sql");
         
+        System.out.println("Intentando escribir en: " + archivoSQL.toAbsolutePath());
+        System.out.println("Operación SQL: " + operacionSQL);
+        
         if (!Files.exists(archivoSQL)) {
+            System.out.println("¡Archivo no encontrado!");
             throw new IOException("Archivo del proyecto no encontrado: " + nombreProyecto + ".sql");
         }
-
-        // Leer el contenido actual
-        String contenidoActual = Files.readString(archivoSQL);
         
         // Agregar la nueva operación al final del archivo
         String nuevaOperacion = "\n-- Operación agregada: " + java.time.LocalDateTime.now() + "\n";
         nuevaOperacion += operacionSQL + "\n";
         
-        // Escribir el archivo actualizado ; StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING
-        Files.writeString(archivoSQL, contenidoActual + nuevaOperacion, StandardOpenOption.APPEND);
+        try {
+            // Verificar permisos de escritura
+            if (!Files.isWritable(archivoSQL)) {
+                System.out.println("¡No hay permisos de escritura en el archivo!");
+                throw new IOException("No hay permisos de escritura en: " + archivoSQL);
+            }
+            
+            // Escribir el archivo con APPEND para añadir al final
+            Files.writeString(archivoSQL, nuevaOperacion, StandardOpenOption.APPEND);
+            System.out.println("Escritura exitosa en el archivo SQL");
+            
+            // Ejecutar la operación SQL en la base de datos
+            try {
+                databaseService.ejecutarSQL(operacionSQL);
+                System.out.println("Operación SQL ejecutada exitosamente en la base de datos");
+            } catch (Exception e) {
+                System.out.println("Error al ejecutar SQL en la base de datos: " + e.getMessage());
+                throw new IOException("Error al ejecutar SQL: " + e.getMessage(), e);
+            }
+        } catch (IOException e) {
+            System.out.println("Error al escribir: " + e.getMessage());
+            throw e;
+        }
     }
 }
