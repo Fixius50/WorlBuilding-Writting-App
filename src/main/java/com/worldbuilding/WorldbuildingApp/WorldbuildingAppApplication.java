@@ -11,7 +11,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WorldbuildingAppApplication {
 	/**
 	 * Primero arrancar XAMPP e iniciar MySQL
-	 * Luego: ejecutar la app y poner en el navegador http://localhost:8080 y de seguido la ruta relativa.
+	 * Luego: ejecutar la app y se inicia en el navegador http://localhost:8080 y de seguido la ruta relativa.
 	 */
 
     public static void main(String[] args) {

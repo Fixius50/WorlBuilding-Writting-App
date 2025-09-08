@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.worldbuilding.WorldbuildingApp.MetodosBaseDatos;
 import com.worldbuilding.WorldbuildingApp.modelos.*;
+import com.worldbuilding.WorldbuildingApp.servicios.DatosTablaService;
 
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
@@ -26,10 +27,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RequestMapping("/api/bd")
 public class BDController implements MetodosBaseDatos{
 
-    public ProyectoController proyectoActual;
-
-    @Autowired
-    private DatosTablaController.DatosTablaService datosTablaService;
+    private DatosTablaService datosTablaService;
 
     // Inyecta la ruta desde el properties
     @Value("${app.data-folder:./data}")
@@ -52,7 +50,7 @@ public class BDController implements MetodosBaseDatos{
             }
             // Obtener el tipo de tabla desde el DTO
             String tipoTabla = datosDTO.getTipo();
-            String nombreTablaSQL = obtenerNombreTablaSQL(tipoTabla);
+            // ...
             // Obtener el siguiente ID disponible
             // Guardar el DTO usando el service JPA
             DatosTablaDTO guardado = datosTablaService.guardar(datosDTO);
@@ -80,7 +78,7 @@ public class BDController implements MetodosBaseDatos{
             }
             Long id = datosDTO.getId();
             String tipoTabla = datosDTO.getTipo();
-            String nombreTablaSQL = obtenerNombreTablaSQL(tipoTabla);
+            // ...
             datosTablaService.eliminar(id);
             mensaje = ResponseEntity.ok("Datos eliminados correctamente de " + tipoTabla + " del proyecto '" + nombreProyecto + "'");
         } catch (Exception e) {
@@ -122,8 +120,7 @@ public class BDController implements MetodosBaseDatos{
                 return ResponseEntity.badRequest().body("No hay proyecto activo");
             }
             Long id = datosDTO.getId();
-            String tipoTabla = datosDTO.getTipo();
-            String nombreTablaSQL = obtenerNombreTablaSQL(tipoTabla);
+            // ...
             Optional<DatosTablaDTO> resultado = datosTablaService.buscarPorId(id);
             if (resultado.isPresent()) {
                 mensaje = ResponseEntity.ok(resultado.get().toString());
@@ -153,7 +150,7 @@ public class BDController implements MetodosBaseDatos{
             }
             Long id = datosDTO.getId();
             String tipoTabla = datosDTO.getTipo();
-            String nombreTablaSQL = obtenerNombreTablaSQL(tipoTabla);
+            // ...
             // Suponiendo que el DTO tiene un campo "activo" (ajustar si es diferente)
             // Si tienes un campo booleano en el DTO, usa el getter correspondiente. Si no, puedes ajustar aquí:
             // Actualizar el DTO (aquí podrías modificar campos según lógica)
@@ -222,166 +219,6 @@ public class BDController implements MetodosBaseDatos{
     return ResponseEntity.status(501).body("No implementado: verificación directa de la base de datos no soportada en este controlador");
     }
 
-    /**
-     * Determina el tipo de tabla basado en los datos recibidos
-     * @param requestBody Datos del request
-     * @return String con el tipo de tabla
-     */
-    private String determinarTipoTabla(Map<String, Object> requestBody) {
-        String tabla = "No se pudo determinar el tipo de tabla";
-        // Si tiene estado y comportamiento, es una entidad
-        if (requestBody.containsKey("estado") && requestBody.containsKey("comportamiento")) {
-            tabla = requestBody.containsKey("colectivo") ? "Entidad-Colectiva" : "Entidad-Individual";
-        } 
-        // Si tiene tamaño y desarrollo
-        else if (requestBody.containsKey("tamano") && requestBody.containsKey("desarrollo")) {
-            tabla = requestBody.containsKey("esZona") ? "Zona" : "Construccion";
-        } 
-        // Si tiene origen y dureza es un efecto
-        else if (requestBody.containsKey("origen") && requestBody.containsKey("dureza")) {
-            tabla = "Efecto";
-        } 
-        // Si tiene dirección y afectados es una relación
-        else if (requestBody.containsKey("direccion") && requestBody.containsKey("afectados")) {
-            tabla = "Relacion";
-        } else{
-            throw new IllegalArgumentException("No se pudo determinar el tipo de tabla");
-        }
-        return tabla;
-    }
-
-    /**
-     * Crea el array de valores extra según el tipo de tabla
-     * @param tipoTabla Tipo de tabla
-     * @param requestBody Datos del request
-     * @return Array de valores extra
-     */
-    private String[] crearValoresExtraTabla(String tipoTabla, Map<String, Object> requestBody) {
-        switch (tipoTabla) {
-            case "Entidad-Individual":
-            case "Entidad-Colectiva":
-                return new String[]{
-                    tipoTabla,  // Tipo exacto que espera el DTO
-                    (String) requestBody.get("estado"),
-                    (String) requestBody.get("origen"),
-                    (String) requestBody.get("comportamiento")
-                };
-            case "Construccion":
-            case "Zona":
-                return new String[]{
-                    tipoTabla,  // Tipo exacto que espera el DTO
-                    (String) requestBody.get("tamano"),
-                    (String) requestBody.get("desarrollo")
-                };
-            case "Efecto":
-                return new String[]{
-                    "efectos",  // Nombre exacto de la tabla en DB
-                    (String) requestBody.get("origen"),
-                    (String) requestBody.get("dureza"),
-                    (String) requestBody.get("comportamiento")
-                };
-            case "Relacion":
-                return new String[]{
-                    "interaccion",  // Nombre exacto de la tabla en DB
-                    (String) requestBody.get("direccion"),
-                    (String) requestBody.get("afectados")
-                };
-            default:
-                throw new IllegalArgumentException("Tipo de tabla no reconocido: " + tipoTabla);
-        }
-    }
-
-    /**
-     * Genera la operación SQL para insertar datos
-     * @param tipoTabla Tipo de tabla
-     * @param datosDTO DTO con los datos
-     * @return String con la operación SQL
-     */
-    private String generarOperacionSQL(String tipoTabla, DatosTablaDTO datosDTO) {
-        StringBuilder sql = new StringBuilder();
-        // Usar el nombre exacto de la tabla según el tipo
-        String nombreTablaSQL;
-        switch (tipoTabla) {
-            case "Entidad-Individual":
-                nombreTablaSQL = "entidadIndividual";
-                break;
-            case "Entidad-Colectiva":
-                nombreTablaSQL = "entidadColectiva";
-                break;
-            case "Efecto":
-                nombreTablaSQL = "efectos";
-                break;
-            case "Relacion":
-                nombreTablaSQL = "interaccion";
-                break;
-            default:
-                nombreTablaSQL = tipoTabla.toLowerCase();
-        }
-
-        sql.append("INSERT INTO ").append(nombreTablaSQL).append(" (");
-        
-        // Agregar campos específicos según el tipo de tabla
-        switch (tipoTabla) {
-            case "Entidad-Individual":
-            case "Entidad-Colectiva":
-                sql.append("nombre, apellidos, estado, tipo, origen, comportamiento, descripcion");
-                break;
-            case "Construccion":
-            case "Zona":
-                sql.append("nombre, apellidos, tamanno, tipo, desarrollo, descripcion");
-                break;
-            case "Efecto":
-                sql.append("nombre, apellidos, origen, dureza, comportamiento, descripcion");
-                break;
-            case "Relacion":
-                sql.append("nombre, apellidos, direccion, tipo, afectados, descripcion");
-                break;
-        }
-        
-        sql.append(") VALUES (");
-        
-        // Agregar valores específicos según el tipo de tabla
-        switch (tipoTabla) {
-            case "Entidad-Individual":
-            case "Entidad-Colectiva":
-                sql.append("'").append(escapeSQL(datosDTO.getNombre())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getApellidos())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getEstado())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getTipo())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getOrigenEntidad())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getComportamientoEntidad())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getDescripcion())).append("'");
-                break;
-            case "Construccion":
-            case "Zona":
-                sql.append("'").append(escapeSQL(datosDTO.getNombre())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getApellidos())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getTamannoCons())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getTipo())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getDesarrolloCons())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getDescripcion())).append("'");
-                break;
-            case "Efecto":
-                sql.append("'").append(escapeSQL(datosDTO.getNombre())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getApellidos())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getOrigenEfecto())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getDureza())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getComportamientoEfecto())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getDescripcion())).append("'");
-                break;
-            case "Relacion":
-                sql.append("'").append(escapeSQL(datosDTO.getNombre())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getApellidos())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getDireccion())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getTipo())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getAfectados())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getDescripcion())).append("'");
-                break;
-        }
-        
-        sql.append(");");
-        return sql.toString();
-    }
 
     /**
      * Genera la operación SQL para crear relaciones
@@ -392,26 +229,6 @@ public class BDController implements MetodosBaseDatos{
         // Aquí se implementaría la lógica para generar SQL de relaciones
         // Por ahora retornamos un placeholder
         return "-- Operación de relación: " + request.getNombre() + " -> " + request.getDescripcion();
-    }
-
-    /**
-     * Obtiene el nombre exacto de la tabla SQL según el tipo de tabla
-     * @param tipoTabla El tipo de tabla (Entidad-Individual, Entidad-Colectiva, etc)
-     * @return El nombre exacto de la tabla en la base de datos
-     */
-    private String obtenerNombreTablaSQL(String tipoTabla) {
-        switch (tipoTabla) {
-            case "Entidad-Individual":
-                return "entidadIndividual";
-            case "Entidad-Colectiva":
-                return "entidadColectiva";
-            case "Efecto":
-                return "efectos";
-            case "Relacion":
-                return "interaccion";
-            default:
-                return tipoTabla.toLowerCase();
-        }
     }
 
     /**
@@ -503,14 +320,6 @@ public class BDController implements MetodosBaseDatos{
         return valores.toArray(new String[0]);
     }
 
-    /**
-     * Escapa caracteres especiales en SQL
-     * @param value Valor a escapar
-     * @return Valor escapado
-     */
-    private String escapeSQL(String value) {
-        return (value == null) ? "" : value.replace("'", "''").replace("\\", "\\\\");
-    }
 
     /**
      * Agrega una operación SQL al archivo del proyecto
@@ -521,11 +330,9 @@ public class BDController implements MetodosBaseDatos{
     private void agregarOperacionAlArchivo(String nombreProyecto, String operacionSQL) throws IOException {
         Path archivoSQL = Paths.get(dataFolder, nombreProyecto + ".sql");
         
-        System.out.println("Intentando escribir en: " + archivoSQL.toAbsolutePath());
-        System.out.println("Operación SQL: " + operacionSQL);
+    // ...
         
         if (!Files.exists(archivoSQL)) {
-            System.out.println("¡Archivo no encontrado!");
             throw new IOException("Archivo del proyecto no encontrado: " + nombreProyecto + ".sql");
         }
         
@@ -536,17 +343,12 @@ public class BDController implements MetodosBaseDatos{
         try {
             // Verificar permisos de escritura
             if (!Files.isWritable(archivoSQL)) {
-                System.out.println("¡No hay permisos de escritura en el archivo!");
                 throw new IOException("No hay permisos de escritura en: " + archivoSQL);
             }
-            
             // Escribir el archivo con APPEND para añadir al final
             Files.writeString(archivoSQL, nuevaOperacion, StandardOpenOption.APPEND);
-            System.out.println("Escritura exitosa en el archivo SQL");
-            
             // Si necesitas ejecutar la operación en la base de datos, implementa aquí la lógica usando JPA o ignora si solo es archivo.
         } catch (IOException e) {
-            System.out.println("Error al escribir: " + e.getMessage());
             throw e;
         }
     }
