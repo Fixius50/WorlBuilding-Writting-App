@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RequestMapping("/api/bd")
 public class BDController implements MetodosBaseDatos{
 
+    @Autowired
     private DatosTablaService datosTablaService;
 
     // Inyecta la ruta desde el properties

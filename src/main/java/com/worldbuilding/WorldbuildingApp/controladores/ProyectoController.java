@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import com.worldbuilding.WorldbuildingApp.servicios.ProyectoService;
 
 /**
  * Esta clase controla el proyecto que se va a usar o crear en la aplicación según una serie de funciones internas definidas. 
@@ -23,7 +24,7 @@ import java.util.*;
 public class ProyectoController {
 
     @Autowired
-    private BDController bdController;
+    private ProyectoService proyectoService;
 
     // ADVERTENCIA: Esta ruta funcionará en el IDE, pero fallará al empaquetar en un JAR.
     private final String DATA_FOLDER = "src/main/data";
@@ -168,7 +169,7 @@ public class ProyectoController {
         }
 
         try {
-            bdController.agregarOperacionAArchivo(nombreProyecto, operacionSQL);
+            proyectoService.agregarOperacionAArchivo(nombreProyecto, operacionSQL);
             return ResponseEntity.ok("Operación SQL agregada correctamente al proyecto '" + nombreProyecto + "'");
         } catch (IOException e) {
             return ResponseEntity.status(500).body("Error agregando operación SQL: " + e.getMessage());
@@ -236,7 +237,7 @@ public class ProyectoController {
             };
             
             for (String tabla : nombresTablas) {
-                List<Map<String, Object>> datosTabla = bdController.extraerDatosDeTabla(contenido, tabla);
+                List<Map<String, Object>> datosTabla = proyectoService.extraerDatosDeTabla(contenido, tabla);
                 // Solo agregar la tabla si tiene datos
                 if (!datosTabla.isEmpty()) {
                     tablas.put(tabla, datosTabla);
