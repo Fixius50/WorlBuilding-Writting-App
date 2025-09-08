@@ -4,6 +4,7 @@
 -- ===========================================
 
 use worldbuilding;
+INSERT INTO crearProyecto (nombreProyecto, enfoqueProyecto) VALUES ('Prueba', 'Magica');
 
 -- Datos de la tabla interaccion
 

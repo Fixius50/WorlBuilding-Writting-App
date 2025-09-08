@@ -185,35 +185,50 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        fetch('/api/proyectos/activo')
-        .then(res => {
-            if (!res.ok) throw new Error("No hay proyecto activo");
-            return res.json(); // <-- Cambia a .json()
-        })
-        .then(proyecto => {
-            // Ahora recibimos un objeto JSON con nombre y enfoque
-            nombreProyectoGlobal = proyecto.nombre;
-            document.getElementById("nombre-proyecto").textContent = proyecto.nombre + " ( -" + proyecto.enfoque + "- )";
-        })
-        .catch(err => {
-            document.getElementById("nombre-proyecto").textContent = "Sin proyecto activo";
-        });
-        let dataFolder = null;
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            // Primero obtenemos el proyecto activo
+            const resProyecto = await fetch('/api/proyectos/activo');
+            console.log('Respuesta del servidor (proyecto activo):', resProyecto.status);
+            
+            if (!resProyecto.ok) {
+                throw new Error("No hay proyecto activo");
+            }
 
-        fetch('/api/config')
-            .then(res => res.json())
-            .then(config => {
-                dataFolder = config.dataFolder;
-                // Ahora puedes usar dataFolder en tu JS
-                console.log("Ruta dataFolder:", dataFolder);
-            });
-        
-        // Inicializar el mapa infinito. Desmarcar cuando se quiera probar los nodos
-        initializeInfiniteMap(); 
-        
-        // Inicializar el cargador de datos del proyecto. Desmarcar cuando se termine de modificar la página
-        initializeProjectDataLoader()
+            const proyecto = await resProyecto.json();
+            console.log('Datos del proyecto:', proyecto);
+
+            // Guardamos el nombre del proyecto y actualizamos la UI
+            nombreProyectoGlobal = proyecto.nombre;
+            document.getElementById("nombre-proyecto").textContent = `${proyecto.nombre} ( -${proyecto.enfoque}- )`;
+
+            // Luego cargamos la configuración
+            const resConfig = await fetch('/api/config');
+            const config = await resConfig.json();
+            console.log('Configuración cargada:', config);
+
+            // Inicializamos el mapa y el cargador de datos solo si tenemos un proyecto activo
+            initializeInfiniteMap();
+            
+            // Esperamos un momento antes de inicializar el cargador de datos
+            setTimeout(() => {
+                initializeProjectDataLoader();
+                // Cargamos los datos del proyecto
+                if (projectDataLoader) {
+                    projectDataLoader.loadProjectData().then(() => {
+                        console.log('Datos del proyecto cargados correctamente');
+                    }).catch(error => {
+                        console.error('Error al cargar datos del proyecto:', error);
+                    });
+                }
+            }, 500);
+
+        } catch (error) {
+            console.error('Error al inicializar la página:', error);
+            document.getElementById("nombre-proyecto").textContent = "Sin proyecto activo";
+            // Aún así inicializamos el mapa para poder mostrar la interfaz
+            initializeInfiniteMap();
+        }
     });
 
     // ===== FUNCIONES DEL MAPA INFINITO =====

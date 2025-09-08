@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.worldbuilding.WorldbuildingApp.servicios.DatabaseService;
+// import com.worldbuilding.WorldbuildingApp.servicios.DatabaseService;
 
 import com.worldbuilding.WorldbuildingApp.MetodosBaseDatos;
 import com.worldbuilding.WorldbuildingApp.modelos.*;
@@ -29,7 +29,7 @@ public class BDController implements MetodosBaseDatos{
     public ProyectoController proyectoActual;
 
     @Autowired
-    private DatabaseService databaseService;
+    private DatosTablaController.DatosTablaService datosTablaService;
 
     // Inyecta la ruta desde el properties
     @Value("${app.data-folder:./data}")
@@ -43,58 +43,20 @@ public class BDController implements MetodosBaseDatos{
      */
     @PutMapping("/insertar")
     @Override
-    public ResponseEntity<?> insertarDatosDTO(@RequestBody Map<String, Object> requestBody, HttpSession session) {
+    public ResponseEntity<?> insertarDatosDTO(@RequestBody DatosTablaDTO datosDTO, HttpSession session) {
         ResponseEntity<String> mensaje;
         try {
-            // Log detallado de los datos recibidos
-            System.out.println("\n=== INICIANDO INSERCIÓN DE DATOS ===");
-            System.out.println("Datos recibidos completos: " + requestBody);
-            System.out.println("Campos encontrados: " + String.join(", ", requestBody.keySet()));
-            requestBody.forEach((key, value) -> System.out.println(key + ": " + value));
-            
-            // Obtener el proyecto activo
             String nombreProyecto = (String) session.getAttribute("proyectoActivo");
-            System.out.println("\nProyecto activo: " + nombreProyecto);
             if (nombreProyecto == null) {
-                mensaje = ResponseEntity.badRequest().body("No hay proyecto activo");
-                throw new DataException(mensaje.toString());
+                return ResponseEntity.badRequest().body("No hay proyecto activo");
             }
-
-            // Extraer datos del request
-            String nombre = (String) requestBody.get("nombre");
-            String apellidos = (String) requestBody.get("apellidos");
-            String tipo = (String) requestBody.get("tipo");
-            String descripcion = (String) requestBody.get("descripcion");
-            
-            // Determinar el tipo de tabla basado en los datos recibidos
-            String tipoTabla = determinarTipoTabla(requestBody);
-            System.out.println("\nTipo de tabla determinado: " + tipoTabla);
-            
-            // Crear array de valores extra según el tipo de tabla
-            String[] valoresExtraTabla = crearValoresExtraTabla(tipoTabla, requestBody);
-            System.out.println("Valores extra creados: " + String.join(", ", valoresExtraTabla));
-            
-            // Crear DTO con los datos
-            DatosTablaDTO<ProyectoDTO> datosDTO = new DatosTablaDTO<>(
-                null, nombre, apellidos, tipo, descripcion, valoresExtraTabla
-            );
-            System.out.println("\nDTO creado con datos:");
-            System.out.println("Nombre: " + datosDTO.getNombre());
-            System.out.println("Apellidos: " + datosDTO.getApellidos());
-            System.out.println("Tipo: " + datosDTO.getTipo());
-            System.out.println("Descripción: " + datosDTO.getDescripcion());
-            
-            // Generar la operación SQL
-            String operacionSQL = generarOperacionSQL(tipoTabla, datosDTO);
-            System.out.println("\nOperación SQL generada: " + operacionSQL);
-            
-            // Agregar la operación al archivo SQL del proyecto
-            agregarOperacionAlArchivo(nombreProyecto, operacionSQL);
-            
-            mensaje = ResponseEntity.ok("Datos insertados correctamente en " + tipoTabla + " del proyecto '" + nombreProyecto + "'");
-            
-        } catch (DataException e) {
-            mensaje = ResponseEntity.badRequest().body("Error en los datos: " + e.getMessage());
+            // Obtener el tipo de tabla desde el DTO
+            String tipoTabla = datosDTO.getTipo();
+            String nombreTablaSQL = obtenerNombreTablaSQL(tipoTabla);
+            // Obtener el siguiente ID disponible
+            // Guardar el DTO usando el service JPA
+            DatosTablaDTO guardado = datosTablaService.guardar(datosDTO);
+            mensaje = ResponseEntity.ok("Datos insertados correctamente en " + tipoTabla + " del proyecto '" + nombreProyecto + "' (ID: " + guardado.getId() + ")");
         } catch (Exception e) {
             mensaje = ResponseEntity.internalServerError().body("Error interno: " + e.getMessage());
         }
@@ -109,26 +71,18 @@ public class BDController implements MetodosBaseDatos{
      */
     @DeleteMapping("/eliminar")
     @Override
-    public ResponseEntity<?> eliminarDatosDTO(@RequestBody Map<String, Object> requestBody, HttpSession session) {
+    public ResponseEntity<?> eliminarDatosDTO(@RequestBody DatosTablaDTO datosDTO, HttpSession session) {
         ResponseEntity<String> mensaje;
         try {
             String nombreProyecto = (String) session.getAttribute("proyectoActivo");
             if (nombreProyecto == null) {
-                mensaje = ResponseEntity.badRequest().body("No hay proyecto activo");
-                throw new Exception();
+                return ResponseEntity.badRequest().body("No hay proyecto activo");
             }
-
-            Long id = Long.valueOf(requestBody.get("id").toString());
-            String tipoTabla = (String) requestBody.get("tipoTabla");
-            
-            // Generar la operación SQL de eliminación
-            String operacionSQL = "DELETE FROM " + tipoTabla + " WHERE id = " + id + ";";
-            
-            // Agregar la operación al archivo SQL del proyecto
-            agregarOperacionAlArchivo(nombreProyecto, operacionSQL);
-            
+            Long id = datosDTO.getId();
+            String tipoTabla = datosDTO.getTipo();
+            String nombreTablaSQL = obtenerNombreTablaSQL(tipoTabla);
+            datosTablaService.eliminar(id);
             mensaje = ResponseEntity.ok("Datos eliminados correctamente de " + tipoTabla + " del proyecto '" + nombreProyecto + "'");
-            
         } catch (Exception e) {
             mensaje = ResponseEntity.internalServerError().body("Error al eliminar: " + e.getMessage());
         }
@@ -155,32 +109,27 @@ public class BDController implements MetodosBaseDatos{
         // Escribir el archivo actualizado
         Files.writeString(archivoSQL, nuevaOperacion, StandardOpenOption.APPEND);
         
-        // Ejecutar la operación SQL en la base de datos
-        databaseService.ejecutarSQL(operacionSQL);
+    // Si necesitas ejecutar la operación en la base de datos, implementa aquí la lógica usando JPA o ignora si solo es archivo.
     }
 
     @GetMapping("/obtener")
     @Override
-    public ResponseEntity<?> obtenerDatosDTO(@RequestBody Map<String, Object> requestBody, HttpSession session){
+    public ResponseEntity<?> obtenerDatosDTO(@RequestBody DatosTablaDTO datosDTO, HttpSession session){
         ResponseEntity<String> mensaje;
         try {
-            
             String nombreProyecto = (String) session.getAttribute("proyectoActivo");
             if (nombreProyecto == null) {
-                mensaje = ResponseEntity.badRequest().body("No hay proyecto activo");
-                throw new Exception();
+                return ResponseEntity.badRequest().body("No hay proyecto activo");
             }
-
-            Long id = Long.valueOf(requestBody.get("id").toString());
-            String tipoTabla = (String) requestBody.get("tipoTabla");
-
-            // Generar la operación SQL de eliminación
-            String operacionSQL = "SELECT * FROM " + tipoTabla + " WHERE id = " + id + ";";
-            
-            // Agregar la operación al archivo SQL del proyecto
-            agregarOperacionAlArchivo(nombreProyecto, operacionSQL);
-            mensaje = ResponseEntity.ok("Datos eliminados correctamente de " + tipoTabla + " del proyecto '" + nombreProyecto + "'");
-
+            Long id = datosDTO.getId();
+            String tipoTabla = datosDTO.getTipo();
+            String nombreTablaSQL = obtenerNombreTablaSQL(tipoTabla);
+            Optional<DatosTablaDTO> resultado = datosTablaService.buscarPorId(id);
+            if (resultado.isPresent()) {
+                mensaje = ResponseEntity.ok(resultado.get().toString());
+            } else {
+                mensaje = ResponseEntity.status(404).body("No se encontró el registro con id " + id);
+            }
         } catch (Exception e) {
             mensaje = ResponseEntity.internalServerError().body("Error al obtener datos de: " + e.getMessage());
         }
@@ -195,27 +144,22 @@ public class BDController implements MetodosBaseDatos{
      */
     @PatchMapping("/modificar")
     @Override
-    public ResponseEntity<?> modificarDatosDTO(@RequestBody Map<String, Object> requestBody, HttpSession session) {
+    public ResponseEntity<?> modificarDatosDTO(@RequestBody DatosTablaDTO datosDTO, HttpSession session) {
         ResponseEntity<String> mensaje;
         try {
             String nombreProyecto = (String) session.getAttribute("proyectoActivo");
             if (nombreProyecto == null) {
-                mensaje = ResponseEntity.badRequest().body("No hay proyecto activo");
-                throw new Exception();
+                return ResponseEntity.badRequest().body("No hay proyecto activo");
             }
-
-            Long id = Long.valueOf(requestBody.get("id").toString());
-            String tipoTabla = (String) requestBody.get("tipoTabla");
-            Boolean activo = (Boolean) requestBody.get("activo");
-            
-            // Generar la operación SQL de modificación
-            String operacionSQL = "UPDATE " + tipoTabla + " SET es_nodo = " + activo + " WHERE id = " + id + ";";
-            
-            // Agregar la operación al archivo SQL del proyecto
-            agregarOperacionAlArchivo(nombreProyecto, operacionSQL);
-            
-            mensaje = ResponseEntity.ok("Datos modificados correctamente en " + tipoTabla + " del proyecto '" + nombreProyecto + "'");
-            
+            Long id = datosDTO.getId();
+            String tipoTabla = datosDTO.getTipo();
+            String nombreTablaSQL = obtenerNombreTablaSQL(tipoTabla);
+            // Suponiendo que el DTO tiene un campo "activo" (ajustar si es diferente)
+            // Si tienes un campo booleano en el DTO, usa el getter correspondiente. Si no, puedes ajustar aquí:
+            // Actualizar el DTO (aquí podrías modificar campos según lógica)
+            datosDTO.setId(id);
+            DatosTablaDTO actualizado = datosTablaService.guardar(datosDTO);
+            mensaje = ResponseEntity.ok("Datos modificados correctamente en " + tipoTabla + " del proyecto '" + nombreProyecto + "' (ID: " + actualizado.getId() + ")");
         } catch (Exception e) {
             mensaje = ResponseEntity.internalServerError().body("Error al modificar: " + e.getMessage());
         }
@@ -229,21 +173,15 @@ public class BDController implements MetodosBaseDatos{
      * @return ResponseEntity con el resultado de la operación
      */
     @PostMapping("/relacionar")
-    public ResponseEntity<?> relacionarElementos(@RequestBody DatosTablaDTO<ProyectoDTO> request, HttpSession session) {
+    public ResponseEntity<?> relacionarElementos(@RequestBody DatosTablaDTO datosDTO, HttpSession session) {
         ResponseEntity<String> mensaje;
         try {
             String nombreProyecto = (String) session.getAttribute("proyectoActivo");
             if (nombreProyecto == null) {
-                mensaje = ResponseEntity.badRequest().body("No hay proyecto activo");
-                throw new Exception();
+                return ResponseEntity.badRequest().body("No hay proyecto activo");
             }
-
-            // Generar la operación SQL para crear relaciones
-            String operacionSQL = generarOperacionRelacionSQL(request);
-            
-            // Agregar la operación al archivo SQL del proyecto
+            String operacionSQL = generarOperacionRelacionSQL(datosDTO);
             agregarOperacionAlArchivo(nombreProyecto, operacionSQL);
-            
             mensaje = ResponseEntity.ok("Elementos relacionados correctamente en el proyecto '" + nombreProyecto + "'");
         } catch (Exception e) {
             mensaje = ResponseEntity.internalServerError().body("Error al relacionar: " + e.getMessage());
@@ -264,8 +202,7 @@ public class BDController implements MetodosBaseDatos{
             String enfoque = (String) session.getAttribute("enfoqueProyectoActivo");
             
             if (nombre != null && enfoque != null) {
-                ProyectoDTO proyecto = new ProyectoDTO(nombre, enfoque);
-                mensaje = ResponseEntity.ok(proyecto);
+                mensaje = ResponseEntity.ok(Map.of("nombre", nombre, "enfoque", enfoque));
             } else {
                 mensaje = ResponseEntity.status(404).body("No hay proyecto activo");
             }
@@ -273,6 +210,16 @@ public class BDController implements MetodosBaseDatos{
             mensaje = ResponseEntity.internalServerError().body("Error al obtener proyecto activo: " + e.getMessage());
         }
         return mensaje;
+    }
+
+    /**
+     * Endpoint para verificar el estado de la base de datos
+     * @return ResponseEntity con el estado de la conexión y las tablas
+     */
+    @GetMapping("/verificar")
+    public ResponseEntity<?> verificarBaseDeDatos() {
+    // Este endpoint debe ser adaptado a la nueva arquitectura JPA o eliminado si no aplica.
+    return ResponseEntity.status(501).body("No implementado: verificación directa de la base de datos no soportada en este controlador");
     }
 
     /**
@@ -350,7 +297,7 @@ public class BDController implements MetodosBaseDatos{
      * @param datosDTO DTO con los datos
      * @return String con la operación SQL
      */
-    private String generarOperacionSQL(String tipoTabla, DatosTablaDTO<ProyectoDTO> datosDTO) {
+    private String generarOperacionSQL(String tipoTabla, DatosTablaDTO datosDTO) {
         StringBuilder sql = new StringBuilder();
         // Usar el nombre exacto de la tabla según el tipo
         String nombreTablaSQL;
@@ -401,25 +348,25 @@ public class BDController implements MetodosBaseDatos{
                 sql.append("'").append(escapeSQL(datosDTO.getApellidos())).append("', ");
                 sql.append("'").append(escapeSQL(datosDTO.getEstado())).append("', ");
                 sql.append("'").append(escapeSQL(datosDTO.getTipo())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getOrigen_entidad())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getComportamiento_entidad())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getOrigenEntidad())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getComportamientoEntidad())).append("', ");
                 sql.append("'").append(escapeSQL(datosDTO.getDescripcion())).append("'");
                 break;
             case "Construccion":
             case "Zona":
                 sql.append("'").append(escapeSQL(datosDTO.getNombre())).append("', ");
                 sql.append("'").append(escapeSQL(datosDTO.getApellidos())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getTamanno_cons())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getTamannoCons())).append("', ");
                 sql.append("'").append(escapeSQL(datosDTO.getTipo())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getDesarrollo_cons())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getDesarrolloCons())).append("', ");
                 sql.append("'").append(escapeSQL(datosDTO.getDescripcion())).append("'");
                 break;
             case "Efecto":
                 sql.append("'").append(escapeSQL(datosDTO.getNombre())).append("', ");
                 sql.append("'").append(escapeSQL(datosDTO.getApellidos())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getOrigen_efecto())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getOrigenEfecto())).append("', ");
                 sql.append("'").append(escapeSQL(datosDTO.getDureza())).append("', ");
-                sql.append("'").append(escapeSQL(datosDTO.getComportamiento_efecto())).append("', ");
+                sql.append("'").append(escapeSQL(datosDTO.getComportamientoEfecto())).append("', ");
                 sql.append("'").append(escapeSQL(datosDTO.getDescripcion())).append("'");
                 break;
             case "Relacion":
@@ -441,10 +388,30 @@ public class BDController implements MetodosBaseDatos{
      * @param request DTO con los datos de la relación
      * @return String con la operación SQL
      */
-    private String generarOperacionRelacionSQL(DatosTablaDTO<ProyectoDTO> request) {
+    private String generarOperacionRelacionSQL(DatosTablaDTO request) {
         // Aquí se implementaría la lógica para generar SQL de relaciones
         // Por ahora retornamos un placeholder
         return "-- Operación de relación: " + request.getNombre() + " -> " + request.getDescripcion();
+    }
+
+    /**
+     * Obtiene el nombre exacto de la tabla SQL según el tipo de tabla
+     * @param tipoTabla El tipo de tabla (Entidad-Individual, Entidad-Colectiva, etc)
+     * @return El nombre exacto de la tabla en la base de datos
+     */
+    private String obtenerNombreTablaSQL(String tipoTabla) {
+        switch (tipoTabla) {
+            case "Entidad-Individual":
+                return "entidadIndividual";
+            case "Entidad-Colectiva":
+                return "entidadColectiva";
+            case "Efecto":
+                return "efectos";
+            case "Relacion":
+                return "interaccion";
+            default:
+                return tipoTabla.toLowerCase();
+        }
     }
 
     /**
@@ -577,14 +544,7 @@ public class BDController implements MetodosBaseDatos{
             Files.writeString(archivoSQL, nuevaOperacion, StandardOpenOption.APPEND);
             System.out.println("Escritura exitosa en el archivo SQL");
             
-            // Ejecutar la operación SQL en la base de datos
-            try {
-                databaseService.ejecutarSQL(operacionSQL);
-                System.out.println("Operación SQL ejecutada exitosamente en la base de datos");
-            } catch (Exception e) {
-                System.out.println("Error al ejecutar SQL en la base de datos: " + e.getMessage());
-                throw new IOException("Error al ejecutar SQL: " + e.getMessage(), e);
-            }
+            // Si necesitas ejecutar la operación en la base de datos, implementa aquí la lógica usando JPA o ignora si solo es archivo.
         } catch (IOException e) {
             System.out.println("Error al escribir: " + e.getMessage());
             throw e;
