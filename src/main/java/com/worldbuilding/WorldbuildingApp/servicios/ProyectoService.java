@@ -11,7 +11,7 @@ import java.util.regex.*;
 public class ProyectoService {
     private final String dataFolder = "src/main/data";
 
-    public void agregarOperacionAArchivo(String nombreProyecto, String operacionSQL) throws IOException {
+    public void agregarOperacionAlArchivo(String nombreProyecto, String operacionSQL) throws IOException {
         Path archivoSQL = Paths.get(dataFolder, nombreProyecto + ".sql");
         
         if (!Files.exists(archivoSQL)) {

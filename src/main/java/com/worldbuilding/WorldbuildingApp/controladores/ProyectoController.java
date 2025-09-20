@@ -169,7 +169,7 @@ public class ProyectoController {
         }
 
         try {
-            proyectoService.agregarOperacionAArchivo(nombreProyecto, operacionSQL);
+            proyectoService.agregarOperacionAlArchivo(nombreProyecto, operacionSQL);
             return ResponseEntity.ok("Operación SQL agregada correctamente al proyecto '" + nombreProyecto + "'");
         } catch (IOException e) {
             return ResponseEntity.status(500).body("Error agregando operación SQL: " + e.getMessage());
