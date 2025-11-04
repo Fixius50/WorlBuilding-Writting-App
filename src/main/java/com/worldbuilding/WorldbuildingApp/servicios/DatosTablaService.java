@@ -13,7 +13,7 @@ import com.worldbuilding.WorldbuildingApp.modelos.DatosTablaDTO;
 public class DatosTablaService {
     private final DatosTablaRepository repository;
 
-    public DatosTablaService(@Autowired(required = false) DatosTablaRepository repository) {
+    public DatosTablaService(DatosTablaRepository repository) {
         this.repository = repository;
     }
 
