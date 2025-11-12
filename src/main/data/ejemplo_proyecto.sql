@@ -1,8 +1,3 @@
--- ===========================================
--- PROYECTO: ejemplo_proyecto
--- ACTUALIZADO: 2025-09-08T00:47:18.475763600
--- ===========================================
-
 use worldbuilding;
 INSERT INTO crearProyecto (nombreProyecto, enfoqueProyecto) VALUES ('Prueba', 'Magica');
 
@@ -19,4 +14,3 @@ INSERT INTO zona (id, nombre, apellidos, tamanno, tipo, desarrollo, descripcion,
 
 -- Datos de la tabla entidadIndividual
 INSERT INTO entidadIndividual (id, nombre, apellidos, estado, tipo, origen, comportamiento, descripcion, es_nodo) VALUES (1, 'Luna', 'Guardiana', 'viva', 'druida', 'Bosque M?stico', 'protectora', 'Una druida que protege el Bosque M?stico y sus secretos.', 1);
-

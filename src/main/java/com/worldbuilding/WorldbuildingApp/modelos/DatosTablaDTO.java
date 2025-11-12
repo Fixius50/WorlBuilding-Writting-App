@@ -1,23 +1,19 @@
 package com.worldbuilding.WorldbuildingApp.modelos;
 
-import jakarta.persistence.*;
+// ¡Se han quitado TODAS las anotaciones de JPA!
+// Esta clase ya no es una @Entity. Es un simple POJO para transportar datos.
 
-/**
- * Entidad JPA que representa los datos de la tabla.
- * Se adapta desde el antiguo DTO para persistencia en MySQL.
- */
-@Entity
-@Table(name = "datos_tabla")
 public class DatosTablaDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // Este ID es genérico, podría ser de una entidad, zona, etc.
     private Long id;
 
+    // Campos comunes
     private String nombre;
     private String apellidos;
-    private String tipo;
+    private String tipo; // MUY IMPORTANTE: "entidadIndividual", "zona", "efectos", etc.
     private String descripcion;
+    private String caracteristica; // Para el nodo
 
     // === Campos para "Entidad" ===
     private String estado;
@@ -41,7 +37,8 @@ public class DatosTablaDTO {
     private String direccion;
     private String afectados;
 
-    // === Getters y Setters ===
+    // === Getters y Setters (Sin cambios) ===
+    
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -56,6 +53,9 @@ public class DatosTablaDTO {
 
     public String getDescripcion() { return descripcion; }
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    
+    public String getCaracteristica() { return caracteristica; }
+    public void setCaracteristica(String caracteristica) { this.caracteristica = caracteristica; }
 
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }

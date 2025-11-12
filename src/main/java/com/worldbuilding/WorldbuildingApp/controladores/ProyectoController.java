@@ -60,8 +60,10 @@ public class ProyectoController {
             contenidoProyecto.append("-- OPERACIONES ESPECÍFICAS DEL PROYECTO: ").append(nombre).append("\n");
             contenidoProyecto.append("-- ===========================================\n\n");
             contenidoProyecto.append("-- Crear el proyecto en la base de datos\n");
+            // ¡IMPORTANTE! Tu SQL usa 'crearProyecto'. Tu modelo Java se llama 'Proyecto'.
+            // He modificado el modelo 'Proyecto.java' para que coincida con esta tabla.
             contenidoProyecto.append("INSERT INTO crearProyecto (nombreProyecto, enfoqueProyecto) VALUES ('")
-                              .append(nombreSeguro).append("', '").append(enfoqueSeguro).append("');\n\n");
+                            .append(nombreSeguro).append("', '").append(enfoqueSeguro).append("');\n\n");
             contenidoProyecto.append("-- ===========================================\n");
             contenidoProyecto.append("-- AQUÍ SE AGREGARÁN LAS OPERACIONES ESPECÍFICAS DEL PROYECTO\n");
             contenidoProyecto.append("-- ===========================================\n\n");
@@ -80,10 +82,10 @@ public class ProyectoController {
         Path archivoSQL = Paths.get(DATA_FOLDER, nombre + ".sql");
         Map<String, Object> response = new HashMap<>();
         
-        // Log para debugging
-        System.out.println("Intentando abrir proyecto: " + nombre);
-        System.out.println("Sesión ID: " + session.getId());
-        System.out.println("Ruta del archivo: " + archivoSQL.toAbsolutePath());
+        // Log para debugging (Comentado)
+        // System.out.println("Intentando abrir proyecto: " + nombre);
+        // System.out.println("Sesión ID: " + session.getId());
+        // System.out.println("Ruta del archivo: " + archivoSQL.toAbsolutePath());
 
         if (Files.exists(archivoSQL) && !Files.isDirectory(archivoSQL)) {
             try {
@@ -100,9 +102,9 @@ public class ProyectoController {
                 session.setAttribute("proyectoActivo", nombre);
                 session.setAttribute("enfoqueProyectoActivo", enfoque);
                 
-                // Log para confirmar que se establecieron los atributos
-                System.out.println("Proyecto activado en sesión: " + session.getAttribute("proyectoActivo"));
-                System.out.println("Enfoque establecido en sesión: " + session.getAttribute("enfoqueProyectoActivo"));
+                // Log para confirmar que se establecieron los atributos (Comentado)
+                // System.out.println("Proyecto activado en sesión: " + session.getAttribute("proyectoActivo"));
+                // System.out.println("Enfoque establecido en sesión: " + session.getAttribute("enfoqueProyectoActivo"));
 
                 response.put("status", "success");
                 response.put("message", "Proyecto '" + nombre + "' abierto correctamente");
@@ -111,13 +113,13 @@ public class ProyectoController {
                 return ResponseEntity.ok(response);
                 
             } catch (IOException e) {
-                System.err.println("Error al leer archivo del proyecto: " + e.getMessage());
+                // System.err.println("Error al leer archivo del proyecto: " + e.getMessage());
                 response.put("status", "error");
                 response.put("message", "Error leyendo el archivo del proyecto: " + e.getMessage());
                 return ResponseEntity.status(500).body(response);
             }
         } else {
-            System.out.println("Proyecto no encontrado en: " + archivoSQL.toAbsolutePath());
+            // System.out.println("Proyecto no encontrado en: " + archivoSQL.toAbsolutePath());
             response.put("status", "error");
             response.put("message", "Proyecto '" + nombre + "' no encontrado");
             return ResponseEntity.status(404).body(response);
@@ -155,12 +157,6 @@ public class ProyectoController {
         return entity;
     }
 
-    /**
-     * Método para agregar operaciones SQL al archivo del proyecto activo
-     * @param operacionSQL La operación SQL a agregar
-     * @param session La sesión HTTP
-     * @return ResponseEntity con el resultado
-     */
     @PostMapping("/agregar-operacion")
     public ResponseEntity<?> agregarOperacionSQL(@RequestParam String operacionSQL, HttpSession session) {
         String nombreProyecto = (String) session.getAttribute("proyectoActivo");
@@ -176,11 +172,6 @@ public class ProyectoController {
         }
     }
 
-    /**
-     * Método para obtener el contenido del archivo SQL del proyecto activo
-     * @param session La sesión HTTP
-     * @return ResponseEntity con el contenido del archivo
-     */
     @GetMapping("/archivo-sql")
     public ResponseEntity<?> obtenerArchivoSQL(HttpSession session) {
         String nombreProyecto = (String) session.getAttribute("proyectoActivo");
@@ -202,11 +193,6 @@ public class ProyectoController {
         }
     }
 
-    /**
-     * Método para obtener todos los datos del proyecto activo ejecutando SELECT * en cada tabla
-     * @param session La sesión HTTP
-     * @return ResponseEntity con los datos estructurados de todas las tablas
-     */
     @GetMapping("/datos-proyecto")
     public ResponseEntity<Map<String, Object>> obtenerDatosProyecto(HttpSession session) {
         String nombreProyecto = (String) session.getAttribute("proyectoActivo");
@@ -222,12 +208,10 @@ public class ProyectoController {
 
             String contenido = Files.readString(archivoSQL);
             
-            // Crear objeto con los datos estructurados
             Map<String, Object> datosProyecto = new HashMap<>();
             datosProyecto.put("nombreProyecto", nombreProyecto);
             datosProyecto.put("enfoque", session.getAttribute("enfoqueProyectoActivo"));
             
-            // Extraer datos de cada tabla del contenido SQL
             Map<String, List<Map<String, Object>>> tablas = new HashMap<>();
             
             // Tablas que queremos extraer
@@ -238,7 +222,6 @@ public class ProyectoController {
             
             for (String tabla : nombresTablas) {
                 List<Map<String, Object>> datosTabla = proyectoService.extraerDatosDeTabla(contenido, tabla);
-                // Solo agregar la tabla si tiene datos
                 if (!datosTabla.isEmpty()) {
                     tablas.put(tabla, datosTabla);
                 }
