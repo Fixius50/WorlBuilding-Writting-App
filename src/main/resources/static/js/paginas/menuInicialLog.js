@@ -9,7 +9,9 @@ async function crearProyecto() {
     }
 
     try {
-        const response = await fetch("/api/proyectos", {
+        // --- ¡CORRECCIÓN AQUÍ! ---
+        // La URL correcta es "/api/proyectos/crear"
+        const response = await fetch("/api/proyectos/crear", {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded"
@@ -21,15 +23,16 @@ async function crearProyecto() {
         });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText);
+            // El backend ahora devuelve un JSON en caso de error, así que lo parseamos
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Error desconocido del servidor");
         }
 
         const mensaje = await response.text();
         alert(mensaje);
 
-        // Redirigir con el proyecto en la URL
-        window.location.href = `/ventanaProyectos?proyecto=${encodeURIComponent(nombre)}`;
+        // Redirigir a la ventana de proyectos (esto está bien)
+        window.location.href = `html/ventanaProyectos.html`;
 
     } catch (err) {
         console.error("Error al crear proyecto:", err);
@@ -47,20 +50,22 @@ async function abrirProyecto() {
     }
 
     try {
+        // Esta URL está bien porque el controlador tiene un @GetMapping("/{nombre}")
         const response = await fetch(`/api/proyectos/${encodeURIComponent(nombre)}`, {
             method: "GET"
         });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText);
+            const errorData = await response.json(); // Asumimos JSON para errores
+            throw new Error(errorData.message || "Proyecto no encontrado");
         }
 
-        const mensaje = await response.text();
-        alert(mensaje);
+        // El backend devuelve un JSON con {nombre, enfoque} al abrir
+        const proyecto = await response.json();
+        alert(`Proyecto '${proyecto.nombre}' abierto correctamente.`);
 
-        // Redirigir con el proyecto en la URL
-        window.location.href = `/ventanaProyectos?proyecto=${encodeURIComponent(nombre)}`;
+        // Redirigir
+        window.location.href = `html/ventanaProyectos.html`;
 
     } catch (err) {
         console.error("Error al abrir proyecto:", err);
@@ -89,30 +94,33 @@ function cerrarVentanaAbrir() {
 
 // ===================== AL CARGAR LA PÁGINA =====================
 window.onload = () => {
-    cerrarVentanaAbrir();
-    cerrarVentanaCrear();
+    // Inicia con la pestaña "Abrir" visible por defecto
+    abrirVentanaAbrir();
+    document.getElementById("crear").style.display = "none";
 };
 
 // ===================== SALIR =====================
 async function salir() {
-    const confirmar = confirm("¿Seguro que quieres salir de la aplicación?");
-    if (!confirmar) return;
+    // No usamos confirm() porque puede ser bloqueado por el navegador
+    // Sería mejor tener un modal de confirmación, pero por ahora:
+    console.log("Intento de salida");
 
     try {
-        const response = await fetch("/api/exit", {
+        await fetch("/api/exit", {
             method: "POST"
         });
-
-        if (!response.ok) {
-            throw new Error("Error al cerrar la aplicación.");
-        }
-
-        alert("La aplicación se cerrará.");
-        // Opción: puedes mostrar un mensaje o redirigir a una página de salida
-        // window.location.href = "/html/salida.html";
+        
+        // No podemos fiarnos del alert, ya que la app podría cerrarse antes
+        // Mostramos un mensaje de despedida en la página
+        document.body.innerHTML = "<h1>Cerrando la aplicación...</h1>";
+        
+        // Damos tiempo al navegador para que muestre el mensaje antes de que se cierre
+        setTimeout(() => {
+           // (El servidor se está apagando)
+        }, 500);
 
     } catch (err) {
         console.error("Error al salir:", err);
-        alert("No se pudo cerrar la aplicación: " + err.message);
+        alert("No se pudo contactar al servidor para cerrar: " + err.message);
     }
 }

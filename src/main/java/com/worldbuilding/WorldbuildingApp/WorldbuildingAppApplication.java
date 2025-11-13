@@ -2,12 +2,19 @@ package com.worldbuilding.WorldbuildingApp;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+// AÑADIR ESTAS IMPORTACIONES
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+// FIN DE IMPORTACIONES AÑADIDAS
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @SpringBootApplication
+
+@EnableJpaRepositories("com.worldbuilding.interfaces") // 1. Le dice a Spring dónde encontrar tus interfaces de Repositorio
+@EntityScan("com.worldbuilding.WorldbuildingApp.modelos") // 2. Le dice a Spring dónde encontrar tus clases @Entity
 public class WorldbuildingAppApplication {
 	/**
 	 * Primero arrancar XAMPP e iniciar MySQL

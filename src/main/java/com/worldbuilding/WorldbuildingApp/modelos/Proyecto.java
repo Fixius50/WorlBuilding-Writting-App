@@ -1,21 +1,23 @@
 package com.worldbuilding.WorldbuildingApp.modelos;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 /**
  * Entidad JPA para representar un proyecto.
- * MODIFICADA: Ahora usa 'nombre' como @Id (String) para coincidir con tu SQL.
- * La tabla se llama 'crearProyecto' según tu script.
+ * MODIFICADO: Ahora usa 'nombre' como @Id (String) para coincidir con el SQL.
  */
 @Entity
-@Table(name = "crearProyecto") 
+@Table(name = "crearProyecto") // Coincide con tu tabla SQL
 public class Proyecto {
 
     @Id
-    @Column(name = "nombreProyecto", nullable = false, length = 100) // Coincide con tu SQL
+    @Column(name = "nombreProyecto", nullable = false, length = 100) // Mapea a la columna SQL
     private String nombre;
 
-    @Column(name = "enfoqueProyecto", nullable = false, length = 10) // Coincide con tu SQL
+    @Column(name = "enfoqueProyecto", nullable = false, length = 10) // Mapea a la columna SQL
     private String enfoque;
 
     // === Constructores ===
@@ -29,8 +31,7 @@ public class Proyecto {
     }
 
     // === Getters y Setters ===
-    // (Se elimina getId/setId para Long)
-
+    // Ya no hay ID numérico, el nombre ES el ID.
     public String getNombre() {
         return nombre;
     }
