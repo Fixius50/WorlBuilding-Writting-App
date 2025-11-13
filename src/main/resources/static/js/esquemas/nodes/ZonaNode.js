@@ -18,16 +18,11 @@ class ZonaNode {
         this.isExpanded = false;
     }
 
-    /**
-     * Renderiza el nodo de zona
-     * Se muestra como un recuadro compacto que se expande al hacer click
-     */
     render(node) {
         const { data } = node;
-        
-        // Si no hay datos del backend, usar datos por defecto
         const nodeData = this.mergeWithBackendData(data);
-        
+        const alias = nodeData.apellidos || nodeData.alias || 'N/A';
+
         return `
             <button type="button" class="despliegue-datos" data-node-id="${node.id}">
                 <article class="node-compact">
@@ -42,7 +37,7 @@ class ZonaNode {
                 <article class="node-expanded">
                     <section>
                         <b class="node-b">Alias:</b>
-                        <i class="node-value">${nodeData.alias || 'N/A'}</i>
+                        <i class="node-value">${alias}</i>
                     </section>
                     <section>
                         <b class="node-b">Tamaño:</b>
@@ -70,119 +65,52 @@ class ZonaNode {
         `;
     }
 
-    /**
-     * Combina los datos del nodo con los datos del backend
-     */
     mergeWithBackendData(nodeData) {
-        // Si el nodo ya tiene datos del backend, usarlos
         if (nodeData.backendData) {
+            // Mapeo inverso: los datos de la BD (zonas) tienen 'tamanno' y 'desarrollo'
+            // pero el DTO usa 'tamannoZona' y 'desarrolloZona'.
+            // Los datos de la entidad 'Zona' SÍ tienen 'tamanno' y 'desarrollo'.
+            // Tu 'ProjectDataLoader' ahora carga directamente desde la API de 'Zona',
+            // así que los nombres de campo (tamanno, desarrollo) son correctos.
             return {
                 ...this.defaultData,
                 ...nodeData.backendData
             };
         }
-        
-        // Si no, usar los datos del nodo o por defecto
         return {
             ...this.defaultData,
             ...nodeData
         };
     }
 
-    /**
-     * Carga los datos del backend para este nodo
-     * @param {string} nodeId - ID del nodo
-     * @param {string} entityId - ID de la entidad en la base de datos
-     */
-    async loadBackendData(nodeId, entityId) {
-        try {
-            const response = await fetch('/api/proyectos/datos-proyecto');
-            if (!response.ok) {
-                throw new Error('Error obteniendo datos del proyecto');
-            }
-            
-            const datosProyecto = await response.json();
-            const zonas = datosProyecto.tablas.zona || [];
-            
-            // Buscar la zona específica por ID o nombre
-            const zona = zonas.find(z => 
-                z.id === entityId || z.nombre === entityId || z.nombre === this.getNodeName(nodeId)
-            );
-            
-            if (zona) {
-                // Actualizar el nodo con los datos del backend
-                this.updateNodeWithBackendData(nodeId, zona);
-                return zona;
-            }
-            
-            return null;
-        } catch (error) {
-            console.error('Error cargando datos del backend:', error);
-            return null;
-        }
-    }
+    // ... (loadBackendData y updateNodeWithBackendData eliminados) ...
 
-    /**
-     * Actualiza el nodo con datos del backend
-     */
-    updateNodeWithBackendData(nodeId, backendData) {
-        const flowManager = window.flowManager;
-        if (!flowManager) return;
-        
-        const nodes = flowManager.getNodes();
-        const nodeIndex = nodes.findIndex(n => n.id === nodeId);
-        
-        if (nodeIndex !== -1) {
-            nodes[nodeIndex].data = {
-                ...nodes[nodeIndex].data,
-                backendData: backendData
-            };
-            
-            // Forzar re-renderizado del nodo
-            flowManager.updateNode(nodeId, nodes[nodeIndex].data);
-        }
-    }
-
-    /**
-     * Obtiene el nombre del nodo
-     */
     getNodeName(nodeId) {
         const flowManager = window.flowManager;
         if (!flowManager) return '';
-        
         const nodes = flowManager.getNodes();
         const node = nodes.find(n => n.id === nodeId);
         return node ? (node.data.nombre || node.data.backendData?.nombre || '') : '';
     }
 
-    /**
-     * Obtiene el número de conexiones del nodo
-     */
     getConnectionCount(nodeId) {
         const flowManager = window.flowManager;
         if (!flowManager) return 0;
-        
         const edges = flowManager.getEdges();
         return edges.filter(edge => edge.source === nodeId || edge.target === nodeId).length;
     }
 
     /**
-     * Formatea los datos para enviar al backend
+     * Formatea los datos para el DTO plano (Corregido)
      */
     formatDataForBackend(data) {
         return {
             nombre: data.nombre,
             apellidos: data.apellidos || '',
-            tamanno: data.tamanno || '',
-            tipo: data.tipo,
-            desarrollo: data.desarrollo || '',
             descripcion: data.descripcion || '',
-            tipoTabla: 'zonas',
-            valoresExtraTabla: [
-                'Zona',
-                data.tamanno || '',
-                data.desarrollo || ''
-            ]
+            tipo: "zona", // ¡Clave!
+            tamannoZona: data.tamanno || '', // Mapeo al DTO
+            desarrolloZona: data.desarrollo || '' // Mapeo al DTO
         };
     }
 

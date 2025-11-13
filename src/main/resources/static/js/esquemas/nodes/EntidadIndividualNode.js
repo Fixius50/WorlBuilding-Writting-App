@@ -8,9 +8,11 @@ class EntidadIndividualNode {
         this.type = 'entidadIndividual';
         this.defaultData = {
             nombre: '',
-            alias: '',
-            especie: '',
+            alias: '', // 'apellidos' en la BD
+            estado: '',
+            tipo: '',
             origen: '',
+            comportamiento: '',
             descripcion: ''
         };
         this.isExpanded = false;
@@ -19,6 +21,9 @@ class EntidadIndividualNode {
     render(node) {
         const { data } = node;
         const nodeData = this.mergeWithBackendData(data);
+
+        // El 'alias' en el DTO es 'apellidos', lo mapeamos aquí
+        const alias = nodeData.apellidos || nodeData.alias || 'N/A';
 
         return `
             <button type="button" class="despliegue-datos" data-node-id="${node.id}">
@@ -34,7 +39,7 @@ class EntidadIndividualNode {
                 <article class="node-expanded">
                     <section>
                         <b class="node-b">Alias:</b>
-                        <i class="node-value">${nodeData.alias || 'N/A'}</i>
+                        <i class="node-value">${alias}</i>
                     </section>
                     <section>
                         <b class="node-b">Estado:</b>
@@ -67,6 +72,7 @@ class EntidadIndividualNode {
     }
 
     mergeWithBackendData(nodeData) {
+        // 'backendData' es lo que carga ProjectDataLoader
         if (nodeData.backendData) {
             return {
                 ...this.defaultData,
@@ -79,39 +85,15 @@ class EntidadIndividualNode {
         };
     }
 
-    async loadBackendData(nodeId, entityId) {
-        try {
-            const response = await fetch('/api/proyectos/datos-proyecto');
-            if (!response.ok) throw new Error('Error obteniendo datos del proyecto');
-            const datosProyecto = await response.json();
-            const entidades = datosProyecto.tablas.entidadesIndividuales || [];
-            const entidad = entidades.find(e =>
-                e.id === entityId || e.nombre === entityId || e.nombre === this.getNodeName(nodeId)
-            );
-            if (entidad) {
-                this.updateNodeWithBackendData(nodeId, entidad);
-                return entidad;
-            }
-            return null;
-        } catch (error) {
-            console.error('Error cargando datos del backend:', error);
-            return null;
-        }
-    }
+    /**
+     * ELIMINADO - Esta lógica ahora vive en ProjectDataLoader
+     */
+    // async loadBackendData(nodeId, entityId) { ... }
 
-    updateNodeWithBackendData(nodeId, backendData) {
-        const flowManager = window.flowManager;
-        if (!flowManager) return;
-        const nodes = flowManager.getNodes();
-        const nodeIndex = nodes.findIndex(n => n.id === nodeId);
-        if (nodeIndex !== -1) {
-            nodes[nodeIndex].data = {
-                ...nodes[nodeIndex].data,
-                backendData: backendData
-            };
-            flowManager.updateNode(nodeId, nodes[nodeIndex].data);
-        }
-    }
+    /**
+     * ELIMINADO - Esta lógica ahora vive en ProjectDataLoader
+     */
+    // updateNodeWithBackendData(nodeId, backendData) { ... }
 
     getNodeName(nodeId) {
         const flowManager = window.flowManager;
@@ -128,19 +110,18 @@ class EntidadIndividualNode {
         return edges.filter(edge => edge.source === nodeId || edge.target === nodeId).length;
     }
 
+    /**
+     * Formatea los datos para el DTO plano (Corregido)
+     */
     formatDataForBackend(data) {
         return {
             nombre: data.nombre,
-            alias: data.alias || '',
-            especie: data.especie || '',
-            origen: data.origen || '',
+            apellidos: data.alias || '',
             descripcion: data.descripcion || '',
-            tipoTabla: 'entidadesIndividuales',
-            valoresExtraTabla: [
-                'EntidadIndividual',
-                data.especie || '',
-                data.origen || ''
-            ]
+            tipo: "entidadindividual",
+            estado: data.estado || '',
+            origenEntidad: data.origen || '',
+            comportamientoEntidad: data.comportamiento || ''
         };
     }
 
