@@ -4,19 +4,18 @@ import jakarta.persistence.*;
 
 /**
  * Entidad JPA para representar un proyecto.
+ * MODIFICADA: Ahora usa 'nombre' como @Id (String) para coincidir con tu SQL.
+ * La tabla se llama 'crearProyecto' según tu script.
  */
 @Entity
-@Table(name = "proyecto")
+@Table(name = "crearProyecto") 
 public class Proyecto {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false)
+    @Column(name = "nombreProyecto", nullable = false, length = 100) // Coincide con tu SQL
     private String nombre;
 
-    @Column(nullable = false)
+    @Column(name = "enfoqueProyecto", nullable = false, length = 10) // Coincide con tu SQL
     private String enfoque;
 
     // === Constructores ===
@@ -30,13 +29,7 @@ public class Proyecto {
     }
 
     // === Getters y Setters ===
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
+    // (Se elimina getId/setId para Long)
 
     public String getNombre() {
         return nombre;
