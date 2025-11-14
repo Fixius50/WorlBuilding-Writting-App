@@ -1,7 +1,3 @@
-Aquí tienes el documento con el resumen de los errores que encontramos y solucionamos.
-
----
-
 # Errores durante la creación.md
 
 Este documento detalla los problemas encontrados y resueltos durante la sesión de depuración para hacer funcionar el envío de formularios (`POST /api/bd/insertar`) tras la refactorización principal.
