@@ -1,16 +1,18 @@
 /**
- * EntidadColectivaNode.js - Nodo personalizado para entidades colectivas
- * Representa organizaciones, grupos, facciones y entidades colectivas en el mundo
+ * EntidadIndividualNode.js - Nodo personalizado para entidades individuales
+ * Representa personajes, seres únicos, etc.
  */
 
-class EntidadColectivaNode {
+class EntidadIndividualNode {
     constructor() {
-        this.type = 'entidadColectiva';
+        this.type = 'entidadIndividual';
         this.defaultData = {
             nombre: '',
-            alias: '',
-            especie: '',
+            apellidos: '', // Alias
+            estado: '',
+            tipo: '',
             origen: '',
+            comportamiento: '',
             descripcion: ''
         };
         this.isExpanded = false;
@@ -20,21 +22,24 @@ class EntidadColectivaNode {
         const { data } = node;
         const nodeData = this.mergeWithBackendData(data);
 
+        // El 'alias' en el DTO es 'apellidos', lo mapeamos aquí
+        const alias = nodeData.apellidos || nodeData.alias || 'N/A';
+
         return `
-            <button type="button" class="despliegue-datos" data-node-id="${node.id}" onclick="toggleNodeExpansion('${node.id}')">
+            <button type="button" class="despliegue-datos" data-node-id="${node.id}">
                 <article class="node-compact">
                     <section class="node-image">
                         <img src="../../../Otros/imagenes/mage.png"></img>
                     </section>
                     <section class="node-name">
-                        <b class="node-type">Entidad Colectiva</b>
+                        <b class="node-type">Entidad Individual</b>
                         <h2 class="node-name">${nodeData.nombre || 'Sin nombre'}</h2>
                     </section>
                 </article>
                 <article class="node-expanded">
                     <section>
                         <b class="node-b">Alias:</b>
-                        <i class="node-value">${nodeData.alias || 'N/A'}</i>
+                        <i class="node-value">${alias}</i>
                     </section>
                     <section>
                         <b class="node-b">Estado:</b>
@@ -67,6 +72,7 @@ class EntidadColectivaNode {
     }
 
     mergeWithBackendData(nodeData) {
+        // 'backendData' es lo que carga ProjectDataLoader o FlowManager
         if (nodeData.backendData) {
             return {
                 ...this.defaultData,
@@ -77,40 +83,6 @@ class EntidadColectivaNode {
             ...this.defaultData,
             ...nodeData
         };
-    }
-
-    async loadBackendData(nodeId, entityId) {
-        try {
-            const response = await fetch('/api/proyectos/datos-proyecto');
-            if (!response.ok) throw new Error('Error obteniendo datos del proyecto');
-            const datosProyecto = await response.json();
-            const entidades = datosProyecto.tablas.entidadesColectivaes || [];
-            const entidad = entidades.find(e =>
-                e.id === entityId || e.nombre === entityId || e.nombre === this.getNodeName(nodeId)
-            );
-            if (entidad) {
-                this.updateNodeWithBackendData(nodeId, entidad);
-                return entidad;
-            }
-            return null;
-        } catch (error) {
-            console.error('Error cargando datos del backend:', error);
-            return null;
-        }
-    }
-
-    updateNodeWithBackendData(nodeId, backendData) {
-        const flowManager = window.flowManager;
-        if (!flowManager) return;
-        const nodes = flowManager.getNodes();
-        const nodeIndex = nodes.findIndex(n => n.id === nodeId);
-        if (nodeIndex !== -1) {
-            nodes[nodeIndex].data = {
-                ...nodes[nodeIndex].data,
-                backendData: backendData
-            };
-            flowManager.updateNode(nodeId, nodes[nodeIndex].data);
-        }
     }
 
     getNodeName(nodeId) {
@@ -128,19 +100,18 @@ class EntidadColectivaNode {
         return edges.filter(edge => edge.source === nodeId || edge.target === nodeId).length;
     }
 
+    /**
+     * Formatea los datos para el DTO plano (Corregido)
+     */
     formatDataForBackend(data) {
         return {
             nombre: data.nombre,
-            alias: data.alias || '',
-            especie: data.especie || '',
-            origen: data.origen || '',
+            apellidos: data.alias || '',
             descripcion: data.descripcion || '',
-            tipoTabla: 'entidadesColectivas',
-            valoresExtraTabla: [
-                'EntidadColectiva',
-                data.especie || '',
-                data.origen || ''
-            ]
+            tipo: "entidadindividual",
+            estado: data.estado || '',
+            origenEntidad: data.origen || '',
+            comportamientoEntidad: data.comportamiento || ''
         };
     }
 
@@ -152,23 +123,31 @@ class EntidadColectivaNode {
         const { data } = node;
         const nodeData = this.mergeWithBackendData(data);
         return `
-            <div class="edit-form entidad-Colectiva-form">
-                <h3>Editar Entidad Colectiva</h3>
+            <div class="edit-form entidad-individual-form">
+                <h3>Editar Entidad Individual</h3>
                 <div class="form-group">
                     <label for="nombre-${nodeId}">Nombre *</label>
                     <input type="text" id="nombre-${nodeId}" value="${nodeData.nombre || ''}" required>
                 </div>
                 <div class="form-group">
                     <label for="alias-${nodeId}">Alias</label>
-                    <input type="text" id="alias-${nodeId}" value="${nodeData.alias || ''}">
+                    <input type="text" id="alias-${nodeId}" value="${nodeData.apellidos || nodeData.alias || ''}">
                 </div>
                 <div class="form-group">
-                    <label for="especie-${nodeId}">Especie</label>
-                    <input type="text" id="especie-${nodeId}" value="${nodeData.especie || ''}">
+                    <label for="estado-${nodeId}">Estado</label>
+                    <input type="text" id="estado-${nodeId}" value="${nodeData.estado || ''}">
+                </div>
+                <div class="form-group">
+                    <label for="tipo-${nodeId}">Tipo (Raza/Especie)</label>
+                    <input type="text" id="tipo-${nodeId}" value="${nodeData.tipo || ''}">
                 </div>
                 <div class="form-group">
                     <label for="origen-${nodeId}">Origen</label>
                     <input type="text" id="origen-${nodeId}" value="${nodeData.origen || ''}">
+                </div>
+                 <div class="form-group">
+                    <label for="comportamiento-${nodeId}">Comportamiento</label>
+                    <input type="text" id="comportamiento-${nodeId}" value="${nodeData.comportamiento || ''}">
                 </div>
                 <div class="form-group">
                     <label for="descripcion-${nodeId}">Descripción</label>
@@ -184,8 +163,8 @@ class EntidadColectivaNode {
 
     getCreateForm() {
         return `
-            <div class="create-form entidad-Colectiva-form">
-                <h3>Crear Nueva Entidad Colectiva</h3>
+            <div class="create-form entidad-individual-form">
+                <h3>Crear Nueva Entidad Individual</h3>
                 <div class="form-group">
                     <label for="nombre-new">Nombre *</label>
                     <input type="text" id="nombre-new" required>
@@ -194,20 +173,28 @@ class EntidadColectivaNode {
                     <label for="alias-new">Alias</label>
                     <input type="text" id="alias-new">
                 </div>
+                 <div class="form-group">
+                    <label for="estado-new">Estado</label>
+                    <input type="text" id="estado-new">
+                </div>
                 <div class="form-group">
-                    <label for="especie-new">Especie</label>
-                    <input type="text" id="especie-new">
+                    <label for="tipo-new">Tipo (Raza/Especie)</label>
+                    <input type="text" id="tipo-new">
                 </div>
                 <div class="form-group">
                     <label for="origen-new">Origen</label>
                     <input type="text" id="origen-new">
                 </div>
                 <div class="form-group">
+                    <label for="comportamiento-new">Comportamiento</label>
+                    <input type="text" id="comportamiento-new">
+                </div>
+                <div class="form-group">
                     <label for="descripcion-new">Descripción</label>
                     <textarea id="descripcion-new"></textarea>
                 </div>
                 <div class="form-actions">
-                    <button type="button" onclick="createNewNode('entidadColectiva')" class="btn btn-primary">Crear</button>
+                    <button type="button" onclick="createNewNode('entidadIndividual')" class="btn btn-primary">Crear</button>
                     <button type="button" onclick="cancelCreateNode()" class="btn btn-secondary">Cancelar</button>
                 </div>
             </div>
@@ -218,27 +205,16 @@ class EntidadColectivaNode {
 window.toggleNodeExpansion = function(nodeId) {
     const nodeElement = document.querySelector(`[data-node-id="${nodeId}"]`);
     if (!nodeElement) return;
-    const compactView = nodeElement.querySelector('.node-compact-view');
-    const expandedContent = nodeElement.querySelector('.node-expanded-content');
-    const expandIndicator = nodeElement.querySelector('.node-expand-indicator i');
-    if (expandedContent.style.display === 'none') {
+    
+    const expandedContent = nodeElement.querySelector('.node-expanded');
+
+    if (expandedContent.style.display === 'none' || expandedContent.style.display === "") {
         expandedContent.style.display = 'block';
         nodeElement.classList.remove('compact');
-        expandIndicator.className = 'fas fa-chevron-up';
-        const flowManager = window.flowManager;
-        if (flowManager) {
-            const nodes = flowManager.getNodes();
-            const node = nodes.find(n => n.id === nodeId);
-            if (node && !node.data.backendData) {
-                const entidadNode = new EntidadColectivaNode();
-                entidadNode.loadBackendData(nodeId, node.data.nombre);
-            }
-        }
     } else {
         expandedContent.style.display = 'none';
         nodeElement.classList.add('compact');
-        expandIndicator.className = 'fas fa-chevron-down';
     }
 };
 
-window.EntidadColectivaNode = EntidadColectivaNode;
+window.EntidadIndividualNode = EntidadIndividualNode;

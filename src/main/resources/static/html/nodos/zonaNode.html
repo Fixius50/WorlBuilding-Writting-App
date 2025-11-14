@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zona Node</title>
+    <title>Efecto Node</title>
     <link rel="stylesheet" href="../../css/Nodos/NodeStyle.css">
 </head>
 <body>
-    <button type="button" class="despliegue-datos" data-node-id="${node.id}">
+    <button type="button" class="despliegue-datos" data-node-id="${node.id}" onclick="toggleNodeExpansion(this)">
         <article class="node-compact">
             <section class="node-image">
                 <img src="../../../Otros/imagenes/mage.png"></img>
             </section>
             <section class="node-name">
-                <b class="node-type">Zona</b>
+                <b class="node-type">Efecto</b>
                 <h2 class="node-name">${nodeData.nombre || 'Sin nombre'}</h2>
             </section>
         </article>
@@ -23,16 +23,16 @@
                 <i class="node-value">${nodeData.alias || 'N/A'}</i>
             </section>
             <section>
-                <b class="node-b">Tamaño:</b>
-                <i class="node-value">${nodeData.tamanno || 'N/A'}</i>
+                <b class="node-b">Origen:</b>
+                <i class="node-value">${nodeData.origen || 'N/A'}</i>
             </section>
             <section>
-                <b class="node-b">Tipo:</b>
-                <i class="node-value">${nodeData.tipo || 'N/A'}</i>
+                <b class="node-b">Dureza:</b>
+                <i class="node-value">${nodeData.dureza || 'N/A'}</i>
             </section>
             <section>
-                <b class="node-b">Desarrollo:</b>
-                <i class="node-value">${nodeData.desarrollo || 'N/A'}</i>
+                <b class="node-b">Comportamiento:</b>
+                <i class="node-value">${nodeData.comportamiento || 'N/A'}</i>
             </section>
             <section class="description">
                 <b class="node-b">Descripción:</b>
@@ -47,23 +47,18 @@
     </button>
 </body>
 <script>
-    function toggleNodeExpansion() {
-        // getElementsByClassName devuelve una colección, necesitas especificar el índice
-        const nodeExpanded = document.getElementsByClassName("node-expanded")[0];
-        const despliegueBtn = document.getElementsByClassName("despliegue-datos")[0];
+    function toggleNodeExpansion(buttonElement) {
+        // 'buttonElement' es el <button class="despliegue-datos"> que fue clickeado
+        const nodeExpanded = buttonElement.querySelector('.node-expanded');
 
-        // Añadir el evento al botón, no dentro de la función
-        despliegueBtn.addEventListener("click", function() {
+        if (nodeExpanded) {
             // Alternar entre mostrar y ocultar
             if (nodeExpanded.style.display === "none" || nodeExpanded.style.display === "") {
                 nodeExpanded.style.display = "flex";
             } else {
                 nodeExpanded.style.display = "none";
             }
-        });
+        }
     }
-
-    // Llamar a la función cuando el DOM esté cargado
-    document.addEventListener('DOMContentLoaded', toggleNodeExpansion);
 </script>
 </html>

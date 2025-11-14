@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="../../css/Nodos/NodeStyle.css">
 </head>
 <body>
-    <button type="button" class="despliegue-datos" data-node-id="${node.id}" onclick="toggleNodeExpansion('${node.id}')">
+    <button type="button" class="despliegue-datos" data-node-id="${node.id}" onclick="toggleNodeExpansion(this)">
         <article class="node-compact">
             <section class="node-image">
                 <img src="../../../Otros/imagenes/mage.png"></img>
@@ -47,23 +47,18 @@
     </button>
 </body>
 <script>
-    function toggleNodeExpansion() {
-        // getElementsByClassName devuelve una colección, necesitas especificar el índice
-        const nodeExpanded = document.getElementsByClassName("node-expanded")[0];
-        const despliegueBtn = document.getElementsByClassName("despliegue-datos")[0];
+    function toggleNodeExpansion(buttonElement) {
+        // 'buttonElement' es el <button class="despliegue-datos"> que fue clickeado
+        const nodeExpanded = buttonElement.querySelector('.node-expanded');
 
-        // Añadir el evento al botón, no dentro de la función
-        despliegueBtn.addEventListener("click", function() {
+        if (nodeExpanded) {
             // Alternar entre mostrar y ocultar
             if (nodeExpanded.style.display === "none" || nodeExpanded.style.display === "") {
                 nodeExpanded.style.display = "flex";
             } else {
                 nodeExpanded.style.display = "none";
             }
-        });
+        }
     }
-
-    // Llamar a la función cuando el DOM esté cargado
-    document.addEventListener('DOMContentLoaded', toggleNodeExpansion);
 </script>
 </html>

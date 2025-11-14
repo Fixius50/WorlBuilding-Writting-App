@@ -90,60 +90,6 @@ class EfectoNode {
     }
 
     /**
-     * Carga los datos del backend para este nodo
-     * @param {string} nodeId - ID del nodo
-     * @param {string} entityId - ID de la entidad en la base de datos
-     */
-    async loadBackendData(nodeId, entityId) {
-        try {
-            const response = await fetch('/api/proyectos/datos-proyecto');
-            if (!response.ok) {
-                throw new Error('Error obteniendo datos del proyecto');
-            }
-            
-            const datosProyecto = await response.json();
-            const efectos = datosProyecto.tablas.efectos || [];
-            
-            // Buscar el efecto específico por ID o nombre
-            const efecto = efectos.find(e => 
-                e.id === entityId || e.nombre === entityId || e.nombre === this.getNodeName(nodeId)
-            );
-            
-            if (efecto) {
-                // Actualizar el nodo con los datos del backend
-                this.updateNodeWithBackendData(nodeId, efecto);
-                return efecto;
-            }
-            
-            return null;
-        } catch (error) {
-            console.error('Error cargando datos del backend:', error);
-            return null;
-        }
-    }
-
-    /**
-     * Actualiza el nodo con datos del backend
-     */
-    updateNodeWithBackendData(nodeId, backendData) {
-        const flowManager = window.flowManager;
-        if (!flowManager) return;
-        
-        const nodes = flowManager.getNodes();
-        const nodeIndex = nodes.findIndex(n => n.id === nodeId);
-        
-        if (nodeIndex !== -1) {
-            nodes[nodeIndex].data = {
-                ...nodes[nodeIndex].data,
-                backendData: backendData
-            };
-            
-            // Forzar re-renderizado del nodo
-            flowManager.updateNode(nodeId, nodes[nodeIndex].data);
-        }
-    }
-
-    /**
      * Obtiene el nombre del nodo
      */
     getNodeName(nodeId) {
@@ -167,23 +113,17 @@ class EfectoNode {
     }
 
     /**
-     * Formatea los datos para enviar al backend
+     * Formatea los datos para enviar al backend (DTO)
      */
     formatDataForBackend(data) {
         return {
             nombre: data.nombre,
             apellidos: data.apellidos || '',
-            origen: data.origen || '',
-            dureza: data.dureza || '',
-            comportamiento: data.comportamiento || '',
             descripcion: data.descripcion || '',
-            tipoTabla: 'efectos',
-            valoresExtraTabla: [
-                'Efecto',
-                data.origen || '',
-                data.dureza || '',
-                data.comportamiento || ''
-            ]
+            tipo: "efectos", // Clave para el DTO
+            origenEfecto: data.origen || '',
+            dureza: data.dureza || '',
+            comportamientoEfecto: data.comportamiento || ''
         };
     }
 
@@ -294,31 +234,16 @@ window.toggleNodeExpansion = function(nodeId) {
     const nodeElement = document.querySelector(`[data-node-id="${nodeId}"]`);
     if (!nodeElement) return;
     
-    const compactView = nodeElement.querySelector('.node-compact-view');
-    const expandedContent = nodeElement.querySelector('.node-expanded-content');
-    const expandIndicator = nodeElement.querySelector('.node-expand-indicator i');
+    const expandedContent = nodeElement.querySelector('.node-expanded');
     
-    if (expandedContent.style.display === 'none') {
+    if (expandedContent.style.display === 'none' || expandedContent.style.display === "") {
         // Expandir
         expandedContent.style.display = 'block';
         nodeElement.classList.remove('compact');
-        expandIndicator.className = 'fas fa-chevron-up';
-        
-        // Cargar datos del backend si no están cargados
-        const flowManager = window.flowManager;
-        if (flowManager) {
-            const nodes = flowManager.getNodes();
-            const node = nodes.find(n => n.id === nodeId);
-            if (node && !node.data.backendData) {
-                const efectoNode = new EfectoNode();
-                efectoNode.loadBackendData(nodeId, node.data.nombre);
-            }
-        }
     } else {
         // Contraer
         expandedContent.style.display = 'none';
         nodeElement.classList.add('compact');
-        expandIndicator.className = 'fas fa-chevron-down';
     }
 };
 

@@ -67,11 +67,6 @@ class ZonaNode {
 
     mergeWithBackendData(nodeData) {
         if (nodeData.backendData) {
-            // Mapeo inverso: los datos de la BD (zonas) tienen 'tamanno' y 'desarrollo'
-            // pero el DTO usa 'tamannoZona' y 'desarrolloZona'.
-            // Los datos de la entidad 'Zona' SÍ tienen 'tamanno' y 'desarrollo'.
-            // Tu 'ProjectDataLoader' ahora carga directamente desde la API de 'Zona',
-            // así que los nombres de campo (tamanno, desarrollo) son correctos.
             return {
                 ...this.defaultData,
                 ...nodeData.backendData
@@ -82,8 +77,6 @@ class ZonaNode {
             ...nodeData
         };
     }
-
-    // ... (loadBackendData y updateNodeWithBackendData eliminados) ...
 
     getNodeName(nodeId) {
         const flowManager = window.flowManager;
@@ -239,32 +232,15 @@ class ZonaNode {
 window.toggleNodeExpansion = function(nodeId) {
     const nodeElement = document.querySelector(`[data-node-id="${nodeId}"]`);
     if (!nodeElement) return;
+
+    const expandedContent = nodeElement.querySelector('.node-expanded');
     
-    const compactView = nodeElement.querySelector('.node-compact-view');
-    const expandedContent = nodeElement.querySelector('.node-expanded-content');
-    const expandIndicator = nodeElement.querySelector('.node-expand-indicator i');
-    
-    if (expandedContent.style.display === 'none') {
-        // Expandir
+    if (expandedContent.style.display === 'none' || expandedContent.style.display === "") {
         expandedContent.style.display = 'block';
         nodeElement.classList.remove('compact');
-        expandIndicator.className = 'fas fa-chevron-up';
-        
-        // Cargar datos del backend si no están cargados
-        const flowManager = window.flowManager;
-        if (flowManager) {
-            const nodes = flowManager.getNodes();
-            const node = nodes.find(n => n.id === nodeId);
-            if (node && !node.data.backendData) {
-                const zonaNode = new ZonaNode();
-                zonaNode.loadBackendData(nodeId, node.data.nombre);
-            }
-        }
     } else {
-        // Contraer
         expandedContent.style.display = 'none';
         nodeElement.classList.add('compact');
-        expandIndicator.className = 'fas fa-chevron-down';
     }
 };
 
