@@ -13,39 +13,27 @@
     </header>
     <div class="zona">
         <section class="opciones">
-            <figure> <!-- Imagen de lo que es -->
-                <figcaption> <!-- Descripción de lo que es -->
-                    <h1>ENTIDADES INDIVIDUALES</h1>
+            <figure> <figcaption> <h1>ENTIDADES INDIVIDUALES</h1>
                 </figcaption>
                 <button type="button" onclick="mostrarContenidoRelacionado('opciones/entidad-individual.html')">SELECCIONAR</button>
             </figure>
-            <figure> <!-- Imagen de lo que es -->
-                <figcaption> <!-- Descripción de lo que es -->
-                    <h1>ENTIDADES COLECTIVAS</h1>
+            <figure> <figcaption> <h1>ENTIDADES COLECTIVAS</h1>
                 </figcaption>
                 <button type="button" onclick="mostrarContenidoRelacionado('opciones/entidad-colectiva.html')">SELECCIONAR</button>
             </figure>
-            <figure> <!-- Imagen de lo que es -->
-                <figcaption> <!-- Descripción de lo que es -->
-                    <h1>EFECTOS Y/O MAGIAS/PODERES</h1>
+            <figure> <figcaption> <h1>EFECTOS Y/O MAGIAS/PODERES</h1>
                 </figcaption>
                 <button type="button" onclick="mostrarContenidoRelacionado('opciones/efectos-magias.html')">SELECCIONAR</button>
             </figure>
-            <figure> <!-- Imagen de lo que es -->
-                <figcaption> <!-- Descripción de lo que es -->
-                    <h1>CONSTRUCCIONES</h1>
+            <figure> <figcaption> <h1>CONSTRUCCIONES</h1>
                 </figcaption>
                 <button type="button" onclick="mostrarContenidoRelacionado('opciones/construcciones.html')">SELECCIONAR</button>
             </figure>
-            <figure> <!-- Imagen de lo que es -->
-                <figcaption> <!-- Descripción de lo que es -->
-                    <h1>ZONAS</h1>
+            <figure> <figcaption> <h1>ZONAS</h1>
                 </figcaption>
                 <button type="button" onclick="mostrarContenidoRelacionado('opciones/zonas.html')">SELECCIONAR</button>
             </figure>
-            <figure> <!-- Imagen de lo que es -->
-                <figcaption> <!-- Descripción de lo que es -->
-                    <h1>RELACIONES</h1>
+            <figure> <figcaption> <h1>RELACIONES</h1>
                 </figcaption>
                 <button type="button" onclick="mostrarContenidoRelacionado('opciones/relaciones.html')">SELECCIONAR</button>
             </figure>
@@ -54,53 +42,5 @@
         <section class="despliegue"></section>
     </div>
 </body>
-<script>
-    let proyectoActivo = null;
-
-    document.addEventListener('DOMContentLoaded', () => {
-        fetch('/api/proyectos/activo')
-            .then(res => {
-                if (!res.ok) throw new Error("No hay proyecto activo");
-                return res.json();
-            })
-            .then(proyecto => {
-                // Ahora recibimos un objeto JSON con nombre y enfoque
-                document.getElementById("nombre-proyecto").textContent = proyecto.nombre + " (" + proyecto.enfoque + ")";
-            })
-            .catch(err => {
-                document.getElementById("nombre-proyecto").textContent = "Sin proyecto activo";
-            });
-    });
-
-    async function mostrarContenidoRelacionado(nombreArchivoHtml) {
-        const despliegue = document.querySelector('.despliegue');
-        despliegue.innerHTML = '';
-
-        try {
-            const respuesta = await fetch(new URL(nombreArchivoHtml, window.location.href));
-
-            if (!respuesta.ok) {
-                throw new Error('No se pudo cargar el panel: ' + nombreArchivoHtml);
-            }
-
-            const contenido = await respuesta.text();
-            despliegue.innerHTML = contenido;
-        } catch (error) {
-            despliegue.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
-        }
-    }
-
-    function volverAlProyectoActual(){
-        window.location.href = "../html/ventanaProyectos.html";
-    }
-    let dataFolder = null;
-
-    fetch('/api/config')
-        .then(res => res.json())
-        .then(config => {
-            dataFolder = config.dataFolder;
-            // Ahora puedes usar dataFolder en tu JS
-            console.log("Ruta dataFolder:", dataFolder);
-        });
-</script>
+<script src="../js/pages/ventanaCreacion.js"></script>
 </html>

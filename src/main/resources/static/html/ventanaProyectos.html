@@ -9,40 +9,21 @@
 </head>
 <body>
     <div class="panel0">
-        <!-- Aquí entra el menú con opciones, 
-         de las cuales te llevan a ventanas de distintas cosas. -->
         <div class="top">
             <div class="menu-desplegable">   
                 <b>MENÚ</b>
                 <div class="content">
-                    <!-- Hacer que la letra se esconda hasta que se pase el ratón por encima.
-                    Luego hacer que se quede el último recuadro del cual se haya puesto el ratón y no se vaya--> 
                     <button class="option" id="bt1" onclick="abrirVentanaCreacion()">Generar objetos</button>
-                    <!--
-                    <button class="option" id="bt1" onclick="">Importar (proximamente) </button>
-                    <button class="option" id="bt1" onclick="">Exportar (proximamente) </button>
-                    <button class="option" id="bt1" onclick="">Wiki (proximamente) </button>
-                    <button class="option" id="bt1" onclick="">Apuntes (proximamente) </button> 
-                    -->
                     <button class="option" id="bt1" onclick="abrirVentanaAjustes()">Ajustes proyecto</button>
                     <button class="option" id="bt1" onclick="abrirVentanaMenuInicial()">Página inicial </button>
                 </div>
                 <b class="simbolo">&dArr;</b>
             </div>
-            <!-- Aquí entra algo que ya veré que hacer. A lo mejor un gif animado o
-             la autoría con el nombre del proyecto. Más tarde se editará para mejorarlo.-->
             <div class="infoTop">
-                <header class="header-top"><!-- Aquí va el nombre del proyecto y el tipo -->
-                    <b id="nombre-proyecto" oninput="mostarInfoProyecto()"></b>
+                <header class="header-top"><b id="nombre-proyecto" oninput="mostarInfoProyecto()"></b>
                 </header>
                 
                 <nav class="navTop">
-                    <!-- Esto son pestañas que se despliegan. Los nombres indican cosas generales.
-                     Ej: la pestaña "Construcción" agrega dentro opciones relacionadas a la puesta
-                     de las cosas/fichas (personajes/objetos/lugares, etc...), como las subopciones:
-                     - Agregar
-                     - Editar
-                     - Eliminar -->
                     <header class="construccion">Construcción</header>
                     <header class="estado">Estado</header>
                     <header class="nv">Eliminar</header>
@@ -54,7 +35,6 @@
         <div class="area-central">
             <section class="objects">
                 <div class="objects-container">
-                    <!-- Entidades Individuales -->
                     <div class="object-category">
                         <div class="category-header">
                             <span class="category-icon">👤</span>
@@ -62,11 +42,9 @@
                             <span class="category-count" id="count-entidades-individuales">0</span>
                         </div>
                         <div class="object-list" id="list-entidades-individuales">
-                            <!-- Los elementos se cargarán dinámicamente -->
-                        </div>
+                            </div>
                     </div>
                     
-                    <!-- Entidades Colectivas -->
                     <div class="object-category">
                         <div class="category-header">
                             <span class="category-icon">🏛️</span>
@@ -74,11 +52,9 @@
                             <span class="category-count" id="count-entidades-colectivas">0</span>
                         </div>
                         <div class="object-list" id="list-entidades-colectivas">
-                            <!-- Los elementos se cargarán dinámicamente -->
-                        </div>
+                            </div>
                     </div>
                     
-                    <!-- Construcciones -->
                     <div class="object-category">
                         <div class="category-header">
                             <span class="category-icon">🏰</span>
@@ -86,11 +62,9 @@
                             <span class="category-count" id="count-construcciones">0</span>
                         </div>
                         <div class="object-list" id="list-construcciones">
-                            <!-- Los elementos se cargarán dinámicamente -->
-                        </div>
+                            </div>
                     </div>
                     
-                    <!-- Zonas -->
                     <div class="object-category">
                         <div class="category-header">
                             <span class="category-icon">🗺️</span>
@@ -98,11 +72,9 @@
                             <span class="category-count" id="count-zonas">0</span>
                         </div>
                         <div class="object-list" id="list-zonas">
-                            <!-- Los elementos se cargarán dinámicamente -->
-                        </div>
+                            </div>
                     </div>
                     
-                    <!-- Efectos -->
                     <div class="object-category">
                         <div class="category-header">
                             <span class="category-icon">✨</span>
@@ -110,8 +82,7 @@
                             <span class="category-count" id="count-efectos">0</span>
                         </div>
                         <div class="object-list" id="list-efectos">
-                            <!-- Los elementos se cargarán dinámicamente -->
-                        </div>
+                            </div>
                     </div>
                 </div>
                 <div class="map-info">
@@ -121,7 +92,6 @@
                         <li><strong>Teclado:</strong> Flechas para mover, +/- para zoom, 0 para reset</li>
                     </ul>
                 </div>
-                <!-- Esto es el cabecero que sale con los botones de arriba del mapa -->
                 <div class="map-header">
                     <div class="map-controls">
                         <button class="map-btn" onclick="resetMapView()" title="Resetear vista">
@@ -145,188 +115,15 @@
             <section class="ground">
                 <div class="map-container">
                     <div id="infinite-map-container" class="map-area">
-                        <!-- El mapa se cargará aquí -->
-                    </div>
+                        </div>
                 </div>
             </section>
         </div>
     </div>
 </body>
 
-<!-- Scripts necesarios para el mapa infinito y la carga de datos del proyecto -->
-<script src="../js/esquemas/InfiniteMap.js"></script>
-<script src="../js/esquemas/ProjectDataLoader.js"></script>
+<script src="../js/lib/InfiniteMap.js"></script>
+<script src="../js/lib/ProjectDataLoader.js"></script>
+<script src="../js/pages/ventanaProyectos.js"></script>
 
-<!-- En ProjectDataLoader se cargan los nodos que van a ser arrastrados al mapa. 
-    Mirar ahí y modificar los estilos.
-    PD: hacer unos arrastrables para cuando no haya proyecto activo.
--->
-
-<script>
-    let nombreProyectoGlobal = null;
-    let infiniteMap = null;
-    let projectDataLoader = null;
-
-    function abrirVentanaCreacion() {
-        if (nombreProyectoGlobal) {
-            window.location.href = `/html/ventanaCreacion.html?proyecto=${encodeURIComponent(nombreProyectoGlobal)}`;
-        }
-    }
-
-    function abrirVentanaAjustes() {
-        if (nombreProyectoGlobal) {
-            window.location.href = `/html/ventanaAjustes.html?proyecto=${encodeURIComponent(nombreProyectoGlobal)}`;
-        }
-    }
-
-    function abrirVentanaMenuInicial() {
-        if (nombreProyectoGlobal) {
-            window.location.href = `../menuInicialLog.html`;
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', async () => {
-        try {
-            // Primero obtenemos el proyecto activo
-            const resProyecto = await fetch('/api/proyectos/activo');
-            console.log('Respuesta del servidor (proyecto activo):', resProyecto.status);
-            
-            if (!resProyecto.ok) {
-                throw new Error("No hay proyecto activo");
-            }
-
-            const proyecto = await resProyecto.json();
-            console.log('Datos del proyecto:', proyecto);
-
-            // Guardamos el nombre del proyecto y actualizamos la UI
-            nombreProyectoGlobal = proyecto.nombre;
-            document.getElementById("nombre-proyecto").textContent = `${proyecto.nombre} ( -${proyecto.enfoque}- )`;
-
-            // Luego cargamos la configuración
-            const resConfig = await fetch('/api/config');
-            const config = await resConfig.json();
-            console.log('Configuración cargada:', config);
-
-            // Inicializamos el mapa y el cargador de datos solo si tenemos un proyecto activo
-            initializeInfiniteMap();
-            
-            // Esperamos un momento antes de inicializar el cargador de datos
-            setTimeout(() => {
-                initializeProjectDataLoader();
-                // Cargamos los datos del proyecto
-                if (projectDataLoader) {
-                    projectDataLoader.loadProjectData().then(() => {
-                        console.log('Datos del proyecto cargados correctamente');
-                    }).catch(error => {
-                        console.error('Error al cargar datos del proyecto:', error);
-                    });
-                }
-            }, 500);
-
-        } catch (error) {
-            console.error('Error al inicializar la página:', error);
-            document.getElementById("nombre-proyecto").textContent = "Sin proyecto activo";
-            // Aún así inicializamos el mapa para poder mostrar la interfaz
-            initializeInfiniteMap();
-        }
-    });
-
-    // ===== FUNCIONES DEL MAPA INFINITO =====
-
-    function initializeInfiniteMap() {
-        // Esperar a que el DOM esté completamente cargado
-        setTimeout(() => {
-            const container = document.getElementById('infinite-map-container');
-            if (container) {
-                infiniteMap = new InfiniteMap('infinite-map-container', {
-                    gridSize: 100,
-                    gridColor: '#e0e0e0',
-                    gridOpacity: 0.3,
-                    backgroundColor: '#f8f9fa',
-                    zoomLevel: 1,
-                    minZoom: 0.1,
-                    maxZoom: 5,
-                    showCoordinates: true,
-                    coordinateColor: '#666'
-                });
-                
-                console.log('🗺️ Mapa infinito cargado en ventana de proyectos');
-                
-                // Cargar marcadores de ejemplo después de un breve delay
-                setTimeout(() => {
-                    loadProjectMarkers();
-                }, 500);
-            } else {
-                console.error('❌ Contenedor del mapa no encontrado');
-            }
-        }, 100);
-    }
-
-    function resetMapView() {
-        if (infiniteMap) {
-            infiniteMap.resetView();
-        }
-    }
-
-    function zoomInMap() {
-        if (infiniteMap) {
-            infiniteMap.zoomIn();
-        }
-    }
-
-    function zoomOutMap() {
-        if (infiniteMap) {
-            infiniteMap.zoomOut();
-        }
-    }
-
-    function toggleCoordinates() {
-        if (infiniteMap) {
-            infiniteMap.config.showCoordinates = !infiniteMap.config.showCoordinates;
-            infiniteMap.render();
-        }
-    }
-
-
-    // ===== FUNCIONES DEL CARGADOR DE DATOS =====
-
-    function initializeProjectDataLoader() {
-        projectDataLoader = new ProjectDataLoader();
-        
-        // Cargar datos del proyecto después de un breve delay
-        setTimeout(() => {
-            projectDataLoader.loadProjectData();
-        }, 500);
-        
-        console.log('📦 Cargador de datos del proyecto inicializado');
-    }
-
-    // Función para recargar datos del proyecto
-    function reloadProjectData() {
-        if (!projectDataLoader) return;
-        
-        const reloadBtn = document.querySelector('.reload-btn');
-        if (reloadBtn) {
-            reloadBtn.classList.add('loading');
-        }
-        
-        projectDataLoader.reload().then(() => {
-            if (reloadBtn) {
-                reloadBtn.classList.remove('loading');
-            }
-        }).catch(() => {
-            if (reloadBtn) {
-                reloadBtn.classList.remove('loading');
-            }
-        });
-    }
-
-    // Función para cargar marcadores desde el proyecto (ahora usa datos reales)
-    function loadProjectMarkers() {
-        if (!nombreProyectoGlobal || !projectDataLoader) return;
-        
-        // Los marcadores se cargarán automáticamente cuando se arrastren elementos
-        console.log('📍 Los marcadores se cargarán al arrastrar elementos al mapa');
-    }
-</script>
 </html>

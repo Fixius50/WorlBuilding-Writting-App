@@ -62,7 +62,7 @@
     <div class="formContent">
         <div class="panel">
             <h2>Entidad Colectiva</h2>
-            <form id="form-entidad-colectiva">
+            <form id="form-entidad" data-tipo-entidad="entidadcolectiva">
                 <div class="el">
                     <div>
                         <label>Nombre/Pseudónimo:</label>
@@ -75,7 +75,7 @@
                         <select name="estado" required>
                             <option value="" selected disabled>(selecciona una)</option>
                             <option value="activo">Vivo</option>
-                            <option value="inactivo">Muerto</option>
+                            <option value."inactivo">Muerto</option>
                             <option value="pendiente">Abstracto</option>
                         </select><br>
                         <label>¿Cual es su tipo de longevidad?:</label>
@@ -111,48 +111,5 @@
         </div>
     </div>
 </body>
-<script>
-    // La lógica de 'DOMContentLoaded' no cambia
-    document.addEventListener("DOMContentLoaded", async () => {
-        // ... (código para obtener proyecto activo) ...
-        const formulario = document.getElementById("form-entidad-colectiva");
-        if (formulario) {
-            formulario.addEventListener("submit", function (e) {
-                e.preventDefault();
-                const formData = new FormData(formulario);
-                const datos = Object.fromEntries(formData.entries());
-                guardarEntidad(datos); // Llama a la función refactorizada
-            });
-        }
-    });
-
-    /**
-     * ¡FUNCIÓN REFACTORIZADA!
-     */
-    function guardarEntidad(datosObjeto) {
-        const datosParaEnviar = {
-            nombre: datosObjeto.nombre,
-            apellidos: datosObjeto.apellidos,
-            descripcion: datosObjeto.descripcion,
-            
-            tipo: "entidadcolectiva", 
-            
-            estado: datosObjeto.estado,
-            origenEntidad: datosObjeto.origen,
-            comportamientoEntidad: datosObjeto.comportamiento
-        };
-
-        fetch('/api/bd/insertar', {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(datosParaEnviar)
-        })
-        .then(async res => res.ok ? res.json() : Promise.reject(await res.text()))
-        .then(dataGuardada => {
-            alert("Datos guardados correctamente:\n" + `ID: ${dataGuardada.id}, Nombre: ${dataGuardada.nombre}`);
-            document.getElementById("form-entidad-colectiva").reset();
-        })
-        .catch(err => alert("Error al guardar datos:\n" + err));
-    }
-</script>
+<script src="../js/components/opcionesForm.js"></script>
 </html>

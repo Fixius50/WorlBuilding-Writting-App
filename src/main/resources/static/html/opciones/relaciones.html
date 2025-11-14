@@ -62,7 +62,7 @@
     <div class="formContent">
         <div class="panel">
             <h2>Relaciones</h2>
-            <form id="form-relaciones">
+            <form id="form-entidad" data-tipo-entidad="interaccion">
                 <div class="el">
                     <div>
                         <label>Nombre/Pseudónimo:</label>
@@ -108,48 +108,5 @@
         </div>
     </div>
 </body>
-<script>
-    // La lógica de 'DOMContentLoaded' no cambia
-    document.addEventListener("DOMContentLoaded", async () => {
-        // ... (código para obtener proyecto activo) ...
-        const formulario = document.getElementById("form-relaciones");
-        if (formulario) {
-            formulario.addEventListener("submit", function (e) {
-                e.preventDefault();
-                const formData = new FormData(formulario);
-                const datos = Object.fromEntries(formData.entries());
-                guardarEntidad(datos); // Llama a la función refactorizada
-            });
-        }
-    });
-
-    /**
-     * ¡FUNCIÓN REFACTORIZADA!
-     */
-    function guardarEntidad(datosObjeto) {
-        const datosParaEnviar = {
-            nombre: datosObjeto.nombre,
-            apellidos: datosObjeto.apellidos,
-            descripcion: datosObjeto.descripcion,
-            
-            tipo: "interaccion", // ¡Clave! Tu tabla SQL es 'interaccion'
-            
-            // Campos específicos de Relaciones/Interaccion
-            direccion: datosObjeto.direccion,
-            afectados: datosObjeto.afectados
-        };
-
-        fetch('/api/bd/insertar', {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(datosParaEnviar)
-        })
-        .then(async res => res.ok ? res.json() : Promise.reject(await res.text()))
-        .then(dataGuardada => {
-            alert("Datos guardados correctamente:\n" + `ID: ${dataGuardada.id}, Nombre: ${dataGuardada.nombre}`);
-            document.getElementById("form-relaciones").reset();
-        })
-        .catch(err => alert("Error al guardar datos:\n" + err));
-    }
-</script>
+<script src="../js/components/opcionesForm.js"></script>
 </html>
