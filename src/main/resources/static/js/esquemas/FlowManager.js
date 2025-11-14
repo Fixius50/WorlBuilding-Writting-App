@@ -80,62 +80,95 @@ class FlowManager {
 
     /**
      * Carga los datos del proyecto desde el backend
+     * ¡REFACTORIZADO!
      */
     async loadProjectData() {
         if (!this.projectActive) return;
 
         try {
-            console.log('🔄 Cargando datos del proyecto desde el backend...');
-            const response = await fetch('/api/proyectos/datos-proyecto');
-            if (response.ok) {
-                const datosProyecto = await response.json();
-                console.log('📄 Datos del proyecto obtenidos:', datosProyecto);
-                this.processStructuredData(datosProyecto);
-            } else {
-                console.warn('No se pudieron obtener los datos del proyecto');
-            }
+            console.log('🔄 [FlowManager] Cargando datos del proyecto desde la API...');
+
+            const categorias = [
+                'entidadindividual',
+                'entidadcolectiva',
+                'construccion',
+                'zona',
+                'efectos',
+                'interaccion'
+            ];
+
+            const promesas = categorias.map(tipo =>
+                fetch(`/api/bd/${tipo}`)
+                    .then(res => res.ok ? res.json() : Promise.reject(`Error cargando ${tipo}`))
+                    .catch(err => {
+                        console.error(err);
+                        return []; // Devuelve un array vacío si esta categoría falla
+                    })
+            );
+            
+            const [
+                entidadesIndividuales,
+                entidadesColectivas,
+                construcciones,
+                zonas,
+                efectos,
+                interacciones
+            ] = await Promise.all(promesas);
+
+            // Combinar todos los datos
+            const projectData = {
+                entidadindividual: entidadesIndividuales || [],
+                entidadcolectiva: entidadesColectivas || [],
+                construccion: construcciones || [],
+                zona: zonas || [],
+                efectos: efectos || [],
+                interaccion: interacciones || []
+            };
+            
+            console.log('📄 [FlowManager] Datos del proyecto obtenidos (API):', projectData);
+            this.processStructuredData(projectData);
+
         } catch (error) {
-            console.error('Error cargando datos del proyecto:', error);
+            console.error('[FlowManager] Error cargando datos del proyecto:', error);
         }
     }
 
     /**
      * Procesa los datos estructurados del backend
+     * ¡REFACTORIZADO!
      */
-    processStructuredData(datosProyecto) {
-        const { tablas } = datosProyecto;
+    processStructuredData(projectData) {
         
-        // Procesar entidades individuales
-        if (tablas.entidadIndividual) {
-            this.processEntities(tablas.entidadIndividual, 'entidad-individual');
+        // Limpiamos nodos y edges antiguos
+        this.nodes = [];
+        this.edges = [];
+
+        // Procesar entidades y convertirlas en nodos
+        if (projectData.entidadindividual) {
+            this.processEntities(projectData.entidadindividual, 'entidad-individual');
+        }
+        if (projectData.entidadcolectiva) {
+            this.processEntities(projectData.entidadcolectiva, 'entidad-colectiva');
+        }
+        if (projectData.construccion) {
+            this.processEntities(projectData.construccion, 'construccion');
+        }
+        if (projectData.zona) {
+            this.processEntities(projectData.zona, 'zona');
+        }
+        if (projectData.efectos) {
+            this.processEntities(projectData.efectos, 'efecto');
         }
         
-        // Procesar entidades colectivas
-        if (tablas.entidadColectiva) {
-            this.processEntities(tablas.entidadColectiva, 'entidad-colectiva');
+        // Procesar interacciones (como nodos o edges, según tu lógica)
+        if (projectData.interaccion) {
+            // Actualmente tu app trata 'interaccion' (Relaciones) como un nodo
+            this.processEntities(projectData.interaccion, 'relacion'); 
+            // Si 'interaccion' debiera ser un edge (línea), la lógica iría aquí
+            // this.processInteractionsAsEdges(projectData.interaccion);
         }
         
-        // Procesar construcciones
-        if (tablas.construccion) {
-            this.processEntities(tablas.construccion, 'construccion');
-        }
-        
-        // Procesar zonas
-        if (tablas.zona) {
-            this.processEntities(tablas.zona, 'zona');
-        }
-        
-        // Procesar efectos
-        if (tablas.efectos) {
-            this.processEntities(tablas.efectos, 'efecto');
-        }
-        
-        // Procesar interacciones
-        if (tablas.interaccion) {
-            this.processInteractions(tablas.interaccion);
-        }
-        
-        console.log('✅ Datos del proyecto procesados correctamente');
+        console.log('✅ [FlowManager] Datos del proyecto procesados correctamente');
         this.updateFlow();
     }
 
@@ -144,18 +177,21 @@ class FlowManager {
      */
     processEntities(entities, nodeType) {
         entities.forEach((entity, index) => {
-            const nodeId = `${nodeType}-${index}`;
+            // Usar un ID único basado en el tipo y el ID de la BD
+            const nodeId = `${nodeType}-${entity.id}`; 
+            
             const node = {
                 id: nodeId,
                 type: nodeType,
-                position: { x: 100 + (index * 250), y: 100 + (index * 150) },
+                // Asignar posición aleatoria (idealmente, esto se guardaría y cargaría)
+                position: { x: 100 + (index * 50) + (Math.random() * 50), y: 100 + (index * 100) },
                 data: {
                     nombre: entity.nombre || 'Sin nombre',
-                    backendData: entity
+                    backendData: entity // Almacenamos todos los datos de la BD aquí
                 }
             };
             
-            // Verificar si el nodo ya existe
+            // Verificar si el nodo ya existe (aunque acabamos de limpiar, es buena práctica)
             const existingNodeIndex = this.nodes.findIndex(n => n.id === nodeId);
             if (existingNodeIndex !== -1) {
                 this.nodes[existingNodeIndex] = node;
@@ -166,15 +202,17 @@ class FlowManager {
     }
 
     /**
-     * Procesa interacciones y las convierte en conexiones
+     * Procesa interacciones y las convierte en conexiones (EJEMPLO, NO USADO AÚN)
      */
-    processInteractions(interactions) {
+    processInteractionsAsEdges(interactions) {
         interactions.forEach((interaction, index) => {
-            const edgeId = `interaction-${index}`;
+            const edgeId = `interaction-${interaction.id}`;
             const edge = {
                 id: edgeId,
-                source: interaction.source || 'unknown',
-                target: interaction.target || 'unknown',
+                // ¡NECESITARÍAS LÓGICA AQUÍ para saber qué nodos conectar!
+                // Ej. si 'interaccion' tuviera 'nodo_origen_id' y 'nodo_destino_id'
+                source: interaction.source_node_id || 'unknown', 
+                target: interaction.target_node_id || 'unknown',
                 type: 'relacion-linea',
                 data: {
                     nombre: interaction.nombre || 'Interacción',
@@ -184,7 +222,6 @@ class FlowManager {
                 }
             };
             
-            // Verificar si la conexión ya existe
             const existingEdgeIndex = this.edges.findIndex(e => e.id === edgeId);
             if (existingEdgeIndex !== -1) {
                 this.edges[existingEdgeIndex] = edge;
@@ -306,20 +343,6 @@ class FlowManager {
             console.error('Error creando nodo:', error);
             throw error;
         }
-    }
-
-    /**
-     * Mapea nombres de tabla a tipos de nodo (método legacy)
-     */
-    mapTableToNodeType(tableName) {
-        const mapping = {
-            'entidades_individuales': 'entidad-individual',
-            'entidades_colectivas': 'entidad-colectiva',
-            'construcciones': 'construccion',
-            'zonas': 'zona',
-            'efectos': 'efecto'
-        };
-        return mapping[tableName] || 'entidad-individual';
     }
 
     /**

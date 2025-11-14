@@ -4,29 +4,26 @@
 -- gracias a la configuración "spring.jpa.hibernate.ddl-auto=update".
 
 -- Eliminar delimitadores si existen para evitar errores en re-ejecuciones
-DROP FUNCTION IF EXISTS abrirProyecto;
-DROP PROCEDURE IF EXISTS activarNodo;
-DROP PROCEDURE IF EXISTS relacionarPorCaracteristica;
-DROP PROCEDURE IF EXISTS verRelacionados;
+DROP FUNCTION IF EXISTS abrirProyecto //
+DROP PROCEDURE IF EXISTS activarNodo //
+DROP PROCEDURE IF EXISTS relacionarPorCaracteristica //
+DROP PROCEDURE IF EXISTS verRelacionados //
 
 -- Esta función abre el proyecto.
-DELIMITER //
-    CREATE FUNCTION abrirProyecto(nombre VARCHAR(100))
+CREATE FUNCTION abrirProyecto(nombre VARCHAR(100))
     RETURNS BOOLEAN
     DETERMINISTIC
-    BEGIN
-        DECLARE existe BOOLEAN;
+BEGIN
+    DECLARE existe BOOLEAN;
 
-            SELECT COUNT(*) > 0 INTO existe
-            FROM crearProyecto -- Esta tabla la crea Hibernate
-            WHERE nombreProyecto = nombre;
+        SELECT COUNT(*) > 0 INTO existe
+        FROM crearProyecto -- Esta tabla la crea Hibernate
+        WHERE nombreProyecto = nombre;
 
-        RETURN existe;
-    END
-// DELIMITER ;
+    RETURN existe;
+END //
 
 -- Procedimiento para activar un nodo:
-DELIMITER //
 CREATE PROCEDURE activarNodo(
     IN entidadID INT,
     IN tipoEntidad VARCHAR(100),
@@ -53,10 +50,9 @@ BEGIN
     PREPARE stmt FROM @sql;
     EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
-END // DELIMITER ;
+END //
 
 -- Procedimiento para relacionar nodos con la misma característica:
-DELIMITER //
 CREATE PROCEDURE relacionarPorCaracteristica(
     IN caracteristica VARCHAR(100),
     IN tipoRelacion VARCHAR(100)
@@ -93,10 +89,9 @@ BEGIN
     END LOOP;
 
     CLOSE cur1;
-END // DELIMITER ;
+END //
 
 -- Procedimiento para ver nodos relacionados:
-DELIMITER //
 CREATE PROCEDURE verRelacionados(
     IN nodoID INT
 )
@@ -113,4 +108,4 @@ BEGIN
         OR
         (r.nodo_destino_id = nodoID AND n.id = r.nodo_origen_id)
     );
-END // DELIMITER ;
+END //

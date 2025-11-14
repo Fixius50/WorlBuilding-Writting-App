@@ -9,9 +9,7 @@ async function crearProyecto() {
     }
 
     try {
-        // --- ¡CORRECCIÓN AQUÍ! ---
-        // La URL correcta es "/api/proyectos/crear"
-        const response = await fetch("/api/proyectos/crear", {
+        const response = await fetch("/api/proyectos/crear", { // <-- ¡URL CORREGIDA!
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded"
@@ -22,19 +20,22 @@ async function crearProyecto() {
             })
         });
 
+        // El backend ahora responde con JSON, tanto para éxito como para error
         if (!response.ok) {
-            // El backend ahora devuelve un JSON en caso de error, así que lo parseamos
-            const errorData = await response.json();
-            throw new Error(errorData.message || "Error desconocido del servidor");
+            // Si la respuesta es un error (404, 500, 409, etc.)
+            const errorData = await response.json(); // Lee el JSON de error
+            throw new Error(errorData.error || `Error ${response.status}`);
         }
 
-        const mensaje = await response.text();
-        alert(mensaje);
+        // Si la respuesta es OK (200)
+        const data = await response.json(); // Lee el JSON de éxito
+        alert(data.message); // Muestra el mensaje de éxito del backend
 
-        // Redirigir a la ventana de proyectos (esto está bien)
-        window.location.href = `html/ventanaProyectos.html`;
+        // Redirigir a la ventana de proyectos
+        window.location.href = `/html/ventanaProyectos.html`;
 
     } catch (err) {
+        // err.message ahora contendrá el error de JSON.parse O el error del backend
         console.error("Error al crear proyecto:", err);
         alert("Error al crear el proyecto: " + err.message);
     }
@@ -50,22 +51,21 @@ async function abrirProyecto() {
     }
 
     try {
-        // Esta URL está bien porque el controlador tiene un @GetMapping("/{nombre}")
         const response = await fetch(`/api/proyectos/${encodeURIComponent(nombre)}`, {
             method: "GET"
         });
 
+        // El backend ahora responde con JSON
         if (!response.ok) {
-            const errorData = await response.json(); // Asumimos JSON para errores
-            throw new Error(errorData.message || "Proyecto no encontrado");
+            const errorData = await response.json(); // Lee el JSON de error
+            throw new Error(errorData.error || `Error ${response.status}`);
         }
 
-        // El backend devuelve un JSON con {nombre, enfoque} al abrir
-        const proyecto = await response.json();
-        alert(`Proyecto '${proyecto.nombre}' abierto correctamente.`);
+        const data = await response.json(); // Lee el JSON de éxito
+        alert(data.message); // Muestra el mensaje de éxito del backend
 
-        // Redirigir
-        window.location.href = `html/ventanaProyectos.html`;
+        // Redirigir a la ventana de proyectos
+        window.location.href = `/html/ventanaProyectos.html`;
 
     } catch (err) {
         console.error("Error al abrir proyecto:", err);
@@ -94,30 +94,24 @@ function cerrarVentanaAbrir() {
 
 // ===================== AL CARGAR LA PÁGINA =====================
 window.onload = () => {
-    // Inicia con la pestaña "Abrir" visible por defecto
+    // Por defecto, mostrar la ventana de ABRIR
     abrirVentanaAbrir();
-    document.getElementById("crear").style.display = "none";
+    // Ocultar la de crear
+    cerrarVentanaCrear();
 };
 
 // ===================== SALIR =====================
 async function salir() {
-    // No usamos confirm() porque puede ser bloqueado por el navegador
-    // Sería mejor tener un modal de confirmación, pero por ahora:
-    console.log("Intento de salida");
+    // No usar alert() o confirm()
+    console.log("Intentando salir...");
 
     try {
         await fetch("/api/exit", {
             method: "POST"
         });
         
-        // No podemos fiarnos del alert, ya que la app podría cerrarse antes
-        // Mostramos un mensaje de despedida en la página
-        document.body.innerHTML = "<h1>Cerrando la aplicación...</h1>";
-        
-        // Damos tiempo al navegador para que muestre el mensaje antes de que se cierre
-        setTimeout(() => {
-           // (El servidor se está apagando)
-        }, 500);
+        // Ocultar la app y mostrar un mensaje de despedida
+        document.body.innerHTML = "<h1 style='color: white; text-align: center; margin-top: 50px;'>Has salido de la aplicación. Puedes cerrar esta pestaña.</h1>";
 
     } catch (err) {
         console.error("Error al salir:", err);

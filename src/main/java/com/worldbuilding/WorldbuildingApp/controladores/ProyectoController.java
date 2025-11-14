@@ -3,6 +3,8 @@ package com.worldbuilding.WorldbuildingApp.controladores;
 import jakarta.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,12 +14,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+
+import com.worldbuilding.WorldbuildingApp.modelos.Proyecto;
 import com.worldbuilding.WorldbuildingApp.servicios.ProyectoService;
+import com.worldbuilding.interfaces.ProyectoRepository;
 
 /**
- * Esta clase controla el proyecto que se va a usar o crear en la aplicación según una serie de funciones internas definidas. 
- * @see crearProyecto
- * @see abrirProyecto
+ * Esta clase controla el proyecto que se va a usar o crear en la aplicación.
+ * Ahora guarda el proyecto en la Base de Datos Y crea un archivo .sql de log.
  */
 @RestController
 @RequestMapping("/api/proyectos")
@@ -26,135 +30,124 @@ public class ProyectoController {
     @Autowired
     private ProyectoService proyectoService;
 
-    // ADVERTENCIA: Esta ruta funcionará en el IDE, pero fallará al empaquetar en un JAR.
+    @Autowired
+    private ProyectoRepository proyectoRepository;
+
     private final String DATA_FOLDER = "src/main/data";
-    private final String WORLD_BUILDING_SQL = "worldbuilding.sql";
-    public String nombre, enfoque;
 
-
-
+    /**
+     * Crea un nuevo proyecto.
+     * 1. Guarda el proyecto en la base de datos (tabla 'crearProyecto').
+     * 2. Crea un archivo .sql de log en 'src/main/data/'.
+     * 3. Guarda el proyecto en la sesión HTTP.
+     * Devuelve siempre una respuesta JSON.
+     */
     @PostMapping("/crear")
-    public ResponseEntity<?> crearProyecto(@RequestParam String nombre, @RequestParam String enfoque, HttpSession session) {
+    public ResponseEntity<Map<String, String>> crearProyecto(@RequestParam String nombre, @RequestParam String enfoque, HttpSession session) {
+        
+        // 1. Guardar en la Base de Datos
+        try {
+            Proyecto nuevoProyecto = new Proyecto(nombre, enfoque);
+            proyectoRepository.save(nuevoProyecto);
+        
+        } catch (DataIntegrityViolationException e) {
+            // Error si el nombre del proyecto (Primary Key) ya existe
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT) // 409 Conflict
+                    .body(Map.of("error", "El proyecto con el nombre '" + nombre + "' ya existe."));
+        
+        } catch (Exception e) {
+            // Cualquier otro error de base de datos
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error interno al guardar en la BD: " + e.getMessage()));
+        }
+
+        // 2. Crear el archivo .sql de log (como lo hacías antes)
         try {
             Path archivoSQL = Paths.get(DATA_FOLDER, nombre + ".sql");
-            Path worldBuildingSQL = Paths.get(DATA_FOLDER, WORLD_BUILDING_SQL);
+            
             if (Files.exists(archivoSQL)) {
-                return ResponseEntity.status(400).body("El proyecto ya existe");
+                 // Esto no debería pasar si la BD falló primero, pero es un buen control
+                 return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "El archivo .sql de log '" + nombre + ".sql' ya existe."));
             }
-            if (!Files.exists(worldBuildingSQL)) {
-                return ResponseEntity.status(500).body("No se encuentra el archivo worldbuilding.sql");
-            }
-            String nombreSeguro = nombre.replace("'", "''");
-            String enfoqueSeguro = enfoque.replace("'", "''");
+
             StringBuilder contenidoProyecto = new StringBuilder();
             contenidoProyecto.append("-- ===========================================\n");
             contenidoProyecto.append("-- PROYECTO: ").append(nombre).append("\n");
             contenidoProyecto.append("-- ENFOQUE: ").append(enfoque).append("\n");
             contenidoProyecto.append("-- FECHA DE CREACIÓN: ").append(java.time.LocalDateTime.now()).append("\n");
             contenidoProyecto.append("-- ===========================================\n\n");
-            contenidoProyecto.append("-- REFERENCIA A LA BASE DE DATOS GENERAL\n");
-            contenidoProyecto.append("-- Este archivo usa worldbuilding.sql como base\n");
-            contenidoProyecto.append("-- Las tablas y funciones están definidas en worldbuilding.sql\n\n");
+            contenidoProyecto.append("-- Este archivo es un LOG/HISTORIAL de las operaciones del proyecto.\n");
+            contenidoProyecto.append("-- La base de datos 'viva' es MySQL.\n\n");
             contenidoProyecto.append("use worldbuilding;\n\n");
-            contenidoProyecto.append("-- ===========================================\n");
-            contenidoProyecto.append("-- OPERACIONES ESPECÍFICAS DEL PROYECTO: ").append(nombre).append("\n");
-            contenidoProyecto.append("-- ===========================================\n\n");
-            contenidoProyecto.append("-- Crear el proyecto en la base de datos\n");
-            // ¡IMPORTANTE! Tu SQL usa 'crearProyecto'. Tu modelo Java se llama 'Proyecto'.
-            // He modificado el modelo 'Proyecto.java' para que coincida con esta tabla.
-            contenidoProyecto.append("INSERT INTO crearProyecto (nombreProyecto, enfoqueProyecto) VALUES ('")
-                            .append(nombreSeguro).append("', '").append(enfoqueSeguro).append("');\n\n");
-            contenidoProyecto.append("-- ===========================================\n");
-            contenidoProyecto.append("-- AQUÍ SE AGREGARÁN LAS OPERACIONES ESPECÍFICAS DEL PROYECTO\n");
-            contenidoProyecto.append("-- ===========================================\n\n");
+            
             Files.writeString(archivoSQL, contenidoProyecto.toString(), StandardOpenOption.WRITE, StandardOpenOption.CREATE);
-            session.setAttribute("proyectoActivo", nombre);
-            session.setAttribute("enfoqueProyectoActivo", enfoque);
-            return ResponseEntity.ok("Proyecto '" + nombre + "' creado correctamente");
+
         } catch (IOException e) {
-            return ResponseEntity.status(500).body(e.getMessage());
+            // Error si no se puede escribir el archivo .sql
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al crear el archivo .sql de log: " + e.getMessage()));
         }
-    }
 
-
-    @GetMapping("/{nombre}")
-    public ResponseEntity<?> abrirProyecto(@PathVariable String nombre, HttpSession session) {
-        Path archivoSQL = Paths.get(DATA_FOLDER, nombre + ".sql");
-        Map<String, Object> response = new HashMap<>();
+        // 3. Guardar en la sesión y devolver ÉXITO
+        session.setAttribute("proyectoActivo", nombre);
+        session.setAttribute("enfoqueProyectoActivo", enfoque);
         
-        // Log para debugging (Comentado)
-        // System.out.println("Intentando abrir proyecto: " + nombre);
-        // System.out.println("Sesión ID: " + session.getId());
-        // System.out.println("Ruta del archivo: " + archivoSQL.toAbsolutePath());
-
-        if (Files.exists(archivoSQL) && !Files.isDirectory(archivoSQL)) {
-            try {
-                String contenido = Files.readString(archivoSQL);
-                String enfoque = extraerEnfoqueDesdeSQL(contenido);
-                
-                if (enfoque == null) {
-                    response.put("status", "error");
-                    response.put("message", "No se pudo encontrar el enfoque del proyecto en el archivo SQL");
-                    return ResponseEntity.status(500).body(response);
-                }
-
-                // Establecer atributos de sesión
-                session.setAttribute("proyectoActivo", nombre);
-                session.setAttribute("enfoqueProyectoActivo", enfoque);
-                
-                // Log para confirmar que se establecieron los atributos (Comentado)
-                // System.out.println("Proyecto activado en sesión: " + session.getAttribute("proyectoActivo"));
-                // System.out.println("Enfoque establecido en sesión: " + session.getAttribute("enfoqueProyectoActivo"));
-
-                response.put("status", "success");
-                response.put("message", "Proyecto '" + nombre + "' abierto correctamente");
-                response.put("nombre", nombre);
-                response.put("enfoque", enfoque);
-                return ResponseEntity.ok(response);
-                
-            } catch (IOException e) {
-                // System.err.println("Error al leer archivo del proyecto: " + e.getMessage());
-                response.put("status", "error");
-                response.put("message", "Error leyendo el archivo del proyecto: " + e.getMessage());
-                return ResponseEntity.status(500).body(response);
-            }
-        } else {
-            // System.out.println("Proyecto no encontrado en: " + archivoSQL.toAbsolutePath());
-            response.put("status", "error");
-            response.put("message", "Proyecto '" + nombre + "' no encontrado");
-            return ResponseEntity.status(404).body(response);
-        }
+        return ResponseEntity
+                .ok(Map.of("message", "Proyecto '" + nombre + "' creado y guardado en la base de datos."));
     }
 
-    private String extraerEnfoqueDesdeSQL(String contenido) {
-        String[] lineas = contenido.split("\r?\n");
-        for (String linea : lineas) {
-            if (linea.trim().toUpperCase().contains("ENFOQUE")) {
-                return linea.replaceAll("--.*ENFOQUE\s*:\s*", "").trim();
-            }
-        }
-        return null;
+
+    /**
+     * Abre un proyecto existente.
+     * 1. Busca el proyecto en la base de datos.
+     * 2. Si existe, lo guarda en la sesión.
+     * Devuelve siempre una respuesta JSON.
+     */
+    @GetMapping("/{nombre}")
+    public ResponseEntity<Map<String, String>> abrirProyecto(@PathVariable String nombre, HttpSession session) {
+        
+        // 1. Buscar en la Base de Datos
+        return proyectoRepository.findById(nombre)
+            .map(proyecto -> {
+                // 2. Si se encuentra, guardar en sesión y devolver ÉXITO
+                session.setAttribute("proyectoActivo", proyecto.getNombreProyecto());
+                session.setAttribute("enfoqueProyectoActivo", proyecto.getEnfoqueProyecto());
+                
+                return ResponseEntity
+                        .ok(Map.of("message", "Proyecto '" + nombre + "' abierto correctamente."));
+            })
+            .orElse(
+                // 3. Si no se encuentra, devolver ERROR
+                ResponseEntity
+                        .status(HttpStatus.NOT_FOUND) // 404 Not Found
+                        .body(Map.of("error", "El proyecto '" + nombre + "' no existe en la base de datos."))
+            );
     }
 
+    /**
+     * Obtiene el proyecto activo de la sesión.
+     * Devuelve siempre una respuesta JSON.
+     */
     @GetMapping("/activo")
-    public ResponseEntity<?> getProyectoActivo(HttpSession session) {
+    public ResponseEntity<Map<String, String>> getProyectoActivo(HttpSession session) {
         String nombre = (String) session.getAttribute("proyectoActivo");
         String enfoque = (String) session.getAttribute("enfoqueProyectoActivo");
 
-        Map<String, Object> response = new HashMap<>();
-        ResponseEntity<?> entity;
         if (nombre != null && enfoque != null) {
-            response.put("status", "success");
-            response.put("nombre", nombre);
-            response.put("enfoque", enfoque);
-            entity = ResponseEntity.ok(response);
+            // Éxito
+            return ResponseEntity
+                    .ok(Map.of("nombre", nombre, "enfoque", enfoque));
         } else {
-            response.put("status", "error");
-            response.put("message", "No hay proyecto activo");
-            response.put("sessionId", session.getId());
-            entity = ResponseEntity.status(404).body(response);
+            // Error
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "No hay ningún proyecto activo en la sesión."));
         }
-        return entity;
     }
 
     @PostMapping("/agregar-operacion")

@@ -1,50 +1,46 @@
 package com.worldbuilding.WorldbuildingApp.modelos;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 /**
  * Entidad JPA para representar un proyecto.
- * MODIFICADO: Ahora usa 'nombre' como @Id (String) para coincidir con el SQL.
+ * El nombre del proyecto es la Clave Primaria.
  */
 @Entity
-@Table(name = "crearProyecto") // Coincide con tu tabla SQL
+@Table(name = "crearProyecto") // Coincide con tu SQL
 public class Proyecto {
 
     @Id
-    @Column(name = "nombreProyecto", nullable = false, length = 100) // Mapea a la columna SQL
-    private String nombre;
+    @Column(length = 100)
+    private String nombreProyecto;
 
-    @Column(name = "enfoqueProyecto", nullable = false, length = 10) // Mapea a la columna SQL
-    private String enfoque;
+    @Column(nullable = false, length = 50)
+    private String enfoqueProyecto;
 
-    // === Constructores ===
+    // --- Constructores ---
     public Proyecto() {
         // Constructor vacío requerido por JPA
     }
 
     public Proyecto(String nombre, String enfoque) {
-        this.nombre = nombre;
-        this.enfoque = enfoque;
+        this.nombreProyecto = nombre;
+        this.enfoqueProyecto = enfoque;
     }
 
-    // === Getters y Setters ===
-    // Ya no hay ID numérico, el nombre ES el ID.
-    public String getNombre() {
-        return nombre;
+    // --- Getters y Setters ---
+    public String getNombreProyecto() {
+        return nombreProyecto;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setNombreProyecto(String nombreProyecto) {
+        this.nombreProyecto = nombreProyecto;
     }
 
-    public String getEnfoque() {
-        return enfoque;
+    public String getEnfoqueProyecto() {
+        return enfoqueProyecto;
     }
 
-    public void setEnfoque(String enfoque) {
-        this.enfoque = enfoque;
+    public void setEnfoqueProyecto(String enfoqueProyecto) {
+        this.enfoqueProyecto = enfoqueProyecto;
     }
 }
