@@ -74,7 +74,7 @@ function guardarEntidad(datosObjeto, tipo, formularioElement) {
 
     // El fetch es el mismo para todos
     fetch('/api/bd/insertar', {
-        method: "PUT", // Debería ser POST para crear, pero seguimos tu API
+        method: "POST", // ¡ESTA ES LA LÍNEA CORREGIDA!
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datosParaEnviar)
     })
