@@ -15,8 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
  * 1. Navegación entre páginas de la aplicación
  * 2. Configuración de la aplicación
  * 3. Shutdown de la aplicación
- * 
- * Anteriormente dividido en PagesController, ConfigController y ShutdownController
+ * * Anteriormente dividido en PagesController, ConfigController y ShutdownController
  */
 
 @RestController
