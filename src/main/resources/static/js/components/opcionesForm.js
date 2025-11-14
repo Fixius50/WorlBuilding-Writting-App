@@ -1,32 +1,31 @@
 /**
  * Lógica reutilizable para los formularios de creación (html/opciones/*.html)
+ * ¡MODIFICADO! Se elimina el 'DOMContentLoaded' para que funcione al cargarse dinámicamente.
  */
 
-document.addEventListener("DOMContentLoaded", () => {
-    // Esta función se adjuntará a cualquier formulario que tenga el ID 'form-entidad'
-    const formulario = document.getElementById("form-entidad");
-    
-    if (formulario) {
-        formulario.addEventListener("submit", function (e) {
-            e.preventDefault();
-            
-            // 1. Obtener los datos del formulario
-            const formData = new FormData(formulario);
-            const datosObjeto = Object.fromEntries(formData.entries());
-            
-            // 2. Obtener el 'tipo' de entidad desde el atributo data del formulario
-            // (Ej: <form id="form-entidad" data-tipo-entidad="zona">)
-            const tipoEntidad = formulario.dataset.tipoEntidad;
-            if (!tipoEntidad) {
-                alert("Error: El formulario no tiene 'data-tipo-entidad'.");
-                return;
-            }
+// Esta función se adjuntará a cualquier formulario que tenga el ID 'form-entidad'
+const formulario = document.getElementById("form-entidad");
 
-            // 3. Mapear y enviar
-            guardarEntidad(datosObjeto, tipoEntidad, formulario);
-        });
-    }
-});
+if (formulario) {
+    formulario.addEventListener("submit", function (e) {
+        e.preventDefault();
+        
+        // 1. Obtener los datos del formulario
+        const formData = new FormData(formulario);
+        const datosObjeto = Object.fromEntries(formData.entries());
+        
+        // 2. Obtener el 'tipo' de entidad desde el atributo data del formulario
+        const tipoEntidad = formulario.dataset.tipoEntidad;
+        if (!tipoEntidad) {
+            alert("Error: El formulario no tiene 'data-tipo-entidad'.");
+            return;
+        }
+
+        // 3. Mapear y enviar
+        guardarEntidad(datosObjeto, tipoEntidad, formulario);
+    });
+}
+
 
 /**
  * Función centralizada para guardar CUALQUIER entidad.
@@ -74,7 +73,7 @@ function guardarEntidad(datosObjeto, tipo, formularioElement) {
 
     // El fetch es el mismo para todos
     fetch('/api/bd/insertar', {
-        method: "POST", // ¡ESTA ES LA LÍNEA CORREGIDA!
+        method: "POST", // Método correcto
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datosParaEnviar)
     })

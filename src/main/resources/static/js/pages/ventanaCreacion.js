@@ -25,14 +25,31 @@ async function mostrarContenidoRelacionado(nombreArchivoHtml) {
     despliegue.innerHTML = '';
 
     try {
+        // 1. Cargar el HTML del formulario
         const respuesta = await fetch(new URL(nombreArchivoHtml, window.location.href));
-
         if (!respuesta.ok) {
             throw new Error('No se pudo cargar el panel: ' + nombreArchivoHtml);
         }
-
         const contenido = await respuesta.text();
         despliegue.innerHTML = contenido;
+
+        // 2. ¡EL ARREGLO! Cargar el script del formulario dinámicamente
+        
+        // Eliminar cualquier script de formulario anterior para evitar duplicados
+        const scriptViejo = document.getElementById("form-script-dinamico");
+        if (scriptViejo) {
+            scriptViejo.remove();
+        }
+
+        // Crear y añadir el nuevo script al final del <body>
+        const scriptNuevo = document.createElement("script");
+        scriptNuevo.id = "form-script-dinamico";
+        // Usamos una ruta absoluta desde la raíz del sitio
+        scriptNuevo.src = "/js/components/opcionesForm.js"; 
+        scriptNuevo.defer = true; // Asegura que se ejecute después de que el HTML esté en su sitio
+        document.body.appendChild(scriptNuevo);
+
+
     } catch (error) {
         despliegue.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
     }
