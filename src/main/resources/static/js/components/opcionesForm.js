@@ -86,7 +86,8 @@ function guardarEntidad(datosObjeto, tipo, formularioElement) {
         }
     })
     .then(dataGuardada => {
-        alert("Datos guardados correctamente:\n" + `ID: ${dataGuardada.id}, Nombre: ${dataGuardada.nombre}`);
+        alert("Entidad creada correctamente");
+        
         if (formularioElement) {
             formularioElement.reset();
         }
