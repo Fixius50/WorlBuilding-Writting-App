@@ -109,7 +109,7 @@ async function salir() {
         await fetch("/api/exit", {
             method: "POST"
         });
-        
+
         // Ocultar la app y mostrar un mensaje de despedida
         document.body.innerHTML = "<h1 style='color: white; text-align: center; margin-top: 50px;'>Has salido de la aplicación. Puedes cerrar esta pestaña.</h1>";
 
