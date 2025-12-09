@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grafo de Relaciones - WorldbuildingApp V2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/index.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .graph-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .graph-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--spacing-md) var(--spacing-xl);
+            border-bottom: 1px solid var(--color-border);
+            background: var(--color-bg-secondary);
+            z-index: 10;
+        }
+
+        .graph-topbar h1 {
+            margin: 0;
+            font-size: 1.25rem;
+        }
+
+        .graph-canvas {
+            flex: 1;
+            position: relative;
+            background: var(--color-bg-primary);
+        }
+
+        .coming-soon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--color-text-muted);
+        }
+
+        .coming-soon-icon {
+            font-size: 4rem;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .coming-soon h2 {
+            font-size: 2rem;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .coming-soon p {
+            font-size: 1.1rem;
+            max-width: 40rem;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        /* Transición de entrada */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        body {
+            animation: fadeIn 0.3s ease;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="graph-container">
+        <header class="graph-topbar">
+            <button class="btn btn-ghost" onclick="volverDashboard()">
+                ← Volver al Dashboard
+            </button>
+            <h1>🕸️ Grafo de Relaciones</h1>
+            <div class="topbar-actions">
+                <button class="btn btn-secondary" onclick="reorganizarGrafo()" disabled>
+                    🔄 Reorganizar
+                </button>
+            </div>
+        </header>
+
+        <div class="graph-canvas">
+            <div class="coming-soon">
+                <div class="coming-soon-icon">🚧</div>
+                <h2>Visualización de Grafo</h2>
+                <p>
+                    Esta página mostrará un grafo interactivo con todas tus entidades como nodos,
+                    conectados por líneas que representan sus relaciones compartidas.
+                </p>
+                <p style="margin-top: var(--spacing-lg);">
+                    🔜 <strong>Próximamente:</strong> React Flow, nodos arrastrables, tooltips de relaciones y más...
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        // Verificar proyecto activo
+        async function verificarProyecto() {
+            try {
+                const proyecto = await API.proyectos.activo();
+                if (proyecto.error) {
+                    window.location.href = '../index.html';
+                }
+            } catch (error) {
+                window.location.href = '../index.html';
+            }
+        }
+
+        function volverDashboard() {
+            // Transición suave al dashboard
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.3s ease';
+
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 300);
+        }
+
+        function reorganizarGrafo() {
+            // Placeholder para cuando se implemente
+            alert('Funcionalidad en desarrollo');
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', verificarProyecto);
+    </script>
+</body>
+
+</html>

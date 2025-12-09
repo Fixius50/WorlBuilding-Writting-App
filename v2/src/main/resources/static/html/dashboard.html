@@ -113,15 +113,65 @@
         .topbar {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            gap: var(--spacing-lg);
             padding: var(--spacing-md) var(--spacing-xl);
             border-bottom: 1px solid var(--color-border);
             background: var(--color-bg-secondary);
+            flex-wrap: wrap;
         }
 
         .topbar-title {
             font-size: 1.25rem;
             font-weight: 600;
+            min-width: 10rem;
+        }
+
+        .topbar-search {
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: center;
+            flex: 1;
+            max-width: 40rem;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 12rem;
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: var(--color-bg-primary);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            color: var(--color-text-primary);
+            font-size: 0.95rem;
+            transition: all var(--transition-fast);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--color-accent-primary);
+            box-shadow: 0 0 0 0.1875rem rgba(99, 102, 241, 0.2);
+        }
+
+        .search-input::placeholder {
+            color: var(--color-text-muted);
+        }
+
+        .filter-select {
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: var(--color-bg-primary);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            color: var(--color-text-primary);
+            font-size: 0.95rem;
+            min-width: 12rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--color-accent-primary);
+            box-shadow: 0 0 0 0.1875rem rgba(99, 102, 241, 0.2);
         }
 
         .topbar-actions {
@@ -356,7 +406,27 @@
         <main class="main-content">
             <header class="topbar">
                 <h1 class="topbar-title" id="vista-title">Personajes</h1>
+                <div class="topbar-search">
+                    <input type="text" id="search-input" class="search-input" placeholder="🔍 Buscar...">
+
+                    <select id="filter-category" class="filter-select">
+                        <option value="">Todas las categorías</option>
+                        <option value="entidadindividual">👤 Personajes</option>
+                        <option value="entidadcolectiva">👥 Grupos</option>
+                        <option value="zona">🗺️ Zonas</option>
+                        <option value="construccion">🏛️ Construcciones</option>
+                        <option value="efectos">✨ Efectos</option>
+                        <option value="interaccion">🔗 Interacciones</option>
+                    </select>
+
+                    <button class="btn btn-ghost btn-sm" onclick="limpiarFiltros()" title="Limpiar filtros">
+                        ✕
+                    </button>
+                </div>
                 <div class="topbar-actions">
+                    <button class="btn btn-secondary" onclick="abrirGrafo()" title="Ver grafo de relaciones">
+                        🕸️ Grafo
+                    </button>
                     <button class="btn btn-primary" onclick="abrirModalCrear()">
                         ➕ Crear Nuevo
                     </button>
@@ -440,6 +510,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             await verificarProyecto();
             await cargarDatos();
+            setupSearch(); // Inicializar búsqueda y filtros
         });
 
         async function verificarProyecto() {
@@ -533,7 +604,20 @@
             elemento.classList.add('active');
             tipoActual = elemento.dataset.tipo;
             document.getElementById('vista-title').textContent = tiposTitulos[tipoActual];
-            renderizarEntidades();
+
+            // Sincronizar filtro de categoría con vista actual
+            filterCategory = tipoActual;
+            const filterSelect = document.getElementById('filter-category');
+            if (filterSelect) {
+                filterSelect.value = tipoActual;
+            }
+
+            // Si hay búsqueda activa, aplicar filtros
+            if (searchTerm) {
+                aplicarFiltros();
+            } else {
+                renderizarEntidades();
+            }
         }
 
         // === Modal ===
@@ -622,6 +706,131 @@
         async function cerrarProyecto() {
             await API.proyectos.cerrar();
             window.location.href = '../index.html';
+        }
+
+        // === Búsqueda y Filtrado ===
+        let searchTerm = '';
+        let filterCategory = '';
+
+        function setupSearch() {
+            const searchInput = document.getElementById('search-input');
+            const filterSelect = document.getElementById('filter-category');
+
+            searchInput.addEventListener('input', (e) => {
+                searchTerm = e.target.value.toLowerCase();
+                aplicarFiltros();
+            });
+
+            filterSelect.addEventListener('change', (e) => {
+                filterCategory = e.target.value;
+                if (filterCategory && filterCategory !== tipoActual) {
+                    // Cambiar vista si se selecciona una categoría diferente
+                    const navItem = document.querySelector(`.nav-item[data-tipo="${filterCategory}"]`);
+                    if (navItem) {
+                        cambiarVista(navItem);
+                    }
+                }
+                aplicarFiltros();
+            });
+
+            // Sincronizar filtro con vista actual
+            filterSelect.value = tipoActual;
+        }
+
+        function aplicarFiltros() {
+            const mapeo = {
+                'entidadindividual': 'entidadIndividual',
+                'entidadcolectiva': 'entidadColectiva',
+                'zona': 'zona',
+                'construccion': 'construccion',
+                'efectos': 'efectos',
+                'interaccion': 'interaccion'
+            };
+
+            let entidadesFiltradas;
+
+            // Si hay filtro de categoría y es diferente a la vista actual, usar esa categoría
+            if (filterCategory && filterCategory !== tipoActual) {
+                entidadesFiltradas = datosProyecto[mapeo[filterCategory]] || [];
+            } else {
+                entidadesFiltradas = datosProyecto[mapeo[tipoActual]] || [];
+            }
+
+            // Aplicar búsqueda de texto
+            if (searchTerm) {
+                entidadesFiltradas = entidadesFiltradas.filter(e =>
+                    (e.nombre && e.nombre.toLowerCase().includes(searchTerm)) ||
+                    (e.descripcion && e.descripcion.toLowerCase().includes(searchTerm)) ||
+                    (e.tipo && e.tipo.toLowerCase().includes(searchTerm)) ||
+                    (e.apellidos && e.apellidos.toLowerCase().includes(searchTerm))
+                );
+            }
+
+            renderizarEntidadesFiltradas(entidadesFiltradas);
+        }
+
+        function renderizarEntidadesFiltradas(entidades) {
+            const container = document.getElementById('entities-container');
+
+            if (entidades.length === 0) {
+                const mensaje = searchTerm || filterCategory
+                    ? 'No se encontraron resultados'
+                    : `No hay ${tiposTitulos[tipoActual].toLowerCase()}`;
+
+                const sugerencia = searchTerm
+                    ? 'Intenta con otros términos de búsqueda'
+                    : 'Crea el primero haciendo clic en "Crear Nuevo"';
+
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">${searchTerm ? '🔍' : '📭'}</div>
+                        <h3>${mensaje}</h3>
+                        <p>${sugerencia}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Usar la misma renderización que renderizarEntidades
+            container.innerHTML = entidades.map(e => `
+                <div class="entity-card" onclick="editarEntidad(${e.id})">
+                    <div class="entity-card-header">
+                        <div>
+                            <div class="entity-name">${e.nombre || 'Sin nombre'}</div>
+                            <div class="entity-type">${e.tipo || tipoActual}</div>
+                        </div>
+                        ${e.esNodo ? '<span class="badge badge-primary">Nodo</span>' : ''}
+                    </div>
+                    <p class="entity-description">${e.descripcion || 'Sin descripción'}</p>
+                    <div class="entity-card-actions">
+                        <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation(); editarEntidad(${e.id})">
+                            ✏️ Editar
+                        </button>
+                        <button class="btn btn-sm btn-ghost text-error" onclick="event.stopPropagation(); eliminarEntidad(${e.id})">
+                            🗑️ Eliminar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function limpiarFiltros() {
+            searchTerm = '';
+            filterCategory = '';
+            document.getElementById('search-input').value = '';
+            document.getElementById('filter-category').value = tipoActual;
+            renderizarEntidades();
+        }
+
+        // === Navegación al Grafo ===
+        function abrirGrafo() {
+            // Transición suave a la página de grafo
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.3s ease';
+
+            setTimeout(() => {
+                window.location.href = 'graph.html';
+            }, 300);
         }
 
         // === Toast ===
