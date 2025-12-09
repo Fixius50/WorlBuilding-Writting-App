@@ -35,13 +35,6 @@ public class ProyectoController {
 
     private final String DATA_FOLDER = "src/main/data";
 
-    /**
-     * Crea un nuevo proyecto.
-     * 1. Guarda el proyecto en la base de datos (tabla 'crearProyecto').
-     * 2. Crea un archivo .sql de log en 'src/main/data/'.
-     * 3. Guarda el proyecto en la sesión HTTP.
-     * Devuelve siempre una respuesta JSON.
-     */
     @PostMapping("/crear")
     public ResponseEntity<Map<String, String>> crearProyecto(@RequestParam String nombre, @RequestParam String enfoque, HttpSession session) {
         
