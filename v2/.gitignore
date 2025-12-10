@@ -41,7 +41,7 @@ node_modules/
 *.log
 
 ### Data files ###
-data/*.sql
+data/*
 
 ### Environment ###
 .env

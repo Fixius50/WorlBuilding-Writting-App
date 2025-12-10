@@ -193,8 +193,11 @@ public class DynamicDataSourceConfig {
     private void initializeDatabase(HikariDataSource dataSource) {
         String schema = loadResource("/schema.sql");
         if (schema == null || schema.isBlank()) {
+            System.err.println("WARNING: schema.sql no encontrado o vacío!");
             return;
         }
+
+        System.out.println("Inicializando base de datos con schema.sql (" + schema.length() + " chars)");
 
         try (Connection conn = dataSource.getConnection();
                 Statement stmt = conn.createStatement()) {
@@ -204,13 +207,19 @@ public class DynamicDataSourceConfig {
                 if (!trimmed.isEmpty() && !trimmed.startsWith("--")) {
                     try {
                         stmt.execute(trimmed);
+                        System.out.println("  OK: " + trimmed.substring(0, Math.min(50, trimmed.length())) + "...");
                     } catch (SQLException e) {
-                        // Ignorar errores de tablas que ya existen
+                        // Solo ignorar errores de "ya existe"
+                        if (!e.getMessage().contains("already exists")) {
+                            System.err.println("  ERROR SQL: " + e.getMessage());
+                        }
                     }
                 }
             }
+            System.out.println("Base de datos inicializada correctamente");
         } catch (SQLException e) {
             System.err.println("Error initializing database: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

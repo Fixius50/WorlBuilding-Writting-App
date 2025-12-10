@@ -118,7 +118,13 @@ public class BDController {
                     "success", true,
                     "entidad", entidadGuardada));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+            e.printStackTrace(); // Log en consola del servidor
+            String errorMsg = e.getMessage();
+            if (errorMsg == null || errorMsg.isBlank()) {
+                errorMsg = e.getClass().getName() + " - "
+                        + (e.getCause() != null ? e.getCause().getMessage() : "Sin mensaje");
+            }
+            return ResponseEntity.status(500).body(Map.of("error", errorMsg));
         }
     }
 
