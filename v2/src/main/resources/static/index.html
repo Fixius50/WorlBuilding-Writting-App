@@ -261,6 +261,25 @@
 
     <script src="js/api.js"></script>
     <script>
+        // === Estado de carga ===
+        let isLoading = false;
+
+        function setLoading(loading, buttonId = null) {
+            isLoading = loading;
+            if (buttonId) {
+                const btn = document.getElementById(buttonId);
+                if (btn) {
+                    btn.disabled = loading;
+                    btn.innerHTML = loading 
+                        ? '<span class="loader" style="width:16px;height:16px;border-width:2px;margin-right:8px;"></span> Cargando...'
+                        : btn.dataset.originalText;
+                    if (!loading) {
+                        btn.dataset.originalText = btn.innerHTML;
+                    }
+                }
+            }
+        }
+
         // === Modales ===
         function openModal(tipo) {
             document.getElementById(`modal-${tipo}`).classList.add('active');
@@ -276,7 +295,7 @@
         }
 
         function closeModalOnOverlay(event, tipo) {
-            if (event.target.classList.contains('modal-overlay')) {
+            if (event.target.classList.contains('modal-overlay') && !isLoading) {
                 closeModal(tipo);
             }
         }
@@ -295,40 +314,75 @@
         // === Proyectos ===
         async function crearProyecto(event) {
             event.preventDefault();
-            const nombre = document.getElementById('crear-nombre').value;
+            const nombre = document.getElementById('crear-nombre').value.trim();
             const tipo = document.getElementById('crear-tipo').value;
+            const btnCrear = event.target.querySelector('button[type="submit"]');
+
+            if (!nombre) {
+                showToast('Por favor ingresa un nombre', 'error');
+                return;
+            }
+
+            // Mostrar loading
+            btnCrear.disabled = true;
+            btnCrear.innerHTML = '<span class="loader" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:8px;"></span> Creando...';
 
             try {
                 const result = await API.proyectos.crear(nombre, tipo);
+                console.log('Resultado crear:', result);
+                
                 if (result.success) {
-                    showToast('¡Proyecto creado exitosamente!');
-                    closeModal('crear');
-                    // Redirigir al dashboard
-                    window.location.href = 'html/dashboard.html';
+                    showToast('¡Proyecto creado! Redirigiendo...');
+                    // Pequeña pausa para que el usuario vea el mensaje
+                    setTimeout(() => {
+                        window.location.href = 'html/dashboard.html';
+                    }, 500);
                 } else {
                     showToast(result.error || 'Error al crear proyecto', 'error');
+                    btnCrear.disabled = false;
+                    btnCrear.innerHTML = 'Crear';
                 }
             } catch (error) {
+                console.error('Error:', error);
                 showToast('Error de conexión', 'error');
-                console.error(error);
+                btnCrear.disabled = false;
+                btnCrear.innerHTML = 'Crear';
             }
         }
 
         async function abrirProyecto(event) {
             event.preventDefault();
-            const nombre = document.getElementById('abrir-nombre').value;
+            const nombre = document.getElementById('abrir-nombre').value.trim();
+            const btnAbrir = event.target.querySelector('button[type="submit"]');
+
+            if (!nombre) {
+                showToast('Por favor ingresa un nombre', 'error');
+                return;
+            }
+
+            // Mostrar loading
+            btnAbrir.disabled = true;
+            btnAbrir.innerHTML = '<span class="loader" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:8px;"></span> Abriendo...';
 
             try {
                 const result = await API.proyectos.abrir(nombre);
+                console.log('Resultado abrir:', result);
+                
                 if (result.success) {
-                    showToast('Proyecto abierto');
-                    window.location.href = 'html/dashboard.html';
+                    showToast('Proyecto abierto! Redirigiendo...');
+                    setTimeout(() => {
+                        window.location.href = 'html/dashboard.html';
+                    }, 500);
                 } else {
                     showToast(result.error || 'Proyecto no encontrado', 'error');
+                    btnAbrir.disabled = false;
+                    btnAbrir.innerHTML = 'Abrir';
                 }
             } catch (error) {
+                console.error('Error:', error);
                 showToast('Error de conexión', 'error');
-                console.error(error);
+                btnAbrir.disabled = false;
+                btnAbrir.innerHTML = 'Abrir';
             }
         }
 
@@ -338,7 +392,7 @@
                 const container = document.getElementById('lista-proyectos');
                 const wrapper = document.getElementById('proyectos-recientes');
                 
-                if (proyectos.length > 0) {
+                if (proyectos && proyectos.length > 0) {
                     wrapper.classList.remove('hidden');
                     container.innerHTML = proyectos.slice(0, 5).map(p => `
                         <button type="button" class="btn btn-sm btn-ghost" 
@@ -346,6 +400,8 @@
                             ${p.nombreProyecto}
                         </button>
                     `).join('');
+                } else {
+                    wrapper.classList.add('hidden');
                 }
             } catch (error) {
                 console.error('No se pudieron cargar los proyectos:', error);
@@ -358,7 +414,7 @@
 
         // ESC para cerrar modales
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
+            if (e.key === 'Escape' && !isLoading) {
                 document.querySelectorAll('.modal-overlay.active').forEach(modal => {
                     modal.classList.remove('active');
                 });

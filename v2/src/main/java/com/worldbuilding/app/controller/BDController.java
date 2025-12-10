@@ -1,5 +1,6 @@
 package com.worldbuilding.app.controller;
 
+import com.worldbuilding.app.config.DynamicDataSourceConfig;
 import com.worldbuilding.app.model.*;
 import com.worldbuilding.app.model.dto.DatosTablaDTO;
 import com.worldbuilding.app.repository.*;
@@ -40,12 +41,35 @@ public class BDController {
     private RelacionRepository relacionRepo;
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private DynamicDataSourceConfig dataSourceConfig;
+
+    /**
+     * Obtiene el nombre del proyecto activo de ThreadLocal o sesión
+     */
+    private String getProyectoActivo(HttpSession session) {
+        // Primero intentar ThreadLocal (configurado por el Interceptor)
+        String proyecto = DynamicDataSourceConfig.getCurrentProject();
+        if (proyecto != null && !proyecto.isBlank() && !"default".equals(proyecto)) {
+            return proyecto;
+        }
+        // Si no, intentar la sesión HTTP
+        if (session != null) {
+            proyecto = (String) session.getAttribute(PROYECTO_ACTIVO);
+            if (proyecto != null && !proyecto.isBlank()) {
+                // Sincronizar con el DataSource
+                dataSourceConfig.switchToProject(proyecto);
+                return proyecto;
+            }
+        }
+        return null;
+    }
 
     // ==================== INSERTAR ====================
 
     @PutMapping("/insertar")
     public ResponseEntity<?> insertar(@RequestBody DatosTablaDTO dto, HttpSession session) {
-        String nombreProyecto = (String) session.getAttribute(PROYECTO_ACTIVO);
+        String nombreProyecto = getProyectoActivo(session);
         if (nombreProyecto == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "No hay proyecto activo"));
         }
@@ -102,7 +126,7 @@ public class BDController {
 
     @PatchMapping("/modificar")
     public ResponseEntity<?> modificar(@RequestBody DatosTablaDTO dto, HttpSession session) {
-        String nombreProyecto = (String) session.getAttribute(PROYECTO_ACTIVO);
+        String nombreProyecto = getProyectoActivo(session);
         if (nombreProyecto == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "No hay proyecto activo"));
         }
@@ -166,19 +190,16 @@ public class BDController {
 
     @GetMapping("/{tipo}")
     public ResponseEntity<?> listarPorTipo(@PathVariable String tipo, HttpSession session) {
-        String nombreProyecto = (String) session.getAttribute(PROYECTO_ACTIVO);
-        if (nombreProyecto == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "No hay proyecto activo"));
-        }
-
+        // Con H2 por proyecto, toda la BD es del proyecto activo
+        // Ya no necesitamos filtrar por nombreProyecto
         try {
             List<?> resultados = switch (tipo.toLowerCase()) {
-                case "entidadindividual" -> entidadIndRepo.findByNombreProyecto(nombreProyecto);
-                case "entidadcolectiva" -> entidadColRepo.findByNombreProyecto(nombreProyecto);
-                case "zona" -> zonaRepo.findByNombreProyecto(nombreProyecto);
-                case "construccion" -> construccionRepo.findByNombreProyecto(nombreProyecto);
-                case "efectos" -> efectosRepo.findByNombreProyecto(nombreProyecto);
-                case "interaccion" -> interaccionRepo.findByNombreProyecto(nombreProyecto);
+                case "entidadindividual" -> entidadIndRepo.findAll();
+                case "entidadcolectiva" -> entidadColRepo.findAll();
+                case "zona" -> zonaRepo.findAll();
+                case "construccion" -> construccionRepo.findAll();
+                case "efectos" -> efectosRepo.findAll();
+                case "interaccion" -> interaccionRepo.findAll();
                 case "nodo" -> nodoRepo.findAll();
                 case "relacion" -> relacionRepo.findAll();
                 default -> throw new IllegalArgumentException("Tipo no soportado: " + tipo);
@@ -252,8 +273,11 @@ public class BDController {
                 return ResponseEntity.badRequest().body(Map.of("error", "entidadId y tipoEntidad son requeridos"));
             }
 
-            // Llamar al procedimiento almacenado
-            jdbcTemplate.update("CALL activarNodo(?, ?, ?)", entidadId, tipoEntidad, caracteristica);
+            // En H2, usamos la función Java registrada como ALIAS
+            // Llamamos directamente desde Java en lugar de usar CALL
+            com.worldbuilding.app.h2.H2Functions.activarNodo(
+                    jdbcTemplate.getDataSource().getConnection(),
+                    entidadId, tipoEntidad, caracteristica);
 
             return ResponseEntity.ok(Map.of("success", true, "mensaje", "Nodo activado"));
         } catch (Exception e) {
@@ -265,7 +289,7 @@ public class BDController {
 
     @GetMapping("/proyecto-activo")
     public ResponseEntity<?> obtenerProyectoActivo(HttpSession session) {
-        String nombreProyecto = (String) session.getAttribute(PROYECTO_ACTIVO);
+        String nombreProyecto = getProyectoActivo(session);
         if (nombreProyecto == null) {
             return ResponseEntity.status(404).body(Map.of("error", "No hay proyecto activo"));
         }

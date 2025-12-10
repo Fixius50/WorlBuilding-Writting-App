@@ -1,16 +1,19 @@
 package com.worldbuilding.app.controller;
 
-import com.worldbuilding.app.model.Proyecto;
-import com.worldbuilding.app.service.ProyectoService;
+import com.worldbuilding.app.config.DynamicDataSourceConfig;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
+/**
+ * Controlador de proyectos con gestión de BD H2 dinámica.
+ * Cada proyecto tiene su propia BD en un archivo .mv.db separado.
+ */
 @RestController
 @RequestMapping("/api/proyectos")
 public class ProyectoController {
@@ -18,10 +21,10 @@ public class ProyectoController {
     private static final String PROYECTO_ACTIVO = "proyectoActivo";
 
     @Autowired
-    private ProyectoService proyectoService;
+    private DynamicDataSourceConfig dataSourceConfig;
 
     /**
-     * Crea un nuevo proyecto y lo guarda en sesión
+     * Crea un nuevo proyecto con su propia BD H2
      */
     @PostMapping("/crear")
     public ResponseEntity<?> crearProyecto(@RequestBody Map<String, String> body, HttpSession session) {
@@ -32,36 +35,48 @@ public class ProyectoController {
             return ResponseEntity.badRequest().body(Map.of("error", "El nombre del proyecto es requerido"));
         }
 
-        if (proyectoService.existe(nombre)) {
+        // Sanitizar nombre (solo alfanuméricos y guiones)
+        String nombreSanitizado = nombre.replaceAll("[^a-zA-Z0-9_-]", "_");
+
+        if (dataSourceConfig.existsProject(nombreSanitizado)) {
             return ResponseEntity.badRequest().body(Map.of("error", "Ya existe un proyecto con ese nombre"));
         }
 
-        Proyecto proyecto = proyectoService.crear(nombre, tipo);
-        session.setAttribute(PROYECTO_ACTIVO, proyecto.getNombreProyecto());
+        try {
+            // Cambiar al DataSource del nuevo proyecto (se crea automáticamente)
+            dataSourceConfig.switchToProject(nombreSanitizado);
 
-        return ResponseEntity.ok(Map.of(
-                "success", true,
-                "mensaje", "Proyecto creado exitosamente",
-                "proyecto", proyecto));
+            // Guardar en sesión
+            session.setAttribute(PROYECTO_ACTIVO, nombreSanitizado);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "mensaje", "Proyecto creado exitosamente",
+                    "nombreProyecto", nombreSanitizado,
+                    "tipo", tipo != null ? tipo : "general"));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Error creando proyecto: " + e.getMessage()));
+        }
     }
 
     /**
-     * Abre un proyecto existente y lo guarda en sesión
+     * Abre un proyecto existente
      */
     @GetMapping("/{nombre}")
     public ResponseEntity<?> abrirProyecto(@PathVariable String nombre, HttpSession session) {
-        Optional<Proyecto> proyectoOpt = proyectoService.buscarPorNombre(nombre);
+        String nombreSanitizado = nombre.replaceAll("[^a-zA-Z0-9_-]", "_");
 
-        if (proyectoOpt.isEmpty()) {
+        if (!dataSourceConfig.existsProject(nombreSanitizado)) {
             return ResponseEntity.status(404).body(Map.of("error", "Proyecto no encontrado"));
         }
 
-        Proyecto proyecto = proyectoOpt.get();
-        session.setAttribute(PROYECTO_ACTIVO, proyecto.getNombreProyecto());
+        // Cambiar al DataSource del proyecto
+        dataSourceConfig.switchToProject(nombreSanitizado);
+        session.setAttribute(PROYECTO_ACTIVO, nombreSanitizado);
 
         return ResponseEntity.ok(Map.of(
                 "success", true,
-                "proyecto", proyecto));
+                "nombreProyecto", nombreSanitizado));
     }
 
     /**
@@ -71,25 +86,31 @@ public class ProyectoController {
     public ResponseEntity<?> obtenerProyectoActivo(HttpSession session) {
         String nombreProyecto = (String) session.getAttribute(PROYECTO_ACTIVO);
 
-        if (nombreProyecto == null) {
+        if (nombreProyecto == null || nombreProyecto.equals("default")) {
             return ResponseEntity.status(404).body(Map.of("error", "No hay proyecto activo"));
         }
 
-        Optional<Proyecto> proyectoOpt = proyectoService.buscarPorNombre(nombreProyecto);
-        if (proyectoOpt.isEmpty()) {
-            session.removeAttribute(PROYECTO_ACTIVO);
-            return ResponseEntity.status(404).body(Map.of("error", "Proyecto no encontrado"));
-        }
+        // Asegurar que estamos conectados a la BD correcta
+        dataSourceConfig.switchToProject(nombreProyecto);
 
-        return ResponseEntity.ok(proyectoOpt.get());
+        return ResponseEntity.ok(Map.of(
+                "nombreProyecto", nombreProyecto,
+                "activo", true));
     }
 
     /**
-     * Lista todos los proyectos
+     * Lista todos los proyectos disponibles (archivos .mv.db)
      */
     @GetMapping
-    public ResponseEntity<List<Proyecto>> listarProyectos() {
-        return ResponseEntity.ok(proyectoService.listarTodos());
+    public ResponseEntity<?> listarProyectos() {
+        try {
+            List<String> proyectos = dataSourceConfig.listProjects();
+            return ResponseEntity.ok(proyectos.stream()
+                    .map(p -> Map.of("nombreProyecto", p))
+                    .toList());
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Error listando proyectos"));
+        }
     }
 
     /**
@@ -98,6 +119,32 @@ public class ProyectoController {
     @PostMapping("/cerrar")
     public ResponseEntity<?> cerrarProyecto(HttpSession session) {
         session.removeAttribute(PROYECTO_ACTIVO);
+        dataSourceConfig.switchToProject("default");
         return ResponseEntity.ok(Map.of("success", true, "mensaje", "Proyecto cerrado"));
+    }
+
+    /**
+     * Elimina un proyecto (borra su archivo .mv.db)
+     */
+    @DeleteMapping("/{nombre}")
+    public ResponseEntity<?> eliminarProyecto(@PathVariable String nombre, HttpSession session) {
+        String nombreSanitizado = nombre.replaceAll("[^a-zA-Z0-9_-]", "_");
+
+        if (!dataSourceConfig.existsProject(nombreSanitizado)) {
+            return ResponseEntity.status(404).body(Map.of("error", "Proyecto no encontrado"));
+        }
+
+        try {
+            // Si es el proyecto activo, cerrarlo primero
+            String activo = (String) session.getAttribute(PROYECTO_ACTIVO);
+            if (nombreSanitizado.equals(activo)) {
+                session.removeAttribute(PROYECTO_ACTIVO);
+            }
+
+            dataSourceConfig.deleteProject(nombreSanitizado);
+            return ResponseEntity.ok(Map.of("success", true, "mensaje", "Proyecto eliminado"));
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Error eliminando proyecto: " + e.getMessage()));
+        }
     }
 }
