@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entidad Colectiva Node</title>
+    <link rel="stylesheet" href="../../css/Nodos/NodeStyle.css">
+</head>
+<body>
+    <button type="button" class="despliegue-datos" data-node-id="${node.id}" onclick="toggleNodeExpansion(this)">
+        <article class="node-compact">
+            <section class="node-image">
+                <img src="../../../Otros/imagenes/mage.png"></img>
+            </section>
+            <section class="node-name">
+                <b class="node-type">Entidad Colectiva</b>
+                <h2 class="node-name">${nodeData.nombre || 'Sin nombre'}</h2>
+            </section>
+        </article>
+        <article class="node-expanded">
+            <section>
+                <b class="node-b">Alias:</b>
+                <i class="node-value">${nodeData.alias || 'N/A'}</i>
+            </section>
+            <section>
+                <b class="node-b">Estado:</b>
+                <i class="node-value">${nodeData.estado || 'N/A'}</i>
+            </section>
+            <section>
+                <b class="node-b">Tipo:</b>
+                <i class="node-value">${nodeData.tipo || 'N/A'}</i>
+            </section>
+            <section>
+                <b class="node-b">Origen:</b>
+                <i class="node-value">${nodeData.origen || 'N/A'}</i>
+            </section>
+            <section>
+                <b class="node-b">Comportamiento:</b>
+                <i class="node-value">${nodeData.comportamiento || 'N/A'}</i>
+            </section>
+            <section class="description">
+                <b class="node-b">Descripción:</b>
+                <p class="node-description">${nodeData.descripcion || 'Sin descripción'}</p>
+            </section>
+        </article>
+        <article class="node-footer">
+            <section class="node-connections">
+                <b class="connection-count">Conexiones: ${this.getConnectionCount(node.id)}</b>
+            </section>
+        </article>
+    </button>
+</body>
+<script src="../js/components/nodeTemplate.js"></script>
+</html>

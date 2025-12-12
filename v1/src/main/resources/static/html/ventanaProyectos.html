@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/ventanaProyectos.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Ventana Proyectos</title>
+</head>
+<body>
+    <div class="panel0">
+        <div class="top">
+            <div class="menu-desplegable">   
+                <b>MENÚ</b>
+                <div class="content">
+                    <button class="option" id="bt1" onclick="abrirVentanaCreacion()">Generar objetos</button>
+                    <button class="option" id="bt1" onclick="abrirVentanaAjustes()">Ajustes proyecto</button>
+                    <button class="option" id="bt1" onclick="abrirVentanaMenuInicial()">Página inicial </button>
+                </div>
+                <b class="simbolo">&dArr;</b>
+            </div>
+            <div class="infoTop">
+                <header class="header-top"><b id="nombre-proyecto" oninput="mostarInfoProyecto()"></b>
+                </header>
+                
+                <nav class="navTop">
+                    <header class="construccion">Construcción</header>
+                    <header class="estado">Estado</header>
+                    <header class="nv">Eliminar</header>
+                    <header class="nv">Acciones</header>
+                    <header class="nv">Decisiones</header>
+                </nav>
+            </div>
+        </div>
+        <div class="area-central">
+            <section class="objects">
+                <div class="objects-container">
+                    <div class="object-category">
+                        <div class="category-header">
+                            <span class="category-icon">👤</span>
+                            <span class="category-name">Personajes</span>
+                            <span class="category-count" id="count-entidades-individuales">0</span>
+                        </div>
+                        <div class="object-list" id="list-entidades-individuales">
+                            </div>
+                    </div>
+                    
+                    <div class="object-category">
+                        <div class="category-header">
+                            <span class="category-icon">🏛️</span>
+                            <span class="category-name">Organizaciones</span>
+                            <span class="category-count" id="count-entidades-colectivas">0</span>
+                        </div>
+                        <div class="object-list" id="list-entidades-colectivas">
+                            </div>
+                    </div>
+                    
+                    <div class="object-category">
+                        <div class="category-header">
+                            <span class="category-icon">🏰</span>
+                            <span class="category-name">Construcciones</span>
+                            <span class="category-count" id="count-construcciones">0</span>
+                        </div>
+                        <div class="object-list" id="list-construcciones">
+                            </div>
+                    </div>
+                    
+                    <div class="object-category">
+                        <div class="category-header">
+                            <span class="category-icon">🗺️</span>
+                            <span class="category-name">Zonas</span>
+                            <span class="category-count" id="count-zonas">0</span>
+                        </div>
+                        <div class="object-list" id="list-zonas">
+                            </div>
+                    </div>
+                    
+                    <div class="object-category">
+                        <div class="category-header">
+                            <span class="category-icon">✨</span>
+                            <span class="category-name">Efectos</span>
+                            <span class="category-count" id="count-efectos">0</span>
+                        </div>
+                        <div class="object-list" id="list-efectos">
+                            </div>
+                    </div>
+                </div>
+                <div class="map-info">
+                    <p><strong>Controles:</strong></p>
+                    <ul>
+                        <li><strong>Mouse:</strong> Arrastrar para mover, rueda para zoom</li>
+                        <li><strong>Teclado:</strong> Flechas para mover, +/- para zoom, 0 para reset</li>
+                    </ul>
+                </div>
+                <div class="map-header">
+                    <div class="map-controls">
+                        <button class="map-btn" onclick="resetMapView()" title="Resetear vista">
+                            <i class="fas fa-home"></i>
+                        </button>
+                        <button class="map-btn" onclick="zoomInMap()" title="Zoom +">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                        <button class="map-btn" onclick="zoomOutMap()" title="Zoom -">
+                            <i class="fas fa-search-minus"></i>
+                        </button>
+                        <button class="map-btn" onclick="toggleCoordinates()" title="Mostrar/Ocultar coordenadas">
+                            <i class="fas fa-crosshairs"></i>
+                        </button>
+                    </div>
+                </div>
+                <button class="reload-btn" onclick="reloadProjectData()" title="Recargar datos">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </section>
+            <section class="ground">
+                <div class="map-container">
+                    <div id="infinite-map-container" class="map-area">
+                        </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</body>
+
+<script src="../js/lib/InfiniteMap.js"></script>
+<script src="../js/lib/ProjectDataLoader.js"></script>
+<script src="../js/pages/ventanaProyectos.js"></script>
+
+</html>

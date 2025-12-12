@@ -1,0 +1,192 @@
+* {
+    box-sizing: content-box;
+}
+
+body {
+    background-image: url(../Otros/imagenes/Fondo-Tierra-Menu-Inicial.jpg);
+    background-repeat: repeat;
+    background-size: cover;
+    /*Cambia totalmente de "cover" a "contain"*/
+    background-position: center;
+}
+
+.plantilla-0 {
+    border: 1px solid white;
+    position: absolute;
+    width: 99%;
+    height: 98%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.panel1 {
+    position: relative;
+    opacity: 0.5;
+    width: 50vh;
+    height: 50vh;
+    display: flex;
+    flex-direction: row;
+    background-image: url('../Otros/imagenes/sword-fantasy-sword.gif');
+    background-size: cover;
+    background-position: center;
+}
+
+.panel1:hover {
+    opacity: 1;
+}
+
+header {
+    grid-area: header;
+    text-align: center;
+    background-image: url('../Otros/imagenes/sword-fantasy-sword.gif');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    width: 25%;
+
+}
+
+header .button0 {
+    width: 100%;
+    cursor: pointer;
+    border: none;
+    background-image: url('../Otros/imagenes/ornamental-frame.jpg');
+    background-size: cover;
+    background-position: center;
+}
+
+.contenido {
+    margin-left: 0.5%;
+    width: 100%;
+    background-image: url('../Otros/imagenes/wooden-plank-texture-wall.jpg');
+    background-size: contain;
+    background-position: center;
+    background-repeat: repeat;
+    display: flex;
+    flex-direction: column;
+}
+
+.contenido nav {
+    margin-top: 1%;
+    width: auto;
+    height: 20%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+nav .button {
+    background-image: url('../Otros/imagenes/ornamental-frame.jpg');
+    background-size: cover;
+    background-position: center;
+
+}
+
+button:hover {
+    background-color: blueviolet;
+    color: burlywood;
+}
+
+button {
+    border: none;
+    width: auto;
+    height: auto;
+    cursor: pointer;
+}
+
+.sec {
+    margin: 1%;
+    width: auto;
+    height: auto;
+    margin-top: 10%;
+}
+
+form * {
+    border: inherit;
+}
+
+.abrir {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.abrir aside {
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#abrir form {
+    width: 100%;
+    height: auto;
+}
+
+#abrir label {
+    color: white;
+    font-size: 1.2em;
+}
+
+#abrir input {
+    width: 100%;
+    height: 2em;
+}
+
+.buttonNew {
+    margin-top: 1%;
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.crear {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#crear {
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#crear div {
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.c1,
+.c2 {
+    margin: 1%;
+}
+
+.c1 label,
+.c2 label {
+    color: white;
+    font-size: 1.2em;
+}
+
+.c1 input,
+.c2 select {
+    width: 100%;
+    height: 2em;
+}

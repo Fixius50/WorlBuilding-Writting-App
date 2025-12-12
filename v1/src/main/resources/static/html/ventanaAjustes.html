@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventana Ajustes</title>
+</head>
+<style>
+    * {
+        box-sizing: border-box;
+    }
+    .cuerpo{
+        border: 1px solid rgb(29, 41, 201);
+        background-color: aqua;
+        width: 99vw;
+        height: 99vh;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        grid-template-rows: 100%;
+    }
+    .panel {
+        border: 1px solid black;
+        background-color: red;
+        /*Lo de arriba borrar al acabar*/
+        flex-grow: 1;
+        height: 98%;
+        display: flex;
+        flex-direction: row;
+        /* Distribuye el espacio entre los elementos */
+        flex-wrap: wrap;
+        margin: 1%;
+    }
+    .panelButton {
+        border: 1px solid black;
+        background-color: aqua;
+        width: 10%;
+        height: 10%;
+        margin: 1%;
+        cursor: pointer;
+        /* Más adelante meterle animación */
+    }
+    .panelButton:hover{
+        width: 15%;
+        height: 15%;
+        font-size: larger;
+    }
+
+    .panelButton, .panelButton:hover{
+        transition: width 1s ease-in-out, height 1s ease-in-out, font-size 1s ease-in-out;
+    }
+
+    .guardar{
+        width: 9%;
+        margin: 1%;
+        text-align: center;
+    }
+
+    .sec1, .sec2{
+        /*Tamaño del recuadro*/
+        width: 80%;
+        height: 85%;
+        position: relative;
+    }
+    
+</style>
+<body>
+    <section class="cuerpo">
+        <section class="panel">
+            <!-- De aquí sería solo meter el hover y ya. Loes elementos repetidos se  posicionan solos -->
+            <button class="panelButton" popovertarget="panel1" type="button">
+                <a>Aplicación</a>
+            </button> 
+            <button class="panelButton" popovertarget="panel2" type="button">
+                <a>Proyecto</a>
+            </button>
+            <button class="panelButton" popovertarget="panel3" type="button">
+                <a>Customización</a>
+            </button>
+        </section>
+        <div class="guardar">
+            <h1>SELECCIONA UNA OPCIÓN</h1>
+            <button class="guardarBoton" type="button">Guardar y aplicar cambios</button>
+        </div>
+        <section popover id="panel1" class="sec1" >
+            <button type="button" popovertarget="panel1" popovertargetaction="hide">Cerrar ventana</button>
+            <fieldset>
+                <legend><h1>Ajustes generales de la aplicación</h1></legend>
+                <label for="section1">Ajuste 1</label>
+                <input type="text" name="opcion1" id="a1">
+            </fieldset>
+            <fieldset>
+                <legend><h1>Ajustes al iniciar la aplicación</h1></legend>
+                <label for="section1">Inicio automático de sesión:</label>
+                <label for="SI">SI</label>
+                <input type="radio" value="SI" name="opt">
+                <label for="NO">NO</label>
+                <input type="radio" value="NO" name="opt">
+            </fieldset>
+            <fieldset>
+                <legend><h1>Ajustes de apariencia</h1></legend>
+                <label for="section1">Tamaño de la fuente:</label>
+                <b>16px</b>
+                <input type="range" name="range" id="">
+                <b>32px</b>
+            </fieldset>
+        </section>
+        <section popover id="cuerpo2" class="sec2" >
+            <button type="button" popovertarget="panel2" popovertargetaction="hide">Cerrar ventana</button>
+            <fieldset>
+                <legend><h1>Ajustes generales del proyecto</h1></legend>
+                <label for="section1">Eliminar proyecto:</label>
+                <label for="SI">SI</label>
+                <input type="radio" value="SI" name="opt">
+                <label for="NO">NO</label>
+                <input type="radio" value="NO" name="opt">
+            </fieldset>
+        </section>
+    </section>
+</body>
+<script>
+    document.addEventListener('DOMContentLoaded', function (){
+        let botonGuardarYAplicar = document.getElementsByClassName('guardarBoton');
+        // Sería hacer un array por cada panel para guardar los datos ahí
+        // Luego al hacer click a guardar, primero se envía a la base de datos general
+        // Luego se devuelve a la pagina Proyectos
+    });
+
+    let dataFolder = null;
+
+    fetch('/api/config')
+        .then(res => res.json())
+        .then(config => {
+            dataFolder = config.dataFolder;
+            // Ahora puedes usar dataFolder en tu JS
+            console.log("Ruta dataFolder:", dataFolder);
+        });
+</script>
+</html>

@@ -1,0 +1,191 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Chronos Atlas Dark Theme - Premium IDE Colors */
+  --background: 222 47% 5%;
+  --foreground: 210 40% 98%;
+  
+  --card: 222 47% 8%;
+  --card-foreground: 210 40% 98%;
+  
+  --primary: 217 91% 60%;
+  --primary-foreground: 222 47% 5%;
+  
+  --secondary: 217 33% 17%;
+  --secondary-foreground: 210 40% 98%;
+  
+  --muted: 217 33% 12%;
+  --muted-foreground: 215 20% 50%;
+  
+  --accent: 262 83% 58%;
+  --accent-foreground: 210 40% 98%;
+  
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+  
+  --border: 217 33% 17%;
+  --input: 217 33% 17%;
+  --ring: 217 91% 60%;
+  
+  /* Neon glow for divergence indicator */
+  --neon-glow: 180 100% 50%;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar styling for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--secondary));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary));
+}
+
+/* MapLibre overrides */
+.maplibregl-map {
+  font-family: inherit;
+}
+
+.maplibregl-ctrl-group {
+  background: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+.maplibregl-ctrl-group button {
+  background-color: transparent !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Divergence neon glow effect */
+.divergent-glow {
+  box-shadow: 
+    0 0 5px hsl(var(--neon-glow)),
+    0 0 10px hsl(var(--neon-glow)),
+    0 0 15px hsl(var(--neon-glow)),
+    inset 0 0 5px hsl(var(--neon-glow) / 0.1);
+  border-color: hsl(var(--neon-glow)) !important;
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 
+      0 0 5px hsl(var(--neon-glow)),
+      0 0 10px hsl(var(--neon-glow));
+  }
+  50% {
+    box-shadow: 
+      0 0 10px hsl(var(--neon-glow)),
+      0 0 20px hsl(var(--neon-glow)),
+      0 0 30px hsl(var(--neon-glow));
+  }
+}
+
+/* Panel system */
+.ide-panel {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+}
+
+/* TipTap editor styles */
+.ProseMirror {
+  outline: none;
+  min-height: 200px;
+  padding: 1rem;
+}
+
+.ProseMirror p {
+  margin-bottom: 0.5em;
+}
+
+/* Mention styling */
+.mention {
+  background-color: hsl(var(--primary) / 0.2);
+  border-radius: 4px;
+  padding: 0 4px;
+  color: hsl(var(--primary));
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.mention:hover {
+  background-color: hsl(var(--primary) / 0.3);
+}
+
+/* Logic block styling */
+.logic-block {
+  background: hsl(var(--accent) / 0.15);
+  border: 1px solid hsl(var(--accent) / 0.3);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9em;
+  color: hsl(var(--accent));
+}
+
+/* Timeline indicator colors */
+.timeline-canon {
+  background-color: #22c55e;
+}
+
+.timeline-divergent {
+  background-color: #f59e0b;
+}
+
+.timeline-whatif {
+  background-color: #8b5cf6;
+}
+
+/* Loading shimmer */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.loading-shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 25%,
+    hsl(var(--secondary)) 50%,
+    hsl(var(--muted)) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
