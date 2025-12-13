@@ -9,6 +9,9 @@
         "lint": "next lint"
     },
     "dependencies": {
+        "@nebula.gl/edit-modes": "^1.0.4",
+        "@nebula.gl/layers": "^1.0.4",
+        "@powersync/web": "^1.30.0",
         "@tiptap/extension-mention": "^3.13.0",
         "@tiptap/react": "^3.13.0",
         "@tiptap/starter-kit": "^3.13.0",
@@ -31,6 +34,7 @@
         "@types/node": "^22.10.2",
         "@types/react": "^19.0.1",
         "@types/react-dom": "^19.0.2",
+        "@types/sql.js": "^1.4.9",
         "autoprefixer": "^10.4.20",
         "eslint": "^9.16.0",
         "eslint-config-next": "^15.1.0",

@@ -173,23 +173,58 @@ export function WorldMap({ className = '' }: WorldMapProps) {
     useEffect(() => {
         if (map.current || !mapContainer.current) return;
 
+        // Generate grid lines as GeoJSON
+        const gridLines: GeoJSON.FeatureCollection = {
+            type: 'FeatureCollection',
+            features: [
+                // Longitude lines every 30 degrees
+                ...[-180, -150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150, 180].map(lng => ({
+                    type: 'Feature' as const,
+                    properties: {},
+                    geometry: {
+                        type: 'LineString' as const,
+                        coordinates: [[-lng, -85], [-lng, 85]]
+                    }
+                })),
+                // Latitude lines every 30 degrees
+                ...[-60, -30, 0, 30, 60].map(lat => ({
+                    type: 'Feature' as const,
+                    properties: {},
+                    geometry: {
+                        type: 'LineString' as const,
+                        coordinates: [[-180, lat], [180, lat]]
+                    }
+                }))
+            ]
+        };
+
         map.current = new maplibregl.Map({
             container: mapContainer.current,
             style: {
                 version: 8,
                 name: 'Chronos Atlas Dark',
-                sources: {},
+                sources: {
+                    'grid-lines': {
+                        type: 'geojson',
+                        data: gridLines
+                    }
+                },
                 layers: [
                     {
                         id: 'background',
                         type: 'background',
                         paint: { 'background-color': '#0a0f1a' }
                     },
-                    // Grid lines for fantasy map feel
+                    // Visible grid lines
                     {
                         id: 'grid',
-                        type: 'background',
-                        paint: { 'background-color': '#0a0f1a' }
+                        type: 'line',
+                        source: 'grid-lines',
+                        paint: {
+                            'line-color': '#1e3a5f',
+                            'line-width': 0.5,
+                            'line-opacity': 0.6
+                        }
                     }
                 ],
                 glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf'
@@ -246,8 +281,8 @@ export function WorldMap({ className = '' }: WorldMapProps) {
                 <button
                     onClick={() => handleModeChange('select')}
                     className={`px-3 py-1.5 backdrop-blur border rounded-md text-sm transition-colors ${drawMode === 'select'
-                            ? 'bg-primary text-primary-foreground border-primary'
-                            : 'bg-card/90 border-border hover:bg-secondary'
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-card/90 border-border hover:bg-secondary'
                         }`}
                     title="Select Tool"
                 >
@@ -258,8 +293,8 @@ export function WorldMap({ className = '' }: WorldMapProps) {
                 <button
                     onClick={() => handleModeChange('polygon')}
                     className={`px-3 py-1.5 backdrop-blur border rounded-md text-sm transition-colors ${drawMode === 'polygon'
-                            ? 'bg-primary text-primary-foreground border-primary'
-                            : 'bg-card/90 border-border hover:bg-secondary'
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-card/90 border-border hover:bg-secondary'
                         }`}
                     title="Draw Polygon"
                 >
@@ -270,8 +305,8 @@ export function WorldMap({ className = '' }: WorldMapProps) {
                 <button
                     onClick={() => handleModeChange('marker')}
                     className={`px-3 py-1.5 backdrop-blur border rounded-md text-sm transition-colors ${drawMode === 'marker'
-                            ? 'bg-primary text-primary-foreground border-primary'
-                            : 'bg-card/90 border-border hover:bg-secondary'
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-card/90 border-border hover:bg-secondary'
                         }`}
                     title="Add Marker"
                 >

@@ -2,23 +2,54 @@
 
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Mention from '@tiptap/extension-mention';
-import { useState, useCallback, useEffect } from 'react';
+import { CustomMention } from './CustomMention';
+import { useState, useEffect, useRef } from 'react';
+import { getEntities, Entity, initDatabase } from '@/lib/db/local-database';
 
 interface SmartEditorProps {
     className?: string;
 }
 
-// Mock entities for autocomplete (will be replaced with SQLite queries)
-const mockEntities = [
-    { id: '1', name: 'Gandalf', type: 'actor' },
-    { id: '2', name: 'Mordor', type: 'location' },
-    { id: '3', name: 'The One Ring', type: 'item' },
-    { id: '4', name: 'Magic System', type: 'rule' },
+interface MentionItem {
+    id: string;
+    name: string;
+    type: string;
+}
+
+// Default entities for when DB is empty
+const defaultMentionItems: MentionItem[] = [
+    { id: 'gandalf', name: 'Gandalf', type: 'character' },
+    { id: 'mordor', name: 'Mordor', type: 'location' },
+    { id: 'ring', name: 'The One Ring', type: 'item' },
+    { id: 'magic', name: 'Magic System', type: 'rule' },
 ];
 
 export function SmartEditor({ className = '' }: SmartEditorProps) {
     const [wordCount, setWordCount] = useState(0);
+    const [mentionItems, setMentionItems] = useState<MentionItem[]>(defaultMentionItems);
+    const mentionItemsRef = useRef<MentionItem[]>(defaultMentionItems);
+
+    // Load entities from database for mentions
+    useEffect(() => {
+        async function loadEntities() {
+            try {
+                await initDatabase();
+                const entities = getEntities('default-project');
+                if (entities.length > 0) {
+                    const items: MentionItem[] = entities.map(e => ({
+                        id: e.id,
+                        name: `${e.type.charAt(0).toUpperCase() + e.type.slice(1)} ${e.id.slice(0, 4)}`,
+                        type: e.type,
+                    }));
+                    setMentionItems([...defaultMentionItems, ...items]);
+                    mentionItemsRef.current = [...defaultMentionItems, ...items];
+                }
+            } catch (error) {
+                console.error('Error loading entities for mentions:', error);
+            }
+        }
+        loadEntities();
+    }, []);
 
     const editor = useEditor({
         immediatelyRender: false,
@@ -28,13 +59,13 @@ export function SmartEditor({ className = '' }: SmartEditorProps) {
                     levels: [1, 2, 3],
                 },
             }),
-            Mention.configure({
+            CustomMention.configure({
                 HTMLAttributes: {
                     class: 'mention',
                 },
                 suggestion: {
                     items: ({ query }: { query: string }) => {
-                        return mockEntities
+                        return mentionItemsRef.current
                             .filter(entity =>
                                 entity.name.toLowerCase().includes(query.toLowerCase())
                             )

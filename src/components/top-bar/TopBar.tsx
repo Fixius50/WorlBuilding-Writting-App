@@ -1,11 +1,32 @@
 'use client';
 
+import { useSyncStore, SyncStatus } from '@/lib/stores/useSyncStore';
+
 interface TopBarProps {
     onToggleSidebar: () => void;
     sidebarOpen: boolean;
 }
 
+const syncConfig: Record<SyncStatus, { color: string; bgColor: string; dotColor: string; label: string }> = {
+    synced: { color: 'text-green-400', bgColor: 'bg-green-500/10', dotColor: 'bg-green-400', label: 'Synced' },
+    syncing: { color: 'text-yellow-400', bgColor: 'bg-yellow-500/10', dotColor: 'bg-yellow-400', label: 'Saving...' },
+    offline: { color: 'text-gray-400', bgColor: 'bg-gray-500/10', dotColor: 'bg-gray-400', label: 'Offline' },
+    error: { color: 'text-red-400', bgColor: 'bg-red-500/10', dotColor: 'bg-red-400', label: 'Error' },
+};
+
 export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
+    const { status, lastSyncTime } = useSyncStore();
+    const config = syncConfig[status];
+
+    const formatLastSync = () => {
+        if (!lastSyncTime) return '';
+        const now = new Date();
+        const diff = Math.floor((now.getTime() - lastSyncTime.getTime()) / 1000);
+        if (diff < 60) return 'just now';
+        if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+        return lastSyncTime.toLocaleTimeString();
+    };
+
     return (
         <header className="h-12 bg-card border-b border-border flex items-center justify-between px-4">
             {/* Left Section */}
@@ -47,10 +68,13 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
 
             {/* Right Section - Actions */}
             <div className="flex items-center gap-2">
-                {/* Sync Status */}
-                <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-green-500/10 text-green-400 text-xs">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                    <span>Synced</span>
+                {/* Sync Status - Connected to real store */}
+                <div
+                    className={`flex items-center gap-1.5 px-2 py-1 rounded-md ${config.bgColor} ${config.color} text-xs cursor-help`}
+                    title={lastSyncTime ? `Last saved: ${formatLastSync()}` : 'Not yet saved'}
+                >
+                    <div className={`w-1.5 h-1.5 rounded-full ${config.dotColor} ${status === 'syncing' ? 'animate-pulse' : ''}`} />
+                    <span>{config.label}</span>
                 </div>
 
                 {/* Undo/Redo */}

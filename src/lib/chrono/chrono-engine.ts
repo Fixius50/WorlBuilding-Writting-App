@@ -190,3 +190,139 @@ export const DEFAULT_TIME_CONFIG: TimeConfig = {
     year_length: 365,
     day_length: 24,
 };
+
+// ============================================
+// ADVANCED CALENDAR FUNCTIONS
+// ============================================
+
+/**
+ * Configuración de calendario personalizado con meses nombrados
+ */
+export interface CustomCalendarConfig extends TimeConfig {
+    months?: { name: string; days: number }[];
+}
+
+/**
+ * Convierte ticks usando un calendario con meses personalizados
+ */
+export function ticksToCustomCalendar(
+    ticks: bigint | number,
+    config: CustomCalendarConfig
+): LocalDate & { monthName: string } {
+    const baseDate = ticksToCalendar(ticks, config);
+
+    if (!config.months || config.months.length === 0) {
+        return { ...baseDate, monthName: getMonthName(baseDate.month) };
+    }
+
+    // Calcular el día del año
+    const tickNum = typeof ticks === 'bigint' ? Number(ticks) : ticks;
+    const multiplier = config.tick_multiplier || 1.0;
+    const dayLength = config.day_length || 24;
+    const ticksPerDay = dayLength * TICKS_PER_HOUR;
+    const yearLength = config.year_length || 365;
+    const ticksPerYear = yearLength * ticksPerDay;
+
+    const adjustedTicks = tickNum * multiplier;
+    const remainingAfterYear = adjustedTicks % ticksPerYear;
+    const dayOfYear = Math.floor(remainingAfterYear / ticksPerDay);
+
+    // Encontrar el mes según la configuración personalizada
+    let cumulativeDays = 0;
+    let monthIndex = 0;
+    let dayInMonth = dayOfYear + 1;
+
+    for (let i = 0; i < config.months.length; i++) {
+        if (dayOfYear < cumulativeDays + config.months[i].days) {
+            monthIndex = i;
+            dayInMonth = dayOfYear - cumulativeDays + 1;
+            break;
+        }
+        cumulativeDays += config.months[i].days;
+    }
+
+    return {
+        ...baseDate,
+        month: monthIndex + 1,
+        day: dayInMonth,
+        monthName: config.months[monthIndex]?.name || getMonthName(monthIndex + 1),
+    };
+}
+
+/**
+ * Nombre de mes por defecto
+ */
+function getMonthName(month: number): string {
+    const names = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return names[(month - 1) % 12] || 'Unknown';
+}
+
+/**
+ * Calcula la diferencia relativa entre dos ticks
+ */
+export function getTimeDifference(
+    fromTick: bigint | number,
+    toTick: bigint | number,
+    config: TimeConfig
+): { years: number; days: number; hours: number; direction: 'past' | 'future' } {
+    const from = typeof fromTick === 'bigint' ? Number(fromTick) : fromTick;
+    const to = typeof toTick === 'bigint' ? Number(toTick) : toTick;
+
+    const diff = to - from;
+    const direction = diff >= 0 ? 'future' : 'past';
+    const absDiff = Math.abs(diff) * (config.tick_multiplier || 1.0);
+
+    const dayLength = config.day_length || 24;
+    const yearLength = config.year_length || 365;
+    const ticksPerDay = dayLength * TICKS_PER_HOUR;
+    const ticksPerYear = yearLength * ticksPerDay;
+
+    const years = Math.floor(absDiff / ticksPerYear);
+    const remainingAfterYears = absDiff % ticksPerYear;
+    const days = Math.floor(remainingAfterYears / ticksPerDay);
+    const remainingAfterDays = remainingAfterYears % ticksPerDay;
+    const hours = Math.floor(remainingAfterDays / TICKS_PER_HOUR);
+
+    return { years, days, hours, direction };
+}
+
+/**
+ * Formatea diferencia de tiempo como texto legible
+ */
+export function formatTimeDifference(
+    fromTick: bigint | number,
+    toTick: bigint | number,
+    config: TimeConfig
+): string {
+    const diff = getTimeDifference(fromTick, toTick, config);
+    const parts: string[] = [];
+
+    if (diff.years > 0) parts.push(`${diff.years} year${diff.years > 1 ? 's' : ''}`);
+    if (diff.days > 0) parts.push(`${diff.days} day${diff.days > 1 ? 's' : ''}`);
+    if (diff.hours > 0 && diff.years === 0) parts.push(`${diff.hours} hour${diff.hours > 1 ? 's' : ''}`);
+
+    if (parts.length === 0) return 'now';
+
+    const timeStr = parts.join(', ');
+    return diff.direction === 'past' ? `${timeStr} ago` : `in ${timeStr}`;
+}
+
+/**
+ * Verifica si un tick está dentro de un rango de validez (para Facts)
+ */
+export function isTickInRange(
+    tick: bigint | number,
+    validFrom: number | null,
+    validUntil: number | null
+): boolean {
+    const t = typeof tick === 'bigint' ? Number(tick) : tick;
+
+    if (validFrom !== null && t < validFrom) return false;
+    if (validUntil !== null && t >= validUntil) return false;
+
+    return true;
+}
+

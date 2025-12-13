@@ -1,7 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useCosmosStore } from '@/lib/stores/useCosmosStore';
+import {
+    initDatabase,
+    getEntities,
+    getEntityState,
+    bootstrapProject,
+    Entity,
+    EntityType
+} from '@/lib/db/local-database';
+import { CreateEntityModal } from './CreateEntityModal';
 
 interface UniverseOutlinerProps {
     className?: string;
@@ -10,54 +19,29 @@ interface UniverseOutlinerProps {
 interface TreeNode {
     id: string;
     name: string;
-    type: 'universe' | 'spacetime' | 'galaxy' | 'system' | 'planet' | 'region' | 'character' | 'item' | 'rule';
-    children?: TreeNode[];
+    type: EntityType;
+    children: TreeNode[];
 }
 
-// Mock data - will be replaced with SQLite queries
-const mockTree: TreeNode = {
-    id: '1',
-    name: 'My Universe',
-    type: 'universe',
-    children: [
-        {
-            id: '2',
-            name: 'Earth System',
-            type: 'system',
-            children: [
-                {
-                    id: '3',
-                    name: 'Earth',
-                    type: 'planet',
-                    children: [
-                        { id: '4', name: 'Europe', type: 'region' },
-                        { id: '5', name: 'Asia', type: 'region' },
-                    ]
-                },
-                { id: '6', name: 'Mars', type: 'planet' },
-            ]
-        },
-        {
-            id: '7',
-            name: 'Characters',
-            type: 'character',
-            children: [
-                { id: '8', name: 'King Arthur', type: 'character' },
-                { id: '9', name: 'Merlin', type: 'character' },
-            ]
-        },
-        {
-            id: '10',
-            name: 'Items',
-            type: 'item',
-            children: [
-                { id: '11', name: 'Excalibur', type: 'item' },
-            ]
-        },
-    ]
-};
+// Project ID for this session
+const PROJECT_ID = 'default-project';
 
-const getTypeIcon = (type: TreeNode['type']) => {
+// Store for entity names (loaded from facts)
+const entityNames: Map<string, string> = new Map();
+
+// Build tree from flat entities
+function buildTree(entities: Entity[], parentId: string | null = null): TreeNode[] {
+    return entities
+        .filter(e => e.parent_id === parentId)
+        .map(e => ({
+            id: e.id,
+            name: entityNames.get(e.id) || `${e.type.charAt(0).toUpperCase() + e.type.slice(1)} ${e.id.slice(0, 4)}`,
+            type: e.type,
+            children: buildTree(entities, e.id),
+        }));
+}
+
+const getTypeIcon = (type: EntityType) => {
     switch (type) {
         case 'universe':
             return (
@@ -128,10 +112,12 @@ const getTypeIcon = (type: TreeNode['type']) => {
                     <polyline points="8 6 2 12 8 18" />
                 </svg>
             );
+        default:
+            return null;
     }
 };
 
-const getTypeColor = (type: TreeNode['type']) => {
+const getTypeColor = (type: EntityType) => {
     switch (type) {
         case 'universe': return 'text-purple-400';
         case 'spacetime': return 'text-cyan-400';
@@ -146,24 +132,42 @@ const getTypeColor = (type: TreeNode['type']) => {
     }
 };
 
-function TreeNodeComponent({ node, level = 0 }: { node: TreeNode; level?: number }) {
+function TreeNodeComponent({
+    node,
+    level = 0,
+    selectedId,
+    onSelect,
+    onCreateChild
+}: {
+    node: TreeNode;
+    level?: number;
+    selectedId: string | null;
+    onSelect: (id: string, type: EntityType) => void;
+    onCreateChild: (parentId: string) => void;
+}) {
     const [expanded, setExpanded] = useState(level < 2);
     const hasChildren = node.children && node.children.length > 0;
-    const { setPlanet } = useCosmosStore();
+    const isSelected = selectedId === node.id;
 
     const handleClick = () => {
         if (hasChildren) {
             setExpanded(!expanded);
         }
-        if (node.type === 'planet') {
-            setPlanet(node.id);
-        }
+        onSelect(node.id, node.type);
+    };
+
+    const handleAddChild = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onCreateChild(node.id);
     };
 
     return (
         <div>
             <div
-                className={`flex items-center gap-2 px-2 py-1 cursor-pointer hover:bg-secondary/50 rounded-md transition-colors`}
+                className={`group flex items-center gap-2 px-2 py-1 cursor-pointer rounded-md transition-colors ${isSelected
+                    ? 'bg-primary/20 border-l-2 border-primary'
+                    : 'hover:bg-secondary/50'
+                    }`}
                 style={{ paddingLeft: `${level * 12 + 8}px` }}
                 onClick={handleClick}
             >
@@ -180,13 +184,32 @@ function TreeNodeComponent({ node, level = 0 }: { node: TreeNode; level?: number
                     <span className="w-3" />
                 )}
                 <span className={getTypeColor(node.type)}>{getTypeIcon(node.type)}</span>
-                <span className="text-sm text-foreground truncate">{node.name}</span>
-                <span className="text-[10px] text-muted-foreground ml-auto">{node.type}</span>
+                <span className="text-sm text-foreground truncate flex-1">{node.name}</span>
+                <span className="text-[10px] text-muted-foreground">{node.type}</span>
+
+                {/* Add child button - visible on hover */}
+                <button
+                    onClick={handleAddChild}
+                    className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-primary/20 rounded transition-all"
+                    title="Add child entity"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                </button>
             </div>
             {hasChildren && expanded && (
                 <div>
-                    {node.children!.map((child) => (
-                        <TreeNodeComponent key={child.id} node={child} level={level + 1} />
+                    {node.children.map((child) => (
+                        <TreeNodeComponent
+                            key={child.id}
+                            node={child}
+                            level={level + 1}
+                            selectedId={selectedId}
+                            onSelect={onSelect}
+                            onCreateChild={onCreateChild}
+                        />
                     ))}
                 </div>
             )}
@@ -196,8 +219,89 @@ function TreeNodeComponent({ node, level = 0 }: { node: TreeNode; level?: number
 
 export function UniverseOutliner({ className = '' }: UniverseOutlinerProps) {
     const [searchQuery, setSearchQuery] = useState('');
-    const { getContextPath, isDivergent } = useCosmosStore();
+    const [entities, setEntities] = useState<Entity[]>([]);
+    const [tree, setTree] = useState<TreeNode[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalParentId, setModalParentId] = useState<string | null>(null);
+
+    const { getContextPath, isDivergent, setPlanet, setSpacetime, setUniverse } = useCosmosStore();
     const contextPath = getContextPath();
+
+    // Load entities from database
+    const loadEntities = useCallback(async () => {
+        try {
+            await initDatabase();
+
+            // Check if we have any entities
+            let allEntities = getEntities(PROJECT_ID);
+
+            // If no entities, bootstrap the project
+            if (allEntities.length === 0) {
+                const { universe, canon } = bootstrapProject(PROJECT_ID, 'My World');
+                setUniverse(universe.id);
+                setSpacetime(canon.id);
+                allEntities = getEntities(PROJECT_ID);
+            }
+
+            // Find the spacetime for loading facts
+            const spacetime = allEntities.find(e => e.type === 'spacetime');
+            const spacetimeId = spacetime?.id || 'canon';
+
+            // Load names from facts for all entities
+            entityNames.clear();
+            for (const entity of allEntities) {
+                const facts = getEntityState(entity.id, spacetimeId, 0);
+                const nameFact = facts.find(f => f.attribute === 'name');
+                if (nameFact && typeof nameFact.value === 'object' && nameFact.value !== null) {
+                    const val = nameFact.value as { string?: string };
+                    if (val.string) {
+                        entityNames.set(entity.id, val.string);
+                    }
+                }
+            }
+
+            setEntities(allEntities);
+
+            // Build tree starting from universe (no parent)
+            const treeData = buildTree(allEntities, null);
+            setTree(treeData);
+        } catch (error) {
+            console.error('Error loading entities:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [setUniverse, setSpacetime]);
+
+    useEffect(() => {
+        loadEntities();
+    }, [loadEntities]);
+
+    const handleSelect = (id: string, type: EntityType) => {
+        setSelectedId(id);
+
+        // Update cosmos context based on type
+        if (type === 'universe') {
+            setUniverse(id);
+        } else if (type === 'spacetime') {
+            setSpacetime(id);
+        } else if (type === 'planet') {
+            setPlanet(id);
+        }
+    };
+
+    const handleCreateChild = (parentId: string) => {
+        setModalParentId(parentId);
+        setModalOpen(true);
+    };
+
+    const handleCreateRoot = () => {
+        // Find universe to use as parent
+        const universe = entities.find(e => e.type === 'universe');
+        setModalParentId(universe?.id || null);
+        setModalOpen(true);
+    };
 
     return (
         <aside className={`flex flex-col h-full bg-card border-r border-border ${className}`}>
@@ -252,12 +356,33 @@ export function UniverseOutliner({ className = '' }: UniverseOutlinerProps) {
 
             {/* Entity Tree */}
             <div className="flex-1 overflow-auto p-2">
-                <TreeNodeComponent node={mockTree} />
+                {isLoading ? (
+                    <div className="flex items-center justify-center h-20">
+                        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    </div>
+                ) : tree.length === 0 ? (
+                    <div className="text-center text-muted-foreground text-sm p-4">
+                        No entities yet. Click "New Entity" to create one.
+                    </div>
+                ) : (
+                    tree.map((node) => (
+                        <TreeNodeComponent
+                            key={node.id}
+                            node={node}
+                            selectedId={selectedId}
+                            onSelect={handleSelect}
+                            onCreateChild={handleCreateChild}
+                        />
+                    ))
+                )}
             </div>
 
             {/* Actions */}
             <div className="p-2 border-t border-border space-y-2">
-                <button className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm font-medium">
+                <button
+                    onClick={handleCreateRoot}
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm font-medium"
+                >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <line x1="12" y1="5" x2="12" y2="19" />
                         <line x1="5" y1="12" x2="19" y2="12" />
@@ -272,6 +397,15 @@ export function UniverseOutliner({ className = '' }: UniverseOutlinerProps) {
                     Create What-If
                 </button>
             </div>
+
+            {/* Create Entity Modal */}
+            <CreateEntityModal
+                isOpen={modalOpen}
+                onClose={() => setModalOpen(false)}
+                parentId={modalParentId}
+                projectId={PROJECT_ID}
+                onCreated={loadEntities}
+            />
         </aside>
     );
 }
