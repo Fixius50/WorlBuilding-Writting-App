@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { WorldMap } from '@/components/world-map/WorldMap';
 import { SmartEditor } from '@/components/smart-editor/SmartEditor';
-import { TimeController } from '@/components/time-controller/TimeController';
-import { Sidebar } from '@/components/sidebar/Sidebar';
+import { TimeBar } from '@/components/time-bar/TimeBar';
+import { UniverseOutliner } from '@/components/universe-outliner/UniverseOutliner';
 import { TopBar } from '@/components/top-bar/TopBar';
 
 export default function ChronosAtlas() {
@@ -21,15 +21,15 @@ export default function ChronosAtlas() {
 
             {/* Main Content */}
             <div className="flex-1 flex overflow-hidden">
-                {/* Sidebar - Entity Tree */}
+                {/* Universe Outliner - Hierarchical Sidebar */}
                 {sidebarOpen && (
-                    <Sidebar className="w-64 flex-shrink-0" />
+                    <UniverseOutliner className="w-72 flex-shrink-0" />
                 )}
 
                 {/* Main Panel Area */}
                 <main className="flex-1 flex flex-col overflow-hidden">
-                    {/* Time Controller */}
-                    <TimeController className="flex-shrink-0" />
+                    {/* Time Bar - Replaces old TimeController */}
+                    <TimeBar className="flex-shrink-0" />
 
                     {/* Workspace */}
                     <div className="flex-1 flex gap-1 p-1 overflow-hidden">
@@ -52,7 +52,7 @@ export default function ChronosAtlas() {
 
             {/* Status Bar */}
             <footer className="h-6 bg-card border-t border-border px-4 flex items-center justify-between text-xs text-muted-foreground">
-                <span>Chronos Atlas v1.0.0</span>
+                <span>Chronos Atlas v2.0 - Cosmological Model</span>
                 <span>Local Database • Ready</span>
             </footer>
         </div>
