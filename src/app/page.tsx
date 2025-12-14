@@ -8,52 +8,66 @@ import { UniverseOutliner } from '@/components/universe-outliner/UniverseOutline
 import { TopBar } from '@/components/top-bar/TopBar';
 
 export default function ChronosAtlas() {
-    const [activePanel, setActivePanel] = useState<'map' | 'editor' | 'split'>('split');
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [currentView, setCurrentView] = useState<'map' | 'editor' | 'entities'>('map');
+    const [isTransitioning, setIsTransitioning] = useState(false);
+
+    const handleViewChange = (view: 'map' | 'editor' | 'entities') => {
+        if (view === currentView) return;
+        setIsTransitioning(true);
+        setTimeout(() => {
+            setCurrentView(view);
+            setIsTransitioning(false);
+        }, 300); // Wait for fade out
+    };
 
     return (
         <div className="h-screen w-screen flex flex-col bg-background overflow-hidden">
-            {/* Top Bar */}
-            <TopBar
-                onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-                sidebarOpen={sidebarOpen}
+            {/* Top Bar with View Navigation */}
+            <TopBar 
+                currentView={currentView}
+                onViewChange={handleViewChange}
             />
 
-            {/* Main Content */}
-            <div className="flex-1 flex overflow-hidden">
-                {/* Universe Outliner - Hierarchical Sidebar */}
-                {sidebarOpen && (
-                    <UniverseOutliner className="w-72 flex-shrink-0" />
-                )}
-
-                {/* Main Panel Area */}
-                <main className="flex-1 flex flex-col overflow-hidden">
-                    {/* Time Bar - Replaces old TimeController */}
-                    <TimeBar className="flex-shrink-0" />
-
-                    {/* Workspace */}
-                    <div className="flex-1 flex gap-1 p-1 overflow-hidden">
-                        {/* Map Panel */}
-                        {(activePanel === 'map' || activePanel === 'split') && (
-                            <div className={`ide-panel overflow-hidden ${activePanel === 'split' ? 'flex-1' : 'w-full'}`}>
-                                <WorldMap />
+            {/* Main Content Area */}
+            <main className="flex-1 relative overflow-hidden bg-background">
+                
+                {/* View Container with Transition */}
+                <div 
+                    className={`absolute inset-0 transition-opacity duration-300 ease-in-out ${
+                        isTransitioning ? 'opacity-0' : 'opacity-100'
+                    }`}
+                >
+                    {currentView === 'map' && (
+                        <div className="w-full h-full">
+                            <WorldMap />
+                            {/* Overlay TimeBar in Map Mode */}
+                            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-3/4 max-w-2xl bg-black/50 backdrop-blur-md rounded-full p-2">
+                                <TimeBar minimal />
                             </div>
-                        )}
+                        </div>
+                    )}
 
-                        {/* Editor Panel */}
-                        {(activePanel === 'editor' || activePanel === 'split') && (
-                            <div className={`ide-panel overflow-hidden ${activePanel === 'split' ? 'flex-1' : 'w-full'}`}>
-                                <SmartEditor />
-                            </div>
-                        )}
-                    </div>
-                </main>
-            </div>
+                    {currentView === 'editor' && (
+                        <div className="w-full h-full max-w-4xl mx-auto p-6 animate-in slide-in-from-bottom-4 duration-500">
+                             <SmartEditor />
+                        </div>
+                    )}
 
-            {/* Status Bar */}
-            <footer className="h-6 bg-card border-t border-border px-4 flex items-center justify-between text-xs text-muted-foreground">
-                <span>Chronos Atlas v2.0 - Cosmological Model</span>
-                <span>Local Database • Ready</span>
+                    {currentView === 'entities' && (
+                        <div className="w-full h-full p-6 animate-in zoom-in-95 duration-300">
+                            {/* Reusing UniverseOutliner as full page view */}
+                            <h2 className="text-3xl font-bold mb-6 text-foreground">Universe Entities</h2>
+                            <UniverseOutliner className="w-full max-w-3xl mx-auto h-[80vh] border rounded-lg shadow-lg" />
+                        </div>
+                    )}
+                </div>
+
+            </main>
+
+            {/* Global Status Footer */}
+            <footer className="h-6 bg-card/80 border-t border-border px-4 flex items-center justify-between text-xs text-muted-foreground backdrop-blur-sm fixed bottom-0 w-full z-50">
+                <span>Chronos Atlas v2.1 • Focus Mode</span>
+                <span>{currentView.toUpperCase()} VIEW</span>
             </footer>
         </div>
     );

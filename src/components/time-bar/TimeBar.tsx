@@ -6,6 +6,7 @@ import { CreateWhatIfModal } from '@/components/modals/CreateWhatIfModal';
 
 interface TimeBarProps {
     className?: string;
+    minimal?: boolean;
 }
 
 // Available tick scales for step size
@@ -18,7 +19,7 @@ const TICK_SCALES = [
     { label: '1 year', value: 525600 },
 ];
 
-export function TimeBar({ className = '' }: TimeBarProps) {
+export function TimeBar({ className = '', minimal = false }: TimeBarProps) {
     const [tickScale, setTickScale] = useState(1440); // Default: 1 day
     const [showWhatIfModal, setShowWhatIfModal] = useState(false);
     const {
@@ -54,37 +55,39 @@ export function TimeBar({ className = '' }: TimeBarProps) {
 
     return (
         <>
-            <div className={`flex items-center gap-4 px-4 py-2 bg-card/50 border-b border-border ${className}`}>
-                {/* Spacetime Tabs */}
-                <div className="flex items-center gap-1">
-                    {spacetimes.map((st) => (
-                        <button
-                            key={st.id}
-                            onClick={() => setSpacetime(st.id)}
-                            className={`
+            <div className={`flex items-center gap-4 px-4 py-2 bg-card/50 border-b border-border ${minimal ? 'border-none bg-transparent p-0' : ''} ${className}`}>
+                {/* Spacetime Tabs - Hide in Minimal */}
+                {!minimal && (
+                    <div className="flex items-center gap-1">
+                        {spacetimes.map((st) => (
+                            <button
+                                key={st.id}
+                                onClick={() => setSpacetime(st.id)}
+                                className={`
               flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all
               ${currentSpacetimeId === st.id
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'bg-secondary/50 hover:bg-secondary text-foreground'}
+                                        ? 'bg-primary text-primary-foreground'
+                                        : 'bg-secondary/50 hover:bg-secondary text-foreground'}
             `}
-                        >
-                            <span className={`w-2 h-2 rounded-full ${st.isCanon ? 'bg-green-400' : 'bg-purple-400'}`} />
-                            {st.name}
-                        </button>
-                    ))}
+                            >
+                                <span className={`w-2 h-2 rounded-full ${st.isCanon ? 'bg-green-400' : 'bg-purple-400'}`} />
+                                {st.name}
+                            </button>
+                        ))}
 
-                    {/* Add What-If Button */}
-                    <button
-                        onClick={() => setShowWhatIfModal(true)}
-                        className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-purple-500/20 hover:text-purple-400 transition-colors"
-                        title="Create What-If"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <line x1="12" y1="5" x2="12" y2="19" />
-                            <line x1="5" y1="12" x2="19" y2="12" />
-                        </svg>
-                    </button>
-                </div>
+                        {/* Add What-If Button */}
+                        <button
+                            onClick={() => setShowWhatIfModal(true)}
+                            className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-purple-500/20 hover:text-purple-400 transition-colors"
+                            title="Create What-If"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <line x1="12" y1="5" x2="12" y2="19" />
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
 
                 {/* Divergence Indicator */}
                 {isDivergent() && (

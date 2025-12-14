@@ -216,3 +216,13 @@ Mention.configure({
 │       ├── 📂 db/
 │       └── 📂 stores/
 ```
+
+### UI Refactor (15/12/2024)
+- **Cambio de Paradigma:** De "IDE Split-Screen" a "Focus Mode Multi-Page".
+- **Views:**
+    - `Map`: Full screen + Floating TimeBar.
+    - `Chronicle`: Editor centrado.
+    - `Database`: Entity Graph/Tree full page.
+- **Componentes:**
+    - `TopBar`: Navegación central.
+    - `TimeBar`: Modo minimalista.

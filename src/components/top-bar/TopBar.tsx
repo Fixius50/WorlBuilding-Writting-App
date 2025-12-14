@@ -3,8 +3,8 @@
 import { useSyncStore, SyncStatus } from '@/lib/stores/useSyncStore';
 
 interface TopBarProps {
-    onToggleSidebar: () => void;
-    sidebarOpen: boolean;
+    currentView: 'map' | 'editor' | 'entities';
+    onViewChange: (view: 'map' | 'editor' | 'entities') => void;
 }
 
 const syncConfig: Record<SyncStatus, { color: string; bgColor: string; dotColor: string; label: string }> = {
@@ -14,7 +14,7 @@ const syncConfig: Record<SyncStatus, { color: string; bgColor: string; dotColor:
     error: { color: 'text-red-400', bgColor: 'bg-red-500/10', dotColor: 'bg-red-400', label: 'Error' },
 };
 
-export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
+export function TopBar({ currentView, onViewChange }: TopBarProps) {
     const { status, lastSyncTime } = useSyncStore();
     const config = syncConfig[status];
 
@@ -27,74 +27,91 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
         return lastSyncTime.toLocaleTimeString();
     };
 
-    return (
-        <header className="h-12 bg-card border-b border-border flex items-center justify-between px-4">
-            {/* Left Section */}
-            <div className="flex items-center gap-3">
-                {/* Sidebar Toggle */}
-                <button
-                    onClick={onToggleSidebar}
-                    className="p-1.5 rounded hover:bg-secondary transition-colors"
-                    title={sidebarOpen ? 'Hide Sidebar' : 'Show Sidebar'}
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                        <line x1="9" y1="3" x2="9" y2="21" />
-                    </svg>
-                </button>
+    const NavButton = ({ view, label, icon }: { view: 'map' | 'editor' | 'entities', label: string, icon: React.ReactNode }) => (
+        <button
+            onClick={() => onViewChange(view)}
+            className={`
+                relative flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium transition-all
+                ${currentView === view
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'}
+            `}
+        >
+            {icon}
+            {label}
+            {currentView === view && (
+                <span className="absolute inset-0 rounded-full ring-1 ring-inset ring-white/20" />
+            )}
+        </button>
+    );
 
-                {/* Logo */}
-                <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <circle cx="12" cy="12" r="10" />
-                            <polyline points="12 6 12 12 16 14" />
-                        </svg>
-                    </div>
-                    <span className="font-semibold text-lg tracking-tight">Chronos Atlas</span>
+    return (
+        <header className="h-14 bg-card/80 backdrop-blur-md border-b border-border flex items-center justify-between px-6 sticky top-0 z-50">
+            {/* Left Section - Logo */}
+            <div className="flex items-center gap-3 w-48">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                </div>
+                <div className="flex flex-col leading-none">
+                    <span className="font-bold text-base tracking-tight text-foreground">Chronos Atlas</span>
+                    <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">World Engine</span>
                 </div>
             </div>
 
-            {/* Center Section - Project Name */}
-            <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Project:</span>
-                <span className="text-sm font-medium">My World</span>
-                <button className="p-1 rounded hover:bg-secondary transition-colors" title="Project Settings">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                </button>
+            {/* Center Section - Navigation Pills */}
+            <div className="flex items-center gap-1 bg-secondary/30 p-1 rounded-full border border-white/5">
+                <NavButton
+                    view="map"
+                    label="World Map"
+                    icon={
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+                            <path d="M2 12h20" />
+                        </svg>
+                    }
+                />
+                <NavButton
+                    view="editor"
+                    label="Chronicle"
+                    icon={
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                    }
+                />
+                <NavButton
+                    view="entities"
+                    label="Database"
+                    icon={
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M12 2c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12 6.5 2 12 2zm0 18c4.4 0 8-3.6 8-8s-3.6-8-8-8-8 3.6-8 8 3.6 8 8 8z" />
+                            <circle cx="12" cy="12" r="3" />
+                            <path d="M12 2v2" /><path d="M12 20v2" />
+                            <path d="M2 12h2" /><path d="M20 12h2" />
+                        </svg>
+                    }
+                />
             </div>
 
-            {/* Right Section - Actions */}
-            <div className="flex items-center gap-2">
-                {/* Sync Status - Connected to real store */}
+            {/* Right Section - Status & Actions */}
+            <div className="flex items-center gap-3 w-48 justify-end">
+                {/* Sync Status */}
                 <div
-                    className={`flex items-center gap-1.5 px-2 py-1 rounded-md ${config.bgColor} ${config.color} text-xs cursor-help`}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full ${config.bgColor} ${config.color} text-xs font-medium cursor-help transition-colors ring-1 ring-inset ring-white/5`}
                     title={lastSyncTime ? `Last saved: ${formatLastSync()}` : 'Not yet saved'}
                 >
                     <div className={`w-1.5 h-1.5 rounded-full ${config.dotColor} ${status === 'syncing' ? 'animate-pulse' : ''}`} />
                     <span>{config.label}</span>
                 </div>
 
-                {/* Undo/Redo */}
-                <div className="flex items-center border border-border rounded-md overflow-hidden">
-                    <button className="p-1.5 hover:bg-secondary transition-colors border-r border-border" title="Undo (Ctrl+Z)">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <polyline points="1 4 1 10 7 10" />
-                            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
-                        </svg>
-                    </button>
-                    <button className="p-1.5 hover:bg-secondary transition-colors" title="Redo (Ctrl+Y)">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <polyline points="23 4 23 10 17 10" />
-                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-                        </svg>
-                    </button>
-                </div>
+                <div className="w-px h-4 bg-border" />
 
-                {/* Settings */}
-                <button className="p-1.5 rounded hover:bg-secondary transition-colors" title="Settings">
+                <button className="p-2 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground" title="Settings">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <circle cx="12" cy="12" r="3" />
                         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
