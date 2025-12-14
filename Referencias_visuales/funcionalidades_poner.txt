@@ -1,0 +1,12 @@
+
+    Página de Inicio/Dashboard: Esta pantalla proporciona un resumen general de los mundos o proyectos del usuario, con accesos rápidos a los más recientes y una visión de las entidades principales, todo diseñado con un tema de fantasía oscura y elementos rústicos.
+    Gestión de Mundos/Proyectos: Una interfaz intuitiva para crear, ver y organizar los diferentes mundos o proyectos de worldbuilding, manteniendo la estética de fantasía oscura.
+    Explorador de Entidades: Un centro con una interfaz clara para visualizar, gestionar, filtrar y buscar todas las entidades (personajes, lugares, objetos, eventos, etc.) dentro de un mundo seleccionado.
+    Editor de Entidades con Historial: La pantalla principal para editar los detalles de una entidad específica, integrando un editor de texto enriquecido con menciones de entidades y una línea de tiempo visual para la causalidad profunda.
+    Mapa Geoespacial Interactivo: Una interfaz funcional y fluida para visualizar y editar mapas de alta resolución, permitiendo la colocación y vinculación geoespacial de entidades con un diseño que complementa el tema de fantasía oscura.
+    Configuración y Sincronización: Una pantalla clara y fácil de usar para gestionar las opciones de la aplicación, incluyendo la configuración de sincronización entre la base de datos local y la nube.
+
+    Página de Inicio/Dashboard: Hemos renovado el Dashboard para que su estilo visual y paleta de colores se alineen con el "Explorador de Entidades", ofreciendo un resumen coherente de tus proyectos con un toque de fantasía oscura.
+    Editor de Entidades con Historial: El Editor de Entidades ahora presenta un diseño unificado con el estilo que te gustó, integrando el editor de texto enriquecido y la línea de tiempo de causalidad profunda de forma armónica.
+    Mapa Geoespacial Interactivo: La interfaz del mapa ha sido actualizada para coincidir con la estética deseada, asegurando que la visualización y edición de mapas de alta resolución con MapLibre y Deck.gl mantenga la cohesión visual.
+    Configuración y Sincronización: La pantalla de Configuración y Sincronización ha sido rediseñada para reflejar el estilo del "Explorador de Entidades", haciendo que las opciones de PowerSync y otras preferencias sean claras y accesibles dentro del tema general.
