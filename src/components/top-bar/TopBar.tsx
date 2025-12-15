@@ -1,40 +1,64 @@
 'use client';
 
-import { useSyncStore, SyncStatus } from '@/lib/stores/useSyncStore';
+import { useSyncStore } from '@/lib/stores/useSyncStore';
+import { useThemeStore } from '@/lib/stores/useThemeStore';
+import {
+    Activity,
+    Book,
+    ChevronLeft,
+    ChevronRight,
+    Cloud,
+    CloudOff,
+    Database as DatabaseIcon,
+    Map as MapIcon,
+    Menu,
+    MoreVertical,
+    Redo2,
+    Settings as SettingsIcon,
+    Undo2,
+    ScrollText as ChronicleIcon,
+    Home as HomeIcon,
+    Sparkles,
+    Ghost
+} from 'lucide-react';
+import React from 'react';
 
 interface TopBarProps {
-    currentView: 'map' | 'editor' | 'entities';
-    onViewChange: (view: 'map' | 'editor' | 'entities') => void;
+    currentView: 'dashboard' | 'map' | 'editor' | 'entities' | 'settings';
+    onViewChange: (view: 'dashboard' | 'map' | 'editor' | 'entities' | 'settings') => void;
 }
 
-const syncConfig: Record<SyncStatus, { color: string; bgColor: string; dotColor: string; label: string }> = {
-    synced: { color: 'text-green-400', bgColor: 'bg-green-500/10', dotColor: 'bg-green-400', label: 'Synced' },
-    syncing: { color: 'text-yellow-400', bgColor: 'bg-yellow-500/10', dotColor: 'bg-yellow-400', label: 'Saving...' },
-    offline: { color: 'text-gray-400', bgColor: 'bg-gray-500/10', dotColor: 'bg-gray-400', label: 'Offline' },
-    error: { color: 'text-red-400', bgColor: 'bg-red-500/10', dotColor: 'bg-red-400', label: 'Error' },
-};
-
 export function TopBar({ currentView, onViewChange }: TopBarProps) {
-    const { status, lastSyncTime } = useSyncStore();
-    const config = syncConfig[status];
+    const { status, pendingChanges, lastSyncTime } = useSyncStore();
+    const { mode, toggleMode } = useThemeStore();
 
-    const formatLastSync = () => {
-        if (!lastSyncTime) return '';
-        const now = new Date();
-        const diff = Math.floor((now.getTime() - lastSyncTime.getTime()) / 1000);
-        if (diff < 60) return 'just now';
-        if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-        return lastSyncTime.toLocaleTimeString();
+    const getStatusLabel = () => {
+        switch (status) {
+            case 'synced': return 'Synced';
+            case 'syncing': return 'Saving...';
+            case 'error': return 'Error';
+            case 'offline': return 'Offline';
+        }
     };
 
-    const NavButton = ({ view, label, icon }: { view: 'map' | 'editor' | 'entities', label: string, icon: React.ReactNode }) => (
+    const getStatusColor = () => {
+        switch (status) {
+            case 'synced': return 'text-emerald-500 bg-emerald-500/10 ring-emerald-500/20';
+            case 'syncing': return 'text-amber-500 bg-amber-500/10 ring-amber-500/20';
+            case 'error': return 'text-destructive bg-destructive/10 ring-destructive/20';
+            case 'offline': return 'text-muted-foreground bg-secondary ring-white/10';
+        }
+    };
+
+    const NavButton = ({ view, label, icon }: { view: 'dashboard' | 'map' | 'editor' | 'entities' | 'settings', label: string, icon: React.ReactNode }) => (
         <button
             onClick={() => onViewChange(view)}
             className={`
-                relative flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium transition-all
+                relative flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all
                 ${currentView === view
-                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    ? 'bg-primary text-primary-foreground shadow-sm ring-1 ring-white/10'
                     : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'}
+                ${mode === 'detailed' && currentView === view ? 'shadow-[0_0_10px_rgba(var(--primary),0.3)]' : ''}
             `}
         >
             {icon}
@@ -46,55 +70,56 @@ export function TopBar({ currentView, onViewChange }: TopBarProps) {
     );
 
     return (
-        <header className="h-14 bg-card/80 backdrop-blur-md border-b border-border flex items-center justify-between px-6 sticky top-0 z-50">
+        <header className={`h-14 backdrop-blur-md border-b flex items-center justify-between px-6 sticky top-0 z-50 transition-all duration-500
+            ${mode === 'detailed'
+                ? 'bg-[#0c0d12]/90 border-[#2a2b35] shadow-lg shadow-black/50'
+                : 'bg-card/80 border-border'}
+        `}>
             {/* Left Section - Logo */}
-            <div className="flex items-center gap-3 w-48">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <circle cx="12" cy="12" r="10" />
-                        <polyline points="12 6 12 12 16 14" />
-                    </svg>
+            <div className="flex items-center gap-3 w-48 transition-opacity hover:opacity-80 cursor-pointer" onClick={() => onViewChange('dashboard')}>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold shadow-lg transition-all duration-500
+                    ${mode === 'detailed'
+                        ? 'bg-gradient-to-br from-amber-700 to-amber-900 shadow-amber-900/20 ring-1 ring-amber-500/30'
+                        : 'bg-gradient-to-br from-indigo-500 to-purple-600 shadow-indigo-500/20'}
+                `}>
+                    <span className={mode === 'detailed' ? 'font-serif text-amber-100' : ''}>CA</span>
                 </div>
-                <div className="flex flex-col leading-none">
-                    <span className="font-bold text-base tracking-tight text-foreground">Chronos Atlas</span>
-                    <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">World Engine</span>
+                <div>
+                    <h1 className={`text-sm font-bold leading-none tracking-tight ${mode === 'detailed' ? 'text-amber-100/90 font-serif' : ''}`}>Chronos Atlas</h1>
+                    <span className="text-[10px] text-muted-foreground font-medium">WORLD ENGINE</span>
                 </div>
             </div>
 
             {/* Center Section - Navigation Pills */}
-            <div className="flex items-center gap-1 bg-secondary/30 p-1 rounded-full border border-white/5">
+            <div className={`flex items-center gap-1 p-1 rounded-full border transition-all duration-500
+                ${mode === 'detailed'
+                    ? 'bg-black/40 border-[#2a2b35] shadow-inner'
+                    : 'bg-secondary/30 border-white/5'}
+            `}>
+                <NavButton
+                    view="dashboard"
+                    label="Home"
+                    icon={<HomeIcon className="w-3.5 h-3.5" />}
+                />
                 <NavButton
                     view="map"
-                    label="World Map"
-                    icon={
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <circle cx="12" cy="12" r="10" />
-                            <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
-                            <path d="M2 12h20" />
-                        </svg>
-                    }
+                    label="Map"
+                    icon={<MapIcon className="w-3.5 h-3.5" />}
                 />
                 <NavButton
                     view="editor"
                     label="Chronicle"
-                    icon={
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                        </svg>
-                    }
+                    icon={<ChronicleIcon className="w-3.5 h-3.5" />}
                 />
                 <NavButton
                     view="entities"
                     label="Database"
-                    icon={
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M12 2c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12 6.5 2 12 2zm0 18c4.4 0 8-3.6 8-8s-3.6-8-8-8-8 3.6-8 8 3.6 8 8 8z" />
-                            <circle cx="12" cy="12" r="3" />
-                            <path d="M12 2v2" /><path d="M12 20v2" />
-                            <path d="M2 12h2" /><path d="M20 12h2" />
-                        </svg>
-                    }
+                    icon={<DatabaseIcon className="w-3.5 h-3.5" />}
+                />
+                <NavButton
+                    view="settings"
+                    label="Settings"
+                    icon={<SettingsIcon className="w-3.5 h-3.5" />}
                 />
             </div>
 
@@ -102,21 +127,24 @@ export function TopBar({ currentView, onViewChange }: TopBarProps) {
             <div className="flex items-center gap-3 w-48 justify-end">
                 {/* Sync Status */}
                 <div
-                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full ${config.bgColor} ${config.color} text-xs font-medium cursor-help transition-colors ring-1 ring-inset ring-white/5`}
-                    title={lastSyncTime ? `Last saved: ${formatLastSync()}` : 'Not yet saved'}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full ${getStatusColor()} text-xs font-medium cursor-help transition-colors ring-1 ring-inset`}
+                    title={lastSyncTime ? `Last saved: ${lastSyncTime.toLocaleTimeString()}` : 'Not yet saved'}
                 >
-                    <div className={`w-1.5 h-1.5 rounded-full ${config.dotColor} ${status === 'syncing' ? 'animate-pulse' : ''}`} />
-                    <span>{config.label}</span>
+                    <div className={`w-1.5 h-1.5 rounded-full bg-current ${status === 'syncing' ? 'animate-pulse' : ''}`} />
+                    <span>{getStatusLabel()}</span>
                 </div>
 
                 <div className="w-px h-4 bg-border" />
 
-                <button className="p-2 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground" title="Settings">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="3" />
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                    </svg>
+                {/* Theme Toggle */}
+                <button
+                    onClick={toggleMode}
+                    className={`p-2 rounded-full hover:bg-secondary transition-colors group relative ${mode === 'detailed' ? 'text-amber-400 hover:text-amber-200 hover:bg-amber-900/20' : 'text-muted-foreground hover:text-foreground'}`}
+                    title={mode === 'detailed' ? 'Switch to Minimal' : 'Switch to Dark Fantasy'}
+                >
+                    {mode === 'detailed' ? <Ghost className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
                 </button>
+
             </div>
         </header>
     );

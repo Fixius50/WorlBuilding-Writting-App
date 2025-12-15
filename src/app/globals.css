@@ -33,6 +33,31 @@
   --neon-glow: 180 100% 50%;
 }
 
+:root[data-theme='detailed'] {
+  /* Dark Fantasy / RPG Theme */
+  --background: 240 10% 8%; /* Very dark stone */
+  --foreground: 35 30% 85%; /* Parchment text */
+  
+  --card: 240 10% 12%; /* Darker slate */
+  --card-foreground: 35 30% 85%;
+  
+  --primary: 35 90% 45%; /* Gold/Amber */
+  --primary-foreground: 240 10% 8%;
+  
+  --secondary: 240 15% 18%; /* Dark Iron */
+  --secondary-foreground: 35 30% 85%;
+  
+  --muted: 240 10% 15%;
+  --muted-foreground: 240 10% 60%;
+  
+  --accent: 260 50% 40%; /* Royal Purple */
+  --accent-foreground: 35 30% 90%;
+  
+  --border: 35 20% 20%; /* Rusted/Old metal */
+  --input: 240 15% 15%;
+  --ring: 35 90% 45%;
+}
+
 * {
   margin: 0;
   padding: 0;

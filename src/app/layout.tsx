@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
+import { ThemeProvider } from '@/components/theme/ThemeProvider';
 
 const inter = Inter({
     subsets: ['latin'],
@@ -28,7 +29,9 @@ export default function RootLayout({
     return (
         <html lang="es" className={`dark ${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
             <body className="font-sans antialiased" suppressHydrationWarning>
-                {children}
+                <ThemeProvider>
+                    {children}
+                </ThemeProvider>
             </body>
         </html>
     );
