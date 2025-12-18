@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuaderno - Escritura Inmersiva</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/index.css">
+    <style>
+        body {
+            background-color: var(--color-bg-primary);
+            overflow-x: hidden;
+        }
+
+        .writing-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: var(--spacing-md) var(--spacing-xl);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(26, 22, 20, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .notebook-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            color: var(--color-gold);
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: var(--color-text-muted);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: var(--color-text-primary);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-slate-200 font-display h-screen overflow-hidden flex flex-col">
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="../css/glass_theme.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Header Glassmorphism -->
+    <header
+        class="glass-panel sticky top-0 z-50 flex items-center justify-between px-6 py-3 border-b border-white/10 shrink-0">
+        <div class="flex items-center gap-4">
+            <a href="dashboard.html"
+                class="flex items-center justify-center size-8 bg-indigo-500/10 rounded-lg hover:bg-indigo-500/20 transition-colors">
+                <span class="material-symbols-outlined text-indigo-400">arrow_back</span>
+            </a>
+            <div class="flex flex-col">
+                <h1 class="text-white text-sm font-bold tracking-wide" id="notebook-title">Mi Historia</h1>
+                <div class="flex items-center gap-2 text-xs text-slate-400">
+                    <span class="size-1.5 rounded-full bg-green-500"></span>
+                    <span id="save-status">Guardado</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <button
+                class="flex items-center gap-2 px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-wider rounded-full transition-colors shadow-lg shadow-indigo-600/20">
+                <span class="material-symbols-outlined text-sm">center_focus_strong</span>
+                <span>Enfoque</span>
+            </button>
+            <button
+                class="size-9 flex items-center justify-center rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-white/10">
+                <span class="material-symbols-outlined text-lg">settings</span>
+            </button>
+            <div
+                class="size-9 bg-slate-700 rounded-full border border-white/10 flex items-center justify-center text-xs font-bold">
+                JS</div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden relative">
+        <!-- Main Canvas -->
+        <main class="flex-1 overflow-y-auto relative scroll-smooth bg-slate-950 flex flex-col items-center py-12 px-4">
+            <!-- Page Container -->
+            <div id="paper-container"
+                class="group relative w-full max-w-[816px] min-h-[1056px] bg-slate-900 rounded-sm p-16 md:p-24 shadow-2xl transition-all duration-300 border-t border-white/5">
+                <!-- Page Number -->
+                <div class="absolute -right-12 top-0 text-slate-600 text-xs font-mono font-medium opacity-50"
+                    id="page-number-display">01</div>
+
+                <!-- Editable Area -->
+                <div id="editor" class="text-lg leading-[1.8] text-slate-300 font-body outline-none min-h-[800px]"
+                    contenteditable="true" spellcheck="false">
+                    Empieza a escribir tu historia aquí...
+                </div>
+            </div>
+
+            <!-- Page Navigation Grid (Bottom) -->
+            <div class="mt-8 flex gap-4">
+                <button class="glass-button text-sm" onclick="irPaginaAnterior()">← Anterior</button>
+                <button class="glass-button text-sm" onclick="añadirNuevaHoja()">+ Nueva Hoja</button>
+                <button class="glass-button text-sm" onclick="irPaginaSiguiente()">Siguiente →</button>
+            </div>
+        </main>
+
+        <!-- Sidebar Notes (Desktop) -->
+        <aside class="hidden xl:flex w-80 flex-col border-l border-white/10 glass-panel z-10">
+            <div class="flex items-center justify-between p-4 border-b border-white/10">
+                <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400">Notas Rápidas</h3>
+            </div>
+            <!-- Notes List -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                <div
+                    class="bg-slate-900/50 rounded-xl p-4 border border-white/5 hover:border-indigo-500/30 transition-colors cursor-pointer">
+                    <div class="flex justify-between items-start mb-2">
+                        <span
+                            class="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full">Idea</span>
+                        <span class="text-[10px] text-slate-500">Hoy</span>
+                    </div>
+                    <p class="text-sm text-slate-300 leading-relaxed">Recordar vincular al antagonista con la facción
+                        del norte.</p>
+                </div>
+            </div>
+            <!-- Input -->
+            <div class="p-4 border-t border-white/10">
+                <input class="glass-input text-sm" placeholder="Escribir nota..." type="text">
+            </div>
+        </aside>
+    </div>
+
+    <!-- Dropdown & Modals (Preserved from original logic but restyled) -->
+    <div id="mention-dropdown"
+        class="absolute hidden flex-col glass-panel rounded-xl shadow-2xl overflow-hidden z-50 border border-indigo-500/30 min-w-[250px] animate-fade-in-up">
+        <!-- Injected by JS -->
+    </div>
+
+    <!-- Modal Creación Rápida -->
+    <div id="modal-crear"
+        class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex-col items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-md rounded-2xl p-6 shadow-2xl border border-white/10">
+            <h2 class="text-xl font-bold text-white mb-4">Nueva Entidad</h2>
+            <form id="form-crear-rapida" onsubmit="guardarEntidadRapida(event)" class="space-y-4">
+                <div>
+                    <label class="text-xs text-slate-400 uppercase font-bold">Tipo</label>
+                    <select id="entidad-tipo-select" class="glass-input mt-1">
+                        <option value="entidadindividual">👤 Personaje</option>
+                        <option value="entidadcolectiva">👥 Grupo</option>
+                        <option value="zona">🗺️ Zona</option>
+                        <option value="construccion">🏛️ Construcción</option>
+                        <option value="efectos">✨ Efectos/Magia</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 uppercase font-bold">Nombre</label>
+                    <input type="text" id="entidad-nombre" class="glass-input mt-1" required>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 uppercase font-bold">Descripción</label>
+                    <textarea id="entidad-descripcion" class="glass-input mt-1" rows="2"></textarea>
+                </div>
+                <div class="flex justify-end gap-2 mt-6">
+                    <button type="button" class="text-slate-400 hover:text-white px-4 py-2 text-sm font-medium"
+                        onclick="cerrarModalCrear()">Cancelar</button>
+                    <button type="submit" class="glass-button">Crear</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/editor.js"></script>
+</body>
+
+</html>

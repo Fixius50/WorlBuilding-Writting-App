@@ -1,65 +1,50 @@
-# Dependencies
-node_modules/
-.pnp
-.pnp.js
+# WorldbuildingApp V2
 
-# Testing
-coverage/
+### Build output ###
+target/
+!**/src/main/**/target/
+!**/src/test/**/target/
 
-# Next.js
-.next/
-out/
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
 build/
+!**/src/main/**/build/
+!**/src/test/**/build/
 
-# Production
-dist/
+### VS Code ###
+.vscode/
 
-# Misc
-.DS_Store
-*.pem
+### Maven Wrapper ###
+.mvn/wrapper/maven-wrapper.jar
 
-# Debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+### Frontend ###
+node_modules/
+*.log
 
-# Local env files
+### Data files ###
+data/*
+
+### Environment ###
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
 
-# Vercel
-.vercel
-
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Legacy Java (archived)
-_legacy/target/
-_legacy/.mvn/
-*.class
-*.jar
-*.war
-*.ear
-
-# Supabase
-.supabase/
-supabase/.temp/
-
-# OS
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# Logs
-*.log
-logs/
+/Docs/Referencias_visuales/

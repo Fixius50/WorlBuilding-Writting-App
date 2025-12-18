@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="WorldbuildingApp V2 - Crea y gestiona mundos para tus historias">
+    <title>WorldbuildingApp V2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/index.css">
+    <style>
+        /* Estilos específicos de la página de inicio */
+        .landing {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hero {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-xl);
+            background:
+                radial-gradient(ellipse at 20% 30%, rgba(184, 134, 11, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(140, 126, 109, 0.05) 0%, transparent 50%),
+                var(--color-bg-primary);
+        }
+
+        .hero-content {
+            text-align: center;
+            max-width: 600px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .hero-logo {
+            font-size: 3.5rem;
+            font-weight: 700;
+            background: var(--color-accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-normal);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-xl);
+            width: 90%;
+            max-width: 450px;
+            transform: scale(0.9) translateY(20px);
+            transition: transform var(--transition-normal);
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--color-text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: var(--spacing-xs);
+            line-height: 1;
+            transition: color var(--transition-fast);
+        }
+
+        .modal-close:hover {
+            color: var(--color-text-primary);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+        }
+
+        /* Footer */
+        .footer {
+            padding: var(--spacing-lg);
+            text-align: center;
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
+            border-top: 1px solid var(--color-border);
+        }
+
+        /* Notificación toast */
+        .toast {
+            position: fixed;
+            bottom: var(--spacing-xl);
+            right: var(--spacing-xl);
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            transform: translateX(120%);
+            transition: transform var(--transition-normal);
+            z-index: 2000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast-success {
+            background: var(--color-success);
+            color: white;
+        }
+
+        .toast-error {
+            background: var(--color-error);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="landing">
+        <main class="hero">
+            <div class="hero-content">
+                <h1 class="hero-logo">🌍 WorldbuildingApp</h1>
+                <p class="hero-subtitle">
+                    Crea mundos increíbles para tus historias. Gestiona personajes,
+                    zonas, construcciones y relaciones en un solo lugar.
+                </p>
+                <div class="hero-actions">
+                    <button class="btn btn-primary btn-lg" onclick="openModal('crear')">
+                        ✨ Crear Proyecto
+                    </button>
+                    <button class="btn btn-secondary btn-lg" onclick="openModal('abrir')">
+                        📂 Abrir Proyecto
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>WorldbuildingApp V2 &copy; 2024 — Creado con ❤️ para creadores de mundos</p>
+        </footer>
+    </div>
+
+    <!-- Modal Crear Proyecto -->
+    <div id="modal-crear" class="modal-overlay" onclick="closeModalOnOverlay(event, 'crear')">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">✨ Crear Proyecto</h2>
+                <button class="modal-close" onclick="closeModal('crear')">&times;</button>
+            </div>
+            <form id="form-crear" onsubmit="crearProyecto(event)">
+                <div class="form-group">
+                    <label class="form-label" for="crear-nombre">Nombre del proyecto</label>
+                    <input type="text" id="crear-nombre" class="form-input" placeholder="Ej: Tierras de Aethoria"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="crear-tipo">Tipo de proyecto</label>
+                    <select id="crear-tipo" class="form-select">
+                        <option value="fantasia">Fantasía</option>
+                        <option value="scifi">Ciencia Ficción</option>
+                        <option value="historico">Histórico</option>
+                        <option value="moderno">Moderno</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('crear')">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Crear
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Abrir Proyecto -->
+    <div id="modal-abrir" class="modal-overlay" onclick="closeModalOnOverlay(event, 'abrir')">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">📂 Abrir Proyecto</h2>
+                <button class="modal-close" onclick="closeModal('abrir')">&times;</button>
+            </div>
+            <form id="form-abrir" onsubmit="abrirProyecto(event)">
+                <div class="form-group">
+                    <label class="form-label" for="abrir-nombre">Nombre del proyecto</label>
+                    <input type="text" id="abrir-nombre" class="form-input" placeholder="Nombre exacto del proyecto"
+                        required>
+                </div>
+                <div id="proyectos-recientes" class="hidden" style="margin-bottom: var(--spacing-lg);">
+                    <p class="form-label">Proyectos recientes:</p>
+                    <div id="lista-proyectos" style="display: flex; flex-wrap: wrap; gap: var(--spacing-sm);"></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('abrir')">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Abrir
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast de notificaciones -->
+    <div id="toast" class="toast"></div>
+
+    <script src="js/api.js"></script>
+    <script>
+        // === Estado de carga ===
+        let isLoading = false;
+
+        function setLoading(loading, buttonId = null) {
+            isLoading = loading;
+            if (buttonId) {
+                const btn = document.getElementById(buttonId);
+                if (btn) {
+                    btn.disabled = loading;
+                    btn.innerHTML = loading
+                        ? '<span class="loader" style="width:16px;height:16px;border-width:2px;margin-right:8px;"></span> Cargando...'
+                        : btn.dataset.originalText;
+                    if (!loading) {
+                        btn.dataset.originalText = btn.innerHTML;
+                    }
+                }
+            }
+        }
+
+        // === Modales ===
+        function openModal(tipo) {
+            document.getElementById(`modal-${tipo}`).classList.add('active');
+
+            // Si es el modal de abrir, cargar proyectos
+            if (tipo === 'abrir') {
+                cargarProyectos();
+            }
+        }
+
+        function closeModal(tipo) {
+            document.getElementById(`modal-${tipo}`).classList.remove('active');
+        }
+
+        function closeModalOnOverlay(event, tipo) {
+            if (event.target.classList.contains('modal-overlay') && !isLoading) {
+                closeModal(tipo);
+            }
+        }
+
+        // === Toast ===
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast toast-${type} show`;
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // === Proyectos ===
+        async function crearProyecto(event) {
+            event.preventDefault();
+            const nombre = document.getElementById('crear-nombre').value.trim();
+            const tipo = document.getElementById('crear-tipo').value;
+            const btnCrear = event.target.querySelector('button[type="submit"]');
+
+            if (!nombre) {
+                showToast('Por favor ingresa un nombre', 'error');
+                return;
+            }
+
+            // Mostrar loading
+            btnCrear.disabled = true;
+            btnCrear.innerHTML = '<span class="loader" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:8px;"></span> Creando...';
+
+            try {
+                const result = await API.proyectos.crear(nombre, tipo);
+                console.log('Resultado crear:', result);
+
+                if (result.success) {
+                    showToast('¡Proyecto creado! Redirigiendo...');
+                    // Pequeña pausa para que el usuario vea el mensaje
+                    setTimeout(() => {
+                        window.location.href = 'html/dashboard.html';
+                    }, 500);
+                } else {
+                    showToast(result.error || 'Error al crear proyecto', 'error');
+                    btnCrear.disabled = false;
+                    btnCrear.innerHTML = 'Crear';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error de conexión', 'error');
+                btnCrear.disabled = false;
+                btnCrear.innerHTML = 'Crear';
+            }
+        }
+
+        async function abrirProyecto(event) {
+            event.preventDefault();
+            const nombre = document.getElementById('abrir-nombre').value.trim();
+            const btnAbrir = event.target.querySelector('button[type="submit"]');
+
+            if (!nombre) {
+                showToast('Por favor ingresa un nombre', 'error');
+                return;
+            }
+
+            // Mostrar loading
+            btnAbrir.disabled = true;
+            btnAbrir.innerHTML = '<span class="loader" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:8px;"></span> Abriendo...';
+
+            try {
+                const result = await API.proyectos.abrir(nombre);
+                console.log('Resultado abrir:', result);
+
+                if (result.success) {
+                    showToast('Proyecto abierto! Redirigiendo...');
+                    setTimeout(() => {
+                        window.location.href = 'html/dashboard.html';
+                    }, 500);
+                } else {
+                    showToast(result.error || 'Proyecto no encontrado', 'error');
+                    btnAbrir.disabled = false;
+                    btnAbrir.innerHTML = 'Abrir';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error de conexión', 'error');
+                btnAbrir.disabled = false;
+                btnAbrir.innerHTML = 'Abrir';
+            }
+        }
+
+        async function cargarProyectos() {
+            try {
+                const proyectos = await API.proyectos.listar();
+                const container = document.getElementById('lista-proyectos');
+                const wrapper = document.getElementById('proyectos-recientes');
+
+                if (proyectos && proyectos.length > 0) {
+                    wrapper.classList.remove('hidden');
+                    container.innerHTML = proyectos.slice(0, 5).map(p => `
+                        <button type="button" class="btn btn-sm btn-ghost" 
+                                onclick="seleccionarProyecto('${p.nombreProyecto}')">
+                            ${p.nombreProyecto}
+                        </button>
+                    `).join('');
+                } else {
+                    wrapper.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('No se pudieron cargar los proyectos:', error);
+            }
+        }
+
+        function seleccionarProyecto(nombre) {
+            document.getElementById('abrir-nombre').value = nombre;
+        }
+
+        // ESC para cerrar modales
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !isLoading) {
+                document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

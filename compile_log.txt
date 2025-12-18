@@ -1,0 +1,72 @@
+﻿.\mvnw.cmd : WARNING: 
+A terminally 
+deprecated method in 
+sun.misc.Unsafe has 
+been called
+En línea: 1 Carácter: 
+1
++ .\mvnw.cmd compile 
+2>&1 | Out-File 
+-FilePath 
+compile_log.txt 
+-Encodin ...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (WARNING: A   
+  term...has been     
+called:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+WARNING: sun.misc.Unsa
+fe::staticFieldBase 
+has been called by com
+.google.inject.interna
+l.aop.HiddenClassDefin
+er (file:/C:/Users/rob
+er/.m2/wrapper/dists/a
+pache-maven-3.9.10/a38
+810a491b03367137adfdfb
+e7d14c4/lib/guice-5.1.
+0-classes.jar)
+WARNING: Please 
+consider reporting 
+this to the 
+maintainers of class c
+om.google.inject.inter
+nal.aop.HiddenClassDef
+iner
+WARNING: sun.misc.Unsa
+fe::staticFieldBase 
+will be removed in a 
+future release
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.worldbuilding:worldbuilding-app-v2:jar:2.0.0-SNAPSHOT
+[WARNING] 'parent.relativePath' of POM com.worldbuilding:worldbuilding-app-v2:2.0.0-SNAPSHOT (C:\Users\rober\Desktop\Proyectos propios\WorldbuildingApp\v2\pom.xml) points at com.worldbuilding:WorldbuildingApp instead of org.springframework.boot:spring-boot-starter-parent, please verify your project structure @ line 5, column 10
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] 
+[INFO] ---------------< com.worldbuilding:worldbuilding-app-v2 >---------------
+[INFO] Building WorldbuildingAppV2 2.0.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ worldbuilding-app-v2 ---
+[INFO] Copying 8 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ worldbuilding-app-v2 ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.029 s
+[INFO] Finished at: 2025-12-10T13:42:07+01:00
+[INFO] ------------------------------------------------------------------------
