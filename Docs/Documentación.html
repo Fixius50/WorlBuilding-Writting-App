@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chronos Atlas - Documentación</title>
+    <style>
+        :root {
+            --bg-primary: #0a0f1a;
+            --bg-secondary: #161b22;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent: #58a6ff;
+            --border: #30363d;
+            --code-bg: #0d1117;
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Sidebar Styles */
+        aside {
+            width: var(--sidebar-width);
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 1.5rem;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            display: block;
+        }
+
+        nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex-grow: 1;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            text-align: left;
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .nav-btn:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
+        }
+
+        .nav-btn.active {
+            background-color: rgba(88, 166, 255, 0.1);
+            color: var(--accent);
+        }
+
+        /* Main Content Area */
+        main {
+            flex-grow: 1;
+            position: relative;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background-color: var(--bg-primary);
+        }
+
+        .content-wrapper {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* Sections & Transitions */
+        section {
+            display: none;
+            /* Hidden by default */
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        section.active {
+            display: block;
+            /* Animation trigger via JS class delay */
+        }
+
+        section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Content Styling (Reused) */
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        h2 {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+
+        h3 {
+            color: var(--text-primary);
+            margin-top: 2rem;
+        }
+
+        p,
+        li {
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        strong {
+            color: var(--text-primary);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .badge-accent {
+            background-color: rgba(56, 139, 253, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(56, 139, 253, 0.4);
+        }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            margin: 1.5rem 0;
+        }
+
+        code {
+            font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+            color: var(--text-primary);
+            font-size: 0.9em;
+        }
+
+        p code {
+            background-color: rgba(110, 118, 129, 0.4);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+        }
+
+        /* Intro Section Specific */
+        #intro {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+        }
+
+        #intro h1 {
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, #fff 0%, #888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        footer {
+            margin-top: auto;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <div>
+            <span class="logo">Chronos Atlas</span>
+            <span class="subtitle">v1.0.0 RC</span>
+        </div>
+        <nav>
+            <button class="nav-btn active" onclick="showSection('intro')">Inicio</button>
+            <button class="nav-btn" onclick="showSection('bitacora')">Bitácora</button>
+            <button class="nav-btn" onclick="showSection('stack')">Tech Stack</button>
+            <button class="nav-btn" onclick="showSection('architecture')">Arquitectura</button>
+            <button class="nav-btn" onclick="showSection('features')">Features</button>
+        </nav>
+        <footer>
+            Generated by<br>Protocolo documentadorApp
+        </footer>
+    </aside>
+
+    <main>
+        <div class="content-wrapper">
+
+            <!-- Intro Section -->
+            <section id="intro" class="active visible">
+                <div style="margin-bottom: 2rem;">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                </div>
+                <h1>Chronos Atlas</h1>
+                <p style="font-size: 1.25rem; max-width: 600px;">
+                    IDE Narrativo Local-First para Worldbuilding con causalidad temporal perfecta.
+                </p>
+                <div style="margin-top: 2rem;">
+                    <span class="badge badge-accent">Local-First</span>
+                    <span class="badge badge-accent">Event-Sourced</span>
+                    <span class="badge badge-accent">Infinite History</span>
+                </div>
+                <button onclick="showSection('bitacora')"
+                    style="margin-top: 3rem; background: var(--accent); color: #fff; border: none; padding: 0.75rem 2rem; border-radius: 2rem; font-size: 1rem; cursor: pointer; font-weight: 600;">
+                    Comenzar Lectura
+                </button>
+            </section>
+
+            <!-- Bitacora Section -->
+            <section id="bitacora">
+                <h2>Bitácora de Desarrollo</h2>
+                <p>Historial cronológico de la transformación.</p>
+
+                <div class="card">
+                    <h3>Prompts Originales</h3>
+                    <div
+                        style="border-left: 4px solid var(--accent); padding-left: 1rem; font-style: italic; color: var(--text-secondary);">
+                        <strong>12/12/2024:</strong> "Transformar WorldbuildingApp (Java/Spring Boot) a 'Chronos Atlas'
+                        - IDE Narrativo Local-First para Worldbuilding con causalidad temporal."
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Inteligencias Artificiales</h3>
+                    <ul>
+                        <li><strong>Claude (Anthropic):</strong> Arquitectura y planificación.</li>
+                        <li><strong>Gemini (Google):</strong> Implementación de código y documentación.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Stack Section -->
+            <section id="stack">
+                <h2>Tech Stack ("The God Stack")</h2>
+
+                <div class="card">
+                    <h3>Núcleo (Core & Data)</h3>
+                    <ul>
+                        <li><strong>Nube (Serverless):</strong> Supabase (PostgreSQL)</li>
+                        <li><strong>Sincronización:</strong> PowerSync (Wrapper bidireccional)</li>
+                        <li><strong>Cliente Local:</strong> SQLite (WASM) via sql.js</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3>Frontend & Renderizado</h3>
+                    <ul>
+                        <li><strong>Framework:</strong> Next.js 15 (React 19)</li>
+                        <li><strong>Estilizado:</strong> Tailwind CSS + Shadcn/UI</li>
+                        <li><strong>Estado:</strong> Zustand + PowerSync Hooks</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3>Motores Especializados</h3>
+                    <ul>
+                        <li><strong>Mapas:</strong> MapLibre GL JS + Deck.gl + Nebula.gl</li>
+                        <li><strong>Texto:</strong> TipTap (Headless, Block-based)</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Architecture Section -->
+            <section id="architecture">
+                <h2>Arquitectura Clave</h2>
+                <p>Componentes fundamentales del sistema.</p>
+
+                <h3>1. Inicialización Local (SQLite)</h3>
+                <pre><code>// Inicialización SQL.js (SQLite WASM)
+export async function initDatabase(): Promise<Database> {
+  const SQL = await initSqlJs({
+    locateFile: (file) => `https://sql.js.org/dist/${file}`
+  });
+  // ... lógica de carga desde localStorage
+}</code></pre>
+
+                <h3>2. Esquema EAV Temporal</h3>
+                <pre><code>CREATE TABLE facts (
+  id UUID PRIMARY KEY,
+  entity_id UUID REFERENCES entities(id),
+  attribute VARCHAR NOT NULL,
+  value JSONB NOT NULL,
+  valid_from_game_tick INTEGER
+  -- ... causalidad temporal
+);</code></pre>
+
+                <h3>3. Store de Tiempo (Zustand)</h3>
+                <pre><code>interface TimelineState {
+  activeTimelineId: string | null;
+  currentGameTick: number;
+  // ... controles de reproducción
+}</code></pre>
+            </section>
+
+            <!-- Features Section -->
+            <section id="features">
+                <h2>Changelog / Features</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+                    <div class="card">
+                        <h3>Local-First</h3>
+                        <p>Latencia 0ms. La base de datos vive en tu navegador. Funciona sin internet.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Causalidad Profunda</h3>
+                        <p>No se guardan estados, se guarda historia. Puedes viajar a cualquier punto del tiempo.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Sincronización</h3>
+                        <p>De local a la nube (Supabase) automáticamente cuando hay conexión.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Visualización</h3>
+                        <p>Mapas vectoriales 8K y renderizado WebGL para tokens y ejércitos.</p>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        function showSection(sectionId) {
+            // 1. Update Navigation
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            // Find button that calls this section (simple match)
+            const activeBtn = Array.from(document.querySelectorAll('.nav-btn')).find(b => b.getAttribute('onclick').includes(sectionId));
+            if (activeBtn) activeBtn.classList.add('active');
+
+            // 2. Hide current active section
+            const currentSection = document.querySelector('section.active');
+            if (currentSection) {
+                currentSection.classList.remove('visible');
+                setTimeout(() => {
+                    currentSection.classList.remove('active');
+
+                    // 3. Show new section with animation
+                    const newSection = document.getElementById(sectionId);
+                    newSection.classList.add('active');
+                    // Small delay to allow display:block to render before opacity transition
+                    requestAnimationFrame(() => {
+                        newSection.classList.add('visible');
+                    });
+                }, 300); // Wait for fade out
+            } else {
+                // Should not happen usually
+                const newSection = document.getElementById(sectionId);
+                newSection.classList.add('active');
+                setTimeout(() => newSection.classList.add('visible'), 10);
+            }
+        }
+    </script>
+</body>
+
+</html>
