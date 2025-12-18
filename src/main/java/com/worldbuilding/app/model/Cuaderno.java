@@ -14,6 +14,10 @@ public class Cuaderno {
     @Column(name = "nombre_proyecto", nullable = false)
     private String nombreProyecto;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id") // Nullable for now to ease migration of existing rows if any
+    private Usuario usuario;
+
     @Column(nullable = false)
     private String titulo;
 
@@ -62,5 +66,13 @@ public class Cuaderno {
 
     public void setFechaCreacion(LocalDateTime fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 }

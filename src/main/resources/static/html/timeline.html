@@ -4,220 +4,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chronos Atlas - Editor de Línea de Tiempo</title>
+    <title>Chronos Atlas - Cronología</title>
     <link rel="stylesheet" href="../css/glass_theme.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
 </head>
 
-<body class="bg-slate-950 text-slate-200 font-display min-h-screen flex hidden-scrollbar overflow-hidden">
+<body class="bg-slate-950 text-slate-200 font-display min-h-screen flex flex-col hidden-scrollbar overflow-hidden">
 
-    <!-- Sidebar Navigation (Matching Dashboard) -->
-    <aside class="glass-panel w-72 h-full flex flex-col border-r border-white/10 z-20 shrink-0">
-        <div class="p-6 flex items-center gap-3">
-            <div
-                class="size-10 bg-gradient-to-br from-indigo-500 to-slate-800 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                <span class="material-symbols-outlined text-white">public</span>
-            </div>
-            <div>
-                <h1 class="text-white text-sm font-bold leading-tight">Chronos Atlas</h1>
-                <p class="text-slate-500 text-xs font-medium">Local-First</p>
-            </div>
+    <!-- Top Radial Menu -->
+    <div class="nav-trigger-container" id="nav-container">
+        <div class="nav-trigger" id="nav-trigger">
+            <span class="material-symbols-outlined text-indigo-400 text-2xl">keyboard_arrow_down</span>
         </div>
-        <nav class="flex-1 overflow-y-auto px-4 py-2 space-y-1">
-            <a href="dashboard.html"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all group">
-                <span class="material-symbols-outlined group-hover:text-white">dashboard</span>
-                <span class="font-medium text-sm">Dashboard</span>
-            </a>
-            <a href="#"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl bg-indigo-500/10 text-white border border-indigo-500/20 shadow-sm transition-all group">
-                <span class="material-symbols-outlined text-indigo-400">schedule</span>
-                <span class="font-medium text-sm">Cronología</span>
-            </a>
-        </nav>
-    </aside>
+        <div class="radial-menu-container" id="radial-menu">
+            <div class="radial-menu-bg"></div>
+            <a href="dashboard.html" class="nav-item" style="top: 20px; left: 20px;" title="Dashboard"><span
+                    class="material-symbols-outlined">dashboard</span><span class="tooltip">Dashboard</span></a>
+            <a href="dashboard.html" class="nav-item" style="top: 60px; left: 80px;" title="Librería"><span
+                    class="material-symbols-outlined">library_books</span><span class="tooltip">Librería</span></a>
+            <a href="biblia.html" class="nav-item" style="top: 100px; left: 140px;" title="Biblia"><span
+                    class="material-symbols-outlined">menu_book</span><span class="tooltip">Biblia</span></a>
+            <a href="profile.html" class="nav-item" style="top: 120px; left: 178px;" title="Perfil"><span
+                    class="material-symbols-outlined">person</span><span class="tooltip">Perfil</span></a>
+            <a href="timeline.html" class="nav-item" style="top: 100px; left: 216px;" title="Cronología"><span
+                    class="material-symbols-outlined">schedule</span><span class="tooltip">Cronología</span></a>
+            <a href="atlas.html" class="nav-item" style="top: 60px; left: 276px;" title="Atlas"><span
+                    class="material-symbols-outlined">map</span><span class="tooltip">Atlas</span></a>
+            <a href="conlang.html" class="nav-item" style="top: 20px; left: 336px;" title="Lingüística"><span
+                    class="material-symbols-outlined">translate</span><span class="tooltip">Lingüística</span></a>
+        </div>
+    </div>
+    <div class="bg-overlay" id="menu-overlay"></div>
 
     <!-- Main Content -->
     <main
-        class="flex-1 flex flex-col h-screen overflow-hidden relative bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-950/20 via-slate-950 to-slate-950">
-
-        <!-- Header Overlay -->
-        <header
-            class="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-8 py-4 pointer-events-none">
-            <div class="pointer-events-auto flex gap-4 items-center">
-                <h2 class="text-xl font-bold text-white">Timeline Editor</h2>
-                <div class="flex bg-slate-900/80 rounded-lg p-1 border border-white/10 backdrop-blur">
-                    <button class="px-3 py-1 rounded text-xs text-slate-400 hover:text-white">Century</button>
-                    <button class="px-3 py-1 rounded text-xs bg-indigo-600 text-white shadow-sm">Year</button>
-                    <button class="px-3 py-1 rounded text-xs text-slate-400 hover:text-white">Day</button>
+        class="flex-1 w-full flex flex-col relative bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-950/40 via-slate-950 to-slate-950">
+        <!-- Header -->
+        <div class="p-6 border-b border-white/5 flex items-center justify-between backdrop-blur-sm z-10">
+            <div class="flex items-center gap-4">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined text-indigo-400">schedule</span>
+                    Línea de Tiempo
+                </h2>
+                <div class="flex gap-2">
+                    <span
+                        class="px-2 py-0.5 rounded border border-white/10 text-[10px] text-slate-400 uppercase font-bold tracking-wider">Era
+                        Actual</span>
                 </div>
             </div>
-
-            <div class="pointer-events-auto flex gap-3">
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-2.5 top-2 text-slate-500 text-sm">search</span>
-                    <input type="text" placeholder="Search events..."
-                        class="glass-input pl-8 py-1.5 text-sm w-64 rounded-full bg-slate-900/80 border-slate-700">
-                </div>
-                <button
-                    class="size-8 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-colors">
-                    <span class="material-symbols-outlined text-sm">tune</span>
-                </button>
-                <button
-                    class="px-4 py-1.5 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-lg shadow-indigo-600/20 flex items-center gap-2">
-                    <span class="material-symbols-outlined text-sm">save</span>
-                    Save
-                </button>
-            </div>
-        </header>
-
-        <!-- Current Era Indicator -->
-        <div class="absolute top-20 left-8 z-0 pointer-events-none">
-            <div class="glass-panel p-4 rounded-xl border-l-4 border-l-indigo-500">
-                <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Current Era</span>
-                <h1 class="text-4xl font-black text-white leading-none mt-1">Year 452</h1>
-                <p class="text-slate-500 text-xs mt-1">The Age of Ash</p>
-            </div>
+            <button
+                class="bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-200 border border-indigo-500/30 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all">
+                <span class="material-symbols-outlined">add</span>
+                Evento
+            </button>
         </div>
 
-        <!-- Canvas Area (Infinite Scroll Simulation) -->
-        <div class="flex-1 overflow-auto relative cursor-grab active:cursor-grabbing custom-scrollbar"
-            id="timeline-canvas">
-            <!-- Grid Background -->
-            <div class="absolute inset-0 z-0 opacity-20 pointer-events-none"
-                style="background-image: radial-gradient(#4f46e5 1px, transparent 1px); background-size: 40px 40px;">
-            </div>
-
-            <!-- Central Time Axis -->
-            <div class="absolute top-0 bottom-0 left-1/2 w-px bg-indigo-500/20 z-0"></div>
+        <!-- Timeline Body (Horizontal Scroll) -->
+        <div class="flex-1 overflow-x-auto overflow-y-hidden p-10 flex items-center gap-8 min-w-full relative"
+            id="timeline-scroll-area">
+            <div class="absolute top-1/2 left-0 w-full h-1 bg-white/10 -translate-y-1/2 pointer-events-none"></div>
+            <!-- Dynamic Content Here via JS (timeline.js) -->
+            <!-- Placeholder for visual if JS fails -->
             <div
-                class="absolute top-0 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-b z-10">
-                NOW</div>
-
-            <!-- Content Container (Large width for scrolling) -->
-            <div class="min-w-[2000px] min-h-[1000px] relative pt-32 pb-32">
-
-                <!-- Swimlanes (Horizontal Lines) -->
-                <div
-                    class="absolute top-1/3 left-0 right-0 h-px border-t border-dashed border-white/5 flex items-center">
-                    <span
-                        class="ml-8 text-[10px] font-bold text-slate-600 uppercase tracking-widest bg-slate-950 px-2">Main
-                        Plot</span>
-                </div>
-                <div
-                    class="absolute top-2/3 left-0 right-0 h-px border-t border-dashed border-white/5 flex items-center">
-                    <span
-                        class="ml-8 text-[10px] font-bold text-slate-600 uppercase tracking-widest bg-slate-950 px-2">Political</span>
-                </div>
-
-                <!-- Events -->
-                <!-- Event 1 -->
-                <div
-                    class="absolute left-[45%] top-[calc(33%-40px)] w-64 glass-panel p-4 rounded-xl border border-white/10 hover:border-indigo-500/50 transition-all cursor-pointer group hover:scale-105 z-10">
-                    <div
-                        class="absolute -bottom-10 left-1/2 -translate-x-1/2 w-px h-10 bg-indigo-500/50 group-hover:bg-indigo-400">
-                    </div>
-                    <div
-                        class="absolute -bottom-[43px] left-1/2 -translate-x-1/2 size-2 rounded-full bg-indigo-500 ring-4 ring-slate-950">
-                    </div>
-
-                    <span class="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded">Jan
-                        12</span>
-                    <h3 class="text-sm font-bold text-white mt-1">Coronation of King Alric</h3>
-                    <p class="text-xs text-slate-500 mt-1 line-clamp-2">The young king ascends to the throne amidst
-                        rumors of betrayal.</p>
-                </div>
-
-                <!-- Event 2 -->
-                <div
-                    class="absolute left-[70%] top-[33%] w-72 glass-panel p-4 rounded-xl border border-white/10 hover:border-red-500/50 transition-all cursor-pointer group hover:scale-105 z-10">
-                    <div class="absolute top-1/2 -left-10 w-10 h-px bg-red-500/30"></div>
-
-                    <span class="text-[10px] font-bold text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded">Jun 15</span>
-                    <h3 class="text-sm font-bold text-white mt-1">Battle of Red Valley</h3>
-                    <p class="text-xs text-slate-500 mt-1">Major conflict between the Northern Alliance and the rebels.
-                    </p>
-                    <div class="flex items-center gap-2 mt-3 pt-3 border-t border-white/5">
-                        <div class="size-5 rounded-full bg-slate-700"></div>
-                        <span class="text-[10px] text-slate-400">Involves: Gen. Kael</span>
-                    </div>
-                </div>
-
-                <!-- Event 3 -->
-                <div
-                    class="absolute left-[52%] top-[66%] w-56 glass-panel p-3 rounded-xl border border-white/10 hover:border-emerald-500/50 transition-all cursor-pointer group hover:scale-105 z-10">
-                    <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-px h-10 bg-emerald-500/30"></div>
-                    <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">Aug
-                        22</span>
-                    <h3 class="text-sm font-bold text-white mt-1">Drought Crisis</h3>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- Right Side Panel (Events List) -->
-        <aside class="w-80 h-full glass-panel border-l border-white/10 z-20 flex flex-col">
-            <div class="p-4 border-b border-white/10 flex justify-between items-center">
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Timeline Events</h3>
-                <span class="material-symbols-outlined text-slate-500 text-sm">list</span>
-            </div>
-            <div class="flex-1 overflow-y-auto p-4 space-y-6 relative">
-                <!-- Vertical Line -->
-                <div class="absolute left-6 top-4 bottom-4 w-px bg-slate-800"></div>
-
-                <!-- List Item 1 -->
-                <div class="relative pl-8 group cursor-pointer">
-                    <div
-                        class="absolute left-[21px] top-1.5 size-2 rounded-full bg-slate-700 ring-4 ring-slate-950 group-hover:bg-indigo-500 transition-colors">
-                    </div>
-                    <span class="text-[10px] text-slate-500 font-mono">Jan 12, 452</span>
-                    <h4 class="text-sm font-bold text-slate-300 group-hover:text-white transition-colors">Coronation of
-                        King Alric</h4>
-                    <span
-                        class="text-[10px] bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded border border-white/5 mt-1 inline-block">Political</span>
-                </div>
-
-                <!-- List Item 2 (Active) -->
-                <div class="relative pl-8 group cursor-pointer">
-                    <div
-                        class="absolute left-[19px] top-1.5 size-3 rounded-full bg-transparent border-2 border-indigo-500 ring-4 ring-slate-950">
-                    </div>
-                    <div class="glass-panel p-3 rounded-lg border-indigo-500/30 bg-indigo-500/5">
-                        <span class="text-[10px] text-indigo-400 font-mono font-bold">Jun 15, 452</span>
-                        <h4 class="text-sm font-bold text-white mt-0.5">Battle of Red Valley</h4>
-                        <p class="text-[10px] text-slate-400 mt-1 leading-relaxed">Major conflict between the Northern
-                            Alliance and...</p>
-                    </div>
+                class="glass-timeline-card min-w-[280px] p-5 rounded-2xl relative group hover:-translate-y-2 transition-transform duration-300">
+                <div class="absolute top-1/2 -left-4 w-4 h-1 bg-white/20"></div>
+                <div class="text-indigo-400 text-xs font-bold mb-1">Año 340</div>
+                <h3 class="text-white font-bold text-lg mb-2">La Gran Fundación</h3>
+                <p class="text-slate-400 text-sm line-clamp-3">Se establecen los pilares de la primera ciudadela bajo el
+                    mandato del Rey...</p>
+                <div class="mt-4 pt-4 border-t border-white/5 flex gap-2">
+                    <span class="px-2 py-1 bg-amber-500/10 text-amber-400 text-xs rounded">Político</span>
                 </div>
             </div>
-        </aside>
-
-        <!-- Floating Action Button -->
-        <button
-            class="absolute bottom-8 right-96 z-30 size-14 rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
-            <span class="material-symbols-outlined text-3xl">add</span>
-        </button>
-
-        <!-- Scrubber -->
-        <div
-            class="absolute bottom-0 left-72 right-80 h-16 glass-panel border-t border-white/10 z-20 flex items-center px-6 gap-4">
-            <span class="text-[10px] font-mono text-slate-500">Year 400</span>
-            <div class="flex-1 h-1.5 bg-slate-800 rounded-full relative">
-                <div class="absolute left-0 top-0 bottom-0 w-[40%] bg-indigo-500/30 rounded-l-full"></div>
-                <div
-                    class="absolute left-[40%] top-1/2 -translate-y-1/2 size-4 bg-white rounded-full shadow cursor-pointer hover:scale-125 transition-transform ring-4 ring-indigo-500/30">
-                </div>
-            </div>
-            <span class="text-[10px] font-mono text-slate-500">Year 500</span>
             <div
-                class="px-2 py-1 rounded bg-indigo-900/50 border border-indigo-500/30 text-[10px] font-mono text-indigo-300">
-                Current: 452
+                class="glass-timeline-card min-w-[280px] p-5 rounded-2xl relative group hover:-translate-y-2 transition-transform duration-300">
+                <div class="absolute top-1/2 -left-4 w-4 h-1 bg-white/20"></div>
+                <div class="text-indigo-400 text-xs font-bold mb-1">Año 342</div>
+                <h3 class="text-white font-bold text-lg mb-2">Guerra de los Ecos</h3>
+                <p class="text-slate-400 text-sm line-clamp-3">Conflicto armado en las fronteras...</p>
+                <div class="mt-4 pt-4 border-t border-white/5 flex gap-2">
+                    <span class="px-2 py-1 bg-red-500/10 text-red-400 text-xs rounded">Militar</span>
+                </div>
             </div>
         </div>
-
     </main>
+
+    <script src="../js/navigation.js"></script>
+    <script src="../js/timeline.js"></script>
 </body>
 
 </html>

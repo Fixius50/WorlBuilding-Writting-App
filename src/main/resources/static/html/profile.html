@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chronos Atlas - Perfil</title>
+    <link rel="stylesheet" href="../css/glass_theme.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+</head>
+
+<body class="bg-slate-950 text-slate-200 font-display min-h-screen flex hidden-scrollbar overflow-hidden">
+    <!-- Sidebar Navigation -->
+    <aside class="glass-panel w-72 h-full flex flex-col border-r border-white/10 z-20 shrink-0">
+        <div class="p-6 flex items-center gap-3">
+            <div
+                class="size-10 bg-gradient-to-br from-indigo-500 to-slate-800 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <span class="material-symbols-outlined text-white">public</span>
+            </div>
+            <div>
+                <h1 class="text-white text-sm font-bold leading-tight">Chronos Atlas</h1>
+                <p class="text-slate-500 text-xs font-medium">Local-First</p>
+            </div>
+        </div>
+        <nav class="flex-1 overflow-y-auto px-4 py-2 space-y-1">
+            <a href="dashboard.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all group">
+                <span class="material-symbols-outlined group-hover:text-white">dashboard</span>
+                <span class="font-medium text-sm">Dashboard</span>
+            </a>
+            <a href="biblia.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all group">
+                <span class="material-symbols-outlined group-hover:text-white">menu_book</span>
+                <span class="font-medium text-sm">Biblia del Mundo</span>
+            </a>
+            <a href="escritura.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all group">
+                <span class="material-symbols-outlined group-hover:text-white">edit_note</span>
+                <span class="font-medium text-sm">Escritura</span>
+            </a>
+            <a href="atlas.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all group">
+                <span class="material-symbols-outlined group-hover:text-white">map</span>
+                <span class="font-medium text-sm">Atlas Interactivo</span>
+            </a>
+            <a href="timeline.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all group">
+                <span class="material-symbols-outlined group-hover:text-white">schedule</span>
+                <span class="font-medium text-sm">Cronología</span>
+            </a>
+            <div class="h-px bg-white/5 my-2 mx-2"></div>
+            <a href="conlang.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-purple-400 transition-all group">
+                <span class="material-symbols-outlined group-hover:text-purple-400">translate</span>
+                <span class="font-medium text-sm">Lingüística</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-white/10">
+            <a href="profile.html"
+                class="flex items-center gap-3 px-3 py-2 rounded-xl bg-white/10 text-white cursor-pointer transition-colors group">
+                <div
+                    class="size-8 rounded-full bg-gradient-to-tr from-emerald-500 to-indigo-500 flex items-center justify-center text-white font-bold text-xs">
+                    JS
+                </div>
+                <span class="text-sm font-bold">Juan Silva</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main
+        class="flex-1 overflow-y-auto relative bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-slate-950 to-slate-950">
+        <div class="p-8 max-w-3xl mx-auto">
+
+            <!-- Header Profile -->
+            <div class="flex flex-col items-center mb-8">
+                <div
+                    class="size-24 rounded-full bg-gradient-to-tr from-emerald-500 to-indigo-500 flex items-center justify-center text-white font-bold text-3xl ring-4 ring-slate-900 shadow-2xl mb-4">
+                    JS
+                </div>
+                <h2 class="text-2xl font-bold text-white">Juan Silva</h2>
+                <p class="text-indigo-400 text-sm font-medium">Arquitecto de Mundos · Plan Pro</p>
+            </div>
+
+            <!-- Form -->
+            <div class="glass-panel p-8 rounded-2xl space-y-6">
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-slate-500 uppercase">Nombre de Usuario</label>
+                        <input type="text" value="juansilva99" class="glass-input w-full bg-slate-900/50">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-slate-500 uppercase">Correo Electrónico</label>
+                        <input type="email" value="juan.silva@example.com" class="glass-input w-full bg-slate-900/50">
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase">Biografía</label>
+                    <textarea rows="3"
+                        class="glass-input w-full bg-slate-900/50 text-sm">Apasionado por la fantasía épica y la creación de sistemas de magia duros.</textarea>
+                </div>
+
+                <div class="pt-6 border-t border-white/10 flex justify-between items-center">
+                    <button
+                        class="text-sm text-slate-400 hover:text-white underline decoration-slate-600 underline-offset-4">Cambiar
+                        Contraseña</button>
+                    <div class="flex gap-3">
+                        <button
+                            class="px-5 py-2 rounded-full border border-white/10 text-white text-sm font-medium hover:bg-white/5 transition-colors">Cancelar</button>
+                        <button
+                            class="px-5 py-2 rounded-full bg-indigo-600 text-white text-sm font-bold shadow-lg shadow-indigo-600/20 hover:bg-indigo-500 transition-colors">Guardar
+                            Cambios</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

@@ -1,0 +1,128 @@
+/* Navigation Menu - Top Center Radial */
+.nav-trigger-container {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.nav-trigger {
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: none;
+    border-radius: 0 0 16px 16px;
+    padding: 8px 32px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.nav-trigger:hover {
+    background: rgba(99, 102, 241, 0.2);
+    /* Indigo tint */
+    border-color: rgba(99, 102, 241, 0.4);
+}
+
+.radial-menu-container {
+    position: absolute;
+    top: 40px;
+    /* Below trigger */
+    left: 50%;
+    transform: translateX(-50%) scale(0);
+    width: 300px;
+    height: 150px;
+    /* Half circle */
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: none;
+}
+
+.radial-menu-container.active {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.radial-menu-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 200%;
+    /* Full circle visually clipped */
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+    /* Show top half? No user wants "media circunferencia que salgan", implying downwards from top? 
+    "flecha hacia abajo y sea media circunferencia lo que salgan de opciones" -> Options come out below the arrow. Use semicircular layout. */
+    /* Let's try simpler: Arch layout of buttons */
+    mask-image: linear-gradient(to bottom, black 50%, transparent 50%);
+    /* Actually proper half circle downwards */
+    clip-path: circle(50% at 50% 0);
+}
+
+/* Items positioned along the arc */
+.nav-item {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.nav-item:hover {
+    background: #6366f1;
+    /* Indigo-500 */
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+}
+
+.nav-item .tooltip {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-top: 4px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.nav-item:hover .tooltip {
+    opacity: 1;
+}
+
+/* Specific positions for 6 items in a semi-circle */
+/* Radius approx 120px */
+/* Angles: 180 (left) to 0 (right). We want downwards? User said "menu centrado arriba... salgan de opciones". 
+   If it's at the top, the semi-circle must expand downwards. 
+   So angles from 180 (left) to 360 (or 0) (right) is UP. 
+   Downwards is 0 to 180? No. 
+   Standard CSS coords: 0 is right, 90 is down, 180 is left.
+   So we want arc from 180 (left) -> 0 (right) BUT positioned relative to top center.
+   Correct arc for top-down menu is from roughly 150deg to 30deg (if 0 is right). 
+   Actually, let's use:
+   Item 1: Leftmost
+   Item 6: Rightmost
+*/

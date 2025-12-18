@@ -97,3 +97,4 @@ h1, h2, h3, h4, h5, h6 {
 .material-symbols-outlined.filled {
     font-variation-settings: 'FILL' 1;
 }
+@import url('radial_menu.css');

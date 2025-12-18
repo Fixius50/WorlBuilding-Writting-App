@@ -31,3 +31,10 @@
 *   [BUG FIX] Corregido error en `DynamicDataSourceConfig`: el inicializador SQL ignoraba bloques que empezaban con comentarios, omitiendo la creación de tablas.
 *   [COMPATIBILIDAD] Cambiado `MEDIUMTEXT` por `CLOB` en todas las entidades para asegurar compatibilidad total con H2.
 *   [VERIFICACIÓN] Verificado flujo completo en un nuevo proyecto "Mundo_Arreglado".
+
+
+### Prompt ID: 6 (Navegación y Arquitectura)
+> Elimina la sidebar, pon un menú radial arriba y prepara el backend para multi-usuario...
+**Resultados:**
+*   [UX] Implementado menú radial Top-Center (Glassmorphism). Refactorizados todos los HTMLs.
+*   [BACKEND] Creada entidad Usuario y repositorio JPA. Configurado redirección a Login.

@@ -226,3 +226,9 @@ Mention.configure({
 - **Componentes:**
     - `TopBar`: Navegación central.
     - `TimeBar`: Modo minimalista.
+
+
+### Phase 3: Navegación y Arquitectura (18/12/2025)
+- **Navegación:** Eliminación de Sidebar lateral. Nuevo Menú Radial Superior con animaciones CSS.
+- **Backend:** Soporte Multi-Tenant (Tabla Proyecto vinculada a Usuario).
+- **Seguridad:** Redurección forzada a Login en root.
