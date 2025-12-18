@@ -4,7 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chronos Atlas - Biblia</title>
+    <title>Biblia del Mundo - Entidades</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="../css/glass_theme.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
@@ -18,154 +23,156 @@
         <div class="nav-trigger" id="nav-trigger">
             <span class="material-symbols-outlined text-indigo-400 text-2xl">keyboard_arrow_down</span>
         </div>
-
-        <!-- Radial Menu Body -->
         <div class="radial-menu-container" id="radial-menu">
             <div class="radial-menu-bg"></div>
-            <!-- Items - Positioned via inline styles or classes -->
-            <a href="dashboard.html" class="nav-item" style="top: 20px; left: 20px;" title="Dashboard">
+            <a href="dashboard.html" class="nav-item" title="Dashboard">
                 <span class="material-symbols-outlined">dashboard</span>
                 <span class="tooltip">Dashboard</span>
             </a>
-            <a href="dashboard.html" class="nav-item" style="top: 60px; left: 80px;" title="Librería">
+            <a href="dashboard.html" class="nav-item" title="Librería">
                 <span class="material-symbols-outlined">library_books</span>
                 <span class="tooltip">Librería</span>
             </a>
-            <a href="biblia.html" class="nav-item" style="top: 100px; left: 140px;" title="Biblia">
+            <a href="biblia.html" class="nav-item" title="Biblia">
                 <span class="material-symbols-outlined">menu_book</span>
                 <span class="tooltip">Biblia</span>
             </a>
-            <a href="profile.html" class="nav-item" style="top: 120px; left: 178px;" title="Perfil">
-                <span class="material-symbols-outlined">person</span>
-                <span class="tooltip">Perfil</span>
-            </a>
-            <a href="timeline.html" class="nav-item" style="top: 100px; left: 216px;" title="Cronología">
+            <a href="timeline.html" class="nav-item" title="Cronología">
                 <span class="material-symbols-outlined">schedule</span>
                 <span class="tooltip">Cronología</span>
             </a>
-            <a href="atlas.html" class="nav-item" style="top: 60px; left: 276px;" title="Atlas">
+            <a href="atlas.html" class="nav-item" title="Atlas">
                 <span class="material-symbols-outlined">map</span>
                 <span class="tooltip">Atlas</span>
             </a>
-            <a href="conlang.html" class="nav-item" style="top: 20px; left: 336px;" title="Lingüística">
+            <a href="conlang.html" class="nav-item" title="Lingüística">
                 <span class="material-symbols-outlined">translate</span>
                 <span class="tooltip">Lingüística</span>
+            </a>
+            <a href="profile.html" class="nav-item" title="Perfil">
+                <span class="material-symbols-outlined">person</span>
+                <span class="tooltip">Perfil</span>
             </a>
         </div>
     </div>
     <div class="bg-overlay" id="menu-overlay"></div>
 
-    <!-- Main Content (Adapted for Full Width) -->
-    <main
-        class="flex-1 w-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-950/40 via-slate-950 to-slate-950 flex flex-col">
-        <!-- Original Header Content (Will need minor padding adjustments) -->
-        <div
-            class="p-6 border-b border-white/5 flex items-center justify-between backdrop-blur-md sticky top-0 z-10 bg-slate-950/50">
-            <div class="flex items-center gap-4">
-                <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                    <span class="material-symbols-outlined text-emerald-400">menu_book</span>
-                    Biblia del Mundo
-                </h2>
-                <div class="h-6 w-px bg-white/10"></div>
-                <div class="flex gap-2">
-                    <span class="px-3 py-1 bg-white/5 rounded-full text-xs font-medium text-slate-400">42
-                        Entidades</span>
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-hidden relative flex">
+        <!-- Sidebar Filters -->
+        <aside class="w-64 glass-panel border-r border-white/10 flex flex-col z-10 hidden md:flex">
+            <div class="p-6 border-b border-white/10">
+                <h2 class="text-xl font-bold text-white font-heading tracking-wide">Entidades</h2>
+                <p class="text-xs text-slate-400 mt-1">Directorio universal</p>
+            </div>
+
+            <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+                <a href="#"
+                    class="flex items-center justify-between px-3 py-2 rounded-lg bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+                    <span class="flex items-center gap-2 text-sm font-medium"><span
+                            class="material-symbols-outlined text-lg">public</span> Todos</span>
+                    <span class="text-xs bg-indigo-500/20 px-1.5 py-0.5 rounded text-indigo-200">24</span>
+                </a>
+                <a href="#"
+                    class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-white/5 hover:text-white transition-colors">
+                    <span class="flex items-center gap-2 text-sm font-medium"><span
+                            class="material-symbols-outlined text-lg">person</span> Personajes</span>
+                    <span class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-slate-500">12</span>
+                </a>
+                <a href="#"
+                    class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-white/5 hover:text-white transition-colors">
+                    <span class="flex items-center gap-2 text-sm font-medium"><span
+                            class="material-symbols-outlined text-lg">castle</span> Lugares</span>
+                    <span class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-slate-500">5</span>
+                </a>
+                <a href="#"
+                    class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-white/5 hover:text-white transition-colors">
+                    <span class="flex items-center gap-2 text-sm font-medium"><span
+                            class="material-symbols-outlined text-lg">diamond</span> Objetos</span>
+                    <span class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-slate-500">3</span>
+                </a>
+            </nav>
+
+            <div class="p-4 border-t border-white/10">
+                <button
+                    onclick="document.getElementById('modal-crear').classList.remove('hidden'); document.getElementById('modal-crear').classList.add('flex');"
+                    class="w-full glass-button flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-sm">add</span> Nueva Entidad
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Table Area -->
+        <div class="flex-1 overflow-hidden flex flex-col bg-slate-950 relative">
+            <!-- Toolbar -->
+            <div
+                class="h-16 border-b border-white/10 flex items-center justify-between px-6 bg-slate-900/50 backdrop-blur-sm sticky top-0 z-20">
+                <div class="relative w-96">
+                    <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-500">search</span>
+                    <input type="text" placeholder="Buscar en la biblia..."
+                        class="glass-input pl-10 py-2 rounded-full text-sm bg-slate-900/50">
+                </div>
+                <div class="flex items-center gap-3">
+                    <button class="icon-btn text-slate-400 hover:text-white"><span
+                            class="material-symbols-outlined">filter_list</span></button>
+                    <button class="icon-btn text-slate-400 hover:text-white"><span
+                            class="material-symbols-outlined">view_module</span></button>
                 </div>
             </div>
-            <button
-                class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-emerald-600/20 flex items-center gap-2 transition-all">
-                <span class="material-symbols-outlined text-lg">add</span>
-                Nueva Entidad
-            </button>
-        </div>
 
-        <!-- Original Content Body -->
-        <div class="flex-1 flex overflow-hidden">
-            <!-- Internal Sidebar Filters (Keep these, they are context specific) -->
-            <aside class="w-64 border-r border-white/5 p-4 flex flex-col gap-6 overflow-y-auto">
-                <div>
-                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Categorías</h3>
-                    <div class="space-y-1">
-                        <div
-                            class="flex items-center justify-between px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/20 cursor-pointer">
-                            <span class="text-sm font-medium">Todos</span>
-                            <span class="text-xs opacity-60">42</span>
-                        </div>
-                        <div
-                            class="flex items-center justify-between px-3 py-2 hover:bg-white/5 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer group">
-                            <div class="flex items-center gap-2">
-                                <span
-                                    class="material-symbols-outlined text-lg opacity-60 group-hover:text-amber-400">person</span>
-                                <span class="text-sm font-medium">Personajes</span>
-                            </div>
-                            <span class="text-xs opacity-40">15</span>
-                        </div>
-                        <div
-                            class="flex items-center justify-between px-3 py-2 hover:bg-white/5 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer group">
-                            <div class="flex items-center gap-2">
-                                <span
-                                    class="material-symbols-outlined text-lg opacity-60 group-hover:text-green-400">forest</span>
-                                <span class="text-sm font-medium">Lugares</span>
-                            </div>
-                            <span class="text-xs opacity-40">10</span>
-                        </div>
-                        <div
-                            class="flex items-center justify-between px-3 py-2 hover:bg-white/5 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer group">
-                            <div class="flex items-center gap-2">
-                                <span
-                                    class="material-symbols-outlined text-lg opacity-60 group-hover:text-purple-400">auto_stories</span>
-                                <span class="text-sm font-medium">Objetos</span>
-                            </div>
-                            <span class="text-xs opacity-40">8</span>
-                        </div>
-                    </div>
-                </div>
-            </aside>
-
-            <!-- Table Area -->
+            <!-- Grid Content -->
             <div class="flex-1 overflow-y-auto p-6">
-                <!-- Grid or Table of Entities -->
-                <div class="glass-panel overflow-hidden">
-                    <table class="w-full text-left text-sm text-slate-400">
-                        <thead class="bg-white/5 text-slate-200 uppercase text-xs font-bold">
-                            <tr>
-                                <th class="px-6 py-4">Nombre</th>
-                                <th class="px-6 py-4">Categoría</th>
-                                <th class="px-6 py-4">Etiquetas</th>
-                                <th class="px-6 py-4">Última Edición</th>
-                                <th class="px-6 py-4 text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-white/5">
-                            <!-- Example Row -->
-                            <tr class="hover:bg-white/5 transition-colors group cursor-pointer">
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="size-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 font-bold">
-                                            A</div>
-                                        <span
-                                            class="text-white font-medium group-hover:text-emerald-400 transition-colors">Aragorn</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">Personaje</td>
-                                <td class="px-6 py-4">
-                                    <span
-                                        class="px-2 py-1 rounded bg-slate-800 border border-white/5 text-xs">Montaraz</span>
-                                </td>
-                                <td class="px-6 py-4">Hace 2 horas</td>
-                                <td class="px-6 py-4 text-right">
-                                    <button
-                                        class="text-slate-500 hover:text-white material-symbols-outlined text-lg">more_vert</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div id="entities-container"
+                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <!-- Entities injected by JS -->
                 </div>
             </div>
         </div>
     </main>
 
+    <!-- Modal Creación -->
+    <div id="modal-crear"
+        class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex-col items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-lg rounded-2xl p-0 shadow-2xl border border-white/10 overflow-hidden">
+            <div class="bg-indigo-600/10 p-6 border-b border-white/10 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-white">Nueva Entidad</h2>
+                <button onclick="document.getElementById('modal-crear').classList.add('hidden')"
+                    class="text-slate-400 hover:text-white"><span
+                        class="material-symbols-outlined">close</span></button>
+            </div>
+            <form id="form-crear-entidad" onsubmit="crearEntidad(event)" class="p-6 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs text-slate-400 uppercase font-bold mb-1 block">Nombre</label>
+                        <input type="text" id="nombre-entidad" class="glass-input" required placeholder="Ej. Excalibur">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400 uppercase font-bold mb-1 block">Tipo</label>
+                        <select id="tipo-entidad" class="glass-input">
+                            <option value="entidadindividual">Personaje</option>
+                            <option value="entidadcolectiva">Grupo</option>
+                            <option value="zona">Lugar</option>
+                            <option value="civilizacion">Civilización</option>
+                            <option value="construccion">Construcción</option>
+                            <option value="efectos">Objeto / Magia</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 uppercase font-bold mb-1 block">Descripción Corta</label>
+                    <textarea id="desc-entidad" class="glass-input" rows="3" placeholder="Resumen..."></textarea>
+                </div>
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" onclick="document.getElementById('modal-crear').classList.add('hidden')"
+                        class="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white">Cancelar</button>
+                    <button type="submit" class="glass-button">Guardar Entidad</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/biblia.js"></script>
     <script src="../js/navigation.js"></script>
 </body>
 

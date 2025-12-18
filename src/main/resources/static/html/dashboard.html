@@ -24,41 +24,34 @@
         <!-- Radial Menu Body -->
         <div class="radial-menu-container" id="radial-menu">
             <div class="radial-menu-bg"></div>
-            <!-- Items - Positioned via inline styles or classes -->
-            <!-- Dashboard (Top Left) -->
-            <a href="dashboard.html" class="nav-item" style="top: 20px; left: 20px;" title="Dashboard">
+            <!-- Items - Positions handled by JS -->
+            <a href="dashboard.html" class="nav-item" title="Dashboard">
                 <span class="material-symbols-outlined">dashboard</span>
                 <span class="tooltip">Dashboard</span>
             </a>
-            <!-- Projects (Mid Left) -->
-            <a href="dashboard.html" class="nav-item" style="top: 60px; left: 80px;" title="Librería">
+            <a href="dashboard.html" class="nav-item" title="Librería">
                 <span class="material-symbols-outlined">library_books</span>
                 <span class="tooltip">Librería</span>
             </a>
-            <!-- Bible (Bottom Left) -->
-            <a href="biblia.html" class="nav-item" style="top: 100px; left: 140px;" title="Biblia">
+            <a href="biblia.html" class="nav-item" title="Biblia">
                 <span class="material-symbols-outlined">menu_book</span>
                 <span class="tooltip">Biblia</span>
             </a>
-            <!-- Context (Center Bottom) - Optional or Profile -->
-            <a href="profile.html" class="nav-item" style="top: 120px; left: 178px;" title="Perfil">
-                <span class="material-symbols-outlined">person</span>
-                <span class="tooltip">Perfil</span>
-            </a>
-            <!-- Timeline (Bottom Right) -->
-            <a href="timeline.html" class="nav-item" style="top: 100px; left: 216px;" title="Cronología">
+            <a href="timeline.html" class="nav-item" title="Cronología">
                 <span class="material-symbols-outlined">schedule</span>
                 <span class="tooltip">Cronología</span>
             </a>
-            <!-- Atlas (Mid Right) -->
-            <a href="atlas.html" class="nav-item" style="top: 60px; left: 276px;" title="Atlas">
+            <a href="atlas.html" class="nav-item" title="Atlas">
                 <span class="material-symbols-outlined">map</span>
                 <span class="tooltip">Atlas</span>
             </a>
-            <!-- Conlang (Top Right) -->
-            <a href="conlang.html" class="nav-item" style="top: 20px; left: 336px;" title="Lingüística">
+            <a href="conlang.html" class="nav-item" title="Lingüística">
                 <span class="material-symbols-outlined">translate</span>
                 <span class="tooltip">Lingüística</span>
+            </a>
+            <a href="profile.html" class="nav-item" title="Perfil">
+                <span class="material-symbols-outlined">person</span>
+                <span class="tooltip">Perfil</span>
             </a>
         </div>
     </div>
@@ -81,7 +74,9 @@
                     <input type="text" placeholder="Buscar proyecto..."
                         class="glass-input pl-10 w-64 rounded-full bg-slate-900/60 border-slate-700/50 focus:border-indigo-500/50">
                 </div>
+                <!-- Fix: Add onclick to open modal -->
                 <button
+                    onclick="document.getElementById('modal-proyecto').classList.remove('hidden'); document.getElementById('modal-proyecto').classList.add('flex');"
                     class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-lg shadow-indigo-600/20 flex items-center gap-2 transition-all hover:scale-105">
                     <span class="material-symbols-outlined">add</span>
                     Nuevo Proyecto
@@ -93,93 +88,74 @@
         <!-- Just wrapping the existing cards grid -->
         <div class="px-8 pb-8 overflow-y-auto h-[calc(100vh-100px)] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 content-start"
             id="project-grid">
-            <!-- JS will populate this -->
+            <!-- Static Project Card (Demo) -->
+            <div onclick="window.location.href='biblia.html'"
+                class="glass-panel p-0 rounded-2xl overflow-hidden cursor-pointer group hover:border-indigo-500/50 transition-all hover:shadow-2xl hover:shadow-indigo-500/10 relative h-64 flex flex-col">
+                <div class="h-32 bg-slate-800 relative overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1000&auto=format&fit=crop"
+                        class="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
+                        alt="Cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent"></div>
+                </div>
+                <div class="p-5 flex-1 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-1 group-hover:text-indigo-400 transition-colors">
+                            Tierras del Sur</h3>
+                        <p class="text-xs text-slate-500 line-clamp-2">Una crónica de los reinos olvidados tras la Era
+                            de la Ceniza.</p>
+                    </div>
+                    <div class="flex items-center justify-between text-xs text-slate-400 mt-4">
+                        <span class="flex items-center gap-1"><span
+                                class="material-symbols-outlined text-[14px]">edit_calendar</span> Hace 2h</span>
+                        <span
+                            class="bg-indigo-500/10 text-indigo-300 px-2 py-0.5 rounded border border-indigo-500/20">Fantasía</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Project Card style (Button) -->
+            <button
+                onclick="document.getElementById('modal-proyecto').classList.remove('hidden'); document.getElementById('modal-proyecto').classList.add('flex');"
+                class="glass-panel rounded-2xl border-dashed border-2 border-white/5 hover:border-indigo-500/50 hover:bg-white/5 transition-all flex flex-col items-center justify-center p-8 gap-4 group h-64">
+                <div
+                    class="size-16 rounded-full bg-slate-800 group-hover:bg-indigo-600 transition-colors flex items-center justify-center shadow-lg">
+                    <span
+                        class="material-symbols-outlined text-3xl text-slate-400 group-hover:text-white transition-colors">add</span>
+                </div>
+                <span class="font-bold text-slate-400 group-hover:text-white transition-colors">Crear Nuevo Mundo</span>
+            </button>
         </div>
 
     </main>
 
+    <!-- Modal Nuevo Proyecto -->
+    <div id="modal-proyecto"
+        class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex-col items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-md rounded-2xl p-6 shadow-2xl border border-white/10">
+            <h2 class="text-xl font-bold text-white mb-4">Nuevo Mundo</h2>
+            <form id="form-proyecto" onsubmit="crearProyecto(event)" class="space-y-4">
+                <div>
+                    <label class="text-xs text-slate-400 uppercase font-bold">Título</label>
+                    <input type="text" id="nombre-proyecto" class="glass-input mt-1" required
+                        placeholder="Ej. Tierras del Sur">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 uppercase font-bold">Descripción</label>
+                    <textarea id="desc-proyecto" class="glass-input mt-1" rows="3"
+                        placeholder="Breve sinopsis..."></textarea>
+                </div>
+                <div class="flex justify-end gap-2 mt-6">
+                    <button type="button" class="text-slate-400 hover:text-white px-4 py-2 text-sm font-medium"
+                        onclick="document.getElementById('modal-proyecto').classList.add('hidden');">Cancelar</button>
+                    <button type="submit" class="glass-button">Crear</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
     <script src="../js/dashboard.js"></script>
     <script src="../js/navigation.js"></script>
-</body>
-
-<!-- Background decorative elements -->
-<div class="absolute top-0 right-0 w-1/2 h-1/2 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
-<div class="absolute bottom-0 left-0 w-1/3 h-1/3 bg-purple-500/5 rounded-full blur-3xl pointer-events-none">
-</div>
-
-<!-- Top Header -->
-<header class="flex items-center justify-between px-8 py-6 z-10 sticky top-0">
-    <!-- Search -->
-    <div class="flex-1 max-w-xl relative group">
-        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <span
-                class="material-symbols-outlined text-slate-500 group-focus-within:text-indigo-400 transition-colors">search</span>
-        </div>
-        <input class="glass-input pl-10 pr-3 py-2.5 rounded-full text-sm text-slate-200 placeholder-slate-500"
-            placeholder="Buscar en tus cuadernos (Ctrl+K)..." type="text" />
-    </div>
-
-    <!-- Actions -->
-    <div class="flex items-center gap-4 pl-6">
-        <button
-            class="relative flex items-center justify-center size-10 rounded-full hover:bg-white/5 text-slate-400 hover:text-white transition-colors">
-            <span class="material-symbols-outlined">notifications</span>
-            <span class="absolute top-2.5 right-2.5 size-2 bg-indigo-500 rounded-full border border-slate-950"></span>
-        </button>
-        <button onclick="abrirModalProyecto()"
-            class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-lg shadow-indigo-600/20 transition-all hover:scale-105 active:scale-95">
-            <span class="material-symbols-outlined text-[20px]">add</span>
-            <span>Nuevo Cuaderno</span>
-        </button>
-    </div>
-</header>
-
-<!-- Dynamic Content Container -->
-<div id="content-area" class="flex-1 overflow-y-auto p-8 pt-0 pb-20">
-    <!-- Welcome Header -->
-    <div class="mb-10 animate-fade-in-up">
-        <h2 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-2">Mis Cuadernos</h2>
-        <p class="text-slate-400 text-lg">Gestiona tus mundos y tramas. Todos tus cambios se guardan localmente.
-        </p>
-    </div>
-
-    <!-- Grid -->
-    <div id="project-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <!-- Cards will be injected by JS -->
-    </div>
-</div>
-
-</main>
-
-<!-- Modal Nuevo Proyecto -->
-<div id="modal-proyecto"
-    class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex-col items-center justify-center p-4">
-    <div class="glass-panel w-full max-w-md rounded-2xl p-6 shadow-2xl border border-white/10">
-        <h2 class="text-xl font-bold text-white mb-4">Nuevo Mundo</h2>
-        <form id="form-proyecto" onsubmit="crearProyecto(event)" class="space-y-4">
-            <div>
-                <label class="text-xs text-slate-400 uppercase font-bold">Título</label>
-                <input type="text" id="nombre-proyecto" class="glass-input mt-1" required
-                    placeholder="Ej. Tierras del Sur">
-            </div>
-            <div>
-                <label class="text-xs text-slate-400 uppercase font-bold">Descripción</label>
-                <textarea id="desc-proyecto" class="glass-input mt-1" rows="3"
-                    placeholder="Breve sinopsis..."></textarea>
-            </div>
-            <div class="flex justify-end gap-2 mt-6">
-                <button type="button" class="text-slate-400 hover:text-white px-4 py-2 text-sm font-medium"
-                    onclick="cerrarModalProyecto()">Cancelar</button>
-                <button type="submit" class="glass-button">Crear</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modals removed for brevity, maintained in clean separation -->
-
-<script src="../js/api.js"></script>
-<script src="../js/dashboard.js"></script>
 </body>
 
 </html>
