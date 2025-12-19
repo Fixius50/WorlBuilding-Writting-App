@@ -43,7 +43,7 @@ El diseño busca un equilibrio entre la claridad de un IDE moderno y la mística
 *   **Vistas Duales:** Alternancia entre Vista de Lista (densidad) y Vista de Cuadrícula (visual).
 *   **Nodos de Causalidad:** Vinculación lógica entre entidades y eventos históricos.
 
-### C. El Atlas & Cronología [EN DESARROLLO]
+### C. El Atlas & Cronología [IMPLEMENTADO]
 *   **Atlas Geográfico:** Visor de mapas con pines interactivos conectados a la Biblia.
 *   **Línea de Tiempo:** Visualización horizontal de la historia del mundo.
 
