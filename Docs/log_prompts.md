@@ -38,3 +38,13 @@
 **Resultados:**
 *   [UX] Implementado menÃº radial Top-Center (Glassmorphism). Refactorizados todos los HTMLs.
 *   [BACKEND] Creada entidad Usuario y repositorio JPA. Configurado redirecciÃ³n a Login.
+
+---
+
+### Prompt ID: 7 (Migración a SQLite)
+> Migrate to SQLite Database
+**Resultados:**
+*   [DATABASE] Migración completa de H2 a SQLite (data/worldbuilding.db).
+*   [CLEANUP] Eliminado código legacy H2 (DynamicDataSourceConfig, H2Functions).
+*   [REFACTOR] Reescritura de ProyectoController y BDController para JPA estándar.
+

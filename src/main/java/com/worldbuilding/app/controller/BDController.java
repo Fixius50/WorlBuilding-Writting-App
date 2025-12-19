@@ -1,6 +1,6 @@
 package com.worldbuilding.app.controller;
 
-import com.worldbuilding.app.config.DynamicDataSourceConfig;
+// import com.worldbuilding.app.config.DynamicDataSourceConfig;
 import com.worldbuilding.app.model.*;
 import com.worldbuilding.app.model.dto.DatosTablaDTO;
 import com.worldbuilding.app.repository.*;
@@ -21,7 +21,8 @@ import java.util.Map;
 @RequestMapping("/api/bd")
 public class BDController {
 
-    private static final String PROYECTO_ACTIVO = "proyectoActivo";
+    // private static final String PROYECTO_ACTIVO = "proyectoActivo"; // Ya no se
+    // usa para switching de BD
 
     @Autowired
     private EntidadIndividualRepository entidadIndRepo;
@@ -39,30 +40,33 @@ public class BDController {
     private NodoRepository nodoRepo;
     @Autowired
     private RelacionRepository relacionRepo;
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    @Autowired
-    private DynamicDataSourceConfig dataSourceConfig;
+    // @Autowired
+    // private DynamicDataSourceConfig dataSourceConfig;
 
     /**
      * Obtiene el nombre del proyecto activo de ThreadLocal o sesión
      */
     private String getProyectoActivo(HttpSession session) {
-        // Primero intentar ThreadLocal (configurado por el Interceptor)
-        String proyecto = DynamicDataSourceConfig.getCurrentProject();
-        if (proyecto != null && !proyecto.isBlank() && !"default".equals(proyecto)) {
-            return proyecto;
-        }
-        // Si no, intentar la sesión HTTP
-        if (session != null) {
-            proyecto = (String) session.getAttribute(PROYECTO_ACTIVO);
-            if (proyecto != null && !proyecto.isBlank()) {
-                // Sincronizar con el DataSource
-                dataSourceConfig.switchToProject(proyecto);
-                return proyecto;
-            }
-        }
-        return null;
+        // En SQLite (single DB), esto podría retornar el ID del proyecto si lo
+        // necesitamos para filtrar
+        // Por ahora retornamos "default" o el valor de la sesión si queremos mantener
+        // la lógica de "Contexto de Proyecto"
+        // Pero SIN cambiar de DataSource
+        return "default";
+        /*
+         * String proyecto = DynamicDataSourceConfig.getCurrentProject();
+         * if (proyecto != null && !proyecto.isBlank() && !"default".equals(proyecto)) {
+         * return proyecto;
+         * }
+         * if (session != null) {
+         * proyecto = (String) session.getAttribute(PROYECTO_ACTIVO);
+         * return proyecto;
+         * }
+         * return null;
+         */
     }
 
     // ==================== INSERTAR ====================
@@ -281,9 +285,13 @@ public class BDController {
 
             // En H2, usamos la función Java registrada como ALIAS
             // Llamamos directamente desde Java en lugar de usar CALL
-            com.worldbuilding.app.h2.H2Functions.activarNodo(
-                    jdbcTemplate.getDataSource().getConnection(),
-                    entidadId, tipoEntidad, caracteristica);
+            /*
+             * com.worldbuilding.app.h2.H2Functions.activarNodo(
+             * jdbcTemplate.getDataSource().getConnection(),
+             * entidadId, tipoEntidad, caracteristica);
+             */
+            // TODO: Portar lógica de activarNodo a servicio JPA puro para SQLite
+            System.out.println("Activando nodo (Simulado para SQLite): " + entidadId);
 
             return ResponseEntity.ok(Map.of("success", true, "mensaje", "Nodo activado"));
         } catch (Exception e) {

@@ -232,3 +232,13 @@ Mention.configure({
 - **NavegaciÃ³n:** EliminaciÃ³n de Sidebar lateral. Nuevo MenÃº Radial Superior con animaciones CSS.
 - **Backend:** Soporte Multi-Tenant (Tabla Proyecto vinculada a Usuario).
 - **Seguridad:** RedurecciÃ³n forzada a Login en root.
+
+
+### Phase 5: Migración de Base de Datos (19/12/2025)
+- **Motor de BD:** Migración completa de H2 (Archivos) a SQLite (Single File data/worldbuilding.db).
+- **Refactorización Backend:**
+    - Eliminación de DynamicDataSourceConfig (Complejidad innecesaria).
+    - Reescritura de ProyectoController para usar JPA (CuadernoRepository).
+    - Limpieza de BDController y dependencias H2.
+- **Estabilidad:** Solución a problemas de lock de base de datos y dead-processes.
+

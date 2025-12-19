@@ -1,18 +1,19 @@
 package com.worldbuilding.app.controller;
 
-import com.worldbuilding.app.config.DynamicDataSourceConfig;
+import com.worldbuilding.app.model.Cuaderno;
+import com.worldbuilding.app.repository.CuadernoRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
- * Controlador de proyectos con gestión de BD H2 dinámica.
- * Cada proyecto tiene su propia BD en un archivo .mv.db separado.
+ * Controlador de proyectos (Cuadernos) usando JPA.
+ * Gestiona la entidad Cuaderno en la base de datos única (SQLite).
  */
 @RestController
 @RequestMapping("/api/proyectos")
@@ -21,38 +22,48 @@ public class ProyectoController {
     private static final String PROYECTO_ACTIVO = "proyectoActivo";
 
     @Autowired
-    private DynamicDataSourceConfig dataSourceConfig;
+    private CuadernoRepository cuadernoRepository;
 
     /**
-     * Crea un nuevo proyecto con su propia BD H2
+     * Crea un nuevo proyecto (Cuaderno)
      */
     @PostMapping("/crear")
     public ResponseEntity<?> crearProyecto(@RequestBody Map<String, String> body, HttpSession session) {
         String nombre = body.get("nombreProyecto");
         String tipo = body.get("tipo");
+        String descripcion = body.get("descripcion");
 
         if (nombre == null || nombre.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "El nombre del proyecto es requerido"));
         }
 
-        // Sanitizar nombre (solo alfanuméricos y guiones)
-        String nombreSanitizado = nombre.replaceAll("[^a-zA-Z0-9_-]", "_");
+        // Verificar si ya existe (asumiendo unicidad por nombre para simplificar
+        // migración)
+        // Idealmente usariamos findByNombreProyecto pero findAll().stream()... sirve
+        // para prototipo si no existe el método exacto
+        boolean existe = cuadernoRepository.findAll().stream()
+                .anyMatch(c -> c.getNombreProyecto().equalsIgnoreCase(nombre));
 
-        if (dataSourceConfig.existsProject(nombreSanitizado)) {
+        if (existe) {
             return ResponseEntity.badRequest().body(Map.of("error", "Ya existe un proyecto con ese nombre"));
         }
 
         try {
-            // Cambiar al DataSource del nuevo proyecto (se crea automáticamente)
-            dataSourceConfig.switchToProject(nombreSanitizado);
+            Cuaderno nuevo = new Cuaderno();
+            nuevo.setNombreProyecto(nombre);
+            nuevo.setTitulo(nombre); // Default title
+            nuevo.setDescripcion(descripcion != null ? descripcion : "Nuevo proyecto");
+
+            cuadernoRepository.save(nuevo);
 
             // Guardar en sesión
-            session.setAttribute(PROYECTO_ACTIVO, nombreSanitizado);
+            session.setAttribute(PROYECTO_ACTIVO, nombre);
 
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "mensaje", "Proyecto creado exitosamente",
-                    "nombreProyecto", nombreSanitizado,
+                    "nombreProyecto", nombre,
+                    "id", nuevo.getId(),
                     "tipo", tipo != null ? tipo : "general"));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Error creando proyecto: " + e.getMessage()));
@@ -60,23 +71,25 @@ public class ProyectoController {
     }
 
     /**
-     * Abre un proyecto existente
+     * Abre un proyecto existente (lo establece en sesión)
      */
     @GetMapping("/{nombre}")
     public ResponseEntity<?> abrirProyecto(@PathVariable String nombre, HttpSession session) {
-        String nombreSanitizado = nombre.replaceAll("[^a-zA-Z0-9_-]", "_");
+        Optional<Cuaderno> cuaderno = cuadernoRepository.findAll().stream()
+                .filter(c -> c.getNombreProyecto().equalsIgnoreCase(nombre))
+                .findFirst();
 
-        if (!dataSourceConfig.existsProject(nombreSanitizado)) {
+        if (cuaderno.isEmpty()) {
             return ResponseEntity.status(404).body(Map.of("error", "Proyecto no encontrado"));
         }
 
-        // Cambiar al DataSource del proyecto
-        dataSourceConfig.switchToProject(nombreSanitizado);
-        session.setAttribute(PROYECTO_ACTIVO, nombreSanitizado);
+        // Establecer activo en sesión
+        session.setAttribute(PROYECTO_ACTIVO, cuaderno.get().getNombreProyecto());
 
         return ResponseEntity.ok(Map.of(
                 "success", true,
-                "nombreProyecto", nombreSanitizado));
+                "nombreProyecto", cuaderno.get().getNombreProyecto(),
+                "id", cuaderno.get().getId()));
     }
 
     /**
@@ -86,12 +99,9 @@ public class ProyectoController {
     public ResponseEntity<?> obtenerProyectoActivo(HttpSession session) {
         String nombreProyecto = (String) session.getAttribute(PROYECTO_ACTIVO);
 
-        if (nombreProyecto == null || nombreProyecto.equals("default")) {
+        if (nombreProyecto == null) {
             return ResponseEntity.status(404).body(Map.of("error", "No hay proyecto activo"));
         }
-
-        // Asegurar que estamos conectados a la BD correcta
-        dataSourceConfig.switchToProject(nombreProyecto);
 
         return ResponseEntity.ok(Map.of(
                 "nombreProyecto", nombreProyecto,
@@ -99,16 +109,19 @@ public class ProyectoController {
     }
 
     /**
-     * Lista todos los proyectos disponibles (archivos .mv.db)
+     * Lista todos los proyectos disponibles
      */
     @GetMapping
     public ResponseEntity<?> listarProyectos() {
         try {
-            List<String> proyectos = dataSourceConfig.listProjects();
+            List<Cuaderno> proyectos = cuadernoRepository.findAll();
             return ResponseEntity.ok(proyectos.stream()
-                    .map(p -> Map.of("nombreProyecto", p))
+                    .map(c -> Map.of(
+                            "nombreProyecto", c.getNombreProyecto(),
+                            "id", c.getId(),
+                            "descripcion", c.getDescripcion() != null ? c.getDescripcion() : ""))
                     .toList());
-        } catch (IOException e) {
+        } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Error listando proyectos"));
         }
     }
@@ -119,31 +132,33 @@ public class ProyectoController {
     @PostMapping("/cerrar")
     public ResponseEntity<?> cerrarProyecto(HttpSession session) {
         session.removeAttribute(PROYECTO_ACTIVO);
-        dataSourceConfig.switchToProject("default");
         return ResponseEntity.ok(Map.of("success", true, "mensaje", "Proyecto cerrado"));
     }
 
     /**
-     * Elimina un proyecto (borra su archivo .mv.db)
+     * Elimina un proyecto
      */
     @DeleteMapping("/{nombre}")
     public ResponseEntity<?> eliminarProyecto(@PathVariable String nombre, HttpSession session) {
-        String nombreSanitizado = nombre.replaceAll("[^a-zA-Z0-9_-]", "_");
+        Optional<Cuaderno> cuaderno = cuadernoRepository.findAll().stream()
+                .filter(c -> c.getNombreProyecto().equalsIgnoreCase(nombre))
+                .findFirst();
 
-        if (!dataSourceConfig.existsProject(nombreSanitizado)) {
+        if (cuaderno.isEmpty()) {
             return ResponseEntity.status(404).body(Map.of("error", "Proyecto no encontrado"));
         }
 
         try {
             // Si es el proyecto activo, cerrarlo primero
             String activo = (String) session.getAttribute(PROYECTO_ACTIVO);
-            if (nombreSanitizado.equals(activo)) {
+            if (nombre.equalsIgnoreCase(activo)) {
                 session.removeAttribute(PROYECTO_ACTIVO);
             }
 
-            dataSourceConfig.deleteProject(nombreSanitizado);
+            cuadernoRepository.delete(cuaderno.get());
+
             return ResponseEntity.ok(Map.of("success", true, "mensaje", "Proyecto eliminado"));
-        } catch (IOException e) {
+        } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Error eliminando proyecto: " + e.getMessage()));
         }
     }
