@@ -9,6 +9,48 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
+    <!-- React Flow Dependencies V11 (ESM) -->
+    <!-- We use ESM imports for reliability -->
+    <script type="importmap">
+        {
+            "imports": {
+                "react": "https://esm.sh/react@18.2.0",
+                "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+                "reactflow": "https://esm.sh/reactflow@11.10.1"
+            }
+        }
+    </script>
+    <script type="module">
+        import React from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { ReactFlow, Controls, Background, addEdge, applyNodeChanges, applyEdgeChanges } from 'reactflow';
+
+        // Expose to window for Babel script to use
+        window.React = React;
+        window.createRoot = createRoot;
+        window.ReactFlow = { ReactFlow, Controls, Background, addEdge, applyNodeChanges, applyEdgeChanges };
+    </script>
+    <link rel="stylesheet" href="https://unpkg.com/reactflow@11.10.1/dist/style.css" />
+
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        .react-flow__node {
+            background: rgba(15, 23, 42, 0.8) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+            border-radius: 8px !important;
+            padding: 10px !important;
+            min-width: 150px;
+        }
+
+        .react-flow__handle {
+            background: #6366f1 !important;
+            width: 8px !important;
+            height: 8px !important;
+        }
+    </style>
     <!-- Leaflet CSS for maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
@@ -56,59 +98,24 @@
     <div class="bg-overlay" id="menu-overlay"></div>
 
     <main class="flex-1 relative overflow-hidden">
-        <!-- Map Container -->
-        <div id="map-container" class="absolute inset-0 bg-slate-900 z-0">
-            <!-- Placeholder for Leaflet map or Image -->
-            <div class="w-full h-full flex items-center justify-center text-slate-600">
-                <div class="text-center">
-                    <span class="material-symbols-outlined text-6xl opacity-20">public</span>
-                    <p class="mt-4 opacity-50">Cargando cartografía...</p>
-                </div>
-            </div>
-        </div>
+        <!-- React Flow Root -->
+        <div id="atlas-root" class="absolute inset-0 bg-slate-950 z-0"></div>
 
-        <!-- Floating Tools -->
-        <div class="absolute top-6 left-6 z-10 glass-panel p-2 flex flex-col gap-2 rounded-lg">
-            <button class="icon-btn hover:text-indigo-400 p-2" title="Zoom In"><span
-                    class="material-symbols-outlined">add</span></button>
-            <button class="icon-btn hover:text-indigo-400 p-2" title="Zoom Out"><span
-                    class="material-symbols-outlined">remove</span></button>
-            <div class="h-px bg-white/10 my-1"></div>
-            <button class="icon-btn hover:text-emerald-400 p-2" title="Añadir Pin"><span
-                    class="material-symbols-outlined">location_on</span></button>
-            <button class="icon-btn hover:text-amber-400 p-2" title="Medir Distancia"><span
-                    class="material-symbols-outlined">straighten</span></button>
-        </div>
-
-        <!-- Map Drawer (Bottom) -->
-        <div
-            class="absolute bottom-6 left-1/2 -translate-x-1/2 glass-panel px-6 py-3 rounded-full flex items-center gap-6 z-10">
-            <div class="flex flex-col items-center cursor-pointer group">
-                <div
-                    class="size-10 rounded-lg bg-slate-800 border border-white/20 overflow-hidden mb-1 group-hover:border-indigo-400 transition-colors">
-                    <!-- Thumbnail -->
-                </div>
-                <span class="text-[10px] font-bold text-slate-400 group-hover:text-white">Mussoris</span>
-            </div>
-            <div class="flex flex-col items-center cursor-pointer group">
-                <div class="size-10 rounded-lg bg-indigo-600/20 border-2 border-indigo-500 overflow-hidden mb-1">
-                    <!-- Thumbnail active -->
-                </div>
-                <span class="text-[10px] font-bold text-indigo-300">Continente</span>
-            </div>
-            <button
-                class="size-10 rounded-full border border-dashed border-white/20 flex items-center justify-center hover:bg-white/5 disabled:opacity-50">
-                <span class="material-symbols-outlined text-slate-400">add</span>
-            </button>
+        <!-- Floating Tools (React Managed ideally, but keep HTML for speed) -->
+        <div class="absolute top-6 left-6 z-10 glass-panel p-2 flex flex-col gap-2 rounded-lg" id="atlas-tools">
+            <button class="icon-btn hover:text-emerald-400 p-2" onclick="window.addAtlasNode()" title="Añadir Pin"><span
+                    class="material-symbols-outlined">add_location</span></button>
+            <button class="icon-btn hover:text-amber-400 p-2" onclick="window.saveAtlas()" title="Guardar"><span
+                    class="material-symbols-outlined">save</span></button>
         </div>
     </main>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth_guard.js"></script>
     <script src="../js/navigation.js"></script>
-    <script>
-        // Init Basic Map (if needed logic here)
-    </script>
+
+    <!-- Atlas React Logic -->
+    <script type="text/babel" src="../js/atlas.js"></script>
 </body>
 
 </html>

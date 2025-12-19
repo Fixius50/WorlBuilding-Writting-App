@@ -59,6 +59,19 @@ public class EventoCronologia {
         this.ordenCronologico = ordenCronologico;
     }
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "linea_temporal_id") // Nullable for compatibility/transition
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private LineaTemporal lineaTemporal;
+
+    public LineaTemporal getLineaTemporal() {
+        return lineaTemporal;
+    }
+
+    public void setLineaTemporal(LineaTemporal lineaTemporal) {
+        this.lineaTemporal = lineaTemporal;
+    }
+
     public String getTipo() {
         return tipo;
     }

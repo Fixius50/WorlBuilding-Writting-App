@@ -14,9 +14,9 @@ public class TimelineController {
     @Autowired
     private EventoCronologiaRepository eventoRepository;
 
-    @GetMapping("/eventos")
-    public List<EventoCronologia> listarEventos() {
-        return eventoRepository.findAllByOrderByOrdenCronologicoAsc();
+    @GetMapping("/linea/{lineaId}/eventos")
+    public List<EventoCronologia> listarEventosPorLinea(@PathVariable Long lineaId) {
+        return eventoRepository.findByLineaTemporalIdOrderByOrdenCronologicoAsc(lineaId);
     }
 
     @PostMapping("/evento")

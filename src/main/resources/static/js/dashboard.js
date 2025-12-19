@@ -29,9 +29,11 @@ async function cargarProyectos() {
 
         if (!cuadernos || cuadernos.length === 0) return;
 
-        cuadernos.forEach(c => {
+        cuadernos.forEach((c, index) => {
             const card = document.createElement('article');
-            card.className = 'group relative flex flex-col justify-end aspect-[4/5] sm:aspect-[3/4] rounded-2xl glass-panel p-5 overflow-hidden transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/10 cursor-pointer';
+            // Added animate-fade-in-up and staggered delay
+            card.className = 'group relative flex flex-col justify-end aspect-[4/5] sm:aspect-[3/4] rounded-2xl glass-panel p-5 overflow-hidden transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/10 cursor-pointer animate-fade-in-up';
+            card.style.animationDelay = `${(index + 1) * 100}ms`; // Stagger effect
             card.onclick = () => window.location.href = `escritura.html?id=${c.id}`;
 
             // Imagen aleatoria o placeholder
