@@ -1,134 +1,134 @@
+/* Navigation Dock Evolution 3.0 */
 .nav-trigger-container {
     position: fixed;
     top: 0;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 50;
+    z-index: 9999;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
+/* Semi-circular handle trigger */
 .nav-trigger {
-    background: transparent;
-    border: none;
-    padding: 0.9375rem 3.75rem;
-    /* 15px 60px */
-    /* Larger area for hover detection */
+    width: 80px;
+    height: 24px;
+    background: #0f172a;
+    /* Slate 950 pure */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: none;
+    border-radius: 0 0 20px 20px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     justify-content: center;
     align-items: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.nav-trigger::after {
+    content: '';
+    width: 32px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
 }
 
 .nav-trigger:hover {
-    background: transparent;
+    height: 32px;
+    background: #1e293b;
+    /* Slate 800 */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
 }
 
-.nav-trigger .material-symbols-outlined {
-    display: none;
-    /* Hide the arrow as requested */
+.nav-trigger:hover::after {
+    background: rgba(255, 255, 255, 0.5);
 }
 
 .radial-menu-container {
     position: absolute;
-    top: 1rem;
-    /* 16px - Bajarlo un poco más */
+    top: -100px;
+    /* Hide off-screen initially */
     left: 50%;
-    transform: translateX(-50%) scale(0);
-    width: 37.5rem;
-    /* 600px */
-    height: 11.25rem;
-    /* 180px */
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    padding: 10px 20px;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 0 0 20px 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     opacity: 0;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     pointer-events: none;
 }
 
 .radial-menu-container.active {
-    transform: translateX(-50%) scale(1);
+    top: 0;
     opacity: 1;
     pointer-events: auto;
 }
 
-.radial-menu-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    /* Background removed as requested */
-    background: transparent;
-    border: none;
-    pointer-events: none;
-}
-
-/* Items positioned along the arc */
 .nav-item {
-    position: absolute;
-    width: 2.5rem;
-    /* 40px */
-    height: 2.5rem;
-    /* 40px */
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 0.0625rem solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    /* Remove absolute positioning from JS */
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #94a3b8;
     text-decoration: none;
-    transition: all 0.2s;
-    box-shadow: 0 0.25rem 0.375rem rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-item:hover {
-    background: #6366f1;
-    /* Indigo-500 */
+    background: rgba(99, 102, 241, 0.1);
     color: white;
+    transform: translateY(4px);
+    border-color: rgba(99, 102, 241, 0.3);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+}
+
+.nav-item.active {
+    color: #6366f1;
+    background: rgba(99, 102, 241, 0.1);
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+.nav-item .material-symbols-outlined {
+    font-size: 24px;
+    transition: transform 0.3s;
+}
+
+.nav-item:hover .material-symbols-outlined {
     transform: scale(1.1);
-    box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
 }
 
 .nav-item .tooltip {
     position: absolute;
-    top: 100%;
+    top: 110%;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 10px;
-    background: rgba(0, 0, 0, 0.8);
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #6366f1;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 6px;
     opacity: 0;
-    transition: opacity 0.2s;
+    transition: all 0.2s;
     white-space: nowrap;
     pointer-events: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 .nav-item:hover .tooltip {
     opacity: 1;
+    top: 120%;
 }
-
-/* Position adjustment for wider menu */
-.nav-item {
-    width: 3rem;
-    /* 48px */
-    height: 3rem;
-    /* 48px */
-}
-
-/* Specific positions for 6 items in a semi-circle */
-/* Radius approx 120px */
-/* Angles: 180 (left) to 0 (right). We want downwards? User said "menu centrado arriba... salgan de opciones". 
-   If it's at the top, the semi-circle must expand downwards. 
-   So angles from 180 (left) to 360 (or 0) (right) is UP. 
-   Downwards is 0 to 180? No. 
-   Standard CSS coords: 0 is right, 90 is down, 180 is left.
-   So we want arc from 180 (left) -> 0 (right) BUT positioned relative to top center.
-   Correct arc for top-down menu is from roughly 150deg to 30deg (if 0 is right). 
-   Actually, let's use:
-   Item 1: Leftmost
-   Item 6: Rightmost
-*/

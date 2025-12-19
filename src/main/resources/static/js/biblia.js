@@ -1,6 +1,7 @@
 let allData = null;
 let currentFilter = 'todos';
 let currentView = 'list';
+let sortDirection = 'asc'; // 'asc' o 'desc'
 
 document.addEventListener('DOMContentLoaded', async () => {
     await inicializarBiblia();
@@ -43,7 +44,7 @@ function actualizarContadores() {
         'stat-total': total,
         'stat-personajes': ind,
         'stat-lugares': zon,
-        'stat-objetos': allData.efectos.length
+        'stat-objetos': allData.eventos.length + allData.lenguas.length // Usar stat-objetos como cajón de sastre o añadir nuevos
     };
 
     for (const [id, count] of Object.entries(elements)) {
@@ -94,6 +95,15 @@ function cambiarVista(vista) {
     renderEntidades();
 }
 
+function toggleSort() {
+    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+    const btn = document.getElementById('sort-btn');
+    if (btn) {
+        btn.querySelector('.material-symbols-outlined').textContent = sortDirection === 'asc' ? 'sort_by_alpha' : 'text_rotation_down';
+    }
+    renderEntidades();
+}
+
 function renderEntidades() {
     const listContainer = document.getElementById('entities-list');
     listContainer.innerHTML = '';
@@ -103,7 +113,9 @@ function renderEntidades() {
         'entidadindividual': 'Personaje',
         'entidadcolectiva': 'Colectiva',
         'zona': 'Lugar',
-        'efectos': 'Objeto'
+        'efectos': 'Objeto',
+        'eventos': 'Cronología',
+        'lenguas': 'Lingüística'
     };
 
     if (currentFilter === 'todos') {
@@ -111,11 +123,27 @@ function renderEntidades() {
             ...allData.entidadIndividual.map(i => ({ ...i, tipoReal: 'entidadindividual' })),
             ...allData.entidadColectiva.map(i => ({ ...i, tipoReal: 'entidadcolectiva' })),
             ...allData.zona.map(i => ({ ...i, tipoReal: 'zona' })),
-            ...allData.efectos.map(i => ({ ...i, tipoReal: 'efectos' }))
+            ...allData.efectos.map(i => ({ ...i, tipoReal: 'efectos' })),
+            ...allData.eventos.map(i => ({ ...i, tipoReal: 'eventos', nombre: i.titulo || i.nombre })),
+            ...allData.lenguas.map(i => ({ ...i, tipoReal: 'lenguas' }))
         ];
     } else {
         items = allData[currentFilter].map(i => ({ ...i, tipoReal: currentFilter }));
+        if (currentFilter === 'eventos') {
+            items = items.map(i => ({ ...i, nombre: i.titulo || i.nombre }));
+        }
     }
+
+    // Aplicar Ordenación
+    items.sort((a, b) => {
+        const nomA = (a.nombre || '').toLowerCase();
+        const nomB = (b.nombre || '').toLowerCase();
+        if (sortDirection === 'asc') {
+            return nomA.localeCompare(nomB);
+        } else {
+            return nomB.localeCompare(nomA);
+        }
+    });
 
     if (items.length === 0) {
         listContainer.innerHTML = '<div class="text-center py-20 text-slate-600">No hay entidades disponibles.</div>';
@@ -210,7 +238,14 @@ async function crearEntidad(e) {
     const descripcion = document.getElementById('desc-entidad').value;
 
     try {
-        await API.bd.insertar(tipo, { nombre, descripcion });
+        if (tipo === 'eventos') {
+            await API.timeline.crearEvento({ titulo: nombre, descripcion });
+        } else if (tipo === 'lenguas') {
+            await API.conlang.crear({ nombre, descripcion });
+        } else {
+            await API.bd.insertar(tipo, { nombre, detalles: descripcion });
+        }
+
         cerrarModalCrear();
         document.getElementById('form-crear-entidad').reset();
         await inicializarBiblia();

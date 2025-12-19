@@ -1,78 +1,66 @@
-// atlas.js - React Flow Implementation via Babel/Standalone
+/**
+ * atlas.js - Tactical Map Implementation 3.0
+ */
 
-const { useState, useCallback, useEffect } = React;
-const ReactFlow = window.ReactFlow.default || window.ReactFlow;
-const { Controls, Background, addEdge, applyNodeChanges, applyEdgeChanges } = window.ReactFlow;
+let map;
+let markers = [];
 
-// V10 uses useNodesState/useEdgesState from react-flow-renderer? No, they might not exist in 10.
-// In V10 we manage state manually or use useNodesState if available (added inv 10.1?).
-// Let's use simple useState for V10 compatibility.
+document.addEventListener('DOMContentLoaded', () => {
+    initMap();
+});
 
-const initialNodes = [
-    { id: '1', position: { x: 300, y: 300 }, data: { label: 'Reino Central' }, type: 'input' },
-    { id: '2', position: { x: 500, y: 100 }, data: { label: 'Montañas del Norte' } },
-];
+function initMap() {
+    // Basic setup for a local coordinate system map
+    // (In a real scenario, this would load a custom image tileset)
+    map = L.map('map-container', {
+        crs: L.CRS.Simple,
+        minZoom: -2,
+        maxZoom: 4,
+        zoomControl: false
+    });
 
-const initialEdges = [{ id: 'e1-2', source: '1', target: '2', animated: true }];
+    const bounds = [[0, 0], [1000, 1000]];
+    const image = L.imageOverlay('https://images.unsplash.com/photo-1548345680-f5475ee51c4c?q=80&w=2000', bounds).addTo(map);
 
-function AtlasEditor() {
-    // Try to load from localStorage
-    const savedGraph = JSON.parse(localStorage.getItem('wb_atlas_graph') || 'null');
+    map.fitBounds(bounds);
 
-    const [nodes, setNodes, onNodesChange] = useNodesState(savedGraph ? savedGraph.nodes : initialNodes);
-    const [edges, setEdges, onEdgesChange] = useEdgesState(savedGraph ? savedGraph.edges : initialEdges);
-
-    const onConnect = useCallback(
-        (params) => setEdges((eds) => addEdge(params, eds)),
-        [setEdges],
-    );
-
-    // Expose function to global scope to be called by HTML buttons
-    // (A bit hacky but works for no-build interactions)
-    useEffect(() => {
-        window.addAtlasNode = () => {
-            const id = Math.random().toString();
-            const newNode = {
-                id,
-                position: { x: Math.random() * window.innerWidth * 0.5, y: Math.random() * window.innerHeight * 0.5 },
-                data: { label: `Nuevo Lugar ${Math.floor(Math.random() * 100)}` },
-            };
-            setNodes((nds) => nds.concat(newNode));
-        };
-
-        window.saveAtlas = () => {
-            const graph = { nodes, edges };
-            localStorage.setItem('wb_atlas_graph', JSON.stringify(graph));
-            alert('Mapa guardado localmente.');
-        };
-    }, [nodes, edges, setNodes]);
-
-    return (
-        <div style={{ width: '100%', height: '100%' }}>
-            <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onConnect={onConnect}
-                fitView
-            >
-                <Background gap={16} color="#475569" />
-                <Controls />
-            </ReactFlow>
-        </div>
-    );
+    // Initial POIs (Mockup based on Image 4)
+    addPOI([600, 400], "The Silver Spire", "Tower", "A legendary tower that pierces the clouds.");
+    addPOI([450, 700], "Ancient Ruins", "Ruins", "Forgotten remnants of the First King.");
 }
 
-// Initial Render
-const container = document.getElementById('atlas-root');
-if (container) {
-    // Wait for ESM to load
-    const checkLoaded = setInterval(() => {
-        if (window.createRoot && window.ReactFlow) {
-            clearInterval(checkLoaded);
-            const root = window.createRoot(container);
-            root.render(<AtlasEditor />);
-        }
-    }, 100);
+function addPOI(latlng, name, type, desc) {
+    const icon = L.divIcon({
+        className: 'custom-marker',
+        html: `<div class="size-6 bg-indigo-500 rounded-full border-2 border-white flex items-center justify-center shadow-lg"><span class="material-symbols-outlined text-white text-[14px]">location_on</span></div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+
+    const marker = L.marker(latlng, { icon }).addTo(map);
+
+    marker.on('click', () => {
+        openPOI(name, type, desc);
+    });
+
+    markers.push(marker);
 }
+
+function openPOI(name, type, desc) {
+    const sidebar = document.getElementById('poi-sidebar');
+    const nameEl = document.getElementById('poi-name');
+    const descEl = document.getElementById('poi-desc');
+
+    if (nameEl) nameEl.textContent = name;
+    if (descEl) descEl.textContent = desc;
+
+    sidebar.classList.add('active');
+}
+
+function closePOI() {
+    const sidebar = document.getElementById('poi-sidebar');
+    sidebar.classList.remove('active');
+}
+
+// Global exposure
+window.closePOI = closePOI;

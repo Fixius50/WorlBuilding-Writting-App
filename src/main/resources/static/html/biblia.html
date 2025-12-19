@@ -20,9 +20,7 @@
 
     <!-- Top Radial Menu -->
     <div class="nav-trigger-container" id="nav-container">
-        <div class="nav-trigger" id="nav-trigger">
-            <span class="material-symbols-outlined text-indigo-400 text-2xl">keyboard_arrow_down</span>
-        </div>
+        <div class="nav-trigger" id="nav-trigger"></div>
         <div class="radial-menu-container" id="radial-menu">
             <div class="radial-menu-bg"></div>
             <a href="dashboard.html" class="nav-item" title="Dashboard">
@@ -133,6 +131,12 @@
                     <button onclick="filtrar('zona')"
                         class="px-5 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-white transition-all"
                         data-cat="zona">Lugares</button>
+                    <button onclick="filtrar('eventos')"
+                        class="px-5 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-white transition-all"
+                        data-cat="eventos">Eventos</button>
+                    <button onclick="filtrar('lenguas')"
+                        class="px-5 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-white transition-all"
+                        data-cat="lenguas">Lenguas</button>
                 </div>
 
                 <div class="flex items-center gap-4 flex-1 max-w-xl mx-8">
@@ -147,8 +151,10 @@
                 <div class="flex items-center gap-2">
                     <button class="icon-btn text-slate-500 hover:text-white p-2 rounded-lg" id="btn-filter"><span
                             class="material-symbols-outlined">filter_list</span></button>
-                    <button class="icon-btn text-slate-500 hover:text-white p-2 rounded-lg" id="btn-sort"><span
-                            class="material-symbols-outlined">sort_by_alpha</span></button>
+                    <button class="icon-btn text-slate-500 hover:text-white p-2 rounded-lg" id="sort-btn"
+                        onclick="toggleSort()">
+                        <span class="material-symbols-outlined">sort_by_alpha</span>
+                    </button>
                     <div class="w-px h-6 bg-white/10 mx-1"></div>
                     <div class="flex gap-1 bg-slate-900/40 p-1 rounded-lg">
                         <button onclick="cambiarVista('list')" id="view-list"
@@ -222,10 +228,15 @@
                             <span class="material-symbols-outlined text-slate-400">category</span>
                             <span class="text-[10px] font-bold text-slate-400">Objeto</span>
                         </button>
-                        <button type="button" onclick="seleccionarTipo('evento', this)"
+                        <button type="button" onclick="seleccionarTipo('eventos', this)"
                             class="type-card flex flex-col items-center gap-3 p-4 rounded-2xl border-2 border-white/5 bg-slate-900/40 hover:bg-slate-800/60 transition-all">
-                            <span class="material-symbols-outlined text-slate-400">event</span>
+                            <span class="material-symbols-outlined text-slate-400">schedule</span>
                             <span class="text-[10px] font-bold text-slate-400">Evento</span>
+                        </button>
+                        <button type="button" onclick="seleccionarTipo('lenguas', this)"
+                            class="type-card flex flex-col items-center gap-3 p-4 rounded-2xl border-2 border-white/5 bg-slate-900/40 hover:bg-slate-800/60 transition-all">
+                            <span class="material-symbols-outlined text-slate-400">translate</span>
+                            <span class="text-[10px] font-bold text-slate-400">Lengua</span>
                         </button>
                         <input type="hidden" id="tipo-entidad" value="entidadindividual">
                     </div>

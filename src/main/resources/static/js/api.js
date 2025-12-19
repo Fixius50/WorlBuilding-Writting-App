@@ -104,7 +104,11 @@ const API = {
         ];
 
         try {
-            const promesas = tipos.map(tipo => this.bd.listar(tipo));
+            const promesas = [
+                ...tipos.map(tipo => this.bd.listar(tipo)),
+                this.timeline.listarEventos(),
+                this.conlang.listar()
+            ];
             const resultados = await Promise.all(promesas);
 
             return {
@@ -113,7 +117,9 @@ const API = {
                 zona: resultados[2] || [],
                 construccion: resultados[3] || [],
                 efectos: resultados[4] || [],
-                interaccion: resultados[5] || []
+                interaccion: resultados[5] || [],
+                eventos: resultados[6] || [],
+                lenguas: resultados[7] || []
             };
         } catch (error) {
             console.error('Error cargando datos:', error);

@@ -12,111 +12,119 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadMultiverse(projectId);
 });
 
-async function loadMultiverse(projectId) {
-    const sidebar = document.querySelector('aside .overflow-y-auto');
-    if (!sidebar) return;
+async function loadEventsForTimeline(lineaId, lineaNombre) {
+    const canvas = document.getElementById('canvas-content');
+    const sidebar = document.getElementById('sidebar-events');
 
-    sidebar.innerHTML = '<div class="text-slate-500 text-xs p-4">Cargando multiverso...</div>';
+    canvas.innerHTML = '<div class="timeline-line"></div>';
+    sidebar.innerHTML = '<div class="text-center text-slate-500 py-10 text-xs">Cargando...</div>';
 
     try {
-        // Fetch Universes
-        const universes = await fetch(`/api/multiverso/cuaderno/${projectId}`).then(r => r.json());
-
+        const events = await API.timeline.listarEventos(); // Asumimos cargar todos por ahora
         sidebar.innerHTML = '';
 
-        if (universes.length === 0) {
-            sidebar.innerHTML = '<div class="text-slate-500 text-xs p-4">Sin universos.</div>';
-            return;
-        }
-
-        // Render Universes and their Timelines in the Sidebar
-        for (const u of universes) {
-            const uDiv = document.createElement('div');
-            uDiv.className = 'mb-4';
-            uDiv.innerHTML = `
-                <div class="px-4 py-2 text-xs font-bold text-indigo-400 uppercase tracking-wider flex justify-between items-center group cursor-pointer hover:bg-white/5 rounded-lg mx-2 transition-colors">
-                    ${u.nombre}
-                    <span class="material-symbols-outlined text-sm opacity-0 group-hover:opacity-100">expand_more</span>
-                </div>
-                <div class="space-y-1 mt-1 pl-2" id="lines-universe-${u.id}"></div>
-            `;
-            sidebar.appendChild(uDiv);
-
-            // Fetch Timelines for this Universe
-            const lines = await fetch(`/api/timeline/lineas/universo/${u.id}`).then(r => r.json());
-            const linesContainer = uDiv.querySelector(`#lines-universe-${u.id}`);
-
-            lines.forEach(l => {
-                const lItem = document.createElement('div');
-                lItem.className = 'p-3 mx-2 hover:bg-white/5 border border-transparent rounded-lg cursor-pointer transition-colors group relative';
-                lItem.innerHTML = `
-                    <h3 class="text-sm font-bold text-slate-300 group-hover:text-white transition-colors">${l.nombre}</h3>
-                    <div class="flex justify-between mt-1 text-xs text-slate-500">
-                        <span class="events-count-badge">Ver eventos</span>
-                    </div>
-                `;
-                lItem.onclick = () => loadEventsForTimeline(l.id, l.nombre);
-                linesContainer.appendChild(lItem);
-            });
-        }
-    } catch (e) {
-        console.error("Error loading multiverse:", e);
-        sidebar.innerHTML = '<div class="text-red-400 text-xs p-4">Error de conexión.</div>';
-    }
-}
-
-async function loadEventsForTimeline(lineaId, lineaNombre) {
-    const container = document.getElementById('timeline-events');
-    const title = document.querySelector('header h2') || document.getElementById('timeline-title');
-
-    if (title) title.textContent = `Cronología: ${lineaNombre}`;
-
-    container.innerHTML = '<div class="text-center text-slate-500 py-20">Cargando hilos del destino...</div>';
-
-    try {
-        const events = await fetch(`/api/timeline/linea/${lineaId}/eventos`).then(r => r.json());
-        container.innerHTML = '';
-
-        if (events.length === 0) {
-            container.innerHTML = '<div class="text-center text-slate-500 py-20">Línea temporal vacía. <br> <span class="text-xs">Añade eventos para comenzar.</span></div>';
-            return;
-        }
+        let maxY = 0;
 
         events.forEach((evt, index) => {
-            const isLeft = index % 2 === 0;
-            const item = document.createElement('div');
-            item.className = 'flex items-center justify-between group w-full';
+            // Render on Canvas (Simplified Y-position based on index for now)
+            const swimlaneOffset = (index % 2 === 0) ? 100 : 350;
+            const yPos = 100 + (index * 120);
 
-            // Animation class handled by CSS now (animate-fade-in-up)
-            item.style.animationDelay = `${index * 100}ms`;
-            item.classList.add('animate-fade-in-up');
+            // Track max height needed
+            if (yPos > maxY) maxY = yPos;
 
-            item.innerHTML = `
-                <div class="w-5/12 text-right pr-8 ${!isLeft ? 'opacity-0' : ''}">
-                    ${isLeft ? renderEventCard(evt) : ''}
-                </div>
-                
-                <div class="absolute left-1/2 -translate-x-1/2 size-4 rounded-full bg-slate-950 border-2 ${isLeft ? 'border-indigo-500 scale-110 shadow-[0_0_10px_rgba(99,102,241,0.5)]' : 'border-slate-600'} z-10 group-hover:scale-125 transition-all cursor-pointer"></div>
-                
-                <div class="w-5/12 pl-8 ${isLeft ? 'opacity-0' : ''}">
-                    ${!isLeft ? renderEventCard(evt) : ''}
-                </div>
+            // Dot
+            const dot = document.createElement('div');
+            dot.className = 'event-dot';
+            dot.style.top = `${yPos}px`;
+            canvas.appendChild(dot);
+
+            // Pill
+            const pill = document.createElement('div');
+            pill.className = 'event-pill animate-fade-in-up';
+            pill.style.top = `${yPos - 15}px`;
+            pill.style.left = '48%';
+            pill.innerHTML = `
+                <p class="text-[10px] text-indigo-400 font-bold mb-1">${evt.fechaInGame || 'Jan 01'}</p>
+                <h4 class="text-xs font-bold text-white">${evt.titulo}</h4>
             `;
-            container.appendChild(item);
+            canvas.appendChild(pill);
+
+            // Render in Sidebar
+            const card = document.createElement('div');
+            card.className = `timeline-event-card ${index === 0 ? 'active' : ''}`;
+            card.innerHTML = `
+                <p class="text-[10px] text-slate-500 mb-1">${evt.fechaInGame || 'Jan 01, 452'}</p>
+                <h4 class="text-sm font-bold text-white mb-2">${evt.titulo}</h4>
+                <p class="text-[11px] text-slate-500 line-clamp-2">${evt.descripcion || ''}</p>
+            `;
+            sidebar.appendChild(card);
         });
+
+        // Dynamic Height Adjustment (Base height + buffer for last event)
+        // Ensure at least min-h-full (handled by CSS), but expand if content is taller
+        if (maxY > 0) {
+            canvas.style.minHeight = `${maxY + 200}px`;
+        }
 
     } catch (e) {
         console.error(e);
-        container.innerHTML = '<div class="text-center text-red-400 py-20">Error al leer los astros.</div>';
+        sidebar.innerHTML = '<div class="text-red-400 text-xs p-4">Error cargando hilos del destino.</div>';
     }
 }
 
-function renderEventCard(evt) {
-    return `
-        <div class="hover:bg-white/5 p-4 rounded-xl transition-all border border-transparent hover:border-white/5 cursor-pointer">
-            <h3 class="text-lg font-bold text-white group-hover:text-indigo-400 transition-colors">${evt.titulo}</h3>
-            <p class="text-sm text-slate-400 mt-2 line-clamp-3">${evt.descripcion}</p>
-            <div class="mt-2 text-xs text-indigo-300 font-mono bg-indigo-500/10 inline-block px-2 py-1 rounded border border-indigo-500/20">${evt.fechaInGame}</div>
+// Scrubber Logic
+function initScrubber() {
+    const track = document.querySelector('.scrubber-track');
+    const handle = document.querySelector('.scrubber-handle');
+    if (!track || !handle) return;
+
+    track.addEventListener('click', (e) => {
+        const rect = track.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const pct = Math.max(0, Math.min(100, (x / rect.width) * 100));
+        handle.style.left = `${pct}%`;
+
+        updateWorldState(pct);
+    });
+}
+
+function updateWorldState(pct) {
+    // Simulate year based on pct (0% = Year 0, 100% = Year 1000)
+    const year = Math.floor(pct * 10);
+
+    // Find or create widget
+    let widget = document.getElementById('world-state-widget');
+    if (!widget) {
+        widget = document.createElement('div');
+        widget.id = 'world-state-widget';
+        widget.className = 'absolute top-24 right-8 w-64 glass-panel p-4 rounded-xl animate-fade-in-up';
+        document.querySelector('main').appendChild(widget);
+    }
+
+    // Dynamic Content based on era
+    let era = "Era del Amanecer";
+    let ruler = "Consejo de Sabios";
+
+    if (year > 300) { era = "Era de los Reinos"; ruler = "Rey Alric I"; }
+    if (year > 600) { era = "Era Oscura"; ruler = "El Usurpador"; }
+    if (year > 900) { era = "Renacimiento"; ruler = "Reina Elara"; }
+
+    widget.innerHTML = `
+        <h5 class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2">Estado del Mundo: Info</h5>
+        <div class="flex justify-between items-center mb-2">
+            <span class="text-xs text-white font-bold">Año ${year}</span>
+            <span class="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded">${era}</span>
+        </div>
+        <div class="text-xs text-slate-400">
+            <p><strong class="text-slate-300">Gobernante:</strong> ${ruler}</p>
+            <p><strong class="text-slate-300">Economía:</strong> ${year % 2 === 0 ? 'Estable' : 'En declive'}</p>
         </div>
     `;
 }
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    initScrubber();
+    loadEventsForTimeline(); // For initial load
+});

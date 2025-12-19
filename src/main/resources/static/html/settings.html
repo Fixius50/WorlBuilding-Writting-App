@@ -210,57 +210,56 @@
 
     <!-- Top Radial Menu -->
     <div class="nav-trigger-container" id="nav-container">
-        <div class="nav-trigger" id="nav-trigger">
-            <span class="material-symbols-outlined text-indigo-400 text-2xl">keyboard_arrow_down</span>
+        <div class="nav-trigger-container" id="nav-container">
+            <div class="nav-trigger" id="nav-trigger"></div>
+            <div class="radial-menu-container" id="radial-menu">
+                <div class="radial-menu-bg"></div>
+                <a href="dashboard.html" class="nav-item" title="Dashboard">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <span class="tooltip">Dashboard</span>
+                </a>
+                <a href="libreria.html" class="nav-item" title="Librería">
+                    <span class="material-symbols-outlined">library_books</span>
+                    <span class="tooltip">Librería</span>
+                </a>
+                <a href="biblia.html" class="nav-item" title="Biblia">
+                    <span class="material-symbols-outlined">menu_book</span>
+                    <span class="tooltip">Biblia</span>
+                </a>
+                <a href="timeline.html" class="nav-item" title="Cronología">
+                    <span class="material-symbols-outlined">schedule</span>
+                    <span class="tooltip">Cronología</span>
+                </a>
+                <a href="atlas.html" class="nav-item" title="Atlas">
+                    <span class="material-symbols-outlined">map</span>
+                    <span class="tooltip">Atlas</span>
+                </a>
+                <a href="conlang.html" class="nav-item" title="Lingüística">
+                    <span class="material-symbols-outlined">translate</span>
+                    <span class="tooltip">Lingüística</span>
+                </a>
+                <a href="settings.html" class="nav-item" title="Ajustes">
+                    <span class="material-symbols-outlined">settings</span>
+                    <span class="tooltip">Ajustes</span>
+                </a>
+            </div>
         </div>
-        <div class="radial-menu-container" id="radial-menu">
-            <div class="radial-menu-bg"></div>
-            <a href="dashboard.html" class="nav-item" title="Dashboard">
-                <span class="material-symbols-outlined">dashboard</span>
-                <span class="tooltip">Dashboard</span>
-            </a>
-            <a href="libreria.html" class="nav-item" title="Librería">
-                <span class="material-symbols-outlined">library_books</span>
-                <span class="tooltip">Librería</span>
-            </a>
-            <a href="biblia.html" class="nav-item" title="Biblia">
-                <span class="material-symbols-outlined">menu_book</span>
-                <span class="tooltip">Biblia</span>
-            </a>
-            <a href="timeline.html" class="nav-item" title="Cronología">
-                <span class="material-symbols-outlined">schedule</span>
-                <span class="tooltip">Cronología</span>
-            </a>
-            <a href="atlas.html" class="nav-item" title="Atlas">
-                <span class="material-symbols-outlined">map</span>
-                <span class="tooltip">Atlas</span>
-            </a>
-            <a href="conlang.html" class="nav-item" title="Lingüística">
-                <span class="material-symbols-outlined">translate</span>
-                <span class="tooltip">Lingüística</span>
-            </a>
-            <a href="settings.html" class="nav-item" title="Ajustes">
-                <span class="material-symbols-outlined">settings</span>
-                <span class="tooltip">Ajustes</span>
-            </a>
-        </div>
-    </div>
-    <div class="bg-overlay" id="menu-overlay"></div>
+        <div class="bg-overlay" id="menu-overlay"></div>
 
-    <script src="../js/api.js"></script>
-    <script src="../js/auth_guard.js"></script>
-    <script src="../js/navigation.js"></script>
-    <script>
-        async function logout() {
-            try {
-                const res = await fetch('/api/auth/logout', { method: 'POST' });
-                if (res.ok) {
-                    localStorage.removeItem('wb_user');
-                    window.location.href = 'login.html';
-                }
-            } catch (e) { console.error(e); }
-        }
-    </script>
+        <script src="../js/api.js"></script>
+        <script src="../js/auth_guard.js"></script>
+        <script src="../js/navigation.js"></script>
+        <script>
+            async function logout() {
+                try {
+                    const res = await fetch('/api/auth/logout', { method: 'POST' });
+                    if (res.ok) {
+                        localStorage.removeItem('wb_user');
+                        window.location.href = 'login.html';
+                    }
+                } catch (e) { console.error(e); }
+            }
+        </script>
 </body>
 
 </html>

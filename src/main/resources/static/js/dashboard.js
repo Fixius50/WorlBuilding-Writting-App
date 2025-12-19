@@ -6,10 +6,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function cargarProyectos() {
-    const lista = document.getElementById('project-list');
+    const lista = document.getElementById('project-grid');
     if (!lista) return;
 
-    lista.innerHTML = '<div class="text-slate-500 italic col-span-full text-center">Cargando mundos...</div>';
+    lista.innerHTML = '<div class="text-slate-500 italic col-span-full text-center py-20">Consiguiendo fragmentos de mundos...</div>';
 
     try {
         const cuadernos = await API.proyectos.listar();
@@ -103,5 +103,18 @@ async function abrirProyecto(nombre) {
         }
     } catch (err) {
         alert("Error al abrir proyecto: " + err);
+    }
+}
+
+function manejarImagenLocal(input) {
+    const file = input.files[0];
+    if (file) {
+        // En una app local real, idealmente guardaríamos la ruta.
+        // Aquí simulamos guardando el nombre o convirtiendo a base64 ligero.
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            document.getElementById('imagen-proyecto').value = e.target.result;
+        };
+        reader.readAsDataURL(file);
     }
 }

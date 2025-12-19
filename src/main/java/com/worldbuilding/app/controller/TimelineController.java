@@ -19,6 +19,11 @@ public class TimelineController {
         return eventoRepository.findByLineaTemporalIdOrderByOrdenCronologicoAsc(lineaId);
     }
 
+    @GetMapping("/eventos")
+    public List<EventoCronologia> listarTodosLosEventos() {
+        return eventoRepository.findAll();
+    }
+
     @PostMapping("/evento")
     public EventoCronologia crearEvento(@RequestBody EventoCronologia evento) {
         return eventoRepository.save(evento);
