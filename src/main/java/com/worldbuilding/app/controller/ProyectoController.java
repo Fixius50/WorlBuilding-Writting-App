@@ -1,6 +1,7 @@
 package com.worldbuilding.app.controller;
 
 import com.worldbuilding.app.model.Cuaderno;
+import com.worldbuilding.app.model.Usuario;
 import com.worldbuilding.app.repository.CuadernoRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,42 +30,44 @@ public class ProyectoController {
      */
     @PostMapping("/crear")
     public ResponseEntity<?> crearProyecto(@RequestBody Map<String, String> body, HttpSession session) {
+        Usuario usuarioActual = (Usuario) session.getAttribute("user");
         String nombre = body.get("nombreProyecto");
         String tipo = body.get("tipo");
+        String genero = body.get("genero");
+        String imagenUrl = body.get("imagenUrl");
         String descripcion = body.get("descripcion");
 
         if (nombre == null || nombre.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "El nombre del proyecto es requerido"));
         }
 
-        // Verificar si ya existe (asumiendo unicidad por nombre para simplificar
-        // migración)
-        // Idealmente usariamos findByNombreProyecto pero findAll().stream()... sirve
-        // para prototipo si no existe el método exacto
-        boolean existe = cuadernoRepository.findAll().stream()
+        // Verificar si ya existe PARA ESTE USUARIO
+        boolean existe = cuadernoRepository.findByUsuario(usuarioActual).stream()
                 .anyMatch(c -> c.getNombreProyecto().equalsIgnoreCase(nombre));
 
         if (existe) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Ya existe un proyecto con ese nombre"));
+            return ResponseEntity.badRequest().body(Map.of("error", "Ya tienes un proyecto con ese nombre"));
         }
 
         try {
             Cuaderno nuevo = new Cuaderno();
             nuevo.setNombreProyecto(nombre);
-            nuevo.setTitulo(nombre); // Default title
+            nuevo.setTitulo(nombre);
             nuevo.setDescripcion(descripcion != null ? descripcion : "Nuevo proyecto");
+            nuevo.setTipo(tipo != null ? tipo : "General");
+            nuevo.setGenero(genero != null ? genero : "Fantasía");
+            nuevo.setImagenUrl(imagenUrl != null ? imagenUrl : "");
+            nuevo.setUsuario(usuarioActual);
 
             cuadernoRepository.save(nuevo);
 
-            // Guardar en sesión
             session.setAttribute(PROYECTO_ACTIVO, nombre);
 
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "mensaje", "Proyecto creado exitosamente",
                     "nombreProyecto", nombre,
-                    "id", nuevo.getId(),
-                    "tipo", tipo != null ? tipo : "general"));
+                    "id", nuevo.getId()));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Error creando proyecto: " + e.getMessage()));
         }
@@ -75,15 +78,15 @@ public class ProyectoController {
      */
     @GetMapping("/{nombre}")
     public ResponseEntity<?> abrirProyecto(@PathVariable String nombre, HttpSession session) {
-        Optional<Cuaderno> cuaderno = cuadernoRepository.findAll().stream()
+        Usuario usuarioActual = (Usuario) session.getAttribute("user");
+        Optional<Cuaderno> cuaderno = cuadernoRepository.findByUsuario(usuarioActual).stream()
                 .filter(c -> c.getNombreProyecto().equalsIgnoreCase(nombre))
                 .findFirst();
 
         if (cuaderno.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of("error", "Proyecto no encontrado"));
+            return ResponseEntity.status(404).body(Map.of("error", "Proyecto no encontrado o no te pertenece"));
         }
 
-        // Establecer activo en sesión
         session.setAttribute(PROYECTO_ACTIVO, cuaderno.get().getNombreProyecto());
 
         return ResponseEntity.ok(Map.of(
@@ -109,16 +112,20 @@ public class ProyectoController {
     }
 
     /**
-     * Lista todos los proyectos disponibles
+     * Lista todos los proyectos disponibles PARA EL USUARIO
      */
     @GetMapping
-    public ResponseEntity<?> listarProyectos() {
+    public ResponseEntity<?> listarProyectos(HttpSession session) {
+        Usuario usuarioActual = (Usuario) session.getAttribute("user");
         try {
-            List<Cuaderno> proyectos = cuadernoRepository.findAll();
+            List<Cuaderno> proyectos = cuadernoRepository.findByUsuario(usuarioActual);
             return ResponseEntity.ok(proyectos.stream()
                     .map(c -> Map.of(
                             "nombreProyecto", c.getNombreProyecto(),
                             "id", c.getId(),
+                            "tipo", c.getTipo() != null ? c.getTipo() : "",
+                            "genero", c.getGenero() != null ? c.getGenero() : "",
+                            "imagenUrl", c.getImagenUrl() != null ? c.getImagenUrl() : "",
                             "descripcion", c.getDescripcion() != null ? c.getDescripcion() : ""))
                     .toList());
         } catch (Exception e) {
@@ -140,22 +147,22 @@ public class ProyectoController {
      */
     @DeleteMapping("/{nombre}")
     public ResponseEntity<?> eliminarProyecto(@PathVariable String nombre, HttpSession session) {
-        Optional<Cuaderno> cuaderno = cuadernoRepository.findAll().stream()
+        Usuario usuarioActual = (Usuario) session.getAttribute("user");
+        Optional<Cuaderno> cuaderno = cuadernoRepository.findByUsuario(usuarioActual).stream()
                 .filter(c -> c.getNombreProyecto().equalsIgnoreCase(nombre))
                 .findFirst();
 
         if (cuaderno.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of("error", "Proyecto no encontrado"));
+            return ResponseEntity.status(404).body(Map.of("error", "Proyecto no encontrado o no te pertenece"));
         }
 
         try {
-            // Si es el proyecto activo, cerrarlo primero
             String activo = (String) session.getAttribute(PROYECTO_ACTIVO);
             if (nombre.equalsIgnoreCase(activo)) {
                 session.removeAttribute(PROYECTO_ACTIVO);
             }
 
-            cuadernoRepository.delete(cuaderno.get());
+            cuaderno.ifPresent(cuadernoRepository::delete);
 
             return ResponseEntity.ok(Map.of("success", true, "mensaje", "Proyecto eliminado"));
         } catch (Exception e) {

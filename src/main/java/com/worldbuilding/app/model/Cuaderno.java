@@ -24,6 +24,15 @@ public class Cuaderno {
     @Column(columnDefinition = "CLOB")
     private String descripcion;
 
+    @Column
+    private String tipo;
+
+    @Column
+    private String genero;
+
+    @Column(name = "imagen_url")
+    private String imagenUrl;
+
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion = LocalDateTime.now();
 
@@ -74,5 +83,29 @@ public class Cuaderno {
 
     public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
+
+    public String getGenero() {
+        return genero;
+    }
+
+    public void setGenero(String genero) {
+        this.genero = genero;
+    }
+
+    public String getImagenUrl() {
+        return imagenUrl;
+    }
+
+    public void setImagenUrl(String imagenUrl) {
+        this.imagenUrl = imagenUrl;
     }
 }

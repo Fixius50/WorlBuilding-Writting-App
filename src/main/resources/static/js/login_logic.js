@@ -1,31 +1,93 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const form = document.querySelector('form');
-    if (form) {
-        form.addEventListener('submit', (e) => {
+    // --- Referencias UI ---
+    const loginSection = document.getElementById('login-section');
+    const registerSection = document.getElementById('register-section');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+
+    const btnShowRegister = document.getElementById('btn-show-register');
+    const btnShowLogin = document.getElementById('btn-show-login');
+    const toggleText = document.getElementById('toggle-text');
+    const toggleBackText = document.getElementById('toggle-back-text');
+
+    // --- Alternar Formularios ---
+    const showRegister = () => {
+        loginSection.classList.add('hidden');
+        registerSection.classList.remove('hidden');
+        toggleText.classList.add('hidden');
+        toggleBackText.classList.remove('hidden');
+    };
+
+    const showLogin = () => {
+        registerSection.classList.add('hidden');
+        loginSection.classList.remove('hidden');
+        toggleBackText.classList.add('hidden');
+        toggleText.classList.remove('hidden');
+    };
+
+    if (btnShowRegister) btnShowRegister.addEventListener('click', showRegister);
+    if (btnShowLogin) btnShowLogin.addEventListener('click', showLogin);
+
+    // --- Lógica de Login ---
+    if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            // Basic "Local" Auth - Simulating a real login
-            const usernameInput = form.querySelector('input[type="text"]');
-            const passwordInput = form.querySelector('input[type="password"]');
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
 
-            const username = usernameInput ? usernameInput.value : 'admin';
+            fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        localStorage.setItem('wb_user', JSON.stringify({
+                            username: data.username,
+                            loginTime: new Date().toISOString()
+                        }));
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        alert('Error: ' + (data.error || 'Credenciales inválidas'));
+                    }
+                })
+                .catch(err => {
+                    console.error('Login error:', err);
+                    alert('Error conectando con el servidor');
+                });
+        });
+    }
 
-            if (username) {
-                // Save session to localStorage
-                const user = {
-                    username: username,
-                    token: 'mock-jwt-token-' + Date.now(),
-                    loginTime: new Date().toISOString()
-                };
-                localStorage.setItem('wb_user', JSON.stringify(user));
+    // --- Lógica de Registro ---
+    if (registerForm) {
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
 
-                // Show specific feedback (optional) or just redirect
-                console.log('Login successful, saving session...');
-
-                // Delay slightly for effect
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 500);
-            }
+            fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email, password })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('¡Bóveda creada! Ahora puedes iniciar sesión.');
+                        showLogin();
+                        // Autocompletar login con el nuevo usuario
+                        document.getElementById('login-username').value = username;
+                        document.getElementById('login-password').value = '';
+                    } else {
+                        alert('Error en registro: ' + (data.error || 'Inténtalo de nuevo'));
+                    }
+                })
+                .catch(err => {
+                    console.error('Register error:', err);
+                    alert('Error conectando con el servidor');
+                });
         });
     }
 });

@@ -29,7 +29,7 @@
                 <span class="material-symbols-outlined">dashboard</span>
                 <span class="tooltip">Dashboard</span>
             </a>
-            <a href="dashboard.html" class="nav-item" title="Librería">
+            <a href="libreria.html" class="nav-item" title="Librería">
                 <span class="material-symbols-outlined">library_books</span>
                 <span class="tooltip">Librería</span>
             </a>
@@ -49,123 +49,221 @@
                 <span class="material-symbols-outlined">translate</span>
                 <span class="tooltip">Lingüística</span>
             </a>
-            <a href="profile.html" class="nav-item" title="Perfil">
-                <span class="material-symbols-outlined">person</span>
-                <span class="tooltip">Perfil</span>
+            <a href="settings.html" class="nav-item" title="Ajustes">
+                <span class="material-symbols-outlined">settings</span>
+                <span class="tooltip">Ajustes</span>
             </a>
         </div>
     </div>
     <div class="bg-overlay" id="menu-overlay"></div>
 
     <!-- Main Content Area -->
-    <main class="flex-1 overflow-hidden relative flex">
-        <!-- Sidebar Filters -->
-        <aside class="w-64 glass-panel border-r border-white/10 flex flex-col z-10 hidden md:flex">
-            <div class="p-6 border-b border-white/10">
-                <h2 class="text-xl font-bold text-white font-heading tracking-wide">Entidades</h2>
-                <p class="text-xs text-slate-400 mt-1">Directorio universal</p>
-            </div>
+    <main class="flex-1 overflow-hidden relative flex flex-col bg-slate-950">
 
-            <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-                <a href="#"
-                    class="flex items-center justify-between px-3 py-2 rounded-lg bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
-                    <span class="flex items-center gap-2 text-sm font-medium"><span
-                            class="material-symbols-outlined text-lg">public</span> Todos</span>
-                    <span class="text-xs bg-indigo-500/20 px-1.5 py-0.5 rounded text-indigo-200">24</span>
-                </a>
-                <a href="#"
-                    class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-white/5 hover:text-white transition-colors">
-                    <span class="flex items-center gap-2 text-sm font-medium"><span
-                            class="material-symbols-outlined text-lg">person</span> Personajes</span>
-                    <span class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-slate-500">12</span>
-                </a>
-                <a href="#"
-                    class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-white/5 hover:text-white transition-colors">
-                    <span class="flex items-center gap-2 text-sm font-medium"><span
-                            class="material-symbols-outlined text-lg">castle</span> Lugares</span>
-                    <span class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-slate-500">5</span>
-                </a>
-                <a href="#"
-                    class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:bg-white/5 hover:text-white transition-colors">
-                    <span class="flex items-center gap-2 text-sm font-medium"><span
-                            class="material-symbols-outlined text-lg">diamond</span> Objetos</span>
-                    <span class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-slate-500">3</span>
-                </a>
-            </nav>
-
-            <div class="p-4 border-t border-white/10">
-                <button
-                    onclick="document.getElementById('modal-crear').classList.remove('hidden'); document.getElementById('modal-crear').classList.add('flex');"
-                    class="w-full glass-button flex items-center justify-center gap-2">
-                    <span class="material-symbols-outlined text-sm">add</span> Nueva Entidad
+        <!-- Header and Stats (Image 2) -->
+        <div class="p-8 pb-0">
+            <div class="flex justify-between items-start mb-8">
+                <div>
+                    <h1 class="text-4xl font-bold text-white mb-2">Biblia del Mundo</h1>
+                    <p class="text-slate-400">Gestión centralizada de todas las entidades de tu universo.</p>
+                </div>
+                <button onclick="abrirModalCrear()"
+                    class="bg-[#46ec13] hover:bg-[#3cd10f] text-black px-6 py-3 rounded-2xl font-bold shadow-lg shadow-[#46ec13]/20 flex items-center gap-2 transition-all transform hover:scale-105">
+                    <span class="material-symbols-outlined font-bold">add</span>
+                    Crear Nueva Entidad
                 </button>
             </div>
-        </aside>
 
-        <!-- Main Table Area -->
-        <div class="flex-1 overflow-hidden flex flex-col bg-slate-950 relative">
-            <!-- Toolbar -->
-            <div
-                class="h-16 border-b border-white/10 flex items-center justify-between px-6 bg-slate-900/50 backdrop-blur-sm sticky top-0 z-20">
-                <div class="relative w-96">
-                    <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-500">search</span>
-                    <input type="text" placeholder="Buscar en la biblia..."
-                        class="glass-input pl-10 py-2 rounded-full text-sm bg-slate-900/50">
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-4 gap-6 mb-8">
+                <div class="glass-panel p-6 rounded-3xl flex items-center gap-6">
+                    <div
+                        class="size-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+                        <span class="material-symbols-outlined text-indigo-400 text-3xl">grid_view</span>
+                    </div>
+                    <div>
+                        <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Total</p>
+                        <h3 class="text-3xl font-bold text-white" id="stat-total">0</h3>
+                    </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <button class="icon-btn text-slate-400 hover:text-white"><span
-                            class="material-symbols-outlined">filter_list</span></button>
-                    <button class="icon-btn text-slate-400 hover:text-white"><span
-                            class="material-symbols-outlined">view_module</span></button>
+                <div class="glass-panel p-6 rounded-3xl flex items-center gap-6">
+                    <div
+                        class="size-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                        <span class="material-symbols-outlined text-emerald-400 text-3xl">person</span>
+                    </div>
+                    <div>
+                        <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Personajes</p>
+                        <h3 class="text-3xl font-bold text-white" id="stat-personajes">0</h3>
+                    </div>
+                </div>
+                <div class="glass-panel p-6 rounded-3xl flex items-center gap-6">
+                    <div
+                        class="size-14 rounded-2xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+                        <span class="material-symbols-outlined text-amber-400 text-3xl">castle</span>
+                    </div>
+                    <div>
+                        <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Lugares</p>
+                        <h3 class="text-3xl font-bold text-white" id="stat-lugares">0</h3>
+                    </div>
+                </div>
+                <div class="glass-panel p-6 rounded-3xl flex items-center gap-6">
+                    <div
+                        class="size-14 rounded-2xl bg-sky-500/10 flex items-center justify-center border border-sky-500/20">
+                        <span class="material-symbols-outlined text-sky-400 text-3xl">category</span>
+                    </div>
+                    <div>
+                        <p class="text-slate-500 text-xs font-bold uppercase tracking-wider">Objetos</p>
+                        <h3 class="text-3xl font-bold text-white" id="stat-objetos">0</h3>
+                    </div>
                 </div>
             </div>
 
-            <!-- Grid Content -->
-            <div class="flex-1 overflow-y-auto p-6">
-                <div id="entities-container"
-                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    <!-- Entities injected by JS -->
+            <!-- Filters & View Toggle Bar -->
+            <div class="glass-panel p-3 rounded-2xl flex items-center justify-between mb-6">
+                <div class="flex gap-2 p-1 bg-slate-900/60 rounded-xl">
+                    <button onclick="filtrar('todos')"
+                        class="px-5 py-2 rounded-lg text-sm font-bold bg-slate-800 text-white shadow-sm"
+                        data-cat="todos">Todos</button>
+                    <button onclick="filtrar('entidadindividual')"
+                        class="px-5 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-white transition-all"
+                        data-cat="entidadindividual">Personajes</button>
+                    <button onclick="filtrar('entidadcolectiva')"
+                        class="px-5 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-white transition-all"
+                        data-cat="entidadcolectiva">Grupos</button>
+                    <button onclick="filtrar('zona')"
+                        class="px-5 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-white transition-all"
+                        data-cat="zona">Lugares</button>
+                </div>
+
+                <div class="flex items-center gap-4 flex-1 max-w-xl mx-8">
+                    <div class="relative w-full group">
+                        <span
+                            class="material-symbols-outlined absolute left-3 top-2 text-slate-500 text-xl group-focus-within:text-indigo-400">search</span>
+                        <input type="text" id="search-input" placeholder="Buscar por nombre, etiqueta..."
+                            class="glass-input !bg-transparent border-none focus:ring-0 pl-10 text-sm w-full">
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button class="icon-btn text-slate-500 hover:text-white p-2 rounded-lg" id="btn-filter"><span
+                            class="material-symbols-outlined">filter_list</span></button>
+                    <button class="icon-btn text-slate-500 hover:text-white p-2 rounded-lg" id="btn-sort"><span
+                            class="material-symbols-outlined">sort_by_alpha</span></button>
+                    <div class="w-px h-6 bg-white/10 mx-1"></div>
+                    <div class="flex gap-1 bg-slate-900/40 p-1 rounded-lg">
+                        <button onclick="cambiarVista('list')" id="view-list"
+                            class="p-2 rounded-md bg-indigo-500 text-white shadow-sm transition-all"><span
+                                class="material-symbols-outlined">view_list</span></button>
+                        <button onclick="cambiarVista('grid')" id="view-grid"
+                            class="p-2 rounded-md text-slate-500 hover:text-white transition-all"><span
+                                class="material-symbols-outlined">grid_view</span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="flex-1 overflow-y-auto px-8 pb-8">
+            <div id="entities-container" class="view-list space-y-3">
+                <!-- Entities Table Header if list view -->
+                <div id="list-header"
+                    class="grid grid-cols-12 gap-4 px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-white/5">
+                    <div class="col-span-5">Entidad</div>
+                    <div class="col-span-2 text-center">Categoría</div>
+                    <div class="col-span-2 text-center">Etiquetas</div>
+                    <div class="col-span-2 text-center">Estado</div>
+                    <div class="col-span-1 text-right">Acciones</div>
+                </div>
+                <div id="entities-list" class="space-y-3 pt-2">
+                    <!-- Entities injected here -->
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Modal Creación -->
+    <!-- Modal Creación Rediseñado (Image 3) -->
     <div id="modal-crear"
-        class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex-col items-center justify-center p-4">
-        <div class="glass-panel w-full max-w-lg rounded-2xl p-0 shadow-2xl border border-white/10 overflow-hidden">
-            <div class="bg-indigo-600/10 p-6 border-b border-white/10 flex justify-between items-center">
-                <h2 class="text-xl font-bold text-white">Nueva Entidad</h2>
-                <button onclick="document.getElementById('modal-crear').classList.add('hidden')"
-                    class="text-slate-400 hover:text-white"><span
-                        class="material-symbols-outlined">close</span></button>
+        class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+        <div
+            class="glass-panel w-full max-w-xl rounded-[32px] overflow-hidden shadow-2xl border border-white/10 animate-fade-in-up">
+            <div class="p-8 pb-4 flex justify-between items-start">
+                <div class="flex items-center gap-4">
+                    <div class="size-10 rounded-full bg-indigo-500 flex items-center justify-center text-white">
+                        <span class="material-symbols-outlined font-bold">add</span>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Nueva Entidad</h2>
+                        <p class="text-slate-500 text-xs">Define un nuevo elemento para tu mundo.</p>
+                    </div>
+                </div>
+                <button onclick="cerrarModalCrear()" class="text-slate-500 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
             </div>
-            <form id="form-crear-entidad" onsubmit="crearEntidad(event)" class="p-6 space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-xs text-slate-400 uppercase font-bold mb-1 block">Nombre</label>
-                        <input type="text" id="nombre-entidad" class="glass-input" required placeholder="Ej. Excalibur">
-                    </div>
-                    <div>
-                        <label class="text-xs text-slate-400 uppercase font-bold mb-1 block">Tipo</label>
-                        <select id="tipo-entidad" class="glass-input">
-                            <option value="entidadindividual">Personaje</option>
-                            <option value="entidadcolectiva">Grupo</option>
-                            <option value="zona">Lugar</option>
-                            <option value="civilizacion">Civilización</option>
-                            <option value="construccion">Construcción</option>
-                            <option value="efectos">Objeto / Magia</option>
-                        </select>
+
+            <form id="form-crear-entidad" onsubmit="crearEntidad(event)" class="p-8 pt-4 space-y-8">
+                <!-- Type Selection -->
+                <div class="space-y-3">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tipo de
+                        Entidad</label>
+                    <div class="grid grid-cols-4 gap-4" id="tipo-selector">
+                        <button type="button" onclick="seleccionarTipo('entidadindividual', this)"
+                            class="type-card active flex flex-col items-center gap-3 p-4 rounded-2xl border-2 border-indigo-500 bg-indigo-500/10 transition-all">
+                            <span class="material-symbols-outlined text-white">person</span>
+                            <span class="text-[10px] font-bold text-white">Personaje</span>
+                        </button>
+                        <button type="button" onclick="seleccionarTipo('zona', this)"
+                            class="type-card flex flex-col items-center gap-3 p-4 rounded-2xl border-2 border-white/5 bg-slate-900/40 hover:bg-slate-800/60 transition-all">
+                            <span class="material-symbols-outlined text-slate-400">landscape</span>
+                            <span class="text-[10px] font-bold text-slate-400">Lugar</span>
+                        </button>
+                        <button type="button" onclick="seleccionarTipo('efectos', this)"
+                            class="type-card flex flex-col items-center gap-3 p-4 rounded-2xl border-2 border-white/5 bg-slate-900/40 hover:bg-slate-800/60 transition-all">
+                            <span class="material-symbols-outlined text-slate-400">category</span>
+                            <span class="text-[10px] font-bold text-slate-400">Objeto</span>
+                        </button>
+                        <button type="button" onclick="seleccionarTipo('evento', this)"
+                            class="type-card flex flex-col items-center gap-3 p-4 rounded-2xl border-2 border-white/5 bg-slate-900/40 hover:bg-slate-800/60 transition-all">
+                            <span class="material-symbols-outlined text-slate-400">event</span>
+                            <span class="text-[10px] font-bold text-slate-400">Evento</span>
+                        </button>
+                        <input type="hidden" id="tipo-entidad" value="entidadindividual">
                     </div>
                 </div>
-                <div>
-                    <label class="text-xs text-slate-400 uppercase font-bold mb-1 block">Descripción Corta</label>
-                    <textarea id="desc-entidad" class="glass-input" rows="3" placeholder="Resumen..."></textarea>
+
+                <!-- Name Input -->
+                <div class="space-y-3">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Nombre</label>
+                    <div class="relative group">
+                        <span
+                            class="material-symbols-outlined absolute left-4 top-3.5 text-slate-500 group-focus-within:text-indigo-400 transition-colors">edit</span>
+                        <input type="text" id="nombre-entidad" required placeholder="Ej. El Bosque Susurrante"
+                            class="glass-input !pl-12 !py-4 !rounded-2xl !bg-slate-900/80 border-indigo-500/30 focus:border-indigo-500 shadow-inner">
+                    </div>
                 </div>
-                <div class="flex justify-end gap-3 pt-4">
-                    <button type="button" onclick="document.getElementById('modal-crear').classList.add('hidden')"
-                        class="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white">Cancelar</button>
-                    <button type="submit" class="glass-button">Guardar Entidad</button>
+
+                <!-- Description Input -->
+                <div class="space-y-3">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Descripción
+                        Breve</label>
+                    <textarea id="desc-entidad" rows="3" placeholder="Escribe una línea para recordar qué es esto..."
+                        class="glass-input !p-4 !rounded-2xl !bg-slate-900/80 border-white/10 focus:border-indigo-500 shadow-inner text-sm"></textarea>
+                </div>
+
+                <!-- Footer -->
+                <div class="flex justify-between items-center pt-4">
+                    <div class="flex items-center gap-2 text-[10px] text-slate-500">
+                        <span class="px-1.5 py-0.5 rounded border border-white/10 bg-white/5">↵ Enter</span>
+                        <span>para guardar</span>
+                    </div>
+                    <div class="flex gap-4">
+                        <button type="button" onclick="cerrarModalCrear()"
+                            class="text-sm font-bold text-slate-400 hover:text-white transition-colors">Cancelar</button>
+                        <button type="submit"
+                            class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2">
+                            Crear Entidad <span class="material-symbols-outlined text-sm">check</span>
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>

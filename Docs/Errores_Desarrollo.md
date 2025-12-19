@@ -15,12 +15,17 @@ Estos fueron los errores más críticos que impidieron que la aplicación arranc
 * **Causa:** La versión antigua de XAMPP usaba MySQL 5.5, que no es compatible con Hibernate 6 (usado por Spring Boot 3+).
 * **Solución:** Desinstalar el XAMPP antiguo e instalar una versión moderna que incluya MySQL 8.0+.
 
-### Error 1.2: Permisos de XAMPP en Windows
+### Error 1.2: Puerto 8080 en uso
+* **Síntoma:** La aplicación Spring Boot no arrancaba, mostrando un error indicando que el puerto 8080 ya estaba en uso.
+* **Causa:** Un proceso anterior de Spring Boot (o cualquier otra aplicación) no se cerró correctamente y seguía ocupando el puerto 8080.
+* **Solución:** Identificar el PID del proceso que ocupaba el puerto 8080 usando `netstat -ano | findstr :8080` y luego finalizar la tarea con `taskkill /PID [PID] /F` en la línea de comandos (como administrador).
+
+### Error 1.3: Permisos de XAMPP en Windows
 * **Síntoma:** El panel de control de XAMPP (nuevo) fallaba al iniciarse, mostrando errores `EAccessViolation` y `Error: Cannot create file "C:\Users\...\xampp-control.ini". Acceso denegado`.
 * **Causa:** El panel de control no tenía permisos de administrador para escribir su archivo de configuración en la carpeta `AppData` del usuario.
 * **Solución:** Ejecutar siempre `xampp-control.exe` usando la opción "Ejecutar como administrador".
 
-### Error 1.3: Conflicto de Puerto de MySQL
+### Error 1.4: Conflicto de Puerto de MySQL
 * **Síntoma:** Al intentar iniciar MySQL (como administrador), el panel de XAMPP mostraba `Error: MySQL shutdown unexpectedly... This may be due to a blocked port`.
 * **Causa:** El servicio `mysqld.exe` de la *antigua* instalación de XAMPP seguía ejecutándose en segundo plano, bloqueando el puerto 3306 e impidiendo que el nuevo servicio se iniciara.
 * **Solución:** Se utilizó `netstat -ano | findstr :3306` para encontrar el ID de Proceso (PID) del `mysqld.exe` conflictivo y se finalizó la tarea desde el Administrador de Tareas.

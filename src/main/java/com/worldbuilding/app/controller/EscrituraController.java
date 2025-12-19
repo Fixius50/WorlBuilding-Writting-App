@@ -33,7 +33,14 @@ public class EscrituraController {
         if (proyecto == null)
             return ResponseEntity.status(401).body("No hay proyecto activo");
 
-        return ResponseEntity.ok(cuadernoRepository.findByNombreProyecto(proyecto));
+        List<Cuaderno> cuadernos = cuadernoRepository.findByNombreProyecto(proyecto);
+        return ResponseEntity.ok(cuadernos.stream()
+                .map(c -> Map.of(
+                        "id", c.getId(),
+                        "titulo", c.getTitulo() != null ? c.getTitulo() : "Sin título",
+                        "descripcion", c.getDescripcion() != null ? c.getDescripcion() : "",
+                        "nombreProyecto", c.getNombreProyecto()))
+                .toList());
     }
 
     @PostMapping("/cuaderno")
@@ -56,7 +63,10 @@ public class EscrituraController {
         primera.setContenido("");
         hojaRepository.save(primera);
 
-        return ResponseEntity.ok(guardado);
+        return ResponseEntity.ok(Map.of(
+                "id", guardado.getId(),
+                "titulo", guardado.getTitulo(),
+                "nombreProyecto", guardado.getNombreProyecto()));
     }
 
     @GetMapping("/cuaderno/{id}/hojas")

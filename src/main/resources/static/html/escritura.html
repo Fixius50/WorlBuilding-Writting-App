@@ -32,152 +32,252 @@
             <div class="radial-menu-bg"></div>
             <a href="dashboard.html" class="nav-item" style="top: 20px; left: 20px;" title="Dashboard"><span
                     class="material-symbols-outlined">dashboard</span><span class="tooltip">Dashboard</span></a>
-            <a href="dashboard.html" class="nav-item" style="top: 60px; left: 80px;" title="Librería"><span
-                    class="material-symbols-outlined">library_books</span><span class="tooltip">Librería</span></a>
-            <a href="biblia.html" class="nav-item" style="top: 100px; left: 140px;" title="Biblia"><span
-                    class="material-symbols-outlined">menu_book</span><span class="tooltip">Biblia</span></a>
-            <a href="profile.html" class="nav-item" style="top: 120px; left: 178px;" title="Perfil"><span
-                    class="material-symbols-outlined">person</span><span class="tooltip">Perfil</span></a>
-            <a href="timeline.html" class="nav-item" style="top: 100px; left: 216px;" title="Cronología"><span
-                    class="material-symbols-outlined">schedule</span><span class="tooltip">Cronología</span></a>
-            <a href="atlas.html" class="nav-item" style="top: 60px; left: 276px;" title="Atlas"><span
-                    class="material-symbols-outlined">map</span><span class="tooltip">Atlas</span></a>
-            <a href="conlang.html" class="nav-item" style="top: 20px; left: 336px;" title="Lingüística"><span
-                    class="material-symbols-outlined">translate</span><span class="tooltip">Lingüística</span></a>
+            <a href="libreria.html" class="nav-item" title="Librería">
+                <span class="material-symbols-outlined">library_books</span>
+                <span class="tooltip">Librería</span>
+            </a>
+            <a href="biblia.html" class="nav-item" title="Biblia">
+                <span class="material-symbols-outlined">menu_book</span>
+                <span class="tooltip">Biblia</span>
+            </a>
+            <a href="timeline.html" class="nav-item" title="Cronología">
+                <span class="material-symbols-outlined">schedule</span>
+                <span class="tooltip">Cronología</span>
+            </a>
+            <a href="atlas.html" class="nav-item" title="Atlas">
+                <span class="material-symbols-outlined">map</span>
+                <span class="tooltip">Atlas</span>
+            </a>
+            <a href="conlang.html" class="nav-item" title="Lingüística">
+                <span class="material-symbols-outlined">translate</span>
+                <span class="tooltip">Lingüística</span>
+            </a>
+            <a href="settings.html" class="nav-item" title="Ajustes">
+                <span class="material-symbols-outlined">settings</span>
+                <span class="tooltip">Ajustes</span>
+            </a>
         </div>
-    </div>
-    <div class="bg-overlay" id="menu-overlay"></div>
+        <div class="bg-overlay" id="menu-overlay"></div>
 
-    <!-- Main Flex Container -->
-    <div class="flex flex-1 overflow-hidden relative">
-        <!-- Main Canvas -->
-        <main class="flex-1 overflow-y-auto relative scroll-smooth bg-slate-950 flex flex-col items-center py-12 px-4">
+        <!-- Main Content Housing -->
+        <div class="flex flex-1 overflow-hidden relative">
+            <!-- Main Canvas -->
+            <main
+                class="flex-1 overflow-y-auto relative scroll-smooth bg-slate-950 flex flex-col items-center py-6 px-4">
 
-            <!-- Context Header (Title) -->
-            <div class="w-full max-w-[816px] mb-8 flex items-center justify-between">
-                <div class="flex flex-col">
-                    <h1 class="text-2xl text-white notebook-title italic font-bold" id="notebook-title">Mi Historia</h1>
-                    <div class="flex items-center gap-2 text-xs text-slate-500">
-                        <span class="size-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
-                        <span id="save-status">Guardado hace 2m</span>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3">
-                    <button class="glass-button px-4 py-1.5 text-xs flex items-center gap-2">
-                        <span class="material-symbols-outlined text-sm">center_focus_strong</span>
-                        Enfoque
-                    </button>
-                    <button class="size-9 glass-button !p-0 flex items-center justify-center rounded-full">
-                        <span class="material-symbols-outlined">settings</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Page Container -->
-            <div id="paper-container"
-                class="group relative w-full max-w-[816px] min-h-[1056px] bg-slate-900/50 backdrop-blur-sm rounded-sm p-16 md:p-24 shadow-2xl transition-all duration-300 border border-white/5">
-                <!-- Page Number -->
-                <div class="absolute -right-12 top-0 text-slate-600 text-xs font-mono font-medium opacity-50"
-                    id="page-number-display">01</div>
-
-                <!-- Editable Area -->
-                <div id="editor"
-                    class="text-lg leading-[1.8] text-slate-300 font-serif outline-none min-h-[800px] empty:before:content-[attr(placeholder)] empty:before:text-slate-600"
-                    contenteditable="true" spellcheck="false" placeholder="La historia comienza...">
-
-                </div>
-            </div>
-
-            <!-- Page Navigation Grid (Bottom) -->
-            <div class="mt-8 flex gap-4 opacity-50 hover:opacity-100 transition-opacity">
-                <button class="glass-button text-sm px-6" onclick="irPaginaAnterior()">Anterior</button>
-                <button class="glass-button text-sm px-6" onclick="añadirNuevaHoja()">Nueva Hoja</button>
-                <button class="glass-button text-sm px-6" onclick="irPaginaSiguiente()">Siguiente</button>
-            </div>
-        </main>
-
-        <!-- Right Sidebar (Notes) -->
-        <aside class="hidden xl:flex w-80 flex-col border-l border-white/10 glass-panel z-10">
-            <div class="flex items-center justify-between p-4 border-b border-white/10">
-                <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400">Notas & Contexto</h3>
-            </div>
-            <!-- Notes List -->
-            <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                <!-- Premium Header -->
                 <div
-                    class="bg-slate-900/50 rounded-xl p-4 border border-white/5 hover:border-indigo-500/30 transition-colors cursor-pointer group">
-                    <div class="flex justify-between items-start mb-2">
-                        <span
-                            class="text-[10px] font-bold text-indigo-300 bg-indigo-500/20 px-2 py-0.5 rounded-full border border-indigo-500/20">Idea</span>
-                        <span class="text-[10px] text-slate-500">Hoy</span>
+                    class="w-full max-w-[900px] mb-8 flex items-center justify-between sticky top-0 bg-slate-950/80 backdrop-blur-md z-30 py-4 px-6 rounded-2xl border border-white/5 shadow-2xl">
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="size-10 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+                            <span class="material-symbols-outlined text-indigo-400">auto_stories</span>
+                        </div>
+                        <div>
+                            <h1 class="text-sm font-bold text-white leading-tight" id="project-breadcrumb">El Despertar
+                                de los Dragones</h1>
+                            <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold"
+                                id="chapter-breadcrumb">Capítulo 3 • <span class="text-emerald-500"
+                                    id="save-status">Guardado</span></p>
+                        </div>
                     </div>
-                    <p class="text-sm text-slate-400 group-hover:text-slate-200 transition-colors leading-relaxed">
-                        El protagonista debería encontrar el mapa antes de llegar a la ciudadela.
-                    </p>
+
+                    <div class="flex items-center gap-6">
+                        <div class="flex items-center gap-4 text-slate-400">
+                            <div class="text-center">
+                                <p class="text-[10px] font-bold uppercase tracking-tighter opacity-50">Palabras</p>
+                                <p class="text-sm font-mono text-slate-200" id="word-count">2,453</p>
+                            </div>
+                            <div class="w-px h-6 bg-white/10"></div>
+                            <div class="text-center">
+                                <p class="text-[10px] font-bold uppercase tracking-tighter opacity-50">Lectura</p>
+                                <p class="text-sm font-mono text-slate-200" id="read-time">14 min</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <button id="btn-toggle-focus"
+                                class="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-[10px] uppercase transition-all hover:bg-emerald-400 shadow-lg shadow-emerald-500/20">
+                                <span class="material-symbols-outlined text-sm">center_focus_strong</span>
+                                Modo Enfoque
+                            </button>
+                            <a href="settings.html"
+                                class="size-10 rounded-xl bg-slate-900 flex items-center justify-center border border-white/5 hover:bg-white/5 transition-all text-slate-400 hover:text-white">
+                                <span class="material-symbols-outlined text-xl">settings</span>
+                            </a>
+                            <div
+                                class="size-10 rounded-full bg-slate-800 border-2 border-indigo-500/30 overflow-hidden">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User"
+                                    class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <!-- Input -->
-            <div class="p-4 border-t border-white/10">
-                <div class="relative">
-                    <input class="glass-input text-sm pr-8" placeholder="Añadir nota rápida..." type="text">
-                    <button
-                        class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors">
-                        <span class="material-symbols-outlined text-sm">send</span>
+
+                <!-- Page Container -->
+                <div id="paper-container"
+                    class="group relative w-full max-w-[850px] min-h-[1100px] bg-[#1a1f2e]/40 backdrop-blur-xl rounded-lg p-20 shadow-2xl transition-all duration-500 border border-white/5">
+                    <!-- Page Marker -->
+                    <div
+                        class="absolute right-10 top-10 text-slate-700 text-xs font-mono font-bold opacity-40 select-none">
+                        @3</div>
+
+                    <!-- Editable Area -->
+                    <div id="editor"
+                        class="text-xl leading-[1.8] text-slate-300 font-serif outline-none min-h-[900px] transition-all"
+                        contenteditable="true" spellcheck="false" placeholder="La tormenta soplaba fuerte...">
+                        <!-- Content will be loaded here -->
+                    </div>
+
+                    <!-- Floating Toolbar -->
+                    <div
+                        class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-[#0f172a]/90 backdrop-blur-xl px-6 py-3 rounded-full border border-white/10 shadow-2xl flex items-center gap-6 z-40 animate-slide-up">
+                        <div class="flex items-center gap-4">
+                            <button class="text-slate-400 hover:text-white transition-colors"
+                                title="Negrita"><b>B</b></button>
+                            <button class="text-slate-400 hover:text-white transition-colors"
+                                title="Itálica"><i>I</i></button>
+                        </div>
+                        <div class="w-px h-6 bg-white/10"></div>
+                        <div class="flex items-center gap-4">
+                            <button
+                                class="text-slate-400 hover:text-white transition-colors font-bold text-xs">H1</button>
+                            <button
+                                class="text-slate-400 hover:text-white transition-colors font-bold text-xs">H2</button>
+                            <button class="text-slate-400 hover:text-white transition-colors"><span
+                                    class="material-symbols-outlined">format_quote</span></button>
+                        </div>
+                        <div class="w-px h-6 bg-white/10"></div>
+                        <button id="btn-mention-trigger"
+                            class="size-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-emerald-400 border border-indigo-500/30 hover:bg-indigo-500 hover:text-white transition-all shadow-lg shadow-indigo-500/20">
+                            <span class="material-symbols-outlined text-lg">alternate_email</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Page Navigation -->
+                <div class="mt-8 mb-20 flex gap-4 opacity-30 hover:opacity-100 transition-opacity">
+                    <button class="glass-button text-[10px] font-bold uppercase px-8 py-2"
+                        onclick="irPaginaAnterior()">Anterior</button>
+                    <button class="glass-button text-[10px] font-bold uppercase px-8 py-2"
+                        onclick="añadirNuevaHoja()">Nueva Hoja</button>
+                    <button class="glass-button text-[10px] font-bold uppercase px-8 py-2"
+                        onclick="irPaginaSiguiente()">Siguiente</button>
+                </div>
+            </main>
+
+            <!-- Right Sidebar (Notas Rápidas) -->
+            <aside id="notes-sidebar"
+                class="w-80 flex flex-col border-l border-white/5 bg-slate-950/50 backdrop-blur-md z-20 transition-all duration-300">
+                <div class="p-6 border-b border-white/5 flex items-center justify-between">
+                    <h3 class="text-[10px] font-black uppercase tracking-[2px] text-slate-500">Notas Rápidas</h3>
+                    <button id="btn-close-notes" class="text-slate-600 hover:text-white transition-colors">
+                        <span class="material-symbols-outlined text-xl">vertical_split</span>
                     </button>
                 </div>
-            </div>
-        </aside>
-    </div>
 
-    <!-- Dropdown & Modals -->
-    <div id="mention-dropdown"
-        class="absolute hidden flex-col glass-panel rounded-xl shadow-2xl overflow-hidden z-50 border border-indigo-500/30 min-w-[250px] animate-fade-in-up">
-    </div>
+                <!-- Quick Notes List -->
+                <div class="flex-1 overflow-y-auto p-6 space-y-6" id="quick-notes-list">
+                    <!-- Example Note 1 -->
+                    <div class="space-y-3 animate-fade-in">
+                        <div class="flex justify-between items-center">
+                            <span
+                                class="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 text-[9px] font-bold uppercase tracking-wider border border-indigo-500/20">Lore</span>
+                            <span class="text-[9px] text-slate-600 font-bold uppercase tracking-tighter">Hace 5
+                                min</span>
+                        </div>
+                        <p
+                            class="text-xs text-slate-400 leading-relaxed bg-[#1e293b]/30 p-4 rounded-xl border border-white/5">
+                            Recordar que los Guardianes del Norte son ciegos a la magia de ilusión, pero huelen el
+                            miedo.
+                        </p>
+                        <div class="flex gap-2">
+                            <span
+                                class="text-[9px] text-slate-600 font-bold hover:text-indigo-400 cursor-pointer">#Magia</span>
+                            <span
+                                class="text-[9px] text-slate-600 font-bold hover:text-indigo-400 cursor-pointer">#Enemigos</span>
+                        </div>
+                    </div>
 
-    <div id="modal-crear"
-        class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex-col items-center justify-center p-4">
-        <div class="glass-panel w-full max-w-md rounded-2xl p-6 shadow-2xl border border-white/10 relative">
-            <button onclick="cerrarModalCrear()" class="absolute top-4 right-4 text-slate-500 hover:text-white">
-                <span class="material-symbols-outlined">close</span>
-            </button>
-            <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                <span class="material-symbols-outlined text-emerald-400">add_circle</span>
-                Nueva Entidad
-            </h2>
-            <form id="form-crear-rapida" onsubmit="guardarEntidadRapida(event)" class="space-y-4">
-                <div>
-                    <label class="text-xs text-slate-400 uppercase font-bold mb-1 block">Tipo de Entidad</label>
-                    <select id="entidad-tipo-select" class="glass-input">
-                        <option value="entidadindividual">👤 Personaje</option>
-                        <option value="entidadcolectiva">👥 Grupo / Facción</option>
-                        <option value="zona">🗺️ Lugar</option>
-                        <option value="construccion">🏛️ Construcción</option>
-                        <option value="efectos">✨ Objeto / Magia</option>
-                    </select>
+                    <!-- Example Note 2 -->
+                    <div class="space-y-3 animate-fade-in" style="animation-delay: 100ms">
+                        <div class="flex justify-between items-center">
+                            <span
+                                class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-bold uppercase tracking-wider border border-emerald-500/20">Idea</span>
+                            <span class="text-[9px] text-slate-600 font-bold uppercase tracking-tighter">Ayer</span>
+                        </div>
+                        <p
+                            class="text-xs text-slate-400 leading-relaxed bg-[#1e293b]/30 p-4 rounded-xl border border-white/5">
+                            ¿Y si Kael ya estuvo aquí antes pero le borraron la memoria?
+                        </p>
+                    </div>
                 </div>
-                <div>
-                    <label class="text-xs text-slate-400 uppercase font-bold mb-1 block">Nombre</label>
-                    <input type="text" id="entidad-nombre" class="glass-input" required placeholder="Ej. Aragorn">
+
+                <!-- Quick Note Input -->
+                <div class="p-6 border-t border-white/5 bg-slate-900/20">
+                    <div class="relative group">
+                        <input type="text" id="note-input"
+                            class="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 transition-all"
+                            placeholder="Escribir nota rápida...">
+                        <button
+                            class="absolute right-3 top-1/2 -translate-y-1/2 size-8 rounded-lg bg-white/5 flex items-center justify-center text-slate-500 hover:bg-white/10 hover:text-white transition-all">
+                            <span class="material-symbols-outlined text-sm">send</span>
+                        </button>
+                    </div>
                 </div>
-                <div>
-                    <label class="text-xs text-slate-400 uppercase font-bold mb-1 block">Breve Descripción</label>
-                    <textarea id="entidad-descripcion" class="glass-input resize-none" rows="3"
-                        placeholder="Heredero de Isildur..."></textarea>
-                </div>
-                <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-white/5">
-                    <button type="button"
-                        class="px-4 py-2 text-sm font-bold text-slate-400 hover:text-white transition-colors"
-                        onclick="cerrarModalCrear()">Cancelar</button>
-                    <button type="submit"
-                        class="glass-button bg-emerald-600 hover:bg-emerald-500 border-emerald-500/50">Crear
-                        Entidad</button>
-                </div>
-            </form>
+            </aside>
         </div>
-    </div>
 
-    <script src="../js/api.js"></script>
-    <script src="../js/editor.js"></script>
-    <script src="../js/navigation.js"></script>
+        <!-- Dropdown & Modals -->
+        <div id="mention-dropdown"
+            class="absolute hidden flex-col glass-panel rounded-xl shadow-2xl overflow-hidden z-50 border border-indigo-500/30 min-w-[250px] animate-fade-in-up">
+        </div>
+
+        <div id="modal-crear"
+            class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex-col items-center justify-center p-4">
+            <div class="glass-panel w-full max-w-md rounded-2xl p-6 shadow-2xl border border-white/10 relative">
+                <button onclick="cerrarModalCrear()" class="absolute top-4 right-4 text-slate-500 hover:text-white">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+                <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-emerald-400">add_circle</span>
+                    Nueva Entidad
+                </h2>
+                <form id="form-crear-rapida" onsubmit="guardarEntidadRapida(event)" class="space-y-4">
+                    <div>
+                        <label class="text-xs text-slate-400 uppercase font-bold mb-1 block">Tipo de Entidad</label>
+                        <select id="entidad-tipo-select" class="glass-input">
+                            <option value="entidadindividual">👤 Personaje</option>
+                            <option value="entidadcolectiva">👥 Grupo / Facción</option>
+                            <option value="zona">🗺️ Lugar</option>
+                            <option value="construccion">🏛️ Construcción</option>
+                            <option value="efectos">✨ Objeto / Magia</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400 uppercase font-bold mb-1 block">Nombre</label>
+                        <input type="text" id="entidad-nombre" class="glass-input" required placeholder="Ej. Aragorn">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400 uppercase font-bold mb-1 block">Breve Descripción</label>
+                        <textarea id="entidad-descripcion" class="glass-input resize-none" rows="3"
+                            placeholder="Heredero de Isildur..."></textarea>
+                    </div>
+                    <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-white/5">
+                        <button type="button"
+                            class="px-4 py-2 text-sm font-bold text-slate-400 hover:text-white transition-colors"
+                            onclick="cerrarModalCrear()">Cancelar</button>
+                        <button type="submit"
+                            class="glass-button bg-emerald-600 hover:bg-emerald-500 border-emerald-500/50">Crear
+                            Entidad</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script src="../js/api.js"></script>
+        <script src="../js/editor.js"></script>
+        <script src="../js/navigation.js"></script>
 </body>
 
 </html>

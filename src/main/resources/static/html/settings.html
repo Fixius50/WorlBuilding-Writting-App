@@ -9,147 +9,258 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
+    <style>
+        .setting-card {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .setting-card:hover {
+            background: rgba(30, 41, 59, 0.5);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .theme-card {
+            aspect-ratio: 16/9;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-card.active {
+            border-color: #6366f1;
+        }
+
+        .theme-preview {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .theme-dot {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
 </head>
 
-<body class="bg-slate-950 text-slate-200 font-display min-h-screen flex hidden-scrollbar overflow-hidden">
-    <!-- Sidebar Navigation -->
-    <aside class="glass-panel w-72 h-full flex flex-col border-r border-white/10 z-20 shrink-0">
-        <div class="p-6 flex items-center gap-3">
-            <div
-                class="size-10 bg-gradient-to-br from-indigo-500 to-slate-800 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                <span class="material-symbols-outlined text-white">public</span>
-            </div>
-            <div>
-                <h1 class="text-white text-sm font-bold leading-tight">Chronos Atlas</h1>
-                <p class="text-slate-500 text-xs font-medium">Local-First</p>
-            </div>
-        </div>
-        <nav class="flex-1 overflow-y-auto px-4 py-2 space-y-1">
-            <a href="dashboard.html"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all group">
-                <span class="material-symbols-outlined group-hover:text-white">dashboard</span>
-                <span class="font-medium text-sm">Dashboard</span>
-            </a>
-            <a href="biblia.html"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all group">
-                <span class="material-symbols-outlined group-hover:text-white">menu_book</span>
-                <span class="font-medium text-sm">Biblia del Mundo</span>
-            </a>
-            <a href="escritura.html"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all group">
-                <span class="material-symbols-outlined group-hover:text-white">edit_note</span>
-                <span class="font-medium text-sm">Escritura</span>
-            </a>
-            <a href="atlas.html"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all group">
-                <span class="material-symbols-outlined group-hover:text-white">map</span>
-                <span class="font-medium text-sm">Atlas Interactivo</span>
-            </a>
-            <a href="timeline.html"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all group">
-                <span class="material-symbols-outlined group-hover:text-white">schedule</span>
-                <span class="font-medium text-sm">Cronología</span>
-            </a>
-            <div class="h-px bg-white/5 my-2 mx-2"></div>
-            <a href="conlang.html"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-purple-400 transition-all group">
-                <span class="material-symbols-outlined group-hover:text-purple-400">translate</span>
-                <span class="font-medium text-sm">Lingüística</span>
-            </a>
-        </nav>
-        <div class="p-4 border-t border-white/10">
-            <a href="settings.html"
-                class="flex items-center gap-3 px-3 py-2 rounded-xl bg-white/10 text-white cursor-pointer transition-colors group">
-                <span class="material-symbols-outlined text-white text-lg">settings</span>
-                <span class="text-sm font-bold">Ajustes</span>
-            </a>
-        </div>
-    </aside>
+<body class="bg-slate-950 text-slate-200 font-display min-h-screen">
+
 
     <!-- Main Content -->
-    <main
-        class="flex-1 overflow-y-auto relative bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-slate-950">
-        <div class="p-8 max-w-4xl mx-auto">
-            <header class="mb-8">
-                <h2 class="text-3xl font-bold text-white tracking-tight">Ajustes de la Aplicación</h2>
-                <p class="text-slate-400 mt-2">Personaliza tu experiencia en Chronos Atlas architecture.</p>
-            </header>
-
-            <div class="space-y-6">
-                <!-- Apperance -->
-                <section class="glass-panel p-6 rounded-2xl">
-                    <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                        <span class="material-symbols-outlined text-indigo-400">palette</span>
-                        Apariencia
-                    </h3>
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-white">Tema Oscuro</p>
-                                <p class="text-xs text-slate-500">Usar el tema Glassmorphism Dark.</p>
-                            </div>
-                            <!-- Toggle -->
-                            <div class="relative w-11 h-6 bg-indigo-600 rounded-full cursor-pointer">
-                                <div class="absolute right-1 top-1 bg-white w-4 h-4 rounded-full transition-transform">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-white">Tamaño de Fuente Editor</p>
-                                <p class="text-xs text-slate-500">Ajustar el tamaño de letra en el lienzo.</p>
-                            </div>
-                            <select class="glass-input py-1 px-3 rounded-lg text-sm bg-slate-900">
-                                <option>Pequeño (14px)</option>
-                                <option selected>Normal (16px)</option>
-                                <option>Grande (18px)</option>
-                            </select>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Data & Sync -->
-                <section class="glass-panel p-6 rounded-2xl">
-                    <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                        <span class="material-symbols-outlined text-emerald-400">database</span>
-                        Datos y Almacenamiento
-                    </h3>
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-white">Ubicación de Proyectos</p>
-                                <p class="text-xs text-slate-500">C:/Users/rober/Documents/ChronosWelt</p>
-                            </div>
-                            <button class="text-xs text-indigo-400 font-bold hover:text-white">Cambiar</button>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-white">Auto-Guardado</p>
-                                <p class="text-xs text-slate-500">Guardar cambios cada 5 minutos.</p>
-                            </div>
-                            <div class="relative w-11 h-6 bg-indigo-600 rounded-full cursor-pointer">
-                                <div class="absolute right-1 top-1 bg-white w-4 h-4 rounded-full transition-transform">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Notifications -->
-                <section class="glass-panel p-6 rounded-2xl">
-                    <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                        <span class="material-symbols-outlined text-amber-400">notifications</span>
-                        Notificaciones
-                    </h3>
-                    <div
-                        class="flex items-center gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-200 text-sm">
-                        <span class="material-symbols-outlined">info</span>
-                        Las notificaciones de escritorio están desactivadas por el sistema.
-                    </div>
-                </section>
+    <main class="relative bg-slate-950 p-12">
+        <div class="max-w-4xl mx-auto mb-10 flex items-center gap-4">
+            <a href="dashboard.html"
+                class="size-10 rounded-full bg-slate-900 flex items-center justify-center border border-white/10 hover:bg-indigo-500/10 transition-colors text-slate-400 hover:text-indigo-400">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </a>
+            <div>
+                <h1 class="text-white text-2xl font-bold">Ajustes</h1>
+                <p class="text-slate-500 text-xs">Administra tu experiencia de creación universal</p>
             </div>
         </div>
+        <div class="max-w-4xl mx-auto space-y-12">
+
+            <!-- Section: Apariencia -->
+            <section>
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-white mb-2">Apariencia</h2>
+                    <p class="text-slate-500 text-sm">Personaliza la interfaz visual y tu entorno de escritura para
+                        maximizar tu creatividad y concentración.</p>
+                </div>
+
+                <div class="glass-panel p-8 rounded-2xl">
+                    <h3 class="text-sm font-bold text-white mb-6">Tema de la Interfaz</h3>
+                    <div class="grid grid-cols-3 gap-6">
+                        <div class="space-y-3">
+                            <div class="theme-card active bg-slate-900 border-indigo-500">
+                                <div class="theme-preview"
+                                    style="background: linear-gradient(135deg, #0f172a 0%, #020617 100%)"></div>
+                                <div class="theme-dot"></div>
+                            </div>
+                            <p class="text-xs font-bold text-center text-indigo-400">Deep Space</p>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="theme-card bg-slate-900 border-white/5">
+                                <div class="theme-preview"
+                                    style="background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)"></div>
+                                <div class="theme-dot"></div>
+                            </div>
+                            <p class="text-xs font-bold text-center text-slate-500">Nebula</p>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="theme-card bg-black border-white/5">
+                                <div class="theme-preview bg-black"></div>
+                                <div class="theme-dot border border-white/40"></div>
+                            </div>
+                            <p class="text-xs font-bold text-center text-slate-500">High Contrast</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Configuración del Editor -->
+            <section>
+                <div class="glass-panel p-8 rounded-2xl space-y-8">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="material-symbols-outlined text-indigo-400">format_size</span>
+                        <h3 class="text-sm font-bold text-white">Configuración del Editor</h3>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-8">
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="text-xs font-bold text-slate-400">Tipografía</label>
+                            </div>
+                            <select class="glass-input text-sm">
+                                <option>Manrope (Sans-serif)</option>
+                                <option>Lora (Serif)</option>
+                                <option>JetBrains Mono (Monospace)</option>
+                            </select>
+                            <p class="text-[10px] text-slate-600">La fuente utilizada en el lienzo de escritura.</p>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="text-xs font-bold text-slate-400">Tamaño de Fuente</label>
+                                <span class="text-xs text-indigo-400 font-bold">16px</span>
+                            </div>
+                            <input type="range" min="12" max="24" value="16"
+                                class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                            <div class="flex justify-between text-[10px] text-slate-600 px-1">
+                                <span>Aa</span>
+                                <span>Aa</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Section: Almacenamiento -->
+            <section>
+                <div class="glass-panel p-8 rounded-2xl">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-indigo-400">folder_open</span>
+                            <h3 class="text-sm font-bold text-white">Almacenamiento Local</h3>
+                        </div>
+                        <span
+                            class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-bold border border-emerald-500/20">
+                            <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Sincronizado
+                        </span>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Ruta de la
+                                Bóveda</label>
+                            <div class="flex gap-3">
+                                <input type="text" readonly value="C:/Users/Author/Documents/ChronosAtlas/MyFirstWorld"
+                                    class="flex-1 glass-input bg-slate-900/50 text-xs font-mono">
+                                <button
+                                    class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-lg transition-colors border border-white/5">Cambiar</button>
+                            </div>
+                        </div>
+
+                        <div
+                            class="flex items-center justify-between p-4 bg-slate-900/30 rounded-xl border border-white/5">
+                            <div class="flex items-center gap-4">
+                                <div class="size-10 rounded-full bg-indigo-500/10 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-indigo-400">backup</span>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-white">Copia de Seguridad Automática</h4>
+                                    <p class="text-[10px] text-slate-500">Última copia: Hace 12 minutos</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button
+                                    class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-[10px] font-bold rounded-lg transition-colors border border-white/5">Restaurar</button>
+                                <button
+                                    class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-bold rounded-lg transition-colors shadow-lg shadow-indigo-600/20">Respaldar
+                                    Ahora</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="flex justify-between items-center pt-8 border-t border-white/5">
+                <button class="text-slate-500 hover:text-white text-xs font-medium transition-colors">Restablecer
+                    Predeterminados</button>
+                <button
+                    class="px-8 py-3 bg-white text-slate-950 rounded-full font-bold text-sm hover:bg-slate-200 transition-all shadow-xl shadow-white/10">Guardar
+                    Cambios</button>
+            </div>
+            <div class="h-20"></div> <!-- Buffer -->
+        </div>
     </main>
+
+    <!-- Top Radial Menu -->
+    <div class="nav-trigger-container" id="nav-container">
+        <div class="nav-trigger" id="nav-trigger">
+            <span class="material-symbols-outlined text-indigo-400 text-2xl">keyboard_arrow_down</span>
+        </div>
+        <div class="radial-menu-container" id="radial-menu">
+            <div class="radial-menu-bg"></div>
+            <a href="dashboard.html" class="nav-item" title="Dashboard">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span class="tooltip">Dashboard</span>
+            </a>
+            <a href="libreria.html" class="nav-item" title="Librería">
+                <span class="material-symbols-outlined">library_books</span>
+                <span class="tooltip">Librería</span>
+            </a>
+            <a href="biblia.html" class="nav-item" title="Biblia">
+                <span class="material-symbols-outlined">menu_book</span>
+                <span class="tooltip">Biblia</span>
+            </a>
+            <a href="timeline.html" class="nav-item" title="Cronología">
+                <span class="material-symbols-outlined">schedule</span>
+                <span class="tooltip">Cronología</span>
+            </a>
+            <a href="atlas.html" class="nav-item" title="Atlas">
+                <span class="material-symbols-outlined">map</span>
+                <span class="tooltip">Atlas</span>
+            </a>
+            <a href="conlang.html" class="nav-item" title="Lingüística">
+                <span class="material-symbols-outlined">translate</span>
+                <span class="tooltip">Lingüística</span>
+            </a>
+            <a href="settings.html" class="nav-item" title="Ajustes">
+                <span class="material-symbols-outlined">settings</span>
+                <span class="tooltip">Ajustes</span>
+            </a>
+        </div>
+    </div>
+    <div class="bg-overlay" id="menu-overlay"></div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth_guard.js"></script>
+    <script src="../js/navigation.js"></script>
+    <script>
+        async function logout() {
+            try {
+                const res = await fetch('/api/auth/logout', { method: 'POST' });
+                if (res.ok) {
+                    localStorage.removeItem('wb_user');
+                    window.location.href = 'login.html';
+                }
+            } catch (e) { console.error(e); }
+        }
+    </script>
 </body>
 
 </html>

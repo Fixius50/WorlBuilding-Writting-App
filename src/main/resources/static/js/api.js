@@ -32,10 +32,10 @@ const API = {
 
     // === Proyectos ===
     proyectos: {
-        async crear(nombreProyecto, tipo) {
+        async crear(nombreProyecto, tipo, descripcion, genero, imagenUrl) {
             return API.request('/api/proyectos/crear', {
                 method: 'POST',
-                body: JSON.stringify({ nombreProyecto, tipo })
+                body: JSON.stringify({ nombreProyecto, tipo, descripcion, genero, imagenUrl })
             });
         },
 
@@ -44,7 +44,7 @@ const API = {
         },
 
         async activo() {
-            return API.request('/api/proyectos/activo');
+            return API.request(`/api/proyectos/activo?t=${Date.now()}`);
         },
 
         async listar() {

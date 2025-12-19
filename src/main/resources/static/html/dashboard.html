@@ -29,7 +29,7 @@
                 <span class="material-symbols-outlined">dashboard</span>
                 <span class="tooltip">Dashboard</span>
             </a>
-            <a href="dashboard.html" class="nav-item" title="Librería">
+            <a href="libreria.html" class="nav-item" title="Librería">
                 <span class="material-symbols-outlined">library_books</span>
                 <span class="tooltip">Librería</span>
             </a>
@@ -49,9 +49,9 @@
                 <span class="material-symbols-outlined">translate</span>
                 <span class="tooltip">Lingüística</span>
             </a>
-            <a href="profile.html" class="nav-item" title="Perfil">
-                <span class="material-symbols-outlined">person</span>
-                <span class="tooltip">Perfil</span>
+            <a href="settings.html" class="nav-item" title="Ajustes">
+                <span class="material-symbols-outlined">settings</span>
+                <span class="tooltip">Ajustes</span>
             </a>
         </div>
     </div>
@@ -138,6 +138,33 @@
                     <label class="text-xs text-slate-400 uppercase font-bold">Título</label>
                     <input type="text" id="nombre-proyecto" class="glass-input mt-1" required
                         placeholder="Ej. Tierras del Sur">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs text-slate-400 uppercase font-bold">Tipo</label>
+                        <select id="tipo-proyecto" class="glass-input mt-1">
+                            <option value="Novela">Novela</option>
+                            <option value="Campaña RPG">Campaña RPG</option>
+                            <option value="Antología">Antología</option>
+                            <option value="Videojuego">Videojuego</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400 uppercase font-bold">Género</label>
+                        <select id="genero-proyecto" class="glass-input mt-1">
+                            <option value="Fantasía">Fantasía</option>
+                            <option value="Ciencia Ficción">Ciencia Ficción</option>
+                            <option value="Terror">Terror</option>
+                            <option value="Histórica">Histórica</option>
+                            <option value="Cyberpunk">Cyberpunk</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 uppercase font-bold">URL de Imagen de Portada</label>
+                    <input type="url" id="imagen-proyecto" class="glass-input mt-1"
+                        placeholder="https://images.unsplash.com/...">
                 </div>
                 <div>
                     <label class="text-xs text-slate-400 uppercase font-bold">Descripción</label>

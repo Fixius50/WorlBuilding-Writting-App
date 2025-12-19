@@ -12,7 +12,7 @@ async function cargarProyectos() {
     lista.innerHTML = '<div class="text-slate-500 italic col-span-full text-center">Cargando mundos...</div>';
 
     try {
-        const cuadernos = await API.escritura.listarCuadernos();
+        const cuadernos = await API.proyectos.listar();
         lista.innerHTML = '';
 
         // Botón "Crear Nuevo" como tarjeta
@@ -34,10 +34,10 @@ async function cargarProyectos() {
             // Added animate-fade-in-up and staggered delay
             card.className = 'group relative flex flex-col justify-end aspect-[4/5] sm:aspect-[3/4] rounded-2xl glass-panel p-5 overflow-hidden transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/10 cursor-pointer animate-fade-in-up';
             card.style.animationDelay = `${(index + 1) * 100}ms`; // Stagger effect
-            card.onclick = () => window.location.href = `escritura.html?id=${c.id}`;
+            card.onclick = () => abrirProyecto(c.nombreProyecto);
 
             // Imagen aleatoria o placeholder
-            const bgUrl = `https://source.unsplash.com/random/400x500/?fantasy,landscape&sig=${c.id}`;
+            const bgUrl = c.imagenUrl || `https://source.unsplash.com/random/400x500/?fantasy,landscape&sig=${c.id}`;
 
             card.innerHTML = `
                 <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110 opacity-60 group-hover:opacity-40" style="background-image: url('${bgUrl}'); background-color: #0f172a;"></div>
@@ -45,15 +45,16 @@ async function cargarProyectos() {
                 
                 <div class="relative z-10 flex flex-col gap-2">
                     <div class="flex justify-between items-start mb-1">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 backdrop-blur-sm">Proyecto</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 backdrop-blur-sm">${c.tipo || 'Proyecto'}</span>
                     </div>
                     <h3 class="text-xl font-bold text-white leading-tight group-hover:text-indigo-300 transition-colors">${c.titulo || c.nombreProyecto}</h3>
                     <p class="text-sm text-slate-400 line-clamp-2">${c.descripcion || 'Sin descripción'}</p>
-                    <div class="mt-3 flex items-center gap-3 text-xs text-slate-500 pt-3 border-t border-white/5">
+                    <div class="mt-3 flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-white/5">
                          <div class="flex items-center gap-1 text-slate-400">
                              <span class="material-symbols-outlined text-[14px]">calendar_today</span>
                              <span>${new Date().toLocaleDateString()}</span>
                          </div>
+                         <span class="text-indigo-400 font-medium">${c.genero || ''}</span>
                     </div>
                 </div>
             `;
@@ -79,14 +80,28 @@ function cerrarModalProyecto() {
 
 async function crearProyecto(e) {
     e.preventDefault();
-    const titulo = document.getElementById('nombre-proyecto').value;
+    const nombre = document.getElementById('nombre-proyecto').value;
     const desc = document.getElementById('desc-proyecto').value;
+    const tipo = document.getElementById('tipo-proyecto').value;
+    const genero = document.getElementById('genero-proyecto').value;
+    const imagen = document.getElementById('imagen-proyecto').value;
 
     try {
-        await API.escritura.crearCuaderno(titulo, desc);
+        await API.proyectos.crear(nombre, tipo, desc, genero, imagen);
         cerrarModalProyecto();
         cargarProyectos();
     } catch (err) {
         alert("Error al crear: " + err);
+    }
+}
+
+async function abrirProyecto(nombre) {
+    try {
+        const res = await API.proyectos.abrir(nombre);
+        if (res.success) {
+            window.location.href = 'libreria.html';
+        }
+    } catch (err) {
+        alert("Error al abrir proyecto: " + err);
     }
 }

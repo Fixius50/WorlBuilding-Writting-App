@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (cuadernos && cuadernos.length > 0) {
             cuadernoId = cuadernos[0].id;
         } else {
-            // Crear uno por defecto si no existe ninguno?
+            console.warn("No se encontraron cuadernos. Creando uno...");
             const nuevo = await API.escritura.crearCuaderno("Mi Historia", "Cuaderno inicial");
             cuadernoId = nuevo.id;
         }
@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await cargarCuaderno();
     setupEditor();
+    setupUIListeners();
 });
 
 async function cargarCuaderno() {
@@ -44,8 +45,11 @@ function mostrarHoja(index) {
 
     // Guardar contenido anterior antes de cambiar? (Opcional si hay autosave)
     editor.innerHTML = hoja.contenido || "";
-    document.getElementById('page-number').textContent = `Hoja ${hoja.numeroPagina}`;
 
+    const pageNumMarker = document.querySelector('#paper-container .absolute');
+    if (pageNumMarker) pageNumMarker.textContent = `@${hoja.numeroPagina}`;
+
+    actualizarEstadisticas();
     // Scroll al inicio
     window.scrollTo(0, 0);
 }
@@ -84,12 +88,15 @@ async function guardarHojaActual() {
 
     if (hoja.contenido !== contenido) {
         document.getElementById('save-status').textContent = "Guardando...";
+        document.getElementById('save-status').classList.remove('text-emerald-500');
+        document.getElementById('save-status').classList.add('text-slate-400');
+
         await API.escritura.guardarHoja(hoja.id, contenido);
         hoja.contenido = contenido;
-        document.getElementById('save-status').textContent = "Cambios guardados";
-        setTimeout(() => {
-            document.getElementById('save-status').textContent = "Autoguardado activado";
-        }, 2000);
+
+        document.getElementById('save-status').textContent = "Guardado";
+        document.getElementById('save-status').classList.remove('text-slate-400');
+        document.getElementById('save-status').classList.add('text-emerald-500');
     }
 }
 
@@ -108,24 +115,79 @@ function setupEditor() {
         }
     });
 
-    // TODO: Implementar Smart References (@)
-    editor.addEventListener('input', async (e) => {
-        const selection = window.getSelection();
-        const range = selection.getRangeAt(0);
-        const textBeforeCaret = range.startContainer.textContent.substring(0, range.startOffset);
-
-        if (textBeforeCaret.endsWith('@')) {
-            mostrarMentionDropdown(range);
-        } else {
-            cerrarMentionDropdown();
+    // Smart References (@)
+    editor.addEventListener('keyup', (e) => {
+        if (e.key === '@') {
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                mostrarMentionDropdown(selection.getRangeAt(0));
+            }
         }
+    });
+
+    editor.addEventListener('input', () => {
+        actualizarEstadisticas();
     });
 
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('#mention-dropdown')) {
+        if (!e.target.closest('#mention-dropdown') && !e.target.closest('#btn-mention-trigger')) {
             cerrarMentionDropdown();
         }
     });
+
+    // Barra flotante mención
+    const btnMention = document.getElementById('btn-mention-trigger');
+    if (btnMention) {
+        btnMention.onclick = () => {
+            editor.focus();
+            // Insertar @ simulado si no existe
+            const selection = window.getSelection();
+            const range = selection.getRangeAt(0);
+            const atNode = document.createTextNode('@');
+            range.insertNode(atNode);
+            range.setStartAfter(atNode);
+            range.setEndAfter(atNode);
+            mostrarMentionDropdown(range);
+        };
+    }
+}
+
+function actualizarEstadisticas() {
+    const text = document.getElementById('editor').innerText || "";
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+    const readTime = Math.ceil(words / 200); // 200 palabras por minuto
+
+    document.getElementById('word-count').textContent = words.toLocaleString();
+    document.getElementById('read-time').textContent = `${readTime} min`;
+}
+
+function setupUIListeners() {
+    // Modo Enfoque
+    const btnFocus = document.getElementById('btn-toggle-focus');
+    if (btnFocus) {
+        btnFocus.onclick = () => {
+            const sidebar = document.getElementById('notes-sidebar');
+            const isHidden = sidebar.classList.contains('hidden');
+
+            if (isHidden) {
+                sidebar.classList.remove('hidden');
+                btnFocus.classList.add('bg-emerald-500');
+                btnFocus.classList.remove('bg-slate-800');
+            } else {
+                sidebar.classList.add('hidden');
+                btnFocus.classList.remove('bg-emerald-500');
+                btnFocus.classList.add('bg-slate-800');
+            }
+        };
+    }
+
+    // Toggle Notas Sidebar
+    const btnCloseNotes = document.getElementById('btn-close-notes');
+    if (btnCloseNotes) {
+        btnCloseNotes.onclick = () => {
+            document.getElementById('notes-sidebar').classList.add('hidden');
+        };
+    }
 }
 
 // === Smart References (@) ===
@@ -200,16 +262,13 @@ function insertarMencion(nombre, id, tipo) {
     // Borrar el '@'
     document.execCommand('delete', false, null);
 
-    // Insertar el link/mención
-    const link = document.createElement('a');
-    link.href = "#";
-    link.className = 'mention-link';
+    // Insertar el link/mención estilizado
+    const link = document.createElement('span');
+    link.className = 'mention-pill bg-indigo-500/10 text-emerald-400 font-bold px-1.5 rounded border border-indigo-500/20 cursor-default select-all';
     link.dataset.tipo = tipo;
     link.dataset.id = id;
-    link.textContent = texto;
-    link.style.color = 'var(--color-gold)';
-    link.style.textDecoration = 'none';
-    link.style.fontWeight = 'bold';
+    link.textContent = nombre;
+    link.contentEditable = "false"; // Bloquear edición interna del pill
 
     const range = selection.getRangeAt(0);
     range.insertNode(link);
