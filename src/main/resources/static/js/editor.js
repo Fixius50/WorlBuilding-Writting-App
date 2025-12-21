@@ -133,21 +133,38 @@ async function añadirNuevaHoja() {
     if (list) list.scrollTop = list.scrollHeight;
 }
 
-async function eliminarHojaActual() {
+async function eliminarHojaActual(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    if (!hojas || hojas.length === 0) return;
+
+    // Detener autosave para evitar conflictos
+    if (autoSaveInterval) clearInterval(autoSaveInterval);
+
     if (hojas.length <= 1) {
         if (confirm("Esta es la única hoja. ¿Quieres borrar su contenido?")) {
             document.getElementById('editor').innerHTML = "";
             await guardarHojaActual();
         }
+        // Reiniciar autosave
+        setupEditor();
         return;
     }
 
-    if (!confirm("¿Seguro que quieres eliminar esta hoja?")) return;
+    if (!confirm("¿Seguro que quieres eliminar esta hoja?")) {
+        // Si cancela, reiniciamos autosave
+        setupEditor();
+        return;
+    }
 
     try {
         const hoja = hojas[indiceHojaActual];
         await API.escritura.eliminarHoja(hoja.id);
 
+        // Refetch clean list
         hojas = await API.escritura.listarHojas(cuadernoId);
 
         let newIndex = indiceHojaActual - 1;
@@ -155,9 +172,13 @@ async function eliminarHojaActual() {
 
         renderSidebar();
         mostrarHoja(newIndex);
+
+        // Reiniciar autosave
+        setupEditor();
     } catch (e) {
         console.error("Error eliminando hoja:", e);
-        alert("Error eliminando hoja");
+        alert("Error al eliminar hoja: " + e.message);
+        setupEditor(); // Try to resume
     }
 }
 
@@ -257,7 +278,7 @@ async function eliminarNota(notaId) {
 
 // === Persistencia ===
 async function guardarHojaActual() {
-    if (hojas.length === 0) return;
+    if (!hojas || hojas.length === 0) return;
     const hoja = hojas[indiceHojaActual];
     if (!hoja) return;
 
@@ -271,13 +292,21 @@ async function guardarHojaActual() {
             status.classList.add('text-slate-400');
         }
 
-        await API.escritura.guardarHoja(hoja.id, contenido);
-        hoja.contenido = contenido;
+        try {
+            await API.escritura.guardarHoja(hoja.id, contenido);
+            hoja.contenido = contenido;
 
-        if (status) {
-            status.textContent = "Guardado";
-            status.classList.remove('text-slate-400');
-            status.classList.add('text-emerald-500');
+            if (status) {
+                status.textContent = "Guardado";
+                status.classList.remove('text-slate-400');
+                status.classList.add('text-emerald-500');
+            }
+        } catch (e) {
+            console.error("Autosave failed:", e);
+            if (status) {
+                status.textContent = "Error al guardar";
+                status.classList.add('text-red-500');
+            }
         }
     }
 }
@@ -326,3 +355,10 @@ function setupUIListeners() {
 }
 
 function setupSearch() { }
+
+// Expose functions to window for HTML events
+window.eliminarHojaActual = eliminarHojaActual;
+window.añadirNuevaHoja = añadirNuevaHoja;
+window.guardarNotaRapida = guardarNotaRapida;
+window.eliminarNota = eliminarNota;
+window.mostrarHoja = mostrarHoja;
