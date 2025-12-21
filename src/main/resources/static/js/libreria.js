@@ -9,10 +9,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function inicializarLibreria() {
     console.log("Iniciando librería...");
     try {
-        const proyecto = await API.proyectos.activo();
-        console.log("Proyecto activo detectado:", proyecto);
+        let proyecto = null;
+        try {
+            proyecto = await API.proyectos.activo();
+        } catch (e) {
+            // Si falla (401/404), intentamos restaurar desde localStorage
+            console.warn("Sesión perdida, intentando restaurar...", e);
+            const savedProject = localStorage.getItem('proyecto_activo');
+            if (savedProject) {
+                try {
+                    await API.proyectos.abrir(savedProject);
+                    proyecto = await API.proyectos.activo();
+                } catch (restoreErr) {
+                    console.error("No se pudo restaurar sesión:", restoreErr);
+                }
+            }
+        }
 
-        if (proyecto.error || !proyecto.nombreProyecto) {
+        if (!proyecto || proyecto.error || !proyecto.nombreProyecto) {
             mostrarEstadoSinProyecto();
             return;
         }
@@ -20,9 +34,13 @@ async function inicializarLibreria() {
         document.getElementById('breadcrumb-mundo').textContent = proyecto.nombreProyecto;
         document.getElementById('cuaderno-titulo').textContent = `Librería: ${proyecto.nombreProyecto}`;
 
+        // Ensure we save it for next time
+        localStorage.setItem('proyecto_activo', proyecto.nombreProyecto);
+
         await cargarCuadernos();
     } catch (e) {
-        console.error(e);
+        console.error("Error crítico en librería:", e);
+        mostrarEstadoSinProyecto();
     }
 }
 

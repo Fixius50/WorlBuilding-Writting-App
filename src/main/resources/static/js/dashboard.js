@@ -107,6 +107,7 @@ async function abrirProyecto(nombre) {
     try {
         const res = await API.proyectos.abrir(nombre);
         if (res.success) {
+            localStorage.setItem('proyecto_activo', nombre);
             window.location.href = 'libreria.html';
         }
     } catch (err) {

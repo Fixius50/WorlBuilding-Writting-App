@@ -25,6 +25,9 @@ public class Hoja {
     @Column(name = "fecha_modificacion")
     private LocalDateTime fechaModificacion = LocalDateTime.now();
 
+    @OneToMany(mappedBy = "hoja", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<NotaRapida> notas = new java.util.ArrayList<>();
+
     // Getters y Setters
     public Long getId() {
         return id;
@@ -64,5 +67,13 @@ public class Hoja {
 
     public void setFechaModificacion(LocalDateTime fechaModificacion) {
         this.fechaModificacion = fechaModificacion;
+    }
+
+    public java.util.List<NotaRapida> getNotas() {
+        return notas;
+    }
+
+    public void setNotas(java.util.List<NotaRapida> notas) {
+        this.notas = notas;
     }
 }

@@ -141,6 +141,9 @@ const API = {
                 body: JSON.stringify({ titulo, descripcion })
             });
         },
+        async obtenerCuaderno(id) {
+            return API.request(`/api/escritura/cuaderno/${id}`);
+        },
         async listarHojas(cuadernoId) {
             return API.request(`/api/escritura/cuaderno/${cuadernoId}/hojas?t=${Date.now()}`);
         },

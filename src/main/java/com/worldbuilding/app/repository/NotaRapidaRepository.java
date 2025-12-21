@@ -11,4 +11,6 @@ public interface NotaRapidaRepository extends JpaRepository<NotaRapida, Long> {
     List<NotaRapida> findByHojaOrderByLineaAsc(Hoja hoja);
 
     int countByHoja(Hoja hoja);
+
+    void deleteByHoja(Hoja hoja);
 }

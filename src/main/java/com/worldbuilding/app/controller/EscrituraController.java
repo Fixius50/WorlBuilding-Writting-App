@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api/escritura")
@@ -70,6 +71,21 @@ public class EscrituraController {
                 "id", guardado.getId(),
                 "titulo", guardado.getTitulo(),
                 "nombreProyecto", guardado.getNombreProyecto()));
+    }
+
+    @GetMapping("/cuaderno/{id}")
+    public ResponseEntity<?> obtenerCuaderno(@PathVariable Long id) {
+        if (id == null)
+            return ResponseEntity.badRequest().body(Map.of("error", "ID requerido"));
+        Cuaderno c = cuadernoRepository.findById(id).orElse(null);
+        if (c == null)
+            return ResponseEntity.status(404).body(Map.of("error", "Cuaderno no encontrado"));
+
+        return ResponseEntity.ok(Map.of(
+                "id", c.getId(),
+                "titulo", c.getTitulo() != null ? c.getTitulo() : "Sin título",
+                "descripcion", c.getDescripcion() != null ? c.getDescripcion() : "",
+                "nombreProyecto", c.getNombreProyecto()));
     }
 
     @GetMapping("/cuaderno/{id}/hojas")
@@ -137,6 +153,7 @@ public class EscrituraController {
     }
 
     @DeleteMapping("/hoja/{id}")
+    @Transactional
     public ResponseEntity<?> eliminarHoja(@PathVariable Long id) {
         if (id == null)
             return ResponseEntity.badRequest().body(Map.of("error", "ID requerido"));
@@ -146,10 +163,13 @@ public class EscrituraController {
             return ResponseEntity.status(404).body(Map.of("error", "Hoja no encontrada"));
 
         try {
+            // Eliminar notas asociadas manualmente para evitar restricciones de FK
+            notaRapidaRepository.deleteByHoja(h);
+
             hojaRepository.delete(h);
             return ResponseEntity.ok(Map.of("success", true));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Error eliminando hoja"));
+            return ResponseEntity.status(500).body(Map.of("error", "Error eliminando hoja: " + e.getMessage()));
         }
     }
 }
