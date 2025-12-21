@@ -109,12 +109,19 @@ function renderEntidades() {
 
     // Reset Classes
     if (currentView === 'grid') {
-        container.classList.remove('view-list', 'space-y-3');
-        container.classList.add('grid', 'grid-cols-1', 'sm:grid-cols-2', 'xl:grid-cols-4', 'gap-4'); // Robust Grid
+        // Container cleanup (ensure no grid on parent)
+        container.classList.remove('grid', 'grid-cols-1', 'sm:grid-cols-2', 'xl:grid-cols-4', 'gap-4');
+
+        // List Container becomes the grid
+        listContainer.classList.remove('space-y-3');
+        listContainer.classList.add('grid', 'grid-cols-1', 'sm:grid-cols-2', 'xl:grid-cols-4', 'gap-6', 'pb-20');
+
         if (header) header.classList.add('hidden');
     } else {
-        container.classList.add('view-list', 'space-y-3');
-        container.classList.remove('grid', 'grid-cols-1', 'sm:grid-cols-2', 'xl:grid-cols-4', 'gap-4');
+        // List Container becomes vertical list
+        listContainer.classList.remove('grid', 'grid-cols-1', 'sm:grid-cols-2', 'xl:grid-cols-4', 'gap-6', 'pb-20');
+        listContainer.classList.add('space-y-3');
+
         if (header) header.classList.remove('hidden');
     }
 

@@ -14,6 +14,16 @@
         rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
+
+    <!-- React Dependencies (New Structure) -->
+    <link rel="stylesheet" href="/react-dist/css/index.css">
+    <style>
+        #react-root {
+            width: 100%;
+            height: 100%;
+            background: #0f172a;
+        }
+    </style>
 </head>
 
 <body class="bg-slate-950 text-slate-200 font-display min-h-screen flex flex-col hidden-scrollbar overflow-hidden">
@@ -50,6 +60,16 @@
                 <button
                     class="px-3 py-1 rounded-md text-[10px] font-bold bg-indigo-500 text-white shadow-sm">Year</button>
                 <button class="px-3 py-1 rounded-md text-[10px] font-bold text-slate-500 hover:text-white">Day</button>
+            </div>
+
+            <!-- View Mode Toggle -->
+            <div class="flex gap-1 p-1 bg-slate-900 rounded-lg ml-4">
+                <button id="btn-view-linear"
+                    class="px-3 py-1 rounded-md text-[10px] font-bold bg-indigo-500 text-white shadow-sm"
+                    onclick="toggleView('linear')">Lineal</button>
+                <button id="btn-view-graph"
+                    class="px-3 py-1 rounded-md text-[10px] font-bold text-slate-500 hover:text-white"
+                    onclick="toggleView('graph')">Grafo</button>
             </div>
         </div>
 
@@ -101,6 +121,9 @@
 
         <!-- Center Canvas -->
         <div class="flex-1 relative overflow-y-auto timeline-canvas">
+            <!-- React Container (Hidden by default) -->
+            <div id="react-root" class="hidden w-full h-full"></div>
+
             <div id="canvas-content" class="min-h-full py-20 relative">
                 <div class="timeline-line"></div>
                 <!-- Example Swimlane Labels -->
@@ -189,6 +212,36 @@
     <script src="../js/auth_guard.js"></script>
     <script src="../js/navigation.js"></script>
     <script src="../js/timeline.js"></script>
+
+    <!-- Toggle Logic -->
+    <script>
+        function toggleView(mode) {
+            const btnLinear = document.getElementById('btn-view-linear');
+            const btnGraph = document.getElementById('btn-view-graph');
+            const canvasContent = document.getElementById('canvas-content');
+            const reactRoot = document.getElementById('react-root');
+
+            if (mode === 'linear') {
+                btnLinear.classList.add('bg-indigo-500', 'text-white');
+                btnLinear.classList.remove('text-slate-500');
+                btnGraph.classList.remove('bg-indigo-500', 'text-white');
+                btnGraph.classList.add('text-slate-500');
+
+                canvasContent.classList.remove('hidden');
+                reactRoot.classList.add('hidden');
+            } else {
+                btnGraph.classList.add('bg-indigo-500', 'text-white');
+                btnGraph.classList.remove('text-slate-500');
+                btnLinear.classList.remove('bg-indigo-500', 'text-white');
+                btnLinear.classList.add('text-slate-500');
+
+                canvasContent.classList.add('hidden');
+                reactRoot.classList.remove('hidden');
+            }
+        }
+    </script>
+    <!-- React Bundle (New Path) -->
+    <script type="module" src="/react-dist/js/index.js"></script>
 </body>
 
 </html>

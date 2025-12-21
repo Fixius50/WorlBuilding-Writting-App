@@ -36,4 +36,25 @@ public class TimelineController {
         // evento.setTitulo(eventoDetails.getTitulo());
         return eventoRepository.save(evento); // Simplificación
     }
+
+    @Autowired
+    private com.worldbuilding.app.repository.EventoRelacionRepository relacionRepository;
+
+    // --- Relaciones ---
+
+    @GetMapping("/relaciones")
+    public List<com.worldbuilding.app.model.EventoRelacion> listarRelaciones() {
+        return relacionRepository.findAll();
+    }
+
+    @PostMapping("/relacion")
+    public com.worldbuilding.app.model.EventoRelacion crearRelacion(
+            @RequestBody com.worldbuilding.app.model.EventoRelacion relacion) {
+        return relacionRepository.save(relacion);
+    }
+
+    @DeleteMapping("/relacion/{id}")
+    public void eliminarRelacion(@PathVariable Long id) {
+        relacionRepository.deleteById(id);
+    }
 }
