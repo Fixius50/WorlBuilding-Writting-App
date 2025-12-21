@@ -37,7 +37,8 @@ async function cargarProyectos() {
             card.onclick = () => abrirProyecto(c.nombreProyecto);
 
             // Imagen aleatoria o placeholder
-            const bgUrl = c.imagenUrl || `https://source.unsplash.com/random/400x500/?fantasy,landscape&sig=${c.id}`;
+            // Imagen aleatoria o placeholder (Unsplash Source está deprecado, usamos Picsum)
+            const bgUrl = c.imagenUrl || `https://picsum.photos/seed/${c.id}/400/500`;
 
             card.innerHTML = `
                 <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110 opacity-60 group-hover:opacity-40" style="background-image: url('${bgUrl}'); background-color: #0f172a;"></div>

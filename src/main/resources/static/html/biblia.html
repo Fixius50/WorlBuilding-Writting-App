@@ -169,8 +169,10 @@
         </div>
 
         <!-- Content Area -->
-        <div class="flex-1 overflow-y-auto px-8 pb-8">
-            <div id="entities-container" class="view-list space-y-3">
+        <div class="flex-1 overflow-y-auto px-8 pb-8 relative custom-scrollbar h-full">
+            <!-- Added h-full/custom-scrollbar -->
+            <div id="entities-container" class="view-list space-y-3 pb-20">
+                <!-- Added padding bottom for scroll space -->
                 <!-- Entities Table Header if list view -->
                 <div id="list-header"
                     class="grid grid-cols-12 gap-4 px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-white/5">
@@ -186,6 +188,20 @@
             </div>
         </div>
     </main>
+
+    <!-- Context Menu (Actions) -->
+    <div id="context-menu"
+        class="fixed z-50 hidden bg-slate-900 border border-white/10 rounded-xl shadow-2xl py-2 w-48 animate-fade-in">
+        <button id="ctx-duplicate"
+            class="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-white/5 hover:text-white flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">content_copy</span> Duplicar
+        </button>
+        <div class="h-px bg-white/5 my-1"></div>
+        <button id="ctx-delete"
+            class="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">delete</span> Eliminar
+        </button>
+    </div>
 
     <!-- Modal Creación Rediseñado (Image 3) -->
     <div id="modal-crear"

@@ -241,10 +241,10 @@ const API = {
                         class="size-10 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
                         1</div>
                     <div>
-                        <h3 class="text-white font-bold text-lg mb-2">Referencias Inteligentes (@)</h3>
-                        <p class="text-slate-400 text-sm leading-relaxed">Escribe <code>@</code> para desplegar el menú
-                            de entidades. Puedes seleccionar un personaje existente o crear uno nuevo sin abandonar el
-                            lienzo.</p>
+                        <h3 class="text-white font-bold text-lg mb-2">Navegación Lateral</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">Usa la nueva <strong>Barra Lateral</strong>
+                            izquierda para saltar entre hojas al instante. Cada ítem muestra un contador de notas
+                            integradas.</p>
                     </div>
                 </div>
                 <div class="flex gap-6 items-start">
@@ -252,10 +252,9 @@ const API = {
                         class="size-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
                         2</div>
                     <div>
-                        <h3 class="text-white font-bold text-lg mb-2">Modo Enfoque</h3>
-                        <p class="text-slate-400 text-sm leading-relaxed">Activa el Modo Enfoque desde el header para
-                            ocultar el sidebar de notas y centrarte exclusivamente en el texto. Todo el ruido visual
-                            desaparecerá.</p>
+                        <h3 class="text-white font-bold text-lg mb-2">Referencias Inteligentes (@)</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">Escribe <code>@</code> para desplegar el menú
+                            de entidades. Las notas rápidas ahora son contextuales a la página activa.</p>
                     </div>
                 </div>
                 <div class="flex gap-6 items-start">
@@ -263,11 +262,43 @@ const API = {
                         class="size-10 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
                         3</div>
                     <div>
-                        <h3 class="text-white font-bold text-lg mb-2">Paginación Física</h3>
-                        <p class="text-slate-400 text-sm leading-relaxed">La escritura no es un infinito scroll. Cada
-                            hoja tiene un número asignado (<code>@1</code>, <code>@2</code>). Usa las flechas de
-                            navegación para transicionar entre ellas.</p>
+                        <h3 class="text-white font-bold text-lg mb-2">Gestión de Hojas</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">Añade o elimina hojas directamente desde la
+                            barra lateral. Todo se guarda automáticamente en tiempo real.</p>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Historial / Bitácora -->
+        <section id="changelog" class="mb-20 scroll-mt-24">
+            <h2 class="text-3xl font-bold text-white mb-6">Historial de Desarrollo</h2>
+            <div class="space-y-4">
+                <!-- Entry 12 -->
+                <div class="glass p-6 rounded-2xl border-l-4 border-emerald-500">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="text-white font-bold">v3.4.0 - Rediseño de Escritura</h4>
+                        <span class="text-[10px] text-slate-500 uppercase tracking-widest">Prompt ID 12</span>
+                    </div>
+                    <p class="text-slate-400 text-sm italic mb-4">"Refactoriza la interfaz de escritura para tener una
+                        lista de hojas lateral..."</p>
+                    <ul class="text-xs text-slate-300 space-y-2">
+                        <li class="flex items-center gap-2"><span
+                                class="material-symbols-outlined text-indigo-400 text-[14px]">check_circle</span>
+                            Implementado Sidebar de Navegación persistente.</li>
+                        <li class="flex items-center gap-2"><span
+                                class="material-symbols-outlined text-indigo-400 text-[14px]">check_circle</span>
+                            Contadores de notas por hoja y backend optimizado.</li>
+                        <li class="flex items-center gap-2"><span
+                                class="material-symbols-outlined text-indigo-400 text-[14px]">check_circle</span>
+                            Corrección de bugs de renderizado y persistencia.</li>
+                    </ul>
+                </div>
+                <!-- Previous summary (Condensed) -->
+                <div class="glass p-6 rounded-2xl opacity-60">
+                    <h4 class="text-white font-bold mb-2">Versiones Anteriores (Resumen)</h4>
+                    <p class="text-xs text-slate-500">Includes: Taller de Conlangs (v3.3), Librería y Biblia (v3.2),
+                        Migración SQLite (v3.0). Ver <code>log_prompts.md</code> para detalle completo.</p>
                 </div>
             </div>
         </section>

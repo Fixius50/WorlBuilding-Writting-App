@@ -49,24 +49,15 @@ public class BDController {
     /**
      * Obtiene el nombre del proyecto activo de ThreadLocal o sesión
      */
+    /**
+     * Obtiene el nombre del proyecto activo de ThreadLocal o sesión
+     */
     private String getProyectoActivo(HttpSession session) {
-        // En SQLite (single DB), esto podría retornar el ID del proyecto si lo
-        // necesitamos para filtrar
-        // Por ahora retornamos "default" o el valor de la sesión si queremos mantener
-        // la lógica de "Contexto de Proyecto"
-        // Pero SIN cambiar de DataSource
+        String proyecto = (String) session.getAttribute("proyectoActivo");
+        if (proyecto != null && !proyecto.isBlank()) {
+            return proyecto;
+        }
         return "default";
-        /*
-         * String proyecto = DynamicDataSourceConfig.getCurrentProject();
-         * if (proyecto != null && !proyecto.isBlank() && !"default".equals(proyecto)) {
-         * return proyecto;
-         * }
-         * if (session != null) {
-         * proyecto = (String) session.getAttribute(PROYECTO_ACTIVO);
-         * return proyecto;
-         * }
-         * return null;
-         */
     }
 
     // ==================== INSERTAR ====================
@@ -74,6 +65,7 @@ public class BDController {
     @PutMapping("/insertar")
     public ResponseEntity<?> insertar(@RequestBody DatosTablaDTO dto, HttpSession session) {
         String nombreProyecto = getProyectoActivo(session);
+        // ... (rest of insert method is fine, it uses getProyectoActivo)
         if (nombreProyecto == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "No hay proyecto activo"));
         }
@@ -122,7 +114,7 @@ public class BDController {
                     "success", true,
                     "entidad", entidadGuardada));
         } catch (Exception e) {
-            e.printStackTrace(); // Log en consola del servidor
+            e.printStackTrace();
             String errorMsg = e.getMessage();
             if (errorMsg == null || errorMsg.isBlank()) {
                 errorMsg = e.getClass().getName() + " - "
@@ -137,6 +129,7 @@ public class BDController {
     @PatchMapping("/modificar")
     public ResponseEntity<?> modificar(@RequestBody DatosTablaDTO dto, HttpSession session) {
         String nombreProyecto = getProyectoActivo(session);
+        // ... (rest of modify method is fine)
         if (nombreProyecto == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "No hay proyecto activo"));
         }
@@ -200,17 +193,16 @@ public class BDController {
 
     @GetMapping("/{tipo}")
     public ResponseEntity<?> listarPorTipo(@PathVariable String tipo, HttpSession session) {
-        // Con H2 por proyecto, toda la BD es del proyecto activo
-        // Ya no necesitamos filtrar por nombreProyecto
+        String proyecto = getProyectoActivo(session);
         try {
             List<?> resultados = switch (tipo.toLowerCase()) {
-                case "entidadindividual" -> entidadIndRepo.findAll();
-                case "entidadcolectiva" -> entidadColRepo.findAll();
-                case "zona" -> zonaRepo.findAll();
-                case "construccion" -> construccionRepo.findAll();
-                case "efectos" -> efectosRepo.findAll();
-                case "interaccion" -> interaccionRepo.findAll();
-                case "nodo" -> nodoRepo.findAll();
+                case "entidadindividual" -> entidadIndRepo.findByNombreProyecto(proyecto);
+                case "entidadcolectiva" -> entidadColRepo.findByNombreProyecto(proyecto);
+                case "zona" -> zonaRepo.findByNombreProyecto(proyecto);
+                case "construccion" -> construccionRepo.findByNombreProyecto(proyecto);
+                case "efectos" -> efectosRepo.findByNombreProyecto(proyecto);
+                case "interaccion" -> interaccionRepo.findByNombreProyecto(proyecto);
+                case "nodo" -> nodoRepo.findAll(); // Nodo y Relacion son globales o necesitan repo method
                 case "relacion" -> relacionRepo.findAll();
                 default -> throw new IllegalArgumentException("Tipo no soportado: " + tipo);
             };

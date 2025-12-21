@@ -58,7 +58,7 @@ async function cargarCuadernos() {
         cuadernos.forEach(c => {
             const card = document.createElement('div');
             card.className = "glass-panel p-6 rounded-2xl group cursor-pointer hover:border-indigo-500/50 hover:bg-white/5 transition-all flex flex-col gap-4 relative overflow-hidden";
-            card.onclick = () => seleccionarCuaderno(c);
+            card.onclick = () => window.location.href = `escritura.html?id=${c.id}`;
 
             card.innerHTML = `
                 <div class="absolute -right-4 -top-4 size-20 bg-indigo-500/10 rounded-full blur-xl group-hover:bg-indigo-500/20 transition-all"></div>
@@ -133,7 +133,7 @@ async function cargarHojas(cuadernoId) {
             // Animation staggered delay could be added here
             card.style.animationDelay = `${idx * 0.05}s`;
 
-            card.onclick = () => window.location.href = `escritura.html?id=${h.id}`;
+            card.onclick = () => window.location.href = `escritura.html?id=${cuadernoId}&sheet=${h.id}`;
 
             const fecha = h.fechaModificacion ? new Date(h.fechaModificacion).toLocaleDateString() : 'Recientemente';
 
@@ -149,7 +149,7 @@ async function cargarHojas(cuadernoId) {
                     <span class="text-[10px] uppercase font-bold text-slate-600 block mb-1">Status: Borrador</span>
                     <span class="text-[10px] text-slate-500">${fecha}</span>
                 </div>
-                <button class="size-8 rounded-lg hover:bg-slate-800 flex items-center justify-center text-slate-600 hover:text-white transition-all ml-2" onclick="alert('Opciones hoja')"> <!-- TODO: Dropdown real -->
+                <button class="size-8 rounded-lg hover:bg-slate-800 flex items-center justify-center text-slate-600 hover:text-white transition-all ml-2" onclick="event.stopPropagation(); alert('Opciones hoja')"> <!-- TODO: Dropdown real -->
                     <span class="material-symbols-outlined text-[18px]">more_vert</span>
                 </button>
             `;
@@ -160,6 +160,54 @@ async function cargarHojas(cuadernoId) {
         list.innerHTML = '<div class="text-red-400 p-4">Error al cargar hojas.</div>';
     }
 }
+
+function nuevaHoja() {
+    if (!activeCuaderno) return;
+    window.location.href = `escritura.html?id=${activeCuaderno.id}&action=new`;
+}
+
+
+// Modal Functions
+function abrirModalCuaderno() {
+    const modal = document.getElementById('modal-cuaderno');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => document.getElementById('nuevo-cuaderno-titulo').focus(), 100);
+    }
+}
+
+function cerrarModalCuaderno() {
+    const modal = document.getElementById('modal-cuaderno');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+}
+
+async function crearNuevoCuaderno(e) {
+    if (e) e.preventDefault();
+    const titulo = document.getElementById('nuevo-cuaderno-titulo').value;
+    const desc = document.getElementById('nuevo-cuaderno-desc').value;
+
+    if (!titulo) return;
+
+    try {
+        const res = await API.escritura.crearCuaderno(titulo, desc);
+        if (res && res.id) {
+            cerrarModalCuaderno();
+            document.getElementById('nuevo-cuaderno-titulo').value = '';
+            document.getElementById('nuevo-cuaderno-desc').value = '';
+            await cargarCuadernos();
+        } else {
+            alert("Error creando cuaderno.");
+        }
+    } catch (e) {
+        alert("Error creando cuaderno: " + e);
+        console.error(e);
+    }
+}
+
 function mostrarEstadoSinProyecto() {
     const main = document.querySelector('main');
     if (main) {

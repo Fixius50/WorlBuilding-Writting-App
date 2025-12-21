@@ -23,6 +23,9 @@ public class EscrituraController {
     @Autowired
     private HojaRepository hojaRepository;
 
+    @Autowired
+    private com.worldbuilding.app.repository.NotaRapidaRepository notaRapidaRepository;
+
     private String getProyectoActivo(HttpSession session) {
         return (String) session.getAttribute("proyectoActivo");
     }
@@ -77,7 +80,20 @@ public class EscrituraController {
         if (c == null)
             return ResponseEntity.status(404).body(Map.of("error", "Cuaderno no encontrado"));
 
-        return ResponseEntity.ok(hojaRepository.findByCuadernoOrderByNumeroPaginaAsc(c));
+        List<Hoja> hojas = hojaRepository.findByCuadernoOrderByNumeroPaginaAsc(c);
+
+        // Transform to include note count
+        List<Map<String, Object>> response = hojas.stream().map(h -> {
+            Map<String, Object> map = new java.util.HashMap<>();
+            map.put("id", h.getId());
+            map.put("numeroPagina", h.getNumeroPagina());
+            map.put("contenido", h.getContenido());
+            map.put("fechaModificacion", h.getFechaModificacion());
+            map.put("notasCount", notaRapidaRepository.countByHoja(h));
+            return map;
+        }).collect(java.util.stream.Collectors.toList());
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/cuaderno/{id}/hoja")
@@ -118,5 +134,22 @@ public class EscrituraController {
         h.setFechaModificacion(LocalDateTime.now());
 
         return ResponseEntity.ok(hojaRepository.save(h));
+    }
+
+    @DeleteMapping("/hoja/{id}")
+    public ResponseEntity<?> eliminarHoja(@PathVariable Long id) {
+        if (id == null)
+            return ResponseEntity.badRequest().body(Map.of("error", "ID requerido"));
+
+        Hoja h = hojaRepository.findById(id).orElse(null);
+        if (h == null)
+            return ResponseEntity.status(404).body(Map.of("error", "Hoja no encontrada"));
+
+        try {
+            hojaRepository.delete(h);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Error eliminando hoja"));
+        }
     }
 }

@@ -142,7 +142,7 @@ const API = {
             });
         },
         async listarHojas(cuadernoId) {
-            return API.request(`/api/escritura/cuaderno/${cuadernoId}/hojas`);
+            return API.request(`/api/escritura/cuaderno/${cuadernoId}/hojas?t=${Date.now()}`);
         },
         async añadirHoja(cuadernoId) {
             return API.request(`/api/escritura/cuaderno/${cuadernoId}/hoja`, {
@@ -156,6 +156,11 @@ const API = {
             return API.request(`/api/escritura/hoja/${hojaId}`, {
                 method: 'PUT',
                 body: JSON.stringify({ contenido })
+            });
+        },
+        async eliminarHoja(hojaId) {
+            return API.request(`/api/escritura/hoja/${hojaId}`, {
+                method: 'DELETE'
             });
         },
         notas: {

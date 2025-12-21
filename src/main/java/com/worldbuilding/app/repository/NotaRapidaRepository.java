@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface NotaRapidaRepository extends JpaRepository<NotaRapida, Long> {
     List<NotaRapida> findByHojaOrderByLineaAsc(Hoja hoja);
+
+    int countByHoja(Hoja hoja);
 }

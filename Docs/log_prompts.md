@@ -60,11 +60,24 @@
 
 ---
 
-### Prompt ID: 11 (Refinamientos Escritura)
+### Prompt ID: 11 (Standardización UI Escritura)
 > siempre que puedas debes poner unidades relativas
 > arregla el menu selector de paginas en la hoja de una escritura (no se ha arreglado)
+> en vez de intentar arreglarlo, copia el mismo codigo que en el resto de paginas
 
 **Resultados:**
-*   [FIX] Corregido error de "bubbling" en el selector de páginas separando el trigger del dropdown en el HTML.
-*   [CSS] Refactorización a unidades relativas (`rem`) en módulos de escritura y navegación.
-*   [UX] Simplificación de la interfaz y limpieza de elementos innecesarios.
+*   [REFACTOR] Reemplazada cabecera "Premium" personalizada por el estándar de diseño de `libreria.html`.
+*   [UX] Eliminado selector de páginas complejo; implementada navegación lineal (Anterior/Siguiente) y breadcrumbs estándar.
+*   [CSS] Refactorización completa a unidades relativas (`rem`) en módulos de escritura.
+*   [FIX] Ajustado margen superior (`mt-24`) en cabecera de escritura para evitar solapamiento con menú radial.
+*   [UX] Corregido toggle de barra lateral de notas y eliminado botón de cierre redundante.
+
+### Prompt ID: 12 (Rediseño Escritura & Sidebar)
+> Refactoriza la interfaz de escritura para tener una lista de hojas lateral persistente, contadores de notas y navegación directa. arregla bugs de carga y borrado.
+
+**Resultados:**
+*   [UI] Implementada **Sidebar Lateral** en `escritura.html` para navegación rápida entre hojas.
+*   [BACKEND] Añadido conteo eficiente de notas (`countByHoja`) en `NotaRapidaRepository`.
+*   [UX] **Contadores de Notas** visuales (badges) en la lista de hojas.
+*   [FLOW] Navegación directa desde Librería al Editor (saltando vista intermedia).
+*   [FIX] Resuelto bug crítico de "estados zombie" al borrar hojas y recarga de notas al cambiar de página.
