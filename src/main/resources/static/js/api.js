@@ -20,7 +20,11 @@ const API = {
             const data = await response.json();
 
             if (!response.ok) {
-                return { success: false, error: data.error || 'Error desconocido' };
+                // Lanzar error real para que el catch lo capture
+                const error = new Error(data.error || `HTTP error! status: ${response.status}`);
+                error.status = response.status;
+                error.data = data;
+                throw error;
             }
 
             return data;
@@ -153,6 +157,16 @@ const API = {
                 method: 'PUT',
                 body: JSON.stringify({ contenido })
             });
+        },
+        notas: {
+            async listar(hojaId) { return API.request(`/api/escritura/hoja/${hojaId}/notas`); },
+            async crear(hojaId, data) {
+                return API.request(`/api/escritura/hoja/${hojaId}/notas`, {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+            },
+            async eliminar(hojaId, notaId) { return API.request(`/api/escritura/hoja/${hojaId}/notas/${notaId}`, { method: 'DELETE' }); }
         }
     },
 

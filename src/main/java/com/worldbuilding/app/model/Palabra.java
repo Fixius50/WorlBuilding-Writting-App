@@ -21,6 +21,12 @@ public class Palabra {
     @Column(columnDefinition = "CLOB")
     private String notas;
 
+    @Column(name = "svg_path_data", columnDefinition = "CLOB") // Changed to CLOB for potentially large paths
+    private String svgPathData;
+
+    @Column(name = "raster_image_path")
+    private String rasterImagePath;
+
     public Long getId() {
         return id;
     }
@@ -75,5 +81,21 @@ public class Palabra {
 
     public void setNotas(String notas) {
         this.notas = notas;
+    }
+
+    public String getSvgPathData() {
+        return svgPathData;
+    }
+
+    public void setSvgPathData(String svgPathData) {
+        this.svgPathData = svgPathData;
+    }
+
+    public String getRasterImagePath() {
+        return rasterImagePath;
+    }
+
+    public void setRasterImagePath(String rasterImagePath) {
+        this.rasterImagePath = rasterImagePath;
     }
 }

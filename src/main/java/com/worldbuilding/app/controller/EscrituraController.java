@@ -72,10 +72,10 @@ public class EscrituraController {
     @GetMapping("/cuaderno/{id}/hojas")
     public ResponseEntity<?> listarHojas(@PathVariable Long id) {
         if (id == null)
-            return ResponseEntity.badRequest().body("ID requerido");
+            return ResponseEntity.badRequest().body(Map.of("error", "ID requerido"));
         Cuaderno c = cuadernoRepository.findById(id).orElse(null);
         if (c == null)
-            return ResponseEntity.status(404).body("Cuaderno no encontrado");
+            return ResponseEntity.status(404).body(Map.of("error", "Cuaderno no encontrado"));
 
         return ResponseEntity.ok(hojaRepository.findByCuadernoOrderByNumeroPaginaAsc(c));
     }
@@ -83,10 +83,10 @@ public class EscrituraController {
     @PostMapping("/cuaderno/{id}/hoja")
     public ResponseEntity<?> añadirHoja(@PathVariable Long id) {
         if (id == null)
-            return ResponseEntity.badRequest().body("ID requerido");
+            return ResponseEntity.badRequest().body(Map.of("error", "ID requerido"));
         Cuaderno c = cuadernoRepository.findById(id).orElse(null);
         if (c == null)
-            return ResponseEntity.status(404).body("Cuaderno no encontrado");
+            return ResponseEntity.status(404).body(Map.of("error", "Cuaderno no encontrado"));
 
         List<Hoja> hojas = hojaRepository.findByCuadernoOrderByNumeroPaginaAsc(c);
         int nxt = hojas.size() + 1;
@@ -102,17 +102,17 @@ public class EscrituraController {
     @GetMapping("/hoja/{id}")
     public ResponseEntity<?> obtenerHoja(@PathVariable Long id) {
         if (id == null)
-            return ResponseEntity.badRequest().body("ID requerido");
+            return ResponseEntity.badRequest().body(Map.of("error", "ID requerido"));
         return ResponseEntity.ok(hojaRepository.findById(id).orElse(null));
     }
 
     @PutMapping("/hoja/{id}")
     public ResponseEntity<?> guardarHoja(@PathVariable Long id, @RequestBody Map<String, String> body) {
         if (id == null)
-            return ResponseEntity.badRequest().body("ID requerido");
+            return ResponseEntity.badRequest().body(Map.of("error", "ID requerido"));
         Hoja h = hojaRepository.findById(id).orElse(null);
         if (h == null)
-            return ResponseEntity.status(404).body("Hoja no encontrada");
+            return ResponseEntity.status(404).body(Map.of("error", "Hoja no encontrada"));
 
         h.setContenido(body.get("contenido"));
         h.setFechaModificacion(LocalDateTime.now());

@@ -49,3 +49,22 @@
 *   [BIBLIA] Rediseño total con filtros superiores, conteo dinámico en tiempo real y nuevos tipos (Magia, Zonas, Efectos).
 *   [DASHBOARD] Añadidos campos de género, tipo e imagen al crear proyectos.
 *   [LIBRERÍA] Creado módulo de gestión de hojas (`libreria.html`) con navegación avanzada.
+
+### Prompt ID: 10 (Taller de Conlangs)
+> Implementación del Taller de Conlangs con NLP, Vectorización y FontForge.
+**Resultados:**
+*   [BACKEND] Integración de CoreNLP y JWI (WordNet) para semántica.
+*   [GRAPHICS] Implementado `VectorizationUtils` (Raster -> SVG) y script Python para FontForge (SVG -> TTF).
+*   [FRONTEND] Nuevo módulo `conlangs.html` con Canvas de dibujo Vanilla JS.
+*   [DATA] Nuevas entidades `MorphRule` y extensión de `Palabra` con datos vectoriales.
+
+---
+
+### Prompt ID: 11 (Refinamientos Escritura)
+> siempre que puedas debes poner unidades relativas
+> arregla el menu selector de paginas en la hoja de una escritura (no se ha arreglado)
+
+**Resultados:**
+*   [FIX] Corregido error de "bubbling" en el selector de páginas separando el trigger del dropdown en el HTML.
+*   [CSS] Refactorización a unidades relativas (`rem`) en módulos de escritura y navegación.
+*   [UX] Simplificación de la interfaz y limpieza de elementos innecesarios.

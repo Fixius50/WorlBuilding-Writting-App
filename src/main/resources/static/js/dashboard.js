@@ -62,8 +62,15 @@ async function cargarProyectos() {
         });
 
     } catch (e) {
-        console.error(e);
-        lista.innerHTML = '<div class="text-red-400 col-span-full">Error al cargar proyectos.</div>';
+        console.error("Dashboard Load Error:", e);
+        if (e.status === 401) {
+            window.location.href = 'login.html';
+        } else {
+            lista.innerHTML = `<div class="text-red-400 col-span-full text-center py-10">
+                <span class="material-symbols-outlined text-4xl mb-2">error</span>
+                <p>Error al cargar mundos: ${e.message}</p>
+            </div>`;
+        }
     }
 }
 

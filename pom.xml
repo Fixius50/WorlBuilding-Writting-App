@@ -40,6 +40,32 @@
 			<artifactId>hibernate-community-dialects</artifactId>
 		</dependency>
 		
+
+		<!-- NLP & Linguistics -->
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>4.5.5</version>
+		</dependency>
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>4.5.5</version>
+			<classifier>models</classifier>
+		</dependency>
+		<dependency>
+			<groupId>edu.mit</groupId>
+			<artifactId>jwi</artifactId>
+			<version>2.2.3</version>
+		</dependency>
+		
+		<!-- Image & Graphics Processing -->
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>batik-all</artifactId>
+			<version>1.17</version>
+		</dependency>
+		
 		<!-- DevTools (hot reload) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

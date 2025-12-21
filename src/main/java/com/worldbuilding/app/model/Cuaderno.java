@@ -16,6 +16,7 @@ public class Cuaderno {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id") // Nullable for now to ease migration of existing rows if any
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Usuario usuario;
 
     @Column(nullable = false)

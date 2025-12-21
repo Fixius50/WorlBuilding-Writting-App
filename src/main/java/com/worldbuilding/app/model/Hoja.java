@@ -13,6 +13,7 @@ public class Hoja {
 
     @ManyToOne
     @JoinColumn(name = "cuaderno_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Cuaderno cuaderno;
 
     @Column(name = "numero_pagina", nullable = false)

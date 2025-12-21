@@ -19,73 +19,42 @@ public class DataSeeder implements CommandLineRunner {
     private LineaTemporalRepository lineaTemporalRepository;
     @Autowired
     private EventoCronologiaRepository eventoRepository;
+    @Autowired
+    private HojaRepository hojaRepository;
 
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("SEEDING: Cleaning database...");
-        // Clean all data (Foreign keys usually cascade delete or fail,
-        // so we delete children first if needed, though repositories usually handle it
-        // effectively
-        // if cascade is set in entities. Otherwise delete in order: Evento -> Linea ->
-        // Universo -> Cuaderno -> Usuario)
-        eventoRepository.deleteAll();
-        lineaTemporalRepository.deleteAll();
-        universoRepository.deleteAll();
-        cuadernoRepository.deleteAll();
-        usuarioRepository.deleteAll();
+        System.out.println("SEEDING: Checking for test user...");
 
-        System.out.println("SEEDING: Initializing Test Data...");
+        if (usuarioRepository.findByUsername("testuser").isPresent()) {
+            System.out.println("SEEDING: testuser already exists. Updating password to 123456.");
+            Usuario user = usuarioRepository.findByUsername("testuser").get();
+            user.setPassword("123456");
+            usuarioRepository.save(user);
+        } else {
+            System.out.println("SEEDING: Initializing Test Data...");
+            Usuario user = new Usuario();
+            user.setUsername("testuser");
+            user.setPassword("123456");
+            user.setEmail("test@chronos.com");
+            usuarioRepository.save(user);
 
-        // 1. Create User
-        Usuario user = new Usuario();
-        user.setUsername("testuser");
-        user.setPassword("password"); // Plain text for demo
-        user.setEmail("test@chronos.com");
-        usuarioRepository.save(user);
+            // Create default project if none exists
+            Cuaderno proyecto = new Cuaderno();
+            proyecto.setNombreProyecto("Proyecto Alpha");
+            proyecto.setTitulo("Crónicas del Multiverso");
+            proyecto.setDescripcion("Un proyecto de prueba generado automáticamente.");
+            proyecto.setUsuario(user);
+            cuadernoRepository.save(proyecto);
 
-        // 2. Create Project
-        Cuaderno proyecto = new Cuaderno();
-        proyecto.setNombreProyecto("Proyecto Alpha");
-        proyecto.setTitulo("Crónicas del Multiverso");
-        proyecto.setDescripcion("Un proyecto de prueba generado automáticamente.");
-        proyecto.setUsuario(user);
-        cuadernoRepository.save(proyecto);
-
-        // 3. Create Universe
-        Universo universo = new Universo();
-        universo.setNombre("Multiverso Principal");
-        universo.setCuaderno(proyecto);
-        universoRepository.save(universo);
-
-        // 4. Create Timeline A
-        LineaTemporal lineaA = new LineaTemporal();
-        lineaA.setNombre("Línea Alpha (Original)");
-        lineaA.setUniverso(universo);
-        lineaTemporalRepository.save(lineaA);
-
-        // 5. Create Events for Line A
-        EventoCronologia evt1 = new EventoCronologia();
-        evt1.setTitulo("El Big Bang");
-        evt1.setDescripcion("El inicio de todo.");
-        evt1.setOrdenCronologico(1);
-        evt1.setFechaInGame("Era 0");
-        evt1.setLineaTemporal(lineaA);
-        eventoRepository.save(evt1);
-
-        // 6. Create Timeline B
-        LineaTemporal lineaB = new LineaTemporal();
-        lineaB.setNombre("Línea Beta (Alternativa)");
-        lineaB.setUniverso(universo);
-        lineaTemporalRepository.save(lineaB);
-
-        // 7. Create Events for Line B
-        EventoCronologia evt2 = new EventoCronologia();
-        evt2.setTitulo("La Divergencia");
-        evt2.setDescripcion("Donde todo cambió.");
-        evt2.setOrdenCronologico(1);
-        evt2.setFechaInGame("Era 100");
-        evt2.setLineaTemporal(lineaB);
-        eventoRepository.save(evt2);
+            // Create default sheet
+            Hoja hoja = new Hoja();
+            hoja.setCuaderno(proyecto);
+            hoja.setNumeroPagina(1);
+            hoja.setContenido(
+                    "<h3>Capítulo I: El Comienzo</h3><p>La tormenta soplaba fuerte sobre las torres de Mar-Gorth...</p>");
+            hojaRepository.save(hoja);
+        }
 
         System.out.println("SEEDING: Complete.");
     }

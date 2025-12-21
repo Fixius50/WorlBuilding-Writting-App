@@ -1,172 +1,51 @@
-**Bienvenido a Chronos Atlas: Tu Ecosistema de Worldbuilding** 
-Chronos Atlas ha sido diseñado para ser tu "IDE del Escritor", 
-un entorno inmersivo donde tu mundo cobra vida. Nos hemos centrado en la eficiencia y la estética, 
-utilizando un **estilo "Glassmorphism Oscuro"** que crea una sensación de profundidad y elegancia. 
-La paleta de colores principal se basa en un profundo **gris oscuro (Slate-950)** para el fondo, que minimiza 
-la fatiga visual, acentuado con toques de **azul índigo (Indigo-500)** para resaltar elementos interactivos y 
-estados activos. A continuación, te detallo cómo navegar y utilizar las principales pantallas: 
---- ### 1. Acceso a Chronos Atlas 
-* **Propósito:** Es tu puerta de entrada a Chronos Atlas. Aquí puedes iniciar sesión si ya tienes una cuenta o registrarte si eres nuevo. 
-* **Navegación:** Es la primera pantalla que verás al abrir la aplicación. 
-* **Qué puedes hacer:** 
-* Ingresar tu nombre de usuario/correo electrónico y contraseña. 
-* Hacer clic en "Iniciar Sesión". 
-* Seleccionar "Registrarse" para crear una nueva cuenta. 
-* Utilizar la opción "Olvidé mi Contraseña" si necesitas recuperarla. 
-* **Descripción del Diseño y Elementos:** 
-* **Fondo:** Oscuro y ligeramente translúcido, siguiendo el estilo Glassmorphism, con el tono Slate-950. 
-* **Caja de Contenido Central:** Un panel flotante y ligeramente translúcido en el centro de la pantalla (Glassmorphism), 
-conteniendo los campos de entrada. 
-* **Campos de Entrada:** Cajas de texto con un sutil efecto de desenfoque, bordes finos y un texto placeholder discreto. 
-* **Botón Principal (Iniciar Sesión):** Destacado con un fondo Indigo-500, un ligero brillo y texto en color claro, indicando una acción primaria. 
-* **Enlaces Secundarios (Registrarse, Olvidé mi Contraseña):** Texto en un tono más claro de Indigo-500 o blanco, discretos pero accesibles. 
---- ### 2. Librería de Proyectos (Cuadernos) 
-* **Propósito:** Tu centro de mando para todos tus mundos. Aquí verás una lista de tus "Cuadernos" (proyectos de worldbuilding) 
-y podrás crear nuevos. 
-* **Navegación:** Después de iniciar sesión, esta será tu pantalla principal. 
-* **Qué puedes hacer:** * Ver un listado de todos tus proyectos, con sus títulos y posiblemente una breve descripción o la fecha de 
-la última edición. 
-* Hacer clic en un "Cuaderno" existente para abrirlo y comenzar a trabajar en él. 
-* Hacer clic en el botón "Crear Nuevo Cuaderno" para empezar un nuevo proyecto desde cero. 
-* **Descripción del Diseño y Elementos:** 
-* **Barra de Navegación Superior:** Una barra sutilmente translúcida en la parte superior, posiblemente con un icono de menú (hamburguesa) 
-o el logo de Chronos Atlas a la izquierda y quizás opciones de usuario a la derecha. 
-* **Área Principal (Listado de Cuadernos):** Un espacio central limpio donde cada cuaderno se representa como una tarjeta o un elemento de lista. 
-* **Tarjetas/Elementos de Cuaderno:** Paneles rectangulares ligeramente translúcidos (Glassmorphism), con bordes suaves, que contienen el 
-título del cuaderno. Podrían tener un ligero efecto de sombra o profundidad al pasar el ratón. 
-* **Botón "Crear Nuevo Cuaderno":** Un botón prominente, probablemente en la parte inferior o en una barra lateral, 
-con el color Indigo-500 para una fácil identificación. 
---- ### 3. Gestión de Hojas (Cuaderno Abierto) 
-* **Propósito:** Una vez que has seleccionado un "Cuaderno", esta pantalla te muestra todas las "Hojas" que lo componen, 
-funcionando como tu índice o tabla de contenidos. 
-* **Navegación:** Se accede haciendo clic en un "Cuaderno" desde la "Librería de Proyectos". 
-* **Qué puedes hacer:** * Ver una lista ordenada de todas las "Hojas" de tu cuaderno, con sus títulos. 
-* Hacer clic en el título de una "Hoja" para abrirla en el "Lienzo de Escritura". 
-* Reordenar las hojas arrastrándolas y soltándolas. 
-* Editar rápidamente el título de una hoja. 
-* Crear una nueva hoja dentro de este cuaderno. 
-* **Descripción del Diseño y Elementos:** 
-* **Navegación de Migas de Pan (Breadcrumbs):** En la parte superior, verás una ruta como "Librería > [Nombre del Cuaderno]", 
-que te indica dónde estás y te permite volver fácilmente a la librería. 
-* **Listado de Hojas:** Un panel central con los títulos de las hojas. Cada título podría ser un elemento interactivo que se 
-ilumina con Indigo-500 al pasar el ratón. 
-* **Controles de Hoja:** Pequeños iconos (ej. lápiz para editar, tres puntos para más opciones) 
-al lado de cada título de hoja, que aparecen al pasar el ratón. 
-* **Botón "Nueva Hoja":** Un botón claramente visible para añadir una nueva hoja al cuaderno. 
---- ### 4. Navegación Principal (Modos de App) 
-* **Propósito:** Esta es tu barra de herramientas principal, la cual te permite cambiar entre los diferentes módulos de Chronos Atlas: 
-Escritura, Biblia del Mundo, Cartografía y Cronología. 
-* **Navegación:** Estará siempre visible una vez que estés dentro de un cuaderno, típicamente como una barra lateral izquierda o una 
-barra superior. * **Qué puedes hacer:** 
-* Hacer clic en el icono y/o etiqueta de cada modo para cambiar instantáneamente la vista principal de la aplicación. Por ejemplo, 
-al hacer clic en "Escritura", el área central mostrará tu "Lienzo de Escritura". Al hacer clic en "Biblia del Mundo", verás la gestión 
-de entidades. 
-* **Descripción del Diseño y Elementos:** 
-* **Barra de Navegación:** Una barra lateral izquierda sutilmente translúcida y fija (Glassmorphism) o una barra superior prominente. 
-* **Botones de Modo:** Íconos representativos (ej. pluma para Escritura, libro para Biblia, mapa para Cartografía, reloj para Cronología) 
-con sus respectivas etiquetas de texto. El modo activo se resaltará con el color Indigo-500 (fondo, texto o un borde). 
---- ### 5. Lienzo de Escritura (Editor) 
-* **Propósito:** Donde tu narrativa toma forma. Es un editor de texto diseñado para la inmersión, minimizando distracciones y 
-fusionando la escritura con la construcción del mundo. 
-* **Navegación:** Se accede seleccionando el modo "Escritura" desde la Navegación Principal o abriendo una "Hoja" desde la "Gestión de Hojas". 
-* **Qué puedes hacer:** * Escribir y editar tu prosa en un entorno limpio. 
-* Ver tu texto dividido en "hojas" numeradas, como un cuaderno real. 
-* Utilizar el sistema de referencias inteligentes: al escribir `@` (arroba), se activará un menú de autocompletado para vincular a entidades 
-de tu "Biblia del Mundo". * Crear nuevas entidades "sobre la marcha" mediante la "Creación Flotante" si la entidad que buscas no existe. 
-* (Opcional) Abrir un panel lateral colapsable para notas rápidas o fragmentos de investigación. 
-* **Descripción del Diseño y Elementos:** 
-* **Área de Escritura Central:** Dominando la pantalla, un editor de texto minimalista con un fondo Slate-950 puro o 
-ligeramente más claro, para un contraste óptimo con el texto. 
-* **Paginación:** Indicadores discretos de número de página en la parte inferior o lateral, o transiciones suaves al llegar al final de una 
-"hoja". 
-* **Sistema @:** Al escribir `@`, aparecerá un pequeño cuadro flotante (Glassmorphism) con sugerencias de entidades y una opción para 
-"Crear Nueva Entidad", resaltada con Indigo-500. 
-* **Panel Lateral (Opcional):** Un panel deslizable desde un lateral (Glassmorphism) que se puede ocultar, con un área de texto para notas. 
---- ### 6. Creación Flotante de Entidad 
-* **Propósito:** Para crear nuevas entidades rápidamente sin salir de tu Lienzo de Escritura. 
-* **Navegación:** Se activa automáticamente desde el "Lienzo de Escritura" al escribir `@` y elegir la opción de crear una nueva entidad, 
-o si la entidad buscada no existe. 
-* **Qué puedes hacer:** * Rellenar un formulario conciso con la información esencial de tu nueva entidad 
-(ej. Nombre, Tipo, Descripción breve). 
-* Guardar la nueva entidad para que se incorpore a tu "Biblia del Mundo" y se inserte la referencia en tu texto. 
-* Cancelar la creación si cambias de opinión. 
-* **Descripción del Diseño y Elementos:** 
-* **Modal Flotante:** Una ventana emergente más pequeña, translúcida (Glassmorphism), que aparece superpuesta al "Lienzo de Escritura" 
-en el punto donde se activó. 
-* **Campos de Formulario:** Entradas de texto claras para el nombre, tipo y una breve descripción, 
-diseñadas para una introducción rápida de datos. 
-* **Botones de Acción:** [Guardar] con un acento Indigo-500, y [Cancelar] con un estilo más neutro o de texto. 
---- ### 7. Biblia del Mundo (Gestión de Entidades) 
-* **Propósito:** Tu base de datos central de todo tu universo narrativo. Aquí puedes gestionar, filtrar y ordenar todas las 
-entidades que componen tu mundo. 
-* **Navegación:** Se accede seleccionando el modo "Biblia del Mundo" desde la "Navegación Principal". 
-* **Qué puedes hacer:** 
-* Ver listados de entidades organizados por categorías (Personajes, Lugares, Objetos, etc.). 
-* Filtrar y ordenar las listas de entidades por diferentes criterios (nombre, fecha de creación, etc.). 
-* Hacer clic en una entidad para ver su ficha detallada. 
-* Hacer clic en "Crear Nueva Entidad" para añadir un nuevo elemento a tu mundo. 
-* **Descripción del Diseño y Elementos:** 
-* **Barra de Categorías:** Una barra lateral o superior que muestra las categorías predefinidas (Personajes, Lugares, etc.), con la 
-categoría activa resaltada en Indigo-500. 
-* **Tabla/Listado de Entidades:** Un área central que presenta las entidades en un formato tabular o de lista, con columnas para 
-información clave. Cada fila/elemento de lista será un panel Glassmorphism interactivo. 
-* **Controles de Filtrado/Ordenación:** Pequeños campos de entrada o menús desplegables para refinar la vista. 
-* **Botón "Crear Nueva Entidad":** Un botón prominente con acento Indigo-500. 
---- ### 8. Atlas Interactivo (Módulo Cartográfico) 
-* **Propósito:** Visualiza y explora la geografía de tu mundo. Aquí los mapas no son estáticos, sino herramientas de narración interactiva. 
-* **Navegación:** Se accede seleccionando el modo "Cartografía" desde la "Navegación Principal". 
-* **Qué puedes hacer:** 
-* Ver tus mapas mundiales, regionales o planos de edificios. 
-* Hacer "zoom" en áreas específicas para explorar mapas anidados. 
-* Ver "Pines Interactivos" en el mapa que representan lugares o puntos de interés. 
-* Pasar el ratón sobre un pin para ver un resumen rápido de la entidad asociada. 
-* Hacer clic en un pin para ir directamente a la ficha detallada de esa entidad en la "Biblia del Mundo". 
-* **Descripción del Diseño y Elementos:** 
-* **Área de Mapa Principal:** Ocupando la mayor parte de la pantalla, un lienzo oscuro donde se carga el mapa de tu mundo. 
-* **Pines Interactivos:** Íconos o marcadores distintivos sobre el mapa. Al pasar el ratón, una pequeña tarjeta translúcida 
-(Glassmorphism) con el resumen de la entidad aparecerá. 
-* **Controles de Zoom/Navegación:** Botones discretos en las esquinas del mapa. 
---- ### 9. Línea de Tiempo (Módulo Cronológico) 
-* **Propósito:** Organiza y visualiza la secuencia de eventos de tu historia, desde grandes hitos hasta pequeños sucesos. 
-* **Navegación:** Se accede seleccionando el modo "Cronología" desde la "Navegación Principal". 
-* **Qué puedes hacer:** * Crear y gestionar múltiples líneas de tiempo para diferentes aspectos de tu mundo. 
-* Añadir eventos con fechas, descripciones y enlaces a entidades. 
-* Utilizar la función de "deslizamiento" para ver cómo el estado de tu mundo cambia a lo largo del tiempo. 
-* **Descripción del Diseño y Elementos:** 
-* **Línea de Tiempo Visual:** Un eje horizontal o vertical central que representa el flujo del tiempo, con marcadores para eventos. 
-* **Tarjetas de Evento:** Pequeños paneles Glassmorphism flotantes junto a la línea de tiempo, con información clave del evento. 
-* **Controles de Navegación Temporal:** Botones o un deslizador para avanzar y retroceder en el tiempo, posiblemente con un indicador 
-de la fecha actual. --- ### 10. Taller de Conlangs (Módulo Lingüístico) 
-* **Propósito:** Para los escritores que desean construir lenguajes completos para sus mundos. 
-* **Navegación:** Se accede seleccionando el modo "Lingüístico" desde la "Navegación Principal". 
-* **Qué puedes hacer:** 
-* **Gestor de Léxico:** Crear y gestionar diccionarios de palabras, sus significados y pronunciaciones (usando IPA). 
-* **Motor Gramatical:** Definir reglas fonológicas, morfológicas y sintácticas. 
-* **Diseñador de Ortografía:** Crear sistemas de escritura personalizados (alfabetos, etc.). 
-* **Validador de Reglas:** Comprobar la consistencia lingüística de tu léxico. 
-* **Descripción del Diseño y Elementos:** 
-* **Secciones Modulares:** La pantalla se dividirá en paneles Glassmorphism para cada herramienta (Léxico, Gramática, Ortografía), 
-con títulos claros. 
-* **Campos de Entrada/Listados:** Entradas de texto para añadir palabras o reglas, y listados organizados para ver las entradas existentes. 
-* **Iconos y Controles:** Botones o iconos para añadir, editar o eliminar elementos en cada sección, usando acentos Indigo-500. 
---- ### 11. Perfil de Usuario 
-* **Propósito:** Gestiona tu información personal y los detalles de tu cuenta en Chronos Atlas. 
-* **Navegación:** Probablemente accesible desde un icono de usuario o menú en la barra de navegación superior. 
-* **Qué puedes hacer:** * Ver y editar tu nombre de usuario, correo electrónico y otros datos personales. 
-* Cambiar tu contraseña. 
-* Guardar los cambios realizados. 
-* **Descripción del Diseño y Elementos:** 
-* **Formulario de Datos:** Un panel central (Glassmorphism) con campos de entrada claros para la información del perfil. 
-* **Botón "Guardar Cambios":** Un botón prominente en Indigo-500. 
-* **Botón "Cambiar Contraseña":** Otro botón de acción clara. 
---- ### 12. Ajustes de la Aplicación 
-* **Propósito:** Personaliza tu experiencia en Chronos Atlas y configura opciones de la aplicación. 
-* **Navegación:** Probablemente accesible desde un icono de engranaje o menú de ajustes en la barra de navegación superior. 
-* **Qué puedes hacer:** 
-* Personalizar la interfaz (ej. cambiar el tema, ajustar el tamaño de fuente del editor). 
-* Gestionar las notificaciones de la aplicación. 
-* Configurar opciones de sincronización local o copias de seguridad de tus datos. 
-* **Descripción del Diseño y Elementos:** 
-* **Secciones de Ajustes:** La pantalla estará organizada en secciones con encabezados claros (ej. "General", "Interfaz", "Datos"), 
-cada una en un panel Glassmorphism. 
-* **Controles de Opciones:** Interruptores, menús desplegables y campos de entrada para las diferentes configuraciones, con el estado activo o interactivo resaltado en Indigo-500.
+Acceso a Chronos Atlas
+Esta es la primera interacción del usuario con la aplicación, actuando como la puerta de entrada. Permite a los nuevos usuarios Registrarse para crear una cuenta, mientras que los usuarios existentes pueden Iniciar Sesión utilizando sus credenciales. También ofrece una opción para Recuperar la Contraseña en caso de que el usuario la haya olvidado. Su diseño es limpio y se enfoca en la acción principal, minimizando distracciones.
+
+Librería de Proyectos (Cuadernos)
+Tras el acceso, esta pantalla sirve como el "hub" central para todos los proyectos del escritor. Aquí se muestra una lista organizada de los "Cuadernos" (proyectos) existentes. El usuario puede seleccionar un cuaderno para continuar trabajando en él, o crear un Nuevo Cuaderno para empezar un universo narrativo desde cero. Es el punto de partida para sumergirse en la creación de mundos.
+
+Gestión de Hojas (Cuaderno Abierto)
+Una vez que un cuaderno ha sido seleccionado, esta pantalla funciona como su "índice". Presenta una lista clara y ordenada de todas las "Hojas" que componen ese proyecto. Los usuarios pueden abrir una hoja específica para editarla, reordenar las hojas para organizar su narrativa, y crear nuevas hojas para expandir su historia. La navegación de "migas de pan" en la parte superior asegura que el usuario siempre sepa en qué cuaderno y contexto se encuentra.
+
+Navegación Principal (Modos de App)
+Esta es la herramienta central para cambiar entre las diferentes facetas de la aplicación. Ubicada en la parte superior central, se presenta como una discreta raya horizontal cuando está colapsada. Al pasar el ratón sobre ella, se despliega en un menú semicircular que permite al usuario seleccionar entre los modos principales de la aplicación: Escritura, Biblia del Mundo, Cartografía y Cronología. Al seleccionar un modo, la interfaz principal de la aplicación se transformará para mostrar las herramientas y vistas específicas de ese módulo, manteniendo el resto de la interfaz limpia y enfocada en la tarea actual.
+
+Lienzo de Escritura (Editor)
+Este es el corazón de la creación narrativa. Diseñado como un entorno libre de distracciones, permite al escritor concentrarse plenamente en su prosa. El texto se organiza en "hojas" numeradas con transiciones suaves, emulando la experiencia de un cuaderno físico. Su funcionalidad más innovadora es el Sistema de Referencias Inteligentes (@): al escribir @, se despliega un menú de autocompletado que sugiere entidades de la "Biblia del Mundo", permitiendo al escritor vincular su texto directamente con el lore sin salir del editor. Opcionalmente, se puede abrir un panel lateral colapsable para notas rápidas o ideas.
+
+Creación Flotante de Entidad
+Una funcionalidad directamente vinculada al Lienzo de Escritura, diseñada para mantener el flujo creativo. Cuando el usuario invoca una referencia inteligente @ y la entidad deseada no existe, o si decide crear una nueva, un modal flotante aparece sobre el texto. Este modal proporciona un formulario conciso para rellenar los campos esenciales de una nueva entidad (nombre, tipo, descripción breve), permitiendo al escritor crear y guardar la entidad rápidamente para que se integre en la Biblia del Mundo y se referencie automáticamente en el texto.
+
+Biblia del Mundo (Gestión de Entidades)
+Este módulo es la base de datos central de todo el universo narrativo del escritor. Permite la gestión organizada de entidades clasificadas en categorías predefinidas (Personajes, Lugares, Objetos, etc.). Los usuarios pueden visualizar listados tabulares, filtrar y ordenar las entidades por diversos criterios, y crear nuevas entidades. Es la fuente de verdad del mundo, asegurando coherencia y fácil acceso a toda la información del lore.
+
+Ficha de Personaje (Entidad Detallada)
+Como ejemplo de una entidad detallada en la Biblia del Mundo, esta pantalla permite ver y editar en profundidad la información de un personaje (o cualquier otra entidad). La información se presenta en secciones organizadas (Biografía, Atributos, Relaciones, etc.), utilizando campos personalizables según la plantilla definida. Ofrece opciones claras para Editar la ficha, Eliminar la entidad y, eventualmente, mostrará las referencias a esta entidad en el Lienzo de Escritura.
+
+Gestión de Plantillas de Entidad
+Complementando la Biblia del Mundo, esta pantalla permite una personalización profunda. Los usuarios pueden crear y gestionar plantillas para las fichas de sus entidades. Esto implica definir y reordenar campos de diversos tipos (texto, numérico, fecha, lista, etc.) para cada categoría de entidad. Es una herramienta potente para adaptar la estructura del lore a las necesidades específicas de cada historia.
+
+Atlas Interactivo (Módulo Cartográfico)
+Una herramienta geoespacial que va más allá de un simple mapa. Permite la visualización de mapas anidados, lo que significa que un usuario puede hacer zoom desde un mapa mundial a un continente, luego a una región, una ciudad, y finalmente el plano de un edificio. Los Pines Interactivos en el mapa están vinculados a entidades de la Biblia del Mundo, mostrando resúmenes rápidos al pasar el ratón y permitiendo acceso directo a las fichas detalladas con un clic.
+
+Línea de Tiempo (Módulo Cronológico)
+Esencial para cualquier narrativa, este módulo permite a los escritores crear y gestionar múltiples líneas de tiempo. Los usuarios pueden registrar eventos históricos, seguir arcos de personajes y visualizar secuencias de la trama de manera clara. Una función avanzada permitirá "deslizarse" por la línea de tiempo, actualizando el estado del mundo para reflejar una época específica, ofreciendo una fidelidad histórica sin precedentes.
+
+Taller de Conlangs (Módulo Lingüístico)
+Este módulo es una suite profesional para la creación de lenguajes construidos (conlangs). Incluye un Gestor de Léxico (diccionario), un Motor Gramatical para definir reglas fonológicas, morfológicas y sintácticas, y un Diseñador de Ortografía para crear sistemas de escritura personalizados. Además, se expande con: * Diseño Lingüístico: Para procesar texto, desglosarlo semánticamente y mapearlo a un léxico personalizado, permitiendo definir reglas complejas. * Editor Gráfico Versátil: Una herramienta avanzada que normaliza trazos dibujados a mano, imágenes o caracteres existentes en datos vectoriales escalables para la creación de glifos. * Traductor Logográfico en Tiempo Real: Renderiza visualmente la escritura logográfica creada a medida que el usuario escribe, ofreciendo una vista dinámica de la lengua inventada. * Generador de Fuentes: Compila los símbolos diseñados en un archivo de fuente tipográfica estándar e instalable, permitiendo utilizar la lengua inventada en cualquier entorno digital fuera de Chronos Atlas.
+
+Perfil de Usuario
+Esta pantalla permite al usuario ver y editar su información personal, incluyendo nombre de usuario y correo electrónico. También ofrece la opción de cambiar la contraseña, asegurando la seguridad de la cuenta. Todos los cambios se pueden guardar fácilmente.
+
+Ajustes de la Aplicación
+Aquí- [ ] Implement Mentions System (@)
+    - [ ] Create floating mentions menu triggered by `@`
+    - [ ] Implement styled mention blocks in editor
+    - [ ] Define CSS for category-based mention colors
+- [ ] UI Refinements in Escritura
+    - [x] Remove User Avatar and Focus Button
+    - [ ] Remove Settings Button (Gear icon)
+    - [ ] Ensure Toggle Notes Sidebar works correctly
+    - [ ] Add/Improve Note Creation UI in Sidebar
+- [ ] Global App Verification
+los usuarios pueden personalizar su experiencia con Chronos Atlas. Incluye opciones para la personalización de la interfaz (como temas y tamaño de fuente del editor), gestión de notificaciones, y configuraciones cruciales para la sincronización local y copias de seguridad de sus datos, garantizando la soberanía sobre su trabajo.

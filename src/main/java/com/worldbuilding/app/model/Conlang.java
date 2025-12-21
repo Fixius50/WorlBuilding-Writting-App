@@ -22,10 +22,24 @@ public class Conlang {
     @Column(columnDefinition = "CLOB")
     private String gramatica;
 
+    @Column(name = "font_family_name")
+    private String fontFamilyName;
+
+    @Column(name = "nombre_proyecto")
+    private String nombreProyecto;
+
     private LocalDateTime fechaCreacion = LocalDateTime.now();
 
     public Long getId() {
         return id;
+    }
+
+    public String getNombreProyecto() {
+        return nombreProyecto;
+    }
+
+    public void setNombreProyecto(String nombreProyecto) {
+        this.nombreProyecto = nombreProyecto;
     }
 
     public void setId(Long id) {
@@ -62,6 +76,14 @@ public class Conlang {
 
     public void setGramatica(String gramatica) {
         this.gramatica = gramatica;
+    }
+
+    public String getFontFamilyName() {
+        return fontFamilyName;
+    }
+
+    public void setFontFamilyName(String fontFamilyName) {
+        this.fontFamilyName = fontFamilyName;
     }
 
     public LocalDateTime getFechaCreacion() {
