@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Chronos Atlas - Worldbuilding Platform</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    
+    <!-- React & Tailwind -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/history@5/umd/history.development.js"></script>
+    <script src="https://unpkg.com/react-router@6.3.0/umd/react-router.development.js"></script>
+    <script src="https://unpkg.com/react-router-dom@6.3.0/umd/react-router-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#6366f2",
+                        "primary-hover": "#4f51c0",
+                        "primary-light": "#8b8df5",
+                        "background-dark": "#020617", // Slate-950
+                        "surface-dark": "#0f172a", // Slate-900
+                        "surface-light": "#1e293b", // Slate-800
+                        "glass": "rgba(15, 23, 42, 0.7)",
+                        "glass-border": "rgba(255, 255, 255, 0.08)",
+                        "text-main": "#e2e8f0",
+                        "text-muted": "#94a3b8"
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"],
+                        "mono": ["Space Mono", "monospace"],
+                    },
+                    backgroundImage: {
+                        'grid-pattern': "linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)",
+                    }
+                },
+            },
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .glass-panel {
+                @apply bg-glass backdrop-blur-xl border border-glass-border;
+            }
+            .no-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+            .no-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .custom-scrollbar::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+            .custom-scrollbar::-webkit-scrollbar-track {
+                @apply bg-background-dark;
+            }
+            .custom-scrollbar::-webkit-scrollbar-thumb {
+                @apply bg-surface-light rounded-full;
+            }
+            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                @apply bg-primary;
+            }
+        }
+        
+        body {
+            @apply bg-background-dark text-text-main font-display selection:bg-primary selection:text-white;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { createRoot } = ReactDOM;
+        const { MemoryRouter, Routes, Route, Link, useNavigate, useLocation, Outlet } = ReactRouterDOM;
+
+        // --- Common Components ---
+
+        const Avatar = ({ url, size = "size-8", ring = true }) => (
+            <div 
+                className={`${size} rounded-full bg-cover bg-center ${ring ? 'ring-2 ring-white/10' : ''}`}
+                style={{ backgroundImage: `url('${url}')` }}
+            ></div>
+        );
+
+        const Button = ({ children, icon, primary, className = "", onClick, to }) => {
+            const navigate = useNavigate();
+            const baseClass = "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-sm active:scale-95";
+            const variantClass = primary 
+                ? "bg-primary hover:bg-primary-hover text-white shadow-primary/20" 
+                : "bg-surface-light hover:bg-white/10 text-slate-300 hover:text-white border border-glass-border";
+            
+            const content = (
+                <>
+                    {icon && <span className="material-symbols-outlined text-[20px]">{icon}</span>}
+                    {children}
+                </>
+            );
+
+            if (to) {
+                return <Link to={to} className={`${baseClass} ${variantClass} ${className}`}>{content}</Link>;
+            }
+
+            return (
+                <button onClick={onClick} className={`${baseClass} ${variantClass} ${className}`}>
+                    {content}
+                </button>
+            );
+        };
+
+        const IconBox = ({ icon, color = "text-slate-400", bg = "bg-surface-light" }) => (
+            <div className={`size-8 rounded-lg ${bg} flex items-center justify-center ${color}`}>
+                <span className="material-symbols-outlined text-[20px]">{icon}</span>
+            </div>
+        );
+
+        // --- Layouts ---
+
+        const SidebarItem = ({ icon, label, to, active }) => (
+            <Link 
+                to={to} 
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group ${active ? 'bg-primary/10 text-primary border border-primary/20' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+            >
+                <span className={`material-symbols-outlined text-[20px] ${active ? 'fill-1' : ''}`}>{icon}</span>
+                <span className="text-sm font-medium">{label}</span>
+            </Link>
+        );
+
+        const AppLayout = () => {
+            const location = useLocation();
+            const path = location.pathname;
+
+            return (
+                <div className="flex h-screen w-full overflow-hidden bg-background-dark">
+                    {/* Sidebar */}
+                    <aside className="w-64 flex-none flex flex-col border-r border-glass-border bg-surface-dark/50 backdrop-blur-xl z-20">
+                        {/* Brand */}
+                        <div className="h-16 flex items-center px-6 gap-3 border-b border-glass-border">
+                            <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white shadow-lg shadow-primary/20">
+                                <span className="material-symbols-outlined">public</span>
+                            </div>
+                            <h1 className="text-white font-bold text-lg tracking-tight">Chronos Atlas</h1>
+                        </div>
+
+                        {/* Context */}
+                        <div className="p-4">
+                            <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-surface-light border border-glass-border mb-6">
+                                <div className="size-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)] animate-pulse"></div>
+                                <span className="text-white text-sm font-medium truncate">Kingdom of Aethelgard</span>
+                            </div>
+
+                            <div className="space-y-1">
+                                <SidebarItem icon="dashboard" label="Dashboard" to="/dashboard" active={path === '/dashboard'} />
+                                <div className="h-px bg-white/5 my-2 mx-2"></div>
+                                <p className="px-3 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">World Bible</p>
+                                <SidebarItem icon="group" label="Characters" to="/entity/1" active={path.includes('/entity')} />
+                                <SidebarItem icon="public" label="Locations" to="/map" active={path.includes('/map')} />
+                                <SidebarItem icon="timeline" label="Timeline" to="/timeline" active={path.includes('/timeline')} />
+                                <SidebarItem icon="auto_stories" label="Magic Systems" to="/magic" active={path.includes('/magic')} />
+                                <SidebarItem icon="diversity_3" label="Cultures" to="/cultures" active={path.includes('/cultures')} />
+                                <SidebarItem icon="translate" label="Languages" to="/languages" active={path.includes('/languages')} />
+                                <div className="h-px bg-white/5 my-2 mx-2"></div>
+                                <SidebarItem icon="settings" label="Settings" to="/settings" active={path === '/settings'} />
+                            </div>
+                        </div>
+
+                        {/* Profile */}
+                        <div className="mt-auto p-4 border-t border-glass-border">
+                            <Link to="/profile" className="flex items-center gap-3 px-2 hover:opacity-80 transition-opacity">
+                                <Avatar url="https://lh3.googleusercontent.com/aida-public/AB6AXuDIaax87_BMzDJ4efHtaK99ak0hfnXgfzirMRXRT_ns75WcTgTRMRceY28-HGgc9kdxI_Tnk-x4aommvpVWp7jMqd2_IFyywpSPT0RkcS99XgNyZPC1AYfLsaKK6SZuzvxQfx9cePVqqvSETeRk74e4btil9MYKJm8AEStSUbKT55lSDDdKOGQdkwpRhf54M7zIcvT6NHhtrAyuCgj1mItp8s-nnjQcTDqwr4KFhInKe4XBVFVAlXJbgyAbpypg-qsaxJ678W2M8RA" />
+                                <div className="flex flex-col overflow-hidden">
+                                    <span className="text-sm font-medium text-white truncate">Elena Writer</span>
+                                    <span className="text-xs text-slate-500 truncate">Pro Plan</span>
+                                </div>
+                            </Link>
+                        </div>
+                    </aside>
+
+                    {/* Main Content */}
+                    <main className="flex-1 min-w-0 relative overflow-hidden flex flex-col">
+                        <Outlet />
+                    </main>
+                </div>
+            );
+        };
+
+        // --- Page Components ---
+
+        const Login = () => (
+            <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-background-dark">
+                {/* Background FX */}
+                <div className="absolute inset-0 bg-[url('https://lh3.googleusercontent.com/aida-public/AB6AXuBXRuAnm4TWmeLokpiWualeQMnfpbzAWwF1z7vP_aEtaINpspl5kJGo3vfJJyZhtvNxfrZ83zjJ0RfQwomOQ8WLBjwNCkUbgECBD7apfwZ62QdXEtdLvKV2ZKpX0lqdRpUrytD5F2IoLbbFMnPhcua5NQFjVDCnI8Ptur2mDMgA3f0FJ6HvnU-F5PC4UrNB7UP9Ws-b_47IqoB-uuDQxqe-FZTZb2y0JW5F3ytTFp8uz9yLFPQXhRfXZDw0wkO1eT2pfujN32SWARc')] bg-cover opacity-20"></div>
+                <div className="absolute top-0 -left-20 w-96 h-96 bg-primary/20 rounded-full blur-[120px]"></div>
+                
+                <div className="relative z-10 w-full max-w-md p-8 glass-panel rounded-2xl border-t border-t-primary/50 shadow-2xl">
+                    <div className="flex flex-col items-center mb-8">
+                        <div className="size-16 bg-background-dark rounded-2xl flex items-center justify-center mb-4 border border-glass-border shadow-lg shadow-primary/20">
+                            <span className="material-symbols-outlined text-4xl text-primary">public</span>
+                        </div>
+                        <h1 className="text-3xl font-bold text-white tracking-tight">Chronos Atlas</h1>
+                        <p className="text-slate-400 mt-2">Enter the architect's vault.</p>
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Identity</label>
+                            <input type="text" className="w-full bg-background-dark/50 border border-glass-border rounded-lg px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="username@chronos.net" />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Cipher</label>
+                            <input type="password" className="w-full bg-background-dark/50 border border-glass-border rounded-lg px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="••••••••" />
+                        </div>
+                        
+                        <Link to="/dashboard" className="block w-full">
+                            <button className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 px-4 rounded-lg shadow-lg shadow-primary/25 transition-all mt-4 flex items-center justify-center gap-2">
+                                <span className="material-symbols-outlined">lock_open</span>
+                                Decrypt & Enter
+                            </button>
+                        </Link>
+                    </div>
+                    
+                    <div className="mt-6 text-center text-xs text-slate-500">
+                        Local-First Architecture v2.4.0
+                    </div>
+                </div>
+            </div>
+        );
+
+        const Dashboard = () => (
+            <div className="flex-1 flex flex-col p-8 overflow-y-auto custom-scrollbar">
+                <header className="flex justify-between items-end mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold text-white mb-2">My Chronicles</h1>
+                        <p className="text-slate-400">Select a world to begin building.</p>
+                    </div>
+                    <Button icon="add_circle" primary>New World</Button>
+                </header>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {/* Active Project */}
+                    <Link to="/entity/1" className="group relative h-64 rounded-2xl overflow-hidden border border-glass-border hover:border-primary/50 transition-all cursor-pointer shadow-lg hover:shadow-primary/10">
+                        <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBjZD3W0wgoLUU8QBGI9cDQSvtddbyvQxPQFs4ZO3ongKxfVCLye41Zid6ZVos779xwVspRP6A0JkWO5o6VruPPusPZw-bPf6HaUFWWM3jNFyHR6RuuGDssk_cd73dm_4YlRQgyrZKYojvJyAHr0iaMiUE3Qq3SrkHxvd5eSWgQ89GeiZTdVGVG4OmkPF6oR8ZM86V8hOLH2pMpRepEelvC8Eg95blntg2Ojb-H6c-tZCYxD-Si6ohaa-rNqu4pWskIBt4lMNMA6xI')"}}></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/60 to-transparent"></div>
+                        <div className="absolute bottom-0 left-0 p-6 w-full">
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">Fantasy</span>
+                                <span className="text-xs text-slate-400">Updated 2h ago</span>
+                            </div>
+                            <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-primary transition-colors">Kingdom of Aethelgard</h3>
+                            <p className="text-sm text-slate-300 line-clamp-1">A realm divided by ancient magic and forgotten tech.</p>
+                        </div>
+                    </Link>
+
+                    {/* Secondary Projects */}
+                    <div className="group relative h-64 rounded-2xl overflow-hidden border border-glass-border hover:border-white/20 transition-all cursor-pointer bg-surface-light">
+                        <div className="absolute inset-0 bg-cover bg-center opacity-40 group-hover:opacity-60 transition-opacity" style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBRspeuw4lkscE1DbD-BvZVdXcireukW_pLnO2L0w-Mov2gACmWejq0Er3-FQX_F4JOemBNACdO3gw1ohUqB4_BfVM9vr4m4TMr2N2da5_FdK-QmwmvyXfTMWKesW8Kg7RASfXmQkl_tKa9b095qHseMa3CfQ2P1xLJFGl6DwIrXeIvCxpeE15xd5kTLDxPuGgnancn0DbdlSuJbhXX7dEYLIqzoWifeo8VBVQ9OEfjIKzD-PKr2ghBhWZYRk6ZfSlZF9ufiVaBHic')"}}></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-background-dark to-transparent"></div>
+                        <div className="absolute bottom-0 left-0 p-6">
+                            <span className="text-xs font-bold text-cyan-400 bg-cyan-500/10 px-2 py-1 rounded border border-cyan-500/20 mb-2 inline-block">Sci-Fi</span>
+                            <h3 className="text-xl font-bold text-white">Neo-Tokyo 2099</h3>
+                        </div>
+                    </div>
+
+                    <div className="group relative h-64 rounded-2xl border-2 border-dashed border-slate-700 hover:border-primary hover:bg-primary/5 flex flex-col items-center justify-center cursor-pointer transition-all">
+                        <div className="size-16 rounded-full bg-surface-light flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <span className="material-symbols-outlined text-3xl text-slate-400 group-hover:text-primary">add</span>
+                        </div>
+                        <span className="text-sm font-bold text-slate-400 group-hover:text-primary">Create New Project</span>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const EntityDetail = () => (
+            <div className="flex h-full">
+                {/* Main Content */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-8 bg-grid-pattern bg-[length:40px_40px]">
+                    <div className="max-w-5xl mx-auto">
+                        {/* Header */}
+                        <div className="glass-panel p-6 rounded-2xl flex gap-6 items-start relative overflow-hidden mb-8">
+                            <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 blur-[100px] rounded-full pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
+                            
+                            <div className="relative size-32 rounded-xl overflow-hidden border-2 border-white/10 shadow-2xl flex-shrink-0">
+                                <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuCcQivzMq-YjwEg-zcTdDlbNkD6ZXeEwr4kyItqswmM8cpLcwaGl3YqInJzc0NaR-CVVgPJRAxu9JzaE1yg7JdjQWVUFqa1uNJu6OqdDfD_pIble5SAGvp5PygxQW18UG0DBFxuHxl7roE_BvTyWCQZw9qrULqDolvrbjQ4TNO2LuBdtzi3XQYmkiulq8TR0q3IEPCUu1yLhFvy_lN1SBCifoKg5MpxaGFMgB7XxO803z97mvJ2WmEp6e6pJCH0WdPtuniehLF_iPk')"}}></div>
+                            </div>
+                            
+                            <div className="flex-1 z-10">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <h1 className="text-3xl font-bold text-white">King Alaric IV</h1>
+                                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold border border-emerald-500/20">Alive</span>
+                                    <span className="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 text-xs font-bold border border-purple-500/20">Protagonist</span>
+                                </div>
+                                <p className="text-slate-400 text-sm leading-relaxed mb-4 max-w-2xl">
+                                    Ruler of the Northern Kingdoms. Known for his tactical brilliance during the Great Frost War and his controversial alliance with the Mage Guild. Currently seeking the lost shards.
+                                </p>
+                                <div className="flex gap-6 text-sm text-slate-400">
+                                    <div className="flex items-center gap-2"><span className="material-symbols-outlined text-primary text-[18px]">cake</span> Age: <span className="text-white">42</span></div>
+                                    <div className="flex items-center gap-2"><span className="material-symbols-outlined text-primary text-[18px]">location_on</span> <span className="text-white hover:underline cursor-pointer">Winterhold Keep</span></div>
+                                </div>
+                            </div>
+                            
+                            <div className="flex flex-col gap-2 z-10">
+                                <Button icon="edit" primary>Edit</Button>
+                                <Button icon="share">Export</Button>
+                            </div>
+                        </div>
+
+                        {/* Panels Grid */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Relationships */}
+                            <div className="glass-panel rounded-2xl p-5 min-h-[300px] flex flex-col">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-purple-400">hub</span> Relationships
+                                    </h3>
+                                    <span className="text-xs text-slate-500">Graph View</span>
+                                </div>
+                                <div className="flex-1 bg-surface-dark/50 rounded-xl relative overflow-hidden border border-white/5">
+                                    {/* Mock Graph Visual */}
+                                    <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                                        <line x1="50%" y1="50%" x2="20%" y2="30%" stroke="#6366f2" strokeWidth="2" strokeOpacity="0.5" />
+                                        <line x1="50%" y1="50%" x2="80%" y2="70%" stroke="#ef4444" strokeWidth="2" strokeDasharray="4" strokeOpacity="0.5" />
+                                    </svg>
+                                    
+                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                                        <div className="size-12 rounded-full border-2 border-primary p-0.5"><Avatar url="https://lh3.googleusercontent.com/aida-public/AB6AXuCcQivzMq-YjwEg-zcTdDlbNkD6ZXeEwr4kyItqswmM8cpLcwaGl3YqInJzc0NaR-CVVgPJRAxu9JzaE1yg7JdjQWVUFqa1uNJu6OqdDfD_pIble5SAGvp5PygxQW18UG0DBFxuHxl7roE_BvTyWCQZw9qrULqDolvrbjQ4TNO2LuBdtzi3XQYmkiulq8TR0q3IEPCUu1yLhFvy_lN1SBCifoKg5MpxaGFMgB7XxO803z97mvJ2WmEp6e6pJCH0WdPtuniehLF_iPk" size="size-full" ring={false} /></div>
+                                        <span className="text-[10px] font-bold text-white mt-1 bg-surface-dark/80 px-2 rounded">Alaric</span>
+                                    </div>
+
+                                    <div className="absolute top-[30%] left-[20%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center cursor-pointer hover:scale-110 transition-transform">
+                                        <div className="size-10 rounded-full border border-white/20"><Avatar url="https://lh3.googleusercontent.com/aida-public/AB6AXuAfHI_4can8V-pUS-AQj_8P-ERK8C21pa71nE87ti3V9ejWzBgQNiK7_IUr5nriSHStgNebWQteS9Sw51qyZMu6wT3zP0UF-kD7XOkftMsoUt7LzwgZxEOuZRQZQFRV48FgZFo-cTkwt_C4pmXgccggIWcYzAi1NC4LYJ0XDNSEVNzFsU5mOv43qbCYpBCk2O-GsNcvhQRs3YRmxaqOlc4HHBBB6MQ8KryhIPlwsa9mb7KjqHb4bM-vtbl1GQto6qy7T6gXeIUXfQg" size="size-full" ring={false} /></div>
+                                        <span className="text-[9px] text-slate-300 mt-1">Queen Elara</span>
+                                        <span className="text-[8px] text-primary">Spouse</span>
+                                    </div>
+
+                                    <div className="absolute top-[70%] left-[80%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center cursor-pointer hover:scale-110 transition-transform">
+                                        <div className="size-10 rounded-full border border-white/20 grayscale hover:grayscale-0 transition-all"><Avatar url="https://lh3.googleusercontent.com/aida-public/AB6AXuC6CVGPJG6jS5CTVzvShDmQNRN2EnepDtp3LhnWTH7Y94aZJsy6CGddTZXJRBIcS7oFd8bNVxuCng0FKUS9Bx9Ee5IrWryX8mym_KEu0WpcAbdXimu7Cd0WIGq5C4z1lvBs8-b4r71xcV_cbnTgthtXv2VJ-aiPCgQaqIDeOhB5ZpAsXk_nEv6NrBf9dF3r7B2gj3-aEBskDgp7RhXcIk0NEYsyU52X6l0WuBKeR-Frz0wm2rUBiKEZlKrA4vD0AKnLiaMTxFxJAQQ" size="size-full" ring={false} /></div>
+                                        <span className="text-[9px] text-slate-300 mt-1">Gen. Kael</span>
+                                        <span className="text-[8px] text-red-400">Rival</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Timeline Snippet */}
+                            <div className="glass-panel rounded-2xl p-5 min-h-[300px] flex flex-col">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-primary">history</span> Chronology
+                                    </h3>
+                                </div>
+                                <div className="flex-1 space-y-4 relative">
+                                    <div className="absolute top-2 bottom-2 left-[15px] w-0.5 bg-slate-700"></div>
+                                    
+                                    <div className="relative flex gap-4 items-start">
+                                        <div className="size-8 rounded-full bg-surface-dark border-2 border-slate-600 z-10 flex items-center justify-center shrink-0">
+                                            <span className="text-[10px] text-slate-400">482</span>
+                                        </div>
+                                        <div className="flex-1 bg-surface-dark/50 p-3 rounded-lg border border-white/5">
+                                            <h4 className="text-sm font-bold text-white">Birth of Alaric</h4>
+                                            <p className="text-xs text-slate-400">Born during the twin moon eclipse.</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="relative flex gap-4 items-start">
+                                        <div className="size-8 rounded-full bg-surface-dark border-2 border-primary z-10 flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
+                                            <span className="text-[10px] text-primary font-bold">501</span>
+                                        </div>
+                                        <div className="flex-1 bg-primary/10 p-3 rounded-lg border border-primary/20">
+                                            <h4 className="text-sm font-bold text-white">Coronation</h4>
+                                            <p className="text-xs text-slate-300">Ascends to the throne after his father's passing.</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="relative flex gap-4 items-start">
+                                        <div className="size-8 rounded-full bg-surface-dark border-2 border-red-500 z-10 flex items-center justify-center shrink-0">
+                                            <span className="text-[10px] text-red-400">508</span>
+                                        </div>
+                                        <div className="flex-1 bg-surface-dark/50 p-3 rounded-lg border border-white/5">
+                                            <h4 className="text-sm font-bold text-white">Battle of Frost Pass</h4>
+                                            <p className="text-xs text-slate-400">Major victory against the Shadow Drakes.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Inspector Sidebar */}
+                <aside className="w-80 flex-none bg-surface-dark/80 backdrop-blur-xl border-l border-glass-border p-6 overflow-y-auto hidden xl:block">
+                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-6">Entity Properties</h3>
+                    
+                    <div className="space-y-6">
+                        <div className="space-y-2">
+                            <label className="text-xs font-medium text-slate-400">Full Title</label>
+                            <input className="w-full bg-surface-light border border-glass-border rounded-lg px-3 py-2 text-sm text-white focus:border-primary outline-none" value="High King Alaric IV of the North" readOnly />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-xs font-medium text-slate-400">Motivation</label>
+                            <textarea className="w-full bg-surface-light border border-glass-border rounded-lg px-3 py-2 text-sm text-white focus:border-primary outline-none h-24 resize-none" readOnly>To unite the shattered kingdoms and prevent the return of the Shadow Drakes.</textarea>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-xs font-medium text-slate-400">Tags</label>
+                            <div className="flex flex-wrap gap-2">
+                                <span className="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-xs text-slate-300">Royalty</span>
+                                <span className="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-xs text-slate-300">Warrior</span>
+                                <button className="text-xs text-primary hover:underline">+ Add</button>
+                            </div>
+                        </div>
+
+                        <div className="h-px bg-white/5"></div>
+
+                        <div>
+                            <div className="flex justify-between items-center mb-2">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Quick Notes</label>
+                                <span className="material-symbols-outlined text-xs text-slate-500 cursor-pointer">open_in_full</span>
+                            </div>
+                            <textarea className="w-full bg-surface-light/50 border border-glass-border rounded-lg p-3 text-sm text-slate-300 h-40 resize-none focus:ring-1 focus:ring-primary outline-none" placeholder="Jot down ideas..."></textarea>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        );
+
+        const MapViewer = () => (
+            <div className="relative flex-1 h-full overflow-hidden bg-surface-dark flex flex-col">
+                {/* Map Toolbar */}
+                <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
+                    <div className="glass-panel p-2 rounded-xl flex flex-col gap-2 shadow-xl">
+                        <button className="p-2 rounded-lg bg-primary text-white" title="Select"><span className="material-symbols-outlined">near_me</span></button>
+                        <button className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10" title="Add Pin"><span className="material-symbols-outlined">add_location</span></button>
+                        <button className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10" title="Draw"><span className="material-symbols-outlined">draw</span></button>
+                        <Link to="/map/edit" className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10" title="Full Editor"><span className="material-symbols-outlined">edit_square</span></Link>
+                    </div>
+                </div>
+
+                {/* Map Canvas Placeholder */}
+                <div className="flex-1 bg-[url('https://placeholder.pics/svg/300')] bg-cover bg-center relative cursor-grab active:cursor-grabbing overflow-hidden">
+                    <div className="absolute inset-0 bg-background-dark/20 pointer-events-none"></div>
+                    
+                    {/* Pins */}
+                    <div className="absolute top-[35%] left-[42%] flex flex-col items-center group cursor-pointer">
+                        <div className="size-10 bg-primary rounded-full border-2 border-white flex items-center justify-center text-white shadow-lg transform group-hover:scale-110 transition-transform">
+                            <span className="material-symbols-outlined text-[20px]">castle</span>
+                        </div>
+                        <div className="mt-2 px-3 py-1 bg-black/80 backdrop-blur-md rounded-lg text-xs font-bold text-white shadow-lg border border-white/10">Crimson Tower</div>
+                    </div>
+
+                    <div className="absolute top-[55%] left-[60%] flex flex-col items-center group cursor-pointer">
+                        <div className="size-8 bg-slate-800 rounded-full border-2 border-slate-600 flex items-center justify-center text-slate-300 shadow-lg transform group-hover:scale-110 transition-transform">
+                            <span className="material-symbols-outlined text-[16px]">skull</span>
+                        </div>
+                        <span className="mt-1 text-[10px] font-bold text-slate-300 bg-black/50 px-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">Ruins</span>
+                    </div>
+                </div>
+
+                {/* Map Controls */}
+                <div className="absolute bottom-4 right-4 z-20 flex flex-col gap-2">
+                    <div className="glass-panel rounded-lg p-1 flex flex-col">
+                        <button className="p-2 hover:bg-white/10 rounded text-white"><span className="material-symbols-outlined">add</span></button>
+                        <div className="h-px bg-white/10 w-full"></div>
+                        <button className="p-2 hover:bg-white/10 rounded text-white"><span className="material-symbols-outlined">remove</span></button>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const MapEditor = () => (
+            <div className="flex-1 h-full bg-[#15142b] relative flex">
+                {/* Tools */}
+                <aside className="w-16 bg-surface-dark/90 border-r border-glass-border flex flex-col items-center py-4 gap-4 z-20">
+                    <button className="p-3 rounded-xl bg-primary text-white shadow-lg"><span className="material-symbols-outlined">brush</span></button>
+                    <button className="p-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5"><span className="material-symbols-outlined">ink_eraser</span></button>
+                    <button className="p-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5"><span className="material-symbols-outlined">colorize</span></button>
+                    <button className="p-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5"><span className="material-symbols-outlined">layers</span></button>
+                </aside>
+                
+                {/* Canvas */}
+                <div className="flex-1 relative flex items-center justify-center bg-grid-pattern bg-[length:20px_20px] overflow-hidden">
+                    <div className="bg-white w-[800px] h-[600px] shadow-2xl relative">
+                        {/* Simulation of vector drawing */}
+                        <svg width="100%" height="100%" viewBox="0 0 800 600">
+                            <path d="M 100 100 Q 200 50 300 100 T 500 100" fill="none" stroke="#6366f2" strokeWidth="4" />
+                            <circle cx="100" cy="100" r="4" fill="#6366f2" />
+                            <circle cx="300" cy="100" r="4" fill="#6366f2" />
+                            <circle cx="500" cy="100" r="4" fill="#6366f2" />
+                            <line x1="100" y1="100" x2="200" y2="50" stroke="#ccc" strokeDasharray="4" />
+                        </svg>
+                    </div>
+                </div>
+
+                {/* Properties */}
+                <aside className="w-64 bg-surface-dark/90 border-l border-glass-border p-4 z-20">
+                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Path Properties</h3>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="text-xs text-slate-400 mb-1 block">Stroke Width</label>
+                            <input type="range" className="w-full accent-primary" />
+                        </div>
+                        <div>
+                            <label className="text-xs text-slate-400 mb-1 block">Color</label>
+                            <div className="flex gap-2">
+                                <div className="size-6 rounded bg-primary cursor-pointer ring-2 ring-white"></div>
+                                <div className="size-6 rounded bg-red-500 cursor-pointer"></div>
+                                <div className="size-6 rounded bg-emerald-500 cursor-pointer"></div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        );
+
+        const Timeline = () => (
+            <div className="flex-1 h-full flex flex-col bg-background-dark">
+                {/* Header */}
+                <header className="h-14 border-b border-glass-border flex items-center px-6 justify-between bg-surface-dark">
+                    <h2 className="text-white font-bold">Master Timeline</h2>
+                    <div className="flex gap-2">
+                        <Button icon="add" primary>Add Event</Button>
+                    </div>
+                </header>
+                
+                {/* Visualizer */}
+                <div className="flex-1 overflow-x-auto overflow-y-hidden relative bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTAwIDBMMCAxMDAiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9zdmc+')]">
+                    {/* Years Axis */}
+                    <div className="h-10 border-b border-glass-border flex items-end min-w-[1500px]">
+                        {[...Array(15)].map((_, i) => (
+                            <div key={i} className="w-[100px] border-r border-white/5 text-[10px] text-slate-500 pl-2 pb-1">
+                                Year {450 + i * 5}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Tracks */}
+                    <div className="min-w-[1500px] relative h-[500px]">
+                        {/* Event 1 */}
+                        <div className="absolute left-[200px] top-10 flex flex-col items-center group cursor-pointer">
+                            <div className="size-4 bg-primary rounded-full shadow-[0_0_10px_#6366f2] z-10 relative"></div>
+                            <div className="w-px h-[400px] bg-primary/20 absolute top-2"></div>
+                            <div className="absolute top-6 glass-panel p-3 rounded-lg w-48 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                                <span className="text-xs font-bold text-primary block">Year 460</span>
+                                <span className="text-sm font-bold text-white">The Great Fracture</span>
+                                <p className="text-xs text-slate-400 mt-1">Magical cataclysm that split the continent.</p>
+                            </div>
+                        </div>
+
+                        {/* Swimlanes */}
+                        <div className="mt-8 flex items-center h-16 border-b border-white/5 bg-white/[0.02]">
+                            <div className="sticky left-0 w-48 bg-surface-dark border-r border-white/5 h-full flex items-center px-4 font-bold text-sm text-slate-300 shadow-xl z-10">
+                                Global History
+                            </div>
+                            <div className="absolute left-[350px] w-64 h-8 rounded bg-red-500/20 border border-red-500/40 flex items-center px-3 text-xs text-red-200">
+                                War of Ash
+                            </div>
+                        </div>
+
+                        <div className="flex items-center h-16 border-b border-white/5 hover:bg-white/[0.02]">
+                            <div className="sticky left-0 w-48 bg-surface-dark border-r border-white/5 h-full flex items-center px-4 gap-2 shadow-xl z-10">
+                                <Avatar url="https://lh3.googleusercontent.com/aida-public/AB6AXuC5wrA90E3iR_n72y4TFiYkSf3rPv_D5QFb0SJth3Kl1UaBKnE7lU0Fsj3O-jCJXEEjk_Gybekesf6hQQLSJ3_OQRotMJ6nQeayQ7roTvhzuK-QF-S0OzPtcsraoXjTnZYSQGFZoPNCl8nnsScT3dJfjfcXshdQxGliJ2VvpZ2WTsag0upqgNgL83K-TiY4FEif3q_RANKImopD6_S1Dx1OlkE_L2U65BoxsFX35Ex3bcKYMLONzF8D6KP47cvaCOgAcWSBH6JHP-A" size="size-6" />
+                                <span className="text-sm text-slate-300 font-medium">Elara</span>
+                            </div>
+                            <div className="absolute left-[400px] size-3 bg-white rounded-full"></div>
+                            <div className="absolute left-[400px] w-[300px] h-0.5 bg-white/20"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const Languages = () => (
+            <div className="flex-1 p-8 bg-background-dark overflow-y-auto">
+                <header className="flex justify-between items-center mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold text-white mb-1">Aeloriean High Tongue</h1>
+                        <div className="flex gap-2">
+                            <span className="px-2 py-0.5 rounded bg-primary/20 text-primary text-xs font-bold border border-primary/20">Conlang</span>
+                            <span className="px-2 py-0.5 rounded bg-surface-light text-slate-400 text-xs border border-white/10">45% Complete</span>
+                        </div>
+                    </div>
+                    <Button primary icon="add">New Word</Button>
+                </header>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Dictionary */}
+                    <div className="lg:col-span-2 space-y-4">
+                        <div className="glass-panel rounded-xl p-4 min-h-[500px]">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-lg font-bold text-white flex items-center gap-2"><span className="material-symbols-outlined text-primary">menu_book</span> Lexicon</h3>
+                                <input className="bg-surface-dark border border-glass-border rounded-lg px-3 py-1 text-sm text-white w-64" placeholder="Search..." />
+                            </div>
+                            <div className="space-y-2">
+                                {[
+                                    { word: "Ael'or", type: "noun", def: "Starlight; specifically the light from the twin moons." },
+                                    { word: "Vexi", type: "verb", def: "To weave magic; to create something from nothing." },
+                                    { word: "Kyros", type: "adj", def: "Frozen; unmoving like time." },
+                                    { word: "Thal", type: "noun", def: "Ocean deep; abyss." }
+                                ].map((w, i) => (
+                                    <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-surface-light/50 border border-transparent hover:border-primary/30 hover:bg-surface-light transition-all cursor-pointer group">
+                                        <div>
+                                            <div className="flex items-baseline gap-2">
+                                                <span className="text-lg font-mono font-bold text-primary-light">{w.word}</span>
+                                                <span className="text-xs text-slate-500 italic">{w.type}</span>
+                                            </div>
+                                            <p className="text-sm text-slate-400">{w.def}</p>
+                                        </div>
+                                        <button className="text-slate-600 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <span className="material-symbols-outlined">edit</span>
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Script */}
+                    <div className="space-y-6">
+                        <div className="glass-panel rounded-xl p-6 relative overflow-hidden">
+                            <div className="absolute -right-4 -bottom-4 text-[8rem] text-white/5 font-serif select-none">Ω</div>
+                            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><span className="material-symbols-outlined text-primary">gesture</span> Script</h3>
+                            <div className="grid grid-cols-4 gap-2">
+                                {['α','β','γ','δ','ε','ζ','η','θ'].map(char => (
+                                    <div key={char} className="aspect-square bg-surface-dark rounded-lg border border-glass-border flex items-center justify-center text-xl font-serif text-primary-light hover:border-primary cursor-pointer transition-colors">
+                                        {char}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="glass-panel rounded-xl p-6">
+                            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><span className="material-symbols-outlined text-primary">gavel</span> Grammar</h3>
+                            <div className="space-y-3">
+                                <div className="p-3 bg-surface-dark/50 rounded-lg border border-glass-border">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <div className="size-2 rounded-full bg-emerald-500"></div>
+                                        <h4 className="text-sm font-bold text-white">SOV Order</h4>
+                                    </div>
+                                    <p className="text-xs text-slate-400">Subject-Object-Verb is strict in formal speech.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const Settings = () => (
+            <div className="flex-1 p-8 md:p-12 overflow-y-auto">
+                <div className="max-w-2xl mx-auto">
+                    <h1 className="text-3xl font-bold text-white mb-8">Settings</h1>
+                    
+                    <div className="space-y-8">
+                        <section className="glass-panel p-6 rounded-xl">
+                            <h3 className="text-lg font-bold text-white mb-4">Appearance</h3>
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="aspect-video rounded-lg bg-surface-dark border-2 border-primary cursor-pointer relative">
+                                    <div className="absolute inset-0 flex items-center justify-center"><span className="material-symbols-outlined text-primary">check_circle</span></div>
+                                </div>
+                                <div className="aspect-video rounded-lg bg-[#2a2640] border border-glass-border cursor-pointer hover:border-white/30"></div>
+                                <div className="aspect-video rounded-lg bg-black border border-glass-border cursor-pointer hover:border-white/30"></div>
+                            </div>
+                            <div className="flex justify-between text-xs text-slate-400 mt-2 px-1">
+                                <span>Deep Space</span>
+                                <span>Nebula</span>
+                                <span>High Contrast</span>
+                            </div>
+                        </section>
+
+                        <section className="glass-panel p-6 rounded-xl">
+                            <h3 className="text-lg font-bold text-white mb-4">Editor</h3>
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm text-slate-300">Focus Mode</span>
+                                    <div className="w-10 h-6 bg-primary rounded-full relative cursor-pointer"><div className="absolute right-1 top-1 size-4 bg-white rounded-full"></div></div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm text-slate-300">Glass Effects</span>
+                                    <div className="w-10 h-6 bg-primary rounded-full relative cursor-pointer"><div className="absolute right-1 top-1 size-4 bg-white rounded-full"></div></div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section className="glass-panel p-6 rounded-xl border-l-4 border-l-primary">
+                            <h3 className="text-lg font-bold text-white mb-2">Local Storage</h3>
+                            <p className="text-sm text-slate-400 mb-4">Your vault is stored locally. Last backup: 12 mins ago.</p>
+                            <Button primary>Backup Now</Button>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        );
+
+        // --- Main App Component ---
+
+        const App = () => {
+            return (
+                <MemoryRouter initialEntries={['/']}>
+                    <Routes>
+                        <Route path="/" element={<Login />} />
+                        <Route element={<AppLayout />}>
+                            <Route path="/dashboard" element={<Dashboard />} />
+                            <Route path="/entity/:id" element={<EntityDetail />} />
+                            <Route path="/map" element={<MapViewer />} />
+                            <Route path="/map/edit" element={<MapEditor />} />
+                            <Route path="/timeline" element={<Timeline />} />
+                            <Route path="/languages" element={<Languages />} />
+                            <Route path="/settings" element={<Settings />} />
+                            
+                            {/* Placeholder for other routes mapped to simple components or reuses */}
+                            <Route path="/profile" element={<div className="p-8 text-white">Profile Page Placeholder</div>} />
+                            <Route path="/magic" element={<div className="p-8 text-white">Magic Systems Placeholder (Use Screen 16/23 Logic)</div>} />
+                            <Route path="/cultures" element={<div className="p-8 text-white">Culture Management Placeholder (Use Screen 15/22 Logic)</div>} />
+                        </Route>
+                    </Routes>
+                </MemoryRouter>
+            );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
