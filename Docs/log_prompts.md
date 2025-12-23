@@ -81,3 +81,11 @@
 *   [UX] **Contadores de Notas** visuales (badges) en la lista de hojas.
 *   [FLOW] Navegación directa desde Librería al Editor (saltando vista intermedia).
 *   [FIX] Resuelto bug crítico de "estados zombie" al borrar hojas y recarga de notas al cambiar de página.
+
+### Prompt ID: 13 (Restructuración Frontend & React)
+> Restructure and Debug Frontend (Blank Screen)
+**Resultados:**
+*   [ARCH] Reestructuración completa del proyecto: frontend movido a `src/main/frontend`, compilación a `src/main/resources/static`.
+*   [REACT] Implementación base de SPA con React + Tailwind + Vite.
+*   [FIX] Resuelto bug de "Pantalla Negra" (ReferenceError en montaje de React).
+*   [DESIGN] Integración inicial del tema "Arcane Void".

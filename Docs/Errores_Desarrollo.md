@@ -67,3 +67,12 @@ Estos errores impidieron que el navegador enviara los datos al backend, aunque e
 * **Síntoma:** La página se seguía recargando incluso después de implementar la solución 2.2.
 * **Causa:** Un error en la refactorización. La ruta del script en los HTML de `html/opciones/` era `../js/...` (un nivel arriba), pero la ruta correcta desde esa carpeta era `../../js/...` (dos niveles arriba).
 * **Solución:** Se corrigió la ruta del script en los 6 archivos HTML de `html/opciones/` a `src="../../js/components/opcionesForm.js"`. (Nota: esta solución se volvió obsoleta por la solución 2.2, pero fue un paso intermedio en la depuración).
+
+---
+
+## 4. React Migration (SPA)
+
+### Error 4.1: Critical Blank Screen on Startup
+* **Symptom:** The new React application loaded a blank dark screen. The index.html was served, but the `#root` element remained empty. No obvious errors in the browser console initially.
+* **Cause**: The `src/main/frontend/jsx/main.jsx` entry point had a ReferenceError. It used `rootElement` in a conditional check before defining it.
+* **Solution**: Correctly defined `const rootElement = document.getElementById('root');` before usage. Added robust try-catch blocks during debugging to verify the fix, then cleaned them up.
