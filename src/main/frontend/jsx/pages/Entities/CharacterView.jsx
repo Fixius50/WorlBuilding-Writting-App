@@ -1,10 +1,50 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import GlassPanel from '../../components/common/GlassPanel';
 import Avatar from '../../components/common/Avatar';
 import Button from '../../components/common/Button';
+import api from '../../services/api';
 
 const CharacterView = ({ id }) => {
     const [activeTab, setActiveTab] = useState('overview');
+    const [character, setCharacter] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [isEditing, setIsEditing] = useState(false);
+
+    useEffect(() => {
+        loadCharacter();
+    }, [id]);
+
+    const loadCharacter = async () => {
+        setLoading(true);
+        try {
+            const data = await api.get(`/bd/entidadindividual/${id}`);
+            setCharacter(data);
+        } catch (err) {
+            console.error("Error loading character:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSave = async () => {
+        try {
+            await api.patch('/bd/modificar', {
+                ...character,
+                tipoEntidad: 'entidadindividual'
+            });
+            setIsEditing(false);
+            alert("Changes saved!");
+        } catch (err) {
+            alert("Error saving: " + err.message);
+        }
+    };
+
+    const handleChange = (field, value) => {
+        setCharacter(prev => ({ ...prev, [field]: value }));
+    };
+
+    if (loading) return <div className="p-20 text-center text-slate-500 animate-pulse">Summoning entity...</div>;
+    if (!character) return <div className="p-20 text-center text-red-500">Character not found in the archives.</div>;
 
     return (
         <div className="flex h-full">
@@ -15,28 +55,26 @@ const CharacterView = ({ id }) => {
                 <div className="flex items-start gap-6">
                     <div className="relative">
                         <Avatar
-                            url="https://lh3.googleusercontent.com/aida-public/AB6AXuC5wrA90E3iR_n72y4TFiYkSf3rPv_D5QFb0SJth3Kl1UaBKnE7lU0Fsj3O-jCJXEEjk_Gybekesf6hQQLSJ3_OQRotMJ6nQeayQ7roTvhzuK-QF-S0OzPtcsraoXjTnZYSQGFZoPNCl8nnsScT3dJfjfcXshdQxGliJ2VvpZ2WTsag0upqgNgL83K-TiY4FEif3q_RANKImopD6_S1Dx1OlkE_L2U65BoxsFX35Ex3bcKYMLONzF8D6KP47cvaCOgAcWSBH6JHP-A"
+                            url={character.imagenUrl || "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1976&auto=format&fit=crop"}
                             size="xl"
                             className="rounded-2xl border-2 border-primary shadow-[0_0_30px_rgba(99,102,242,0.3)]"
                         />
-                        <div className="absolute -bottom-2 -right-2 bg-emerald-500 rounded-full p-1 border border-background-dark">
-                            <span className="material-symbols-outlined text-[14px] text-white">check</span>
-                        </div>
                     </div>
 
                     <div className="flex-1">
                         <div className="flex items-center gap-3 mb-1">
-                            <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">PROTAGONIST</span>
-                            <span className="text-xs font-bold text-slate-400 bg-surface-light px-2 py-0.5 rounded border border-white/5">Human</span>
-                            <span className="text-xs font-bold text-slate-400 bg-surface-light px-2 py-0.5 rounded border border-white/5">Mage</span>
+                            <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">{character.estado || 'ACTIVE'}</span>
+                            <span className="text-xs font-bold text-slate-400 bg-surface-light px-2 py-0.5 rounded border border-white/5">{character.tipo || 'Unknown'}</span>
                         </div>
-                        <h1 className="text-4xl font-bold text-white mb-2">Elara Vance</h1>
-                        <p className="text-lg text-slate-300">The Last Weaver of Time</p>
+                        <h1 className="text-4xl font-bold text-white mb-2">{character.nombre} {character.apellidos}</h1>
+                        <p className="text-lg text-slate-300">{character.origen || 'Traveling the void'}</p>
                     </div>
 
                     <div className="flex gap-2">
-                        <Button variant="secondary" icon="edit">Edit Profile</Button>
-                        <Button variant="primary" icon="save">Save Changes</Button>
+                        <Button variant="secondary" icon={isEditing ? 'close' : 'edit'} onClick={() => setIsEditing(!isEditing)}>
+                            {isEditing ? 'Cancel' : 'Edit Profile'}
+                        </Button>
+                        {isEditing && <Button variant="primary" icon="save" onClick={handleSave}>Save Changes</Button>}
                     </div>
                 </div>
 
@@ -62,68 +100,54 @@ const CharacterView = ({ id }) => {
                                 <span className="material-symbols-outlined text-sm">fingerprint</span> Identity
                             </h3>
                             <div className="space-y-4">
-                                <div>
-                                    <label className="text-xs text-slate-400 block mb-1">Full Name</label>
-                                    <input type="text" value="Elara Vance" className="w-full bg-surface-light border border-white/10 rounded px-3 py-2 text-white text-sm" readOnly />
-                                </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-xs text-slate-400 block mb-1">Age</label>
-                                        <input type="text" value="24" className="w-full bg-surface-light border border-white/10 rounded px-3 py-2 text-white text-sm" readOnly />
+                                        <label className="text-xs text-slate-400 block mb-1">Name</label>
+                                        <input type="text" value={character.nombre} onChange={(e) => handleChange('nombre', e.target.value)} className="w-full bg-surface-light border border-white/10 rounded px-3 py-2 text-white text-sm" readOnly={!isEditing} />
                                     </div>
                                     <div>
-                                        <label className="text-xs text-slate-400 block mb-1">Gender</label>
-                                        <input type="text" value="Female" className="w-full bg-surface-light border border-white/10 rounded px-3 py-2 text-white text-sm" readOnly />
+                                        <label className="text-xs text-slate-400 block mb-1">Surnames</label>
+                                        <input type="text" value={character.apellidos || ''} onChange={(e) => handleChange('apellidos', e.target.value)} className="w-full bg-surface-light border border-white/10 rounded px-3 py-2 text-white text-sm" readOnly={!isEditing} />
                                     </div>
+                                </div>
+                                <div>
+                                    <label className="text-xs text-slate-400 block mb-1">Type / Species</label>
+                                    <input type="text" value={character.tipo || ''} onChange={(e) => handleChange('tipo', e.target.value)} className="w-full bg-surface-light border border-white/10 rounded px-3 py-2 text-white text-sm" readOnly={!isEditing} />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-slate-400 block mb-1">Origin</label>
+                                    <input type="text" value={character.origen || ''} onChange={(e) => handleChange('origen', e.target.value)} className="w-full bg-surface-light border border-white/10 rounded px-3 py-2 text-white text-sm" readOnly={!isEditing} />
                                 </div>
                             </div>
                         </GlassPanel>
 
-                        <GlassPanel className="p-4">
-                            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-sm">psychology</span> Personality Matrix
-                            </h3>
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-2 text-sm">
-                                    <span className="w-20 text-slate-400 text-xs">Bravery</span>
-                                    <div className="flex-1 h-1.5 bg-surface-light rounded-full overflow-hidden">
-                                        <div className="h-full bg-blue-500 w-[85%]"></div>
-                                    </div>
-                                    <span className="text-xs text-blue-400 w-8 text-right">85%</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm">
-                                    <span className="w-20 text-slate-400 text-xs">Magic</span>
-                                    <div className="flex-1 h-1.5 bg-surface-light rounded-full overflow-hidden">
-                                        <div className="h-full bg-purple-500 w-[95%]"></div>
-                                    </div>
-                                    <span className="text-xs text-purple-400 w-8 text-right">95%</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm">
-                                    <span className="w-20 text-slate-400 text-xs">Diplomacy</span>
-                                    <div className="flex-1 h-1.5 bg-surface-light rounded-full overflow-hidden">
-                                        <div className="h-full bg-emerald-500 w-[40%]"></div>
-                                    </div>
-                                    <span className="text-xs text-emerald-400 w-8 text-right">40%</span>
-                                </div>
-                            </div>
-                        </GlassPanel>
+
                     </div>
 
                     {/* Center/Right Col */}
                     <div className="col-span-2 space-y-6">
                         <GlassPanel className="p-6 relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button className="text-xs text-primary hover:underline">Expand Editor</button>
-                            </div>
                             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-sm">history_edu</span> Backstory
+                                <span className="material-symbols-outlined text-sm">history_edu</span> Description & Lore
                             </h3>
-                            <p className="text-slate-300 text-sm leading-relaxed mb-4">
-                                Born during the Great Eclipse, Elara was marked by the Void from her first breath. Her parents, simple weavers in the lower districts of Silverfall, hid her away fearing the Inquisition.
-                            </p>
-                            <p className="text-slate-300 text-sm leading-relaxed">
-                                It wasn't until her twelfth birthday that her powers manifested violently, shattering the windows of the weaver's guild hall...
-                            </p>
+                            <textarea
+                                value={character.descripcion || ''}
+                                onChange={(e) => handleChange('descripcion', e.target.value)}
+                                readOnly={!isEditing}
+                                className="w-full bg-transparent border-none outline-none text-slate-300 text-sm leading-relaxed mb-4 min-h-[150px] resize-none"
+                                placeholder="Write the history of this person..."
+                            />
+
+                            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <span className="material-symbols-outlined text-sm">psychology</span> Behavior
+                            </h3>
+                            <textarea
+                                value={character.comportamiento || ''}
+                                onChange={(e) => handleChange('comportamiento', e.target.value)}
+                                readOnly={!isEditing}
+                                className="w-full bg-transparent border-none outline-none text-slate-300 text-sm leading-relaxed min-h-[100px] resize-none"
+                                placeholder="How does this person act?"
+                            />
                         </GlassPanel>
                     </div>
                 </div>

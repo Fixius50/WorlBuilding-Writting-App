@@ -89,3 +89,12 @@
 *   [REACT] Implementación base de SPA con React + Tailwind + Vite.
 *   [FIX] Resuelto bug de "Pantalla Negra" (ReferenceError en montaje de React).
 *   [DESIGN] Integración inicial del tema "Arcane Void".
+
+### Prompt ID: 15 (Calibración UI Arcane Void)
+> UI Overhaul and Calibration to match prototypes.
+**Resultados:**
+*   [ARCH] Implementado `ArchitectLayout.jsx` con sidebars duales (Bible & Canvas) y modo Focus.
+*   [UI] Rediseñadas `ProjectView.jsx` (Welcome screen) y `Dashboard.jsx` (Sidebar hidden) según imágenes 1 y 6.
+*   [FEAT] Creados módulos `EntityProfile.jsx`, `CharacterEditor.jsx` y `Settings.jsx` (Imágenes 3, 4, 5).
+*   [FIX] Corregidas rutas de importación relativas post-migración.
+*   [VERIF] Verificación exitosa de renderizado y estética "Arcane Void" vía subagente.

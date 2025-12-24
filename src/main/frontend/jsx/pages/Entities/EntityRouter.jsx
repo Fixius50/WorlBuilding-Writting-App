@@ -2,24 +2,32 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import CharacterView from './CharacterView';
 import LocationView from './LocationView';
-// import CultureView from './CultureView'; // To be implemented
-// import MagicView from './MagicView'; // To be implemented
+import CollectiveView from './CollectiveView';
+import CosmicHierarchyView from './CosmicHierarchyView';
+import TerritoryGridView from './TerritoryGridView';
 
 const EntityRouter = () => {
     const { type, id } = useParams();
 
-    // In a real app, we might fetch the entity type from DB if just 'id' is passed,
-    // or rely on the URL structure /entities/:type/:id
-
-    // Mapping URL type to Component
     const renderView = () => {
-        switch (type?.toLowerCase()) {
+        const lowerType = type?.toLowerCase();
+
+        switch (lowerType) {
             case 'character':
+            case 'entidadindividual':
                 return <CharacterView id={id} />;
             case 'location':
+            case 'zona':
                 return <LocationView id={id} />;
             case 'culture':
-                return <div className="p-8 text-white">Culture View for ID: {id}</div>;
+            case 'entidadcolectiva':
+                return <CollectiveView id={id} />;
+            case 'universe':
+            case 'galaxy':
+            case 'system':
+                return <CosmicHierarchyView id={id} type={lowerType} />;
+            case 'planet':
+                return <TerritoryGridView id={id} />;
             case 'magic':
                 return <div className="p-8 text-white">Magic System View for ID: {id}</div>;
             default:
