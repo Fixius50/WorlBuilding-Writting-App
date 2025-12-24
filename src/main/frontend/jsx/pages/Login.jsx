@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
@@ -12,6 +12,13 @@ const Login = () => {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            navigate('/dashboard');
+        }
+    }, [navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -29,7 +36,7 @@ const Login = () => {
                     password: formData.password
                 });
                 if (response.success) {
-                    sessionStorage.setItem('user', JSON.stringify(response));
+                    localStorage.setItem('user', JSON.stringify(response));
                     navigate('/dashboard');
                 }
             }

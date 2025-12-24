@@ -14,6 +14,15 @@ const api = {
         });
 
         if (!response.ok) {
+            // Global 401 handler (Session Expired)
+            // Skip this for login requests, as they naturally return 401 on failure
+            if (response.status === 401 && !endpoint.includes('/auth/login')) {
+                localStorage.removeItem('user');
+                sessionStorage.clear();
+                if (window.location.pathname !== '/login' && window.location.pathname !== '/') {
+                    window.location.href = '/';
+                }
+            }
             const errorData = await response.json().catch(() => ({}));
             throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
         }

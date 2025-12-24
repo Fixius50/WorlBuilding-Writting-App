@@ -4,31 +4,41 @@ import Button from '../components/common/Button';
 import CreateProjectModal from '../components/dashboard/CreateProjectModal';
 import api from '../services/api';
 
+import GlassPanel from '../components/common/GlassPanel';
+
 const ProjectCard = ({ title, desc, type, updated, image, id, name, onDelete }) => (
-    <div className="group relative h-64 rounded-2xl overflow-hidden border border-glass-border hover:border-primary/50 transition-all cursor-pointer shadow-lg hover:shadow-primary/10">
-        <Link to={`/project/${id}`} className="absolute inset-0 z-0">
-            <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url('${image || 'https://images.unsplash.com/photo-1464802686167-b939a67e06a1?q=80&w=2070&auto=format&fit=crop'}')` }}></div>
-            <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/60 to-transparent"></div>
-        </Link>
-
-        <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(name); }}
-                className="size-8 rounded-full bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/30 flex items-center justify-center backdrop-blur-sm transition-all"
-            >
-                <span className="material-symbols-outlined text-sm">delete</span>
-            </button>
-        </div>
-
-        <div className="absolute bottom-0 left-0 p-6 w-full pointer-events-none z-10">
-            <div className="flex justify-between items-center mb-2">
-                <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">{type}</span>
-                <span className="text-xs text-slate-400">{updated}</span>
+    <Link to={`/project/${id}`} className="block group">
+        <GlassPanel className="h-64 flex flex-col p-6 hover:shadow-2xl hover:shadow-primary/20 hover:border-primary/50 transition-all relative">
+            <div className="absolute top-6 right-6 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(name); }}
+                    className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-colors"
+                >
+                    <span className="material-symbols-outlined text-lg">delete</span>
+                </button>
             </div>
-            <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-primary transition-colors">{title}</h3>
-            <p className="text-sm text-slate-300 line-clamp-1">{desc}</p>
-        </div>
-    </div>
+
+            <div className="mb-auto">
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary border border-primary/20 group-hover:scale-110 transition-transform">
+                        <span className="material-symbols-outlined text-xl">
+                            {type === 'Fantasy' ? 'auto_awesome' : type === 'Sci-Fi' ? 'rocket_launch' : 'public'}
+                        </span>
+                    </div>
+                    <div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-primary">{type}</span>
+                        <h3 className="text-xl font-bold text-white leading-tight group-hover:text-primary transition-colors">{title}</h3>
+                    </div>
+                </div>
+                <p className="text-sm text-slate-400 line-clamp-3 leading-relaxed">{desc}</p>
+            </div>
+
+            <div className="pt-4 border-t border-white/5 flex justify-between items-center text-xs text-slate-500">
+                <span>Updated {updated}</span>
+                <span className="group-hover:translate-x-1 transition-transform material-symbols-outlined text-base">arrow_forward</span>
+            </div>
+        </GlassPanel>
+    </Link>
 );
 
 const Dashboard = () => {
