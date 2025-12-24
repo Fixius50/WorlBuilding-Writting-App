@@ -28,6 +28,12 @@ const EntityRouter = () => {
                 return <CosmicHierarchyView id={id} type={lowerType} />;
             case 'planet':
                 return <TerritoryGridView id={id} />;
+            case 'construccion':
+                return <LocationView id={id} />; // Reusing LocationView for now
+            case 'efectos':
+                return <div className="p-8 text-white">Effect/Spell View for ID: {id}</div>;
+            case 'interaccion':
+                return <div className="p-8 text-white">Interaction/Event View for ID: {id}</div>;
             case 'magic':
                 return <div className="p-8 text-white">Magic System View for ID: {id}</div>;
             default:

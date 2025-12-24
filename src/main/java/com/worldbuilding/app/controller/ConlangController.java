@@ -29,12 +29,18 @@ public class ConlangController {
     private ConlangService conlangService;
 
     @GetMapping("/lenguas")
-    public List<Conlang> listarLenguas() {
-        return conlangRepository.findAll();
+    public List<Conlang> listarLenguas(jakarta.servlet.http.HttpSession session) {
+        String proyecto = (String) session.getAttribute("proyectoActivo");
+        if (proyecto == null)
+            return java.util.Collections.emptyList();
+        return conlangRepository.findByNombreProyecto(proyecto);
     }
 
     @PostMapping("/lengua")
-    public Conlang crearLengua(@RequestBody Conlang conlang) {
+    public Conlang crearLengua(@RequestBody Conlang conlang, jakarta.servlet.http.HttpSession session) {
+        String proyecto = (String) session.getAttribute("proyectoActivo");
+        if (proyecto != null)
+            conlang.setNombreProyecto(proyecto);
         return conlangRepository.save(conlang);
     }
 
@@ -117,12 +123,20 @@ public class ConlangController {
     private com.worldbuilding.app.repository.EntidadColectivaRepository entidadColectivaRepository;
 
     @PostMapping("/save-entity")
-    public ResponseEntity<String> saveEntity(@RequestParam String name, @RequestParam String description) {
+    public ResponseEntity<String> saveEntity(@RequestParam String name, @RequestParam String description,
+            jakarta.servlet.http.HttpSession session) {
+        String proyecto = (String) session.getAttribute("proyectoActivo");
+        if (proyecto == null)
+            return ResponseEntity.badRequest().body("No hay proyecto activo");
+
         // 1. Save/Update Conlang (Generic logic, or assume generic id=1 for now if not
         // passed)
-        // In a real app we'd pass an ID. Here we'll just check if Entity exists.
+        // In a real app we'd pass an ID. Here we'll just check if Entity exists under
+        // this project
 
-        boolean exists = entidadColectivaRepository.findAll().stream()
+        // Note: Repository findByName might need project filter too, assuming
+        // uniqueness per project
+        boolean exists = entidadColectivaRepository.findByNombreProyecto(proyecto).stream()
                 .anyMatch(e -> e.getNombre().equalsIgnoreCase(name));
 
         if (!exists) {
@@ -130,7 +144,7 @@ public class ConlangController {
             ent.setNombre(name);
             ent.setDescripcion(description);
             ent.setTipo("Lenguaje");
-            ent.setNombreProyecto("Tierras del Sur"); // Hardcoded for context
+            ent.setNombreProyecto(proyecto);
             ent.setComportamiento("Evolutivo");
             ent.setCantidadMiembros(1); // Placeholder
             entidadColectivaRepository.save(ent);

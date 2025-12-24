@@ -1,10 +1,18 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import api from '../../js/services/api';
 import GlassPanel from '../components/common/GlassPanel';
 
 const Settings = () => {
     const navigate = useNavigate();
+    const [user, setUser] = React.useState(null);
+
+    React.useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
+        }
+    }, []);
 
     const handleLogout = async () => {
         try {
@@ -27,6 +35,34 @@ const Settings = () => {
                 </header>
 
                 <div className="space-y-6">
+                    {/* User Profile */}
+                    <GlassPanel className="p-8 space-y-6 border-white/10">
+                        <div className="flex items-center gap-6 border-b border-white/5 pb-6">
+                            <div className="size-20 rounded-2xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white shadow-2xl shadow-primary/20">
+                                <span className="material-symbols-outlined text-4xl">person</span>
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-white tracking-tight">{user?.user?.username || 'Architect'}</h3>
+                                <p className="text-sm text-slate-400 font-medium">Level 1 Worldbuilder</p>
+                                <div className="mt-2 flex items-center gap-2">
+                                    <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase tracking-wider border border-emerald-500/20">Active</span>
+                                    <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase tracking-wider border border-blue-500/20">Pro Member</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="p-4 rounded-xl bg-white/5 border border-white/5">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Architect ID</label>
+                                <p className="text-white font-mono text-sm">{user?.user?.id || 'Undefined'}</p>
+                            </div>
+                            <div className="p-4 rounded-xl bg-white/5 border border-white/5">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Email</label>
+                                <p className="text-white font-mono text-sm">{user?.user?.email || 'No email linked'}</p>
+                            </div>
+                        </div>
+                    </GlassPanel>
+
                     {/* Session Management */}
                     <GlassPanel className="p-8 space-y-6 border-white/10">
                         <div className="flex items-center gap-4 border-b border-white/5 pb-4">

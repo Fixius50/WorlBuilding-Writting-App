@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import GlassPanel from '../../components/common/GlassPanel';
 import Avatar from '../../components/common/Avatar';
 import Button from '../../components/common/Button';
-import api from '../../services/api';
+import api from '../../../js/services/api';
 
 const LinguisticsHub = () => {
     const [projectName, setProjectName] = useState('Loading...');

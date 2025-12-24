@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, Link, useLocation, useParams } from 'react-router-dom';
+import { Outlet, Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import GlassPanel from '../common/GlassPanel';
 import Avatar from '../common/Avatar';
-import api from '../../services/api';
+import api from '../../../js/services/api';
 
 const ArchitectLayout = () => {
     const { id } = useParams();
@@ -13,13 +13,19 @@ const ArchitectLayout = () => {
     const [expandedCategories, setExpandedCategories] = useState({
         characters: true,
         locations: false,
-        items: false
+        items: false,
+        constructions: false,
+        effects: false,
+        interactions: false
     });
 
     const [entities, setEntities] = useState({
         characters: [],
         locations: [],
-        items: []
+        items: [],
+        constructions: [],
+        effects: [],
+        interactions: []
     });
 
     useEffect(() => {
@@ -30,10 +36,6 @@ const ArchitectLayout = () => {
 
     const loadProject = async (projectId) => {
         try {
-            // Get project details to know its name
-            // The existing ProyectoController doesn't have a direct "get by ID" that returns the object easily, 
-            // but let's assume one or use the list to find it if needed.
-            // Actually ProyectoController.java line 103 has obtenerProyecto(Long id)
             const proj = await api.get(`/proyectos/${projectId}`);
             if (proj) {
                 setProjectName(proj.nombreProyecto);
@@ -51,14 +53,22 @@ const ArchitectLayout = () => {
 
     const loadEntities = async () => {
         try {
-            const individuals = await api.get('/bd/entidadindividual');
-            const collectives = await api.get('/bd/entidadcolectiva');
-            const zones = await api.get('/bd/zona');
+            const [individuals, collectives, zones, constructions, effects, interactions] = await Promise.all([
+                api.get('/bd/entidadindividual'),
+                api.get('/bd/entidadcolectiva'),
+                api.get('/bd/zona'),
+                api.get('/bd/construccion'),
+                api.get('/bd/efectos'),
+                api.get('/bd/interaccion')
+            ]);
 
             setEntities({
                 characters: individuals.map(e => ({ id: e.id, name: e.nombre, type: 'entidadindividual' })),
                 locations: zones.map(e => ({ id: e.id, name: e.nombre, type: 'zona' })),
-                items: collectives.map(e => ({ id: e.id, name: e.nombre, type: 'entidadcolectiva' }))
+                items: collectives.map(e => ({ id: e.id, name: e.nombre, type: 'entidadcolectiva' })),
+                constructions: constructions.map(e => ({ id: e.id, name: e.nombre, type: 'construccion' })),
+                effects: effects.map(e => ({ id: e.id, name: e.nombre, type: 'efectos' })),
+                interactions: interactions.map(e => ({ id: e.id, name: e.nombre, type: 'interaccion' }))
             });
         } catch (err) {
             console.error("Error loading entities:", err);
@@ -69,33 +79,11 @@ const ArchitectLayout = () => {
         setExpandedCategories(prev => ({ ...prev, [cat]: !prev[cat] }));
     };
 
-    const handleNewEntry = async () => {
-        const name = prompt("Enter entity name:");
-        if (!name) return;
-        const typeRaw = prompt("Enter type (characters, locations, items):", "characters");
-        const type = typeRaw?.toLowerCase();
+    // Old handleNewEntry prompt logic removed in favor of NewEntityModal
 
-        let apiType = '';
-        if (type === 'characters') apiType = 'entidadindividual';
-        else if (type === 'locations') apiType = 'zona';
-        else if (type === 'items') apiType = 'entidadcolectiva';
+    const [isCreating, setIsCreating] = useState(false);
 
-        if (apiType) {
-            try {
-                await api.put('/bd/insertar', {
-                    tipoEntidad: apiType,
-                    nombre: name,
-                    descripcion: 'New entry added via Architect.'
-                });
-                loadEntities();
-            } catch (err) {
-                alert("Failed to create entity: " + err.message);
-            }
-        } else {
-            alert("Invalid category. Use 'characters', 'locations', or 'items'.");
-        }
-    };
-
+    // ... (existing code for focus mode)
     const isFocusMode = !leftOpen && !rightOpen;
 
     return (
@@ -119,18 +107,31 @@ const ArchitectLayout = () => {
                     <span className="material-symbols-outlined text-xl">chevron_left</span>
                 </button>
 
-                <div className="p-8 pt-20 flex flex-col h-full gap-8">
-                    <header className="flex justify-between items-center">
-                        <div>
-                            <h2 className="text-2xl font-bold text-white tracking-tight">World Bible</h2>
-                            <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500 mt-1">Project: {projectName}</p>
+                <div className="flex flex-col h-full">
+                    {/* Header - Moved to top and compacted */}
+                    <header className="p-6 pb-2 border-b border-white/5 bg-surface-dark z-10">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <h6 className="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500 mb-1">Project Atlas</h6>
+                                <h2 className="text-lg font-bold text-white tracking-tight leading-none truncate max-w-[200px]" title={projectName}>{projectName}</h2>
+                            </div>
+                            <button className="text-slate-500 hover:text-white"><span className="material-symbols-outlined text-lg">more_vert</span></button>
                         </div>
-                        <button className="text-slate-500 hover:text-white"><span className="material-symbols-outlined">more_vert</span></button>
                     </header>
 
-                    <nav className="flex-1 overflow-y-auto custom-scrollbar -mx-2 px-2 space-y-6">
+                    <nav className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
                         <div className="space-y-1">
                             <SidebarItem icon="auto_stories" label="All Entries" count={12} active />
+                        </div>
+
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 mb-4 px-3">Worldbuilding</p>
+                            <nav className="space-y-1">
+                                <SidebarItem to={`/project/${id}/graph`} icon="hub" label="Entity Graph" />
+                                <SidebarItem to={`/project/${id}/timeline`} icon="event_note" label="Timeline" />
+                                <SidebarItem to={`/project/${id}/map`} icon="map" label="Cartography" />
+                                <SidebarItem to={`/project/${id}/languages`} icon="translate" label="Linguistics" />
+                            </nav>
                         </div>
 
                         <div>
@@ -157,27 +158,38 @@ const ArchitectLayout = () => {
                                     onToggle={() => toggleCategory('items')}
                                     items={entities.items}
                                 />
+                                <SidebarCategory
+                                    icon="apartment"
+                                    label="Constructions"
+                                    expanded={expandedCategories.constructions}
+                                    onToggle={() => toggleCategory('constructions')}
+                                    items={entities.constructions}
+                                />
+                                <SidebarCategory
+                                    icon="auto_fix"
+                                    label="Effects"
+                                    expanded={expandedCategories.effects}
+                                    onToggle={() => toggleCategory('effects')}
+                                    items={entities.effects}
+                                />
+                                <SidebarCategory
+                                    icon="compare_arrows"
+                                    label="Interactions"
+                                    expanded={expandedCategories.interactions}
+                                    onToggle={() => toggleCategory('interactions')}
+                                    items={entities.interactions}
+                                />
                             </div>
-                        </div>
-
-                        <div>
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 mb-4 px-3">Worldbuilding</p>
-                            <nav className="space-y-1">
-                                <SidebarItem to="/graph" icon="hub" label="Entity Graph" />
-                                <SidebarItem to="/timeline" icon="event_note" label="Timeline" />
-                                <SidebarItem to="/map" icon="map" label="Cartography" />
-                                <SidebarItem to="/languages" icon="translate" label="Linguistics" />
-                            </nav>
                         </div>
                     </nav>
 
-                    <div className="mt-auto pt-4 border-t border-white/5">
+                    <div className="p-6 pt-0 mt-auto bg-gradient-to-t from-surface-dark to-transparent">
                         <button
-                            onClick={handleNewEntry}
-                            className="w-full py-4 rounded-2xl bg-primary/20 hover:bg-primary/30 text-primary border border-primary/20 font-bold flex items-center justify-center gap-3 transition-all shadow-lg hover:shadow-primary/10 group"
+                            onClick={() => setIsCreating(true)}
+                            className="w-full py-3 rounded-xl bg-primary hover:bg-primary-light text-white font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 group"
                         >
                             <span className="material-symbols-outlined text-xl group-hover:rotate-90 transition-transform duration-300">add</span>
-                            New Entry
+                            <span className="text-sm tracking-wide">New Entry</span>
                         </button>
                     </div>
                 </div>
@@ -244,39 +256,154 @@ const ArchitectLayout = () => {
                     </div>
                 </div>
             </aside>
+
+            {/* Create Entity Modal */}
+            {isCreating && (
+                <NewEntityModal
+                    onClose={() => setIsCreating(false)}
+                    onSuccess={() => {
+                        setIsCreating(false);
+                        loadEntities();
+                    }}
+                    projectId={id} // Pass current project ID for navigation
+                />
+            )}
         </div>
     );
 };
 
-const SidebarCategory = ({ icon, label, expanded, onToggle, items }) => (
-    <div className="space-y-1">
-        <div
-            onClick={onToggle}
-            className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all hover:bg-white/5 group ${expanded ? 'text-white' : 'text-slate-400'}`}
-        >
-            <div className="flex items-center gap-3">
-                <span className={`material-symbols-outlined text-lg ${expanded ? 'text-primary' : 'opacity-50'}`}>{icon}</span>
-                <span className="text-xs font-bold tracking-wide uppercase">{label}</span>
-            </div>
-            <span className={`material-symbols-outlined text-sm transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`}>expand_more</span>
-        </div>
+// --- Subcomponents ---
 
-        {expanded && (
-            <div className="ml-4 pl-4 border-l border-white/5 space-y-1 animate-in slide-in-from-top-2 duration-300">
-                {items.map(item => (
-                    <Link
-                        key={item.id}
-                        to={`/entities/${item.type}/${item.id}`}
-                        className="flex items-center gap-3 px-3 py-2 rounded-xl text-[11px] font-medium text-slate-500 hover:text-white hover:bg-primary/10 hover:border-primary/20 border border-transparent transition-all group"
-                    >
-                        <div className="size-1.5 rounded-full bg-slate-700 group-hover:bg-primary transition-colors"></div>
-                        {item.name}
-                    </Link>
-                ))}
+const NewEntityModal = ({ onClose, onSuccess, projectId }) => {
+    const navigate = useNavigate();
+    const [name, setName] = useState('');
+    const [type, setType] = useState('entidadindividual');
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!name) return;
+        setLoading(true);
+
+        try {
+            const res = await api.put('/bd/insertar', {
+                tipoEntidad: type,
+                nombre: name,
+                descripcion: 'Created via Architect Interface'
+            });
+
+            // Navigate to the new entity view
+            // res.entidad should have the ID
+            if (res.entidad && res.entidad.id) {
+                // Determine URL part based on type
+                // Mapping: entidadindividual -> entities/character/:id
+                // We need to match what the Router expects or what the Sidebar links use.
+                // Sidebar uses: /project/:id/entities/:type/:id
+                // But confusingly, Sidebar maps types like 'entidadindividual' directly to URL.
+                // EntityRouter expects: character, location, etc OR entidadindividual, zona etc.
+                // Let's use the raw type for simplicity as the Router supports it
+                navigate(`/project/${projectId}/entities/${type}/${res.entidad.id}`);
+            }
+
+            onSuccess();
+        } catch (err) {
+            alert("Creation failed: " + err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <GlassPanel className="w-full max-w-md p-8 border-white/10 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-purple-500"></div>
+
+                <h2 className="text-2xl font-bold text-white mb-2">Forging New Entity</h2>
+                <p className="text-sm text-slate-400 mb-6">Define the essence of a new creation for your world.</p>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Entity Name</label>
+                        <input
+                            autoFocus
+                            type="text"
+                            className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all"
+                            placeholder="e.g. The Crystal Spire"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Classification</label>
+                        <select
+                            className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary/50 outline-none appearance-none"
+                            value={type}
+                            onChange={(e) => setType(e.target.value)}
+                        >
+                            <option value="entidadindividual">Character / NPC</option>
+                            <option value="zona">Location / Zone</option>
+                            <option value="entidadcolectiva">Item / Artifact / Group</option>
+                            <option value="construccion">Construction / Building</option>
+                            <option value="efectos">Effect / Spell</option>
+                            <option value="interaccion">Interaction / Event</option>
+                        </select>
+                    </div>
+
+                    <div className="pt-4 flex gap-3">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="flex-1 py-3 rounded-xl bg-surface-light border border-white/5 text-slate-300 font-bold hover:bg-white/5 transition-all"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={loading || !name}
+                            className="flex-1 py-3 rounded-xl bg-primary hover:bg-primary-light text-white font-bold shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        >
+                            {loading ? 'Forging...' : 'Create Entry'}
+                        </button>
+                    </div>
+                </form>
+            </GlassPanel>
+        </div>
+    );
+};
+
+const SidebarCategory = ({ icon, label, expanded, onToggle, items }) => {
+    const { id } = useParams();
+    return (
+        <div className="space-y-1">
+            <div
+                onClick={onToggle}
+                className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all hover:bg-white/5 group ${expanded ? 'text-white' : 'text-slate-400'}`}
+            >
+                <div className="flex items-center gap-3">
+                    <span className={`material-symbols-outlined text-lg ${expanded ? 'text-primary' : 'opacity-50'}`}>{icon}</span>
+                    <span className="text-xs font-bold tracking-wide uppercase">{label}</span>
+                </div>
+                <span className={`material-symbols-outlined text-sm transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`}>expand_more</span>
             </div>
-        )}
-    </div>
-);
+
+            {expanded && (
+                <div className="ml-4 pl-4 border-l border-white/5 space-y-1 animate-in slide-in-from-top-2 duration-300">
+                    {items.map(item => (
+                        <Link
+                            key={item.id}
+                            to={`/project/${id}/entities/${item.type}/${item.id}`}
+                            className="flex items-center gap-3 px-3 py-2 rounded-xl text-[11px] font-medium text-slate-500 hover:text-white hover:bg-primary/10 hover:border-primary/20 border border-transparent transition-all group"
+                        >
+                            <div className="size-1.5 rounded-full bg-slate-700 group-hover:bg-primary transition-colors"></div>
+                            {item.name}
+                        </Link>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
 
 const SidebarItem = ({ icon, label, count, active, to }) => (
     <Link

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import GlassPanel from '../../components/common/GlassPanel';
 import Button from '../../components/common/Button';
-import api from '../../services/api';
+import api from '../../../js/services/api';
 
 const CollectiveView = ({ id }) => {
     const [collective, setCollective] = useState(null);

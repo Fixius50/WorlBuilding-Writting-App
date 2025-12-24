@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Button from '../components/common/Button';
 import CreateProjectModal from '../components/dashboard/CreateProjectModal';
-import api from '../services/api';
+import api from '../../js/services/api';
 
 import GlassPanel from '../components/common/GlassPanel';
 

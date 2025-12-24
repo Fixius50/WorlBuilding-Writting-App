@@ -24,19 +24,20 @@ function App() {
                     <Route path="/settings" element={<Settings />} />
 
                     {/* Architect View for Projects */}
-                    <Route element={<ArchitectLayout />}>
-                        <Route path="/project/:id" element={<ProjectView />} />
-                        <Route path="/writing" element={<WritingView />} />
+                    {/* Architect View for Projects */}
+                    <Route path="/project/:id" element={<ArchitectLayout />}>
+                        <Route index element={<ProjectView />} />
+                        <Route path="writing" element={<WritingView />} />
 
                         {/* Specialized Entity Views */}
-                        <Route path="/entities/:type/:id" element={<EntityRouter />} />
-                        <Route path="/entities/:type" element={<div className="p-8 text-white">List View for :type (Coming Soon)</div>} />
+                        <Route path="entities/:type/:id" element={<EntityRouter />} />
+                        <Route path="entities/:type" element={<div className="p-8 text-white">List View for :type (Coming Soon)</div>} />
 
                         {/* Other modules inside Architect */}
-                        <Route path="/map" element={<MapRouter />} />
-                        <Route path="/timeline" element={<TimelineView />} />
-                        <Route path="/languages" element={<LinguisticsRouter />} />
-                        <Route path="/graph" element={<GraphView />} />
+                        <Route path="map" element={<MapRouter />} />
+                        <Route path="timeline" element={<TimelineView />} />
+                        <Route path="languages" element={<LinguisticsRouter />} />
+                        <Route path="graph" element={<GraphView />} />
                     </Route>
                 </Route>
             </Routes>

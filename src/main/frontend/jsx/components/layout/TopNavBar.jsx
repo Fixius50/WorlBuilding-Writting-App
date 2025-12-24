@@ -34,14 +34,14 @@ const TopNavBar = () => {
 
                 <div className="w-px h-4 bg-white/10 mx-1"></div>
 
-                {path !== '/dashboard' && path !== '/settings' && (
+                {path !== '/dashboard' && path !== '/settings' && activeProjectId && (
                     <nav className="flex items-center gap-1">
-                        <NavItem to={projectPath} icon="grid_view" label="Dashboard" active={path.startsWith('/project/')} />
-                        <NavItem to="/writing" icon="edit_note" label="Writing" active={path.startsWith('/writing')} />
-                        <NavItem to="/timeline" icon="event_note" label="Timeline" active={path.includes('/timeline')} />
-                        <NavItem to="/map" icon="map" label="Cartography" active={path.includes('/map')} />
-                        <NavItem to="/languages" icon="translate" label="Linguistics" active={path.includes('/languages')} />
-                        <NavItem to="/graph" icon="hub" label="Graph" active={path.includes('/graph')} />
+                        <NavItem to={`/project/${activeProjectId}`} icon="grid_view" label="Dashboard" active={path === `/project/${activeProjectId}` || path === `/project/${activeProjectId}/`} />
+                        <NavItem to={`/project/${activeProjectId}/writing`} icon="edit_note" label="Writing" active={path.includes('/writing')} />
+                        <NavItem to={`/project/${activeProjectId}/timeline`} icon="event_note" label="Timeline" active={path.includes('/timeline')} />
+                        <NavItem to={`/project/${activeProjectId}/map`} icon="map" label="Cartography" active={path.includes('/map')} />
+                        <NavItem to={`/project/${activeProjectId}/languages`} icon="translate" label="Linguistics" active={path.includes('/languages')} />
+                        <NavItem to={`/project/${activeProjectId}/graph`} icon="hub" label="Graph" active={path.includes('/graph')} />
                     </nav>
                 )}
                 {(path === '/dashboard' || path === '/settings') && (

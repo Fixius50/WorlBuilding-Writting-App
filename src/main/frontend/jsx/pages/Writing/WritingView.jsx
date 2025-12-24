@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import GlassPanel from '../../components/common/GlassPanel';
 import Button from '../../components/common/Button';
-import api from '../../services/api';
+import api from '../../../js/services/api';
 
 const WritingView = () => {
     const [notebook, setNotebook] = useState(null);
