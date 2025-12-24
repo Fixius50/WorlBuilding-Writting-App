@@ -76,17 +76,28 @@ public class ProyectoController {
     /**
      * Abre un proyecto existente (lo establece en sesión)
      */
-    @GetMapping("/{nombre}")
-    public ResponseEntity<?> abrirProyecto(@PathVariable String nombre, HttpSession session) {
+    @GetMapping("/{identifier}")
+    public ResponseEntity<?> abrirProyecto(@PathVariable String identifier, HttpSession session) {
         Usuario usuarioActual = (Usuario) session.getAttribute("user");
-        Optional<Cuaderno> cuaderno = cuadernoRepository.findByUsuario(usuarioActual).stream()
-                .filter(c -> c.getNombreProyecto().equalsIgnoreCase(nombre))
-                .findFirst();
+        Optional<Cuaderno> cuaderno = Optional.empty();
+
+        // Try to parse as ID first
+        try {
+            Long id = Long.parseLong(identifier);
+            cuaderno = cuadernoRepository.findById(id)
+                    .filter(c -> c.getUsuario().getId().equals(usuarioActual.getId()));
+        } catch (NumberFormatException e) {
+            // Not an ID, try as name
+            cuaderno = cuadernoRepository.findByUsuario(usuarioActual).stream()
+                    .filter(c -> c.getNombreProyecto().equalsIgnoreCase(identifier))
+                    .findFirst();
+        }
 
         if (cuaderno.isEmpty()) {
             return ResponseEntity.status(404).body(Map.of("error", "Proyecto no encontrado o no te pertenece"));
         }
 
+        // CRITICAL: Set the session variable used by other controllers
         session.setAttribute(PROYECTO_ACTIVO, cuaderno.get().getNombreProyecto());
 
         return ResponseEntity.ok(Map.of(

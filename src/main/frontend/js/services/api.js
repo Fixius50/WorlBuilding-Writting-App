@@ -11,6 +11,7 @@ const api = {
         const response = await fetch(url, {
             ...options,
             headers,
+            credentials: 'include', // Ensure cookies (JSESSIONID) are sent/received
         });
 
         if (!response.ok) {
