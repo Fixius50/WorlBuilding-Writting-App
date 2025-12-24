@@ -34,14 +34,21 @@ const TopNavBar = () => {
 
                 <div className="w-px h-4 bg-white/10 mx-1"></div>
 
-                <nav className="flex items-center gap-1">
-                    <NavItem to={projectPath} icon="grid_view" label="Dashboard" active={path.startsWith('/project/')} />
-                    <NavItem to="/writing" icon="edit_note" label="Writing" active={path.startsWith('/writing')} />
-                    <NavItem to="/timeline" icon="event_note" label="Timeline" active={path.includes('/timeline')} />
-                    <NavItem to="/map" icon="map" label="Cartography" active={path.includes('/map')} />
-                    <NavItem to="/languages" icon="translate" label="Linguistics" active={path.includes('/languages')} />
-                    <NavItem to="/graph" icon="hub" label="Graph" active={path.includes('/graph')} />
-                </nav>
+                {path !== '/dashboard' && path !== '/settings' && (
+                    <nav className="flex items-center gap-1">
+                        <NavItem to={projectPath} icon="grid_view" label="Dashboard" active={path.startsWith('/project/')} />
+                        <NavItem to="/writing" icon="edit_note" label="Writing" active={path.startsWith('/writing')} />
+                        <NavItem to="/timeline" icon="event_note" label="Timeline" active={path.includes('/timeline')} />
+                        <NavItem to="/map" icon="map" label="Cartography" active={path.includes('/map')} />
+                        <NavItem to="/languages" icon="translate" label="Linguistics" active={path.includes('/languages')} />
+                        <NavItem to="/graph" icon="hub" label="Graph" active={path.includes('/graph')} />
+                    </nav>
+                )}
+                {(path === '/dashboard' || path === '/settings') && (
+                    <div className="flex items-center gap-1 px-4">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Vault Access Area</span>
+                    </div>
+                )}
 
                 <div className="w-px h-4 bg-white/10 mx-1"></div>
 

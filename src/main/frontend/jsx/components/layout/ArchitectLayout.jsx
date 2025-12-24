@@ -114,7 +114,7 @@ const ArchitectLayout = () => {
                 {/* Close toggle inside sidebar */}
                 <button
                     onClick={() => setLeftOpen(false)}
-                    className="absolute top-6 -right-5 z-40 size-10 rounded-full bg-surface-dark border border-white/10 flex items-center justify-center text-slate-400 hover:text-white shadow-2xl transition-all"
+                    className="absolute top-1/2 -translate-y-1/2 -right-5 z-40 size-10 rounded-full bg-surface-dark border border-white/10 flex items-center justify-center text-slate-400 hover:text-white shadow-2xl transition-all"
                 >
                     <span className="material-symbols-outlined text-xl">chevron_left</span>
                 </button>
@@ -221,7 +221,7 @@ const ArchitectLayout = () => {
                 {/* Close toggle inside sidebar */}
                 <button
                     onClick={() => setRightOpen(false)}
-                    className="absolute top-6 -left-5 z-40 size-10 rounded-full bg-surface-dark border border-white/10 flex items-center justify-center text-slate-400 hover:text-white shadow-2xl transition-all"
+                    className="absolute top-1/2 -translate-y-1/2 -left-5 z-40 size-10 rounded-full bg-surface-dark border border-white/10 flex items-center justify-center text-slate-400 hover:text-white shadow-2xl transition-all"
                 >
                     <span className="material-symbols-outlined text-xl">chevron_right</span>
                 </button>
