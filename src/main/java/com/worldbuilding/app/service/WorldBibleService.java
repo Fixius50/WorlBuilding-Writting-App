@@ -116,6 +116,24 @@ public class WorldBibleService {
         return atributoValorRepository.save(valor);
     }
 
+    @Transactional
+    public AtributoPlantilla createTemplate(Long carpetaId, String nombre, String tipo, String metadata,
+            boolean required) {
+        Optional<Carpeta> carpetaOpt = carpetaRepository.findById(carpetaId);
+        if (carpetaOpt.isEmpty())
+            throw new RuntimeException("Folder not found");
+
+        AtributoPlantilla plantilla = new AtributoPlantilla();
+        plantilla.setCarpeta(carpetaOpt.get());
+        plantilla.setNombre(nombre);
+        plantilla.setTipo(tipo);
+        plantilla.setMetadata(metadata);
+        plantilla.setEsObligatorio(required);
+        // Default visual order logic could go here
+
+        return atributoPlantillaRepository.save(plantilla);
+    }
+
     public static class ValueUpdateDTO {
         private Long valorId;
         private String nuevoValor;

@@ -31,6 +31,9 @@ public class ProyectoController {
     @PostMapping("/crear")
     public ResponseEntity<?> crearProyecto(@RequestBody Map<String, String> body, HttpSession session) {
         Usuario usuarioActual = (Usuario) session.getAttribute("user");
+        if (usuarioActual == null)
+            return ResponseEntity.status(401).body(Map.of("error", "No autenticado"));
+
         String nombre = body.get("nombreProyecto");
         String tipo = body.get("tipo");
         String genero = body.get("genero");
@@ -79,6 +82,9 @@ public class ProyectoController {
     @GetMapping("/{identifier}")
     public ResponseEntity<?> abrirProyecto(@PathVariable String identifier, HttpSession session) {
         Usuario usuarioActual = (Usuario) session.getAttribute("user");
+        if (usuarioActual == null)
+            return ResponseEntity.status(401).body(Map.of("error", "No autenticado"));
+
         Optional<Cuaderno> cuaderno = Optional.empty();
 
         // Try to parse as ID first
@@ -128,6 +134,9 @@ public class ProyectoController {
     @GetMapping
     public ResponseEntity<?> listarProyectos(HttpSession session) {
         Usuario usuarioActual = (Usuario) session.getAttribute("user");
+        if (usuarioActual == null)
+            return ResponseEntity.status(401).body(Map.of("error", "No autenticado"));
+
         try {
             List<Cuaderno> proyectos = cuadernoRepository.findByUsuarioId(usuarioActual.getId());
             return ResponseEntity.ok(proyectos.stream()
@@ -159,6 +168,9 @@ public class ProyectoController {
     @DeleteMapping("/{nombre}")
     public ResponseEntity<?> eliminarProyecto(@PathVariable String nombre, HttpSession session) {
         Usuario usuarioActual = (Usuario) session.getAttribute("user");
+        if (usuarioActual == null)
+            return ResponseEntity.status(401).body(Map.of("error", "No autenticado"));
+
         Optional<Cuaderno> cuaderno = cuadernoRepository.findByUsuarioId(usuarioActual.getId()).stream()
                 .filter(c -> c.getNombreProyecto().equalsIgnoreCase(nombre))
                 .findFirst();

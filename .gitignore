@@ -48,3 +48,4 @@ data/*
 .env.local
 
 Docs/Referencias_visuales/
+.github

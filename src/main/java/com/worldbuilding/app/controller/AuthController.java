@@ -83,8 +83,9 @@ public class AuthController {
     }
 
     private void provisionUserDatabase(Long userId) throws java.io.IOException {
-        java.nio.file.Path source = java.nio.file.Paths.get("src/main/resources/data/worldbuilding.db");
-        java.nio.file.Path targetDir = java.nio.file.Paths.get("src/main/resources/data/users");
+        java.nio.file.Path dataDir = resolveDataDir();
+        java.nio.file.Path source = dataDir.resolve("worldbuilding.db");
+        java.nio.file.Path targetDir = dataDir.resolve("users");
 
         if (!java.nio.file.Files.exists(targetDir)) {
             java.nio.file.Files.createDirectories(targetDir);
@@ -92,6 +93,20 @@ public class AuthController {
 
         java.nio.file.Path target = targetDir.resolve("user_" + userId + ".db");
         java.nio.file.Files.copy(source, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    private java.nio.file.Path resolveDataDir() {
+        String rootDir = System.getProperty("user.dir");
+        java.nio.file.Path basePath = java.nio.file.Paths.get(rootDir);
+
+        // Check if we are in parent dir or project dir
+        if (!java.nio.file.Files.exists(basePath.resolve("src"))) {
+            if (java.nio.file.Files.exists(basePath.resolve("WorldbuildingApp").resolve("src"))) {
+                basePath = basePath.resolve("WorldbuildingApp");
+            }
+        }
+
+        return basePath.resolve("src").resolve("main").resolve("resources").resolve("data");
     }
 
     @PostMapping("/logout")

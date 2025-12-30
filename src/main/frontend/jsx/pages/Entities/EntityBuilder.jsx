@@ -225,6 +225,33 @@ const AttributeField = ({ attribute, value, onChange }) => {
                         <span className="text-xs text-text-muted">{value === 'true' ? 'Enabled' : 'Disabled'}</span>
                     </div>
                 );
+            case 'select':
+                let options = [];
+                try {
+                    const meta = JSON.parse(plantilla.metadata || '{}');
+                    options = meta.options || [];
+                } catch (e) {
+                    console.error("Invalid metadata for select", e);
+                }
+                return (
+                    <div className="relative">
+                        <select
+                            className="w-full bg-black/30 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50 appearance-none cursor-pointer"
+                            value={value || ''}
+                            onChange={(e) => onChange(e.target.value)}
+                        >
+                            <option value="">Select an option...</option>
+                            {options.map((opt, i) => (
+                                <option key={i} value={opt} className="bg-surface-dark text-white p-2">
+                                    {opt}
+                                </option>
+                            ))}
+                        </select>
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-white/50">
+                            <span className="material-symbols-outlined text-sm">unfold_more</span>
+                        </div>
+                    </div>
+                );
             case 'date':
                 return (
                     <input
@@ -236,8 +263,9 @@ const AttributeField = ({ attribute, value, onChange }) => {
                 );
             default:
                 return (
-                    <div className="text-sm font-medium text-white/70 italic p-2 rounded-lg bg-white/5">
-                        Type: {plantilla.tipo} (Renderer coming soon)
+                    <div className="text-sm font-medium text-white/70 italic p-2 rounded-lg bg-white/5 border border-white/5">
+                        <span className="text-[10px] uppercase font-bold text-slate-500 mr-2">{plantilla.tipo}</span>
+                        {value}
                     </div>
                 );
         }

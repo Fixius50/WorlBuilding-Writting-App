@@ -26,6 +26,9 @@ public class AtributoPlantilla {
     @Column(columnDefinition = "CLOB")
     private String descripcion;
 
+    @Column(columnDefinition = "CLOB") // JSON for options (e.g., dropdown items, table config)
+    private String metadata;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "carpeta_id", nullable = false)
     private Carpeta carpeta;
@@ -80,6 +83,14 @@ public class AtributoPlantilla {
 
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
+    }
+
+    public String getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
     }
 
     public Carpeta getCarpeta() {

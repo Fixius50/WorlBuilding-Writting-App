@@ -16,11 +16,30 @@ public class MultiTenantDataSource implements DataSource {
     private final DataSource masterDataSource;
 
     public MultiTenantDataSource() {
-        // Configure Master DB
+        // Configure Master DB with absolute path
+        String dbPath = resolveDataPath("worldbuilding.db");
+
+        System.out.println(">>> MASTER DB PATH: " + dbPath); // Debug Log
+
         DriverManagerDataSource master = new DriverManagerDataSource();
         master.setDriverClassName("org.sqlite.JDBC");
-        master.setUrl("jdbc:sqlite:src/main/resources/data/worldbuilding.db");
+        master.setUrl("jdbc:sqlite:" + dbPath);
         this.masterDataSource = master;
+    }
+
+    private String resolveDataPath(String fileName) {
+        String rootDir = System.getProperty("user.dir");
+        java.nio.file.Path basePath = java.nio.file.Paths.get(rootDir);
+
+        // Check if we are in parent dir or project dir
+        if (!java.nio.file.Files.exists(basePath.resolve("src"))) {
+            if (java.nio.file.Files.exists(basePath.resolve("WorldbuildingApp").resolve("src"))) {
+                basePath = basePath.resolve("WorldbuildingApp");
+            }
+        }
+
+        return basePath.resolve("src").resolve("main").resolve("resources").resolve("data").resolve(fileName)
+                .toString();
     }
 
     private DataSource determineDataSource() {
@@ -33,10 +52,13 @@ public class MultiTenantDataSource implements DataSource {
 
         // If tenant exists, retrieve or create its DataSource
         return tenantDataSources.computeIfAbsent(tenantId, id -> {
+            String dbPath = resolveDataPath("users/user_" + id + ".db");
+
+            System.out.println(">>> TENANT DB PATH [" + id + "]: " + dbPath); // Debug Log
+
             DriverManagerDataSource ds = new DriverManagerDataSource();
             ds.setDriverClassName("org.sqlite.JDBC");
-            // The user DB path
-            ds.setUrl("jdbc:sqlite:src/main/resources/data/users/user_" + id + ".db");
+            ds.setUrl("jdbc:sqlite:" + dbPath);
             return ds;
         });
     }

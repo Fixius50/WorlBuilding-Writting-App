@@ -104,6 +104,21 @@ public class WorldBibleController {
         }
     }
 
+    @PostMapping("/folders/{id}/templates")
+    public ResponseEntity<?> createTemplate(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
+        try {
+            String nombre = (String) payload.get("nombre");
+            String tipo = (String) payload.get("tipo");
+            String metadata = (String) payload.get("metadata"); // JSON string or null
+            Boolean required = (Boolean) payload.get("required");
+
+            return ResponseEntity.ok(
+                    worldBibleService.createTemplate(id, nombre, tipo, metadata, required != null ? required : false));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/folders/{id}/templates")
     public ResponseEntity<?> getTemplates(@PathVariable Long id) {
         Optional<Carpeta> carpeta = carpetaRepository.findById(id);
