@@ -1,7 +1,6 @@
 package com.worldbuilding.app.model;
 
 import jakarta.persistence.*;
-import java.util.List;
 
 @Entity
 @Table(name = "usuario")
@@ -19,10 +18,6 @@ public class Usuario {
 
     @Column(nullable = false)
     private String email;
-
-    // One user has many projects (Cuadernos)
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Cuaderno> cuadernos;
 
     // Getters and Setters
     public Long getId() {
@@ -55,13 +50,5 @@ public class Usuario {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public List<Cuaderno> getCuadernos() {
-        return cuadernos;
-    }
-
-    public void setCuadernos(List<Cuaderno> cuadernos) {
-        this.cuadernos = cuadernos;
     }
 }

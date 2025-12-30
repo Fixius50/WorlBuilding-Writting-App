@@ -11,6 +11,9 @@ import TimelineView from './pages/Timeline/TimelineView';
 import MapRouter from './pages/Maps/MapRouter';
 import LinguisticsRouter from './pages/Linguistics/LinguisticsRouter';
 import WritingView from './pages/Writing/WritingView';
+import TrashView from './pages/Trash/TrashView';
+import EntityBuilder from './pages/Entities/EntityBuilder';
+import FolderView from './pages/Entities/FolderView';
 
 function App() {
     return (
@@ -30,13 +33,18 @@ function App() {
                         <Route path="writing" element={<WritingView />} />
 
                         {/* Specialized Entity Views */}
-                        <Route path="entities/:type/:id" element={<EntityRouter />} />
+                        <Route path="entities/:type/:entityId" element={<EntityRouter />} />
                         <Route path="entities/:type" element={<div className="p-8 text-white">List View for :type (Coming Soon)</div>} />
+
+                        {/* New Dynamic Bible Routes */}
+                        <Route path="bible/entity/:entityId" element={<EntityBuilder />} />
+                        <Route path="bible/folder/:folderId" element={<FolderView />} />
 
                         {/* Other modules inside Architect */}
                         <Route path="map" element={<MapRouter />} />
                         <Route path="timeline" element={<TimelineView />} />
                         <Route path="languages" element={<LinguisticsRouter />} />
+                        <Route path="trash" element={<TrashView />} />
                         <Route path="graph" element={<GraphView />} />
                     </Route>
                 </Route>

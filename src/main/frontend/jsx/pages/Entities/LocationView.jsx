@@ -31,9 +31,10 @@ const LocationView = ({ id }) => {
                 tipoEntidad: 'zona'
             });
             setIsEditing(false);
-            alert("Changes saved!");
+            // alert("Changes saved!"); // Removed
         } catch (err) {
-            alert("Error saving: " + err.message);
+            console.error("Error saving:", err);
+            // alert("Error saving: " + err.message); // Removed
         }
     };
 

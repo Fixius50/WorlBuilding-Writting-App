@@ -42,7 +42,7 @@ public class ProyectoController {
         }
 
         // Verificar si ya existe PARA ESTE USUARIO
-        boolean existe = cuadernoRepository.findByUsuario(usuarioActual).stream()
+        boolean existe = cuadernoRepository.findByUsuarioId(usuarioActual.getId()).stream()
                 .anyMatch(c -> c.getNombreProyecto().equalsIgnoreCase(nombre));
 
         if (existe) {
@@ -57,7 +57,7 @@ public class ProyectoController {
             nuevo.setTipo(tipo != null ? tipo : "General");
             nuevo.setGenero(genero != null ? genero : "Fantasía");
             nuevo.setImagenUrl(imagenUrl != null ? imagenUrl : "");
-            nuevo.setUsuario(usuarioActual);
+            nuevo.setUsuarioId(usuarioActual.getId());
 
             cuadernoRepository.save(nuevo);
 
@@ -85,10 +85,10 @@ public class ProyectoController {
         try {
             Long id = Long.parseLong(identifier);
             cuaderno = cuadernoRepository.findById(id)
-                    .filter(c -> c.getUsuario().getId().equals(usuarioActual.getId()));
+                    .filter(c -> c.getUsuarioId().equals(usuarioActual.getId()));
         } catch (NumberFormatException e) {
             // Not an ID, try as name
-            cuaderno = cuadernoRepository.findByUsuario(usuarioActual).stream()
+            cuaderno = cuadernoRepository.findByUsuarioId(usuarioActual.getId()).stream()
                     .filter(c -> c.getNombreProyecto().equalsIgnoreCase(identifier))
                     .findFirst();
         }
@@ -129,7 +129,7 @@ public class ProyectoController {
     public ResponseEntity<?> listarProyectos(HttpSession session) {
         Usuario usuarioActual = (Usuario) session.getAttribute("user");
         try {
-            List<Cuaderno> proyectos = cuadernoRepository.findByUsuario(usuarioActual);
+            List<Cuaderno> proyectos = cuadernoRepository.findByUsuarioId(usuarioActual.getId());
             return ResponseEntity.ok(proyectos.stream()
                     .map(c -> Map.of(
                             "nombreProyecto", c.getNombreProyecto(),
@@ -159,7 +159,7 @@ public class ProyectoController {
     @DeleteMapping("/{nombre}")
     public ResponseEntity<?> eliminarProyecto(@PathVariable String nombre, HttpSession session) {
         Usuario usuarioActual = (Usuario) session.getAttribute("user");
-        Optional<Cuaderno> cuaderno = cuadernoRepository.findByUsuario(usuarioActual).stream()
+        Optional<Cuaderno> cuaderno = cuadernoRepository.findByUsuarioId(usuarioActual.getId()).stream()
                 .filter(c -> c.getNombreProyecto().equalsIgnoreCase(nombre))
                 .findFirst();
 

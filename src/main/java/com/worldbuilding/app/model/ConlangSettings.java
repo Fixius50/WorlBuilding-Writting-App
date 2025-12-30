@@ -12,7 +12,7 @@ public class ConlangSettings {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id", unique = true)
-    private Proyecto project;
+    private Cuaderno project;
 
     @Column(name = "language_name")
     private String languageName;
@@ -29,11 +29,11 @@ public class ConlangSettings {
         this.id = id;
     }
 
-    public Proyecto getProject() {
+    public Cuaderno getProject() {
         return project;
     }
 
-    public void setProject(Proyecto project) {
+    public void setProject(Cuaderno project) {
         this.project = project;
     }
 

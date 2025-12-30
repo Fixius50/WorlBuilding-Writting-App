@@ -44,7 +44,7 @@ public class DataSeeder implements CommandLineRunner {
             proyecto.setNombreProyecto("Proyecto Alpha");
             proyecto.setTitulo("Crónicas del Multiverso");
             proyecto.setDescripcion("Un proyecto de prueba generado automáticamente.");
-            proyecto.setUsuario(user);
+            proyecto.setUsuarioId(user.getId());
             cuadernoRepository.save(proyecto);
 
             // Create default sheet

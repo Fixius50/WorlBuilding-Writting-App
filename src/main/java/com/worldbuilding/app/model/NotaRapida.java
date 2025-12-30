@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "nota_rapida")
+@org.hibernate.annotations.SQLDelete(sql = "UPDATE nota_rapida SET deleted = true, deleted_date = CURRENT_TIMESTAMP WHERE id = ?")
+@org.hibernate.annotations.Where(clause = "deleted = false")
 public class NotaRapida {
 
     @Id
@@ -28,6 +30,12 @@ public class NotaRapida {
 
     @Column
     private String categoria; // Ej: Lore, Idea, Tarea
+
+    @Column(columnDefinition = "BOOLEAN DEFAULT false")
+    private boolean deleted = false;
+
+    @Column(name = "deleted_date")
+    private LocalDateTime deletedDate;
 
     // Getters y Setters
     public Long getId() {
@@ -76,5 +84,21 @@ public class NotaRapida {
 
     public void setCategoria(String categoria) {
         this.categoria = categoria;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public LocalDateTime getDeletedDate() {
+        return deletedDate;
+    }
+
+    public void setDeletedDate(LocalDateTime deletedDate) {
+        this.deletedDate = deletedDate;
     }
 }

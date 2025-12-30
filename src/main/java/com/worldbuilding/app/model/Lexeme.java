@@ -28,7 +28,7 @@ public class Lexeme {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
-    private Proyecto project;
+    private Cuaderno project;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -87,11 +87,11 @@ public class Lexeme {
         this.rasterImagePath = rasterImagePath;
     }
 
-    public Proyecto getProject() {
+    public Cuaderno getProject() {
         return project;
     }
 
-    public void setProject(Proyecto project) {
+    public void setProject(Cuaderno project) {
         this.project = project;
     }
 

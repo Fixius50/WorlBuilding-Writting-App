@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "cuaderno")
+@org.hibernate.annotations.SQLDelete(sql = "UPDATE cuaderno SET deleted = true, deleted_date = CURRENT_TIMESTAMP WHERE id = ?")
+@org.hibernate.annotations.Where(clause = "deleted = false")
 public class Cuaderno {
 
     @Id
@@ -14,10 +16,8 @@ public class Cuaderno {
     @Column(name = "nombre_proyecto", nullable = false)
     private String nombreProyecto;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id") // Nullable for now to ease migration of existing rows if any
-    @com.fasterxml.jackson.annotation.JsonIgnore
-    private Usuario usuario;
+    @Column(name = "usuario_id")
+    private Long usuarioId;
 
     @Column(nullable = false)
     private String titulo;
@@ -36,6 +36,12 @@ public class Cuaderno {
 
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion = LocalDateTime.now();
+
+    @Column(columnDefinition = "BOOLEAN DEFAULT false")
+    private boolean deleted = false;
+
+    @Column(name = "deleted_date")
+    private LocalDateTime deletedDate;
 
     // Getters y Setters
     public Long getId() {
@@ -78,12 +84,12 @@ public class Cuaderno {
         this.fechaCreacion = fechaCreacion;
     }
 
-    public Usuario getUsuario() {
-        return usuario;
+    public Long getUsuarioId() {
+        return usuarioId;
     }
 
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
+    public void setUsuarioId(Long usuarioId) {
+        this.usuarioId = usuarioId;
     }
 
     public String getTipo() {
@@ -108,5 +114,21 @@ public class Cuaderno {
 
     public void setImagenUrl(String imagenUrl) {
         this.imagenUrl = imagenUrl;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public LocalDateTime getDeletedDate() {
+        return deletedDate;
+    }
+
+    public void setDeletedDate(LocalDateTime deletedDate) {
+        this.deletedDate = deletedDate;
     }
 }

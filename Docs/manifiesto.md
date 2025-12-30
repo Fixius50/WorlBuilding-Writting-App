@@ -1,9 +1,7 @@
 # Manifiesto del Proyecto: Chronos Atlas (WorldbuildingApp)
 
 ## 1. Visión y Propósito
-**Chronos Atlas** es una herramienta profesional de construcción de mundos (Worldbuilding) diseñada específicamente para **ESCRITORES**. A diferencia de los gestores de campañas de rol tradicionales, Chronos Atlas prioriza la **Escritura Inmersiva** y el flujo creativo sin fricciones.
-
-Es una aplicación **"Local-First"**, garantizando privacidad, velocidad y soporte offline real, permitiendo que el universo del autor crezca de forma segura en su propia máquina.
+**Chronos Atlas "Next"** es un entorno modular de construcción de mundos profesional. Abandonamos las categorías rígidas por un sistema de **Bible Bible Dinámica** basada en carpetas y un **Entity Builder Universal** que permite a los autores definir cada detalle de su mundo con flexibilidad total.
 
 ---
 
@@ -19,10 +17,11 @@ Es una aplicación **"Local-First"**, garantizando privacidad, velocidad y sopor
 El diseño busca un equilibrio entre la claridad de un IDE moderno y la mística de un antiguo estudio de alquimia.
 
 *   **Paleta de Colores:**
-    *   **Void Dark:** `#0B0C15` (Fondo de aplicación).
-    *   **Glass Panel:** Transparencias con desenfoque (backdrop-blur) y bordes sutiles.
-    *   **Accent Primary:** `#6366f1` (Indigo - Interacción principal) y `#10b981` (Esmeralda - Acentos narrativos).
-    *   **Text Primary:** `#E0D4B4` (Parchment - Lectura optimizada).
+    - **Void Dark:** `#09090b` (Fondo profundo).
+    - **Glass Border:** `rgba(255, 255, 255, 0.05)`.
+    - **Accent Indigo:** `#6366f1` (Primario).
+    - **Accent Emerald:** `#10b981` (Secundario).
+    - **Parchment White:** `#fafafa` (Texto).
 *   **Tipografía:**
     *   **UI/Sistemas:** `Outfit` / `Inter` (Sans-serif limpia).
     *   **Lectura/Escritura:** `Cormorant Garamond` / `Playfair Display` (Serif elegante para inmersión profunda).
@@ -31,21 +30,17 @@ El diseño busca un equilibrio entre la claridad de un IDE moderno y la mística
 
 ## 4. Mapa de Funcionalidades (Roadmap & Status)
 
-### A. Escritura Inmersiva [IMPLEMENTADO]
-*   **Lienzo Premium:** Paginación visual (hojas físicas) en lugar de scroll infinito.
-*   **Header de Estadísticas:** Conteo de palabras y tiempo de lectura en tiempo real.
-*   **Menciones Inteligentes (@):** Autocompletado vinculado a la Biblia del Mundo para invocar o crear entidades sin salir del texto.
-*   **Panel de Notas Rápidas:** Sidebar lateral para capturar ráfagas de Lore o ideas al vuelo.
-*   **Barra Flotante:** Herramientas de formato minimalistas que aparecen solo cuando se necesitan.
+### A. Entorno Modular [EN REDISEÑO]
+*   **3-Panel Layout**: Explorador jerárquico, Lienzo Central y Caja de Atributos.
+*   **Navigation Dock**: Barra flotante inferior con desenfoque.
 
-### B. Biblia del Mundo (Base de Datos) [IMPLEMENTADO]
-*   **Gestión de Entidades:** Fichas detalladas para Personajes, Lugares, Objetos y Organizaciones.
-*   **Vistas Duales:** Alternancia entre Vista de Lista (densidad) y Vista de Cuadrícula (visual).
-*   **Nodos de Causalidad:** Vinculación lógica entre entidades y eventos históricos.
+### B. Biblia del Mundo Dinámica [EN PLANIFICACIÓN]
+*   **Carpetas Hierárquicas**: Organización libre de lore.
+*   **Attribute Inheritance**: Las carpetas definen la estructura de las entidades hijas.
 
-### C. El Atlas & Cronología [IMPLEMENTADO]
-*   **Atlas Geográfico:** Visor de mapas con pines interactivos conectados a la Biblia.
-*   **Línea de Tiempo:** Visualización horizontal de la historia del mundo.
+### C. Entity Builder [EN PLANIFICACIÓN]
+*   **Drag & Drop**: Construcción de fichas mediante bloques de atributos.
+*   **Pestañas Contextuales**: Mapas y Cronologías integradas directamente en las fichas.
 
 ---
 

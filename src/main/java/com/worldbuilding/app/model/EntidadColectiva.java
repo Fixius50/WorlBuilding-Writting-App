@@ -1,9 +1,14 @@
 package com.worldbuilding.app.model;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "entidad_colectiva")
+@org.hibernate.annotations.SQLDelete(sql = "UPDATE entidad_colectiva SET deleted = true, deleted_date = CURRENT_TIMESTAMP WHERE id = ?")
+@org.hibernate.annotations.Where(clause = "deleted = false")
 public class EntidadColectiva {
 
     @Id
@@ -26,6 +31,12 @@ public class EntidadColectiva {
 
     @Column(name = "es_nodo")
     private boolean esNodo = false;
+
+    @Column(columnDefinition = "BOOLEAN DEFAULT false")
+    private boolean deleted = false;
+
+    @Column(name = "deleted_date")
+    private LocalDateTime deletedDate;
 
     // Getters y Setters
     public Long getId() {
@@ -90,5 +101,21 @@ public class EntidadColectiva {
 
     public void setEsNodo(boolean esNodo) {
         this.esNodo = esNodo;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public LocalDateTime getDeletedDate() {
+        return deletedDate;
+    }
+
+    public void setDeletedDate(LocalDateTime deletedDate) {
+        this.deletedDate = deletedDate;
     }
 }

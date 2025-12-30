@@ -17,6 +17,9 @@ public class AuthController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> credentials, HttpSession session) {
         String username = credentials.get("username");
@@ -27,7 +30,7 @@ public class AuthController {
         }
 
         Optional<Usuario> userOpt = usuarioRepository.findByUsername(username)
-                .filter(u -> u.getPassword().equals(password));
+                .filter(u -> passwordEncoder.matches(password, u.getPassword()));
 
         if (userOpt.isPresent()) {
             Usuario user = userOpt.get();
@@ -61,14 +64,34 @@ public class AuthController {
 
         Usuario nuevoUsuario = new Usuario();
         nuevoUsuario.setUsername(username);
-        nuevoUsuario.setPassword(password); // In production, hash this!
+        nuevoUsuario.setPassword(passwordEncoder.encode(password));
         nuevoUsuario.setEmail(email);
 
         usuarioRepository.save(nuevoUsuario);
 
+        // Provision User Database
+        try {
+            provisionUserDatabase(nuevoUsuario.getId());
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Error creating user workspace: " + e.getMessage()));
+        }
+
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "Usuario creado exitosamente"));
+    }
+
+    private void provisionUserDatabase(Long userId) throws java.io.IOException {
+        java.nio.file.Path source = java.nio.file.Paths.get("src/main/resources/data/worldbuilding.db");
+        java.nio.file.Path targetDir = java.nio.file.Paths.get("src/main/resources/data/users");
+
+        if (!java.nio.file.Files.exists(targetDir)) {
+            java.nio.file.Files.createDirectories(targetDir);
+        }
+
+        java.nio.file.Path target = targetDir.resolve("user_" + userId + ".db");
+        java.nio.file.Files.copy(source, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
     }
 
     @PostMapping("/logout")

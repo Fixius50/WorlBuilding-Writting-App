@@ -28,7 +28,8 @@ const Login = () => {
         try {
             if (isRegister) {
                 await api.post('/auth/register', formData);
-                alert('Account created! Please log in.');
+                // alert('Account created! Please log in.'); // Removed as per request
+                setError('Account created! Please log in.'); // Using error field as status message for now
                 setIsRegister(false);
             } else {
                 const response = await api.post('/auth/login', {

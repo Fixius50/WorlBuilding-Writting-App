@@ -5,34 +5,26 @@ echo  WorldBuilding App V2 - INICIAR
 echo ========================================
 echo.
 
-REM Verificar si MySQL esta corriendo (XAMPP)
-echo [1/3] Verificando MySQL...
-tasklist /FI "IMAGENAME eq mysqld.exe" 2>NUL | find /I /N "mysqld.exe">NUL
+REM Construir Frontend
+echo [2/4] Construyendo Frontend (React)...
+call npm run build
 if %errorlevel% neq 0 (
     echo.
-    echo [ERROR] MySQL no esta corriendo
-    echo.
-    echo SOLUCION:
-    echo 1. Abre XAMPP Control Panel
-    echo 2. Haz clic en 'Start' en MySQL
-    echo 3. Espera a que aparezca el fondo verde
-    echo 4. Vuelve a ejecutar este archivo
-    echo.
+    echo [ERROR] Fallo al construir el frontend.
     pause
     exit /b 1
 )
-
-echo [OK] MySQL esta corriendo (mysqld.exe detectado)
+echo [OK] Frontend actualizado.
 echo.
 
-REM Limpiar compilaciones anteriores
-echo [2/3] Limpiando compilaciones anteriores...
+REM Limpiar compilaciones anteriores (Java)
+echo [3/4] Limpiando compilaciones anteriores...
 if exist target rmdir /s /q target 2>nul
 echo [OK] Limpieza completada
 echo.
 
 REM Iniciar la aplicacion
-echo [3/3] Iniciando WorldBuilding App V2...
+echo [4/4] Iniciando WorldBuilding App V2...
 echo.
 echo ========================================
 echo  La aplicacion se esta iniciando...
@@ -41,6 +33,6 @@ echo  Luego abre: http://localhost:8080
 echo ========================================
 echo.
 
-mvnw.cmd spring-boot:run
+call mvnw.cmd spring-boot:run
 
 pause

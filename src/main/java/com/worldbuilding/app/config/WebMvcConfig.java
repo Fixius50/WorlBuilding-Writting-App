@@ -5,19 +5,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-/**
- * Configuración de MVC para registrar interceptors.
- */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
     @Autowired
-    private ProjectSessionInterceptor projectSessionInterceptor;
+    private TenantInterceptor tenantInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // Aplicar a todas las rutas de API
-        registry.addInterceptor(projectSessionInterceptor)
-                .addPathPatterns("/api/**");
+        registry.addInterceptor(tenantInterceptor).addPathPatterns("/api/**");
     }
 }

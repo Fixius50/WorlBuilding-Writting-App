@@ -1,4 +1,14 @@
-# BitÃ¡cora de Desarrollo (Log Prompts)
+# Bitácora de Desarrollo (Log Prompts)
+
+---
+
+### Prompt ID: 22 (Rediseño "Chronos Atlas Next")
+**Prompt:** "LAS FUNCIONALIDADES (capturas que te pase) sobreescribelas en ese archivo funcionalidades.md. Con esto YA"
+**Resultados:**
+- [DOCS] Transcripción total de 10 imágenes detallando el nuevo paradigma modular.
+- [PLAN] Creación del plan de implementación para el esquema dinámico (Folders/Templates).
+- [ARCH] Reestructuración visual hacia 3 paneles + Bottom Dock.
+
 
 ---
 
@@ -98,3 +108,8 @@
 *   [FEAT] Creados módulos `EntityProfile.jsx`, `CharacterEditor.jsx` y `Settings.jsx` (Imágenes 3, 4, 5).
 *   [FIX] Corregidas rutas de importación relativas post-migración.
 *   [VERIF] Verificación exitosa de renderizado y estética "Arcane Void" vía subagente.
+
+### Prompt ID: 16 (Corrección Error Sintaxis CharacterView)
+> Fix syntax error 'expected catch or finally' in CharacterView.jsx from user report.
+**Resultados:**
+*   [FIX] Eliminado bloque `try` huérfano y código duplicado en `CharacterView.jsx` que causaba crash.

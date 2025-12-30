@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "hoja")
+@org.hibernate.annotations.SQLDelete(sql = "UPDATE hoja SET deleted = true, deleted_date = CURRENT_TIMESTAMP WHERE id = ?")
+@org.hibernate.annotations.Where(clause = "deleted = false")
 public class Hoja {
 
     @Id
@@ -24,6 +26,12 @@ public class Hoja {
 
     @Column(name = "fecha_modificacion")
     private LocalDateTime fechaModificacion = LocalDateTime.now();
+
+    @Column(columnDefinition = "BOOLEAN DEFAULT false")
+    private boolean deleted = false;
+
+    @Column(name = "deleted_date")
+    private LocalDateTime deletedDate;
 
     @OneToMany(mappedBy = "hoja", cascade = CascadeType.ALL, orphanRemoval = true)
     private java.util.List<NotaRapida> notas = new java.util.ArrayList<>();
@@ -75,5 +83,21 @@ public class Hoja {
 
     public void setNotas(java.util.List<NotaRapida> notas) {
         this.notas = notas;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public LocalDateTime getDeletedDate() {
+        return deletedDate;
+    }
+
+    public void setDeletedDate(LocalDateTime deletedDate) {
+        this.deletedDate = deletedDate;
     }
 }

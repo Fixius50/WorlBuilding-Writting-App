@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import GlassPanel from '../../components/common/GlassPanel';
 import Avatar from '../../components/common/Avatar';
 import Button from '../../components/common/Button';
 import api from '../../../js/services/api';
 
 const CharacterView = ({ id }) => {
+    const { id: projectId } = useParams();
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('overview');
     const [character, setCharacter] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -26,6 +29,7 @@ const CharacterView = ({ id }) => {
         }
     };
 
+
     const handleSave = async () => {
         try {
             await api.patch('/bd/modificar', {
@@ -33,9 +37,21 @@ const CharacterView = ({ id }) => {
                 tipoEntidad: 'entidadindividual'
             });
             setIsEditing(false);
-            alert("Changes saved!");
+            // alert("Changes saved!"); // Removed
         } catch (err) {
-            alert("Error saving: " + err.message);
+            console.error("Error saving:", err);
+            // alert("Error saving: " + err.message); // Removed
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!window.confirm("Move this character to the Trash Bin?")) return;
+        try {
+            await api.delete(`/bd/entidadindividual/${id}`);
+            navigate(`/project/${projectId}`);
+        } catch (err) {
+            console.error(err);
+            // alert("Error deleting: " + (err.response?.data?.error || err.message)); // Removed
         }
     };
 
@@ -71,6 +87,11 @@ const CharacterView = ({ id }) => {
                     </div>
 
                     <div className="flex gap-2">
+                        {!isEditing && (
+                            <Button className="border-red-500/30 text-red-400 hover:bg-red-500/10" icon="delete" onClick={handleDelete}>
+                                Delete
+                            </Button>
+                        )}
                         <Button variant="secondary" icon={isEditing ? 'close' : 'edit'} onClick={() => setIsEditing(!isEditing)}>
                             {isEditing ? 'Cancel' : 'Edit Profile'}
                         </Button>

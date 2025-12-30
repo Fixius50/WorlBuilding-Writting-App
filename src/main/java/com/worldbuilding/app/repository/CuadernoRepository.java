@@ -10,5 +10,5 @@ import java.util.List;
 public interface CuadernoRepository extends JpaRepository<Cuaderno, Long> {
     List<Cuaderno> findByNombreProyecto(String nombreProyecto);
 
-    List<Cuaderno> findByUsuario(Usuario usuario);
+    List<Cuaderno> findByUsuarioId(Long usuarioId);
 }

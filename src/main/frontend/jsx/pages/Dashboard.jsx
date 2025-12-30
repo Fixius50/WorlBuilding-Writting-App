@@ -68,7 +68,7 @@ const Dashboard = () => {
                 await api.delete(`/proyectos/${name}`);
                 fetchProjects();
             } catch (err) {
-                alert("Failed to delete project: " + err.message);
+                console.error("Failed to delete project:", err);
             }
         }
     };
@@ -87,7 +87,7 @@ const Dashboard = () => {
                 // navigate(`/project/${response.id}`);
             }
         } catch (err) {
-            alert("Error creating project: " + err.message);
+            console.error("Error creating project:", err);
         }
     };
 

@@ -7,7 +7,7 @@ import CosmicHierarchyView from './CosmicHierarchyView';
 import TerritoryGridView from './TerritoryGridView';
 
 const EntityRouter = () => {
-    const { type, id } = useParams();
+    const { type, entityId } = useParams();
 
     const renderView = () => {
         const lowerType = type?.toLowerCase();
@@ -15,21 +15,21 @@ const EntityRouter = () => {
         switch (lowerType) {
             case 'character':
             case 'entidadindividual':
-                return <CharacterView id={id} />;
+                return <CharacterView id={entityId} />;
             case 'location':
             case 'zona':
-                return <LocationView id={id} />;
+                return <LocationView id={entityId} />;
             case 'culture':
             case 'entidadcolectiva':
-                return <CollectiveView id={id} />;
+                return <CollectiveView id={entityId} />;
             case 'universe':
             case 'galaxy':
             case 'system':
-                return <CosmicHierarchyView id={id} type={lowerType} />;
+                return <CosmicHierarchyView id={entityId} type={lowerType} />;
             case 'planet':
-                return <TerritoryGridView id={id} />;
+                return <TerritoryGridView id={entityId} />;
             case 'construccion':
-                return <LocationView id={id} />; // Reusing LocationView for now
+                return <LocationView id={entityId} />; // Reusing LocationView for now
             case 'efectos':
                 return <div className="p-8 text-white">Effect/Spell View for ID: {id}</div>;
             case 'interaccion':
