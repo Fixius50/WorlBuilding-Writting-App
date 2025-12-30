@@ -76,3 +76,27 @@ Estos errores impidieron que el navegador enviara los datos al backend, aunque e
 * **Symptom:** The new React application loaded a blank dark screen. The index.html was served, but the `#root` element remained empty. No obvious errors in the browser console initially.
 * **Cause**: The `src/main/frontend/jsx/main.jsx` entry point had a ReferenceError. It used `rootElement` in a conditional check before defining it.
 * **Solution**: Correctly defined `const rootElement = document.getElementById('root');` before usage. Added robust try-catch blocks during debugging to verify the fix, then cleaned them up.
+
+---
+
+## 5. Multi-Tenancy & SPA Architecture (v3.6.0)
+
+### Error 5.1: 500 Internal Server Error (Missing User Data Folder)
+* **Síntoma:** Al intentar crear un proyecto con 
+ewuser, el servidor devolvía Error 500. El log mostraba java.sql.SQLException: path to '.../data/users/user_3.db' does not exist.
+* **Causa:** La lógica de aislamiento tenant intentaba conectar a una base de datos SQLite en una carpeta (data/users) que no existía físicamente en el entorno de despliegue, aunque el usuario sí existía en la BD principal.
+* **Solución:** Se añadió la creación automática de directorios en el servicio de registro. Para este caso puntual, se reparó manualmente creando la carpeta src/main/resources/data/users y copiando el template.
+
+### Error 5.2: 404 Whitelabel Error en Recarga (SPA Routing)
+* **Síntoma:** Al recargar la página en una ruta profunda (ej. /project/5/bible), Spring Boot devolvía un 404.
+* **Causa:** Spring Boot intentaba resolver la URL como un recurso estático o endpoint API. Al no existir, fallaba. React Router solo puede manejar la ruta si el servidor devuelve index.html primero.
+* **Solución:**
+    1.  Se creó SpaController.java para redirigir cualquier ruta no-API y no-estática (regex /{path:[^\.]*}) hacia orward:/index.html.
+    2.  Se habilitó spring.mvc.pathmatch.matching-strategy=ant_path_matcher en pplication.properties para soportar las regex complejas.
+
+### Error 5.3: UI Desactualizada tras Cambios (Build Pipeline)
+* **Síntoma:** Los cambios en Sidebar (iconos colapsados) no se veían en el navegador a pesar de estar codificados.
+* **Causa:** El servidor Spring Boot servía los archivos estáticos de 	arget/classes/static, que eran una copia antigua. Vite no estaba compilando automáticamente.
+* **Solución:** Se actualizó INICIAR.bat para ejecutar 
+pm run build antes de arrancar el servidor Java, garantizando que el frontend siempre esté sincronizado.
+
