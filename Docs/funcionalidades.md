@@ -49,8 +49,27 @@ Chronos Atlas evoluciona hacia un entorno de trabajo aún más potente y flexibl
 
 El nuevo paradigma unifica todas las pantallas clave bajo la estructura de tres paneles:
 - **Explorador (Biblia)** a la izquierda.
-- **Lienzo de Trabajo** en el centro (Fichas, Mapas, Grafos, Editores Gráficos, Gestión de Territorios).
+- **Lienzo de Trabajo (Vistas Centrales)**:
+    - **Ficha de Entidad**: Visualización y edición de atributos y contenido anidado.
+    - **Editor Gráfico Versátil**: Lienzo vectorial para símbolos y logogramas.
+    - **Gestión de Territorios**: Listado y gestión geopolítica de biomas y asentamientos.
+    - **Mapa Interactivo**: Navegación y colocación de pines sobre el atlas.
+    - **Visualización de Grafo**: Lienzo dinámico de relaciones entre entidades.
 - **Contexto (Escritura/Atributos)** a la derecha.
+
+---
+
+### 5. Pantalla de Bienvenida a Nuevo Cuaderno
+- **Propósito**: Guiar al usuario en la configuración inicial y ofrecer acceso rápido a acciones clave.
+- **Diseño**:
+    - **Central/Horizontal**: Título de bienvenida, mensajes motivadores y tarjetas de acción destacadas ("Añadir Primera Entidad", "Crear Primer Mapa", "Empezar a Escribir", "Ver Ideas Rápidas").
+    - **Visualización**: Ocupa el área central manteniendo visibles los paneles laterales y la navegación superior. Estilo Glassmorphism Oscuro.
+
+### 6. Creación de Mapa/Zona (Unificado y Extendido)
+- **Diseño**: Área central más alta/larga.
+- **Componentes**:
+    - **Fuente del Lienzo**: Completamente expandida en la parte superior.
+    - **Acordeones**: Secciones "Identidad y Jerarquía" y "Tipo de Mapa" colapsadas por defecto, con indicadores numéricos.
 
 ---
 

@@ -60,9 +60,40 @@ public class WorldbuildingApplication {
             int exitCode = process.waitFor();
             System.out.println(">>> FRONTEND BUILD FINISHED. Exit Code: " + exitCode);
 
+            if (exitCode == 0) {
+                // Manually sync assets from src/main/resources/static to target/classes/static
+                // This is necessary because the app is likely running from target/classes
+                Path srcStatic = projectPath.resolve("src/main/resources/static");
+                Path targetStatic = projectPath.resolve("target/classes/static");
+
+                if (Files.exists(srcStatic) && Files.exists(targetStatic)) {
+                    System.out.println(">>> SYNCING ASSETS: " + srcStatic + " -> " + targetStatic);
+                    copyFolder(srcStatic, targetStatic);
+                    System.out.println(">>> ASSET SYNC COMPLETE.");
+                } else {
+                    System.out.println(">>> SKIPPING ASSET SYNC (Target or Source not found).");
+                }
+            }
+
         } catch (Exception e) {
             System.err.println("!!! ERROR RUNNING FRONTEND BUILD: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private static void copyFolder(Path source, Path target) throws java.io.IOException {
+        Files.walk(source).forEach(sourcePath -> {
+            try {
+                Path targetPath = target.resolve(source.relativize(sourcePath));
+                if (Files.isDirectory(sourcePath)) {
+                    if (!Files.exists(targetPath))
+                        Files.createDirectory(targetPath);
+                } else {
+                    Files.copy(sourcePath, targetPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                }
+            } catch (Exception e) {
+                System.err.println("Failed to copy " + sourcePath + ": " + e.getMessage());
+            }
+        });
     }
 }

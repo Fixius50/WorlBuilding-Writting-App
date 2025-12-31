@@ -27,10 +27,22 @@ const Login = () => {
 
         try {
             if (isRegister) {
-                await api.post('/auth/register', formData);
+                // Auto-generate email from username for registration
+                const autoEmail = `${formData.username.toLowerCase().replace(/\s+/g, '')}@chronos.local`;
+                await api.post('/auth/register', { ...formData, email: autoEmail });
+
                 // alert('Account created! Please log in.'); // Removed as per request
-                setError('Account created! Please log in.'); // Using error field as status message for now
-                setIsRegister(false);
+                setError('Workspace initialized. Decrypting...'); // Simulating login delay
+
+                // Auto-login after register
+                const response = await api.post('/auth/login', {
+                    username: formData.username,
+                    password: formData.password
+                });
+                if (response.success) {
+                    localStorage.setItem('user', JSON.stringify(response));
+                    navigate('/dashboard');
+                }
             } else {
                 const response = await api.post('/auth/login', {
                     username: formData.username,
@@ -88,16 +100,16 @@ const Login = () => {
                     </div>
 
                     {isRegister && (
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Email Communication</label>
+                        <div className="space-y-1 opacity-50 pointer-events-none grayscale">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Email Communication (Disabled)</label>
                             <input
                                 type="email"
                                 name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                className="w-full bg-background-dark/50 border border-glass-border rounded-lg px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
-                                placeholder="robert@chronos.net"
-                                required
+                                value={formData.username ? `${formData.username.toLowerCase().replace(/\s+/g, '')}@chronos.local` : ''}
+                                readOnly
+                                className="w-full bg-background-dark/30 border border-glass-border/30 rounded-lg px-4 py-3 text-slate-500 outline-none cursor-not-allowed"
+                                placeholder="Auto-generated"
+                                tabIndex="-1"
                             />
                         </div>
                     )}

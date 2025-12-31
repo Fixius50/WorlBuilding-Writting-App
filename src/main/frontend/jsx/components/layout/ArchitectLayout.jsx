@@ -45,6 +45,68 @@ const ArchitectLayout = () => {
         }
     };
 
+    const handleCreateFolder = async (parentId = null) => {
+        const name = prompt("Enter folder name:");
+        if (!name) return;
+        try {
+            await api.post('/world-bible/folders', { nombre: name, parentFolderId: parentId });
+            // Refresh logic
+            if (parentId === null) {
+                loadFolders();
+            } else {
+                // If it's a subfolder, we might need to trigger a refresh on the parent item.
+                // For simplified state management, I'll force a full reload or use a context event.
+                // For now: Full reload if simple, or better yet, pass a callback.
+                // Actually, let's just reload root for simplicity or implement a specific event bus later.
+                // Because FolderItem has local state 'content', we need a way to refresh it.
+                window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: parentId } }));
+                if (parentId === null) loadFolders();
+            }
+        } catch (err) {
+            console.error("Error creating folder:", err);
+            alert("Failed to create folder");
+        }
+    };
+
+    const handleRenameFolder = async (folderId, currentName) => {
+        const name = prompt("Rename folder:", currentName);
+        if (!name || name === currentName) return;
+        try {
+            await api.put(`/world-bible/folders/${folderId}`, { nombre: name });
+            window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId } })); // Trigger update
+            loadFolders(); // Reload root just in case
+        } catch (err) {
+            console.error("Error renaming folder:", err);
+        }
+    };
+
+    const handleDeleteFolder = async (folderId) => {
+        if (!confirm("Are you sure you want to delete this folder?")) return;
+        try {
+            await api.delete(`/world-bible/folders/${folderId}`);
+            window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId } }));
+            loadFolders();
+        } catch (err) {
+            console.error("Error deleting folder:", err);
+        }
+    };
+
+    const handleCreateTemplate = async (folderId, type) => {
+        const name = prompt(`Enter name for new ${type} attribute:`);
+        if (!name) return;
+        try {
+            await api.post(`/world-bible/folders/${folderId}/templates`, {
+                nombre: name,
+                tipo: type,
+                required: false
+            });
+            alert("Attribute template added to folder!");
+        } catch (err) {
+            console.error("Error creating template:", err);
+            alert("Failed to add attribute template");
+        }
+    };
+
     return (
         <div className="flex h-screen w-full overflow-hidden bg-background-dark text-text-main font-sans selection:bg-primary/30">
 
@@ -96,7 +158,11 @@ const ArchitectLayout = () => {
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between px-2 mb-2">
                                     <h3 className="text-[10px] font-black uppercase tracking-widest text-text-muted">Structure</h3>
-                                    <button className="text-text-muted hover:text-primary transition-colors">
+                                    <button
+                                        onClick={() => handleCreateFolder(null)}
+                                        className="text-text-muted hover:text-primary transition-colors"
+                                        title="Create Root Folder"
+                                    >
                                         <span className="material-symbols-outlined text-sm">create_new_folder</span>
                                     </button>
                                 </div>
@@ -109,7 +175,14 @@ const ArchitectLayout = () => {
                                 ) : (
                                     <div className="space-y-1">
                                         {folders.map(folder => (
-                                            <FolderItem key={folder.id} folder={folder} />
+                                            <FolderItem
+                                                key={folder.id}
+                                                folder={folder}
+                                                onCreateSubfolder={handleCreateFolder}
+                                                onRename={handleRenameFolder}
+                                                onDelete={handleDeleteFolder}
+                                                onCreateTemplate={handleCreateTemplate}
+                                            />
                                         ))}
                                     </div>
                                 )}
@@ -153,7 +226,8 @@ const ArchitectLayout = () => {
                         leftOpen, setLeftOpen,
                         rightOpen, setRightOpen,
                         availableTemplates, setAvailableTemplates,
-                        setAddAttributeHandler
+                        setAddAttributeHandler,
+                        projectName
                     }} />
                 </div>
 
@@ -259,27 +333,45 @@ const getIconForType = (type) => {
     }
 };
 
-const FolderItem = ({ folder }) => {
+const FolderItem = ({ folder, onCreateSubfolder, onRename, onDelete, onCreateTemplate }) => {
     const { id: projectId } = useParams();
     const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
     const [content, setContent] = useState({ folders: [], entities: [] });
     const [loaded, setLoaded] = useState(false);
+    const [contextMenu, setContextMenu] = useState(null); // { x, y }
+
+    // Listen for updates to this folder to reload content
+    useEffect(() => {
+        const handleUpdate = (e) => {
+            // If the update event is relevant to THIS folder (e.g. a child was added), reload.
+            // Or if this folder itself was renamed (though parent handles that re-render usually).
+            if (e.detail?.folderId === folder.id) {
+                loadContent();
+            }
+        };
+        window.addEventListener('folder-update', handleUpdate);
+        return () => window.removeEventListener('folder-update', handleUpdate);
+    }, [folder.id]);
+
+    const loadContent = async () => {
+        try {
+            const [subs, ents] = await Promise.all([
+                api.get(`/world-bible/folders/${folder.id}/subfolders`),
+                api.get(`/world-bible/folders/${folder.id}/entities`)
+            ]);
+            setContent({ folders: subs, entities: ents });
+            setLoaded(true);
+        } catch (err) {
+            console.error("Error reloading folder content:", err);
+        }
+    };
 
     const toggle = async (e) => {
         e.stopPropagation();
         setIsOpen(!isOpen);
-        if (!loaded) {
-            try {
-                const [subs, ents] = await Promise.all([
-                    api.get(`/world-bible/folders/${folder.id}/subfolders`),
-                    api.get(`/world-bible/folders/${folder.id}/entities`)
-                ]);
-                setContent({ folders: subs, entities: ents });
-                setLoaded(true);
-            } catch (err) {
-                console.error("Error loading folder content:", err);
-            }
+        if (!loaded && !isOpen) { // Only load if opening and not loaded
+            loadContent();
         }
     };
 
@@ -287,11 +379,28 @@ const FolderItem = ({ folder }) => {
         navigate(`/project/${projectId}/bible/folder/${folder.id}`);
     };
 
+    const handleContextMenu = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setContextMenu({ x: e.clientX, y: e.clientY });
+    };
+
+    const closeContextMenu = () => setContextMenu(null);
+
+    // Close menu on click elsewhere
+    useEffect(() => {
+        if (contextMenu) {
+            window.addEventListener('click', closeContextMenu);
+            return () => window.removeEventListener('click', closeContextMenu);
+        }
+    }, [contextMenu]);
+
     return (
-        <div className="space-y-1">
+        <div className="space-y-1 select-none">
             <div
-                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-text-muted hover:text-white hover:bg-white/5 cursor-pointer transition-all group"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-text-muted hover:text-white hover:bg-white/5 cursor-pointer transition-all group relative"
                 onClick={navigateToFolder}
+                onContextMenu={handleContextMenu}
             >
                 <span
                     onClick={toggle}
@@ -301,12 +410,68 @@ const FolderItem = ({ folder }) => {
                 </span>
                 <span className="material-symbols-outlined text-lg text-primary/70">folder</span>
                 <span className="truncate flex-1">{folder.nombre}</span>
+
+                {/* Hover Actions (Desktop) */}
+                <div className="absolute right-2 opacity-0 group-hover:opacity-100 flex gap-1 bg-surface-dark border border-glass-border rounded-lg p-0.5 shadow-lg transition-opacity">
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onCreateSubfolder(folder.id); }}
+                        className="p-1 hover:bg-white/10 rounded" title="New Subfolder"
+                    >
+                        <span className="material-symbols-outlined text-xs">create_new_folder</span>
+                    </button>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onRename(folder.id, folder.nombre); }}
+                        className="p-1 hover:bg-white/10 rounded" title="Rename"
+                    >
+                        <span className="material-symbols-outlined text-xs">edit</span>
+                    </button>
+                </div>
             </div>
+
+            {/* Context Menu Portal could be better, but fixed for now */}
+            {contextMenu && (
+                <div
+                    className="fixed bg-surface-dark border border-glass-border shadow-2xl rounded-xl py-2 z-50 w-48 text-xs font-medium flex flex-col"
+                    style={{ top: contextMenu.y, left: contextMenu.x }}
+                    onClick={(e) => e.stopPropagation()} // Prevent closing immediately
+                >
+                    <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2" onClick={() => { onCreateSubfolder(folder.id); closeContextMenu(); }}>
+                        <span className="material-symbols-outlined text-sm">create_new_folder</span> New Folder
+                    </button>
+                    <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2" onClick={() => { onRename(folder.id, folder.nombre); closeContextMenu(); }}>
+                        <span className="material-symbols-outlined text-sm">edit</span> Rename
+                    </button>
+                    <div className="h-px bg-white/5 my-1" />
+
+                    <div className="px-4 py-1 text-[10px] uppercase font-bold text-text-muted opacity-50">Add Default Attribute</div>
+                    <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2" onClick={() => { onCreateTemplate(folder.id, 'short_text'); closeContextMenu(); }}>
+                        <span className="material-symbols-outlined text-sm">short_text</span> Text Field
+                    </button>
+                    <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2" onClick={() => { onCreateTemplate(folder.id, 'number'); closeContextMenu(); }}>
+                        <span className="material-symbols-outlined text-sm">pin</span> Number
+                    </button>
+                    <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2" onClick={() => { onCreateTemplate(folder.id, 'select'); closeContextMenu(); }}>
+                        <span className="material-symbols-outlined text-sm">list</span> Select List
+                    </button>
+
+                    <div className="h-px bg-white/5 my-1" />
+                    <button className="px-4 py-2 hover:bg-red-500/10 text-red-400 text-left flex items-center gap-2" onClick={() => { onDelete(folder.id); closeContextMenu(); }}>
+                        <span className="material-symbols-outlined text-sm">delete</span> Delete
+                    </button>
+                </div>
+            )}
 
             {isOpen && (
                 <div className="ml-6 pl-4 border-l border-glass-border space-y-1 animate-slide-in">
                     {content.folders.map(sub => (
-                        <FolderItem key={sub.id} folder={sub} />
+                        <FolderItem
+                            key={sub.id}
+                            folder={sub}
+                            onCreateSubfolder={onCreateSubfolder}
+                            onRename={onRename}
+                            onDelete={onDelete}
+                            onCreateTemplate={onCreateTemplate}
+                        />
                     ))}
                     {content.entities.map(ent => (
                         <Link

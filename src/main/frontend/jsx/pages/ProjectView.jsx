@@ -20,7 +20,7 @@ const ActionCard = ({ icon, title, desc, color }) => (
 
 const ProjectView = () => {
     // We can access sidebar controls if needed, but for now we match the image
-    const { leftOpen, rightOpen } = useOutletContext();
+    const { projectName } = useOutletContext();
 
     return (
         <div className="flex-1 flex flex-col items-center justify-center p-12 gap-16 max-w-6xl mx-auto w-full">
@@ -31,32 +31,38 @@ const ProjectView = () => {
 
                 <div className="space-y-4">
                     <h1 className="text-6xl font-manrope font-black text-white tracking-tighter leading-tight">
-                        Welcome back, Traveler.
+                        Bienvenido de nuevo, Viajero.
                     </h1>
                     <p className="text-xl text-slate-400 font-medium leading-relaxed">
-                        Your world <span className="text-primary font-bold">Nebula</span> is waiting to be discovered. The canvas is empty, but your imagination is boundless. How shall we begin today?
+                        Tu mundo <span className="text-primary font-bold">{projectName || 'Cargando...'}</span> espera ser descubierto. El lienzo está vacío, pero tu imaginación no tiene límites. ¿Cómo empezamos hoy?
                     </p>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full items-stretch animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-300">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 w-full items-stretch animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-300">
                 <ActionCard
                     icon="person_add"
-                    title="Create New Entity"
-                    desc="Add a character, location, or significant item to your growing database."
+                    title="Añadir Entidad"
+                    desc="Agrega un personaje, lugar o item importante a tu base de datos."
                     color="bg-indigo-600"
                 />
                 <ActionCard
                     icon="map"
-                    title="Create New Map"
-                    desc="Draft a cartographic representation of a region or city."
+                    title="Crear Mapa"
+                    desc="Dibuja una representación cartográfica de una región."
                     color="bg-purple-600"
                 />
                 <ActionCard
-                    icon="tempest"
-                    title="Define Magic System"
-                    desc="Establish the rules, costs, and limitations of magic or technology."
+                    icon="edit_note"
+                    title="Empezar a Escribir"
+                    desc="Abre el editor de texto y comienza un nuevo capítulo."
                     color="bg-emerald-600"
+                />
+                <ActionCard
+                    icon="lightbulb"
+                    title="Ver Ideas Rápidas"
+                    desc="Revisa tus notas y fragmentos de inspiración guardados."
+                    color="bg-amber-600"
                 />
             </div>
         </div>
