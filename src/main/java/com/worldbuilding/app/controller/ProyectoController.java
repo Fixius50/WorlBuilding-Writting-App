@@ -146,7 +146,8 @@ public class ProyectoController {
                             "tipo", c.getTipo() != null ? c.getTipo() : "",
                             "genero", c.getGenero() != null ? c.getGenero() : "",
                             "imagenUrl", c.getImagenUrl() != null ? c.getImagenUrl() : "",
-                            "descripcion", c.getDescripcion() != null ? c.getDescripcion() : ""))
+                            "descripcion", c.getDescripcion() != null ? c.getDescripcion() : "",
+                            "usuario", usuarioActual.getUsername())) // Add username for URL generation
                     .toList());
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Error listando proyectos"));

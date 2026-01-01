@@ -6,8 +6,8 @@ import api from '../../js/services/api';
 
 import GlassPanel from '../components/common/GlassPanel';
 
-const ProjectCard = ({ title, desc, type, updated, image, id, name, onDelete }) => (
-    <Link to={`/project/${id}`} className="block group">
+const ProjectCard = ({ title, desc, type, updated, image, id, name, username, onDelete }) => (
+    <Link to={`/${username}/${name}`} className="block group">
         <GlassPanel className="h-64 flex flex-col p-6 hover:shadow-2xl hover:shadow-primary/20 hover:border-primary/50 transition-all relative">
             <div className="absolute top-6 right-6 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
@@ -20,7 +20,7 @@ const ProjectCard = ({ title, desc, type, updated, image, id, name, onDelete }) 
 
             <div className="mb-auto">
                 <div className="flex items-center gap-2 mb-4">
-                    <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary border border-primary/20 group-hover:scale-110 transition-transform">
+                    <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary border border-primary/20 group-hover:scale-105 transition-transform">
                         <span className="material-symbols-outlined text-xl">
                             {type === 'Fantasy' ? 'auto_awesome' : type === 'Sci-Fi' ? 'rocket_launch' : 'public'}
                         </span>
@@ -105,6 +105,7 @@ const Dashboard = () => {
                             key={proj.id}
                             id={proj.id}
                             name={proj.nombreProyecto}
+                            username={proj.usuario || 'Roberto'} // Use fetched username, fallback only if missing (shouldn't be)
                             title={proj.nombreProyecto}
                             desc={proj.descripcion}
                             type={proj.tipo}

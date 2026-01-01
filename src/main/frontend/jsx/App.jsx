@@ -28,15 +28,17 @@ function App() {
 
                     {/* Architect View for Projects */}
                     {/* Architect View for Projects */}
-                    <Route path="/project/:id" element={<ArchitectLayout />}>
+                    {/* Architect View for Projects */}
+                    <Route path="/:username/:projectName" element={<ArchitectLayout />}>
                         <Route index element={<ProjectView />} />
                         <Route path="writing" element={<WritingView />} />
 
                         {/* Specialized Entity Views */}
                         <Route path="entities/:type/:entityId" element={<EntityRouter />} />
-                        <Route path="entities/:type" element={<div className="p-8 text-white">List View for :type (Coming Soon)</div>} />
+                        <Route path="settings" element={<Settings />} />
 
                         {/* New Dynamic Bible Routes */}
+                        <Route path="bible" element={<div className="p-8 text-white">World Bible Root View (Select a folder)</div>} />
                         <Route path="bible/entity/:entityId" element={<EntityBuilder />} />
                         <Route path="bible/folder/:folderId" element={<FolderView />} />
 

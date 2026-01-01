@@ -1,5 +1,5 @@
 import React from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useNavigate, useParams } from 'react-router-dom';
 import GlassPanel from '../components/common/GlassPanel';
 
 const ActionCard = ({ icon, title, desc, color }) => (
@@ -20,7 +20,9 @@ const ActionCard = ({ icon, title, desc, color }) => (
 
 const ProjectView = () => {
     // We can access sidebar controls if needed, but for now we match the image
-    const { projectName } = useOutletContext();
+    const { projectName, handleCreateEntity } = useOutletContext();
+    const navigate = useNavigate();
+    const { username } = useParams(); // Should be available if ProjectView is child of route with :username
 
     return (
         <div className="flex-1 flex flex-col items-center justify-center p-12 gap-16 max-w-6xl mx-auto w-full">
@@ -40,30 +42,38 @@ const ProjectView = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 w-full items-stretch animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-300">
-                <ActionCard
-                    icon="person_add"
-                    title="Añadir Entidad"
-                    desc="Agrega un personaje, lugar o item importante a tu base de datos."
-                    color="bg-indigo-600"
-                />
-                <ActionCard
-                    icon="map"
-                    title="Crear Mapa"
-                    desc="Dibuja una representación cartográfica de una región."
-                    color="bg-purple-600"
-                />
-                <ActionCard
-                    icon="edit_note"
-                    title="Empezar a Escribir"
-                    desc="Abre el editor de texto y comienza un nuevo capítulo."
-                    color="bg-emerald-600"
-                />
-                <ActionCard
-                    icon="lightbulb"
-                    title="Ver Ideas Rápidas"
-                    desc="Revisa tus notas y fragmentos de inspiración guardados."
-                    color="bg-amber-600"
-                />
+                <div onClick={() => handleCreateEntity(null, 'default')}>
+                    <ActionCard
+                        icon="person_add"
+                        title="Añadir Entidad"
+                        desc="Agrega un personaje, lugar o item importante a tu base de datos."
+                        color="bg-indigo-600"
+                    />
+                </div>
+                <div onClick={() => handleCreateEntity(null, 'map')}>
+                    <ActionCard
+                        icon="map"
+                        title="Crear Mapa"
+                        desc="Dibuja una representación cartográfica de una región."
+                        color="bg-purple-600"
+                    />
+                </div>
+                <div onClick={() => navigate('writing')}>
+                    <ActionCard
+                        icon="edit_note"
+                        title="Empezar a Escribir"
+                        desc="Abre el editor de texto y comienza un nuevo capítulo."
+                        color="bg-emerald-600"
+                    />
+                </div>
+                <div onClick={() => alert("WIP: Notas Rápidas")}>
+                    <ActionCard
+                        icon="lightbulb"
+                        title="Ver Ideas Rápidas"
+                        desc="Revisa tus notas y fragmentos de inspiración guardados."
+                        color="bg-amber-600"
+                    />
+                </div>
             </div>
         </div>
     );

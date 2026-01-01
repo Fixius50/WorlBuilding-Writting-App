@@ -4,10 +4,6 @@ import TopNavBar from './TopNavBar';
 const AppLayout = () => {
     return (
         <div className="flex h-screen w-full overflow-hidden bg-background-dark relative">
-            {/* TopNavBar is now floating/absolute to not interfere with full-height sidebars */}
-            <div className="absolute top-0 left-0 w-full pointer-events-none z-50">
-                <TopNavBar />
-            </div>
             <main className="flex-1 min-w-0 relative overflow-hidden flex flex-col">
                 <Outlet />
             </main>

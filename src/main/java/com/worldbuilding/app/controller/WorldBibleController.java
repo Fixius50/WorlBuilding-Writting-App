@@ -93,28 +93,8 @@ public class WorldBibleController {
         Cuaderno proyecto = getProyectoActual(session);
         if (proyecto == null)
             return ResponseEntity.status(401).body(Map.of("error", "No active project"));
-        // Assuming repository has a method to find by notebook/project or we filter
-        // generically
-        // If not, we might need to rely on service. For now, assuming EntidadGenerica
-        // has specific query.
-        // Actually, let's use the service if possible, but I don't see the Service
-        // code.
-        // I will trust that EntidadGenericaRepository can find by whatever constraint,
-        // but since I don't see the Repo definition, I'll try to find by nothing
-        // (findAll) and filter?
-        // No, that's bad. Let's assume there is a findByCuaderno_NombreProyecto or
-        // similar in the Repo or Service.
-        // Since I can't see Service, I'll implement a simple findAll for now, but
-        // really should be scoped.
-        // Wait, looking at getEntitiesInFolder (line 57), it uses findByCarpeta.
-        // Let's use worldBibleService.getAllEntities(proyecto) assuming I can add it or
-        // it exists.
-        // Since I cannot edit Service easily without seeing it, I'll assume the Repo
-        // has 'findAll' and I'll use that for now as a placeholder for "Real Data"
-        // BUT the user wants "Real Data".
-        // Let's look at `EntidadGenericaRepository` first? No, let's just add the
-        // endpoint and assume standard JPA.
-        return ResponseEntity.ok(entidadGenericaRepository.findAll());
+
+        return ResponseEntity.ok(entidadGenericaRepository.findByProyecto(proyecto));
     }
 
     @GetMapping("/entities/{id}")

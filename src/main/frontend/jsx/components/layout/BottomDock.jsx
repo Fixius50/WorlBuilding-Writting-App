@@ -2,14 +2,15 @@ import React from 'react';
 import { NavLink, useParams } from 'react-router-dom';
 
 const BottomDock = () => {
-    const { id } = useParams();
+    const { username, projectName } = useParams();
+    const baseUrl = `/${username}/${projectName}`;
 
     const navItems = [
-        { icon: 'home', label: 'Home', to: `/project/${id}` },
-        { icon: 'auto_stories', label: 'World Bible', to: `/project/${id}/bible` },
-        { icon: 'map', label: 'Maps', to: `/project/${id}/map` },
-        { icon: 'event_note', label: 'Timeline', to: `/project/${id}/timeline` },
-        { icon: 'edit_note', label: 'Writing', to: `/project/${id}/writing` },
+        { icon: 'home', label: 'Home', to: baseUrl },
+        { icon: 'auto_stories', label: 'World Bible', to: `${baseUrl}/bible` },
+        { icon: 'map', label: 'Maps', to: `${baseUrl}/map` },
+        { icon: 'event_note', label: 'Timeline', to: `${baseUrl}/timeline` },
+        { icon: 'edit_note', label: 'Writing', to: `${baseUrl}/writing` },
         { icon: 'settings', label: 'Settings', to: '/settings' }
     ];
 
@@ -20,7 +21,7 @@ const BottomDock = () => {
                     <NavLink
                         key={idx}
                         to={item.to}
-                        end={item.to.endsWith(id)}
+                        end={item.to === baseUrl}
                         className={({ isActive }) => `
                             flex flex-col items-center justify-center min-w-[64px] h-12 rounded-full transition-all duration-300 group relative
                             ${isActive ? 'bg-primary/20 text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'}
