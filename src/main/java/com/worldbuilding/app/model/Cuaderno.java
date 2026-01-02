@@ -16,9 +16,6 @@ public class Cuaderno {
     @Column(name = "nombre_proyecto", nullable = false)
     private String nombreProyecto;
 
-    @Column(name = "usuario_id")
-    private Long usuarioId;
-
     @Column(nullable = false)
     private String titulo;
 
@@ -82,14 +79,6 @@ public class Cuaderno {
 
     public void setFechaCreacion(LocalDateTime fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
-    }
-
-    public Long getUsuarioId() {
-        return usuarioId;
-    }
-
-    public void setUsuarioId(Long usuarioId) {
-        this.usuarioId = usuarioId;
     }
 
     public String getTipo() {

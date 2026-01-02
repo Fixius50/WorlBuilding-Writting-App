@@ -47,12 +47,19 @@ public class DatabaseMigration implements CommandLineRunner {
         }
     }
 
-    private void migrateDatabase(File dbFile) {
+    public void migrateDatabase(File dbFile) {
         System.out.println("Checking schema for: " + dbFile.getName());
         String url = "jdbc:sqlite:" + dbFile.getAbsolutePath();
 
         try (Connection conn = DriverManager.getConnection(url);
                 Statement stmt = conn.createStatement()) {
+
+            // STEP 0: Ensure tables exist (CREATE IF NOT EXISTS)
+            createCuadernoTable(stmt);
+            createCarpetaTable(stmt);
+            createEntidadGenericaTable(stmt);
+            createAtributoPlantillaTable(stmt);
+            createAtributoValorTable(stmt);
 
             // 1. Check/Add 'cuaderno' columns
             migrateTable(stmt, "cuaderno", "deleted", "BOOLEAN DEFAULT 0");
@@ -66,9 +73,90 @@ public class DatabaseMigration implements CommandLineRunner {
             migrateTable(stmt, "entidad_generica", "deleted", "BOOLEAN DEFAULT 0");
             migrateTable(stmt, "entidad_generica", "deleted_date", "DATETIME");
 
+            // 4. Check/Add 'atributo_plantilla' columns
+            migrateTable(stmt, "atributo_plantilla", "descripcion", "TEXT");
+
         } catch (Exception e) {
             System.err.println("  [ERROR] Failed to migrate " + dbFile.getName() + ": " + e.getMessage());
         }
+    }
+
+    private void createCuadernoTable(Statement stmt) throws Exception {
+        stmt.execute("""
+                    CREATE TABLE IF NOT EXISTS cuaderno (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        nombre_proyecto VARCHAR(255) NOT NULL,
+                        titulo VARCHAR(255),
+                        descripcion TEXT,
+                        tipo VARCHAR(255),
+                        genero VARCHAR(255),
+                        imagen_url TEXT,
+                        fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        deleted BOOLEAN DEFAULT 0,
+                        deleted_date DATETIME
+                    )
+                """);
+    }
+
+    private void createCarpetaTable(Statement stmt) throws Exception {
+        stmt.execute("""
+                    CREATE TABLE IF NOT EXISTS carpeta (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        nombre VARCHAR(255) NOT NULL,
+                        proyecto_id BIGINT,
+                        padre_id BIGINT,
+                        deleted BOOLEAN DEFAULT 0,
+                        deleted_date DATETIME,
+                        FOREIGN KEY (proyecto_id) REFERENCES cuaderno(id),
+                        FOREIGN KEY (padre_id) REFERENCES carpeta(id)
+                    )
+                """);
+    }
+
+    private void createEntidadGenericaTable(Statement stmt) throws Exception {
+        stmt.execute("""
+                    CREATE TABLE IF NOT EXISTS entidad_generica (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        nombre VARCHAR(255) NOT NULL,
+                        proyecto_id BIGINT,
+                        carpeta_id BIGINT,
+                        tipo_especial VARCHAR(255),
+                        deleted BOOLEAN DEFAULT 0,
+                        deleted_date DATETIME,
+                        FOREIGN KEY (proyecto_id) REFERENCES cuaderno(id),
+                        FOREIGN KEY (carpeta_id) REFERENCES carpeta(id)
+                    )
+                """);
+    }
+
+    private void createAtributoPlantillaTable(Statement stmt) throws Exception {
+        stmt.execute("""
+                    CREATE TABLE IF NOT EXISTS atributo_plantilla (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        nombre VARCHAR(255) NOT NULL,
+                        tipo VARCHAR(255),
+                        metadata TEXT,
+                        valor_defecto TEXT,
+                        es_obligatorio BOOLEAN DEFAULT 0,
+                        descripcion TEXT,
+                        orden_visual INTEGER DEFAULT 0,
+                        carpeta_id BIGINT,
+                        FOREIGN KEY (carpeta_id) REFERENCES carpeta(id)
+                    )
+                """);
+    }
+
+    private void createAtributoValorTable(Statement stmt) throws Exception {
+        stmt.execute("""
+                    CREATE TABLE IF NOT EXISTS atributo_valor (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        valor TEXT,
+                        entidad_id BIGINT,
+                        plantilla_id BIGINT,
+                        FOREIGN KEY (entidad_id) REFERENCES entidad_generica(id),
+                        FOREIGN KEY (plantilla_id) REFERENCES atributo_plantilla(id)
+                    )
+                """);
     }
 
     private void migrateTable(Statement stmt, String tableName, String columnName, String columnType) {

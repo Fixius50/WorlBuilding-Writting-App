@@ -11,19 +11,10 @@ const api = {
         const response = await fetch(url, {
             ...options,
             headers,
-            credentials: 'include', // Ensure cookies (JSESSIONID) are sent/received
+            credentials: 'include',
         });
 
         if (!response.ok) {
-            // Global 401 handler (Session Expired)
-            // Skip this for login requests, as they naturally return 401 on failure
-            if (response.status === 401 && !endpoint.includes('/auth/login')) {
-                localStorage.removeItem('user');
-                sessionStorage.clear();
-                if (window.location.pathname !== '/login' && window.location.pathname !== '/') {
-                    window.location.href = '/';
-                }
-            }
             const errorData = await response.json().catch(() => ({}));
             throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
         }
@@ -64,25 +55,22 @@ const api = {
     }
 };
 
-// Export services matching the previous file structure but using our fetch wrapper
-export const authService = {
-    login: (credentials) => api.post('/auth/login', credentials),
-    register: (data) => api.post('/auth/register', data),
-    logout: () => api.post('/auth/logout', {}),
-    getCurrentUser: () => api.get('/auth/me'),
-};
-
 export const projectService = {
-    list: () => api.get('/proyectos'),
-    create: (data) => api.post('/proyectos/crear', data),
+    // Deprecated? No, used by ArchitectLayout. But simplified.
+    // open: (name) => api.get(`/proyectos/${name}`),
+    // getActive: () => api.get(`/proyectos/activo`),
+
+    // Legacy mapping or just direct usage
     open: (name) => api.get(`/proyectos/${name}`),
+    getActive: () => api.get(`/proyectos/activo`),
     close: () => api.post('/proyectos/cerrar', {}),
-    getActive: () => api.get('/proyectos/activo'),
 };
 
 export const workspaceService = {
     list: () => api.get('/workspaces'),
-    select: (projectId) => api.post('/workspaces/select', { projectId }),
+    create: (name) => api.post('/workspaces', { name }),
+    delete: (name) => api.delete('/workspaces/' + name),
+    select: (projectName) => api.post('/workspaces/select', { projectName }),
 };
 
 export const entityService = {
@@ -102,11 +90,9 @@ export const timelineService = {
 export const conlangService = {
     list: () => api.get('/conlang/lenguas'),
     vectorize: (formData) => {
-        // Custom handling for multipart/form-data as we shouldn't set Content-Type to application/json
         return fetch(`${BASE_URL}/conlang/vectorize`, {
             method: 'POST',
             body: formData,
-            // fetch automatically sets Content-Type for FormData
         }).then(res => {
             if (!res.ok) throw new Error('Vectorization failed');
             return res.json();

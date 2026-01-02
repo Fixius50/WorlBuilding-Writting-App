@@ -1,8 +1,9 @@
 package com.worldbuilding.app.controller;
 
+import com.worldbuilding.app.config.TenantContext;
 import com.worldbuilding.app.model.Cuaderno;
-import com.worldbuilding.app.model.Usuario;
 import com.worldbuilding.app.repository.CuadernoRepository;
+import com.worldbuilding.app.service.ProjectDiscoveryService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -12,10 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * Controlador de proyectos (Cuadernos) usando JPA.
- * Gestiona la entidad Cuaderno en la base de datos única (SQLite).
- */
 @RestController
 @RequestMapping("/api/proyectos")
 public class ProyectoController {
@@ -25,91 +22,52 @@ public class ProyectoController {
     @Autowired
     private CuadernoRepository cuadernoRepository;
 
-    /**
-     * Crea un nuevo proyecto (Cuaderno)
-     */
-    @PostMapping("/crear")
-    public ResponseEntity<?> crearProyecto(@RequestBody Map<String, String> body, HttpSession session) {
-        Usuario usuarioActual = (Usuario) session.getAttribute("user");
-        if (usuarioActual == null)
-            return ResponseEntity.status(401).body(Map.of("error", "No autenticado"));
-
-        String nombre = body.get("nombreProyecto");
-        String tipo = body.get("tipo");
-        String genero = body.get("genero");
-        String imagenUrl = body.get("imagenUrl");
-        String descripcion = body.get("descripcion");
-
-        if (nombre == null || nombre.isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "El nombre del proyecto es requerido"));
-        }
-
-        // Verificar si ya existe PARA ESTE USUARIO
-        boolean existe = cuadernoRepository.findByUsuarioId(usuarioActual.getId()).stream()
-                .anyMatch(c -> c.getNombreProyecto().equalsIgnoreCase(nombre));
-
-        if (existe) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Ya tienes un proyecto con ese nombre"));
-        }
-
-        try {
-            Cuaderno nuevo = new Cuaderno();
-            nuevo.setNombreProyecto(nombre);
-            nuevo.setTitulo(nombre);
-            nuevo.setDescripcion(descripcion != null ? descripcion : "Nuevo proyecto");
-            nuevo.setTipo(tipo != null ? tipo : "General");
-            nuevo.setGenero(genero != null ? genero : "Fantasía");
-            nuevo.setImagenUrl(imagenUrl != null ? imagenUrl : "");
-            nuevo.setUsuarioId(usuarioActual.getId());
-
-            cuadernoRepository.save(nuevo);
-
-            session.setAttribute(PROYECTO_ACTIVO, nombre);
-
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "mensaje", "Proyecto creado exitosamente",
-                    "nombreProyecto", nombre,
-                    "id", nuevo.getId()));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Error creando proyecto: " + e.getMessage()));
-        }
-    }
+    @Autowired
+    private ProjectDiscoveryService projectDiscoveryService;
 
     /**
      * Abre un proyecto existente (lo establece en sesión)
+     * Logic: Check if DB file exists -> Set Context -> Fetch Info -> Set Session
      */
     @GetMapping("/{identifier}")
     public ResponseEntity<?> abrirProyecto(@PathVariable String identifier, HttpSession session) {
-        Usuario usuarioActual = (Usuario) session.getAttribute("user");
-        if (usuarioActual == null)
-            return ResponseEntity.status(401).body(Map.of("error", "No autenticado"));
+        // 1. Validate if project file exists (Security check to avoid creating random
+        // DBs)
+        List<String> projects = projectDiscoveryService.listProjects();
+        if (!projects.contains(identifier)) {
+            return ResponseEntity.status(404).body(Map.of("error", "Project file not found: " + identifier));
+        }
 
-        Optional<Cuaderno> cuaderno = Optional.empty();
+        // 2. Set Tenant Context to read from that DB
+        TenantContext.setCurrentTenant(identifier);
 
-        // Try to parse as ID first
         try {
-            Long id = Long.parseLong(identifier);
-            cuaderno = cuadernoRepository.findById(id)
-                    .filter(c -> c.getUsuarioId().equals(usuarioActual.getId()));
-        } catch (NumberFormatException e) {
-            // Not an ID, try as name
-            cuaderno = cuadernoRepository.findByUsuarioId(usuarioActual.getId()).stream()
-                    .filter(c -> c.getNombreProyecto().equalsIgnoreCase(identifier))
-                    .findFirst();
+            // 3. Find the Cuaderno record (Should be only 1)
+            Optional<Cuaderno> cuaderno = cuadernoRepository.findAll().stream().findFirst();
+
+            if (cuaderno.isEmpty()) {
+                // If DB exists but no record (migration issue?), return error or auto-fix?
+                // For now, error.
+                return ResponseEntity.status(404).body(Map.of("error", "Project metadata missing"));
+            }
+
+            // 4. Set Session
+            session.setAttribute(PROYECTO_ACTIVO, identifier); // Use filename as reliable ID
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "nombreProyecto", cuaderno.get().getNombreProyecto(),
+                    "id", cuaderno.get().getId()));
+
+        } finally {
+            // Context will be cleared by Interceptor, but good practice to allow current
+            // request to finish?
+            // Actually, Interceptor clears it AFTER request.
+            // But if I change it here, does it affect View rendering?
+            // This is REST, so JSON return.
+            // If I clear it, subsequent Lazy loading might fail?
+            // No lazy loading in this simple return.
         }
-
-        if (cuaderno.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of("error", "Proyecto no encontrado o no te pertenece"));
-        }
-
-        // CRITICAL: Set the session variable used by other controllers
-        session.setAttribute(PROYECTO_ACTIVO, cuaderno.get().getNombreProyecto());
-
-        return ResponseEntity.ok(Map.of(
-                "success", true,
-                "nombreProyecto", cuaderno.get().getNombreProyecto(),
-                "id", cuaderno.get().getId()));
     }
 
     /**
@@ -128,69 +86,10 @@ public class ProyectoController {
                 "activo", true));
     }
 
-    /**
-     * Lista todos los proyectos disponibles PARA EL USUARIO
-     */
-    @GetMapping
-    public ResponseEntity<?> listarProyectos(HttpSession session) {
-        Usuario usuarioActual = (Usuario) session.getAttribute("user");
-        if (usuarioActual == null)
-            return ResponseEntity.status(401).body(Map.of("error", "No autenticado"));
-
-        try {
-            List<Cuaderno> proyectos = cuadernoRepository.findByUsuarioId(usuarioActual.getId());
-            return ResponseEntity.ok(proyectos.stream()
-                    .map(c -> Map.of(
-                            "nombreProyecto", c.getNombreProyecto(),
-                            "id", c.getId(),
-                            "tipo", c.getTipo() != null ? c.getTipo() : "",
-                            "genero", c.getGenero() != null ? c.getGenero() : "",
-                            "imagenUrl", c.getImagenUrl() != null ? c.getImagenUrl() : "",
-                            "descripcion", c.getDescripcion() != null ? c.getDescripcion() : "",
-                            "usuario", usuarioActual.getUsername())) // Add username for URL generation
-                    .toList());
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Error listando proyectos"));
-        }
-    }
-
-    /**
-     * Cierra la sesión del proyecto activo
-     */
     @PostMapping("/cerrar")
     public ResponseEntity<?> cerrarProyecto(HttpSession session) {
         session.removeAttribute(PROYECTO_ACTIVO);
+        TenantContext.clear();
         return ResponseEntity.ok(Map.of("success", true, "mensaje", "Proyecto cerrado"));
-    }
-
-    /**
-     * Elimina un proyecto
-     */
-    @DeleteMapping("/{nombre}")
-    public ResponseEntity<?> eliminarProyecto(@PathVariable String nombre, HttpSession session) {
-        Usuario usuarioActual = (Usuario) session.getAttribute("user");
-        if (usuarioActual == null)
-            return ResponseEntity.status(401).body(Map.of("error", "No autenticado"));
-
-        Optional<Cuaderno> cuaderno = cuadernoRepository.findByUsuarioId(usuarioActual.getId()).stream()
-                .filter(c -> c.getNombreProyecto().equalsIgnoreCase(nombre))
-                .findFirst();
-
-        if (cuaderno.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of("error", "Proyecto no encontrado o no te pertenece"));
-        }
-
-        try {
-            String activo = (String) session.getAttribute(PROYECTO_ACTIVO);
-            if (nombre.equalsIgnoreCase(activo)) {
-                session.removeAttribute(PROYECTO_ACTIVO);
-            }
-
-            cuaderno.ifPresent(cuadernoRepository::delete);
-
-            return ResponseEntity.ok(Map.of("success", true, "mensaje", "Proyecto eliminado"));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Error eliminando proyecto: " + e.getMessage()));
-        }
     }
 }

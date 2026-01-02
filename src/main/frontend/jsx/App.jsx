@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AppLayout from './components/layout/AppLayout';
 import Dashboard from './pages/Dashboard';
-import Login from './pages/Login';
+
 import WorkspaceSelector from './pages/WorkspaceSelector';
 import ProjectView from './pages/ProjectView';
 import Settings from './pages/Settings';
@@ -23,7 +23,6 @@ function App() {
         <BrowserRouter>
             <Routes>
                 <Route path="/" element={<WorkspaceSelector />} />
-                <Route path="/login" element={<WorkspaceSelector />} />
 
                 <Route element={<AppLayout />}>
                     <Route path="/dashboard" element={<Dashboard />} />

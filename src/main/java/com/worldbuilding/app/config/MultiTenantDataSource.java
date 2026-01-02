@@ -12,18 +12,18 @@ import java.util.logging.Logger;
 
 public class MultiTenantDataSource implements DataSource {
 
-    private final Map<Long, DataSource> tenantDataSources = new ConcurrentHashMap<>();
+    private final Map<String, DataSource> tenantDataSources = new ConcurrentHashMap<>();
     private final DataSource masterDataSource;
+    private final com.worldbuilding.app.util.DatabaseMigration databaseMigration;
 
-    public MultiTenantDataSource() {
-        // Configure Master DB with absolute path
-        String dbPath = resolveDataPath("worldbuilding.db");
-
-        System.out.println(">>> MASTER DB PATH: " + dbPath); // Debug Log
-
+    public MultiTenantDataSource(com.worldbuilding.app.util.DatabaseMigration databaseMigration) {
+        this.databaseMigration = databaseMigration;
+        // Use in-memory DB for default context (no project selected)
+        // This avoids creating 'worldbuilding.db'
+        System.out.println(">>> MASTER DB: Using In-Memory SQLite (No persistence for master)");
         DriverManagerDataSource master = new DriverManagerDataSource();
         master.setDriverClassName("org.sqlite.JDBC");
-        master.setUrl("jdbc:sqlite:" + dbPath);
+        master.setUrl("jdbc:sqlite::memory:");
         this.masterDataSource = master;
     }
 
@@ -43,7 +43,7 @@ public class MultiTenantDataSource implements DataSource {
     }
 
     private DataSource determineDataSource() {
-        Long tenantId = TenantContext.getCurrentTenant();
+        String tenantId = TenantContext.getCurrentTenant();
 
         // If no tenant context, use Master
         if (tenantId == null) {
@@ -52,9 +52,15 @@ public class MultiTenantDataSource implements DataSource {
 
         // If tenant exists, retrieve or create its DataSource
         return tenantDataSources.computeIfAbsent(tenantId, id -> {
-            String dbPath = resolveDataPath("users/user_" + id + ".db");
+            // Project DB is named {id}.db directly in the data folder
+            String dbPath = resolveDataPath(id + ".db");
 
-            System.out.println(">>> TENANT DB PATH [" + id + "]: " + dbPath); // Debug Log
+            System.out.println(">>> PROJECT DB PATH [" + id + "]: " + dbPath); // Debug Log
+
+            // Ensure schema exists via manual migration
+            if (databaseMigration != null) {
+                databaseMigration.migrateDatabase(new java.io.File(dbPath));
+            }
 
             DriverManagerDataSource ds = new DriverManagerDataSource();
             ds.setDriverClassName("org.sqlite.JDBC");

@@ -9,10 +9,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebMvcConfig implements WebMvcConfigurer {
 
     @Autowired
-    private TenantInterceptor tenantInterceptor;
+    private ProjectSessionInterceptor projectSessionInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(tenantInterceptor).addPathPatterns("/api/**");
+        registry.addInterceptor(projectSessionInterceptor).addPathPatterns("/api/**");
     }
 }

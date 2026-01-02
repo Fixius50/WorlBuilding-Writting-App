@@ -17,34 +17,32 @@ public class ProjectSessionInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
-        // Ignorar rutas de auth y recursos estáticos (si aplica)
+
+        // Skip static resources/error paths if needed (optional)
         String path = request.getRequestURI();
-        // Excluir específicamente los endpoints de autenticación para permitir login y
-        // registro
-        if (path.startsWith("/api/auth/") || !path.startsWith("/api/")) {
+        if (!path.startsWith("/api/")) {
             return true;
         }
 
-        Object user = request.getSession().getAttribute("user");
-        if (user == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("{\"error\": \"No autorizado - Sesión requerida\"}");
-            return false;
+        String projectName = (String) request.getSession().getAttribute("proyectoActivo");
+        if (projectName != null) {
+            // System.out.println(">>> Context Set: " + projectName);
+            TenantContext.setCurrentTenant(projectName);
+        } else {
+            TenantContext.clear();
         }
+
         return true;
     }
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
             @Nullable ModelAndView modelAndView) throws Exception {
-        // No hacer nada
     }
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
-            @Nullable Exception ex)
-            throws Exception {
-        // Limpiar el ThreadLocal al finalizar el request
-        // DynamicDataSourceConfig.clearCurrentProject();
+            @Nullable Exception ex) throws Exception {
+        TenantContext.clear();
     }
 }

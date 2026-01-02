@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { workspaceService, projectService } from '../../js/services/api';
+import { workspaceService } from '../../js/services/api';
 
 const WorkspaceSelector = () => {
     const navigate = useNavigate();
@@ -16,6 +16,7 @@ const WorkspaceSelector = () => {
         try {
             setLoading(true);
             const data = await workspaceService.list();
+            // Data is List<String>
             setWorkspaces(data);
         } catch (err) {
             console.error("Failed to load workspaces", err);
@@ -25,15 +26,15 @@ const WorkspaceSelector = () => {
         }
     };
 
-    const handleSelect = async (projectId) => {
+    const handleSelect = async (projectName) => {
         try {
             setLoading(true);
-            const response = await workspaceService.select(projectId);
+            const response = await workspaceService.select(projectName);
+            // { success: true, redirect: '/local/ProjectName' }
             if (response.success && response.redirect) {
-                // Store user info similar to login
+                // Mock user for frontend compatibility if needed
                 localStorage.setItem('user', JSON.stringify({
-                    username: response.username,
-                    email: 'connected@workspace', // Dummy
+                    username: 'local',
                     success: true
                 }));
                 navigate(response.redirect);
@@ -45,9 +46,35 @@ const WorkspaceSelector = () => {
         }
     };
 
-    // Simplified creation (redirects to old creation or we can add a modal later)
-    // For now, let's just show existing ones. If empty, maybe show a "Create" button 
-    // that assumes a default user or asks for a name.
+    const handleCreateWorkspace = async () => {
+        const projectName = prompt("Enter Project Name:");
+        if (!projectName) return;
+
+        try {
+            setLoading(true);
+            const res = await workspaceService.create(projectName);
+            if (res.success) {
+                await handleSelect(projectName);
+            }
+        } catch (err) {
+            console.error("Creation failed", err);
+            setError("Failed to create workspace: " + (err.message || "Unknown error"));
+            setLoading(false);
+        }
+    };
+
+    const handleDelete = async (e, projectName) => {
+        e.stopPropagation();
+        if (!confirm("Are you sure you want to delete " + projectName + "? This cannot be undone.")) return;
+        try {
+            setLoading(true);
+            await workspaceService.delete(projectName);
+            await loadWorkspaces();
+        } catch (err) {
+            setError("Failed to delete: " + err.message);
+            setLoading(false);
+        }
+    }
 
     return (
         <div className="min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden bg-background-dark p-8">
@@ -77,43 +104,45 @@ const WorkspaceSelector = () => {
                 {loading ? (
                     <div className="flex flex-col items-center gap-4">
                         <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                        <span className="text-slate-500 animate-pulse">Establishing uplink...</span>
+                        <span className="text-slate-500 animate-pulse">Scanning local sector...</span>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
                         {/* Create New Card */}
-                        <div className="glass-panel group relative p-6 rounded-2xl border border-glass-border hover:border-primary/50 transition-all cursor-pointer flex flex-col items-center justify-center min-h-[200px] hover:bg-white/5 disabled opacity-50">
+                        <div
+                            onClick={handleCreateWorkspace}
+                            className="glass-panel group relative p-6 rounded-2xl border border-glass-border hover:border-primary/50 transition-all cursor-pointer flex flex-col items-center justify-center min-h-[200px] hover:bg-white/5 active:scale-95"
+                        >
                             <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                 <span className="material-symbols-outlined text-3xl text-slate-400 group-hover:text-white">add</span>
                             </div>
                             <h3 className="text-xl font-bold text-slate-300 group-hover:text-white">New Workspace</h3>
-                            <p className="text-slate-500 text-sm mt-2">Initialize a new world</p>
-                            {/* Disabled for now until we add logic */}
                         </div>
 
-                        {workspaces.map(ws => (
+                        {workspaces.map(projectName => (
                             <div
-                                key={ws.id}
-                                onClick={() => handleSelect(ws.id)}
+                                key={projectName}
+                                onClick={() => handleSelect(projectName)}
                                 className="glass-panel group relative p-6 rounded-2xl border border-glass-border hover:border-primary/50 transition-all cursor-pointer flex flex-col justify-between min-h-[200px] hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10"
                             >
                                 <div>
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="px-2 py-1 rounded bg-primary/20 border border-primary/30 text-xs font-bold text-primary-light uppercase tracking-wider">
-                                            {ws.type || 'General'}
+                                            Local
                                         </div>
-                                        <span className="text-slate-500 text-xs">{new Date(ws.created).toLocaleDateString()}</span>
+                                        <button
+                                            onClick={(e) => handleDelete(e, projectName)}
+                                            className="text-red-400 hover:text-red-200 material-symbols-outlined text-sm p-1 rounded hover:bg-white/10"
+                                            title="Delete Workspace"
+                                        >
+                                            delete
+                                        </button>
                                     </div>
-                                    <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-primary-light transition-colors">{ws.title}</h3>
-                                    <p className="text-slate-400 text-sm line-clamp-2">{ws.description || "No description provided."}</p>
+                                    <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-primary-light transition-colors">{projectName}</h3>
+                                    <p className="text-slate-400 text-sm">Local Database</p>
                                 </div>
                                 <div className="mt-6 flex items-center justify-between border-t border-white/5 pt-4">
-                                    <div className="flex items-center gap-2">
-                                        <span className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-[10px] font-bold text-white">
-                                            {ws.owner?.[0]?.toUpperCase() || '?'}
-                                        </span>
-                                        <span className="text-xs text-slate-400">{ws.owner}</span>
-                                    </div>
+                                    <span className="text-xs text-slate-400">Ready</span>
                                     <span className="material-symbols-outlined text-slate-600 group-hover:text-primary transition-colors">arrow_forward</span>
                                 </div>
                             </div>
@@ -123,7 +152,7 @@ const WorkspaceSelector = () => {
             </div>
 
             <div className="absolute bottom-6 text-center text-xs text-slate-600">
-                Workspace Selector v1.0 • Connected to Mainframe
+                Chronos Atlas • Local Mode
             </div>
         </div>
     );

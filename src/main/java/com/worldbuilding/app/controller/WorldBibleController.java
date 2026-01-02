@@ -44,6 +44,13 @@ public class WorldBibleController {
         return ResponseEntity.ok(worldBibleService.getRootFolders(proyecto));
     }
 
+    @GetMapping("/folders/{id}")
+    public ResponseEntity<?> getFolder(@PathVariable Long id) {
+        return carpetaRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/folders/{id}/subfolders")
     public ResponseEntity<?> getSubfolders(@PathVariable Long id) {
         return ResponseEntity.ok(worldBibleService.getSubfolders(id));
@@ -59,9 +66,15 @@ public class WorldBibleController {
 
     @PostMapping("/folders")
     public ResponseEntity<?> createFolder(@RequestBody Map<String, Object> payload, HttpSession session) {
+        System.out.println("[DEBUG] createFolder called");
+        System.out.println("[DEBUG] Session ID: " + session.getId());
+        System.out.println("[DEBUG] proyectoActivo: " + session.getAttribute("proyectoActivo"));
+
         Cuaderno proyecto = getProyectoActual(session);
-        if (proyecto == null)
+        if (proyecto == null) {
+            System.out.println("[DEBUG] proyecto is NULL - returning 401");
             return ResponseEntity.status(401).body(Map.of("error", "No active project"));
+        }
 
         String nombre = (String) payload.get("nombre");
         Number padreId = (Number) payload.get("padreId");
