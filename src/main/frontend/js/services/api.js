@@ -80,6 +80,11 @@ export const projectService = {
     getActive: () => api.get('/proyectos/activo'),
 };
 
+export const workspaceService = {
+    list: () => api.get('/workspaces'),
+    select: (projectId) => api.post('/workspaces/select', { projectId }),
+};
+
 export const entityService = {
     list: (type) => api.get(`/bd/${type}`),
     getById: (type, id) => api.get(`/bd/${type}/${id}`),

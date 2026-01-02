@@ -98,6 +98,33 @@ public class WorldBibleController {
     }
 
     @GetMapping("/entities/{id}")
+    public ResponseEntity<?> getEntity(@PathVariable Long id, HttpSession session) {
+        Cuaderno proyecto = getProyectoActual(session);
+        if (proyecto == null)
+            return ResponseEntity.status(401).body(Map.of("error", "No active project"));
+        return entidadGenericaRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/entities/{id}")
+    public ResponseEntity<?> deleteEntity(@PathVariable Long id, HttpSession session) {
+        Cuaderno proyecto = getProyectoActual(session);
+        if (proyecto == null)
+            return ResponseEntity.status(401).body(Map.of("error", "No active project"));
+
+        Optional<EntidadGenerica> ent = entidadGenericaRepository.findById(id);
+        if (ent.isEmpty())
+            return ResponseEntity.notFound().build();
+
+        if (!ent.get().getProyecto().getId().equals(proyecto.getId())) {
+            return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
+        }
+
+        entidadGenericaRepository.deleteById(id);
+        return ResponseEntity.ok(Map.of("success", true));
+    }
+
     public ResponseEntity<?> getEntity(@PathVariable Long id) {
         return ResponseEntity.of(entidadGenericaRepository.findById(id));
     }

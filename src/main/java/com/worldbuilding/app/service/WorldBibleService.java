@@ -28,12 +28,20 @@ public class WorldBibleService {
     // --- CARPETAS ---
 
     public List<Carpeta> getRootFolders(Cuaderno proyecto) {
-        return carpetaRepository.findByProyectoAndPadreIsNull(proyecto);
+        List<Carpeta> folders = carpetaRepository.findByProyectoAndPadreIsNull(proyecto);
+        for (Carpeta f : folders) {
+            f.setItemCount(carpetaRepository.countByPadre(f) + entidadGenericaRepository.countByCarpeta(f));
+        }
+        return folders;
     }
 
     public List<Carpeta> getSubfolders(Long padreId) {
         Optional<Carpeta> padre = carpetaRepository.findById(padreId);
-        return padre.map(carpetaRepository::findByPadre).orElse(new ArrayList<>());
+        List<Carpeta> folders = padre.map(carpetaRepository::findByPadre).orElse(new ArrayList<>());
+        for (Carpeta f : folders) {
+            f.setItemCount(carpetaRepository.countByPadre(f) + entidadGenericaRepository.countByCarpeta(f));
+        }
+        return folders;
     }
 
     @Transactional
@@ -44,7 +52,11 @@ public class WorldBibleService {
         if (padreId != null) {
             carpetaRepository.findById(padreId).ifPresent(carpeta::setPadre);
         }
-        return carpetaRepository.save(carpeta);
+        // Save first
+        Carpeta saved = carpetaRepository.save(carpeta);
+        // Set default count (0)
+        saved.setItemCount(0);
+        return saved;
     }
 
     // --- ENTIDADES ---

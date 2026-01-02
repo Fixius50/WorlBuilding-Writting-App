@@ -100,3 +100,17 @@ ewuser, el servidor devolvía Error 500. El log mostraba java.sql.SQLException: p
 * **Solución:** Se actualizó INICIAR.bat para ejecutar 
 pm run build antes de arrancar el servidor Java, garantizando que el frontend siempre esté sincronizado.
 
+
+### Error Critical 500: 'No such table: cuaderno' (SQLite)
+**Síntoma:** Error 500 intermitente al cargar workspaces o crear carpetas. Logs truncados impedían ver la causa.
+**Diagnóstico:**
+- GlobalExceptionHandler reveló SQLITE_ERROR: no such table: cuaderno.
+- La herramienta Diagnostic veía la tabla, pero Hibernate no.
+- Causa raíz: Ambigüedad en la ruta relativa de JDBC (jdbc:sqlite:src/...) vs el directorio de trabajo de ejecución.
+**Solución:**
+1. Hardcodear ruta absoluta en pplication.properties: jdbc:sqlite:/src/... (o ruta física).
+2. spring.jpa.hibernate.ddl-auto=none para evitar que Hibernate intente validar/crear esquema y confíe en DatabaseMigration.
+**Estado:** Resuelto. Logs movidos a carpeta /Data.
+
+## [2026-01-02] Limpieza de directorio Data
+**AcciÃ³n:** Se movieron ackend.log, server.log, startup.log, 	race.txt del directorio Data a Docs/logs para centralizar la auditorÃ­a.

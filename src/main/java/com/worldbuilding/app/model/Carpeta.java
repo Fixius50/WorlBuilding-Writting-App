@@ -39,6 +39,18 @@ public class Carpeta {
     @Column(name = "deleted_date")
     private LocalDateTime deletedDate;
 
+    // Use Transient to avoid formula errors for now. Populated by service.
+    @Transient
+    private int itemCount = 0;
+
+    public int getItemCount() {
+        return itemCount;
+    }
+
+    public void setItemCount(int itemCount) {
+        this.itemCount = itemCount;
+    }
+
     // Getters y Setters
     public Long getId() {
         return id;

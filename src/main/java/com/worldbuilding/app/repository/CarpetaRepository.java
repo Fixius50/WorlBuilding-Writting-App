@@ -13,4 +13,7 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Long> {
     List<Carpeta> findByProyectoAndPadreIsNull(Cuaderno proyecto);
 
     List<Carpeta> findByPadre(Carpeta padre);
+
+    // Count items
+    int countByPadre(Carpeta padre);
 }

@@ -20,6 +20,12 @@ public class AuthController {
     @Autowired
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private com.worldbuilding.app.repository.CuadernoRepository cuadernoRepository;
+
+    @Autowired
+    private com.worldbuilding.app.service.WorldBibleService worldBibleService;
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> credentials, HttpSession session) {
         String username = credentials.get("username");
@@ -35,6 +41,14 @@ public class AuthController {
         if (userOpt.isPresent()) {
             Usuario user = userOpt.get();
             session.setAttribute("user", user);
+
+            // Auto-select first project if available
+            java.util.List<com.worldbuilding.app.model.Cuaderno> projects = cuadernoRepository
+                    .findByUsuarioId(user.getId());
+            if (!projects.isEmpty()) {
+                session.setAttribute("proyectoActivo", projects.get(0).getNombreProyecto());
+            }
+
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "username", user.getUsername(),
@@ -67,14 +81,14 @@ public class AuthController {
         nuevoUsuario.setPassword(passwordEncoder.encode(password));
         nuevoUsuario.setEmail(email);
 
-        usuarioRepository.save(nuevoUsuario);
+        Usuario savedUser = usuarioRepository.save(nuevoUsuario);
 
-        // Provision User Database
+        // Initialize User Workspace (Default Project)
         try {
-            provisionUserDatabase(nuevoUsuario.getId());
-        } catch (java.io.IOException e) {
+            initializeUserWorkspace(savedUser);
+        } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", "Error creating user workspace: " + e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of("error", "Error initializing workspace: " + e.getMessage()));
         }
 
         return ResponseEntity.ok(Map.of(
@@ -82,31 +96,26 @@ public class AuthController {
                 "message", "Usuario creado exitosamente"));
     }
 
-    private void provisionUserDatabase(Long userId) throws java.io.IOException {
-        java.nio.file.Path dataDir = resolveDataDir();
-        java.nio.file.Path source = dataDir.resolve("worldbuilding.db");
-        java.nio.file.Path targetDir = dataDir.resolve("users");
+    private void initializeUserWorkspace(Usuario user) {
+        // 1. Create Default Project
+        com.worldbuilding.app.model.Cuaderno defaultProject = new com.worldbuilding.app.model.Cuaderno();
+        // Unique project name to avoid collisions if simple names are used globally,
+        // though front-end routing uses /username/projectname, query might be loose.
+        // Using "genesis" as a standard slug.
+        defaultProject.setNombreProyecto("genesis");
+        defaultProject.setTitulo("New Project");
+        defaultProject.setUsuarioId(user.getId());
+        defaultProject.setDescripcion("Your first world awaits.");
+        defaultProject.setTipo("General");
+        defaultProject.setGenero("Fantasy");
 
-        if (!java.nio.file.Files.exists(targetDir)) {
-            java.nio.file.Files.createDirectories(targetDir);
-        }
+        com.worldbuilding.app.model.Cuaderno savedProject = cuadernoRepository.save(defaultProject);
 
-        java.nio.file.Path target = targetDir.resolve("user_" + userId + ".db");
-        java.nio.file.Files.copy(source, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-    }
-
-    private java.nio.file.Path resolveDataDir() {
-        String rootDir = System.getProperty("user.dir");
-        java.nio.file.Path basePath = java.nio.file.Paths.get(rootDir);
-
-        // Check if we are in parent dir or project dir
-        if (!java.nio.file.Files.exists(basePath.resolve("src"))) {
-            if (java.nio.file.Files.exists(basePath.resolve("WorldbuildingApp").resolve("src"))) {
-                basePath = basePath.resolve("WorldbuildingApp");
-            }
-        }
-
-        return basePath.resolve("src").resolve("main").resolve("resources").resolve("data");
+        // 2. Create Root Folders
+        worldBibleService.createFolder("Characters", savedProject, null);
+        worldBibleService.createFolder("Locations", savedProject, null);
+        worldBibleService.createFolder("Timeline", savedProject, null);
+        worldBibleService.createFolder("Lore", savedProject, null);
     }
 
     @PostMapping("/logout")

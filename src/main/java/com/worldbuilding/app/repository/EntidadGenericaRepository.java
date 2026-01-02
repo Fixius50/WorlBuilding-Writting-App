@@ -12,4 +12,7 @@ public interface EntidadGenericaRepository extends JpaRepository<EntidadGenerica
     List<EntidadGenerica> findByProyecto(Cuaderno proyecto);
 
     List<EntidadGenerica> findByCarpeta(Carpeta carpeta);
+
+    // Count items
+    int countByCarpeta(Carpeta carpeta);
 }

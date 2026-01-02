@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AppLayout from './components/layout/AppLayout';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
+import WorkspaceSelector from './pages/WorkspaceSelector';
 import ProjectView from './pages/ProjectView';
 import Settings from './pages/Settings';
 import ArchitectLayout from './components/layout/ArchitectLayout';
@@ -14,13 +15,15 @@ import WritingView from './pages/Writing/WritingView';
 import TrashView from './pages/Trash/TrashView';
 import EntityBuilder from './pages/Entities/EntityBuilder';
 import FolderView from './pages/Entities/FolderView';
+import WorldBibleLayout from './pages/WorldBible/WorldBibleLayout';
+import BibleGridView from './pages/WorldBible/BibleGridView';
 
 function App() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={<Navigate to="/login" replace />} />
-                <Route path="/login" element={<Login />} />
+                <Route path="/" element={<WorkspaceSelector />} />
+                <Route path="/login" element={<WorkspaceSelector />} />
 
                 <Route element={<AppLayout />}>
                     <Route path="/dashboard" element={<Dashboard />} />
@@ -37,10 +40,11 @@ function App() {
                         <Route path="entities/:type/:entityId" element={<EntityRouter />} />
                         <Route path="settings" element={<Settings />} />
 
-                        {/* New Dynamic Bible Routes */}
-                        <Route path="bible" element={<div className="p-8 text-white">World Bible Root View (Select a folder)</div>} />
-                        <Route path="bible/entity/:entityId" element={<EntityBuilder />} />
-                        <Route path="bible/folder/:folderId" element={<FolderView />} />
+                        <Route path="bible" element={<WorldBibleLayout />}>
+                            <Route index element={<BibleGridView />} />
+                            <Route path="entity/:entityId" element={<EntityBuilder />} />
+                            <Route path="folder/:folderId" element={<FolderView />} />
+                        </Route>
 
                         {/* Other modules inside Architect */}
                         <Route path="map" element={<MapRouter />} />

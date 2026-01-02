@@ -14,7 +14,7 @@ public class WorldbuildingApplication {
 
     public static void main(String[] args) {
         // Execute frontend build directly from Java to match BAT behavior
-        runFrontendBuild();
+        // runFrontendBuild(); // Disabled to prevent infinite dev restart loops
         SpringApplication.run(WorldbuildingApplication.class, args);
     }
 

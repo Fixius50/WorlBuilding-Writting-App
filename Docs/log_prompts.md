@@ -113,3 +113,10 @@
 > Fix syntax error 'expected catch or finally' in CharacterView.jsx from user report.
 **Resultados:**
 *   [FIX] Eliminado bloque `try` huÃ©rfano y cÃ³digo duplicado en `CharacterView.jsx` que causaba crash.
+
+### Prompt ID: 23 (Debug 500 & Logs Cleanup)
+> Continue (Debugging SESSION)
+**Resultados:**
+*   [FIX] Resuelto error crítico 500 'no such table' mediante ruta absoluta JDBC y desactivación de DDL-Auto.
+*   [INFRA] Implementado GlobalExceptionHandler para trazas completas.
+*   [CLEANUP] Logs (ackend.log, 	race.txt, etc) movidos a carpeta /Data para limpieza del root.
