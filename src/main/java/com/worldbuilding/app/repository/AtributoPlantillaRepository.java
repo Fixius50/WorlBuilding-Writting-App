@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface AtributoPlantillaRepository extends JpaRepository<AtributoPlantilla, Long> {
     List<AtributoPlantilla> findByCarpetaOrderByOrdenVisualAsc(Carpeta carpeta);
+
+    List<AtributoPlantilla> findByCarpetaAndGlobalTrue(Carpeta carpeta);
 }

@@ -67,17 +67,62 @@ public class DatabaseMigration implements CommandLineRunner {
 
             // 2. Check/Add 'carpeta' columns
             migrateTable(stmt, "carpeta", "deleted", "BOOLEAN DEFAULT 0");
+            migrateTable(stmt, "carpeta", "deleted", "BOOLEAN DEFAULT 0");
             migrateTable(stmt, "carpeta", "deleted_date", "DATETIME");
+            migrateTable(stmt, "carpeta", "tipo", "VARCHAR(50)");
+            migrateTable(stmt, "carpeta", "descripcion", "TEXT");
+            migrateTable(stmt, "carpeta", "slug", "TEXT");
 
             // 3. Check/Add 'entidad_generica' columns
             migrateTable(stmt, "entidad_generica", "deleted", "BOOLEAN DEFAULT 0");
             migrateTable(stmt, "entidad_generica", "deleted_date", "DATETIME");
+            migrateTable(stmt, "entidad_generica", "descripcion", "TEXT");
+            migrateTable(stmt, "entidad_generica", "tags", "TEXT");
+            migrateTable(stmt, "entidad_generica", "slug", "TEXT");
+
+            // 4. Check/Add 'atributo_plantilla' columns
+            migrateTable(stmt, "atributo_plantilla", "global", "BOOLEAN DEFAULT 0");
 
             // 4. Check/Add 'atributo_plantilla' columns
             migrateTable(stmt, "atributo_plantilla", "descripcion", "TEXT");
 
+            // 5. Backfill Slugs if missing
+            backfillSlugs(stmt, "carpeta");
+            backfillSlugs(stmt, "entidad_generica");
+
         } catch (Exception e) {
             System.err.println("  [ERROR] Failed to migrate " + dbFile.getName() + ": " + e.getMessage());
+        }
+    }
+
+    private void backfillSlugs(Statement stmt, String tableName) throws Exception {
+        // Find rows with null slugs
+        try (ResultSet rs = stmt
+                .executeQuery("SELECT id, nombre FROM " + tableName + " WHERE slug IS NULL OR slug = ''")) {
+            List<String> updates = new ArrayList<>();
+            while (rs.next()) {
+                long id = rs.getLong("id");
+                String nombre = rs.getString("nombre");
+                if (nombre == null)
+                    nombre = "unnamed";
+
+                // Simple slug generation for migration: name-id to ensure uniqueness without
+                // complex logic
+                String slug = nombre.toLowerCase()
+                        .replaceAll("[^a-z0-9\\s-]", "") // Remove invalid chars
+                        .replaceAll("\\s+", "-") // Replace spaces with dashes
+                        + "-" + id; // Append ID to guarantee uniqueness for existing items
+
+                updates.add("UPDATE " + tableName + " SET slug = '" + slug + "' WHERE id = " + id);
+            }
+
+            // Execute updates
+            for (String sql : updates) {
+                stmt.executeUpdate(sql);
+            }
+            if (!updates.isEmpty()) {
+                System.out.println("  - Backfilled slugs for " + updates.size() + " items in " + tableName);
+            }
         }
     }
 
@@ -105,6 +150,7 @@ public class DatabaseMigration implements CommandLineRunner {
                         nombre VARCHAR(255) NOT NULL,
                         proyecto_id BIGINT,
                         padre_id BIGINT,
+                        tipo VARCHAR(50),
                         deleted BOOLEAN DEFAULT 0,
                         deleted_date DATETIME,
                         FOREIGN KEY (proyecto_id) REFERENCES cuaderno(id),

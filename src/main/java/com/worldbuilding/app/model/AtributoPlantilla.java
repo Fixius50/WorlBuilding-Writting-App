@@ -36,6 +36,9 @@ public class AtributoPlantilla {
     @Column(name = "orden_visual")
     private int ordenVisual = 0;
 
+    @Column(name = "global", columnDefinition = "BOOLEAN DEFAULT false")
+    private boolean global = false;
+
     // Getters y Setters
     public Long getId() {
         return id;
@@ -107,5 +110,13 @@ public class AtributoPlantilla {
 
     public void setOrdenVisual(int ordenVisual) {
         this.ordenVisual = ordenVisual;
+    }
+
+    public boolean isGlobal() {
+        return global;
+    }
+
+    public void setGlobal(boolean global) {
+        this.global = global;
     }
 }

@@ -1,22 +1,29 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Outlet, useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Outlet, useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import api from '../../../js/services/api';
 import FolderItem from '../../components/bible/FolderItem';
+import CreateNodeModal from '../../components/bible/CreateNodeModal';
 
 // World Bible Layout: Persistent Left Explorer + Right Outlet
 const WorldBibleLayout = () => {
     const { username, projectName } = useParams();
     const navigate = useNavigate();
+    const {
+        handleCreateEntity: propHandleCreateEntity, // In case it's passed down, but we define it here mostly
+        ...architectContext
+    } = useOutletContext() || {};
+
     const [folders, setFolders] = useState([]);
     const [creationMenuOpen, setCreationMenuOpen] = useState(false);
-    const [availableTemplates, setAvailableTemplates] = useState([]);
 
-    // We can define base URL or context
+    // Modal State
+    const [creationModalOpen, setCreationModalOpen] = useState(false);
+    const [targetParent, setTargetParent] = useState(null);
+
     const baseUrl = `/${username}/${projectName}/bible`;
 
     useEffect(() => {
         loadFolders();
-        loadTemplates();
     }, [projectName]);
 
     const loadFolders = async () => {
@@ -26,64 +33,84 @@ const WorldBibleLayout = () => {
         } catch (err) { console.error("Error loading folders:", err); }
     };
 
-    const loadTemplates = async () => {
-        // Mock or real call if needed for creation
-        // setAvailableTemplates(...)
+    // --- Modal Handlers ---
+
+    const handleOpenCreateModal = (parentFolder = null) => {
+        setTargetParent(parentFolder);
+        setCreationModalOpen(true);
+        setCreationMenuOpen(false); // Close dropdown if open
     };
 
-    // --- Actions (Copied/Refactored from ArchitectLayout) ---
-    const handleCreateFolder = async (parentId = null) => {
-        const tempId = `temp-${Date.now()}`;
-        const tempFolder = { id: tempId, uiKey: tempId, nombre: '', parentId, pending: true, isNew: true };
-
-        if (parentId === null) {
-            setFolders(prev => [...prev, tempFolder]);
-        } else {
-            window.dispatchEvent(new CustomEvent('folder-update', {
-                detail: { folderId: parentId, optimisticType: 'folder', item: tempFolder, expand: true }
-            }));
-        }
-    };
-
-    const handleCreateEntity = async (folderId, specialType = 'entidadindividual') => {
-        let targetFolderId = folderId;
-        if (!targetFolderId && folders.length > 0) targetFolderId = folders[0].id;
-        else if (!targetFolderId) return alert("Create a folder first!");
-
-        const tempId = `temp-${Date.now()}`;
-        const tempEntity = { id: tempId, uiKey: tempId, nombre: '', carpetaId: targetFolderId, tipoEspecial: specialType, pending: true, isNew: true };
-
-        window.dispatchEvent(new CustomEvent('folder-update', {
-            detail: { folderId: targetFolderId, optimisticType: 'entity', item: tempEntity, expand: true }
-        }));
-    };
-
-    const handleConfirmCreate = async (tempId, name, type, parentId, specialType) => {
-        if (type === 'folder') {
-            await doCreateFolder(name, parentId, tempId);
-        } else {
-            await doCreateEntity(name, parentId, specialType, tempId);
-        }
-    };
-
-    const doCreateFolder = async (name, parentId, tempId) => {
+    const handleCreateSimpleFolder = async (parentFolder = null) => {
         try {
-            const newFolder = await api.post('/world-bible/folders', { nombre: name, padreId: parentId });
+            const parentId = parentFolder ? (typeof parentFolder === 'object' ? parentFolder.id : parentFolder) : null;
+            const newFolder = await api.post('/world-bible/folders', {
+                nombre: 'Nueva Carpeta',
+                padreId: parentId,
+                tipo: 'FOLDER'
+            });
+
             if (parentId === null) {
-                setFolders(prev => prev.map(f => f.id === tempId ? { ...newFolder } : f));
+                setFolders(prev => [...prev, newFolder]);
             } else {
                 window.dispatchEvent(new CustomEvent('folder-update', {
-                    detail: { folderId: parentId, confirmedType: 'folder', oldId: tempId, item: { ...newFolder } }
+                    detail: {
+                        folderId: parentId,
+                        optimisticType: 'folder',
+                        item: newFolder,
+                        expand: true
+                    }
                 }));
             }
         } catch (err) {
-            if (parentId === null) setFolders(prev => prev.filter(f => f.id !== tempId));
-            else window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: parentId, removeId: tempId, type: 'folder' } }));
-            alert("Failed to create folder");
+            console.error("Error creating simple folder:", err);
         }
     };
 
-    const doCreateEntity = async (name, folderId, specialType, tempId) => {
+    const handleCreateSubmit = async (formData) => {
+        try {
+            const parentId = targetParent ? targetParent.id : null;
+
+            // Create Folder with Type
+            const newFolder = await api.post('/world-bible/folders', {
+                nombre: formData.nombre,
+                descripcion: formData.descripcion,
+                padreId: parentId,
+                tipo: formData.tipo
+            });
+
+            if (parentId === null) {
+                // Add to root
+                setFolders(prev => [...prev, newFolder]);
+            } else {
+                // Propagate to subfolder via event
+                window.dispatchEvent(new CustomEvent('folder-update', {
+                    detail: {
+                        folderId: parentId,
+                        optimisticType: 'folder',
+                        item: newFolder,
+                        expand: true
+                    }
+                }));
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Error creating folder/zone.");
+        }
+    };
+
+    // --- Entity Handlers (Keep inline or basic for now, or expand) ---
+    // For now keeping 'handleCreateEntity' logic simplified or separate.
+
+    // We retain the old 'handleCreateEntity' for consistency with FolderItem props, 
+    // but maybe we should use the Modal for Entities too? 
+    // User requested Hierarchy (Universes, etc) which are Folders.
+    // 'Entidades' (Characters) are different.
+
+    const handleCreateEntity = async (folderId, specialType = 'entidadindividual') => {
+        const name = prompt("Nombre de la entidad:"); // Basic fallback for pure entities
+        if (!name) return;
+
         try {
             const response = await api.post('/world-bible/entities', {
                 nombre: name,
@@ -91,11 +118,12 @@ const WorldBibleLayout = () => {
                 tipoEspecial: specialType
             });
             window.dispatchEvent(new CustomEvent('folder-update', {
-                detail: { folderId: folderId, confirmedType: 'entity', oldId: tempId, item: { ...response, uiKey: tempId } }
+                detail: { folderId: folderId, optimisticType: 'entity', item: response, expand: true }
             }));
-            navigate(`${baseUrl}/entity/${response.id}`);
+            // Navigate using slug
+            navigate(`${baseUrl}/entity/${response.slug || response.id}`);
         } catch (err) {
-            window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: folderId, removeId: tempId, type: 'entity' } }));
+            alert("Failed to create entity");
         }
     };
 
@@ -116,14 +144,14 @@ const WorldBibleLayout = () => {
         } catch (err) { console.error(err); }
     };
 
-    const handleCreateTemplate = async (folderId, type) => {
-        // Implementation similar to ArchitectLayout if needed
+    const handleConfirmCreate = async (tempId, name, type, parentId, specialType) => {
+        // Legacy support if needed, but Modal replaces Main folder creation.
+        // Used by Inline Inputs (if we keep them for Entities)
     };
-
 
     return (
         <div className="flex h-full w-full bg-background-dark max-w-[1920px] mx-auto">
-            {/* LEFT PANEL: EXPLORER (300px Fixed or Resizable) */}
+            {/* LEFT PANEL: EXPLORER */}
             <aside className="w-80 flex-none flex flex-col border-r border-glass-border bg-surface-dark/50 z-10">
                 {/* Search Header */}
                 <div className="p-4 border-b border-glass-border">
@@ -131,34 +159,21 @@ const WorldBibleLayout = () => {
                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm group-focus-within:text-primary transition-colors">search</span>
                         <input
                             type="text"
-                            placeholder="Search in Bible..."
+                            placeholder="Buscar en Biblia..."
                             className="w-full bg-surface-light/50 border border-glass-border rounded-xl py-2 pl-9 pr-3 text-xs focus:border-primary/50 outline-none transition-all text-white placeholder:text-text-muted/50"
                         />
                     </div>
 
                     <div className="flex items-center justify-between">
-                        <h2 className="text-[10px] font-black uppercase tracking-widest text-text-muted">Explorer</h2>
+                        <h2 className="text-[10px] font-black uppercase tracking-widest text-text-muted">Explorador</h2>
                         <div className="relative">
                             <button
-                                className={`transition-colors hover:text-white ${creationMenuOpen ? 'text-primary' : 'text-text-muted'}`}
-                                onClick={() => setCreationMenuOpen(!creationMenuOpen)}
+                                className="transition-colors hover:text-white text-primary"
+                                onClick={() => handleCreateSimpleFolder(null)}
+                                title="Crear Carpeta"
                             >
-                                <span className="material-symbols-outlined text-sm">add_circle</span>
+                                <span className="material-symbols-outlined text-sm">create_new_folder</span>
                             </button>
-                            {creationMenuOpen && (
-                                <>
-                                    <div className="fixed inset-0 z-40" onClick={() => setCreationMenuOpen(false)}></div>
-                                    <div className="absolute right-0 top-full mt-2 w-48 bg-surface-dark border border-glass-border rounded-xl shadow-xl z-50 p-1 animate-in fade-in zoom-in-95 duration-200">
-                                        <button onClick={() => { handleCreateFolder(null); setCreationMenuOpen(false); }} className="w-full px-3 py-2 hover:bg-white/5 rounded-lg text-left flex items-center gap-2 text-xs text-white">
-                                            <span className="material-symbols-outlined text-sm text-primary">folder</span> New Folder
-                                        </button>
-                                        <button onClick={() => { handleCreateEntity(null, 'entidadindividual'); setCreationMenuOpen(false); }} className="w-full px-3 py-2 hover:bg-white/5 rounded-lg text-left flex items-center gap-2 text-xs text-text-muted hover:text-white">
-                                            <span className="material-symbols-outlined text-sm">person</span> New Character
-                                        </button>
-                                        {/* Add more types */}
-                                    </div>
-                                </>
-                            )}
                         </div>
                     </div>
                 </div>
@@ -168,18 +183,18 @@ const WorldBibleLayout = () => {
                     {folders.length === 0 ? (
                         <div className="p-8 text-center opacity-30">
                             <span className="material-symbols-outlined text-3xl mb-2">folder_off</span>
-                            <p className="text-[10px] uppercase font-bold">Empty Bible</p>
+                            <p className="text-[10px] uppercase font-bold">Biblia Vacía</p>
                         </div>
                     ) : (
                         folders.map(folder => (
                             <FolderItem
                                 key={folder.uiKey || folder.id}
                                 folder={folder}
-                                onCreateSubfolder={handleCreateFolder}
+                                onCreateSubfolder={handleCreateSimpleFolder} // Simple folder creation for sidebar
                                 onRename={handleRenameFolder}
                                 onDeleteFolder={handleDeleteFolder}
-                                onDeleteEntity={handleDeleteFolder} // Uses same logic for now or split
-                                onCreateTemplate={handleCreateTemplate}
+                                onDeleteEntity={handleDeleteFolder}
+                                onCreateTemplate={() => { }}
                                 onMoveEntity={(e, f, s) => console.log('move', e, f, s)}
                                 onCreateEntity={handleCreateEntity}
                                 onConfirmCreate={handleConfirmCreate}
@@ -192,9 +207,19 @@ const WorldBibleLayout = () => {
             {/* RIGHT PANEL: CONTENT OUTLET */}
             <main className="flex-1 overflow-hidden relative bg-gradient-to-br from-background-dark to-surface-dark/20">
                 <Outlet context={{
-                    handleCreateEntity // Pass down for pages to use
+                    ...architectContext,
+                    handleCreateEntity,
+                    handleOpenCreateModal
                 }} />
             </main>
+
+            {/* MODAL */}
+            <CreateNodeModal
+                isOpen={creationModalOpen}
+                onClose={() => setCreationModalOpen(false)}
+                onCreate={handleCreateSubmit}
+                parentFolder={targetParent}
+            />
         </div>
     );
 };

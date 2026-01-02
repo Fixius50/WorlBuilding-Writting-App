@@ -25,7 +25,14 @@ public class Carpeta {
     @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "padre_id")
-    private Carpeta padre;
+    private Carpeta padre; // Restore Entity mapping
+
+    @Column(name = "tipo")
+    private String tipo; // UNIVERSE, GALAXY, ...
+
+    @Column(name = "descripcion")
+    private String descripcion;
+    private String slug;
 
     @OneToMany(mappedBy = "padre", cascade = CascadeType.ALL)
     private List<Carpeta> subcarpetas;
@@ -82,6 +89,34 @@ public class Carpeta {
 
     public void setPadre(Carpeta padre) {
         this.padre = padre;
+    }
+
+    public Long getPadreId() {
+        return padre != null ? padre.getId() : null;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
     }
 
     public List<Carpeta> getSubcarpetas() {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, useOutletContext } from 'react-router-dom';
+import { useParams, useOutletContext, useNavigate } from 'react-router-dom';
 import ReactFlow, {
     Background,
     Controls,
@@ -20,10 +20,21 @@ const nodeTypes = {
     custom: CanvasNode
 };
 
-const EntityBuilderContent = () => {
-    const { entityId } = useParams();
-    const { setRightOpen, setAvailableTemplates } = useOutletContext();
+const EntityBuilderContent = ({ mode }) => {
+    const { username, projectName, entitySlug, folderSlug, type } = useParams();
+    const navigate = useNavigate();
+    const isCreation = mode === 'creation';
+    const {
+        setRightOpen,
+        setRightPanelMode,
+        setAvailableTemplates,
+        setAddAttributeHandler,
+        setCreateTemplateHandler
+    } = useOutletContext();
+
     const [entity, setEntity] = useState(null);
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [newTemplate, setNewTemplate] = useState({ nombre: '', tipo: 'text', global: false });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [viewMode, setViewMode] = useState('attributes'); // 'attributes', 'special'
@@ -36,10 +47,20 @@ const EntityBuilderContent = () => {
     const { project } = useReactFlow();
 
     useEffect(() => {
-        loadEntity();
+        setRightPanelMode('TOOLBOX');
+        setRightOpen(true);
         loadLinkableEntities();
-        setViewMode('attributes');
-    }, [entityId]);
+
+        if (isCreation) {
+            loadCreationMode();
+        } else {
+            loadEntity();
+        }
+
+        return () => {
+            setRightPanelMode('NOTES'); // Revert on exit
+        };
+    }, [entitySlug, folderSlug, isCreation]);
 
     const loadLinkableEntities = async () => {
         try {
@@ -48,27 +69,149 @@ const EntityBuilderContent = () => {
         } catch (e) { console.error("Could not load linkable entities", e); }
     };
 
+    const loadCreationMode = async () => {
+        setLoading(true);
+        try {
+            const folderInfo = await api.get(`/world-bible/folders/${folderSlug}`);
+            const templates = await api.get(`/world-bible/folders/${folderSlug}/templates`);
+
+            setEntity({
+                nombre: `Nuevo ${type === 'map' ? 'Mapa' : type === 'timeline' ? 'Cronograma' : 'Ente'}`,
+                carpeta: folderInfo,
+                tipoEspecial: type,
+                isNew: true
+            });
+            setAvailableTemplates(templates);
+
+            let currentNodes = [];
+            let yOffset = 50;
+
+            // Name Node (Only in creation or as editable core)
+            currentNodes.push({
+                id: 'core-name',
+                type: 'custom',
+                position: { x: 50, y: yOffset },
+                data: {
+                    attribute: { nombre: 'Nombre', tipo: 'short_text', descripcion: 'Nombre de la entidad' },
+                    value: '',
+                    onChange: (val) => handleCoreChange('nombre', val),
+                    isCore: true
+                }
+            });
+            yOffset += 150;
+
+            // Description & Tags
+            currentNodes.push({
+                id: 'core-desc',
+                type: 'custom',
+                position: { x: 50, y: yOffset },
+                data: {
+                    attribute: { nombre: 'Descripción', tipo: 'text', descripcion: 'Descripción principal' },
+                    value: '',
+                    onChange: (val) => handleCoreChange('descripcion', val),
+                    isCore: true
+                }
+            });
+            yOffset += 300;
+
+            currentNodes.push({
+                id: 'core-tags',
+                type: 'custom',
+                position: { x: 50, y: yOffset },
+                data: {
+                    attribute: { nombre: 'Etiquetas', tipo: 'short_text', descripcion: 'Separadas por comas' },
+                    value: '',
+                    onChange: (val) => handleCoreChange('tags', val),
+                    isCore: true
+                }
+            });
+
+            // Template Nodes with defaults
+            templates.forEach((tpl, index) => {
+                currentNodes.push({
+                    id: `temp-${tpl.id}`,
+                    type: 'custom',
+                    position: { x: 450 + (index % 2) * 350, y: 50 + Math.floor(index / 2) * 200 },
+                    data: {
+                        attribute: tpl,
+                        value: tpl.valorDefecto || '',
+                        onChange: (newVal) => handleTempAttributeChange(tpl.id, newVal)
+                    },
+                });
+            });
+
+            setNodes(currentNodes);
+        } catch (err) {
+            console.error("Error preparing creation mode:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const loadEntity = async () => {
         setLoading(true);
         try {
-            const data = await api.get(`/world-bible/entities/${entityId}`);
+            const data = await api.get(`/world-bible/entities/${entitySlug}`);
             setEntity(data);
 
-            // Transform attributes to nodes
+            let currentNodes = [];
+            let yOffset = 50;
+
+            // Name Node (Editable for existing too)
+            currentNodes.push({
+                id: 'core-name',
+                type: 'custom',
+                position: { x: 50, y: yOffset },
+                data: {
+                    attribute: { nombre: 'Nombre', tipo: 'short_text', descripcion: 'Nombre de la entidad' },
+                    value: data.nombre,
+                    onChange: (val) => handleCoreChange('nombre', val),
+                    isCore: true
+                }
+            });
+            yOffset += 150;
+
+            currentNodes.push({
+                id: 'core-desc',
+                type: 'custom',
+                position: { x: 50, y: yOffset },
+                data: {
+                    attribute: { nombre: 'Descripción General', tipo: 'text', descripcion: 'Descripción principal.' },
+                    value: data.descripcion || '',
+                    onChange: (val) => handleCoreChange('descripcion', val),
+                    isCore: true
+                }
+            });
+            yOffset += 300;
+
+            currentNodes.push({
+                id: 'core-tags',
+                type: 'custom',
+                position: { x: 50, y: yOffset },
+                data: {
+                    attribute: { nombre: 'Etiquetas', tipo: 'short_text', descripcion: 'Separadas por comas' },
+                    value: data.tags || '',
+                    onChange: (val) => handleCoreChange('tags', val),
+                    isCore: true
+                }
+            });
+
             if (data.valores) {
-                const initialNodes = data.valores.map((val, index) => ({
-                    id: val.id.toString(),
-                    type: 'custom',
-                    position: { x: 100 + (index % 3) * 320, y: 100 + Math.floor(index / 3) * 200 },
-                    data: {
-                        attribute: val,
-                        value: val.valor,
-                        linkableEntities: [], // Will be populated
-                        onChange: (newVal) => handleAttributeChange(val.id, newVal)
-                    },
-                }));
-                setNodes(initialNodes);
+                data.valores.forEach((val, index) => {
+                    currentNodes.push({
+                        id: val.id.toString(),
+                        type: 'custom',
+                        position: { x: 450 + (index % 2) * 350, y: 50 + Math.floor(index / 2) * 200 },
+                        data: {
+                            attribute: val.plantilla,
+                            value: val.valor,
+                            onChange: (newVal) => handleAttributeChange(val.id, newVal)
+                        },
+                    });
+                });
             }
+
+            setNodes(currentNodes);
 
             if (data.carpeta?.id) {
                 const templates = await api.get(`/world-bible/folders/${data.carpeta.id}/templates`);
@@ -81,49 +224,149 @@ const EntityBuilderContent = () => {
         }
     };
 
-    // Update nodes with linkable entities once loaded
+    const handleTempAttributeChange = (templateId, value) => {
+        setNodes((nds) => nds.map((node) => {
+            if (node.id === `temp-${templateId}`) {
+                return { ...node, data: { ...node.data, value: value } };
+            }
+            return node;
+        }));
+    };
+
+    useEffect(() => {
+        const t = entity?.tipoEspecial || type;
+        if (t === 'map' || t === 'timeline') {
+            setViewMode('special');
+        } else {
+            setViewMode('attributes');
+        }
+    }, [entity?.tipoEspecial, type]);
+
+    // Update Nodes with Linkables
     useEffect(() => {
         if (nodes.length > 0 && linkableEntities.length > 0) {
             setNodes((nds) => nds.map((node) => ({
                 ...node,
-                data: {
-                    ...node.data,
-                    linkableEntities: linkableEntities
-                }
+                data: { ...node.data, linkableEntities: linkableEntities }
             })));
         }
-    }, [linkableEntities.length]); // Only run if linkableEntities loads
+    }, [linkableEntities.length]);
+
+    // --- HANDLERS ---
+
+    const handleCoreChange = (field, value) => {
+        if (field === 'nombre') {
+            setEntity(prev => ({ ...prev, nombre: value }));
+        }
+        setNodes((nds) => nds.map((node) => {
+            if (node.data.isCore && node.id === `core-${field}`) {
+                return { ...node, data: { ...node.data, value: value } };
+            }
+            return node;
+        }));
+    };
 
     const handleAttributeChange = useCallback((id, value) => {
-        setNodes((nds) =>
-            nds.map((node) => {
-                if (node.id === id.toString()) {
-                    // Update data value
-                    node.data = { ...node.data, value: value };
-                }
-                return node;
-            })
-        );
+        setNodes((nds) => nds.map((node) => {
+            if (node.id === id.toString()) {
+                return { ...node, data: { ...node.data, value: value } };
+            }
+            return node;
+        }));
     }, [setNodes]);
 
+    const handleAddAttribute = async (templateId) => {
+        if (isCreation) {
+            // In creation mode, we just add a "temp" node
+            const tpl = availableTemplates.find(t => t.id === parseInt(templateId));
+            if (!tpl) return;
+
+            setNodes(nds => [...nds, {
+                id: `temp-${tpl.id}`,
+                type: 'custom',
+                position: { x: 400, y: 400 }, // Initial position
+                data: {
+                    attribute: tpl,
+                    value: tpl.valorDefecto || '',
+                    onChange: (newVal) => handleTempAttributeChange(tpl.id, newVal)
+                }
+            }]);
+        } else {
+            try {
+                await api.post(`/world-bible/entities/${entity.id}/attributes`, { plantillaId: templateId });
+                loadEntity(); // Refresh
+            } catch (err) { console.error("Failed to add attribute", err); }
+        }
+    };
+
     const handleSave = async () => {
+        if (!entity) return;
         setSaving(true);
         try {
-            const updates = nodes.map(node => ({
-                valorId: parseInt(node.id),
-                nuevoValor: node.data.value
-            }));
-            await api.patch(`/world-bible/entities/${entityId}/values`, updates);
-            // Optional: Save positions too if backend supported it
+            const nameNode = nodes.find(n => n.id === 'core-name');
+            const descNode = nodes.find(n => n.id === 'core-desc');
+            const tagsNode = nodes.find(n => n.id === 'core-tags');
+
+            const payload = {
+                nombre: nameNode?.data.value || entity.nombre,
+                descripcion: descNode?.data.value || '',
+                tags: tagsNode?.data.value || '',
+                tipoEspecial: entity.tipoEspecial || 'entidadindividual'
+            };
+
+            if (isCreation) {
+                // 1. Create the Entity
+                payload.carpetaId = entity.carpeta.id;
+                const newEntity = await api.post('/world-bible/entities', payload);
+
+                // 2. Create Attributes from temp nodes
+                const tempNodes = nodes.filter(n => n.id.startsWith('temp-'));
+                for (const node of tempNodes) {
+                    const templateId = parseInt(node.id.replace('temp-', ''));
+                    const val = await api.post(`/world-bible/entities/${newEntity.id}/attributes`, {
+                        plantillaId: templateId
+                    });
+                    // Set initial value
+                    await api.patch(`/world-bible/entities/${newEntity.id}/values`, [{
+                        valorId: val.id,
+                        nuevoValor: node.data.value
+                    }]);
+                }
+
+                setSaving(false);
+                // Redirect to new entity URL
+                navigate(`/${username}/${projectName}/bible/folder/${folderSlug}/entity/${newEntity.slug || newEntity.id}`, { replace: true });
+            } else {
+                // Update Existing
+                if (payload.nombre !== entity.nombre) {
+                    await api.put(`/world-bible/entities/${entity.id}`, { nombre: payload.nombre });
+                }
+
+                await api.patch(`/world-bible/entities/${entity.id}/details`, {
+                    descripcion: payload.descripcion,
+                    tags: payload.tags
+                });
+
+                const attrUpdates = nodes
+                    .filter(n => !n.data.isCore && !n.id.startsWith('link-') && !n.id.startsWith('temp-'))
+                    .map(node => ({
+                        valorId: parseInt(node.id),
+                        nuevoValor: node.data.value
+                    }));
+
+                if (attrUpdates.length > 0) {
+                    await api.patch(`/world-bible/entities/${entity.id}/values`, attrUpdates);
+                }
+                setSaving(false);
+            }
         } catch (err) {
             console.error("Error saving entity:", err);
-        } finally {
             setSaving(false);
+            alert("Error al guardar la entidad.");
         }
     };
 
     const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
-
     const onDragOver = useCallback((event) => {
         event.preventDefault();
         event.dataTransfer.dropEffect = 'move';
@@ -132,58 +375,92 @@ const EntityBuilderContent = () => {
     const onDrop = useCallback(
         async (event) => {
             event.preventDefault();
-
             const type = event.dataTransfer.getData('application/reactflow/type');
-
-            if (typeof type === 'undefined' || !type) {
-                return;
-            }
-
-            const position = reactFlowWrapper.current.getBoundingClientRect();
-            const positionFlow = project({
-                x: event.clientX - position.left,
-                y: event.clientY - position.top,
-            });
+            if (typeof type === 'undefined' || !type) return;
 
             if (type === 'attribute') {
                 const templateId = event.dataTransfer.getData('templateId');
-                // Create attribute via API
-                try {
-                    await api.post(`/world-bible/entities/${entityId}/attributes`, { plantillaId: templateId });
-                    // Refresh entity to get the new ID and data, then add node
-                    // Ideally we just get the new ID back. For now, reload full entity to be safe or just append if we knew the ID.
-                    // Doing a full reload is safer but slower. Let's try to reload.
-                    loadEntity();
-                } catch (err) {
-                    console.error("Failed to add attribute on drop", err);
-                }
-            } else if (type === 'entity') {
-                const draggedId = event.dataTransfer.getData('entityId');
-                const draggedName = event.dataTransfer.getData('entityName');
-
-                // Create a 'Link' node. 
-                // Ideally, this should also save to the backend as a special "attribute" or "relation".
-                // For now, in this visual canvas, it remains a node.
-                // We could use a specific 'entityLink' node type if we had one, but 'default' works for MVP.
-
-                const newNode = {
-                    id: `link-${draggedId}-${Date.now()}`,
-                    type: 'default', // Or 'input'/'output' if we want it to be a pure source/target
-                    position: positionFlow,
-                    data: { label: `🔗 ${draggedName}` },
-                    className: 'bg-surface-dark border-2 border-primary text-white rounded-xl p-2 shadow-lg min-w-[150px] text-center font-bold text-xs'
-                };
-                setNodes((nds) => nds.concat(newNode));
+                await handleAddAttribute(templateId);
             }
         },
-        [project, entityId]
+        [entity?.id]
     );
+
+    const handleCreateTemplateSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await api.post(`/world-bible/folders/${entity.carpeta.id}/templates`, newTemplate);
+            setShowCreateModal(false);
+            setNewTemplate({ nombre: '', tipo: 'text', global: false });
+            // Refresh Templates
+            if (entity.carpeta?.id) {
+                const templates = await api.get(`/world-bible/folders/${entity.carpeta.id}/templates`);
+                setAvailableTemplates(templates);
+            }
+        } catch (err) {
+            console.error("Failed to create template", err);
+        }
+    };
 
     if (loading) return <div className="p-20 text-center animate-pulse text-text-muted uppercase tracking-widest font-black">Summoning Entity...</div>;
     if (!entity) return <div className="p-20 text-center text-red-500">Entity lost in the void.</div>;
 
     return (
-        <div className="flex-1 flex flex-col h-full w-full">
+        <div className="flex-1 flex flex-col h-full w-full relative">
+            {/* Create Template Modal Overlay */}
+            {showCreateModal && (
+                <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-surface-dark border border-glass-border rounded-2xl p-6 w-full max-w-md shadow-2xl animate-scale-in">
+                        <h3 className="text-xl font-black text-white mb-4">Nueva Plantilla</h3>
+                        <form onSubmit={handleCreateTemplateSubmit} className="space-y-4">
+                            <div>
+                                <label className="text-xs uppercase font-bold text-text-muted block mb-1">Nombre</label>
+                                <input
+                                    autoFocus
+                                    className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white focus:border-primary"
+                                    value={newTemplate.nombre}
+                                    onChange={e => setNewTemplate({ ...newTemplate, nombre: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-xs uppercase font-bold text-text-muted block mb-1">Tipo</label>
+                                    <select
+                                        className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white focus:border-primary"
+                                        value={newTemplate.tipo}
+                                        onChange={e => setNewTemplate({ ...newTemplate, tipo: e.target.value })}
+                                    >
+                                        <option value="text">Texto Largo</option>
+                                        <option value="short_text">Texto Corto</option>
+                                        <option value="number">Número</option>
+                                        <option value="boolean">Si/No</option>
+                                        <option value="date">Fecha</option>
+                                        <option value="entity_link">Vínculo Entidad</option>
+                                        <option value="image">Imagen URL</option>
+                                    </select>
+                                </div>
+                                <div className="flex items-center">
+                                    <label className="flex items-center gap-2 cursor-pointer p-3 bg-white/5 rounded-xl w-full hover:bg-white/10 transition-colors">
+                                        <input
+                                            type="checkbox"
+                                            checked={newTemplate.global}
+                                            onChange={e => setNewTemplate({ ...newTemplate, global: e.target.checked })}
+                                            className="accent-primary size-4"
+                                        />
+                                        <span className="text-sm font-bold text-white">Es Global?</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div className="flex justify-end gap-3 pt-4">
+                                <button type="button" onClick={() => setShowCreateModal(false)} className="px-4 py-2 text-text-muted hover:text-white font-bold">Cancelar</button>
+                                <button type="submit" className="px-6 py-2 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-transform">Crear</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
             <header className="flex-none p-6 flex items-end justify-between gap-6 border-b border-white/5 bg-background-dark/50 backdrop-blur z-10">
                 <div className="space-y-2">
@@ -192,6 +469,15 @@ const EntityBuilderContent = () => {
                         {entity.carpeta?.nombre || 'Root'}
                     </div>
                     <h1 className="text-4xl font-black text-white tracking-tighter">{entity.nombre}</h1>
+                    {entity.tags && (
+                        <div className="flex gap-2">
+                            {entity.tags.split(',').map((tag, i) => (
+                                <span key={i} className="px-2 py-0.5 rounded-md bg-white/5 text-[10px] uppercase font-bold text-text-muted border border-white/5">
+                                    {tag.trim()}
+                                </span>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex gap-2">
@@ -213,7 +499,6 @@ const EntityBuilderContent = () => {
                     onNodesChange={onNodesChange}
                     onEdgesChange={onEdgesChange}
                     onConnect={onConnect}
-                    onInit={setReactFlowInstance => console.log('flow loaded:', setReactFlowInstance)}
                     onDrop={onDrop}
                     onDragOver={onDragOver}
                     nodeTypes={nodeTypes}
@@ -223,49 +508,22 @@ const EntityBuilderContent = () => {
                     <Background color="#ffffff" gap={20} size={1} variant="dots" className="opacity-5" />
                     <Controls className="bg-surface-dark border border-white/10 text-white fill-white" />
                 </ReactFlow>
-
-                {/* Overlay Instruction */}
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/40 backdrop-blur px-4 py-2 rounded-full border border-white/5 text-xs text-text-muted pointer-events-none">
-                    Drag attributes from Toolbox or Entities from Explorer
-                </div>
             </div>
 
-            {/* Specialized Views (keep existing logic) */}
-            {viewMode === 'special' && (
-                <div className="w-full flex-1 overflow-auto">
-                    {entity.tipoEspecial === 'map' && <SpecializedMap entity={entity} active={true} />}
-                    {entity.tipoEspecial === 'timeline' && <SpecializedTimeline entity={entity} active={true} />}
-                </div>
+            {/* Special modes */}
+            {viewMode === 'special' && (entity?.tipoEspecial === 'map' || type === 'map') && (
+                <SpecializedMap entity={entity} />
             )}
-
-            {/* Contextual Function Tabs */}
-            {entity.tipoEspecial && (
-                <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex gap-4 animate-slide-up z-40 bg-surface-dark/80 backdrop-blur-xl p-2 rounded-2xl border border-glass-border shadow-2xl">
-                    <button
-                        onClick={() => setViewMode('attributes')}
-                        className={`px-6 py-3 rounded-xl font-bold flex items-center gap-3 transition-all ${viewMode === 'attributes' ? 'bg-white text-surface-dark shadow-lg scale-105' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
-                    >
-                        <span className="material-symbols-outlined">dataset</span>
-                        Struct
-                    </button>
-                    <button
-                        onClick={() => setViewMode('special')}
-                        className={`px-6 py-3 rounded-xl font-bold flex items-center gap-3 transition-all ${viewMode === 'special' ? 'bg-primary text-white shadow-lg scale-105' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
-                    >
-                        <span className="material-symbols-outlined">
-                            {entity.tipoEspecial === 'map' ? 'map' : entity.tipoEspecial === 'timeline' ? 'timeline' : 'analytics'}
-                        </span>
-                        View
-                    </button>
-                </div>
+            {viewMode === 'special' && (entity?.tipoEspecial === 'timeline' || type === 'timeline') && (
+                <SpecializedTimeline entity={entity} />
             )}
         </div>
     );
 };
 
-const EntityBuilder = () => (
+const EntityBuilder = ({ mode }) => (
     <ReactFlowProvider>
-        <EntityBuilderContent />
+        <EntityBuilderContent mode={mode} />
     </ReactFlowProvider>
 );
 

@@ -44,20 +44,61 @@ public class WorldBibleController {
         return ResponseEntity.ok(worldBibleService.getRootFolders(proyecto));
     }
 
-    @GetMapping("/folders/{id}")
-    public ResponseEntity<?> getFolder(@PathVariable Long id) {
-        return carpetaRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @GetMapping("/folders/{idOrSlug}")
+    public ResponseEntity<?> getFolder(@PathVariable String idOrSlug) {
+        if (isNumeric(idOrSlug)) {
+            return carpetaRepository.findById(Long.parseLong(idOrSlug))
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } else {
+            return carpetaRepository.findBySlug(idOrSlug)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        }
     }
 
-    @GetMapping("/folders/{id}/subfolders")
-    public ResponseEntity<?> getSubfolders(@PathVariable Long id) {
+    private boolean isNumeric(String str) {
+        if (str == null)
+            return false;
+        try {
+            Long.parseLong(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    /*
+     * - [x] Renombrar "Estructura/Zona" a "Espacio".
+     * - [x] Corrección Root Index: Eliminar botones "Character/Map/Timeline" y usar
+     * Modal para "Espacio/Mapa".
+     * - [ ] **Refactorización Flujo de Creación (Sin Prompts)**
+     * - [ ] Restaurar Explorador Lateral (Solo Carpeta).
+     * - [ ] Rutas de Creación Directa (e.g., `/new/:type`).
+     * - [ ] Refactor `EntityBuilder` para modo "Creación".
+     * - [ ] Implementar guardado diferido (Post-draft).
+     * - [ ] Soporte para Herencia de Plantillas en modo borrador.
+     */
+    @GetMapping("/folders/{idOrSlug}/subfolders")
+    public ResponseEntity<?> getSubfolders(@PathVariable String idOrSlug) {
+        Long id = resolveFolderId(idOrSlug);
+        if (id == null)
+            return ResponseEntity.notFound().build();
         return ResponseEntity.ok(worldBibleService.getSubfolders(id));
     }
 
-    @GetMapping("/folders/{id}/entities")
-    public ResponseEntity<?> getEntitiesInFolder(@PathVariable Long id) {
+    private Long resolveFolderId(String idOrSlug) {
+        if (isNumeric(idOrSlug))
+            return Long.parseLong(idOrSlug);
+        return carpetaRepository.findBySlug(idOrSlug).map(Carpeta::getId).orElse(null);
+    }
+
+    @GetMapping("/folders/{idOrSlug}/entities")
+    public ResponseEntity<?> getEntitiesInFolder(@PathVariable String idOrSlug) {
+        Long id = resolveFolderId(idOrSlug);
+        if (id == null)
+            return ResponseEntity.notFound().build();
+
         Optional<Carpeta> carpeta = carpetaRepository.findById(id);
         if (carpeta.isEmpty())
             return ResponseEntity.notFound().build();
@@ -77,10 +118,13 @@ public class WorldBibleController {
         }
 
         String nombre = (String) payload.get("nombre");
+        String descripcion = (String) payload.get("descripcion");
         Number padreId = (Number) payload.get("padreId");
+        String tipo = (String) payload.get("tipo");
 
         return ResponseEntity
-                .ok(worldBibleService.createFolder(nombre, proyecto, padreId != null ? padreId.longValue() : null));
+                .ok(worldBibleService.createFolder(nombre, descripcion, proyecto,
+                        padreId != null ? padreId.longValue() : null, tipo));
     }
 
     @PostMapping("/entities")
@@ -110,14 +154,21 @@ public class WorldBibleController {
         return ResponseEntity.ok(entidadGenericaRepository.findByProyecto(proyecto));
     }
 
-    @GetMapping("/entities/{id}")
-    public ResponseEntity<?> getEntity(@PathVariable Long id, HttpSession session) {
+    @GetMapping("/entities/{idOrSlug}")
+    public ResponseEntity<?> getEntity(@PathVariable String idOrSlug, HttpSession session) {
         Cuaderno proyecto = getProyectoActual(session);
         if (proyecto == null)
             return ResponseEntity.status(401).body(Map.of("error", "No active project"));
-        return entidadGenericaRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+
+        if (isNumeric(idOrSlug)) {
+            return entidadGenericaRepository.findById(Long.parseLong(idOrSlug))
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } else {
+            return entidadGenericaRepository.findBySlug(idOrSlug)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        }
     }
 
     @DeleteMapping("/entities/{id}")
@@ -142,15 +193,19 @@ public class WorldBibleController {
         return ResponseEntity.of(entidadGenericaRepository.findById(id));
     }
 
-    @PatchMapping("/entities/{id}/values")
-    public ResponseEntity<?> updateValues(@PathVariable Long id,
+    @PatchMapping("/entities/{entityId}/values")
+    public ResponseEntity<?> updateEntityValues(@PathVariable Long entityId,
             @RequestBody List<WorldBibleService.ValueUpdateDTO> updates) {
-        try {
-            worldBibleService.updateEntityValues(id, updates);
-            return ResponseEntity.ok(Map.of("success", true));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
-        }
+        worldBibleService.updateEntityValues(entityId, updates);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/entities/{entityId}/details")
+    public ResponseEntity<EntidadGenerica> updateEntityDetails(@PathVariable Long entityId,
+            @RequestBody Map<String, Object> payload) {
+        String descripcion = (String) payload.get("descripcion");
+        String tags = (String) payload.get("tags");
+        return ResponseEntity.ok(worldBibleService.updateEntityDetails(entityId, descripcion, tags));
     }
 
     @PostMapping("/folders/{id}/templates")
@@ -159,17 +214,22 @@ public class WorldBibleController {
             String nombre = (String) payload.get("nombre");
             String tipo = (String) payload.get("tipo");
             String metadata = (String) payload.get("metadata"); // JSON string or null
-            Boolean required = (Boolean) payload.get("required");
+            boolean required = (boolean) payload.getOrDefault("required", false);
+            boolean global = (boolean) payload.getOrDefault("global", false);
 
             return ResponseEntity.ok(
-                    worldBibleService.createTemplate(id, nombre, tipo, metadata, required != null ? required : false));
+                    worldBibleService.createTemplate(id, nombre, tipo, metadata, required, global));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
-    @GetMapping("/folders/{id}/templates")
-    public ResponseEntity<?> getTemplates(@PathVariable Long id) {
+    @GetMapping("/folders/{idOrSlug}/templates")
+    public ResponseEntity<?> getTemplates(@PathVariable String idOrSlug) {
+        Long id = resolveFolderId(idOrSlug);
+        if (id == null)
+            return ResponseEntity.notFound().build();
+
         Optional<Carpeta> carpeta = carpetaRepository.findById(id);
         if (carpeta.isEmpty())
             return ResponseEntity.notFound().build();

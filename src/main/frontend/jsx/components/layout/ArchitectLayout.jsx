@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, useParams, useNavigate, useLocation, Link, NavLink } from 'react-router-dom';
+import { Outlet, useParams, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import api from '../../../js/services/api';
-// import TopNavigation from './TopNavigation'; // Removed for Top Nav
-// import BottomDock from './BottomDock'; // Removed for Top Nav
-import GlassPanel from '../common/GlassPanel';
 
 const NavItem = ({ to, icon, label, collapsed, end }) => (
     <NavLink
@@ -31,7 +28,6 @@ const getIconForType = (type) => {
         case 'date': return 'calendar_today';
         case 'select': return 'list';
         case 'boolean': return 'check_box';
-        // Entity Types
         case 'map': return 'map';
         case 'timeline': return 'timeline';
         case 'character': case 'entidadindividual': return 'person';
@@ -39,13 +35,11 @@ const getIconForType = (type) => {
         case 'culture': case 'entidadcolectiva': return 'groups';
         case 'universe': case 'galaxy': case 'system': case 'planet': return 'public';
         case 'entity_link': return 'link';
-        default: return 'description'; // Fallback
+        default: return 'description';
     }
 };
 
-// ... ArchitectLayout ...
 const ArchitectLayout = () => {
-    // ... (Hooks)
     const { username, projectName: paramProjectName } = useParams();
     const navigate = useNavigate();
     const [leftOpen, setLeftOpen] = useState(true);
@@ -53,8 +47,12 @@ const ArchitectLayout = () => {
     const [loadedProjectName, setLoadedProjectName] = useState('Loading...');
     const [projectId, setProjectId] = useState(null);
 
-    const [availableTemplates, setAvailableTemplates] = useState([]);
-    const [addAttributeHandler, setAddAttributeHandler] = useState(null);
+    // Right Panel State
+    const [rightPanelMode, setRightPanelMode] = useState('NOTES'); // 'NOTES', 'TOOLBOX'
+    const [notesContent, setNotesContent] = useState('');
+    const [availableTemplates, setAvailableTemplates] = useState([]); // Use for Toolbox
+    const [addAttributeHandler, setAddAttributeHandler] = useState(null); // Handler for Toolbox clicks
+    const [createTemplateHandler, setCreateTemplateHandler] = useState(null); // Handler for creating templates
 
     const baseUrl = `/${username}/${paramProjectName}`;
 
@@ -62,13 +60,14 @@ const ArchitectLayout = () => {
         const init = async () => {
             if (paramProjectName) {
                 await loadProject(paramProjectName);
-                // Folders loaded in WorldBibleLayout now
+
+                // Load Notes from LocalStorage (or Backend in future)
+                const savedNotes = localStorage.getItem(`notes_${paramProjectName}`);
+                if (savedNotes) setNotesContent(savedNotes);
             }
         };
         init();
     }, [paramProjectName]);
-
-    // ... (rest of listeners) ...
 
     const loadProject = async (identifier) => {
         try {
@@ -80,82 +79,10 @@ const ArchitectLayout = () => {
         } catch (err) { console.error("Error loading project:", err); }
     };
 
-    const handleCreateTemplate = async (folderId, type) => {
-        const name = prompt(`Enter name for new ${type} attribute:`);
-        if (!name) return;
-        try {
-            await api.post(`/world-bible/folders/${folderId}/templates`, {
-                nombre: name,
-                tipo: type,
-                required: false
-            });
-            alert("Attribute template added to folder!");
-        } catch (err) {
-            console.error("Error creating template:", err);
-            alert("Failed to add attribute template");
-        }
-    };
-
-    const handleRenameFolder = async (folderId, newName) => {
-        try {
-            await api.put(`/world-bible/folders/${folderId}`, { nombre: newName });
-            setFolders(prev => prev.map(f => f.id === folderId ? { ...f, nombre: newName } : f));
-        } catch (err) {
-            console.error("Error renaming folder:", err);
-            throw err;
-        }
-    };
-
-    const handleDeleteFolder = async (folderId) => {
-        if (!confirm("Are you sure you want to delete this folder?")) return;
-        try {
-            await api.delete(`/world-bible/folders/${folderId}`);
-            setFolders(prev => prev.filter(f => f.id !== folderId));
-            // Trigger update for any parent listeners
-            window.dispatchEvent(new CustomEvent('folder-update', {
-                detail: { removeId: folderId, type: 'folder' }
-                // Note: We don't know parentId here easily, but listeners check 'removeId' globally? 
-                // No, FolderItem checks: e.detail.folderId === folder.id OR removeId logic inside the loop?
-                // FolderItem listener: "if (folderId === folder.id) ... else if (removeId) ..."
-                // The logical parent ID is needed for the listener of the PARENT folder to react.
-                // However, our FolderItem listener logic:
-                // "if (folderId === folder.id)" -> ONLY if the event specifies the PARENT ID.
-
-                // If we don't know parentId, we can't notify the specific parent via ID.
-                // BUT, we can just reload the parent if we knew it.
-                // Or, we rely on the fact that 'removeId' is checked?
-
-                // Current FolderItem code:
-                // if (folderId === folder.id) { ... if (removeId) ... }
-                // So we MUST pass the parent folderId in event detail.
-
-                // Since we don't track parentId easily here without passing it up, 
-                // we might need to change Sidebar to pass (id, parentId) to delete.
-                // But handleDeleteFolder(folderId) is the signature.
-
-                // Hack: We can iterate 'folders' to see if it's root. If not, we don't update root state.
-                // But for subfolders... 
-                // Actually, FolderItem's onDeleteFolder calls: onDeleteFolder(folder.id). 
-                // It doesn't pass parentId.
-
-                // If I want to fix generic deletion, I should reload the parent.
-                // But I don't have parent info.
-
-                // Let's assume for now that ROOT folders work (setFolders).
-                // For subfolders, since we reload on expand...
-                // Actually, if we just delete it from DB, the UI won't update until reload.
-                // To force UI update, we need to find the parent.
-
-                // FOR NOW: I will just dispatch valid event if possible, or trigger a full reload? 
-                // Ideally, window.location.reload() or re-fetch root? 
-                // Re-fetching root won't fix nested.
-            }));
-            // Dispatch a generic event that might force reload if we match?
-            window.dispatchEvent(new CustomEvent('folder-specific-update', { detail: { folderId } }));
-            loadFolders(); // Refresh root at least
-        } catch (err) {
-            console.error("Error deleting folder:", err);
-        }
+    const handleNoteChange = (e) => {
+        const val = e.target.value;
+        setNotesContent(val);
+        localStorage.setItem(`notes_${paramProjectName}`, val);
     };
 
     return (
@@ -190,16 +117,12 @@ const ArchitectLayout = () => {
                 </div>
 
                 <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col">
-                    {/* Main Navigation */}
-                    {/* Main Navigation */}
                     <div className="p-3 space-y-1">
-                        <NavItem to={baseUrl} icon="home" label="Dashboard" collapsed={!leftOpen} />
+                        <NavItem to={baseUrl} icon="home" label="Dashboard" collapsed={!leftOpen} end />
                         <NavItem to={`${baseUrl}/bible`} icon="menu_book" label="World Bible" collapsed={!leftOpen} />
                         <NavItem to={`${baseUrl}/map`} icon="map" label="Atlas" collapsed={!leftOpen} />
                         <NavItem to={`${baseUrl}/timeline`} icon="calendar_month" label="Chronology" collapsed={!leftOpen} />
-
                         <div className="h-px bg-glass-border my-2 mx-2 opacity-50"></div>
-
                         <NavItem to={`${baseUrl}/writing`} icon="edit_note" label="Writing" collapsed={!leftOpen} />
                         <NavItem to={`${baseUrl}/settings`} icon="settings" label="Settings" collapsed={!leftOpen} />
                     </div>
@@ -211,7 +134,6 @@ const ArchitectLayout = () => {
                             <div className="w-full h-full rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center text-white font-black text-xs">
                                 {username ? username.substring(0, 2).toUpperCase() : 'US'}
                             </div>
-                            <div className="absolute bottom-0 right-0 size-3 bg-emerald-500 border-2 border-surface-dark rounded-full"></div>
                         </div>
                         {leftOpen && (
                             <div className="overflow-hidden">
@@ -225,105 +147,144 @@ const ArchitectLayout = () => {
 
             {/* --- CENTRAL PANEL: CANVAS --- */}
             <main className="flex-1 flex flex-col min-w-0 bg-background-dark relative">
-                {/* Top decorative bar (optional, or breadcrumbs later) */}
                 <div className="h-16 w-full absolute top-0 left-0 bg-gradient-to-b from-background-dark to-transparent pointer-events-none"></div>
 
                 <div className="flex-1 flex overflow-hidden relative z-0">
                     <Outlet context={{
+                        setRightPanelMode, // Require pages to set this
                         availableTemplates, setAvailableTemplates,
                         setAddAttributeHandler,
+                        setCreateTemplateHandler,
                         projectName: loadedProjectName,
-                        projectId
+                        projectId,
+                        setRightOpen
                     }} />
                 </div>
             </main>
 
-            {/* --- RIGHT PANEL: TOOLBOX / CONTEXT --- */}
+            {/* --- RIGHT PANEL: TOOLBOX / NOTES --- */}
             <aside
                 className={`
                     flex-none bg-surface-dark border-l border-glass-border transition-all duration-500 relative flex flex-col z-30
                     ${rightOpen ? 'w-80' : 'w-20'}
                 `}
             >
+                {/* Header */}
                 <header className="h-16 flex items-center px-6 border-b border-glass-border justify-between">
                     {rightOpen ? (
                         <>
-                            <h2 className="text-xs font-black uppercase tracking-widest text-white">Toolbox</h2>
-                            <button onClick={() => setRightOpen(false)} className="text-text-muted hover:text-white transition-colors" title="Collapse Toolbox">
+                            <h2 className="text-xs font-black uppercase tracking-widest text-white">
+                                {rightPanelMode === 'NOTES' ? 'Notas Globales' : 'Constructor'}
+                            </h2>
+                            <button onClick={() => setRightOpen(false)} className="text-text-muted hover:text-white transition-colors">
                                 <span className="material-symbols-outlined text-lg">dock_to_right</span>
                             </button>
                         </>
                     ) : (
-                        <button onClick={() => setRightOpen(true)} className="w-full h-full flex items-center justify-center text-text-muted hover:text-white transition-colors" title="Expand Toolbox">
-                            <span className="material-symbols-outlined">menu_open</span>
+                        <button onClick={() => setRightOpen(true)} className="w-full h-full flex items-center justify-center text-text-muted hover:text-white transition-colors">
+                            <span className="material-symbols-outlined">
+                                {rightPanelMode === 'NOTES' ? 'edit_note' : 'handyman'}
+                            </span>
                         </button>
                     )}
                 </header>
 
-                <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4">
+                <div className="flex-1 overflow-y-auto no-scrollbar p-0">
                     {rightOpen ? (
-                        <>
-                            {availableTemplates.length === 0 ? (
-                                <div className="p-8 text-center border border-dashed border-glass-border rounded-3xl opacity-20 mt-4">
-                                    <span className="material-symbols-outlined text-3xl mb-2 block">construction</span>
-                                    <h3 className="font-bold text-white uppercase tracking-widest text-[10px]">No templates available</h3>
-                                </div>
-                            ) : (
+                        rightPanelMode === 'NOTES' ? (
+                            // NOTES MODE
+                            <div className="h-full flex flex-col p-4">
+                                <textarea
+                                    className="flex-1 bg-surface-light/50 border border-glass-border rounded-xl p-4 text-sm text-white/80 resize-none outline-none focus:border-primary/50 transition-colors"
+                                    placeholder="Escribe tus propias notas..."
+                                    value={notesContent}
+                                    onChange={handleNoteChange}
+                                ></textarea>
+                            </div>
+                        ) : (
+                            // TOOLBOX MODE
+                            <div className="p-4 space-y-6">
+                                {/* Basic Modules Section if needed */}
+
                                 <div className="space-y-3">
-                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-text-muted px-2">Attribute Palette</h3>
-                                    {availableTemplates.map(tpl => (
+                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-text-muted px-2 flex justify-between items-center">
+                                        <span>Plantillas Disponibles</span>
                                         <button
-                                            key={tpl.id}
-                                            className="w-full flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-glass-border hover:border-primary/50 hover:bg-primary/5 transition-all text-left group"
+                                            className="text-primary hover:text-white transition-colors"
+                                            title="Crear Nueva Plantilla"
                                             onClick={() => {
-                                                if (addAttributeHandler) addAttributeHandler(tpl.id);
-                                            }}
-                                            title={`Add ${tpl.nombre}`}
-                                            draggable
-                                            onDragStart={(e) => {
-                                                e.dataTransfer.setData('application/reactflow/type', 'attribute');
-                                                e.dataTransfer.setData('templateId', tpl.id);
-                                                e.dataTransfer.effectAllowed = 'move';
+                                                // We need to access the context handler passed FROM the Outlet Child TO this Layout?
+                                                // Wait, Outlet context goes DOWN.
+                                                // To pass UP, we need a refined approach.
+                                                // Actually, useOutletContext in Child receives what we pass here.
+                                                // So we need a state HERE that the child SETS.
+                                                // I passed 'setAddAttributeHandler' (state) downward.
+                                                // Child calls setAddAttributeHandler(fn).
+                                                // So 'addAttributeHandler' is available here.
+                                                // I need 'createTemplateHandler' similarly.
+                                                // Let's add 'createTemplateHandler' state.
+                                                if (createTemplateHandler) createTemplateHandler();
                                             }}
                                         >
-                                            <div className="size-8 rounded-lg bg-surface-light flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                                                <span className="material-symbols-outlined text-sm">
-                                                    {getIconForType(tpl.tipo)}
-                                                </span>
-                                            </div>
-                                            <div className="overflow-hidden">
-                                                <p className="text-xs font-bold text-white truncate">{tpl.nombre}</p>
-                                                <p className="text-[10px] text-text-muted uppercase font-black tracking-tighter">{tpl.tipo}</p>
-                                            </div>
+                                            <span className="material-symbols-outlined text-sm">add</span>
                                         </button>
-                                    ))}
+                                    </h3>
+
+                                    {availableTemplates.length === 0 ? (
+                                        <div className="p-6 text-center border border-dashed border-glass-border rounded-2xl opacity-30">
+                                            <p className="text-[10px] uppercase font-bold">Sin Plantillas</p>
+                                        </div>
+                                    ) : (
+                                        availableTemplates.map(tpl => (
+                                            <button
+                                                key={tpl.id}
+                                                className="w-full flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-glass-border hover:border-primary/50 hover:bg-primary/5 transition-all text-left group relative"
+                                                draggable
+                                                onDragStart={(e) => {
+                                                    e.dataTransfer.setData('application/reactflow/type', 'attribute');
+                                                    e.dataTransfer.setData('templateId', tpl.id);
+                                                    e.dataTransfer.effectAllowed = 'move';
+                                                }}
+                                                onClick={() => addAttributeHandler && addAttributeHandler(tpl.id)}
+                                            >
+                                                {tpl.global && (
+                                                    <span className="absolute top-2 right-2 flex size-2 bg-blue-500 rounded-full shadow-lg shadow-blue-500/50" title="Global"></span>
+                                                )}
+                                                <div className="size-8 rounded-lg bg-surface-light flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                                                    <span className="material-symbols-outlined text-sm">{getIconForType(tpl.tipo)}</span>
+                                                </div>
+                                                <div className="overflow-hidden">
+                                                    <p className="text-xs font-bold text-white truncate">{tpl.nombre}</p>
+                                                    <p className="text-[10px] text-text-muted uppercase font-black tracking-tighter">{tpl.tipo}</p>
+                                                </div>
+                                            </button>
+                                        ))
+                                    )}
                                 </div>
-                            )}
-                        </>
+                            </div>
+                        )
                     ) : (
-                        <div className="flex flex-col items-center gap-4">
-                            {availableTemplates.map(tpl => (
-                                <button
-                                    key={tpl.id}
-                                    className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted hover:text-white hover:bg-primary/20 transition-all"
-                                    onClick={() => {
-                                        if (addAttributeHandler) addAttributeHandler(tpl.id);
-                                    }}
-                                    title={`Add ${tpl.nombre}`}
-                                    draggable
-                                    onDragStart={(e) => {
-                                        e.dataTransfer.setData('application/reactflow/type', 'attribute');
-                                        e.dataTransfer.setData('templateId', tpl.id);
-                                        e.dataTransfer.effectAllowed = 'move';
-                                    }}
-                                >
-                                    <span className="material-symbols-outlined text-lg">
-                                        {getIconForType(tpl.tipo)}
-                                    </span>
+                        // COLLAPSED ICONS
+                        <div className="flex flex-col items-center gap-4 py-4">
+                            {rightPanelMode === 'NOTES' ? (
+                                <button className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted" title="Notes">
+                                    <span className="material-symbols-outlined text-lg">edit_note</span>
                                 </button>
-                            ))}
-                            {availableTemplates.length === 0 && (
-                                <span className="material-symbols-outlined text-text-muted/30">construction</span>
+                            ) : (
+                                availableTemplates.slice(0, 5).map(tpl => (
+                                    <button
+                                        key={tpl.id}
+                                        className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted hover:text-white hover:bg-primary/20 transition-all relative"
+                                        draggable
+                                        onDragStart={(e) => {
+                                            e.dataTransfer.setData('application/reactflow/type', 'attribute');
+                                            e.dataTransfer.setData('templateId', tpl.id);
+                                        }}
+                                    >
+                                        {tpl.global && <span className="absolute top-0 right-0 size-2 bg-blue-500 rounded-full border border-surface-dark"></span>}
+                                        <span className="material-symbols-outlined text-lg">{getIconForType(tpl.tipo)}</span>
+                                    </button>
+                                ))
                             )}
                         </div>
                     )}

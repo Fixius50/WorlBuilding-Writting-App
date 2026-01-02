@@ -45,10 +45,18 @@ public class WorldBibleService {
     }
 
     @Transactional
-    public Carpeta createFolder(String nombre, Cuaderno proyecto, Long padreId) {
+    public Carpeta createFolder(String nombre, String descripcion, Cuaderno proyecto, Long padreId, String tipo) {
         Carpeta carpeta = new Carpeta();
         carpeta.setNombre(nombre);
+        carpeta.setDescripcion(descripcion);
         carpeta.setProyecto(proyecto);
+        carpeta.setTipo(tipo);
+        carpeta.setTipo(tipo);
+
+        // Generate Slug
+        String slug = generateUniqueSlug(nombre, "folder");
+        carpeta.setSlug(slug);
+
         if (padreId != null) {
             carpetaRepository.findById(padreId).ifPresent(carpeta::setPadre);
         }
@@ -56,7 +64,38 @@ public class WorldBibleService {
         Carpeta saved = carpetaRepository.save(carpeta);
         // Set default count (0)
         saved.setItemCount(0);
+
+        if (isContainer(tipo)) {
+            generateDefaultStructure(saved, proyecto);
+        }
+
         return saved;
+    }
+
+    private boolean isContainer(String tipo) {
+        if (tipo == null)
+            return false;
+        String t = tipo.toUpperCase();
+        return t.equals("UNIVERSE") || t.equals("GALAXY") || t.equals("SYSTEM") || t.equals("WORLD")
+                || t.equals("PLANET");
+    }
+
+    private void generateDefaultStructure(Carpeta parent, Cuaderno proyecto) {
+        createSubFolder("Geografía y Lugares", "GEOGRAPHY", parent, proyecto);
+        createSubFolder("Entidades y Personajes", "ENTITIES", parent, proyecto);
+        createSubFolder("Sistemas de Magia y Poderes", "MAGIC", parent, proyecto);
+        createSubFolder("Cronología y Eventos", "TIMELINE", parent, proyecto);
+        createSubFolder("Facciones y Organizaciones", "FACTIONS", parent, proyecto);
+        createSubFolder("Objetos y Tecnología", "ITEMS", parent, proyecto);
+    }
+
+    private void createSubFolder(String name, String type, Carpeta parent, Cuaderno proyecto) {
+        Carpeta c = new Carpeta();
+        c.setNombre(name);
+        c.setTipo(type);
+        c.setPadre(parent);
+        c.setProyecto(proyecto);
+        carpetaRepository.save(c);
     }
 
     // --- ENTIDADES ---
@@ -72,7 +111,16 @@ public class WorldBibleService {
         entidad.setNombre(nombre);
         entidad.setProyecto(proyecto);
         entidad.setCarpeta(carpeta);
+        entidad.setCarpeta(carpeta);
         entidad.setTipoEspecial(tipoEspecial);
+
+        // Generate Slug
+        String slug = generateUniqueSlug(nombre, "entity");
+        entidad.setSlug(slug);
+
+        // Default values for new fields
+        entidad.setDescripcion("");
+        entidad.setTags("");
 
         EntidadGenerica savedEntity = entidadGenericaRepository.save(entidad);
 
@@ -91,12 +139,40 @@ public class WorldBibleService {
 
     public List<AtributoPlantilla> getAllInheritedTemplates(Carpeta carpeta) {
         List<AtributoPlantilla> allTemplates = new ArrayList<>();
+
+        // 1. Get Global Templates (using Repository - need to add method)
+        // For now, assume we filter them manually or query all global=true for project?
+        // Better: Custom Query in Repo. "findByProyectoAndGlobalTrue" (but
+        // AtributoPlantilla doesn't have project linkage yet, it has Folder).
+        // Using "Global = True" attached to ANY folder in project? Or Root?
+        // Plan was: Global templates have Global=True.
+        // But Repo needs to find them.
+        // Workaround: We find ALL templates in the path. Global ones are tricky if they
+        // are in "Settings" folder.
+        // Let's implement: "Templates in Path" + "Templates in Root with Global=True".
+        // Find Root Folder of this Project.
+        Carpeta root = getRootFolderOf(carpeta);
+        if (root != null) {
+            allTemplates.addAll(atributoPlantillaRepository.findByCarpetaAndGlobalTrue(root));
+        }
+
+        // 2. Path Inheritance
         Carpeta current = carpeta;
         while (current != null) {
             allTemplates.addAll(atributoPlantillaRepository.findByCarpetaOrderByOrdenVisualAsc(current));
             current = current.getPadre();
         }
         return allTemplates;
+    }
+
+    private Carpeta getRootFolderOf(Carpeta c) {
+        if (c == null)
+            return null;
+        Carpeta curr = c;
+        while (curr.getPadre() != null) {
+            curr = curr.getPadre();
+        }
+        return curr;
     }
 
     // --- ATRIBUTOS ---
@@ -130,7 +206,7 @@ public class WorldBibleService {
 
     @Transactional
     public AtributoPlantilla createTemplate(Long carpetaId, String nombre, String tipo, String metadata,
-            boolean required) {
+            boolean required, boolean global) {
         Optional<Carpeta> carpetaOpt = carpetaRepository.findById(carpetaId);
         if (carpetaOpt.isEmpty())
             throw new RuntimeException("Folder not found");
@@ -141,9 +217,23 @@ public class WorldBibleService {
         plantilla.setTipo(tipo);
         plantilla.setMetadata(metadata);
         plantilla.setEsObligatorio(required);
-        // Default visual order logic could go here
+        plantilla.setGlobal(global);
 
         return atributoPlantillaRepository.save(plantilla);
+    }
+
+    @Transactional
+    public EntidadGenerica updateEntityDetails(Long entityId, String descripcion, String tags) {
+        Optional<EntidadGenerica> ent = entidadGenericaRepository.findById(entityId);
+        if (ent.isPresent()) {
+            EntidadGenerica e = ent.get();
+            if (descripcion != null)
+                e.setDescripcion(descripcion);
+            if (tags != null)
+                e.setTags(tags);
+            return entidadGenericaRepository.save(e);
+        }
+        throw new RuntimeException("Entity not found");
     }
 
     public static class ValueUpdateDTO {
@@ -165,5 +255,43 @@ public class WorldBibleService {
         public void setNuevoValor(String nuevoValor) {
             this.nuevoValor = nuevoValor;
         }
+    }
+
+    private String generateUniqueSlug(String name, String type) {
+        if (name == null)
+            name = "unnamed";
+        String baseSlug = name.toLowerCase()
+                .replaceAll("[^a-z0-9\\s-]", "")
+                .replaceAll("\\s+", "-");
+
+        if (baseSlug.isEmpty())
+            baseSlug = "item";
+
+        String uniqueSlug = baseSlug;
+        // Simple counter check. For high concurrency this needs improvement, but
+        // sufficient here.
+        // We check across BOTH tables? No, usually slug collision within type is
+        // enough,
+        // OR we want global unique?
+        // User asked: "Por defecto despues del nombre tienen un 0 y que aumente si hay
+        // mas con ese mismo nombre"
+        // Let's check collision on the specific table.
+
+        int counter = 0;
+        boolean exists;
+        do {
+            if (type.equals("folder")) {
+                exists = carpetaRepository.existsBySlug(uniqueSlug);
+            } else {
+                exists = entidadGenericaRepository.existsBySlug(uniqueSlug);
+            }
+
+            if (exists) {
+                uniqueSlug = baseSlug + "-" + counter;
+                counter++;
+            }
+        } while (exists);
+
+        return uniqueSlug;
     }
 }

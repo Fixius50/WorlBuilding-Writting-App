@@ -41,8 +41,18 @@ function App() {
 
                         <Route path="bible" element={<WorldBibleLayout />}>
                             <Route index element={<BibleGridView />} />
-                            <Route path="entity/:entityId" element={<EntityBuilder />} />
-                            <Route path="folder/:folderId" element={<FolderView />} />
+
+                            {/* Creation routes */}
+                            <Route path="folder/:folderSlug/entity/new/:type" element={<EntityBuilder mode="creation" />} />
+
+                            {/* Slug based routing */}
+                            <Route path="folder/:folderSlug" element={<FolderView />} />
+                            <Route path="entity/:entitySlug" element={<EntityBuilder />} />
+
+                            {/* Nested routes for structure visualization */}
+                            <Route path="folder/:folderSlug/entity/:entitySlug" element={<EntityBuilder />} />
+                            <Route path="folder/:folderSlug/map/:entitySlug" element={<EntityBuilder />} />
+                            <Route path="folder/:folderSlug/timeline/:entitySlug" element={<EntityBuilder />} />
                         </Route>
 
                         {/* Other modules inside Architect */}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../../js/services/api';
+import { getHierarchyType } from '../../../js/constants/hierarchy_types';
 
 const getIconForType = (type) => {
     switch (type?.toLowerCase()) {
@@ -21,11 +22,14 @@ const getIconForType = (type) => {
     }
 };
 
-const getEntityRoute = (username, projectName, entity) => {
-    const type = entity.tipoEspecial || 'entidadindividual';
-    if (type === 'map') return `/${username}/${projectName}/map`; // Or /bible/map/id if we unify
-    if (type === 'timeline') return `/${username}/${projectName}/timeline`;
-    return `/${username}/${projectName}/bible/entity/${entity.id}`;
+const getEntityRoute = (username, projectName, entity, folderSlug) => {
+    // Unify all entity types under the folder structure as requested
+    // Format: /bible/folder/:folderSlug/entity/:entitySlug
+    // We can also use specific types if we want distinct URL structures, e.g. /map/:slug
+    // Using generic entity route for now which EntityBuilder handles.
+    const slug = entity.slug || entity.id;
+    const parent = folderSlug || 'root'; // Should practically always be available here
+    return `/${username}/${projectName}/bible/folder/${parent}/entity/${slug}`;
 };
 
 const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDeleteEntity, onCreateTemplate, onMoveEntity, onCreateEntity, onConfirmCreate, className }) => {
@@ -101,7 +105,7 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
         if (!loaded && !isOpen) loadContent();
     };
 
-    const navigateToFolder = () => navigate(`/${username}/${projectName}/bible/folder/${folder.id}`);
+    const navigateToFolder = () => navigate(`/${username}/${projectName}/bible/folder/${folder.slug || folder.id}`);
     const handleContextMenu = (e, type, id, name) => {
         e.preventDefault(); e.stopPropagation();
         setContextMenu({ x: e.clientX, y: e.clientY, type, id, name });
@@ -189,13 +193,16 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
                 onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
             >
                 <span onClick={toggle} className={`material-symbols-outlined text-lg transition-transform hover:text-primary ${isOpen ? 'rotate-90 text-primary' : 'opacity-50'}`}>chevron_right</span>
-                <span className="material-symbols-outlined text-lg text-primary/70">folder</span>
+
+                {/* Dynamic Icon */}
+                <span className={`material-symbols-outlined text-lg ${getHierarchyType(folder.tipo).color}`}>
+                    {getHierarchyType(folder.tipo).icon}
+                </span>
+
                 <span className="truncate flex-1">{itemName}</span>
 
-                <div className="absolute right-2 opacity-0 group-hover:opacity-100 flex gap-1 bg-surface-dark border border-glass-border rounded-lg p-0.5 shadow-lg transition-opacity">
-                    <button onClick={(e) => { e.stopPropagation(); onCreateSubfolder(folder.id); }} className="p-1 hover:bg-white/10 rounded" title="New Subfolder"><span className="material-symbols-outlined text-xs">create_new_folder</span></button>
-                    <button onClick={(e) => { e.stopPropagation(); onCreateEntity(folder.id, 'entidadindividual'); }} className="p-1 hover:bg-white/10 rounded" title="New Entity"><span className="material-symbols-outlined text-xs">add_circle</span></button>
-                </div>
+
+
             </div>
 
             {contextMenu && (
@@ -203,7 +210,7 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
                     <div className="px-4 py-2 border-b border-white/5 font-bold text-text-muted truncate">{contextMenu.name}</div>
                     {contextMenu.type === 'folder' ? (
                         <>
-                            <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2" onClick={() => { onCreateSubfolder(folder.id); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">create_new_folder</span> New Subfolder</button>
+                            <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2" onClick={() => { onCreateSubfolder(folder); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">create_new_folder</span> New Subfolder</button>
                             <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2" onClick={() => { onCreateEntity(folder.id, 'entidadindividual'); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">person</span> New Character</button>
                             <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2" onClick={() => { onCreateEntity(folder.id, 'map'); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">map</span> New Map</button>
                             <div className="h-px bg-white/5 my-1" />
@@ -237,7 +244,7 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
                         ent.isNew ? <InputItem key={ent.id} item={ent} type="entity" /> :
                             <Link
                                 key={ent.id}
-                                to={getEntityRoute(username, projectName, ent)}
+                                to={getEntityRoute(username, projectName, ent, folder.slug || folder.id)}
                                 onContextMenu={(e) => handleContextMenu(e, 'entity', ent.id, ent.nombre)}
                                 className={`flex items-center gap-3 px-3 py-2 rounded-xl text-[11px] font-medium text-text-muted hover:text-white hover:bg-primary/10 transition-all group cursor-grab active:cursor-grabbing ${ent.pending ? 'opacity-50 pointer-events-none' : ''}`}
                                 draggable={!ent.pending}

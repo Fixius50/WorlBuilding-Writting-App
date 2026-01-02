@@ -39,6 +39,15 @@ public class EntidadGenerica {
     @Column(name = "deleted_date")
     private LocalDateTime deletedDate;
 
+    @Column(name = "descripcion", columnDefinition = "TEXT")
+    private String descripcion;
+
+    @Column(name = "tags")
+    private String tags; // CSV strings
+
+    @Column(name = "slug")
+    private String slug;
+
     // Getters y Setters
     public Long getId() {
         return id;
@@ -102,5 +111,29 @@ public class EntidadGenerica {
 
     public void setDeletedDate(LocalDateTime deletedDate) {
         this.deletedDate = deletedDate;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
     }
 }
