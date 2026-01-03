@@ -6,7 +6,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "entidad_generica")
-@org.hibernate.annotations.SQLDelete(sql = "UPDATE entidad_generica SET deleted = true, deleted_date = CURRENT_TIMESTAMP WHERE id = ?")
+@org.hibernate.annotations.SQLDelete(sql = "UPDATE entidad_generica SET deleted = 1, deleted_date = CURRENT_TIMESTAMP WHERE id = ?")
 @org.hibernate.annotations.Where(clause = "deleted = false")
 public class EntidadGenerica {
 
@@ -65,6 +65,7 @@ public class EntidadGenerica {
         this.nombre = nombre;
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public Cuaderno getProyecto() {
         return proyecto;
     }
@@ -73,6 +74,7 @@ public class EntidadGenerica {
         this.proyecto = proyecto;
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public Carpeta getCarpeta() {
         return carpeta;
     }

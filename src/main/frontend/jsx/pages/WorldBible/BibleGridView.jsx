@@ -61,6 +61,7 @@ const BibleGridView = () => {
                         item={folder}
                         type="folder"
                         linkTo={`/${username}/${projectName}/bible/folder/${folder.slug || folder.id}`}
+                        onDelete={() => useOutletContext().handleDeleteFolder(folder.id)}
                     />
                 ))}
 

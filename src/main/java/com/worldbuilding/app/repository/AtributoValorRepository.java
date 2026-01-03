@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface AtributoValorRepository extends JpaRepository<AtributoValor, Long> {
     List<AtributoValor> findByEntidad(EntidadGenerica entidad);
+
+    void deleteByPlantillaId(Long plantillaId);
 }

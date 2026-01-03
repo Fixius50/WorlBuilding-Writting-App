@@ -24,7 +24,7 @@ const Settings = () => {
         } finally {
             localStorage.removeItem('user');
             sessionStorage.clear();
-            navigate('/login');
+            navigate('/');
         }
     };
 

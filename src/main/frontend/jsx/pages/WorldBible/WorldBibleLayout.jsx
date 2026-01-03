@@ -3,6 +3,7 @@ import { Outlet, useParams, useNavigate, useOutletContext } from 'react-router-d
 import api from '../../../js/services/api';
 import FolderItem from '../../components/bible/FolderItem';
 import CreateNodeModal from '../../components/bible/CreateNodeModal';
+import ConfirmationModal from '../../components/ConfirmationModal';
 
 // World Bible Layout: Persistent Left Explorer + Right Outlet
 const WorldBibleLayout = () => {
@@ -16,9 +17,12 @@ const WorldBibleLayout = () => {
     const [folders, setFolders] = useState([]);
     const [creationMenuOpen, setCreationMenuOpen] = useState(false);
 
-    // Modal State
     const [creationModalOpen, setCreationModalOpen] = useState(false);
     const [targetParent, setTargetParent] = useState(null);
+
+    // Deletion Modal State
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [deletionTarget, setDeletionTarget] = useState(null); // { id, parentId, type, folderId (for entity) }
 
     const baseUrl = `/${username}/${projectName}/bible`;
 
@@ -108,23 +112,9 @@ const WorldBibleLayout = () => {
     // 'Entidades' (Characters) are different.
 
     const handleCreateEntity = async (folderId, specialType = 'entidadindividual') => {
-        const name = prompt("Nombre de la entidad:"); // Basic fallback for pure entities
-        if (!name) return;
-
-        try {
-            const response = await api.post('/world-bible/entities', {
-                nombre: name,
-                carpetaId: folderId,
-                tipoEspecial: specialType
-            });
-            window.dispatchEvent(new CustomEvent('folder-update', {
-                detail: { folderId: folderId, optimisticType: 'entity', item: response, expand: true }
-            }));
-            // Navigate using slug
-            navigate(`${baseUrl}/entity/${response.slug || response.id}`);
-        } catch (err) {
-            alert("Failed to create entity");
-        }
+        // Navigate directly to the creation form instead of prompt()
+        const targetSlug = typeof folderId === 'object' ? (folderId.slug || folderId.id) : folderId;
+        navigate(`${baseUrl}/folder/${targetSlug}/entity/new/${specialType}`);
     };
 
     const handleRenameFolder = async (folderId, newName) => {
@@ -134,14 +124,41 @@ const WorldBibleLayout = () => {
         } catch (err) { throw err; }
     };
 
-    const handleDeleteFolder = async (folderId) => {
-        if (!confirm("Are you sure?")) return;
+    const handleDeleteFolder = (folderId, parentId = null) => {
+        setDeletionTarget({ id: folderId, parentId, type: 'folder' });
+        setConfirmOpen(true);
+    };
+
+    const confirmDeletion = async () => {
+        if (!deletionTarget) return;
+        const { id, parentId, type, folderId } = deletionTarget;
+
         try {
-            await api.delete(`/world-bible/folders/${folderId}`);
-            setFolders(prev => prev.filter(f => f.id !== folderId));
-            window.dispatchEvent(new CustomEvent('folder-update', { detail: { removeId: folderId, type: 'folder' } }));
-            loadFolders();
-        } catch (err) { console.error(err); }
+            if (type === 'folder') {
+                await api.delete(`/world-bible/folders/${id}`);
+                if (parentId === null) {
+                    setFolders(prev => prev.filter(f => f.id !== id));
+                }
+                window.dispatchEvent(new CustomEvent('folder-update', {
+                    detail: { folderId: parentId, removeId: id, type: 'folder' }
+                }));
+            } else if (type === 'entity') {
+                await api.delete(`/world-bible/entities/${id}`);
+                window.dispatchEvent(new CustomEvent('folder-update', {
+                    detail: { folderId: folderId, removeId: id, type: 'entity' }
+                }));
+            }
+        } catch (err) {
+            console.error("Deletion failed:", err);
+            alert("Error trying to delete item.");
+        } finally {
+            setDeletionTarget(null);
+        }
+    };
+
+    const handleDeleteEntity = (entityId, folderId) => {
+        setDeletionTarget({ id: entityId, folderId, type: 'entity' });
+        setConfirmOpen(true);
     };
 
     const handleConfirmCreate = async (tempId, name, type, parentId, specialType) => {
@@ -219,6 +236,18 @@ const WorldBibleLayout = () => {
                 onClose={() => setCreationModalOpen(false)}
                 onCreate={handleCreateSubmit}
                 parentFolder={targetParent}
+            />
+
+            <ConfirmationModal
+                isOpen={confirmOpen}
+                onClose={() => setConfirmOpen(false)}
+                onConfirm={confirmDeletion}
+                title={deletionTarget?.type === 'folder' ? "Borrar Carpeta" : "Borrar Entidad"}
+                message={deletionTarget?.type === 'folder'
+                    ? "Esta acción eliminará la carpeta y todo su contenido. ¿Estás seguro?"
+                    : "¿Estás seguro de querer eliminar esta entidad de tu mundo?"
+                }
+                confirmText="Sí, borrar"
             />
         </div>
     );

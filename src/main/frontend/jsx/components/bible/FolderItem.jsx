@@ -40,6 +40,7 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
     const [loaded, setLoaded] = useState(false);
     const [contextMenu, setContextMenu] = useState(null);
     const [itemName, setItemName] = useState(folder.nombre);
+    const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => { setItemName(folder.nombre); }, [folder.nombre]);
 
@@ -90,11 +91,8 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
 
     const loadContent = async () => {
         try {
-            const [subs, ents] = await Promise.all([
-                api.get(`/world-bible/folders/${folder.id}/subfolders`),
-                api.get(`/world-bible/folders/${folder.id}/entities`)
-            ]);
-            setContent({ folders: subs, entities: ents });
+            const ents = await api.get(`/world-bible/folders/${folder.id}/entities`);
+            setContent({ folders: [], entities: ents });
             setLoaded(true);
         } catch (err) { console.error("Error reloading folder content:", err); }
     };
@@ -199,10 +197,31 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
                     {getHierarchyType(folder.tipo).icon}
                 </span>
 
-                <span className="truncate flex-1">{itemName}</span>
-
-
-
+                {isEditing ? (
+                    <input
+                        autoFocus
+                        className="bg-surface-light border border-primary/50 rounded px-2 py-0.5 text-xs text-white outline-none flex-1 min-w-0"
+                        defaultValue={itemName}
+                        onKeyDown={async (e) => {
+                            if (e.key === 'Enter') {
+                                const val = e.target.value.trim();
+                                if (val && val !== itemName) {
+                                    try {
+                                        await onRename(folder.id, val);
+                                        setItemName(val);
+                                    } catch (err) { console.error(err); }
+                                }
+                                setIsEditing(false);
+                            } else if (e.key === 'Escape') {
+                                setIsEditing(false);
+                            }
+                        }}
+                        onBlur={() => setIsEditing(false)}
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                ) : (
+                    <span className="truncate flex-1">{itemName}</span>
+                )}
             </div>
 
             {contextMenu && (
@@ -210,11 +229,11 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
                     <div className="px-4 py-2 border-b border-white/5 font-bold text-text-muted truncate">{contextMenu.name}</div>
                     {contextMenu.type === 'folder' ? (
                         <>
-                            <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2" onClick={() => { onCreateSubfolder(folder); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">create_new_folder</span> New Subfolder</button>
                             <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2" onClick={() => { onCreateEntity(folder.id, 'entidadindividual'); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">person</span> New Character</button>
                             <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2" onClick={() => { onCreateEntity(folder.id, 'map'); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">map</span> New Map</button>
                             <div className="h-px bg-white/5 my-1" />
-                            <button className="px-4 py-2 hover:bg-red-500/10 text-red-400 text-left flex items-center gap-2" onClick={() => { onDeleteFolder(folder.id); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">delete</span> Delete Folder</button>
+                            <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2" onClick={() => { setIsEditing(true); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">edit</span> Rename Folder</button>
+                            <button className="px-4 py-2 hover:bg-red-500/10 text-red-400 text-left flex items-center gap-2" onClick={() => { onDeleteFolder(folder.id, folder.parentId); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">delete</span> Delete Folder</button>
                         </>
                     ) : (
                         <button className="px-4 py-2 hover:bg-red-500/10 text-red-400 text-left flex items-center gap-2" onClick={() => { onDeleteEntity(contextMenu.id, folder.id); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">delete</span> Delete Entity</button>
@@ -224,22 +243,6 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
 
             {isOpen && (
                 <div className="ml-6 pl-4 border-l border-glass-border space-y-1 animate-slide-in">
-                    {content.folders.map(sub => (
-                        sub.isNew ? <InputItem key={sub.id} item={sub} type="folder" /> :
-                            <FolderItem
-                                key={sub.uiKey || sub.id}
-                                folder={sub}
-                                onCreateSubfolder={onCreateSubfolder}
-                                onRename={onRename}
-                                onDeleteFolder={onDeleteFolder}
-                                onDeleteEntity={onDeleteEntity}
-                                onCreateTemplate={onCreateTemplate}
-                                onMoveEntity={onMoveEntity}
-                                onCreateEntity={onCreateEntity}
-                                onConfirmCreate={onConfirmCreate}
-                                className={sub.pending ? 'opacity-50 pointer-events-none' : ''}
-                            />
-                    ))}
                     {content.entities.map(ent => (
                         ent.isNew ? <InputItem key={ent.id} item={ent} type="entity" /> :
                             <Link

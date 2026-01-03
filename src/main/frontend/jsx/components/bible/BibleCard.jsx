@@ -20,7 +20,7 @@ const getIconForType = (type) => {
     }
 };
 
-const BibleCard = ({ item, type, linkTo, onContextMenu }) => {
+const BibleCard = ({ item, type, linkTo, onContextMenu, onDelete }) => {
     const isFolder = type === 'folder';
 
     return (
@@ -53,9 +53,17 @@ const BibleCard = ({ item, type, linkTo, onContextMenu }) => {
                 </p>
             </div>
 
-            {/* Hover Indicator */}
-            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:translate-x-1 duration-300">
-                <span className="material-symbols-outlined text-primary text-sm">arrow_forward</span>
+            {/* Hover Indicator / Actions */}
+            <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                {onDelete && (
+                    <button
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(item); }}
+                        className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white transition-all border border-red-500/20 shadow-lg shadow-red-500/5 group/del"
+                    >
+                        <span className="material-symbols-outlined text-sm">delete</span>
+                    </button>
+                )}
+                <span className="material-symbols-outlined text-primary text-sm transform group-hover:translate-x-1 transition-transform">arrow_forward</span>
             </div>
         </Link>
     );

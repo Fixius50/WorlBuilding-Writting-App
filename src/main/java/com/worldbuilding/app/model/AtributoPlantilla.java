@@ -96,6 +96,7 @@ public class AtributoPlantilla {
         this.metadata = metadata;
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public Carpeta getCarpeta() {
         return carpeta;
     }

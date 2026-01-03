@@ -127,6 +127,26 @@ public class WorldBibleController {
                         padreId != null ? padreId.longValue() : null, tipo));
     }
 
+    @PutMapping("/folders/{id}")
+    public ResponseEntity<?> renameFolder(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+        try {
+            String newName = payload.get("nombre");
+            return ResponseEntity.ok(worldBibleService.renameFolder(id, newName));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/folders/{id}")
+    public ResponseEntity<?> deleteFolder(@PathVariable Long id) {
+        try {
+            worldBibleService.deleteFolder(id);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PostMapping("/entities")
     public ResponseEntity<?> createEntity(@RequestBody Map<String, Object> payload, HttpSession session) {
         Cuaderno proyecto = getProyectoActual(session);
@@ -241,6 +261,38 @@ public class WorldBibleController {
         try {
             Long plantillaId = payload.get("plantillaId");
             return ResponseEntity.ok(worldBibleService.addAttributeToEntity(id, plantillaId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/values/{id}")
+    public ResponseEntity<?> deleteValue(@PathVariable Long id) {
+        try {
+            worldBibleService.deleteValue(id);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/templates/{id}")
+    public ResponseEntity<?> deleteTemplate(@PathVariable Long id) {
+        try {
+            worldBibleService.deleteTemplate(id);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/templates/{id}")
+    public ResponseEntity<?> updateTemplate(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
+        try {
+            String nombre = (String) payload.get("nombre");
+            String tipo = (String) payload.get("tipo");
+            boolean global = (boolean) payload.getOrDefault("global", false);
+            return ResponseEntity.ok(worldBibleService.updateTemplate(id, nombre, tipo, global));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

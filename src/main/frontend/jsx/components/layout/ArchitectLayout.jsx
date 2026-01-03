@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useParams, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import api from '../../../js/services/api';
+import GlobalNotes from './GlobalNotes';
 
 const NavItem = ({ to, icon, label, collapsed, end }) => (
     <NavLink
@@ -49,24 +50,38 @@ const ArchitectLayout = () => {
 
     // Right Panel State
     const [rightPanelMode, setRightPanelMode] = useState('NOTES'); // 'NOTES', 'TOOLBOX'
-    const [notesContent, setNotesContent] = useState('');
     const [availableTemplates, setAvailableTemplates] = useState([]); // Use for Toolbox
     const [addAttributeHandler, setAddAttributeHandler] = useState(null); // Handler for Toolbox clicks
     const [createTemplateHandler, setCreateTemplateHandler] = useState(null); // Handler for creating templates
 
+    // Edit State
+    const [editingTemplate, setEditingTemplate] = useState(null);
+
+    const handleDeleteTemplate = async (e, id) => {
+        e.stopPropagation();
+        if (confirm('Are you sure you want to delete this template?')) {
+            try {
+                await api.delete(`/world-bible/templates/${id}`);
+                setAvailableTemplates(prev => prev.filter(t => t.id !== id));
+            } catch (err) { console.error("Delete failed", err); }
+        }
+    };
+
+    const handleUpdateTemplate = async (e) => {
+        e.preventDefault();
+        try {
+            await api.put(`/world-bible/templates/${editingTemplate.id}`, editingTemplate);
+            setAvailableTemplates(prev => prev.map(t => t.id === editingTemplate.id ? editingTemplate : t));
+            setEditingTemplate(null);
+        } catch (err) { console.error("Update failed", err); }
+    };
+
     const baseUrl = `/${username}/${paramProjectName}`;
 
     useEffect(() => {
-        const init = async () => {
-            if (paramProjectName) {
-                await loadProject(paramProjectName);
-
-                // Load Notes from LocalStorage (or Backend in future)
-                const savedNotes = localStorage.getItem(`notes_${paramProjectName}`);
-                if (savedNotes) setNotesContent(savedNotes);
-            }
-        };
-        init();
+        if (paramProjectName) {
+            loadProject(paramProjectName);
+        }
     }, [paramProjectName]);
 
     const loadProject = async (identifier) => {
@@ -77,12 +92,6 @@ const ArchitectLayout = () => {
                 setProjectId(proj.id);
             }
         } catch (err) { console.error("Error loading project:", err); }
-    };
-
-    const handleNoteChange = (e) => {
-        const val = e.target.value;
-        setNotesContent(val);
-        localStorage.setItem(`notes_${paramProjectName}`, val);
     };
 
     return (
@@ -193,13 +202,8 @@ const ArchitectLayout = () => {
                     {rightOpen ? (
                         rightPanelMode === 'NOTES' ? (
                             // NOTES MODE
-                            <div className="h-full flex flex-col p-4">
-                                <textarea
-                                    className="flex-1 bg-surface-light/50 border border-glass-border rounded-xl p-4 text-sm text-white/80 resize-none outline-none focus:border-primary/50 transition-colors"
-                                    placeholder="Escribe tus propias notas..."
-                                    value={notesContent}
-                                    onChange={handleNoteChange}
-                                ></textarea>
+                            <div className="h-full p-4 overflow-hidden">
+                                <GlobalNotes projectName={paramProjectName} />
                             </div>
                         ) : (
                             // TOOLBOX MODE
@@ -257,6 +261,24 @@ const ArchitectLayout = () => {
                                                     <p className="text-xs font-bold text-white truncate">{tpl.nombre}</p>
                                                     <p className="text-[10px] text-text-muted uppercase font-black tracking-tighter">{tpl.tipo}</p>
                                                 </div>
+
+                                                {/* Actions */}
+                                                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <div
+                                                        onClick={(e) => { e.stopPropagation(); setEditingTemplate(tpl); }}
+                                                        className="p-1 hover:text-white text-text-muted hover:bg-white/10 rounded cursor-pointer"
+                                                        title="Edit"
+                                                    >
+                                                        <span className="material-symbols-outlined text-sm">edit</span>
+                                                    </div>
+                                                    <div
+                                                        onClick={(e) => handleDeleteTemplate(e, tpl.id)}
+                                                        className="p-1 hover:text-red-400 text-text-muted hover:bg-white/10 rounded cursor-pointer"
+                                                        title="Delete"
+                                                    >
+                                                        <span className="material-symbols-outlined text-sm">delete</span>
+                                                    </div>
+                                                </div>
                                             </button>
                                         ))
                                     )}
@@ -290,6 +312,59 @@ const ArchitectLayout = () => {
                     )}
                 </div>
             </aside>
+            {/* Edit Modal */}
+            {editingTemplate && (
+                <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-surface-dark border border-glass-border rounded-2xl p-6 w-full max-w-md shadow-2xl animate-scale-in">
+                        <h3 className="text-xl font-black text-white mb-4">Editar Plantilla</h3>
+                        <form onSubmit={handleUpdateTemplate} className="space-y-4">
+                            <div>
+                                <label className="text-xs uppercase font-bold text-text-muted block mb-1">Nombre</label>
+                                <input
+                                    autoFocus
+                                    className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white focus:border-primary outline-none"
+                                    value={editingTemplate.nombre}
+                                    onChange={e => setEditingTemplate({ ...editingTemplate, nombre: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-xs uppercase font-bold text-text-muted block mb-1">Tipo</label>
+                                    <select
+                                        className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white focus:border-primary outline-none"
+                                        value={editingTemplate.tipo}
+                                        onChange={e => setEditingTemplate({ ...editingTemplate, tipo: e.target.value })}
+                                    >
+                                        <option value="text">Texto Largo</option>
+                                        <option value="short_text">Texto Corto</option>
+                                        <option value="number">Número</option>
+                                        <option value="boolean">Si/No</option>
+                                        <option value="date">Fecha</option>
+                                        <option value="entity_link">Vínculo Entidad</option>
+                                        <option value="image">Imagen URL</option>
+                                    </select>
+                                </div>
+                                <div className="flex items-center">
+                                    <label className="flex items-center gap-2 cursor-pointer p-3 bg-white/5 rounded-xl w-full hover:bg-white/10 transition-colors">
+                                        <input
+                                            type="checkbox"
+                                            checked={editingTemplate.global}
+                                            onChange={e => setEditingTemplate({ ...editingTemplate, global: e.target.checked })}
+                                            className="accent-primary size-4"
+                                        />
+                                        <span className="text-sm font-bold text-white">Es Global?</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div className="flex justify-end gap-3 pt-4">
+                                <button type="button" onClick={() => setEditingTemplate(null)} className="px-4 py-2 text-text-muted hover:text-white font-bold transition-colors">Cancelar</button>
+                                <button type="submit" className="px-6 py-2 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-transform">Guardar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

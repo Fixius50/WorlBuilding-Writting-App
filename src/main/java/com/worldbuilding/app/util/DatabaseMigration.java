@@ -67,7 +67,7 @@ public class DatabaseMigration implements CommandLineRunner {
 
             // 2. Check/Add 'carpeta' columns
             migrateTable(stmt, "carpeta", "deleted", "BOOLEAN DEFAULT 0");
-            migrateTable(stmt, "carpeta", "deleted", "BOOLEAN DEFAULT 0");
+
             migrateTable(stmt, "carpeta", "deleted_date", "DATETIME");
             migrateTable(stmt, "carpeta", "tipo", "VARCHAR(50)");
             migrateTable(stmt, "carpeta", "descripcion", "TEXT");

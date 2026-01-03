@@ -95,7 +95,28 @@ public class WorldBibleService {
         c.setTipo(type);
         c.setPadre(parent);
         c.setProyecto(proyecto);
+        // Set slug
+        c.setSlug(generateUniqueSlug(name, "folder"));
         carpetaRepository.save(c);
+    }
+
+    @Transactional
+    public Carpeta renameFolder(Long id, String newName) {
+        Optional<Carpeta> folderOpt = carpetaRepository.findById(id);
+        if (folderOpt.isPresent()) {
+            Carpeta folder = folderOpt.get();
+            folder.setNombre(newName);
+            // Optional: update slug? Usually yes to match name.
+            folder.setSlug(generateUniqueSlug(newName, "folder"));
+            return carpetaRepository.save(folder);
+        }
+        throw new RuntimeException("Folder not found");
+    }
+
+    @Transactional
+    public void deleteFolder(Long id) {
+        // Since we have @SQLDelete, this will trigger the soft delete
+        carpetaRepository.deleteById(id);
     }
 
     // --- ENTIDADES ---
@@ -234,6 +255,35 @@ public class WorldBibleService {
             return entidadGenericaRepository.save(e);
         }
         throw new RuntimeException("Entity not found");
+    }
+
+    @Transactional
+    public void deleteValue(Long id) {
+        atributoValorRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void deleteTemplate(Long id) {
+        // Cascade: delete values linked to this template??
+        // Usually handled by DB foreign key cascade, or manually.
+        // Let's manually delete to be safe if DB isn't strict.
+        atributoValorRepository.deleteByPlantillaId(id);
+        atributoPlantillaRepository.deleteById(id);
+    }
+
+    @Transactional
+    public AtributoPlantilla updateTemplate(Long id, String nombre, String tipo, boolean global) {
+        Optional<AtributoPlantilla> p = atributoPlantillaRepository.findById(id);
+        if (p.isPresent()) {
+            AtributoPlantilla plantilla = p.get();
+            if (nombre != null)
+                plantilla.setNombre(nombre);
+            if (tipo != null)
+                plantilla.setTipo(tipo);
+            plantilla.setGlobal(global);
+            return atributoPlantillaRepository.save(plantilla);
+        }
+        throw new RuntimeException("Template not found");
     }
 
     public static class ValueUpdateDTO {

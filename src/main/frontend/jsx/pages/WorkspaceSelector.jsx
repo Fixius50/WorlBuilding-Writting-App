@@ -7,6 +7,7 @@ const WorkspaceSelector = () => {
     const [workspaces, setWorkspaces] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         loadWorkspaces();
@@ -16,11 +17,10 @@ const WorkspaceSelector = () => {
         try {
             setLoading(true);
             const data = await workspaceService.list();
-            // Data is List<String>
             setWorkspaces(data);
         } catch (err) {
             console.error("Failed to load workspaces", err);
-            setError("Could not load workspaces. Is the backend running?");
+            setError("Error al cargar cuadernos. ¿Está el servidor encendido?");
         } finally {
             setLoading(false);
         }
@@ -30,130 +30,194 @@ const WorkspaceSelector = () => {
         try {
             setLoading(true);
             const response = await workspaceService.select(projectName);
-            // { success: true, redirect: '/local/ProjectName' }
             if (response.success && response.redirect) {
-                // Mock user for frontend compatibility if needed
-                localStorage.setItem('user', JSON.stringify({
-                    username: 'local',
-                    success: true
-                }));
+                localStorage.setItem('user', JSON.stringify({ username: 'local', success: true }));
                 navigate(response.redirect);
             }
         } catch (err) {
-            console.error("Selection failed", err);
-            setError(err.message || "Failed to enter workspace");
+            setError(err.message || "Fallo al entrar al cuaderno");
             setLoading(false);
         }
     };
 
     const handleCreateWorkspace = async () => {
-        const projectName = prompt("Enter Project Name:");
+        const projectName = prompt("Nombre del Nuevo Cuaderno:");
         if (!projectName) return;
-
         try {
             setLoading(true);
             const res = await workspaceService.create(projectName);
-            if (res.success) {
-                await handleSelect(projectName);
-            }
+            if (res.success) await handleSelect(projectName);
         } catch (err) {
-            console.error("Creation failed", err);
-            setError("Failed to create workspace: " + (err.message || "Unknown error"));
+            setError("Error al crear cuaderno");
             setLoading(false);
         }
     };
 
-    const handleDelete = async (e, projectName) => {
-        e.stopPropagation();
-        if (!confirm("Are you sure you want to delete " + projectName + "? This cannot be undone.")) return;
-        try {
-            setLoading(true);
-            await workspaceService.delete(projectName);
-            await loadWorkspaces();
-        } catch (err) {
-            setError("Failed to delete: " + err.message);
-            setLoading(false);
-        }
-    }
+    // Random Mock Data for Redesign Mockup alignment
+    const getMockData = (name) => {
+        const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const tags = ['FANTASÍA', 'SCI-FI', 'HORROR', 'LORE', 'MISTERIO'];
+        const images = [
+            'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=800',
+            'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800',
+            'https://images.unsplash.com/photo-1505634467193-785724601157?auto=format&fit=crop&q=80&w=800',
+            'https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&q=80&w=800'
+        ];
+        return {
+            tag: tags[hash % tags.length],
+            img: images[hash % images.length],
+            desc: "Una tierra dividida por la magia y la tecnología antigua...",
+            initials: name.substring(0, 2).toUpperCase(),
+            time: "hace 2h"
+        };
+    };
+
+    const filteredWorkspaces = workspaces.filter(w => w.toLowerCase().includes(searchTerm.toLowerCase()));
 
     return (
-        <div className="min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden bg-background-dark p-8">
-            {/* Background FX */}
-            <div className="absolute inset-0 bg-[url('https://lh3.googleusercontent.com/aida-public/AB6AXuBXRuAnm4TWmeLokpiWualeQMnfpbzAWwF1z7vP_aEtaINpspl5kJGo3vfJJyZhtvNxfrZ83zjJ0RfQwomOQ8WLBjwNCkUbgECBD7apfwZ62QdXEtdLvKV2ZKpX0lqdRpUrytD5F2IoLbbFMnPhcua5NQFjVDCnI8Ptur2mDMgA3f0FJ6HvnU-F5PC4UrNB7UP9Ws-b_47IqoB-uuDQxqe-FZTZb2y0JW5F3ytTFp8uz9yLFPQXhRfXZDw0wkO1eT2pfujN32SWARc')] bg-cover opacity-20"></div>
-            <div className="absolute top-0 -left-20 w-96 h-96 bg-primary/20 rounded-full blur-[120px]"></div>
+        <div className="min-h-screen w-full bg-[#0a0b14] text-white flex flex-col items-center p-8 font-sans selection:bg-indigo-500/30 overflow-y-auto custom-scrollbar">
 
-            <div className="relative z-10 w-full max-w-5xl flex flex-col items-center">
-                <div className="mb-12 text-center">
-                    <div className="flex items-center justify-center gap-4 mb-4">
-                        <div className="size-12 bg-background-dark rounded-xl flex items-center justify-center border border-glass-border shadow-lg shadow-primary/20">
-                            <span className="material-symbols-outlined text-2xl text-primary">public</span>
-                        </div>
-                        <h1 className="text-4xl font-bold text-white tracking-tight">Chronos Atlas</h1>
+            {/* TOP NAVIGATION BAR (MOCKUP) */}
+            <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50">
+                <div className="flex items-center gap-6 px-8 py-3 bg-[#13141f]/80 backdrop-blur-xl border border-white/5 rounded-full shadow-2xl">
+                    <button className="text-white bg-indigo-600/20 p-2 rounded-lg flex items-center justify-center border border-indigo-500/30">
+                        <span className="material-icons text-xl">auto_stories</span>
+                    </button>
+                    <button className="text-white/40 hover:text-white transition-colors">
+                        <span className="material-icons text-xl">public</span>
+                    </button>
+                    <button className="text-white/40 hover:text-white transition-colors">
+                        <span className="material-icons text-xl">notes</span>
+                    </button>
+                    <button className="text-white/40 hover:text-white transition-colors">
+                        <span className="material-icons text-xl">schedule</span>
+                    </button>
+                    <div className="w-px h-4 bg-white/10 mx-2" />
+                    <button className="text-white/40 hover:text-white transition-colors">
+                        <span className="material-icons text-xl">settings</span>
+                    </button>
+                    <div className="w-8 h-8 rounded-full bg-orange-200/20 border border-orange-200/50 flex items-center justify-center overflow-hidden">
+                        <span className="material-icons text-orange-200 text-sm">person</span>
                     </div>
-                    <p className="text-slate-400 text-lg">Select a Neural Workspace to interface with.</p>
+                </div>
+            </div>
+
+            {/* HEADER AREA */}
+            <header className="w-full max-w-6xl mt-24 mb-12 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+                <div className="space-y-4">
+                    <div className="flex items-center gap-4">
+                        <h1 className="text-6xl font-black tracking-tighter leading-none">
+                            <span className="block text-indigo-400">Mis</span>
+                            <span className="block text-white">Cuadernos</span>
+                        </h1>
+                        <div className="bg-white/5 border border-white/10 rounded-lg px-2 py-4 text-[10px] font-black uppercase tracking-widest text-white/30 [writing-mode:vertical-lr] rotate-180">
+                            Local-First
+                        </div>
+                    </div>
+                    <p className="text-white/40 max-w-sm text-sm font-medium leading-relaxed">
+                        Selecciona un proyecto para comenzar a construir o continúa donde lo dejaste.
+                    </p>
                 </div>
 
-                {error && (
-                    <div className="mb-8 p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 font-bold flex items-center gap-2">
-                        <span className="material-symbols-outlined">warning</span>
-                        {error}
-                        <button onClick={loadWorkspaces} className="ml-4 underline text-xs">Retry</button>
+                <div className="flex items-center gap-4">
+                    {/* SEARCH INPUT (Previous style, but integrated) */}
+                    <div className="relative group min-w-[300px]">
+                        <span className="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-white/20 text-xl group-focus-within:text-indigo-400 transition-colors">search</span>
+                        <input
+                            type="text"
+                            placeholder="Filtrar mundos..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full bg-[#13141f] border border-white/5 rounded-2xl py-3 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-all placeholder:text-white/10"
+                        />
                     </div>
-                )}
+                    <button className="p-3 bg-[#13141f] border border-white/5 rounded-2xl text-white/20 hover:text-white transition-all">
+                        <span className="material-icons">list</span>
+                    </button>
+                    <div className="p-3 bg-indigo-600/10 border border-indigo-500/20 rounded-2xl text-indigo-400">
+                        <span className="material-icons">grid_view</span>
+                    </div>
+                </div>
+            </header>
 
+            {/* GRID SECTION */}
+            <section className="w-full max-w-6xl">
                 {loading ? (
-                    <div className="flex flex-col items-center gap-4">
-                        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                        <span className="text-slate-500 animate-pulse">Scanning local sector...</span>
+                    <div className="flex flex-col items-center gap-6 py-20 opacity-20">
+                        <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em]">Accediendo al Sector Local...</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-                        {/* Create New Card */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-20">
+
+                        {/* New Cuaderno Card */}
                         <div
                             onClick={handleCreateWorkspace}
-                            className="glass-panel group relative p-6 rounded-2xl border border-glass-border hover:border-primary/50 transition-all cursor-pointer flex flex-col items-center justify-center min-h-[200px] hover:bg-white/5 active:scale-95"
+                            className="group relative h-[380px] rounded-[2.5rem] border-2 border-dashed border-white/5 flex flex-col items-center justify-center gap-6 hover:bg-white/5 hover:border-indigo-500/30 transition-all cursor-pointer overflow-hidden animate-in fade-in duration-700"
                         >
-                            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <span className="material-symbols-outlined text-3xl text-slate-400 group-hover:text-white">add</span>
+                            <div className="w-20 h-20 rounded-full bg-[#13141f] border border-white/5 flex items-center justify-center text-4xl text-white/20 group-hover:scale-110 group-hover:text-indigo-400 transition-all">
+                                <span className="material-icons text-4xl">add</span>
                             </div>
-                            <h3 className="text-xl font-bold text-slate-300 group-hover:text-white">New Workspace</h3>
+                            <div className="text-center">
+                                <h3 className="text-xl font-black tracking-tight text-white/50 group-hover:text-white transition-colors">Nuevo Cuaderno</h3>
+                                <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mt-2 group-hover:text-white/40">Inicia un nuevo universo</p>
+                            </div>
                         </div>
 
-                        {workspaces.map(projectName => (
-                            <div
-                                key={projectName}
-                                onClick={() => handleSelect(projectName)}
-                                className="glass-panel group relative p-6 rounded-2xl border border-glass-border hover:border-primary/50 transition-all cursor-pointer flex flex-col justify-between min-h-[200px] hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10"
-                            >
-                                <div>
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className="px-2 py-1 rounded bg-primary/20 border border-primary/30 text-xs font-bold text-primary-light uppercase tracking-wider">
-                                            Local
-                                        </div>
-                                        <button
-                                            onClick={(e) => handleDelete(e, projectName)}
-                                            className="text-red-400 hover:text-red-200 material-symbols-outlined text-sm p-1 rounded hover:bg-white/10"
-                                            title="Delete Workspace"
-                                        >
-                                            delete
-                                        </button>
+                        {/* Project Cards */}
+                        {filteredWorkspaces.map(projectName => {
+                            const meta = getMockData(projectName);
+                            return (
+                                <div
+                                    key={projectName}
+                                    onClick={() => handleSelect(projectName)}
+                                    className="group relative h-[380px] rounded-[2.5rem] bg-[#13141f] border border-white/5 overflow-hidden transition-all hover:-translate-y-2 hover:shadow-2xl hover:shadow-indigo-500/10 cursor-pointer animate-in fade-in slide-in-from-bottom-4"
+                                >
+                                    {/* Image Background */}
+                                    <div className="absolute inset-x-0 top-0 h-2/3">
+                                        <img src={meta.img} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity" alt="" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-[#13141f] via-transparent to-transparent"></div>
                                     </div>
-                                    <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-primary-light transition-colors">{projectName}</h3>
-                                    <p className="text-slate-400 text-sm">Local Database</p>
+
+                                    {/* Content */}
+                                    <div className="absolute inset-0 flex flex-col justify-end p-8">
+                                        <div className="mt-auto space-y-3">
+                                            <span className="inline-block px-3 py-1 bg-red-500/20 border border-red-500/30 text-[9px] font-black text-red-100 rounded-lg tracking-widest uppercase">
+                                                {meta.tag}
+                                            </span>
+                                            <h3 className="text-3xl font-black text-white tracking-tighter leading-tight group-hover:text-indigo-400 transition-colors">
+                                                {projectName}
+                                            </h3>
+                                            <p className="text-xs text-white/40 line-clamp-2 leading-relaxed">
+                                                {meta.desc}
+                                            </p>
+
+                                            {/* Footer with status */}
+                                            <div className="flex items-center justify-between pt-6 border-t border-white/5 mt-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                                                    <span className="text-[9px] font-black uppercase tracking-widest text-white/20">
+                                                        Última edición: <span className="text-white/40">{meta.time}</span>
+                                                    </span>
+                                                </div>
+                                                <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black text-indigo-300">
+                                                    {meta.initials}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="mt-6 flex items-center justify-between border-t border-white/5 pt-4">
-                                    <span className="text-xs text-slate-400">Ready</span>
-                                    <span className="material-symbols-outlined text-slate-600 group-hover:text-primary transition-colors">arrow_forward</span>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
-            </div>
+            </section>
 
-            <div className="absolute bottom-6 text-center text-xs text-slate-600">
-                Chronos Atlas • Local Mode
-            </div>
+            {error && (
+                <div className="fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-red-500/20 border border-red-500/30 text-red-200 rounded-2xl text-xs font-bold shadow-2xl animate-bounce">
+                    {error}
+                </div>
+            )}
         </div>
     );
 };

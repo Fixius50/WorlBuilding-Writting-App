@@ -120,3 +120,8 @@
 *   [FIX] Resuelto error crÌtico 500 'no such table' mediante ruta absoluta JDBC y desactivaciÛn de DDL-Auto.
 *   [INFRA] Implementado GlobalExceptionHandler para trazas completas.
 *   [CLEANUP] Logs (ackend.log, 	race.txt, etc) movidos a carpeta /Data para limpieza del root.
+
+### Prompt ID: 16 (CRUD & UI Improvements)
+- **Features**: Implementaci√n de CRUD de carpetas en World Bible, nuevo sistema de Notas con vista pantalla completa, Selector de Mapas y Editor de Mapas funcional (Canvas).
+- **Fixes**: Resuelto error 500 en el arranque (SQLDelete), arreglado redireccionamiento de logout en Settings.
+- **Impact**: Mejora significativa en la UX de cartograf√a y gesti√n de informaci√n.

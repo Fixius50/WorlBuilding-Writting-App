@@ -32,6 +32,7 @@ public class AtributoValor {
         this.id = id;
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public EntidadGenerica getEntidad() {
         return entidad;
     }
@@ -40,6 +41,7 @@ public class AtributoValor {
         this.entidad = entidad;
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public AtributoPlantilla getPlantilla() {
         return plantilla;
     }

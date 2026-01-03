@@ -1,7 +1,7 @@
 import React from 'react';
 
-const AttributeField = ({ attribute, value, onChange, linkableEntities = [] }) => {
-    const { plantilla } = attribute;
+const AttributeField = ({ attribute, value, onChange, onRemove, linkableEntities = [] }) => {
+    const plantilla = attribute.plantilla || attribute;
 
     const renderInput = () => {
         switch (plantilla.tipo) {
@@ -153,9 +153,23 @@ const AttributeField = ({ attribute, value, onChange, linkableEntities = [] }) =
 
     return (
         <div className="p-4 border border-white/5 rounded-2xl bg-surface-dark/50 backdrop-blur-sm relative overflow-hidden h-full flex flex-col group hover:border-primary/20 transition-all">
-            <label className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-3 flex items-center gap-2">
-                <span className="material-symbols-outlined text-xs opacity-50">label</span>
-                {plantilla.nombre}
+            <label className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-3 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-xs opacity-50">label</span>
+                    {plantilla.nombre}
+                </div>
+                {onRemove && (
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            onRemove();
+                        }}
+                        className="text-white/20 hover:text-red-400 transition-colors"
+                        title="Remove Attribute"
+                    >
+                        <span className="material-symbols-outlined text-sm">close</span>
+                    </button>
+                )}
             </label>
 
             <div className="flex-1 nodrag">

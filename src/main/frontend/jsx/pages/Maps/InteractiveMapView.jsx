@@ -3,8 +3,10 @@ import GlassPanel from '../../components/common/GlassPanel';
 import Avatar from '../../components/common/Avatar';
 import Button from '../../components/common/Button';
 
-const InteractiveMapView = () => {
+const InteractiveMapView = ({ map }) => {
     const [selectedMarker, setSelectedMarker] = useState(null);
+    const mapName = map?.nombre || 'Explorador de Mundo';
+    const mapImage = "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?auto=format&fit=crop&w=2000&q=80"; // Fallback/Default
 
     const markers = [
         { id: 1, name: 'Torre Carmesí', type: 'location', x: '45%', y: '42%', color: 'bg-primary' },
