@@ -7,7 +7,7 @@ import { getHierarchyType, HIERARCHY_TYPES } from '../../../js/constants/hierarc
 const FolderView = () => {
     const { username, projectName, folderSlug } = useParams();
     const navigate = useNavigate();
-    const { handleCreateEntity, handleOpenCreateModal, handleDeleteEntity, handleDeleteFolder } = useOutletContext(); // Get handlers
+    const { handleCreateEntity, handleOpenCreateModal, handleDeleteEntity, handleDeleteFolder, handleCreateSimpleFolder } = useOutletContext(); // Get handlers
     const [entities, setEntities] = useState([]);
     const [folder, setFolder] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -163,8 +163,14 @@ const FolderView = () => {
                         onClick={() => handleOpenCreateModal(folder)}
                         className="h-10 px-4 rounded-xl bg-surface-light border border-white/5 hover:bg-white/10 transition flex items-center gap-2 text-xs font-bold text-white"
                     >
-                        <span className="material-symbols-outlined text-sm">map</span>
                         <span>Mapa</span>
+                    </button>
+                    <button
+                        onClick={() => handleCreateSimpleFolder(folder, 'TIMELINE')}
+                        className="h-10 px-4 rounded-xl bg-surface-light border border-white/5 hover:bg-white/10 transition flex items-center gap-2 text-xs font-bold text-white"
+                    >
+                        <span className="material-symbols-outlined text-sm">timeline</span>
+                        <span>Timeline</span>
                     </button>
                 </div>
             </header>

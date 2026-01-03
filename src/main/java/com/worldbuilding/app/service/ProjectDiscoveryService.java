@@ -55,7 +55,7 @@ public class ProjectDiscoveryService {
         }
     }
 
-    public void createProject(String projectName) {
+    public void createProject(String projectName, String title, String genre, String imageUrl) {
         Path dataDir = getDataDirectory();
         String safeName = projectName.replaceAll("[^a-zA-Z0-9_-]", "_");
         Path dbPath = dataDir.resolve(safeName + ".db");
@@ -68,20 +68,21 @@ public class ProjectDiscoveryService {
         databaseMigration.migrateDatabase(dbPath.toFile());
 
         // Seed initial data
-        seedProjectData(dbPath.toFile(), safeName);
+        seedProjectData(dbPath.toFile(), safeName, title, genre, imageUrl);
     }
 
-    private void seedProjectData(File dbFile, String projectName) {
+    private void seedProjectData(File dbFile, String projectName, String title, String genre, String imageUrl) {
         String url = "jdbc:sqlite:" + dbFile.getAbsolutePath();
         try (Connection conn = DriverManager.getConnection(url);
                 PreparedStatement stmt = conn.prepareStatement(
-                        "INSERT INTO cuaderno (nombre_proyecto, titulo, descripcion, tipo, genero, fecha_creacion, deleted) VALUES (?, ?, ?, ?, ?, datetime('now'), 0)")) {
+                        "INSERT INTO cuaderno (nombre_proyecto, titulo, descripcion, tipo, genero, imagen_url, fecha_creacion, deleted) VALUES (?, ?, ?, ?, ?, ?, datetime('now'), 0)")) {
 
             stmt.setString(1, projectName);
-            stmt.setString(2, projectName);
+            stmt.setString(2, title != null ? title : projectName);
             stmt.setString(3, "New Project");
             stmt.setString(4, "General");
-            stmt.setString(5, "Fantasy");
+            stmt.setString(5, genre != null ? genre : "Fantasy");
+            stmt.setString(6, imageUrl);
             stmt.executeUpdate();
 
         } catch (Exception e) {

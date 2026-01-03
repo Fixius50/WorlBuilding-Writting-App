@@ -68,7 +68,7 @@ export const projectService = {
 
 export const workspaceService = {
     list: () => api.get('/workspaces'),
-    create: (name) => api.post('/workspaces', { name }),
+    create: (name, title, genre, imageUrl) => api.post('/workspaces', { name, title, genre, imageUrl }),
     delete: (name) => api.delete('/workspaces/' + name),
     select: (projectName) => api.post('/workspaces/select', { projectName }),
 };

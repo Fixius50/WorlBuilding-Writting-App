@@ -5,7 +5,7 @@ import BibleCard from '../../components/bible/BibleCard';
 
 const BibleGridView = () => {
     const { username, projectName } = useParams();
-    const { handleOpenCreateModal } = useOutletContext();
+    const { handleOpenCreateModal, handleDeleteFolder, handleCreateSimpleFolder } = useOutletContext();
 
     const [folders, setFolders] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -13,6 +13,28 @@ const BibleGridView = () => {
     useEffect(() => {
         loadRoot();
     }, [projectName]);
+
+    useEffect(() => {
+        const handleUpdate = (e) => {
+            const { folderId, removeId, item } = e.detail || {};
+            // Root updates have folderId === null (so we check for null explicitly)
+            if (folderId === null) {
+                if (removeId) {
+                    setFolders(prev => prev.filter(f => f.id !== removeId));
+                } else if (item) {
+                    setFolders(prev => {
+                        if (prev.find(f => f.id === item.id)) return prev;
+                        return [...prev, item];
+                    });
+                } else {
+                    loadRoot();
+                }
+            }
+        };
+
+        window.addEventListener('folder-update', handleUpdate);
+        return () => window.removeEventListener('folder-update', handleUpdate);
+    }, []);
 
     const loadRoot = async () => {
         setLoading(true);
@@ -47,8 +69,8 @@ const BibleGridView = () => {
 
                 {/* Action Bar */}
                 <div className="flex items-center gap-2">
-                    <button onClick={() => handleOpenCreateModal(null)} className="px-6 py-2 bg-primary hover:bg-primary-light text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-lg shadow-primary/20">
-                        <span className="material-symbols-outlined text-sm">map</span> Nuevo Mapa
+                    <button onClick={() => handleCreateSimpleFolder(null, 'FOLDER')} className="px-6 py-2 bg-primary hover:bg-primary-light text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-lg shadow-primary/20">
+                        <span className="material-symbols-outlined text-sm">create_new_folder</span> Nueva Carpeta
                     </button>
                 </div>
             </header>
@@ -61,7 +83,7 @@ const BibleGridView = () => {
                         item={folder}
                         type="folder"
                         linkTo={`/${username}/${projectName}/bible/folder/${folder.slug || folder.id}`}
-                        onDelete={() => useOutletContext().handleDeleteFolder(folder.id)}
+                        onDelete={() => handleDeleteFolder(folder.id)}
                     />
                 ))}
 
@@ -73,8 +95,8 @@ const BibleGridView = () => {
                     <span className="material-symbols-outlined text-6xl mb-4 text-text-muted">library_books</span>
                     <h3 className="text-xl font-bold text-white uppercase tracking-widest">Archivo Vacío</h3>
                     <p className="text-text-muted mt-2">Comienza creando espacios para organizar tu mundo.</p>
-                    <button onClick={() => handleOpenCreateModal(null)} className="mt-6 px-6 py-3 bg-primary text-white rounded-2xl font-bold hover:shadow-lg hover:shadow-primary/20 transition-all">
-                        Crear Primer Mapa
+                    <button onClick={() => handleCreateSimpleFolder(null, 'FOLDER')} className="mt-6 px-6 py-3 bg-primary text-white rounded-2xl font-bold hover:shadow-lg hover:shadow-primary/20 transition-all">
+                        Crear Primera Carpeta
                     </button>
                 </div>
             )}

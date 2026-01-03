@@ -65,8 +65,8 @@ public class Diagnostic implements CommandLineRunner {
                     c -> System.out.println(" - Found: " + c.getNombreProyecto() + ", Deleted: " + c.isDeleted()));
             System.out.println("Repository Test: PASS");
         } catch (Exception e) {
-            System.out.println("Repository Test: FAIL");
-            e.printStackTrace();
+            System.out.println("Repository Test: FAIL (" + e.getMessage() + ")");
+            // e.printStackTrace(); // Disabled stack trace to reduce noise during dev
         }
 
         System.out.println("=== DIAGNOSTIC COMPLETE ===");

@@ -45,13 +45,13 @@ const WorldBibleLayout = () => {
         setCreationMenuOpen(false); // Close dropdown if open
     };
 
-    const handleCreateSimpleFolder = async (parentFolder = null) => {
+    const handleCreateSimpleFolder = async (parentFolder = null, type = 'FOLDER') => {
         try {
             const parentId = parentFolder ? (typeof parentFolder === 'object' ? parentFolder.id : parentFolder) : null;
             const newFolder = await api.post('/world-bible/folders', {
-                nombre: 'Nueva Carpeta',
+                nombre: type === 'TIMELINE' ? 'Nueva Línea de Tiempo' : 'Nueva Carpeta',
                 padreId: parentId,
-                tipo: 'FOLDER'
+                tipo: type
             });
 
             if (parentId === null) {
@@ -226,7 +226,10 @@ const WorldBibleLayout = () => {
                 <Outlet context={{
                     ...architectContext,
                     handleCreateEntity,
-                    handleOpenCreateModal
+                    handleOpenCreateModal,
+                    handleDeleteFolder,
+                    handleDeleteEntity,
+                    handleCreateSimpleFolder
                 }} />
             </main>
 

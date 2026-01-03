@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { workspaceService } from '../../js/services/api';
+import CreateWorkspaceModal from "../components/dashboard/CreateWorkspaceModal";
 
 const WorkspaceSelector = () => {
     const navigate = useNavigate();
@@ -8,6 +9,7 @@ const WorkspaceSelector = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     useEffect(() => {
         loadWorkspaces();
@@ -40,13 +42,12 @@ const WorkspaceSelector = () => {
         }
     };
 
-    const handleCreateWorkspace = async () => {
-        const projectName = prompt("Nombre del Nuevo Cuaderno:");
-        if (!projectName) return;
+    const handleCreateWorkspace = async (formData) => {
+        // formData: { name, title, genre, imageUrl }
         try {
             setLoading(true);
-            const res = await workspaceService.create(projectName);
-            if (res.success) await handleSelect(projectName);
+            const res = await workspaceService.create(formData.name, formData.title, formData.genre, formData.imageUrl);
+            if (res.success) await handleSelect(formData.name);
         } catch (err) {
             setError("Error al crear cuaderno");
             setLoading(false);
@@ -77,30 +78,6 @@ const WorkspaceSelector = () => {
     return (
         <div className="min-h-screen w-full bg-[#0a0b14] text-white flex flex-col items-center p-8 font-sans selection:bg-indigo-500/30 overflow-y-auto custom-scrollbar">
 
-            {/* TOP NAVIGATION BAR (MOCKUP) */}
-            <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50">
-                <div className="flex items-center gap-6 px-8 py-3 bg-[#13141f]/80 backdrop-blur-xl border border-white/5 rounded-full shadow-2xl">
-                    <button className="text-white bg-indigo-600/20 p-2 rounded-lg flex items-center justify-center border border-indigo-500/30">
-                        <span className="material-icons text-xl">auto_stories</span>
-                    </button>
-                    <button className="text-white/40 hover:text-white transition-colors">
-                        <span className="material-icons text-xl">public</span>
-                    </button>
-                    <button className="text-white/40 hover:text-white transition-colors">
-                        <span className="material-icons text-xl">notes</span>
-                    </button>
-                    <button className="text-white/40 hover:text-white transition-colors">
-                        <span className="material-icons text-xl">schedule</span>
-                    </button>
-                    <div className="w-px h-4 bg-white/10 mx-2" />
-                    <button className="text-white/40 hover:text-white transition-colors">
-                        <span className="material-icons text-xl">settings</span>
-                    </button>
-                    <div className="w-8 h-8 rounded-full bg-orange-200/20 border border-orange-200/50 flex items-center justify-center overflow-hidden">
-                        <span className="material-icons text-orange-200 text-sm">person</span>
-                    </div>
-                </div>
-            </div>
 
             {/* HEADER AREA */}
             <header className="w-full max-w-6xl mt-24 mb-12 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
@@ -110,32 +87,20 @@ const WorkspaceSelector = () => {
                             <span className="block text-indigo-400">Mis</span>
                             <span className="block text-white">Cuadernos</span>
                         </h1>
-                        <div className="bg-white/5 border border-white/10 rounded-lg px-2 py-4 text-[10px] font-black uppercase tracking-widest text-white/30 [writing-mode:vertical-lr] rotate-180">
-                            Local-First
-                        </div>
                     </div>
-                    <p className="text-white/40 max-w-sm text-sm font-medium leading-relaxed">
-                        Selecciona un proyecto para comenzar a construir o continúa donde lo dejaste.
-                    </p>
                 </div>
 
                 <div className="flex items-center gap-4">
-                    {/* SEARCH INPUT (Previous style, but integrated) */}
+                    {/* SEARCH INPUT */}
                     <div className="relative group min-w-[300px]">
-                        <span className="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-white/20 text-xl group-focus-within:text-indigo-400 transition-colors">search</span>
+                        <span className="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-white/20 text-xl group-focus-within:text-indigo-400 transition-colors pointer-events-none">search</span>
                         <input
                             type="text"
-                            placeholder="Filtrar mundos..."
+                            placeholder="Buscar..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full bg-[#13141f] border border-white/5 rounded-2xl py-3 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-all placeholder:text-white/10"
                         />
-                    </div>
-                    <button className="p-3 bg-[#13141f] border border-white/5 rounded-2xl text-white/20 hover:text-white transition-all">
-                        <span className="material-icons">list</span>
-                    </button>
-                    <div className="p-3 bg-indigo-600/10 border border-indigo-500/20 rounded-2xl text-indigo-400">
-                        <span className="material-icons">grid_view</span>
                     </div>
                 </div>
             </header>
@@ -152,7 +117,7 @@ const WorkspaceSelector = () => {
 
                         {/* New Cuaderno Card */}
                         <div
-                            onClick={handleCreateWorkspace}
+                            onClick={() => setIsCreateModalOpen(true)}
                             className="group relative h-[380px] rounded-[2.5rem] border-2 border-dashed border-white/5 flex flex-col items-center justify-center gap-6 hover:bg-white/5 hover:border-indigo-500/30 transition-all cursor-pointer overflow-hidden animate-in fade-in duration-700"
                         >
                             <div className="w-20 h-20 rounded-full bg-[#13141f] border border-white/5 flex items-center justify-center text-4xl text-white/20 group-hover:scale-110 group-hover:text-indigo-400 transition-all">
@@ -218,6 +183,12 @@ const WorkspaceSelector = () => {
                     {error}
                 </div>
             )}
+
+            <CreateWorkspaceModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onCreate={handleCreateWorkspace}
+            />
         </div>
     );
 };

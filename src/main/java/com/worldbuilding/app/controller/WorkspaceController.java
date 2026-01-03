@@ -24,11 +24,15 @@ public class WorkspaceController {
     @PostMapping
     public ResponseEntity<?> createWorkspace(@RequestBody Map<String, String> payload) {
         String name = payload.get("name");
+        String title = payload.get("title");
+        String genre = payload.get("genre");
+        String imageUrl = payload.get("imageUrl");
+
         if (name == null || name.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Name is required"));
         }
         try {
-            projectDiscoveryService.createProject(name);
+            projectDiscoveryService.createProject(name, title, genre, imageUrl);
             return ResponseEntity.ok(Map.of("success", true, "name", name));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
