@@ -1,5 +1,6 @@
 package com.worldbuilding.app.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.worldbuilding.app.config.DatabaseMigration;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 @Service
 public class ProjectDiscoveryService {
 
+    @Autowired
     private DatabaseMigration databaseMigration;
 
     private Path getDataDirectory() {

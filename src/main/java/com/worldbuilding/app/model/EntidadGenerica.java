@@ -57,6 +57,9 @@ public class EntidadGenerica {
     @Column(name = "icon_url", columnDefinition = "TEXT")
     private String iconUrl;
 
+    @Column(name = "color")
+    private String color; // Hex code
+
     // Getters y Setters
     public Long getId() {
         return id;
@@ -170,5 +173,13 @@ public class EntidadGenerica {
 
     public void setIconUrl(String iconUrl) {
         this.iconUrl = iconUrl;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 }

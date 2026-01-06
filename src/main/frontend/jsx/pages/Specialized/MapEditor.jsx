@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useOutletContext, useLocation } from 'react-router-dom';
-import { Stage, Layer, Line, Image as KonvaImage, Rect } from 'react-konva';
+import { Stage, Layer, Line, Image as KonvaImage, Rect, Text as KonvaText, Transformer } from 'react-konva';
 
 import api from '../../../js/services/api';
 import Button from '../../components/common/Button';
@@ -65,6 +65,23 @@ const URLImage = ({ src, x, y, width, height }) => {
 
 // Canvas Placeholder Removed - Using Real Stage
 
+const TransformerComponent = ({ selectedId }) => {
+    const trRef = React.useRef();
+    React.useEffect(() => {
+        if (selectedId) {
+            // we need to attach transformer manually
+            const node = trRef.current.getStage().findOne('#' + selectedId);
+            if (node) {
+                trRef.current.nodes([node]);
+                trRef.current.getLayer().batchDraw();
+            }
+        } else {
+            trRef.current.nodes([]);
+        }
+    }, [selectedId]);
+    return <Transformer ref={trRef} />;
+};
+
 
 const MapEditor = ({ mode: initialMode }) => {
     const { username, projectName, folderId, entityId } = useParams();
@@ -83,6 +100,11 @@ const MapEditor = ({ mode: initialMode }) => {
 
     // Editor Step State
     const [step, setStep] = useState(initialMode === 'create' ? 'setup' : 'editor');
+
+    // Force step sync if mode changes (e.g. navigation from create -> edit)
+    useEffect(() => {
+        setStep(initialMode === 'create' ? 'setup' : 'editor');
+    }, [initialMode]);
 
     // Stats
     const [realFolderId, setRealFolderId] = useState(location.state?.folderId || null);
@@ -104,18 +126,57 @@ const MapEditor = ({ mode: initialMode }) => {
     // --- KONVA STATE ---
     const [tool, setTool] = useState('brush'); // brush, eraser
     const [lines, setLines] = useState([]);
+    const [rectangles, setRectangles] = useState([]);
+    const [texts, setTexts] = useState([]);
+    const [selectedId, setSelectedId] = useState(null);
     const isDrawing = React.useRef(false);
 
+    // Check click on empty space to deselect
+    const checkDeselect = (e) => {
+        // deselect when clicked on empty area
+        const clickedOnEmpty = e.target === e.target.getStage();
+        if (clickedOnEmpty) {
+            setSelectedId(null);
+        }
+    };
+
     const handleMouseDown = (e) => {
+        checkDeselect(e);
+        const stage = e.target.getStage();
+        const pos = stage.getPointerPosition();
+
+        if (tool === 'select') return; // Selection handled by individual shape onClick
+
         isDrawing.current = true;
-        const pos = e.target.getStage().getPointerPosition();
-        // Start a new line
-        setLines([...lines, {
-            tool,
-            points: [pos.x, pos.y],
-            color: tool === 'eraser' ? '#ffffff' : '#df4b26', // TODO: Make color dynamic
-            size: tool === 'eraser' ? 20 : 5
-        }]);
+
+        if (tool === 'brush' || tool === 'eraser') {
+            setLines([...lines, {
+                id: `line-${Date.now()}`,
+                tool,
+                points: [pos.x, pos.y],
+                color: tool === 'eraser' ? '#ffffff' : '#df4b26',
+                size: tool === 'eraser' ? 20 : 5
+            }]);
+        } else if (tool === 'rect') {
+            setRectangles([...rectangles, {
+                id: `rect-${Date.now()}`,
+                x: pos.x,
+                y: pos.y,
+                width: 0,
+                height: 0,
+                color: '#df4b26'
+            }]);
+        } else if (tool === 'text') {
+            setTexts([...texts, {
+                id: `text-${Date.now()}`,
+                x: pos.x,
+                y: pos.y,
+                text: 'Double click to edit',
+                fontSize: 20,
+                color: '#ffffff'
+            }]);
+            isDrawing.current = false; // Text is click-to-place, not drag
+        }
     };
 
     const handleMouseMove = (e) => {
@@ -124,13 +185,24 @@ const MapEditor = ({ mode: initialMode }) => {
         const stage = e.target.getStage();
         const point = stage.getPointerPosition();
 
-        // Update last line
-        let lastLine = lines[lines.length - 1];
-        lastLine.points = lastLine.points.concat([point.x, point.y]);
-
-        // Replace last line in state
-        lines.splice(lines.length - 1, 1, lastLine);
-        setLines(lines.concat()); // Force re-render
+        if (tool === 'brush' || tool === 'eraser') {
+            setLines(prevLines => {
+                const newLines = [...prevLines];
+                const lastLine = { ...newLines[newLines.length - 1] };
+                lastLine.points = lastLine.points.concat([point.x, point.y]);
+                newLines[newLines.length - 1] = lastLine;
+                return newLines;
+            });
+        } else if (tool === 'rect') {
+            setRectangles(prevRects => {
+                const newRects = [...prevRects];
+                const lastRect = { ...newRects[newRects.length - 1] };
+                lastRect.width = point.x - lastRect.x;
+                lastRect.height = point.y - lastRect.y;
+                newRects[newRects.length - 1] = lastRect;
+                return newRects;
+            });
+        }
     };
 
     const handleMouseUp = () => {
@@ -155,6 +227,7 @@ const MapEditor = ({ mode: initialMode }) => {
 
             // Register callback to receive updates from panel
             setOnMapSettingsChange((newSettings) => {
+                if (!newSettings) return;
                 // Update local form data when panel changes
                 setFormData(prev => ({
                     ...prev,
@@ -234,10 +307,14 @@ const MapEditor = ({ mode: initialMode }) => {
 
     // Load Entity Data (Edit Mode)
     useEffect(() => {
-        if (!initialMode && entityId) { // If direct access to /edit/:beanId
+        // Fix: Use permissive check or explicit check for 'edit'
+        if ((!initialMode || initialMode === 'edit') && entityId) {
             api.get(`/world-bible/entities/${entityId}`)
                 .then(ent => {
                     setRealFolderId(ent.carpetaId);
+
+                    // Force Editor Mode just in case
+                    setStep('editor');
 
                     // Parse descripcion safely
                     let mapData = {};
@@ -257,6 +334,12 @@ const MapEditor = ({ mode: initialMode }) => {
                         },
                         bgImage: mapData.bgImage
                     });
+
+                    // Restore Shapes
+                    if (mapData.layers) {
+                        // TODO: Restore layers to state (lines, rects, texts)
+                        // For now we just load the BG and settings
+                    }
 
                     // Sync global settings
                     setMapSettings({
@@ -597,6 +680,47 @@ const MapEditor = ({ mode: initialMode }) => {
                                         }
                                     />
                                 ))}
+
+                                {rectangles.map((rect, i) => (
+                                    <Rect
+                                        key={rect.id}
+                                        id={rect.id}
+                                        x={rect.x}
+                                        y={rect.y}
+                                        width={rect.width}
+                                        height={rect.height}
+                                        stroke={rect.color}
+                                        strokeWidth={2}
+                                        draggable={tool === 'select'}
+                                        onClick={() => tool === 'select' && setSelectedId(rect.id)}
+                                        onTap={() => tool === 'select' && setSelectedId(rect.id)}
+                                    />
+                                ))}
+
+                                {texts.map((text, i) => (
+                                    <KonvaText
+                                        key={text.id}
+                                        id={text.id}
+                                        x={text.x}
+                                        y={text.y}
+                                        text={text.text}
+                                        fontSize={text.fontSize}
+                                        fill={text.color}
+                                        draggable={tool === 'select'}
+                                        onClick={() => tool === 'select' && setSelectedId(text.id)}
+                                        onDblClick={(e) => {
+                                            // Simple prompt for now
+                                            const newText = prompt("Edit text:", text.text);
+                                            if (newText !== null) {
+                                                const newTexts = texts.slice();
+                                                newTexts[i].text = newText;
+                                                setTexts(newTexts);
+                                            }
+                                        }}
+                                    />
+                                ))}
+
+                                <TransformerComponent selectedId={selectedId} />
                             </Layer>
                         </Stage>
                     </div>

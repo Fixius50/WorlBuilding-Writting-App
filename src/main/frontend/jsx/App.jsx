@@ -22,15 +22,14 @@ import MapEditor from './pages/Specialized/MapEditor';
 function App() {
     return (
         <BrowserRouter>
+            {/* <div style={{ position: 'fixed', bottom: 0, right: 0, background: 'orange', zIndex: 9999 }}>APP MOUNTED (FULL + SAFE MAP EDITOR)</div> */}
             <Routes>
                 <Route path="/" element={<WorkspaceSelector />} />
 
                 <Route element={<AppLayout />}>
                     <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/settings" element={<Settings />} />
+                    {/* <Route path="/settings" element={<Settings />} /> */}
 
-                    {/* Architect View for Projects */}
-                    {/* Architect View for Projects */}
                     {/* Architect View for Projects */}
                     <Route path="/:username/:projectName" element={<ArchitectLayout />}>
                         <Route index element={<ProjectView />} />

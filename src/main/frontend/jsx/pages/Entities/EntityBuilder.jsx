@@ -11,16 +11,17 @@ const EntityBuilder = ({ mode }) => {
     const isCreation = mode === 'creation';
 
     // Layout Context
-    const { setRightOpen, setAvailableTemplates, setRightPanelMode, setAddAttributeHandler } = useOutletContext();
+    const { setRightOpen, setAvailableTemplates, setRightPanelMode, setAddAttributeHandler, setEntityTabs, activeEntityTab, setActiveEntityTab } = useOutletContext();
 
     // Core Data State
     const [entity, setEntity] = useState({
         nombre: '',
+        tipo: 'entidadindividual',
         descripcion: '',
-        tags: '',
+        color: '#6366f1', // Default PRIMARY color
         apariencia: '',
         notas: '',
-        iconUrl: '', // Base64 or Blob URL
+        iconUrl: null, // Base64 or Blob URL
         tipoEspecial: type || null,
         carpeta: null
     });
@@ -32,16 +33,20 @@ const EntityBuilder = ({ mode }) => {
     const [removedFieldIds, setRemovedFieldIds] = useState([]);
 
     // UI State
-    const [activeTab, setActiveTab] = useState('identity'); // identity, backstory, attributes, relationships
+    // const [activeTab, setActiveTab] = useState('identity'); // REMOVED: Now managed by Layout
 
     // --- INITIALIZATION ---
     useEffect(() => {
         // Configure Global Right Panel
         setRightOpen(true);
-        setRightPanelMode('TOOLBOX');
+        setRightPanelMode('ENTITY');
+        setEntityTabs(['identity', 'backstory', 'attributes', 'relationships', 'notes']);
+        setActiveEntityTab('identity');
 
         return () => {
-            // Optional cleaning
+            // Restore default panel state when leaving builder
+            setRightPanelMode('NOTES');
+            setEntityTabs([]);
         };
     }, []);
 
@@ -86,7 +91,8 @@ const EntityBuilder = ({ mode }) => {
                 ...prev,
                 nombre: `Nuevo ${type === 'map' ? 'Mapa' : type === 'timeline' ? 'Cronograma' : 'Ente'}`,
                 carpeta: folderInfo,
-                tipoEspecial: type || 'entidadindividual'
+                tipoEspecial: type || 'entidadindividual',
+                tipo: type || 'entidadindividual' // Initialize 'tipo' for new entities
             }));
 
             // Auto-populate? Maybe better to let user choose.
@@ -113,8 +119,10 @@ const EntityBuilder = ({ mode }) => {
                 ...data,
                 apariencia: data.apariencia || '',
                 notas: data.notas || '',
-                iconUrl: data.iconUrl || '',
-                tags: data.tags || ''
+                iconUrl: data.iconUrl || null,
+                tags: data.tags || '',
+                tipo: data.tipoEspecial || getHierarchyType(data.tipo).id, // Ensure 'tipo' is set
+                color: data.color || '#6366f1' // Ensure 'color' is set
             });
 
             if (data.carpeta?.id) {
@@ -163,7 +171,36 @@ const EntityBuilder = ({ mode }) => {
         setFields(prev => prev.filter(f => f.id !== id));
     };
 
-    const handleSave = async () => {
+    // Auto-Save Handler for critical properties (Icon, Color)
+    const handleAutoSave = async (field, value) => {
+        // 1. Update Local State Immediately
+        setEntity(prev => ({ ...prev, [field]: value }));
+
+        // 2. Persist to Backend if not new
+        if (!isNew) {
+            try {
+                const updatedEntity = { ...entity, [field]: value };
+                await api.put(`/world-bible/entities/${entityId}`, updatedEntity);
+                console.log(`Auto-saved ${field}`);
+            } catch (err) {
+                console.error(`Failed to auto-save ${field}`, err);
+                // Optionally revert state here on failure
+            }
+        }
+    };
+
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                handleAutoSave('iconUrl', reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleSave = async (shouldRedirect = true) => {
         setSaving(true);
         try {
             const payload = {
@@ -173,7 +210,8 @@ const EntityBuilder = ({ mode }) => {
                 apariencia: entity.apariencia,
                 notas: entity.notas,
                 iconUrl: entity.iconUrl,
-                tipoEspecial: entity.tipoEspecial || 'entidadindividual'
+                tipoEspecial: entity.tipoEspecial || 'entidadindividual',
+                color: entity.color // Include color in the payload
             };
 
             let targetId = entity.id;
@@ -196,12 +234,18 @@ const EntityBuilder = ({ mode }) => {
                     }
                 }
                 setSaving(false);
-                navigate(`/${username}/${projectName}/bible/folder/${folderSlug}/entity/${newEntity.slug || newEntity.id}/edit`, { replace: true });
+
+                if (shouldRedirect) {
+                    navigate(`/${username}/${projectName}/bible/folder/${folderSlug}`);
+                } else {
+                    // Update URL without reloading to switch to Edit Mode
+                    navigate(`/${username}/${projectName}/bible/folder/${folderSlug}/entity/${newEntity.slug || newEntity.id}/edit`, { replace: true });
+                }
                 return;
             }
 
             // Update Existing
-            await api.put(`/world-bible/entities/${targetId}`, { nombre: payload.nombre });
+            await api.put(`/world-bible/entities/${targetId}`, { nombre: payload.nombre, color: payload.color, iconUrl: payload.iconUrl }); // Update name, color, iconUrl
             await api.patch(`/world-bible/entities/${targetId}/details`, {
                 descripcion: payload.descripcion,
                 tags: payload.tags,
@@ -255,43 +299,52 @@ const EntityBuilder = ({ mode }) => {
             <div className="flex-1 flex flex-col min-w-0 overflow-y-auto custom-scrollbar relative">
 
                 {/* Header Actions */}
-                <div className="border-b border-white/5 p-4 flex justify-between items-center bg-background-dark/80 backdrop-blur sticky top-0 z-20">
+                <div className="border-b border-white/5 p-4 flex justify-between items-center bg-background-dark/80 backdrop-blur sticky top-0 z-30">
                     <div className="flex items-center gap-4">
                         <Avatar url={entity.iconUrl} name={entity.nombre} className="size-10 rounded-lg border border-white/10" />
                         <div>
-                            <h1 className="text-lg font-bold text-white leading-tight">{entity.nombre}</h1>
+                            <h1 className="text-lg font-bold text-white leading-tight">{entity.nombre || 'Sin Nombre'}</h1>
                             <span className="text-[10px] uppercase font-black tracking-widest text-slate-500">
-                                {isCreation ? 'Creating New Entity' : 'Editing Entity'}
+                                {isCreation ? 'Creando Nueva Entidad' : 'Editando Entidad'}
                             </span>
                         </div>
                     </div>
-                    <button
-                        onClick={handleSave}
-                        className={`flex items-center gap-2 px-6 py-2 rounded-xl bg-primary text-white font-bold shadow-lg hover:scale-105 transition-all ${saving && 'opacity-50 animate-pulse'}`}
-                    >
-                        <span className="material-symbols-outlined text-sm">save</span>
-                        <span>{saving ? 'Saving...' : 'Save Changes'}</span>
-                    </button>
+
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => navigate(`/${username}/${projectName}/bible/folder/${folderSlug}`)}
+                            className="px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 text-xs font-bold uppercase tracking-widest transition-all"
+                        >
+                            Cancelar
+                        </button>
+                        <div className="flex bg-white/5 rounded-xl p-1 gap-1 border border-white/10">
+                            <button
+                                onClick={() => handleSave(true)}
+                                disabled={saving}
+                                className="h-9 px-4 rounded-lg bg-primary hover:bg-primary-light text-white text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 disabled:opacity-50"
+                            >
+                                {saving ? <span className="material-symbols-outlined animate-spin text-sm">refresh</span> : <span className="material-symbols-outlined text-sm">save</span>}
+                                Guardar
+                            </button>
+                            <div className="w-px bg-white/10 my-1"></div>
+                            <button
+                                onClick={() => handleSave(false)}
+                                disabled={saving}
+                                className="h-9 px-3 rounded-lg bg-transparent hover:bg-white/10 text-white transition-all flex items-center justify-center disabled:opacity-50"
+                                title="Guardar y Seguir Editando"
+                            >
+                                <span className="material-symbols-outlined text-sm">edit_document</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Tabs */}
-                <div className="mt-8 px-8 border-b border-white/5 flex gap-8 shrink-0">
-                    {['identity', 'backstory', 'attributes', 'relationships'].map(tab => (
-                        <button
-                            key={tab}
-                            onClick={() => setActiveTab(tab)}
-                            className={`pb-4 text-xs font-black uppercase tracking-[0.2em] transition-all relative ${activeTab === tab ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}
-                        >
-                            {tab}
-                            {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary shadow-glow"></div>}
-                        </button>
-                    ))}
-                </div>
+                {/* Tabs Removed - Moved to Right Panel */}
 
                 {/* Content */}
                 <div className="p-8 pb-32 max-w-5xl mx-auto w-full">
 
-                    {activeTab === 'identity' && (
+                    {activeEntityTab === 'identity' && (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {/* Identity Card */}
                             <GlassPanel className="p-6 space-y-6">
@@ -355,7 +408,7 @@ const EntityBuilder = ({ mode }) => {
                                 />
                             </GlassPanel>
 
-                            {/* Personality Matrix (Sliders) */}
+
                             <GlassPanel className="p-6 lg:col-span-2">
                                 <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2 mb-6">
                                     <span className="material-symbols-outlined text-sm">psychology</span> Personality / Stats
@@ -386,7 +439,7 @@ const EntityBuilder = ({ mode }) => {
                         </div>
                     )}
 
-                    {activeTab === 'backstory' && (
+                    {activeEntityTab === 'backstory' && (
                         <div className="animate-in fade-in duration-500">
                             <GlassPanel className="min-h-[60vh] flex flex-col p-8">
                                 <div className="flex items-center justify-between mb-6">
@@ -403,7 +456,7 @@ const EntityBuilder = ({ mode }) => {
                         </div>
                     )}
 
-                    {activeTab === 'attributes' && (
+                    {activeEntityTab === 'attributes' && (
                         <div className="animate-in fade-in duration-500 space-y-6">
                             <h3 className="text-xs font-black uppercase tracking-widest text-primary border-b border-white/5 pb-4">
                                 Dynamic Attributes
@@ -422,16 +475,34 @@ const EntityBuilder = ({ mode }) => {
                         </div>
                     )}
 
-                    {activeTab === 'relationships' && (
+                    {activeEntityTab === 'relationships' && (
                         <div className="p-20 text-center border-2 border-dashed border-white/5 rounded-3xl opacity-30">
                             <span className="material-symbols-outlined text-4xl mb-4">hub</span>
                             <p className="text-sm font-bold">Relationships coming soon</p>
                         </div>
                     )}
 
+                    {activeEntityTab === 'notes' && (
+                        <div className="animate-in fade-in duration-500">
+                            <GlassPanel className="min-h-[60vh] flex flex-col p-8 bg-yellow-900/5 border-yellow-500/10">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-yellow-500 flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-sm">sticky_note_2</span> GM Notes (Private)
+                                    </h3>
+                                    <span className="text-[10px] text-yellow-500/50 uppercase font-bold">Not visible to players</span>
+                                </div>
+                                <textarea
+                                    className="flex-1 w-full bg-transparent border-none outline-none text-yellow-100/80 leading-relaxed resize-none focus:ring-0 placeholder:text-yellow-500/20 custom-scrollbar text-sm font-mono"
+                                    placeholder="Secret notes, plot hooks, or truth..."
+                                    value={entity.notas || ''}
+                                    onChange={e => handleCoreChange('notas', e.target.value)}
+                                />
+                            </GlassPanel>
+                        </div>
+                    )}
                 </div>
+
             </div>
-            {/* Internal Sidebar Removed - Using Global Right Panel */}
         </div>
     );
 };

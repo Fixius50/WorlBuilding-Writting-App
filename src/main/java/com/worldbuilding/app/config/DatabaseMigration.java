@@ -36,40 +36,87 @@ public class DatabaseMigration {
     }
 
     private void migrateUsingTemplate(JdbcTemplate jdbcTemplate) {
-        // Table: entidad_generica - Ensure columns exist
+        // --- 1. CUADERNO (Metadata del Proyecto) ---
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS cuaderno (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "nombre_proyecto TEXT NOT NULL, " +
+                "titulo TEXT, " +
+                "descripcion TEXT, " +
+                "tipo TEXT, " +
+                "genero TEXT, " +
+                "imagen_url TEXT, " +
+                "fecha_creacion TEXT, " +
+                "deleted INTEGER DEFAULT 0, " +
+                "deleted_date TEXT" +
+                ")");
 
-        // Column: apariencia
-        if (!columnExists(jdbcTemplate, "entidad_generica", "apariencia")) {
-            System.out.println("Migrating: adding 'apariencia' column to 'entidad_generica'");
+        // --- 2. CARPETA (Jerarquía) ---
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS carpeta (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "nombre TEXT NOT NULL, " +
+                "proyecto_id INTEGER, " +
+                "padre_id INTEGER, " +
+                "tipo TEXT, " +
+                "descripcion TEXT, " +
+                "slug TEXT, " +
+                "deleted INTEGER DEFAULT 0, " +
+                "deleted_date TEXT" +
+                ")");
+
+        // --- 3. ENTIDAD_GENERICA (Personajes, Lugares, etc.) ---
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS entidad_generica (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "nombre TEXT NOT NULL, " +
+                "nombre_proyecto TEXT, " +
+                "proyecto_id INTEGER, " +
+                "carpeta_id INTEGER, " +
+                "tipo_especial TEXT, " +
+                "descripcion TEXT, " +
+                "slug TEXT, " +
+                "icon_url TEXT, " +
+                "apariencia TEXT, " +
+                "notas TEXT, " +
+                "color TEXT, " +
+                "tags TEXT, " +
+                "deleted INTEGER DEFAULT 0, " +
+                "deleted_date TEXT" +
+                ")");
+
+        // --- 4. ATRIBUTO_PLANTILLA (Definición de campos) ---
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS atributo_plantilla (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "nombre TEXT NOT NULL, " +
+                "tipo TEXT NOT NULL, " +
+                "valor_defecto TEXT, " +
+                "es_obligatorio INTEGER DEFAULT 0, " +
+                "descripcion TEXT, " +
+                "metadata TEXT, " +
+                "carpeta_id INTEGER, " +
+                "orden_visual INTEGER DEFAULT 0, " +
+                "global INTEGER DEFAULT 0" +
+                ")");
+
+        // --- 5. ATRIBUTO_VALOR (Valores de los campos) ---
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS atributo_valor (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "entidad_id INTEGER, " +
+                "plantilla_id INTEGER, " +
+                "valor TEXT" +
+                ")");
+
+        // --- Migraciones específicas para columnas añadidas posteriormente ---
+        // (Esto es redundante para bases nuevas pero repara las antiguas)
+
+        if (!columnExists(jdbcTemplate, "entidad_generica", "color")) {
             try {
-                jdbcTemplate.execute("ALTER TABLE entidad_generica ADD COLUMN apariencia TEXT");
+                jdbcTemplate.execute("ALTER TABLE entidad_generica ADD COLUMN color TEXT");
             } catch (Exception ignored) {
             }
         }
 
-        // Column: notas
-        if (!columnExists(jdbcTemplate, "entidad_generica", "notas")) {
-            System.out.println("Migrating: adding 'notas' column to 'entidad_generica'");
+        if (!columnExists(jdbcTemplate, "entidad_generica", "tags")) {
             try {
-                jdbcTemplate.execute("ALTER TABLE entidad_generica ADD COLUMN notas TEXT");
-            } catch (Exception ignored) {
-            }
-        }
-
-        // Column: icon_url
-        if (!columnExists(jdbcTemplate, "entidad_generica", "icon_url")) {
-            System.out.println("Migrating: adding 'icon_url' column to 'entidad_generica'");
-            try {
-                jdbcTemplate.execute("ALTER TABLE entidad_generica ADD COLUMN icon_url TEXT");
-            } catch (Exception ignored) {
-            }
-        }
-
-        // Column: deleted_date
-        if (!columnExists(jdbcTemplate, "entidad_generica", "deleted_date")) {
-            System.out.println("Migrating: adding 'deleted_date' column to 'entidad_generica'");
-            try {
-                jdbcTemplate.execute("ALTER TABLE entidad_generica ADD COLUMN deleted_date TEXT");
+                jdbcTemplate.execute("ALTER TABLE entidad_generica ADD COLUMN tags TEXT");
             } catch (Exception ignored) {
             }
         }

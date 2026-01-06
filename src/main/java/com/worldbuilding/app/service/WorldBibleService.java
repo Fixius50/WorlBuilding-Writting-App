@@ -122,7 +122,8 @@ public class WorldBibleService {
     // --- ENTIDADES ---
 
     @Transactional
-    public EntidadGenerica createEntity(String nombre, Cuaderno proyecto, Long carpetaId, String tipoEspecial) {
+    public EntidadGenerica createEntity(String nombre, Cuaderno proyecto, Long carpetaId, String tipoEspecial,
+            String descripcion, String iconUrl) {
         Optional<Carpeta> carpetaOpt = carpetaRepository.findById(carpetaId);
         if (carpetaOpt.isEmpty())
             throw new RuntimeException("Folder not found");
@@ -132,15 +133,16 @@ public class WorldBibleService {
         entidad.setNombre(nombre);
         entidad.setProyecto(proyecto);
         entidad.setCarpeta(carpeta);
-        entidad.setCarpeta(carpeta);
         entidad.setTipoEspecial(tipoEspecial);
 
         // Generate Slug
         String slug = generateUniqueSlug(nombre, "entity");
         entidad.setSlug(slug);
 
-        // Default values for new fields
-        entidad.setDescripcion("");
+        // Set optional fields
+        entidad.setDescripcion(descripcion != null ? descripcion : "");
+        entidad.setIconUrl(iconUrl);
+        entidad.setTags("");
         entidad.setTags("");
 
         EntidadGenerica savedEntity = entidadGenericaRepository.save(entidad);

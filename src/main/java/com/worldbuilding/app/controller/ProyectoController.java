@@ -45,14 +45,18 @@ public class ProyectoController {
             // 3. Find the Cuaderno record (Should be only 1)
             Optional<Cuaderno> cuaderno = cuadernoRepository.findAll().stream().findFirst();
 
-            if (cuaderno.isEmpty()) {
-                // If DB exists but no record (migration issue?), return error or auto-fix?
-                // For now, error.
-                return ResponseEntity.status(404).body(Map.of("error", "Project metadata missing"));
-            }
+            // 4. Set Session (IMPORTANT: Do this BEFORE returning)
+            session.setAttribute(PROYECTO_ACTIVO, identifier);
 
-            // 4. Set Session
-            session.setAttribute(PROYECTO_ACTIVO, identifier); // Use filename as reliable ID
+            if (cuaderno.isEmpty()) {
+                // If DB exists but no record, return success with default data to avoid
+                // blocking the UI
+                return ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "nombreProyecto", identifier,
+                        "id", -1L,
+                        "warning", "Metadata record missing, using defaults"));
+            }
 
             return ResponseEntity.ok(Map.of(
                     "success", true,

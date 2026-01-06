@@ -125,3 +125,10 @@
 - **Features**: Implementaciﾃn de CRUD de carpetas en World Bible, nuevo sistema de Notas con vista pantalla completa, Selector de Mapas y Editor de Mapas funcional (Canvas).
 - **Fixes**: Resuelto error 500 en el arranque (SQLDelete), arreglado redireccionamiento de logout en Settings.
 - **Impact**: Mejora significativa en la UX de cartografﾃa y gestiﾃn de informaciﾃn.
+
+## Sesiﾃハ 2026-01-07: Resoluciﾃハ de Estabilidad y UI
+- [x] Correcciﾃハ de persistencia DB (SQLite Master persistente).
+- [x] Inicializaciﾃハ robusta de esquemas (CREATE TABLE IF NOT EXISTS).
+- [x] Resoluciﾃハ de errores 401 (PermitAll + Session activation temprana).
+- [x] Fix de botﾃハ 'Guardar' desaparecido (Rediseﾃバ de Header y Stacking Context).
+

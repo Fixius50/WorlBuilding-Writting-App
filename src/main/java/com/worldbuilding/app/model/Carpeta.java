@@ -40,6 +40,9 @@ public class Carpeta {
     @OneToMany(mappedBy = "carpeta", cascade = CascadeType.ALL)
     private List<AtributoPlantilla> plantillas;
 
+    @OneToMany(mappedBy = "carpeta", cascade = CascadeType.ALL)
+    private List<EntidadGenerica> entidades;
+
     @Column(columnDefinition = "BOOLEAN DEFAULT false")
     private boolean deleted = false;
 
@@ -135,6 +138,14 @@ public class Carpeta {
 
     public void setPlantillas(List<AtributoPlantilla> plantillas) {
         this.plantillas = plantillas;
+    }
+
+    public List<EntidadGenerica> getEntidades() {
+        return entidades;
+    }
+
+    public void setEntidades(List<EntidadGenerica> entidades) {
+        this.entidades = entidades;
     }
 
     public boolean isDeleted() {

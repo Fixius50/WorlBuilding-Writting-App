@@ -7,10 +7,28 @@ import { getHierarchyType, HIERARCHY_TYPES } from '../../../js/constants/hierarc
 const FolderView = () => {
     const { username, projectName, folderSlug } = useParams();
     const navigate = useNavigate();
-    const { handleCreateEntity, handleOpenCreateModal, handleDeleteEntity, handleDeleteFolder, handleCreateSimpleFolder } = useOutletContext(); // Get handlers
+    const {
+        handleCreateEntity,
+        handleDeleteEntity,
+        handleCreateSimpleFolder,
+        folderSearchTerm,
+        folderFilterType
+    } = useOutletContext(); // Get handlers from Global Layout
+
+    // Local state for data
     const [entities, setEntities] = useState([]);
     const [folder, setFolder] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    // Filter Logic using Global Context
+    const filteredEntities = entities.filter(ent => {
+        const matchesSearch = ent.nombre.toLowerCase().includes(folderSearchTerm.toLowerCase());
+        const matchesType = folderFilterType === 'ALL' ||
+            (folderFilterType === 'MAP' && ent.tipoEspecial === 'map') ||
+            (folderFilterType === 'TIMELINE' && ent.tipoEspecial === 'timeline') ||
+            (folderFilterType === 'ENTITY' && (!ent.tipoEspecial || ent.tipoEspecial === 'entidadindividual'));
+        return matchesSearch && matchesType;
+    });
 
     useEffect(() => {
         const handleUpdate = (e) => {
@@ -176,8 +194,10 @@ const FolderView = () => {
                 </div>
             </header>
 
+            {/* Filter Toolbar REMOVED - Moved to Global Right Panel */}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                {entities.map(entity => (
+                {filteredEntities.map(entity => (
                     <BibleCard
                         key={entity.id}
                         item={entity}

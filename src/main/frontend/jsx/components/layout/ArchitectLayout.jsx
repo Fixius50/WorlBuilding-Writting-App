@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useParams, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import api from '../../../js/services/api';
+import TemplateManager from '../settings/TemplateManager';
 import GlobalNotes from './GlobalNotes';
 
 const NavItem = ({ to, icon, label, collapsed, end }) => (
@@ -41,8 +42,10 @@ const getIconForType = (type) => {
 };
 
 const ArchitectLayout = () => {
-    const { username, projectName: paramProjectName } = useParams();
+    console.log("ArchitectLayout Mounting");
+    const { username, projectName, folderSlug } = useParams();
     const navigate = useNavigate();
+    const location = useLocation(); // Hook location
     const [leftOpen, setLeftOpen] = useState(true);
     const [rightOpen, setRightOpen] = useState(false);
     const [loadedProjectName, setLoadedProjectName] = useState('Loading...');
@@ -64,8 +67,18 @@ const ArchitectLayout = () => {
     const [onMapSettingsChange, setOnMapSettingsChange] = useState(null);
     const [activeMapSection, setActiveMapSection] = useState('identity'); // 'identity', 'grid', 'canvas'
 
+    // Notes vs Templates vs Filters (Bible Context)
+    const [activeBibleTab, setActiveBibleTab] = useState('notes'); // 'notes', 'templates', 'filters'
+    const [folderSearchTerm, setFolderSearchTerm] = useState('');
+    const [folderFilterType, setFolderFilterType] = useState('ALL');
+    const isBibleContext = location.pathname.includes('/bible');
+
     // Edit State
     const [editingTemplate, setEditingTemplate] = useState(null);
+
+    // Entity Builder State
+    const [entityTabs, setEntityTabs] = useState([]);
+    const [activeEntityTab, setActiveEntityTab] = useState('identity');
 
     const handleDeleteTemplate = async (e, id) => {
         e.stopPropagation();
@@ -86,13 +99,13 @@ const ArchitectLayout = () => {
         } catch (err) { console.error("Update failed", err); }
     };
 
-    const baseUrl = `/${username}/${paramProjectName}`;
+    const baseUrl = `/${username}/${projectName}`;
 
     useEffect(() => {
-        if (paramProjectName) {
-            loadProject(paramProjectName);
+        if (projectName) {
+            loadProject(projectName);
         }
-    }, [paramProjectName]);
+    }, [projectName]);
 
     const loadProject = async (identifier) => {
         try {
@@ -168,7 +181,7 @@ const ArchitectLayout = () => {
             <main className="flex-1 flex flex-col min-w-0 bg-background-dark relative">
                 <div className="h-16 w-full absolute top-0 left-0 bg-gradient-to-b from-background-dark to-transparent pointer-events-none"></div>
 
-                <div className="flex-1 flex overflow-hidden relative z-0">
+                <div className="flex-1 flex overflow-hidden relative">
                     <Outlet context={{
                         setRightPanelMode, // Require pages to set this
                         availableTemplates, setAvailableTemplates,
@@ -176,12 +189,27 @@ const ArchitectLayout = () => {
                         setCreateTemplateHandler,
                         projectName: loadedProjectName,
                         projectId,
-                        projectName: loadedProjectName,
-                        projectId,
+
                         setRightOpen,
                         // Map Props
                         mapSettings, setMapSettings,
-                        setOnMapSettingsChange
+                        projectName: loadedProjectName,
+                        projectId,
+
+                        setRightOpen,
+                        // Map Props
+                        mapSettings, setMapSettings,
+                        setOnMapSettingsChange,
+
+                        // Entity Builder Props
+                        entityTabs, setEntityTabs,
+                        // Entity Builder Props
+                        entityTabs, setEntityTabs,
+                        activeEntityTab, setActiveEntityTab,
+
+                        // Folder Filter Props
+                        folderSearchTerm, setFolderSearchTerm,
+                        folderFilterType, setFolderFilterType
                     }} />
                 </div>
             </main>
@@ -194,12 +222,36 @@ const ArchitectLayout = () => {
                 `}
             >
                 {/* Header */}
-                <header className="h-16 flex items-center px-6 border-b border-glass-border justify-between">
+                <header className="h-16 flex items-center px-6 border-b border-glass-border justify-between shrink-0">
                     {rightOpen ? (
                         <>
-                            <h2 className="text-xs font-black uppercase tracking-widest text-white">
-                                {rightPanelMode === 'NOTES' ? 'Notas Globales' : 'Constructor'}
-                            </h2>
+                            {isBibleContext && rightPanelMode === 'NOTES' ? (
+                                <div className="flex bg-white/5 rounded-lg p-1 gap-1">
+                                    <button
+                                        onClick={() => setActiveBibleTab('notes')}
+                                        className={`px-3 py-1 rounded-md text-[10px] uppercase font-bold transition-all ${activeBibleTab === 'notes' ? 'bg-primary text-white shadow' : 'text-slate-500 hover:text-white'}`}
+                                    >
+                                        Notas
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveBibleTab('templates')}
+                                        className={`px-3 py-1 rounded-md text-[10px] uppercase font-bold transition-all ${activeBibleTab === 'templates' ? 'bg-primary text-white shadow' : 'text-slate-500 hover:text-white'}`}
+                                    >
+                                        Plantillas
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveBibleTab('filters')}
+                                        className={`px-3 py-1 rounded-md text-[10px] uppercase font-bold transition-all ${activeBibleTab === 'filters' ? 'bg-primary text-white shadow' : 'text-slate-500 hover:text-white'}`}
+                                    >
+                                        Explorar
+                                    </button>
+                                </div>
+                            ) : (
+                                <h2 className="text-xs font-black uppercase tracking-widest text-white">
+                                    {rightPanelMode === 'NOTES' ? 'Notas Globales' : 'Constructor'}
+                                </h2>
+                            )}
+
                             <button onClick={() => setRightOpen(false)} className="text-text-muted hover:text-white transition-colors">
                                 <span className="material-symbols-outlined text-lg">dock_to_right</span>
                             </button>
@@ -209,250 +261,344 @@ const ArchitectLayout = () => {
                             <span className="material-symbols-outlined">{rightPanelMode === 'NOTES' ? 'edit_note' : rightPanelMode === 'MAP' ? 'map' : 'handyman'}</span>
                         </button>
                     )
-                }
-            </header><div className="flex-1 overflow-y-auto no-scrollbar p-0">
-                {rightOpen ? (
-                    rightPanelMode === 'NOTES' ? (
-                        // NOTES MODE
-                        <div className="h-full p-4 overflow-hidden">
-                            <GlobalNotes projectName={paramProjectName} />
-                        </div>
-                    ) : rightPanelMode === 'MAP' ? (
-                        // MAP SETTINGS MODE
-                        <div className="p-6 space-y-8 animate-in fade-in slide-in-from-right-4">
-                            {/* Grid Settings */}
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-text-muted">Grid System</h3>
-                                    <label className="relative inline-flex items-center cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            checked={mapSettings.showGrid}
-                                            onChange={(e) => {
-                                                const newVal = { ...mapSettings, showGrid: e.target.checked };
-                                                setMapSettings(newVal);
-                                                if (onMapSettingsChange) onMapSettingsChange(newVal);
-                                            } }
-                                            className="sr-only peer" />
-                                        <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
-                                    </label>
+                    }
+                </header><div className="flex-1 overflow-y-auto no-scrollbar p-0">
+                    {rightOpen ? (
+                        rightPanelMode === 'NOTES' ? (
+                            activeBibleTab === 'templates' && isBibleContext ? (
+                                <div className="h-full overflow-y-auto no-scrollbar">
+                                    <TemplateManager compact={true} />
                                 </div>
-
-                                <div className={`space-y-2 transition-opacity ${mapSettings.showGrid ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
-                                    <div className="flex justify-between text-xs font-bold text-white">
-                                        <span>Size</span>
-                                        <span className="font-mono text-primary">{mapSettings.gridSize}px</span>
-                                    </div>
-                                    <input
-                                        type="range"
-                                        min="10"
-                                        max="200"
-                                        step="10"
-                                        value={mapSettings.gridSize}
-                                        onChange={(e) => {
-                                            const newVal = { ...mapSettings, gridSize: parseInt(e.target.value) };
-                                            setMapSettings(newVal);
-                                            if (onMapSettingsChange) onMapSettingsChange(newVal);
-                                        } }
-                                        className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary" />
-                                </div>
-                            </div>
-
-                            <div className="h-px bg-glass-border"></div>
-
-                            {/* Dimensions Settings */}
-                            <div className="space-y-4">
-                                <h3 className="text-xs font-black uppercase tracking-widest text-text-muted">Canvas Data</h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] uppercase font-bold text-slate-500">Width (px)</label>
-                                        <input
-                                            type="number"
-                                            value={mapSettings.width}
-                                            onChange={(e) => {
-                                                const newVal = { ...mapSettings, width: parseInt(e.target.value) };
-                                                setMapSettings(newVal);
-                                                if (onMapSettingsChange) onMapSettingsChange(newVal);
-                                            } }
-                                            className="w-full bg-black/20 border border-white/10 rounded-lg p-2 text-white text-right font-mono text-sm focus:border-primary outline-none" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] uppercase font-bold text-slate-500">Height (px)</label>
-                                        <input
-                                            type="number"
-                                            value={mapSettings.height}
-                                            onChange={(e) => {
-                                                const newVal = { ...mapSettings, height: parseInt(e.target.value) };
-                                                setMapSettings(newVal);
-                                                if (onMapSettingsChange) onMapSettingsChange(newVal);
-                                            } }
-                                            className="w-full bg-black/20 border border-white/10 rounded-lg p-2 text-white text-right font-mono text-sm focus:border-primary outline-none" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        // TOOLBOX MODE
-                        <div className="p-4 space-y-6">
-                            {/* Basic Modules Section if needed */}
-
-                            <div className="space-y-3">
-                                <h3 className="text-[10px] font-black uppercase tracking-widest text-text-muted px-2 flex justify-between items-center">
-                                    <span>Plantillas Disponibles</span>
-                                    <button
-                                        className="text-primary hover:text-white transition-colors"
-                                        title="Crear Nueva Plantilla"
-                                        onClick={() => {
-                                            // We need to access the context handler passed FROM the Outlet Child TO this Layout?
-                                            // Wait, Outlet context goes DOWN.
-                                            // To pass UP, we need a refined approach.
-                                            // Actually, useOutletContext in Child receives what we pass here.
-                                            // So we need a state HERE that the child SETS.
-                                            // I passed 'setAddAttributeHandler' (state) downward.
-                                            // Child calls setAddAttributeHandler(fn).
-                                            // So 'addAttributeHandler' is available here.
-                                            // I need 'createTemplateHandler' similarly.
-                                            // Let's add 'createTemplateHandler' state.
-                                            if (createTemplateHandler) createTemplateHandler();
-                                        } }
-                                    >
-                                        <span className="material-symbols-outlined text-sm">add</span>
-                                    </button>
-                                </h3>
-
-                                {availableTemplates.length === 0 ? (
-                                    <div className="p-6 text-center border border-dashed border-glass-border rounded-2xl opacity-30">
-                                        <p className="text-[10px] uppercase font-bold">Sin Plantillas</p>
-                                    </div>
-                                ) : (
-                                    availableTemplates.map(tpl => (
-                                        <button
-                                            key={tpl.id}
-                                            className="w-full flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-glass-border hover:border-primary/50 hover:bg-primary/5 transition-all text-left group relative"
-                                            draggable
-                                            onDragStart={(e) => {
-                                                e.dataTransfer.setData('application/reactflow/type', 'attribute');
-                                                e.dataTransfer.setData('templateId', tpl.id);
-                                                e.dataTransfer.effectAllowed = 'move';
-                                            } }
-                                            onClick={() => addAttributeHandler && addAttributeHandler(tpl.id)}
-                                        >
-                                            {tpl.global && (
-                                                <span className="absolute top-2 right-2 flex size-2 bg-blue-500 rounded-full shadow-lg shadow-blue-500/50" title="Global"></span>
+                            ) : activeBibleTab === 'filters' && isBibleContext ? (
+                                <div className="h-full p-6 space-y-6 animate-in fade-in slide-in-from-right-4">
+                                    <div className="space-y-4">
+                                        <h3 className="text-xs font-black uppercase tracking-widest text-text-muted">Búsqueda</h3>
+                                        <div className="bg-black/20 border border-white/10 rounded-xl p-3 flex items-center gap-2 focus-within:border-primary transition-colors">
+                                            <span className="material-symbols-outlined text-slate-500">search</span>
+                                            <input
+                                                value={folderSearchTerm}
+                                                onChange={e => setFolderSearchTerm(e.target.value)}
+                                                placeholder="Buscar entidad..."
+                                                className="bg-transparent border-none outline-none text-sm text-white w-full placeholder-slate-600"
+                                            />
+                                            {folderSearchTerm && (
+                                                <button onClick={() => setFolderSearchTerm('')} className="text-slate-500 hover:text-white">
+                                                    <span className="material-symbols-outlined text-sm">close</span>
+                                                </button>
                                             )}
-                                            <div className="size-8 rounded-lg bg-surface-light flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                                                <span className="material-symbols-outlined text-sm">{getIconForType(tpl.tipo)}</span>
-                                            </div>
-                                            <div className="overflow-hidden">
-                                                <p className="text-xs font-bold text-white truncate">{tpl.nombre}</p>
-                                                <p className="text-[10px] text-text-muted uppercase font-black tracking-tighter">{tpl.tipo}</p>
-                                            </div>
+                                        </div>
+                                    </div>
 
-                                            {/* Actions */}
-                                            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <div
-                                                    onClick={(e) => { e.stopPropagation(); setEditingTemplate(tpl); } }
-                                                    className="p-1 hover:text-white text-text-muted hover:bg-white/10 rounded cursor-pointer"
-                                                    title="Edit"
+                                    <div className="h-px bg-glass-border"></div>
+
+                                    <div className="space-y-4">
+                                        <h3 className="text-xs font-black uppercase tracking-widest text-text-muted">Filtrar por Tipo</h3>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {[
+                                                { id: 'ALL', label: 'Todos', icon: 'grid_view' },
+                                                { id: 'ENTITY', label: 'Entidades', icon: 'person' },
+                                                { id: 'MAP', label: 'Mapas', icon: 'map' },
+                                                { id: 'TIMELINE', label: 'Timelines', icon: 'timeline' }
+                                            ].map(type => (
+                                                <button
+                                                    key={type.id}
+                                                    onClick={() => setFolderFilterType(type.id)}
+                                                    className={`
+                                                        p-3 rounded-xl border flex flex-col items-center gap-2 transition-all
+                                                        ${folderFilterType === type.id
+                                                            ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
+                                                            : 'bg-white/5 border-transparent text-slate-500 hover:bg-white/10 hover:text-white'}
+                                                    `}
                                                 >
-                                                    <span className="material-symbols-outlined text-sm">edit</span>
-                                                </div>
-                                                <div
-                                                    onClick={(e) => handleDeleteTemplate(e, tpl.id)}
-                                                    className="p-1 hover:text-red-400 text-text-muted hover:bg-white/10 rounded cursor-pointer"
-                                                    title="Delete"
+                                                    <span className="material-symbols-outlined">{type.icon}</span>
+                                                    <span className="text-[10px] font-bold uppercase">{type.label}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="h-full p-4 overflow-hidden">
+                                    <GlobalNotes projectName={projectName} />
+                                </div>
+                            )
+                        ) : rightPanelMode === 'MAP' ? (
+                            // MAP SETTINGS MODE
+                            <div className="p-6 space-y-8 animate-in fade-in slide-in-from-right-4">
+                                {/* Grid Settings */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-xs font-black uppercase tracking-widest text-text-muted">Grid System</h3>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={mapSettings.showGrid}
+                                                onChange={(e) => {
+                                                    const newVal = { ...mapSettings, showGrid: e.target.checked };
+                                                    setMapSettings(newVal);
+                                                    if (onMapSettingsChange) onMapSettingsChange(newVal);
+                                                }}
+                                                className="sr-only peer" />
+                                            <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                                        </label>
+                                    </div>
+
+                                    <div className={`space-y-2 transition-opacity ${mapSettings.showGrid ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
+                                        <div className="flex justify-between text-xs font-bold text-white">
+                                            <span>Size</span>
+                                            <span className="font-mono text-primary">{mapSettings.gridSize}px</span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="10"
+                                            max="200"
+                                            step="10"
+                                            value={mapSettings.gridSize}
+                                            onChange={(e) => {
+                                                const newVal = { ...mapSettings, gridSize: parseInt(e.target.value) };
+                                                setMapSettings(newVal);
+                                                if (onMapSettingsChange) onMapSettingsChange(newVal);
+                                            }}
+                                            className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary" />
+                                    </div>
+                                </div>
+
+                                <div className="h-px bg-glass-border"></div>
+
+                                {/* Dimensions Settings */}
+                                <div className="space-y-4">
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-text-muted">Canvas Data</h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] uppercase font-bold text-slate-500">Width (px)</label>
+                                            <input
+                                                type="number"
+                                                value={mapSettings.width}
+                                                onChange={(e) => {
+                                                    const newVal = { ...mapSettings, width: parseInt(e.target.value) };
+                                                    setMapSettings(newVal);
+                                                    if (onMapSettingsChange) onMapSettingsChange(newVal);
+                                                }}
+                                                className="w-full bg-black/20 border border-white/10 rounded-lg p-2 text-white text-right font-mono text-sm focus:border-primary outline-none" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] uppercase font-bold text-slate-500">Height (px)</label>
+                                            <input
+                                                type="number"
+                                                value={mapSettings.height}
+                                                onChange={(e) => {
+                                                    const newVal = { ...mapSettings, height: parseInt(e.target.value) };
+                                                    setMapSettings(newVal);
+                                                    if (onMapSettingsChange) onMapSettingsChange(newVal);
+                                                }}
+                                                className="w-full bg-black/20 border border-white/10 rounded-lg p-2 text-white text-right font-mono text-sm focus:border-primary outline-none" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : rightPanelMode === 'ENTITY' ? (
+                            // ENTITY BUILDER NAVIGATION (Switch Style)
+                            <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4">
+                                <div className="p-4 border-b border-glass-border">
+                                    <div className="bg-black/40 p-1 rounded-xl flex">
+                                        {entityTabs.map(tab => {
+                                            const getIcon = (t) => {
+                                                switch (t.toLowerCase()) {
+                                                    case 'identity': return 'badge';
+                                                    case 'backstory': return 'auto_stories';
+                                                    case 'attributes': return 'tune';
+                                                    case 'relationships': return 'hub';
+                                                    case 'notes': return 'edit_note';
+                                                    default: return 'circle';
+                                                }
+                                            }
+                                            return (
+                                                <button
+                                                    key={tab}
+                                                    onClick={() => setActiveEntityTab(tab)}
+                                                    className={`
+                                                        flex-1 py-2 rounded-lg transition-all group relative flex items-center justify-center
+                                                        ${activeEntityTab === tab
+                                                            ? 'bg-primary text-white shadow-lg'
+                                                            : 'text-text-muted hover:text-white hover:bg-white/5'}
+                                                    `}
+                                                    title={tab}
                                                 >
-                                                    <span className="material-symbols-outlined text-sm">delete</span>
-                                                </div>
-                                            </div>
-                                        </button>
-                                    ))
+                                                    <span className="material-symbols-outlined text-lg">{getIcon(tab)}</span>
+                                                    {/* Tooltip on Hover */}
+                                                    <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/90 text-white text-[10px] uppercase font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                                                        {tab}
+                                                    </span>
+                                                </button>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                                {activeEntityTab === 'attributes' && (
+                                    <div className="flex-1 overflow-hidden flex flex-col bg-black/20">
+                                        <div className="px-6 py-4 text-[10px] font-black uppercase text-slate-500 tracking-widest flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-sm">drag_indicator</span> Drag Attributes
+                                        </div>
+                                        <div className="flex-1 overflow-y-auto custom-scrollbar px-2">
+                                            <TemplateManager compact={true} initialFolderSlug={folderSlug} />
+                                        </div>
+                                    </div>
                                 )}
                             </div>
-                        </div>
-                    )
-                ) : (
-                    // COLLAPSED ICONS
-                    <div className="flex flex-col items-center gap-4 py-4">
-                        {rightPanelMode === 'NOTES' ? (
-                            <button className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted" title="Notes">
-                                <span className="material-symbols-outlined text-lg">edit_note</span>
-                            </button>
+                        ) : rightPanelMode === 'TOOLBOX' ? (
+                            // TOOLBOX MODE
+                            <div className="p-4 space-y-6">
+                                <div className="space-y-3">
+                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-text-muted px-2 flex justify-between items-center">
+                                        <span>Plantillas Disponibles</span>
+                                        <button
+                                            className="text-primary hover:text-white transition-colors"
+                                            title="Crear Nueva Plantilla"
+                                            onClick={() => createTemplateHandler && createTemplateHandler()}
+                                        >
+                                            <span className="material-symbols-outlined text-sm">add</span>
+                                        </button>
+                                    </h3>
+
+                                    {availableTemplates.length === 0 ? (
+                                        <div className="p-6 text-center border border-dashed border-glass-border rounded-2xl opacity-30">
+                                            <p className="text-[10px] uppercase font-bold">Sin Plantillas</p>
+                                        </div>
+                                    ) : (
+                                        availableTemplates.map(tpl => (
+                                            <button
+                                                key={tpl.id}
+                                                className="w-full flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-glass-border hover:border-primary/50 hover:bg-primary/5 transition-all text-left group relative"
+                                                draggable
+                                                onDragStart={(e) => {
+                                                    e.dataTransfer.setData('application/reactflow/type', 'attribute');
+                                                    e.dataTransfer.setData('templateId', tpl.id);
+                                                    e.dataTransfer.effectAllowed = 'move';
+                                                }}
+                                                onClick={() => addAttributeHandler && addAttributeHandler(tpl.id)}
+                                            >
+                                                {tpl.global && (
+                                                    <span className="absolute top-2 right-2 flex size-2 bg-blue-500 rounded-full shadow-lg shadow-blue-500/50" title="Global"></span>
+                                                )}
+                                                <div className="size-8 rounded-lg bg-surface-light flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                                                    <span className="material-symbols-outlined text-sm">{getIconForType(tpl.tipo)}</span>
+                                                </div>
+                                                <div className="overflow-hidden">
+                                                    <p className="text-xs font-bold text-white truncate">{tpl.nombre}</p>
+                                                    <p className="text-[10px] text-text-muted uppercase font-black tracking-tighter">{tpl.tipo}</p>
+                                                </div>
+
+                                                {/* Actions */}
+                                                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <div
+                                                        onClick={(e) => { e.stopPropagation(); setEditingTemplate(tpl); }}
+                                                        className="p-1 hover:text-white text-text-muted hover:bg-white/10 rounded cursor-pointer"
+                                                        title="Edit"
+                                                    >
+                                                        <span className="material-symbols-outlined text-sm">edit</span>
+                                                    </div>
+                                                    <div
+                                                        onClick={(e) => handleDeleteTemplate(e, tpl.id)}
+                                                        className="p-1 hover:text-red-400 text-text-muted hover:bg-white/10 rounded cursor-pointer"
+                                                        title="Delete"
+                                                    >
+                                                        <span className="material-symbols-outlined text-sm">delete</span>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
                         ) : (
-                            availableTemplates.slice(0, 5).map(tpl => (
-                                <button
-                                    key={tpl.id}
-                                    className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted hover:text-white hover:bg-primary/20 transition-all relative"
-                                    draggable
-                                    onDragStart={(e) => {
-                                        e.dataTransfer.setData('application/reactflow/type', 'attribute');
-                                        e.dataTransfer.setData('templateId', tpl.id);
-                                    } }
-                                >
-                                    {tpl.global && <span className="absolute top-0 right-0 size-2 bg-blue-500 rounded-full border border-surface-dark"></span>}
-                                    <span className="material-symbols-outlined text-lg">{getIconForType(tpl.tipo)}</span>
+                            // DEFAULT / EMPTY
+                            <div className="flex flex-col items-center justify-center h-full text-text-muted opacity-50">
+                                <span className="material-symbols-outlined text-4xl mb-2">dashboard</span>
+                                <p className="text-xs uppercase font-bold tracking-widest">Select an item</p>
+                            </div>
+                        )
+                    ) : (
+                        // COLLAPSED ICONS
+                        <div className="flex flex-col items-center gap-4 py-4">
+                            {rightPanelMode === 'NOTES' ? (
+                                <button className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted" title="Notes">
+                                    <span className="material-symbols-outlined text-lg">edit_note</span>
                                 </button>
-                            ))
-                        )}
-                    </div>
-                )}
-            </div>
+                            ) : (
+                                availableTemplates.slice(0, 5).map(tpl => (
+                                    <button
+                                        key={tpl.id}
+                                        className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted hover:text-white hover:bg-primary/20 transition-all relative"
+                                        draggable
+                                        onDragStart={(e) => {
+                                            e.dataTransfer.setData('application/reactflow/type', 'attribute');
+                                            e.dataTransfer.setData('templateId', tpl.id);
+                                        }}
+                                    >
+                                        {tpl.global && <span className="absolute top-0 right-0 size-2 bg-blue-500 rounded-full border border-surface-dark"></span>}
+                                        <span className="material-symbols-outlined text-lg">{getIconForType(tpl.tipo)}</span>
+                                    </button>
+                                ))
+                            )}
+                        </div>
+                    )}
+                </div>
             </aside >
-    {/* Edit Modal */ }
-{
-    editingTemplate && (
-        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-surface-dark border border-glass-border rounded-2xl p-6 w-full max-w-md shadow-2xl animate-scale-in">
-                <h3 className="text-xl font-black text-white mb-4">Editar Plantilla</h3>
-                <form onSubmit={handleUpdateTemplate} className="space-y-4">
-                    <div>
-                        <label className="text-xs uppercase font-bold text-text-muted block mb-1">Nombre</label>
-                        <input
-                            autoFocus
-                            className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white focus:border-primary outline-none"
-                            value={editingTemplate.nombre}
-                            onChange={e => setEditingTemplate({ ...editingTemplate, nombre: e.target.value })}
-                            required
-                        />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="text-xs uppercase font-bold text-text-muted block mb-1">Tipo</label>
-                            <select
-                                className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white focus:border-primary outline-none"
-                                value={editingTemplate.tipo}
-                                onChange={e => setEditingTemplate({ ...editingTemplate, tipo: e.target.value })}
-                            >
-                                <option value="text">Texto Largo</option>
-                                <option value="short_text">Texto Corto</option>
-                                <option value="number">Número</option>
-                                <option value="boolean">Si/No</option>
-                                <option value="date">Fecha</option>
-                                <option value="entity_link">Vínculo Entidad</option>
-                                <option value="image">Imagen URL</option>
-                            </select>
+            {/* Edit Modal */}
+            {
+                editingTemplate && (
+                    <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                        <div className="bg-surface-dark border border-glass-border rounded-2xl p-6 w-full max-w-md shadow-2xl animate-scale-in">
+                            <h3 className="text-xl font-black text-white mb-4">Editar Plantilla</h3>
+                            <form onSubmit={handleUpdateTemplate} className="space-y-4">
+                                <div>
+                                    <label className="text-xs uppercase font-bold text-text-muted block mb-1">Nombre</label>
+                                    <input
+                                        autoFocus
+                                        className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white focus:border-primary outline-none"
+                                        value={editingTemplate.nombre}
+                                        onChange={e => setEditingTemplate({ ...editingTemplate, nombre: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-xs uppercase font-bold text-text-muted block mb-1">Tipo</label>
+                                        <select
+                                            className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white focus:border-primary outline-none"
+                                            value={editingTemplate.tipo}
+                                            onChange={e => setEditingTemplate({ ...editingTemplate, tipo: e.target.value })}
+                                        >
+                                            <option value="text">Texto Largo</option>
+                                            <option value="short_text">Texto Corto</option>
+                                            <option value="number">Número</option>
+                                            <option value="boolean">Si/No</option>
+                                            <option value="date">Fecha</option>
+                                            <option value="entity_link">Vínculo Entidad</option>
+                                            <option value="image">Imagen URL</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <label className="flex items-center gap-2 cursor-pointer p-3 bg-white/5 rounded-xl w-full hover:bg-white/10 transition-colors">
+                                            <input
+                                                type="checkbox"
+                                                checked={editingTemplate.global}
+                                                onChange={e => setEditingTemplate({ ...editingTemplate, global: e.target.checked })}
+                                                className="accent-primary size-4"
+                                            />
+                                            <span className="text-sm font-bold text-white">Es Global?</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="flex justify-end gap-3 pt-4">
+                                    <button type="button" onClick={() => setEditingTemplate(null)} className="px-4 py-2 text-text-muted hover:text-white font-bold transition-colors">Cancelar</button>
+                                    <button type="submit" className="px-6 py-2 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-transform">Guardar</button>
+                                </div>
+                            </form>
                         </div>
-                        <div className="flex items-center">
-                            <label className="flex items-center gap-2 cursor-pointer p-3 bg-white/5 rounded-xl w-full hover:bg-white/10 transition-colors">
-                                <input
-                                    type="checkbox"
-                                    checked={editingTemplate.global}
-                                    onChange={e => setEditingTemplate({ ...editingTemplate, global: e.target.checked })}
-                                    className="accent-primary size-4"
-                                />
-                                <span className="text-sm font-bold text-white">Es Global?</span>
-                            </label>
-                        </div>
                     </div>
-                    <div className="flex justify-end gap-3 pt-4">
-                        <button type="button" onClick={() => setEditingTemplate(null)} className="px-4 py-2 text-text-muted hover:text-white font-bold transition-colors">Cancelar</button>
-                        <button type="submit" className="px-6 py-2 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-transform">Guardar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    )
-}
+                )
+            }
         </div >
     );
 };

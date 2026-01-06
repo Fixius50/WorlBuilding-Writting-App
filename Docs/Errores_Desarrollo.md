@@ -114,3 +114,29 @@ pm run build antes de arrancar el servidor Java, garantizando que el frontend si
 
 ## [2026-01-02] Limpieza de directorio Data
 **Acción:** Se movieron ackend.log, server.log, startup.log, 	race.txt del directorio Data a Docs/logs para centralizar la auditoría.
+
+## [06/01/2026] Pantalla Blanca (Crash MapEditor)
+**Síntoma:** Pantalla blanca al cargar la app. Error silencioso de importación.
+**Diagnóstico:** Conflicto de versiones. eact-konva v19 requiere React 19, pero el proyecto usa React 18.
+**Solución:** Downgrade a eact-konva@18.2.10 y konva@9.3.16.
+**Estado:** Resuelto.
+
+---
+### Error: SQLITE_ERROR: no such table: cuaderno
+* **SÃntoma:** Errores de base de datos al iniciar o abrir proyectos.
+* **Causa:** Uso de SQLite en memoria para el contexto maestro y falta de CREATE TABLE en migraciones.
+* **SoluciÃn:** Cambiado a SQLite persistente en MultiTenantDataSource.java y habilitado CREATE TABLE IF NOT EXISTS en DatabaseMigration.java.
+* **Estado:** Resuelto.
+
+### Error: 401 Unauthorized / Password Generada
+* **SÃntoma:** Bloqueo de acceso a la API y logs de seguridad de Spring activados.
+* **Causa:** ConfiguraciÃn de seguridad por defecto activada; sesion de proyecto se activaba demasiado tarde.
+* **SoluciÃn:** ConfiguraciÃn de SecurityConfig.java con permitAll() y activaciÃn de sesiÃn en ProyectoController.java antes de validaciones de metadatos.
+* **Estado:** Resuelto.
+
+### Error: BotÃn 'Guardar' desaparecido en EntityBuilder
+* **SÃntoma:** Los usuarios no podÃan guardar entidades creadas.
+* **Causa:** Posicionamiento ixed oculto por el sidebar y conflicto de z-index (Stacking Context).
+* **SoluciÃn:** RediseÃo de la cabecera de EntityBuilder.jsx para incluir botones persistentes y eliminaciÃn de z-0 en ArchitectLayout.jsx.
+* **Estado:** Resuelto.
+

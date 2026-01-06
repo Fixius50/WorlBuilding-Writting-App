@@ -19,12 +19,18 @@ public class MultiTenantDataSource implements DataSource {
 
     public MultiTenantDataSource(DatabaseMigration databaseMigration) {
         this.databaseMigration = databaseMigration;
-        // Use in-memory DB for default context (no project selected)
-        // This avoids creating 'worldbuilding.db'
-        System.out.println(">>> MASTER DB: Using In-Memory SQLite (No persistence for master)");
+        // Use persistent file 'worldbuilding.db' for Master Context
+        String masterDbPath = resolveDataPath("worldbuilding.db");
+        System.out.println(">>> MASTER DB PATH: " + masterDbPath);
+
+        // Run migration on Master DB too (ensures schema exists even for Master)
+        if (databaseMigration != null) {
+            databaseMigration.migrateDatabase(new java.io.File(masterDbPath));
+        }
+
         DriverManagerDataSource master = new DriverManagerDataSource();
         master.setDriverClassName("org.sqlite.JDBC");
-        master.setUrl("jdbc:sqlite::memory:");
+        master.setUrl("jdbc:sqlite:" + masterDbPath);
         this.masterDataSource = master;
     }
 

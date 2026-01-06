@@ -19,8 +19,7 @@ El esqueleto está listo, pero falta el motor gráfico.
 
 ## 2. Refactorización del Constructor de Entidades (`EntityBuilder`)
 El constructor actual es funcional pero necesita alinearse con el nuevo diseño de "Panel Derecho Global".
-- [ ] **Migrar Tabs al Panel Derecho**:
-    - Las pestañas "Notas", "Plantillas" y "Multimedia" deberían residir en el `ArchitectLayout` (zona derecha), similar a como se hizo con el Mapa.
+    - [x] Migrar Tabs al Panel Derecho (Completado).
 - [ ] **Mejoras en Identidad**:
     - Añadir campo "Apariencia" (Texto rico o imagen).
     - Permitir subir icono personalizado (Local Image) para la entidad.
@@ -33,3 +32,11 @@ El constructor actual es funcional pero necesita alinearse con el nuevo diseño 
 ## Notas Técnicas
 - **Persistencia**: Recuerda que `EntidadGenerica` usa un campo `descripcion` (String/JSON) para guardar datos complejos. Para los mapas, esto incluye capas, imágenes en base64 (o URLs) y metadatos.
 - **Contexto Global**: `ArchitectLayout` usa `useOutletContext` para pasar estados del Panel Derecho (`rightPanelMode`, `setMapSettings`, etc.) a las páginas hijas. Todo nuevo editor debe engancharse a este contexto.
+
+## 4. Refactorización Técnica y Backend (Desde TODOs)
+Tareas extraídas de `WorldBibleController.java`:
+- [ ] **Refactorización Flujo de Creación (Sin Prompts)**: Eliminar el uso de `window.prompt` y usar modales/wizards integrados.
+- [ ] **Restaurar Explorador Lateral**: Limpiar el sidebar para mostrar solo estructura de carpetas relevante.
+- [ ] **Rutas de Creación Directa**: Implementar rutas como `/new/:type` para acceso rápido.
+- [ ] **Guardado Diferido (Post-draft)**: Permitir crear entidades en memoria y solo persistir al guardar (evitar basura en DB).
+- [ ] **Herencia de Plantillas en Borrador**: Que los nuevos borradores hereden plantillas dinámicamente antes de guardarse.

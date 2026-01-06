@@ -91,10 +91,23 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
 
     const loadContent = async () => {
         try {
-            const ents = await api.get(`/world-bible/folders/${folder.id}/entities`);
-            setContent({ folders: [], entities: ents });
+            // FIX: Ensure we are using the numeric ID if available, or handle the slug correctly.
+            // If folder.id is a string (slug), and backend expects Long, this fails.
+            // Assuming folder prop comes from parent, which usually has the ID.
+            console.log("Loading content for folder:", folder.id, "Slug:", folder.slug);
+            const [subs, ents] = await Promise.all([
+                api.get(`/world-bible/folders/${folder.id}/subfolders`),
+                api.get(`/world-bible/folders/${folder.id}/entities`)
+            ]);
+            setContent({ folders: subs, entities: ents });
             setLoaded(true);
-        } catch (err) { console.error("Error reloading folder content:", err); }
+        } catch (err) {
+            console.error("Error reloading folder content:", err);
+            // DEBUG: Alert so user sees exactly when it fails
+            if (err.message && err.message.includes("404")) {
+                console.error(`404 for folder ${folder.id} (${folder.nombre})`);
+            }
+        }
     };
 
     const toggle = (e) => {
@@ -257,6 +270,23 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
 
             {isOpen && (
                 <div className="ml-6 pl-4 border-l border-glass-border space-y-1 animate-slide-in">
+                    {/* Render Subfolders */}
+                    {content.folders.map(sub => (
+                        <FolderItem
+                            key={sub.id}
+                            folder={sub}
+                            onCreateSubfolder={onCreateSubfolder}
+                            onRename={onRename}
+                            onDeleteFolder={onDeleteFolder}
+                            onDeleteEntity={onDeleteEntity}
+                            onCreateTemplate={onCreateTemplate}
+                            onMoveEntity={onMoveEntity}
+                            onCreateEntity={onCreateEntity}
+                            onConfirmCreate={onConfirmCreate}
+                        />
+                    ))}
+
+                    {/* Render Entities */}
                     {content.entities.map(ent => (
                         ent.isNew ? <InputItem key={ent.id} item={ent} type="entity" /> :
                             <Link

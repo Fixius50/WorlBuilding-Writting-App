@@ -55,7 +55,14 @@ const WorldBibleLayout = () => {
             });
 
             if (parentId === null) {
-                setFolders(prev => [...prev, newFolder]);
+                // RELOAD folders to ensure data integrity (IDs, Slugs)
+                const updatedFolders = await api.get('/world-bible/folders');
+                setFolders(updatedFolders);
+
+                // DISPATCH event so BibleGridView knows to reload too
+                window.dispatchEvent(new CustomEvent('folder-update', {
+                    detail: { folderId: null }
+                }));
             } else {
                 window.dispatchEvent(new CustomEvent('folder-update', {
                     detail: {
@@ -83,11 +90,23 @@ const WorldBibleLayout = () => {
                 tipo: formData.tipo
             });
 
+
+
+            // RELOAD folders to ensure we have the correct ID and Slug from DB
+            // Optimistic update might be missing fields if backend response is partial
             if (parentId === null) {
-                // Add to root
-                setFolders(prev => [...prev, newFolder]);
+                const updatedFolders = await api.get('/world-bible/folders');
+                setFolders(updatedFolders);
+
+                // DISPATCH event so BibleGridView knows to reload too
+                window.dispatchEvent(new CustomEvent('folder-update', {
+                    detail: { folderId: null }
+                }));
             } else {
-                // Propagate to subfolder via event
+                // For subfolders, we still rely on event, but passing the response 'newFolder'
+                // verifying it has an ID
+                if (!newFolder.id) console.error("CRITICAL: Created folder has no ID!", newFolder);
+
                 window.dispatchEvent(new CustomEvent('folder-update', {
                     detail: {
                         folderId: parentId,
@@ -162,8 +181,74 @@ const WorldBibleLayout = () => {
     };
 
     const handleConfirmCreate = async (tempId, name, type, parentId, specialType) => {
-        // Legacy support if needed, but Modal replaces Main folder creation.
-        // Used by Inline Inputs (if we keep them for Entities)
+        try {
+            if (type === 'folder') {
+                // If it's a rename (existing ID, not temp)
+                if (typeof tempId === 'number' && !tempId.toString().startsWith('temp')) {
+                    // It's a rename of an existing folder? Usually onRename handles this.
+                    // But if InputItem was used on a 'clean' new item, it has a temp ID.
+                    // Actually, FolderItem passes folder.id. If folder.isNew, it has a temp ID or real ID?
+                    // In handleCreateSimpleFolder, we create it in Backend immediately...
+                    // Wait, handleCreateSimpleFolder creates it with "New Folder".
+                    // So we are just RENAMING it here.
+                    await api.put(`/world-bible/folders/${tempId}`, { nombre: name });
+
+                    window.dispatchEvent(new CustomEvent('folder-update', {
+                        detail: {
+                            folderId: parentId,
+                            confirmedType: 'folder',
+                            oldId: tempId,
+                            item: { id: tempId, nombre: name, parentId, tipo: specialType, uiKey: Date.now() }
+                        }
+                    }));
+
+                    if (!parentId) {
+                        setFolders(prev => prev.map(f => f.id === tempId ? { ...f, nombre: name } : f));
+                    }
+                } else {
+                    // True creation if we didn't create it before? 
+                    // Current flow: handleCreateSimpleFolder creates it. So this is always a Rename.
+                    // Unless we add "Optimistic UI" where we don't create until name is set.
+                }
+            } else if (type === 'entity') {
+                if (typeof tempId === 'string' && tempId.startsWith('new-')) {
+                    // Real creation for entity if we use inline input
+                    const newEntity = await api.post('/world-bible/entities', {
+                        nombre: name,
+                        carpetaId: parentId,
+                        tipoEspecial: specialType || 'entidadindividual'
+                    });
+
+                    window.dispatchEvent(new CustomEvent('folder-update', {
+                        detail: {
+                            folderId: parentId,
+                            confirmedType: 'entity',
+                            oldId: tempId,
+                            item: newEntity
+                        }
+                    }));
+                } else {
+                    // Rename Entity
+                    await api.put(`/world-bible/entities/${tempId}`, { nombre: name });
+                    window.dispatchEvent(new CustomEvent('folder-update', {
+                        detail: {
+                            folderId: parentId,
+                            confirmedType: 'entity',
+                            oldId: tempId,
+                            item: { id: tempId, nombre: name, carpeta: { id: parentId }, tipoEspecial: specialType, slug: tempId } // minimalistic update
+                        }
+                    }));
+                    // Reload content to get full data
+                    window.dispatchEvent(new CustomEvent('folder-update', {
+                        detail: { folderId: parentId } // trigger reload
+                    }));
+                }
+            }
+        } catch (err) {
+            console.error("Creation/Rename failed", err);
+            // If failed and it was new, maybe delete it?
+            if (type === 'folder') handleDeleteFolder(tempId, parentId);
+        }
     };
 
     return (
@@ -225,6 +310,7 @@ const WorldBibleLayout = () => {
             <main className="flex-1 overflow-hidden relative bg-gradient-to-br from-background-dark to-surface-dark/20">
                 <Outlet context={{
                     ...architectContext,
+                    folders, // Shared State
                     handleCreateEntity,
                     handleOpenCreateModal,
                     handleDeleteFolder,

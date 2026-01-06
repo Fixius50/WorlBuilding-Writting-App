@@ -156,10 +156,13 @@ public class WorldBibleController {
         String nombre = (String) payload.get("nombre");
         Number carpetaId = (Number) payload.get("carpetaId");
         String tipoEspecial = (String) payload.get("tipoEspecial");
+        String descripcion = (String) payload.get("descripcion");
+        String iconUrl = (String) payload.get("iconUrl");
 
         try {
             return ResponseEntity
-                    .ok(worldBibleService.createEntity(nombre, proyecto, carpetaId.longValue(), tipoEspecial));
+                    .ok(worldBibleService.createEntity(nombre, proyecto, carpetaId.longValue(), tipoEspecial,
+                            descripcion, iconUrl));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

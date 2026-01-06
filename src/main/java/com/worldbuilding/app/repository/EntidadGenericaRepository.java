@@ -10,6 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface EntidadGenericaRepository extends JpaRepository<EntidadGenerica, Long> {
+    @org.springframework.data.jpa.repository.Query("SELECT e FROM EntidadGenerica e WHERE e.proyecto = :proyecto AND e.deleted = false AND e.carpeta.deleted = false")
     List<EntidadGenerica> findByProyecto(Cuaderno proyecto);
 
     Optional<EntidadGenerica> findBySlug(String slug);

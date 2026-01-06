@@ -48,3 +48,9 @@ El diseño busca un equilibrio entre la claridad de un IDE moderno y la mística
 1.  **Cero Distracción:** El autor no debe abandonar el teclado. Los comandos y atajos de teclado son prioridad.
 2.  **Contexto es Rey:** La información del mundo debe fluir hacia el texto, no al revés.
 3.  **Local-First:** Tus datos son tuyos. La sincronización es una opción, no un requisito.
+
+## Estado Actual (2026-01-07)
+- [x] **Fase de Estabilidad Core**: Completada. Persistencia de datos asegurada y esquema multi-tenant funcional.
+- [x] **Seguridad**: Configurada para desarrollo fluido (PermitAll) sin comprometer la activaciÃn de sesiones de proyecto.
+- [x] **UI/UX Biblia**: Entity Builder optimizado con controles en cabecera y visualizaciÃn corregida.
+

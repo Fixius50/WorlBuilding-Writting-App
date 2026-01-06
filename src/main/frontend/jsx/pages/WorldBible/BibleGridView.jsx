@@ -5,53 +5,29 @@ import BibleCard from '../../components/bible/BibleCard';
 
 const BibleGridView = () => {
     const { username, projectName } = useParams();
-    const { handleOpenCreateModal, handleDeleteFolder, handleCreateSimpleFolder } = useOutletContext();
+    // Consume 'folders' from Layout Context. No local fetch needed for Root.
+    const {
+        handleOpenCreateModal,
+        handleDeleteFolder,
+        handleCreateSimpleFolder,
+        folders = [] // Default to empty
+    } = useOutletContext();
 
-    const [folders, setFolders] = useState([]);
-    const [loading, setLoading] = useState(true);
+    // No local state or effects needed for data loading anymore!
+    // The Layout handles it.
 
-    useEffect(() => {
-        loadRoot();
-    }, [projectName]);
-
-    useEffect(() => {
-        const handleUpdate = (e) => {
-            const { folderId, removeId, item } = e.detail || {};
-            // Root updates have folderId === null (so we check for null explicitly)
-            if (folderId === null) {
-                if (removeId) {
-                    setFolders(prev => prev.filter(f => f.id !== removeId));
-                } else if (item) {
-                    setFolders(prev => {
-                        if (prev.find(f => f.id === item.id)) return prev;
-                        return [...prev, item];
-                    });
-                } else {
-                    loadRoot();
-                }
-            }
-        };
-
-        window.addEventListener('folder-update', handleUpdate);
-        return () => window.removeEventListener('folder-update', handleUpdate);
-    }, []);
-
-    const loadRoot = async () => {
-        setLoading(true);
-        try {
-            const data = await api.get('/world-bible/folders');
-            setFolders(data);
-        } catch (err) {
-            console.error("Error loading root:", err);
-        } finally {
-            setLoading(false);
-        }
-    };
+    // We can keep a fake 'loading' if folders is empty initially, 
+    // but Layout usually loads fast. 
+    // Let's assume if it's undefined it's loading? 
+    // But we defaulted it to []. 
+    // Layout initializes it to []. 
+    // We could pass 'loadingFolders' from layout if we wanted a spinner.
+    // For now, let's just render. The 'Empty' state handles the empty array.
 
 
 
 
-    if (loading) return <div className="p-20 text-center animate-pulse text-text-muted">Loading World Bible...</div>;
+    if (folders === undefined) return <div className="p-20 text-center animate-pulse text-text-muted">Loading World Bible...</div>;
 
     return (
         <div className="flex-1 p-8 max-w-[1600px] mx-auto w-full h-full overflow-y-auto">
@@ -95,9 +71,7 @@ const BibleGridView = () => {
                     <span className="material-symbols-outlined text-6xl mb-4 text-text-muted">library_books</span>
                     <h3 className="text-xl font-bold text-white uppercase tracking-widest">Archivo Vacío</h3>
                     <p className="text-text-muted mt-2">Comienza creando espacios para organizar tu mundo.</p>
-                    <button onClick={() => handleCreateSimpleFolder(null, 'FOLDER')} className="mt-6 px-6 py-3 bg-primary text-white rounded-2xl font-bold hover:shadow-lg hover:shadow-primary/20 transition-all">
-                        Crear Primera Carpeta
-                    </button>
+
                 </div>
             )}
         </div>

@@ -3,7 +3,7 @@ import api from '../../../js/services/api';
 import GlassPanel from '../common/GlassPanel';
 import Button from '../common/Button';
 
-const TemplateManager = () => {
+const TemplateManager = ({ compact = false, initialFolderSlug }) => {
     const [folders, setFolders] = useState([]);
     const [selectedFolderId, setSelectedFolderId] = useState('');
     const [templates, setTemplates] = useState([]);
@@ -11,7 +11,7 @@ const TemplateManager = () => {
 
     useEffect(() => {
         loadFolders();
-    }, []);
+    }, [initialFolderSlug]);
 
     useEffect(() => {
         if (selectedFolderId) {
@@ -27,7 +27,16 @@ const TemplateManager = () => {
             // For simplicity, let's fetch root folders
             const data = await api.get('/world-bible/folders');
             setFolders(data);
-            if (data.length > 0) setSelectedFolderId(data[0].id);
+
+            if (initialFolderSlug) {
+                const match = data.find(f => f.slug === initialFolderSlug || f.id.toString() === initialFolderSlug);
+                if (match) {
+                    setSelectedFolderId(match.id);
+                    return;
+                }
+            }
+
+            if (data.length > 0 && !selectedFolderId) setSelectedFolderId(data[0].id);
         } catch (err) {
             console.error("Error loading folders:", err);
         }
@@ -62,16 +71,16 @@ const TemplateManager = () => {
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-            <GlassPanel className="p-8 space-y-8">
-                <header className="flex justify-between items-center">
+            <GlassPanel className={`${compact ? 'p-4 bg-transparent border-none shadow-none' : 'p-8 space-y-8'}`}>
+                <header className={`flex ${compact ? 'flex-col gap-4' : 'justify-between items-center'}`}>
                     <div>
-                        <h3 className="text-xl font-bold text-white">Folder Templates</h3>
+                        <h3 className={`${compact ? 'text-sm' : 'text-xl'} font-bold text-white`}>Folder Templates</h3>
                         <p className="text-xs text-slate-500 mt-1">Define default attributes for entities in...</p>
                     </div>
                     <select
                         value={selectedFolderId}
                         onChange={(e) => setSelectedFolderId(e.target.value)}
-                        className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-primary/50"
+                        className={`bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-primary/50 ${compact ? 'w-full' : ''}`}
                     >
                         <option value="">Select a Folder...</option>
                         {folders.map(f => (
@@ -81,7 +90,7 @@ const TemplateManager = () => {
                 </header>
 
                 <div className="space-y-4">
-                     {loading ? (
+                    {loading ? (
                         <div className="text-center p-4 text-slate-500">Loading templates...</div>
                     ) : (
                         templates.map((tpl, idx) => (
@@ -95,7 +104,7 @@ const TemplateManager = () => {
                             </div>
                         ))
                     )}
-                    
+
                     <NewFieldForm onAdd={handleCreateTemplate} />
                 </div>
             </GlassPanel>
@@ -107,7 +116,7 @@ const NewFieldForm = ({ onAdd }) => {
     const [label, setLabel] = useState('');
     const [type, setType] = useState('text');
     const [required, setRequired] = useState(false);
-    
+
     // For Dropdown/MultiSelect
     const [options, setOptions] = useState(['']);
 
@@ -121,7 +130,7 @@ const NewFieldForm = ({ onAdd }) => {
 
     const handleSubmit = () => {
         if (!label) return;
-        
+
         let metadata = null;
         if (['select', 'multi_select'].includes(type)) {
             metadata = { options: options.filter(o => o.trim()) };
@@ -136,14 +145,14 @@ const NewFieldForm = ({ onAdd }) => {
         <div className="p-4 rounded-2xl border-2 border-dashed border-white/10 bg-white/[0.01] space-y-4">
             <h4 className="text-xs font-black uppercase tracking-widest text-primary">Add New Attribute</h4>
             <div className="grid grid-cols-2 gap-4">
-                <input 
-                    placeholder="Field Name" 
-                    value={label} 
+                <input
+                    placeholder="Field Name"
+                    value={label}
                     onChange={e => setLabel(e.target.value)}
-                    className="bg-black/20 border border-white/5 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-primary/30"
+                    className="bg-black/20 border border-white/5 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-primary/30 min-w-0"
                 />
-                <select 
-                    value={type} 
+                <select
+                    value={type}
                     onChange={e => setType(e.target.value)}
                     className="bg-black/20 border border-white/5 rounded-xl px-4 py-2 text-xs text-white outline-none"
                 >
@@ -156,7 +165,7 @@ const NewFieldForm = ({ onAdd }) => {
                     <option value="boolean">Switch (True/False)</option>
                 </select>
             </div>
-            
+
             {['select', 'multi_select'].includes(type) && (
                 <div className="space-y-2">
                     <label className="text-[10px] font-bold text-slate-500 uppercase">Options</label>
@@ -169,7 +178,7 @@ const NewFieldForm = ({ onAdd }) => {
                                     onChange={e => handleOptionChange(idx, e.target.value)}
                                     className="flex-1 bg-black/20 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-white outline-none focus:border-primary/30"
                                 />
-                                <button 
+                                <button
                                     onClick={() => handleRemoveOption(idx)}
                                     className="p-1.5 hover:bg-red-500/20 text-slate-500 hover:text-red-400 rounded-lg transition-colors"
                                 >
@@ -178,7 +187,7 @@ const NewFieldForm = ({ onAdd }) => {
                             </div>
                         ))}
                     </div>
-                    <button 
+                    <button
                         onClick={handleAddOption}
                         className="w-full py-1.5 text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-primary/5 rounded-lg border border-dashed border-primary/20 transition-all"
                     >
