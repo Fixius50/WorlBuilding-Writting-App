@@ -9,14 +9,15 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
+import com.worldbuilding.app.config.TenantContext;
 
 public class MultiTenantDataSource implements DataSource {
 
     private final Map<String, DataSource> tenantDataSources = new ConcurrentHashMap<>();
     private final DataSource masterDataSource;
-    private final com.worldbuilding.app.util.DatabaseMigration databaseMigration;
+    private final DatabaseMigration databaseMigration;
 
-    public MultiTenantDataSource(com.worldbuilding.app.util.DatabaseMigration databaseMigration) {
+    public MultiTenantDataSource(DatabaseMigration databaseMigration) {
         this.databaseMigration = databaseMigration;
         // Use in-memory DB for default context (no project selected)
         // This avoids creating 'worldbuilding.db'

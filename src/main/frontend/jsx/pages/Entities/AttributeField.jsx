@@ -50,9 +50,7 @@ const AttributeField = ({ attribute, value, onChange, onRemove, linkableEntities
                 try {
                     const meta = JSON.parse(plantilla.metadata || '{}');
                     options = meta.options || [];
-                } catch (e) {
-                    console.error("Invalid metadata for select", e);
-                }
+                } catch (e) { }
                 return (
                     <div className="relative">
                         <select
@@ -70,6 +68,41 @@ const AttributeField = ({ attribute, value, onChange, onRemove, linkableEntities
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-white/50">
                             <span className="material-symbols-outlined text-sm">unfold_more</span>
                         </div>
+                    </div>
+                );
+            case 'multi_select':
+                let multiOptions = [];
+                try {
+                    const meta = JSON.parse(plantilla.metadata || '{}');
+                    multiOptions = meta.options || [];
+                } catch (e) { }
+
+                let selectedValues = [];
+                try {
+                    selectedValues = value ? JSON.parse(value) : [];
+                    if (!Array.isArray(selectedValues)) selectedValues = [];
+                } catch (e) {
+                    console.error("Error parsing select values", e);
+                }
+
+                const toggleOption = (opt) => {
+                    const newValues = selectedValues.includes(opt)
+                        ? selectedValues.filter(v => v !== opt)
+                        : [...selectedValues, opt];
+                    onChange(JSON.stringify(newValues));
+                };
+
+                return (
+                    <div className="bg-black/20 border border-white/5 rounded-xl p-2 space-y-1 max-h-40 overflow-y-auto custom-scrollbar">
+                        {multiOptions.map((opt, i) => (
+                            <label key={i} className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-lg cursor-pointer group transition-colors">
+                                <div className={`size-4 rounded border flex items-center justify-center transition-all ${selectedValues.includes(opt) ? 'bg-primary border-primary' : 'border-white/10 group-hover:border-white/30'}`}>
+                                    {selectedValues.includes(opt) && <span className="material-symbols-outlined text-[10px] text-white">check</span>}
+                                </div>
+                                <span className={`text-xs font-medium ${selectedValues.includes(opt) ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`}>{opt}</span>
+                            </label>
+                        ))}
+                        {multiOptions.length === 0 && <div className="text-xs text-slate-500 p-2 italic">No options defined.</div>}
                     </div>
                 );
             case 'date':

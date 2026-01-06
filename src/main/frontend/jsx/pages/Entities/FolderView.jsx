@@ -82,7 +82,7 @@ const FolderView = () => {
                                 <span className="material-symbols-outlined text-sm">person_add</span> Nueva Entidad
                             </button>
                             <button
-                                onClick={() => handleOpenCreateModal(folder)}
+                                onClick={() => navigate(`/${username}/${projectName}/map-editor/create/${folderSlug}`, { state: { folderId: folder?.id } })}
                                 className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all border border-glass-border"
                             >
                                 <span className="material-symbols-outlined text-sm">map</span> Mapa
@@ -160,9 +160,10 @@ const FolderView = () => {
                         <span>Nueva Entidad</span>
                     </button>
                     <button
-                        onClick={() => handleOpenCreateModal(folder)}
-                        className="h-10 px-4 rounded-xl bg-surface-light border border-white/5 hover:bg-white/10 transition flex items-center gap-2 text-xs font-bold text-white"
+                        onClick={() => navigate(`/${username}/${projectName}/map-editor/create/${folderSlug}`, { state: { folderId: folder?.id } })}
+                        className="h-10 px-4 rounded-xl bg-surface-light border border-white/5 hover:bg-white/10 transition flex items-center gap-2 text-xs font-bold text-white shadow-lg"
                     >
+                        <span className="material-symbols-outlined text-sm">map</span>
                         <span>Mapa</span>
                     </button>
                     <button

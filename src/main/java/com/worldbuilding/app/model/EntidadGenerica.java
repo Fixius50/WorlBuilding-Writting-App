@@ -48,6 +48,15 @@ public class EntidadGenerica {
     @Column(name = "slug")
     private String slug;
 
+    @Column(name = "apariencia", columnDefinition = "TEXT")
+    private String apariencia;
+
+    @Column(name = "notas", columnDefinition = "TEXT")
+    private String notas;
+
+    @Column(name = "icon_url", columnDefinition = "TEXT")
+    private String iconUrl;
+
     // Getters y Setters
     public Long getId() {
         return id;
@@ -137,5 +146,29 @@ public class EntidadGenerica {
 
     public void setSlug(String slug) {
         this.slug = slug;
+    }
+
+    public String getApariencia() {
+        return apariencia;
+    }
+
+    public void setApariencia(String apariencia) {
+        this.apariencia = apariencia;
+    }
+
+    public String getNotas() {
+        return notas;
+    }
+
+    public void setNotas(String notas) {
+        this.notas = notas;
+    }
+
+    public String getIconUrl() {
+        return iconUrl;
+    }
+
+    public void setIconUrl(String iconUrl) {
+        this.iconUrl = iconUrl;
     }
 }

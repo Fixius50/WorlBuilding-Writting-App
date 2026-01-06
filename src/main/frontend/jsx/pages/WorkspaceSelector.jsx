@@ -93,7 +93,7 @@ const WorkspaceSelector = () => {
                 <div className="flex items-center gap-4">
                     {/* SEARCH INPUT */}
                     <div className="relative group min-w-[300px]">
-                        <span className="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-white/20 text-xl group-focus-within:text-indigo-400 transition-colors pointer-events-none">search</span>
+                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/20 text-xl group-focus-within:text-indigo-400 transition-colors pointer-events-none">search</span>
                         <input
                             type="text"
                             placeholder="Buscar..."
@@ -121,7 +121,7 @@ const WorkspaceSelector = () => {
                             className="group relative h-[380px] rounded-[2.5rem] border-2 border-dashed border-white/5 flex flex-col items-center justify-center gap-6 hover:bg-white/5 hover:border-indigo-500/30 transition-all cursor-pointer overflow-hidden animate-in fade-in duration-700"
                         >
                             <div className="w-20 h-20 rounded-full bg-[#13141f] border border-white/5 flex items-center justify-center text-4xl text-white/20 group-hover:scale-110 group-hover:text-indigo-400 transition-all">
-                                <span className="material-icons text-4xl">add</span>
+                                <span className="material-symbols-outlined text-4xl">add</span>
                             </div>
                             <div className="text-center">
                                 <h3 className="text-xl font-black tracking-tight text-white/50 group-hover:text-white transition-colors">Nuevo Cuaderno</h3>

@@ -17,6 +17,7 @@ import EntityBuilder from './pages/Entities/EntityBuilder';
 import FolderView from './pages/Entities/FolderView';
 import WorldBibleLayout from './pages/WorldBible/WorldBibleLayout';
 import BibleGridView from './pages/WorldBible/BibleGridView';
+import MapEditor from './pages/Specialized/MapEditor';
 
 function App() {
     return (
@@ -38,6 +39,9 @@ function App() {
                         {/* Specialized Entity Views */}
                         <Route path="entities/:type/:entityId" element={<EntityRouter />} />
                         <Route path="settings" element={<Settings />} />
+
+                        <Route path="map-editor/create/:folderId" element={<MapEditor mode="create" />} />
+                        <Route path="map-editor/edit/:entityId" element={<MapEditor mode="edit" />} />
 
                         <Route path="bible" element={<WorldBibleLayout />}>
                             <Route index element={<BibleGridView />} />

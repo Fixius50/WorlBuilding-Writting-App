@@ -54,6 +54,16 @@ const ArchitectLayout = () => {
     const [addAttributeHandler, setAddAttributeHandler] = useState(null); // Handler for Toolbox clicks
     const [createTemplateHandler, setCreateTemplateHandler] = useState(null); // Handler for creating templates
 
+    // Map Settings State (Global)
+    const [mapSettings, setMapSettings] = useState({
+        name: '', description: '', type: 'regional',
+        showGrid: true, gridSize: 50,
+        width: 800, height: 600,
+        bgImage: null
+    });
+    const [onMapSettingsChange, setOnMapSettingsChange] = useState(null);
+    const [activeMapSection, setActiveMapSection] = useState('identity'); // 'identity', 'grid', 'canvas'
+
     // Edit State
     const [editingTemplate, setEditingTemplate] = useState(null);
 
@@ -166,7 +176,12 @@ const ArchitectLayout = () => {
                         setCreateTemplateHandler,
                         projectName: loadedProjectName,
                         projectId,
-                        setRightOpen
+                        projectName: loadedProjectName,
+                        projectId,
+                        setRightOpen,
+                        // Map Props
+                        mapSettings, setMapSettings,
+                        setOnMapSettingsChange
                     }} />
                 </div>
             </main>
@@ -191,181 +206,254 @@ const ArchitectLayout = () => {
                         </>
                     ) : (
                         <button onClick={() => setRightOpen(true)} className="w-full h-full flex items-center justify-center text-text-muted hover:text-white transition-colors">
-                            <span className="material-symbols-outlined">
-                                {rightPanelMode === 'NOTES' ? 'edit_note' : 'handyman'}
-                            </span>
+                            <span className="material-symbols-outlined">{rightPanelMode === 'NOTES' ? 'edit_note' : rightPanelMode === 'MAP' ? 'map' : 'handyman'}</span>
                         </button>
-                    )}
-                </header>
-
-                <div className="flex-1 overflow-y-auto no-scrollbar p-0">
-                    {rightOpen ? (
-                        rightPanelMode === 'NOTES' ? (
-                            // NOTES MODE
-                            <div className="h-full p-4 overflow-hidden">
-                                <GlobalNotes projectName={paramProjectName} />
-                            </div>
-                        ) : (
-                            // TOOLBOX MODE
-                            <div className="p-4 space-y-6">
-                                {/* Basic Modules Section if needed */}
-
-                                <div className="space-y-3">
-                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-text-muted px-2 flex justify-between items-center">
-                                        <span>Plantillas Disponibles</span>
-                                        <button
-                                            className="text-primary hover:text-white transition-colors"
-                                            title="Crear Nueva Plantilla"
-                                            onClick={() => {
-                                                // We need to access the context handler passed FROM the Outlet Child TO this Layout?
-                                                // Wait, Outlet context goes DOWN.
-                                                // To pass UP, we need a refined approach.
-                                                // Actually, useOutletContext in Child receives what we pass here.
-                                                // So we need a state HERE that the child SETS.
-                                                // I passed 'setAddAttributeHandler' (state) downward.
-                                                // Child calls setAddAttributeHandler(fn).
-                                                // So 'addAttributeHandler' is available here.
-                                                // I need 'createTemplateHandler' similarly.
-                                                // Let's add 'createTemplateHandler' state.
-                                                if (createTemplateHandler) createTemplateHandler();
-                                            }}
-                                        >
-                                            <span className="material-symbols-outlined text-sm">add</span>
-                                        </button>
-                                    </h3>
-
-                                    {availableTemplates.length === 0 ? (
-                                        <div className="p-6 text-center border border-dashed border-glass-border rounded-2xl opacity-30">
-                                            <p className="text-[10px] uppercase font-bold">Sin Plantillas</p>
-                                        </div>
-                                    ) : (
-                                        availableTemplates.map(tpl => (
-                                            <button
-                                                key={tpl.id}
-                                                className="w-full flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-glass-border hover:border-primary/50 hover:bg-primary/5 transition-all text-left group relative"
-                                                draggable
-                                                onDragStart={(e) => {
-                                                    e.dataTransfer.setData('application/reactflow/type', 'attribute');
-                                                    e.dataTransfer.setData('templateId', tpl.id);
-                                                    e.dataTransfer.effectAllowed = 'move';
-                                                }}
-                                                onClick={() => addAttributeHandler && addAttributeHandler(tpl.id)}
-                                            >
-                                                {tpl.global && (
-                                                    <span className="absolute top-2 right-2 flex size-2 bg-blue-500 rounded-full shadow-lg shadow-blue-500/50" title="Global"></span>
-                                                )}
-                                                <div className="size-8 rounded-lg bg-surface-light flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                                                    <span className="material-symbols-outlined text-sm">{getIconForType(tpl.tipo)}</span>
-                                                </div>
-                                                <div className="overflow-hidden">
-                                                    <p className="text-xs font-bold text-white truncate">{tpl.nombre}</p>
-                                                    <p className="text-[10px] text-text-muted uppercase font-black tracking-tighter">{tpl.tipo}</p>
-                                                </div>
-
-                                                {/* Actions */}
-                                                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <div
-                                                        onClick={(e) => { e.stopPropagation(); setEditingTemplate(tpl); }}
-                                                        className="p-1 hover:text-white text-text-muted hover:bg-white/10 rounded cursor-pointer"
-                                                        title="Edit"
-                                                    >
-                                                        <span className="material-symbols-outlined text-sm">edit</span>
-                                                    </div>
-                                                    <div
-                                                        onClick={(e) => handleDeleteTemplate(e, tpl.id)}
-                                                        className="p-1 hover:text-red-400 text-text-muted hover:bg-white/10 rounded cursor-pointer"
-                                                        title="Delete"
-                                                    >
-                                                        <span className="material-symbols-outlined text-sm">delete</span>
-                                                    </div>
-                                                </div>
-                                            </button>
-                                        ))
-                                    )}
-                                </div>
-                            </div>
-                        )
-                    ) : (
-                        // COLLAPSED ICONS
-                        <div className="flex flex-col items-center gap-4 py-4">
-                            {rightPanelMode === 'NOTES' ? (
-                                <button className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted" title="Notes">
-                                    <span className="material-symbols-outlined text-lg">edit_note</span>
-                                </button>
-                            ) : (
-                                availableTemplates.slice(0, 5).map(tpl => (
-                                    <button
-                                        key={tpl.id}
-                                        className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted hover:text-white hover:bg-primary/20 transition-all relative"
-                                        draggable
-                                        onDragStart={(e) => {
-                                            e.dataTransfer.setData('application/reactflow/type', 'attribute');
-                                            e.dataTransfer.setData('templateId', tpl.id);
-                                        }}
-                                    >
-                                        {tpl.global && <span className="absolute top-0 right-0 size-2 bg-blue-500 rounded-full border border-surface-dark"></span>}
-                                        <span className="material-symbols-outlined text-lg">{getIconForType(tpl.tipo)}</span>
-                                    </button>
-                                ))
-                            )}
+                    )
+                }
+            </header><div className="flex-1 overflow-y-auto no-scrollbar p-0">
+                {rightOpen ? (
+                    rightPanelMode === 'NOTES' ? (
+                        // NOTES MODE
+                        <div className="h-full p-4 overflow-hidden">
+                            <GlobalNotes projectName={paramProjectName} />
                         </div>
-                    )}
-                </div>
-            </aside>
-            {/* Edit Modal */}
-            {editingTemplate && (
-                <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-surface-dark border border-glass-border rounded-2xl p-6 w-full max-w-md shadow-2xl animate-scale-in">
-                        <h3 className="text-xl font-black text-white mb-4">Editar Plantilla</h3>
-                        <form onSubmit={handleUpdateTemplate} className="space-y-4">
-                            <div>
-                                <label className="text-xs uppercase font-bold text-text-muted block mb-1">Nombre</label>
-                                <input
-                                    autoFocus
-                                    className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white focus:border-primary outline-none"
-                                    value={editingTemplate.nombre}
-                                    onChange={e => setEditingTemplate({ ...editingTemplate, nombre: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-xs uppercase font-bold text-text-muted block mb-1">Tipo</label>
-                                    <select
-                                        className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white focus:border-primary outline-none"
-                                        value={editingTemplate.tipo}
-                                        onChange={e => setEditingTemplate({ ...editingTemplate, tipo: e.target.value })}
-                                    >
-                                        <option value="text">Texto Largo</option>
-                                        <option value="short_text">Texto Corto</option>
-                                        <option value="number">Número</option>
-                                        <option value="boolean">Si/No</option>
-                                        <option value="date">Fecha</option>
-                                        <option value="entity_link">Vínculo Entidad</option>
-                                        <option value="image">Imagen URL</option>
-                                    </select>
-                                </div>
-                                <div className="flex items-center">
-                                    <label className="flex items-center gap-2 cursor-pointer p-3 bg-white/5 rounded-xl w-full hover:bg-white/10 transition-colors">
+                    ) : rightPanelMode === 'MAP' ? (
+                        // MAP SETTINGS MODE
+                        <div className="p-6 space-y-8 animate-in fade-in slide-in-from-right-4">
+                            {/* Grid Settings */}
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-text-muted">Grid System</h3>
+                                    <label className="relative inline-flex items-center cursor-pointer">
                                         <input
                                             type="checkbox"
-                                            checked={editingTemplate.global}
-                                            onChange={e => setEditingTemplate({ ...editingTemplate, global: e.target.checked })}
-                                            className="accent-primary size-4"
-                                        />
-                                        <span className="text-sm font-bold text-white">Es Global?</span>
+                                            checked={mapSettings.showGrid}
+                                            onChange={(e) => {
+                                                const newVal = { ...mapSettings, showGrid: e.target.checked };
+                                                setMapSettings(newVal);
+                                                if (onMapSettingsChange) onMapSettingsChange(newVal);
+                                            } }
+                                            className="sr-only peer" />
+                                        <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
                                     </label>
                                 </div>
+
+                                <div className={`space-y-2 transition-opacity ${mapSettings.showGrid ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
+                                    <div className="flex justify-between text-xs font-bold text-white">
+                                        <span>Size</span>
+                                        <span className="font-mono text-primary">{mapSettings.gridSize}px</span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="10"
+                                        max="200"
+                                        step="10"
+                                        value={mapSettings.gridSize}
+                                        onChange={(e) => {
+                                            const newVal = { ...mapSettings, gridSize: parseInt(e.target.value) };
+                                            setMapSettings(newVal);
+                                            if (onMapSettingsChange) onMapSettingsChange(newVal);
+                                        } }
+                                        className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary" />
+                                </div>
                             </div>
-                            <div className="flex justify-end gap-3 pt-4">
-                                <button type="button" onClick={() => setEditingTemplate(null)} className="px-4 py-2 text-text-muted hover:text-white font-bold transition-colors">Cancelar</button>
-                                <button type="submit" className="px-6 py-2 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-transform">Guardar</button>
+
+                            <div className="h-px bg-glass-border"></div>
+
+                            {/* Dimensions Settings */}
+                            <div className="space-y-4">
+                                <h3 className="text-xs font-black uppercase tracking-widest text-text-muted">Canvas Data</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] uppercase font-bold text-slate-500">Width (px)</label>
+                                        <input
+                                            type="number"
+                                            value={mapSettings.width}
+                                            onChange={(e) => {
+                                                const newVal = { ...mapSettings, width: parseInt(e.target.value) };
+                                                setMapSettings(newVal);
+                                                if (onMapSettingsChange) onMapSettingsChange(newVal);
+                                            } }
+                                            className="w-full bg-black/20 border border-white/10 rounded-lg p-2 text-white text-right font-mono text-sm focus:border-primary outline-none" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] uppercase font-bold text-slate-500">Height (px)</label>
+                                        <input
+                                            type="number"
+                                            value={mapSettings.height}
+                                            onChange={(e) => {
+                                                const newVal = { ...mapSettings, height: parseInt(e.target.value) };
+                                                setMapSettings(newVal);
+                                                if (onMapSettingsChange) onMapSettingsChange(newVal);
+                                            } }
+                                            className="w-full bg-black/20 border border-white/10 rounded-lg p-2 text-white text-right font-mono text-sm focus:border-primary outline-none" />
+                                    </div>
+                                </div>
                             </div>
-                        </form>
+                        </div>
+                    ) : (
+                        // TOOLBOX MODE
+                        <div className="p-4 space-y-6">
+                            {/* Basic Modules Section if needed */}
+
+                            <div className="space-y-3">
+                                <h3 className="text-[10px] font-black uppercase tracking-widest text-text-muted px-2 flex justify-between items-center">
+                                    <span>Plantillas Disponibles</span>
+                                    <button
+                                        className="text-primary hover:text-white transition-colors"
+                                        title="Crear Nueva Plantilla"
+                                        onClick={() => {
+                                            // We need to access the context handler passed FROM the Outlet Child TO this Layout?
+                                            // Wait, Outlet context goes DOWN.
+                                            // To pass UP, we need a refined approach.
+                                            // Actually, useOutletContext in Child receives what we pass here.
+                                            // So we need a state HERE that the child SETS.
+                                            // I passed 'setAddAttributeHandler' (state) downward.
+                                            // Child calls setAddAttributeHandler(fn).
+                                            // So 'addAttributeHandler' is available here.
+                                            // I need 'createTemplateHandler' similarly.
+                                            // Let's add 'createTemplateHandler' state.
+                                            if (createTemplateHandler) createTemplateHandler();
+                                        } }
+                                    >
+                                        <span className="material-symbols-outlined text-sm">add</span>
+                                    </button>
+                                </h3>
+
+                                {availableTemplates.length === 0 ? (
+                                    <div className="p-6 text-center border border-dashed border-glass-border rounded-2xl opacity-30">
+                                        <p className="text-[10px] uppercase font-bold">Sin Plantillas</p>
+                                    </div>
+                                ) : (
+                                    availableTemplates.map(tpl => (
+                                        <button
+                                            key={tpl.id}
+                                            className="w-full flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-glass-border hover:border-primary/50 hover:bg-primary/5 transition-all text-left group relative"
+                                            draggable
+                                            onDragStart={(e) => {
+                                                e.dataTransfer.setData('application/reactflow/type', 'attribute');
+                                                e.dataTransfer.setData('templateId', tpl.id);
+                                                e.dataTransfer.effectAllowed = 'move';
+                                            } }
+                                            onClick={() => addAttributeHandler && addAttributeHandler(tpl.id)}
+                                        >
+                                            {tpl.global && (
+                                                <span className="absolute top-2 right-2 flex size-2 bg-blue-500 rounded-full shadow-lg shadow-blue-500/50" title="Global"></span>
+                                            )}
+                                            <div className="size-8 rounded-lg bg-surface-light flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                                                <span className="material-symbols-outlined text-sm">{getIconForType(tpl.tipo)}</span>
+                                            </div>
+                                            <div className="overflow-hidden">
+                                                <p className="text-xs font-bold text-white truncate">{tpl.nombre}</p>
+                                                <p className="text-[10px] text-text-muted uppercase font-black tracking-tighter">{tpl.tipo}</p>
+                                            </div>
+
+                                            {/* Actions */}
+                                            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div
+                                                    onClick={(e) => { e.stopPropagation(); setEditingTemplate(tpl); } }
+                                                    className="p-1 hover:text-white text-text-muted hover:bg-white/10 rounded cursor-pointer"
+                                                    title="Edit"
+                                                >
+                                                    <span className="material-symbols-outlined text-sm">edit</span>
+                                                </div>
+                                                <div
+                                                    onClick={(e) => handleDeleteTemplate(e, tpl.id)}
+                                                    className="p-1 hover:text-red-400 text-text-muted hover:bg-white/10 rounded cursor-pointer"
+                                                    title="Delete"
+                                                >
+                                                    <span className="material-symbols-outlined text-sm">delete</span>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    )
+                ) : (
+                    // COLLAPSED ICONS
+                    <div className="flex flex-col items-center gap-4 py-4">
+                        {rightPanelMode === 'NOTES' ? (
+                            <button className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted" title="Notes">
+                                <span className="material-symbols-outlined text-lg">edit_note</span>
+                            </button>
+                        ) : (
+                            availableTemplates.slice(0, 5).map(tpl => (
+                                <button
+                                    key={tpl.id}
+                                    className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted hover:text-white hover:bg-primary/20 transition-all relative"
+                                    draggable
+                                    onDragStart={(e) => {
+                                        e.dataTransfer.setData('application/reactflow/type', 'attribute');
+                                        e.dataTransfer.setData('templateId', tpl.id);
+                                    } }
+                                >
+                                    {tpl.global && <span className="absolute top-0 right-0 size-2 bg-blue-500 rounded-full border border-surface-dark"></span>}
+                                    <span className="material-symbols-outlined text-lg">{getIconForType(tpl.tipo)}</span>
+                                </button>
+                            ))
+                        )}
                     </div>
-                </div>
-            )}
+                )}
+            </div>
+            </aside >
+    {/* Edit Modal */ }
+{
+    editingTemplate && (
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-surface-dark border border-glass-border rounded-2xl p-6 w-full max-w-md shadow-2xl animate-scale-in">
+                <h3 className="text-xl font-black text-white mb-4">Editar Plantilla</h3>
+                <form onSubmit={handleUpdateTemplate} className="space-y-4">
+                    <div>
+                        <label className="text-xs uppercase font-bold text-text-muted block mb-1">Nombre</label>
+                        <input
+                            autoFocus
+                            className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white focus:border-primary outline-none"
+                            value={editingTemplate.nombre}
+                            onChange={e => setEditingTemplate({ ...editingTemplate, nombre: e.target.value })}
+                            required
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-xs uppercase font-bold text-text-muted block mb-1">Tipo</label>
+                            <select
+                                className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white focus:border-primary outline-none"
+                                value={editingTemplate.tipo}
+                                onChange={e => setEditingTemplate({ ...editingTemplate, tipo: e.target.value })}
+                            >
+                                <option value="text">Texto Largo</option>
+                                <option value="short_text">Texto Corto</option>
+                                <option value="number">Número</option>
+                                <option value="boolean">Si/No</option>
+                                <option value="date">Fecha</option>
+                                <option value="entity_link">Vínculo Entidad</option>
+                                <option value="image">Imagen URL</option>
+                            </select>
+                        </div>
+                        <div className="flex items-center">
+                            <label className="flex items-center gap-2 cursor-pointer p-3 bg-white/5 rounded-xl w-full hover:bg-white/10 transition-colors">
+                                <input
+                                    type="checkbox"
+                                    checked={editingTemplate.global}
+                                    onChange={e => setEditingTemplate({ ...editingTemplate, global: e.target.checked })}
+                                    className="accent-primary size-4"
+                                />
+                                <span className="text-sm font-bold text-white">Es Global?</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div className="flex justify-end gap-3 pt-4">
+                        <button type="button" onClick={() => setEditingTemplate(null)} className="px-4 py-2 text-text-muted hover:text-white font-bold transition-colors">Cancelar</button>
+                        <button type="submit" className="px-6 py-2 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-transform">Guardar</button>
+                    </div>
+                </form>
+            </div>
         </div>
+    )
+}
+        </div >
     );
 };
 

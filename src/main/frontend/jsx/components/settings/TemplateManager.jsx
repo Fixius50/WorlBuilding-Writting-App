@@ -108,19 +108,28 @@ const NewFieldForm = ({ onAdd }) => {
     const [type, setType] = useState('text');
     const [required, setRequired] = useState(false);
     
-    // For Dropdown
-    const [options, setOptions] = useState('');
+    // For Dropdown/MultiSelect
+    const [options, setOptions] = useState(['']);
+
+    const handleAddOption = () => setOptions([...options, '']);
+    const handleRemoveOption = (idx) => setOptions(options.filter((_, i) => i !== idx));
+    const handleOptionChange = (idx, val) => {
+        const newOpts = [...options];
+        newOpts[idx] = val;
+        setOptions(newOpts);
+    };
 
     const handleSubmit = () => {
         if (!label) return;
         
-        const metadata = type === 'select' 
-            ? { options: options.split(',').map(s => s.trim()).filter(Boolean) } 
-            : null;
+        let metadata = null;
+        if (['select', 'multi_select'].includes(type)) {
+            metadata = { options: options.filter(o => o.trim()) };
+        }
 
         onAdd({ label, type, required, metadata });
         setLabel('');
-        setOptions('');
+        setOptions(['']);
     };
 
     return (
@@ -142,18 +151,40 @@ const NewFieldForm = ({ onAdd }) => {
                     <option value="short_text">Text (Short)</option>
                     <option value="number">Number</option>
                     <option value="date">Date</option>
-                    <option value="select">Dropdown (Selector)</option>
-                    <option value="boolean">Checkbox</option>
+                    <option value="select">Single Selection (Dropdown)</option>
+                    <option value="multi_select">Multiple Selection</option>
+                    <option value="boolean">Switch (True/False)</option>
                 </select>
             </div>
             
-            {type === 'select' && (
-                <input 
-                    placeholder="Options (comma separated, e.g. High, Medium, Low)" 
-                    value={options} 
-                    onChange={e => setOptions(e.target.value)}
-                    className="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-primary/30"
-                />
+            {['select', 'multi_select'].includes(type) && (
+                <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase">Options</label>
+                    <div className="space-y-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                        {options.map((opt, idx) => (
+                            <div key={idx} className="flex gap-2">
+                                <input
+                                    placeholder={`Option ${idx + 1}`}
+                                    value={opt}
+                                    onChange={e => handleOptionChange(idx, e.target.value)}
+                                    className="flex-1 bg-black/20 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-white outline-none focus:border-primary/30"
+                                />
+                                <button 
+                                    onClick={() => handleRemoveOption(idx)}
+                                    className="p-1.5 hover:bg-red-500/20 text-slate-500 hover:text-red-400 rounded-lg transition-colors"
+                                >
+                                    <span className="material-symbols-outlined text-sm">close</span>
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                    <button 
+                        onClick={handleAddOption}
+                        className="w-full py-1.5 text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-primary/5 rounded-lg border border-dashed border-primary/20 transition-all"
+                    >
+                        + Add Custom Option
+                    </button>
+                </div>
             )}
 
             <div className="flex justify-between items-center">

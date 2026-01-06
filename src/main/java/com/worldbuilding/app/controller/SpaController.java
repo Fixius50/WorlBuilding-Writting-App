@@ -14,13 +14,13 @@ public class SpaController {
 
     // Matches any path that does NOT have a dot in it (so not .js, .css, .png)
     // and is NOT starting with /api
-    @RequestMapping(value = "/{path:[^\\.]*}")
+    @RequestMapping(value = "/{path:[^\\.]*}", method = org.springframework.web.bind.annotation.RequestMethod.GET)
     public String redirect() {
         return "forward:/index.html";
     }
 
     // Capture nested paths like /project/5
-    @RequestMapping(value = "/**/{path:[^\\.]*}")
+    @RequestMapping(value = "/**/{path:[^\\.]*}", method = org.springframework.web.bind.annotation.RequestMethod.GET)
     public String redirectNested() {
         return "forward:/index.html";
     }

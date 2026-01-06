@@ -230,13 +230,27 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
                     {contextMenu.type === 'folder' ? (
                         <>
                             <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2" onClick={() => { onCreateEntity(folder.id, 'entidadindividual'); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">person</span> New Character</button>
-                            <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2" onClick={() => { onCreateEntity(folder.id, 'map'); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">map</span> New Map</button>
+                            <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2" onClick={() => {
+                                navigate(`/${username}/${projectName}/map-editor/create/${folder.id}`);
+                                closeContextMenu();
+                            }}><span className="material-symbols-outlined text-sm">map</span> New Map</button>
                             <div className="h-px bg-white/5 my-1" />
                             <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2" onClick={() => { setIsEditing(true); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">edit</span> Rename Folder</button>
                             <button className="px-4 py-2 hover:bg-red-500/10 text-red-400 text-left flex items-center gap-2" onClick={() => { onDeleteFolder(folder.id, folder.parentId); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">delete</span> Delete Folder</button>
                         </>
                     ) : (
-                        <button className="px-4 py-2 hover:bg-red-500/10 text-red-400 text-left flex items-center gap-2" onClick={() => { onDeleteEntity(contextMenu.id, folder.id); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">delete</span> Delete Entity</button>
+                        <>
+                            <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2 cursor-pointer" onClick={() => {
+                                // Trigger rename for entity (needs separate state or reuse InputItem equivalent?)
+                                // For now, let's keep it simple: Prompt -> API -> Update
+                                const newName = prompt("Rename Entity", contextMenu.name);
+                                if (newName && newName !== contextMenu.name) {
+                                    onConfirmCreate(contextMenu.id, newName, 'entity', folder.id);
+                                }
+                                closeContextMenu();
+                            }}><span className="material-symbols-outlined text-sm">edit</span> Rename</button>
+                            <button className="px-4 py-2 hover:bg-red-500/10 text-red-400 text-left flex items-center gap-2" onClick={() => { onDeleteEntity(contextMenu.id, folder.id); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">delete</span> Delete Entity</button>
+                        </>
                     )}
                 </div>
             )}

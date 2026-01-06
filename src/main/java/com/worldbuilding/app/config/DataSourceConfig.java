@@ -10,7 +10,7 @@ public class DataSourceConfig {
 
     @Bean
     @Primary
-    public DataSource dataSource(com.worldbuilding.app.util.DatabaseMigration databaseMigration) {
+    public DataSource dataSource(DatabaseMigration databaseMigration) {
         return new MultiTenantDataSource(databaseMigration);
     }
 }
