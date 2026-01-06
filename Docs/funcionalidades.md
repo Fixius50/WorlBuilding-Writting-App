@@ -65,11 +65,14 @@ El nuevo paradigma unifica todas las pantallas clave bajo la estructura de tres 
     - **Central/Horizontal**: Título de bienvenida, mensajes motivadores y tarjetas de acción destacadas ("Añadir Primera Entidad", "Crear Primer Mapa", "Empezar a Escribir", "Ver Ideas Rápidas").
     - **Visualización**: Ocupa el área central manteniendo visibles los paneles laterales y la navegación superior. Estilo Glassmorphism Oscuro.
 
-### 6. Creación de Mapa/Zona (Unificado y Extendido)
-- **Diseño**: Área central más alta/larga.
-- **Componentes**:
-    - **Fuente del Lienzo**: Completamente expandida en la parte superior.
-    - **Acordeones**: Secciones "Identidad y Jerarquía" y "Tipo de Mapa" colapsadas por defecto, con indicadores numéricos.
+### 6. Creación y Edición de Mapas (Implementado)
+- **Editor de Mapas (`MapEditor.jsx`)**:
+    - **Panel Derecho Global**: Integrado con diseño de Acordeón de 3 secciones:
+        1.  **Identidad**: Nombre, Tipo (Regional, Mundo, etc.).
+        2.  **Sistema de Rejilla**: Toggle On/Off y Slider de tamaño (px).
+        3.  **Lienzo**: Dimensiones (Ancho/Alto) y Subida de Imagen de Fondo.
+    - **Sincronización**: Los cambios en el panel derecho se reflejan instantáneamente en el lienzo central.
+    - **Flujo de Guardado**: Al guardar cambios, el sistema redirige automáticamente a la carpeta contenedora para facilitar el flujo de trabajo.
 
 ---
 

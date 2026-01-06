@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useOutletContext, useLocation } from 'react-router-dom';
+import { Stage, Layer, Line, Image as KonvaImage, Rect } from 'react-konva';
+
 import api from '../../../js/services/api';
 import Button from '../../components/common/Button';
 import GlassPanel from '../../components/common/GlassPanel';
@@ -47,25 +49,22 @@ const TypeCard = ({ icon, title, desc, selected, onClick }) => (
     </div>
 );
 
-const CanvasPlaceholder = ({ width, height, gridSize, showGrid, image }) => (
-    <div
-        style={{ width, height, backgroundImage: image ? `url(${image})` : undefined, backgroundSize: 'cover' }}
-        className="bg-white shadow-2xl relative transition-all duration-500"
-    >
-        {showGrid && (
-            <div
-                className="absolute inset-0 pointer-events-none opacity-20"
-                style={{
-                    backgroundImage: `linear-gradient(to right, #000 1px, transparent 1px), linear-gradient(to bottom, #000 1px, transparent 1px)`,
-                    backgroundSize: `${gridSize}px ${gridSize}px`
-                }}
-            />
-        )}
-        <div className="absolute inset-0 flex items-center justify-center text-black/20 font-black text-4xl uppercase pointer-events-none select-none">
-            {image ? '' : 'Map Canvas'}
-        </div>
-    </div>
-);
+const URLImage = ({ src, x, y, width, height }) => {
+    const [image, setImage] = useState(null);
+    useEffect(() => {
+        if (!src) return;
+        const img = new window.Image();
+        img.src = src;
+        img.crossOrigin = 'Anonymous';
+        img.onload = () => {
+            setImage(img);
+        };
+    }, [src]);
+    return <KonvaImage image={image} x={x} y={y} width={width} height={height} />;
+};
+
+// Canvas Placeholder Removed - Using Real Stage
+
 
 const MapEditor = ({ mode: initialMode }) => {
     const { username, projectName, folderId, entityId } = useParams();
@@ -101,6 +100,43 @@ const MapEditor = ({ mode: initialMode }) => {
     });
 
     const [saving, setSaving] = useState(false);
+
+    // --- KONVA STATE ---
+    const [tool, setTool] = useState('brush'); // brush, eraser
+    const [lines, setLines] = useState([]);
+    const isDrawing = React.useRef(false);
+
+    const handleMouseDown = (e) => {
+        isDrawing.current = true;
+        const pos = e.target.getStage().getPointerPosition();
+        // Start a new line
+        setLines([...lines, {
+            tool,
+            points: [pos.x, pos.y],
+            color: tool === 'eraser' ? '#ffffff' : '#df4b26', // TODO: Make color dynamic
+            size: tool === 'eraser' ? 20 : 5
+        }]);
+    };
+
+    const handleMouseMove = (e) => {
+        if (!isDrawing.current) return;
+
+        const stage = e.target.getStage();
+        const point = stage.getPointerPosition();
+
+        // Update last line
+        let lastLine = lines[lines.length - 1];
+        lastLine.points = lastLine.points.concat([point.x, point.y]);
+
+        // Replace last line in state
+        lines.splice(lines.length - 1, 1, lastLine);
+        setLines(lines.concat()); // Force re-render
+    };
+
+    const handleMouseUp = () => {
+        isDrawing.current = false;
+    };
+
 
     // Initialize Global Right Panel Setup
     useEffect(() => {
@@ -484,22 +520,86 @@ const MapEditor = ({ mode: initialMode }) => {
             <div className="flex-1 flex overflow-hidden">
                 {/* Left Toolbar */}
                 <div className="w-14 bg-[#1a1a20] border-r border-white/5 flex flex-col items-center py-4 gap-4 z-10">
-                    {['near_me', 'brush', 'check_box_outline_blank', 'circle', 'title'].map(tool => (
-                        <button key={tool} className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors">
-                            <span className="material-symbols-outlined">{tool}</span>
+                    {/* Toolbar */}
+                    {[
+                        { id: 'select', icon: 'near_me' },
+                        { id: 'brush', icon: 'brush' },
+                        { id: 'eraser', icon: 'ink_eraser' }, // Changed icon specifically for eraser
+                        { id: 'rect', icon: 'check_box_outline_blank' },
+                        { id: 'text', icon: 'title' }
+                    ].map(t => (
+                        <button
+                            key={t.id}
+                            onClick={() => setTool(t.id)}
+                            className={`p-2 rounded-lg transition-colors ${tool === t.id ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'hover:bg-white/5 text-slate-400 hover:text-white'}`}
+                        >
+                            <span className="material-symbols-outlined">{t.icon}</span>
                         </button>
                     ))}
                 </div>
 
                 {/* Canvas Area */}
                 <div className="flex-1 overflow-auto bg-[#0f0f13] relative flex items-center justify-center p-8 custom-scrollbar">
-                    <CanvasPlaceholder
-                        width={formData.dims.width}
-                        height={formData.dims.height}
-                        gridSize={mapSettings?.gridSize || 50}
-                        showGrid={mapSettings?.showGrid}
-                        image={formData.bgImage}
-                    />
+                    {/* KONVA STAGE */}
+                    <div className="bg-[#1a1a20] shadow-[0_0_50px_rgba(0,0,0,0.5)] flex-none">
+                        <Stage
+                            width={formData.dims.width}
+                            height={formData.dims.height}
+                            onMouseDown={handleMouseDown}
+                            onMouseMove={handleMouseMove}
+                            onMouseUp={handleMouseUp}
+                            className="bg-white"
+                        >
+                            <Layer>
+                                {/* Background Image */}
+                                {formData.bgImage && (
+                                    <URLImage
+                                        src={formData.bgImage}
+                                        x={0}
+                                        y={0}
+                                        width={formData.dims.width}
+                                        height={formData.dims.height}
+                                    />
+                                )}
+
+                                {/* Grid (Custom rendering) */}
+                                {mapSettings?.showGrid && (
+                                    <Rect
+                                        width={formData.dims.width}
+                                        height={formData.dims.height}
+                                        fillPatternImage={(() => {
+                                            const canvas = document.createElement('canvas');
+                                            canvas.width = mapSettings.gridSize || 50;
+                                            canvas.height = mapSettings.gridSize || 50;
+                                            const ctx = canvas.getContext('2d');
+                                            ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+                                            ctx.lineWidth = 1;
+                                            ctx.strokeRect(0, 0, canvas.width, canvas.height);
+                                            return canvas;
+                                        })()}
+                                        listening={false}
+                                    />
+                                )}
+                            </Layer>
+
+                            <Layer>
+                                {lines.map((line, i) => (
+                                    <Line
+                                        key={i}
+                                        points={line.points}
+                                        stroke={line.color}
+                                        strokeWidth={line.size}
+                                        tension={0.5}
+                                        lineCap="round"
+                                        lineJoin="round"
+                                        globalCompositeOperation={
+                                            line.tool === 'eraser' ? 'destination-out' : 'source-over'
+                                        }
+                                    />
+                                ))}
+                            </Layer>
+                        </Stage>
+                    </div>
                 </div>
             </div>
         </div>
