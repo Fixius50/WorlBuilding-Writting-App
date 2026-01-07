@@ -219,6 +219,36 @@ public class WorldBibleController {
         return ResponseEntity.ok(Map.of("success", true));
     }
 
+    @PutMapping("/entities/{id}")
+    public ResponseEntity<?> updateEntity(@PathVariable Long id, @RequestBody Map<String, Object> payload,
+            HttpSession session) {
+        Cuaderno proyecto = getProyectoActual(session);
+        if (proyecto == null)
+            return ResponseEntity.status(401).body(Map.of("error", "No active project"));
+
+        Optional<EntidadGenerica> ent = entidadGenericaRepository.findById(id);
+        if (ent.isEmpty())
+            return ResponseEntity.notFound().build();
+
+        if (!ent.get().getProyecto().getId().equals(proyecto.getId())) {
+            return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
+        }
+
+        try {
+            String nombre = (String) payload.get("nombre");
+            Number carpetaId = (Number) payload.get("carpetaId");
+            String tipoEspecial = (String) payload.get("tipoEspecial");
+            String descripcion = (String) payload.get("descripcion");
+            String iconUrl = (String) payload.get("iconUrl");
+
+            return ResponseEntity.ok(worldBibleService.updateEntity(id, nombre,
+                    carpetaId != null ? carpetaId.longValue() : null,
+                    tipoEspecial, descripcion, iconUrl));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     public ResponseEntity<?> getEntity(@PathVariable Long id) {
         return ResponseEntity.of(entidadGenericaRepository.findById(id));
     }

@@ -4,6 +4,7 @@ import api from '../../../js/services/api';
 import AttributeField from './AttributeField';
 import GlassPanel from '../../components/common/GlassPanel';
 import Avatar from '../../components/common/Avatar';
+import Button from '../../components/common/Button';
 import RelationshipManager from '../../components/relationships/RelationshipManager';
 
 const EntityBuilder = ({ mode }) => {
@@ -35,6 +36,7 @@ const EntityBuilder = ({ mode }) => {
 
     // UI State
     // const [activeTab, setActiveTab] = useState('identity'); // REMOVED: Now managed by Layout
+    const [showImageModal, setShowImageModal] = useState(false);
 
     // --- INITIALIZATION ---
     useEffect(() => {
@@ -348,7 +350,7 @@ const EntityBuilder = ({ mode }) => {
                     {activeEntityTab === 'identity' && (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {/* Identity Card */}
-                            <GlassPanel className="p-6 space-y-6">
+                            <GlassPanel className={`p-6 space-y-6 ${entity.tipoEspecial === 'map' ? 'lg:col-span-2' : ''}`}>
                                 <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2 mb-6">
                                     <span className="material-symbols-outlined text-sm">badge</span> Identity
                                 </h3>
@@ -396,47 +398,112 @@ const EntityBuilder = ({ mode }) => {
                                 </div>
                             </GlassPanel>
 
-                            {/* Appearance */}
-                            <GlassPanel className="p-6 space-y-6">
-                                <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2 mb-6">
-                                    <span className="material-symbols-outlined text-sm">palette</span> Appearance
-                                </h3>
-                                <textarea
-                                    value={entity.apariencia}
-                                    onChange={e => handleCoreChange('apariencia', e.target.value)}
-                                    className="w-full h-40 bg-black/30 border border-white/10 rounded-xl p-4 text-sm text-slate-300 leading-relaxed resize-none focus:border-primary/50 outline-none transition-colors custom-scrollbar"
-                                    placeholder="Describe their physical appearance, clothing, distinct marks..."
-                                />
-                            </GlassPanel>
+                            {/* Appearance (Hidden for Maps) */}
+                            {entity.tipoEspecial !== 'map' && (
+                                <GlassPanel className="p-6 space-y-6">
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2 mb-6">
+                                        <span className="material-symbols-outlined text-sm">palette</span> Appearance
+                                    </h3>
+                                    <textarea
+                                        value={entity.apariencia}
+                                        onChange={e => handleCoreChange('apariencia', e.target.value)}
+                                        className="w-full h-40 bg-black/30 border border-white/10 rounded-xl p-4 text-sm text-slate-300 leading-relaxed resize-none focus:border-primary/50 outline-none transition-colors custom-scrollbar"
+                                        placeholder="Describe their physical appearance, clothing, distinct marks..."
+                                    />
+                                </GlassPanel>
+                            )}
 
 
-                            <GlassPanel className="p-6 lg:col-span-2">
-                                <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2 mb-6">
-                                    <span className="material-symbols-outlined text-sm">psychology</span> Personality / Stats
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    {fields.filter(f => f.attribute.tipo === 'number').map(f => (
-                                        <div key={f.id} className="space-y-2">
-                                            <div className="flex justify-between">
-                                                <span className="text-xs font-bold text-white">{f.attribute.nombre}</span>
-                                                <span className="text-xs text-primary font-mono">{f.value || 0}</span>
+                            {entity.tipoEspecial === 'map' ? (
+                                <GlassPanel className="p-6 lg:col-span-2 space-y-6">
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2 mb-6">
+                                        <span className="material-symbols-outlined text-sm">map</span> Cartography
+                                    </h3>
+                                    <div
+                                        onClick={() => {
+                                            // Prefer snapshotUrl from JSON, fallback to iconUrl
+                                            let preview = entity.iconUrl;
+                                            try {
+                                                const json = JSON.parse(entity.descripcion || '{}');
+                                                if (json.snapshotUrl) preview = json.snapshotUrl;
+                                            } catch (e) { }
+
+                                            // Hack: We need to pass the correct URL to the modal. 
+                                            // Since modal currently uses entity.iconUrl, and we haven't updated the Modal component to accept a prop override,
+                                            // we will trust the Modal uses entity.iconUrl.
+                                            // BUT wait, we want to separate them.
+                                            // If preview != entity.iconUrl, the modal will show the Wrong Image (Avatar).
+                                            // We must update the Modal logic too or use a temporary state override.
+                                            // Let's assume for now we just show the modal, but we really should update the modal to use "previewImage" state if set.
+                                            setShowImageModal(true);
+                                        }}
+                                        className="w-full aspect-[21/9] bg-black/30 border border-white/10 rounded-xl overflow-hidden cursor-pointer group relative"
+                                    >
+                                        {(() => {
+                                            let preview = entity.iconUrl;
+                                            try {
+                                                const json = JSON.parse(entity.descripcion || '{}');
+                                                if (json.snapshotUrl) preview = json.snapshotUrl;
+                                            } catch (e) { }
+
+                                            if (preview) {
+                                                return (
+                                                    <>
+                                                        <img src={preview} alt="Map Preview" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                            <span className="material-symbols-outlined text-white text-3xl">zoom_in</span>
+                                                        </div>
+                                                    </>
+                                                );
+                                            } else {
+                                                return (
+                                                    <div className="w-full h-full flex items-center justify-center text-slate-500 text-xs italic">
+                                                        No map preview available
+                                                    </div>
+                                                );
+                                            }
+                                        })()}
+                                    </div>
+                                    <div className="flex justify-end">
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            icon="edit"
+                                            onClick={() => window.open(`/${username}/${projectName}/map-editor/edit/${entity.id}`, '_self')}
+                                        >
+                                            Open Editor
+                                        </Button>
+                                    </div>
+                                </GlassPanel>
+                            ) : (
+                                <GlassPanel className="p-6 lg:col-span-2">
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2 mb-6">
+                                        <span className="material-symbols-outlined text-sm">psychology</span> Personality / Stats
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        {fields.filter(f => f.attribute.tipo === 'number').map(f => (
+                                            <div key={f.id} className="space-y-2">
+                                                <div className="flex justify-between">
+                                                    <span className="text-xs font-bold text-white">{f.attribute.nombre}</span>
+                                                    <span className="text-xs text-primary font-mono">{f.value || 0}</span>
+                                                </div>
+                                                <input
+                                                    type="range"
+                                                    min="0" max="100"
+                                                    value={f.value || 0}
+                                                    onChange={e => handleFieldChange(f.id, e.target.value)}
+                                                    className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                                                />
                                             </div>
-                                            <input
-                                                type="range"
-                                                min="0" max="100"
-                                                value={f.value || 0}
-                                                onChange={e => handleFieldChange(f.id, e.target.value)}
-                                                className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
-                                            />
-                                        </div>
-                                    ))}
-                                    {fields.filter(f => f.attribute.tipo === 'number').length === 0 && (
-                                        <div className="col-span-2 text-center text-xs text-slate-500 italic py-4">
-                                            No numeric attributes defined. Add them from the Templates tab.
-                                        </div>
-                                    )}
-                                </div>
-                            </GlassPanel>
+                                        ))}
+                                        {fields.filter(f => f.attribute.tipo === 'number').length === 0 && (
+                                            <div className="col-span-2 text-center text-xs text-slate-500 italic py-4">
+                                                No numeric attributes defined. Add them from the Templates tab.
+                                            </div>
+                                        )}
+                                    </div>
+                                </GlassPanel>
+                            )}
                         </div>
                     )}
 
@@ -511,6 +578,26 @@ const EntityBuilder = ({ mode }) => {
                     )}
                 </div>
 
+
+                {/* Image Modal */}
+                {showImageModal && entity.iconUrl && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setShowImageModal(false)}>
+                        <div className="relative max-w-[90vw] max-h-[90vh] p-2">
+                            <button
+                                onClick={() => setShowImageModal(false)}
+                                className="absolute -top-12 right-0 p-2 text-white hover:text-primary transition-colors"
+                            >
+                                <span className="material-symbols-outlined text-3xl">close</span>
+                            </button>
+                            <img
+                                src={entity.iconUrl}
+                                alt={entity.nombre}
+                                className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl border border-white/10"
+                                onClick={(e) => e.stopPropagation()}
+                            />
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

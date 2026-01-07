@@ -260,6 +260,38 @@ public class WorldBibleService {
     }
 
     @Transactional
+    public EntidadGenerica updateEntity(Long id, String nombre, Long carpetaId, String tipoEspecial, String descripcion,
+            String iconUrl) {
+        Optional<EntidadGenerica> entOpt = entidadGenericaRepository.findById(id);
+        if (entOpt.isEmpty())
+            throw new RuntimeException("Entity not found");
+
+        EntidadGenerica ent = entOpt.get();
+
+        if (nombre != null) {
+            ent.setNombre(nombre);
+            // Optionally update slug? For maps, maybe yes.
+            // ent.setSlug(generateUniqueSlug(nombre, "entity"));
+        }
+
+        if (carpetaId != null) {
+            Optional<Carpeta> carpetaOpt = carpetaRepository.findById(carpetaId);
+            if (carpetaOpt.isPresent()) {
+                ent.setCarpeta(carpetaOpt.get());
+            }
+        }
+
+        if (tipoEspecial != null)
+            ent.setTipoEspecial(tipoEspecial);
+        if (descripcion != null)
+            ent.setDescripcion(descripcion);
+        if (iconUrl != null)
+            ent.setIconUrl(iconUrl);
+
+        return entidadGenericaRepository.save(ent);
+    }
+
+    @Transactional
     public void deleteValue(Long id) {
         atributoValorRepository.deleteById(id);
     }

@@ -267,6 +267,8 @@ const MapEditor = ({ mode: initialMode }) => {
         }
     };
 
+    const stageRef = React.useRef(null);
+
     const handleCreateFinish = async () => {
         if (!realFolderId) {
             alert("Folder context missing. Please start from the folder view again.");
@@ -275,6 +277,24 @@ const MapEditor = ({ mode: initialMode }) => {
 
         setSaving(true);
         try {
+            // Capture Stage Preview
+            let previewUrl = formData.bgImage;
+            if (stageRef.current) {
+                // Determine scale to fit within reasonable preview size if needed,
+                // but direct dataURL is simplest.
+                // Hide transformer for snapshot if selected
+                const tr = stageRef.current.findOne('Transformer');
+                if (tr) tr.nodes([]);
+
+                previewUrl = stageRef.current.toDataURL({ pixelRatio: 0.5 }); // Reduced quality for icon
+
+                // Restore transformer
+                if (tr && selectedId) {
+                    const node = stageRef.current.findOne('#' + selectedId);
+                    if (node) tr.nodes([node]);
+                }
+            }
+
             const payload = {
                 nombre: formData.name,
                 tipoEspecial: 'map',
@@ -285,9 +305,10 @@ const MapEditor = ({ mode: initialMode }) => {
                     width: formData.dims.width,
                     height: formData.dims.height,
                     bgImage: formData.bgImage ? 'BINARY_DATA' : null,
-                    layers: []
+                    layers: { lines, rectangles, texts },
+                    snapshotUrl: previewUrl
                 }),
-                iconUrl: formData.bgImage // Optional: use map bg as icon
+                iconUrl: previewUrl
             };
 
             const res = await api.post('/world-bible/entities', payload);
@@ -305,6 +326,8 @@ const MapEditor = ({ mode: initialMode }) => {
         }
     };
 
+    const originalIconUrlRef = React.useRef(null);
+
     // Load Entity Data (Edit Mode)
     useEffect(() => {
         // Fix: Use permissive check or explicit check for 'edit'
@@ -312,6 +335,7 @@ const MapEditor = ({ mode: initialMode }) => {
             api.get(`/world-bible/entities/${entityId}`)
                 .then(ent => {
                     setRealFolderId(ent.carpetaId);
+                    originalIconUrlRef.current = ent.iconUrl;
 
                     // Force Editor Mode just in case
                     setStep('editor');
@@ -337,8 +361,9 @@ const MapEditor = ({ mode: initialMode }) => {
 
                     // Restore Shapes
                     if (mapData.layers) {
-                        // TODO: Restore layers to state (lines, rects, texts)
-                        // For now we just load the BG and settings
+                        setLines(mapData.layers.lines || []);
+                        setRectangles(mapData.layers.rectangles || []);
+                        setTexts(mapData.layers.texts || []);
                     }
 
                     // Sync global settings
@@ -360,6 +385,20 @@ const MapEditor = ({ mode: initialMode }) => {
     const handleEditorSave = async () => {
         setSaving(true);
         try {
+            // Capture Stage Preview
+            let previewUrl = formData.bgImage;
+            if (stageRef.current) {
+                // Ensure transformer is hidden
+                setSelectedId(null);
+                // Slight delay to allow state update if needed, but synchronous set usually fine?
+                // Actually toDataURL is sync.
+                // Better: manually detach transformer node
+                const tr = stageRef.current.findOne('Transformer');
+                if (tr) tr.nodes([]);
+
+                previewUrl = stageRef.current.toDataURL({ pixelRatio: 0.5 });
+            }
+
             const payload = {
                 id: entityId,
                 nombre: formData.name,
@@ -370,10 +409,11 @@ const MapEditor = ({ mode: initialMode }) => {
                     type: formData.type,
                     width: formData.dims.width,
                     height: formData.dims.height,
-                    bgImage: formData.bgImage ? 'BINARY_DATA' : null, // Optimize this later
-                    layers: []
+                    bgImage: formData.bgImage ? 'BINARY_DATA' : null,
+                    layers: { lines, rectangles, texts },
+                    snapshotUrl: previewUrl // Save snapshot for dedicated preview
                 }),
-                iconUrl: formData.bgImage
+                iconUrl: originalIconUrlRef.current
             };
 
             await api.put(`/world-bible/entities/${entityId}`, payload);
@@ -626,6 +666,7 @@ const MapEditor = ({ mode: initialMode }) => {
                     {/* KONVA STAGE */}
                     <div className="bg-[#1a1a20] shadow-[0_0_50px_rgba(0,0,0,0.5)] flex-none">
                         <Stage
+                            ref={stageRef}
                             width={formData.dims.width}
                             height={formData.dims.height}
                             onMouseDown={handleMouseDown}
