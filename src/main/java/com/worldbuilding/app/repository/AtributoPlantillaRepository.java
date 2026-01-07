@@ -11,4 +11,6 @@ public interface AtributoPlantillaRepository extends JpaRepository<AtributoPlant
     List<AtributoPlantilla> findByCarpetaOrderByOrdenVisualAsc(Carpeta carpeta);
 
     List<AtributoPlantilla> findByCarpetaAndGlobalTrue(Carpeta carpeta);
+
+    List<AtributoPlantilla> findByCarpeta_ProyectoAndGlobalTrue(com.worldbuilding.app.model.Cuaderno proyecto);
 }

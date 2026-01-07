@@ -39,4 +39,15 @@ Tareas extraídas de `WorldBibleController.java`:
 - [ ] **Restaurar Explorador Lateral**: Limpiar el sidebar para mostrar solo estructura de carpetas relevante.
 - [ ] **Rutas de Creación Directa**: Implementar rutas como `/new/:type` para acceso rápido.
 - [ ] **Guardado Diferido (Post-draft)**: Permitir crear entidades en memoria y solo persistir al guardar (evitar basura en DB).
-- [ ] **Herencia de Plantillas en Borrador**: Que los nuevos borradores hereden plantillas dinámicamente antes de guardarse.
+- [x] **Herencia de Plantillas**: Completado mediante la implementación de **Atributos Globales**.
+
+## 5. Tareas Completadas Recientemente (Sesión Actual)
+- [x] **Gestión de Plantillas Globales**:
+    - Refactorización del Backend (`AtributoPlantillaRepository`, `WorldBibleService`, `WorldBibleController`) para soportar plantillas a nivel de proyecto.
+    - Actualización de `TemplateManager` para gestionar plantillas globales en lugar de por carpeta.
+- [x] **UX del Constructor de Entidades (EntityBuilder)**:
+    - Implementación de **Drag & Drop** para añadir atributos desde la plantilla global.
+    - Creación de Drop Zone visual con instrucciones claras.
+    - Renombrado de sección "Dynamic Attributes" a "Atributos especiales".
+- [x] **Consistencia de UI**:
+    - Reemplazo de todos los `window.confirm()` nativos por `ConfirmationModal` personalizado (Timeline, Notas, Templates).

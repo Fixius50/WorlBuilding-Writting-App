@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ConfirmationModal from '../ConfirmationModal'; // Adjust path if needed
 
 const GlobalNotes = ({ projectName }) => {
     const [notes, setNotes] = useState([]);
@@ -35,10 +36,17 @@ const GlobalNotes = ({ projectName }) => {
         setEditingNoteId(newNote.id);
     };
 
+    // Modal State
+    const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+
     const deleteNote = (id) => {
-        if (confirm('¿Eliminar esta nota?')) {
-            saveNotes(notes.filter(n => n.id !== id));
-        }
+        setConfirmDeleteId(id);
+    };
+
+    const confirmDeleteAction = () => {
+        if (!confirmDeleteId) return;
+        saveNotes(notes.filter(n => n.id !== confirmDeleteId));
+        setConfirmDeleteId(null);
     };
 
     const updateNote = (id, field, value) => {
@@ -96,6 +104,16 @@ const GlobalNotes = ({ projectName }) => {
                     ))
                 )}
             </div>
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={!!confirmDeleteId}
+                onClose={() => setConfirmDeleteId(null)}
+                onConfirm={confirmDeleteAction}
+                title="Eliminar Nota"
+                message="¿Estás seguro de que quieres eliminar esta nota? No se podrá recuperar."
+                confirmText="Eliminar"
+                type="danger"
+            />
         </div>
     );
 

@@ -33,6 +33,7 @@ const EntityBuilder = ({ mode }) => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [removedFieldIds, setRemovedFieldIds] = useState([]);
+    const [availableTemplatesLocal, setAvailableTemplatesLocal] = useState([]); // Local copy for Drag & Drop
 
     // UI State
     // const [activeTab, setActiveTab] = useState('identity'); // REMOVED: Now managed by Layout
@@ -61,6 +62,7 @@ const EntityBuilder = ({ mode }) => {
     const setupContextHandlers = (templates) => {
         // Push templates to Layout
         setAvailableTemplates(templates);
+        setAvailableTemplatesLocal(templates);
 
         // Define Handler for adding attributes from Sidebar
         setAddAttributeHandler((templateId) => {
@@ -525,11 +527,54 @@ const EntityBuilder = ({ mode }) => {
                     )}
 
                     {activeEntityTab === 'attributes' && (
-                        <div className="animate-in fade-in duration-500 space-y-6">
-                            <h3 className="text-xs font-black uppercase tracking-widest text-primary border-b border-white/5 pb-4">
-                                Dynamic Attributes
+                        <div
+                            className={`animate-in fade-in duration-500 space-y-6 min-h-[50vh] transition-colors rounded-2xl p-4 ${window.isDraggingOver ? 'bg-primary/10 border-2 border-dashed border-primary' : ''}`}
+                            onDragOver={(e) => {
+                                e.preventDefault();
+                                e.dataTransfer.dropEffect = 'copy';
+                                e.currentTarget.classList.add('bg-primary/10', 'border-primary', 'border-dashed', 'border-2');
+                            }}
+                            onDragLeave={(e) => {
+                                e.preventDefault();
+                                e.currentTarget.classList.remove('bg-primary/10', 'border-primary', 'border-dashed', 'border-2');
+                            }}
+                            onDrop={(e) => {
+                                e.preventDefault();
+                                e.currentTarget.classList.remove('bg-primary/10', 'border-primary', 'border-dashed', 'border-2');
+                                const type = e.dataTransfer.getData('application/reactflow/type');
+                                if (type !== 'attribute') return;
+
+                                const templateId = parseInt(e.dataTransfer.getData('templateId'));
+                                const tpl = availableTemplatesLocal.find(t => t.id === templateId);
+
+                                if (tpl) {
+                                    setFields(prev => {
+                                        if (prev.some(f => f.attribute.id === tpl.id)) {
+                                            return prev;
+                                        }
+                                        return [...prev, {
+                                            id: `temp-${tpl.id}`,
+                                            attribute: tpl,
+                                            value: tpl.valorDefecto || '',
+                                            isTemp: true
+                                        }];
+                                    });
+                                }
+                            }}
+                        >
+                            <h3 className="text-xs font-black uppercase tracking-widest text-primary border-b border-white/5 pb-4 flex items-center justify-between">
+                                <span>Atributos especiales</span>
+                                <span className="text-[10px] text-slate-500 font-normal normal-case opacity-50 hidden md:block">
+                                    Arraste atributos desde el panel derecho
+                                </span>
                             </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border-2 border-dashed border-white/5 rounded-2xl hover:border-primary/20 transition-colors bg-white/[0.01]">
+                                {fields.length === 0 && (
+                                    <div className="col-span-full py-12 text-center text-slate-500 text-sm pointer-events-none">
+                                        <span className="material-symbols-outlined text-4xl mb-2 opacity-50">drag_indicator</span>
+                                        <p>Arrastra plantillas aquí para añadir atributos</p>
+                                    </div>
+                                )}
                                 {fields.filter(f => f.attribute.tipo !== 'number').map((field) => (
                                     <AttributeField
                                         key={field.id}

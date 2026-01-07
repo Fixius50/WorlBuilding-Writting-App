@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import api from '../../../js/services/api';
+import ConfirmationModal from '../../components/ConfirmationModal';
 import GlassPanel from '../../components/common/GlassPanel';
 import Button from '../../components/common/Button';
 
@@ -212,19 +213,7 @@ const TimelineView = () => {
         }
     };
 
-    const handleDeleteEvent = async (id, e) => {
-        e.stopPropagation();
-        if (!confirm("Delete this event?")) return;
-        try {
-            await api.delete(`/timeline/evento/${id}`);
-            loadEvents(selectedTimelineId);
-            if (editingEvent && editingEvent.id === id) {
-                setEditingEvent(null);
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    };
+    // handleDeleteEvent is now handled by the unified confirmation logic below.
 
     const startEditEvent = (event) => {
         setEditingEvent(event);
@@ -254,15 +243,60 @@ const TimelineView = () => {
         }
     };
 
-    const handleDeleteTimeline = async (id, e) => {
+    // Confirmation State
+    const [confirmState, setConfirmState] = useState({
+        open: false,
+        type: null, // 'TIMELINE' | 'EVENT'
+        id: null,
+        title: '',
+        message: ''
+    });
+
+    const handleDeleteTimeline = (id, e) => {
         e.stopPropagation();
-        if (!confirm("Delete this timeline? events will be lost.")) return;
+        setConfirmState({
+            open: true,
+            type: 'TIMELINE',
+            id,
+            title: 'Delete Timeline',
+            message: 'Are you sure you want to delete this timeline? All events will be lost.'
+        });
+    };
+
+    const handleDeleteEvent = (id, e) => {
+        e.stopPropagation();
+        setConfirmState({
+            open: true,
+            type: 'EVENT',
+            id,
+            title: 'Delete Event',
+            message: 'Are you sure you want to delete this event?'
+        });
+    };
+
+    const executeDeletion = async () => {
+        const { type, id } = confirmState;
+        if (!type || !id) return;
+
         try {
-            await api.delete(`/timeline/linea/${id}`);
-            if (selectedTimelineId === id) setSelectedTimelineId(null);
-            loadTimelines();
+            if (type === 'TIMELINE') {
+                await api.delete(`/timeline/linea/${id}`);
+                // Verify if we deleted the active timeline
+                if (selectedTimelineId === id) {
+                    const remaining = timelines.filter(t => t.id !== id);
+                    setSelectedTimelineId(remaining.length > 0 ? remaining[0].id : null);
+                }
+                loadTimelines();
+            } else if (type === 'EVENT') {
+                await api.delete(`/timeline/evento/${id}`);
+                loadEvents(selectedTimelineId);
+                if (editingEvent && editingEvent.id === id) {
+                    setEditingEvent(null);
+                }
+            }
         } catch (error) {
             console.error(error);
+            alert("Error deleting item");
         }
     };
 
@@ -512,6 +546,16 @@ const TimelineView = () => {
                     </div>
                 </div>
             </main>
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={confirmState.open}
+                onClose={() => setConfirmState({ ...confirmState, open: false })}
+                onConfirm={executeDeletion}
+                title={confirmState.title}
+                message={confirmState.message}
+                confirmText="Delete"
+                type="danger"
+            />
         </div>
     );
 };

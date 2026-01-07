@@ -9,8 +9,8 @@ Chronos Atlas evoluciona hacia un entorno de trabajo aún más potente y flexibl
 - **Qué puedes hacer**:
     - **Crear Carpetas y Subcarpetas**: Un botón o un menú contextual (clic derecho) permite crear nuevas carpetas. Se pueden anidar para construir una estructura tan compleja como necesites (ej. "Personajes de Eldoria" dentro de "Eldoria").
     - **Nombrar Carpetas**: Asigna nombres descriptivos ("Lugares Importantes", "Deidades Antiguas").
-    - **Definir Atributos por Defecto (en Carpeta)**: Al crear o editar una carpeta, puedes establecer atributos por defecto (ej. campo "Rango" para todos los personajes en la carpeta "Militares") que se aplicarán automáticamente a cualquier nueva entidad creada dentro.
     - **Arrastrar y Soltar**: Mueve libremente entidades y carpetas para reorganizar tu mundo.
+    - **Atributos Globales**: Los atributos ahora se gestionan de forma global para todo el proyecto desde el `TemplateManager`, permitiendo reutilizar plantillas (ej. "Rango", "Clima") en cualquier entidad sin depender de su carpeta.
     - **Visualización**: Cada carpeta muestra iconos claros con acentos Indigo-500 al seleccionar.
 - **Diseño**: Barra lateral translúcida con árbol de navegación expandible y menús contextuales para Renombrar, Eliminar o Añadir Atributos.
 

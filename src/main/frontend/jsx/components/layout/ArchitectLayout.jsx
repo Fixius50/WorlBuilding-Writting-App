@@ -3,6 +3,7 @@ import { Outlet, useParams, useNavigate, useLocation, NavLink } from 'react-rout
 import api from '../../../js/services/api';
 import TemplateManager from '../settings/TemplateManager';
 import GlobalNotes from './GlobalNotes';
+import ConfirmationModal from '../ConfirmationModal'; // Adjust path based on structure
 
 const NavItem = ({ to, icon, label, collapsed, end }) => (
     <NavLink
@@ -81,14 +82,21 @@ const ArchitectLayout = () => {
     const [entityTabs, setEntityTabs] = useState([]);
     const [activeEntityTab, setActiveEntityTab] = useState('identity');
 
-    const handleDeleteTemplate = async (e, id) => {
+    // Confirm Modal State
+    const [confirmTemplateDelete, setConfirmTemplateDelete] = useState(null); // ID of template to delete
+
+    const handleDeleteTemplate = (e, id) => {
         e.stopPropagation();
-        if (confirm('Are you sure you want to delete this template?')) {
-            try {
-                await api.delete(`/world-bible/templates/${id}`);
-                setAvailableTemplates(prev => prev.filter(t => t.id !== id));
-            } catch (err) { console.error("Delete failed", err); }
-        }
+        setConfirmTemplateDelete(id);
+    };
+
+    const confirmDeleteAction = async () => {
+        if (!confirmTemplateDelete) return;
+        try {
+            await api.delete(`/world-bible/templates/${confirmTemplateDelete}`);
+            setAvailableTemplates(prev => prev.filter(t => t.id !== confirmTemplateDelete));
+        } catch (err) { console.error("Delete failed", err); }
+        setConfirmTemplateDelete(null);
     };
 
     const handleUpdateTemplate = async (e) => {
@@ -612,7 +620,17 @@ const ArchitectLayout = () => {
                     </div>
                 )
             }
-        </div >
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={!!confirmTemplateDelete}
+                onClose={() => setConfirmTemplateDelete(null)}
+                onConfirm={confirmDeleteAction}
+                title="Eliminar Plantilla"
+                message="¿Estás seguro de que quieres eliminar esta plantilla? Esta acción no se puede deshacer."
+                confirmText="Eliminar"
+                type="danger"
+            />
+        </div>
     );
 };
 

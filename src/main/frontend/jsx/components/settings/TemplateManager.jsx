@@ -2,50 +2,40 @@ import React, { useState, useEffect } from 'react';
 import api from '../../../js/services/api';
 import GlassPanel from '../common/GlassPanel';
 import Button from '../common/Button';
+import ConfirmationModal from '../ConfirmationModal';
 
-const TemplateManager = ({ compact = false, initialFolderSlug }) => {
-    const [folders, setFolders] = useState([]);
-    const [selectedFolderId, setSelectedFolderId] = useState('');
+const TemplateManager = ({ compact = false }) => {
+    // We only need the Root Folder ID to attach the global templates to (Database requirement)
+    // But logically they are global.
+    const [rootFolderId, setRootFolderId] = useState(null);
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        loadFolders();
-    }, [initialFolderSlug]);
+    // Modal State for Deletion
+    const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
     useEffect(() => {
-        if (selectedFolderId) {
-            loadTemplates(selectedFolderId);
-        } else {
-            setTemplates([]);
-        }
-    }, [selectedFolderId]);
+        initialize();
+    }, []);
 
-    const loadFolders = async () => {
+    const initialize = async () => {
         try {
-            // Flatten folder structure for dropdown or just get root for now
-            // For simplicity, let's fetch root folders
-            const data = await api.get('/world-bible/folders');
-            setFolders(data);
-
-            if (initialFolderSlug) {
-                const match = data.find(f => f.slug === initialFolderSlug || f.id.toString() === initialFolderSlug);
-                if (match) {
-                    setSelectedFolderId(match.id);
-                    return;
-                }
+            // 1. Get Root Folder for attachment
+            const folders = await api.get('/world-bible/folders');
+            if (folders.length > 0) {
+                setRootFolderId(folders[0].id);
             }
-
-            if (data.length > 0 && !selectedFolderId) setSelectedFolderId(data[0].id);
+            // 2. Load Global Templates
+            loadGlobalTemplates();
         } catch (err) {
-            console.error("Error loading folders:", err);
+            console.error("Init error:", err);
         }
     };
 
-    const loadTemplates = async (folderId) => {
+    const loadGlobalTemplates = async () => {
         setLoading(true);
         try {
-            const data = await api.get(`/world-bible/folders/${folderId}/templates`);
+            const data = await api.get('/world-bible/templates/global');
             setTemplates(data);
         } catch (err) {
             console.error("Error loading templates:", err);
@@ -55,17 +45,31 @@ const TemplateManager = ({ compact = false, initialFolderSlug }) => {
     };
 
     const handleCreateTemplate = async (newField) => {
-        if (!selectedFolderId) return;
+        if (!rootFolderId) return;
         try {
-            await api.post(`/world-bible/folders/${selectedFolderId}/templates`, {
+            // Create in Root Folder but mark as Global
+            await api.post(`/world-bible/folders/${rootFolderId}/templates`, {
                 nombre: newField.label,
                 tipo: newField.type,
                 required: newField.required,
-                metadata: newField.metadata ? JSON.stringify(newField.metadata) : null
+                metadata: newField.metadata ? JSON.stringify(newField.metadata) : null,
+                global: true
             });
-            loadTemplates(selectedFolderId);
+            loadGlobalTemplates();
         } catch (err) {
             console.error("Error creating template:", err);
+        }
+    };
+
+    const confirmDeleteAction = async () => {
+        if (!confirmDeleteId) return;
+        try {
+            await api.delete(`/world-bible/templates/${confirmDeleteId}`);
+            setTemplates(prev => prev.filter(t => t.id !== confirmDeleteId));
+        } catch (err) {
+            console.error("Error deleting template:", err);
+        } finally {
+            setConfirmDeleteId(null);
         }
     };
 
@@ -74,33 +78,40 @@ const TemplateManager = ({ compact = false, initialFolderSlug }) => {
             <GlassPanel className={`${compact ? 'p-4 bg-transparent border-none shadow-none' : 'p-8 space-y-8'}`}>
                 <header className={`flex ${compact ? 'flex-col gap-4' : 'justify-between items-center'}`}>
                     <div>
-                        <h3 className={`${compact ? 'text-sm' : 'text-xl'} font-bold text-white`}>Folder Templates</h3>
-                        <p className="text-xs text-slate-500 mt-1">Define default attributes for entities in...</p>
+                        <h3 className={`${compact ? 'text-sm' : 'text-xl'} font-bold text-white`}>Atributos Globales</h3>
+                        <p className="text-xs text-slate-500 mt-1">Define atributos disponibles para todas las entidades.</p>
                     </div>
-                    <select
-                        value={selectedFolderId}
-                        onChange={(e) => setSelectedFolderId(e.target.value)}
-                        className={`bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-primary/50 ${compact ? 'w-full' : ''}`}
-                    >
-                        <option value="">Select a Folder...</option>
-                        {folders.map(f => (
-                            <option key={f.id} value={f.id}>{f.nombre}</option>
-                        ))}
-                    </select>
+                    {/* Folder Selection Removed - Global Mode */}
                 </header>
 
                 <div className="space-y-4">
                     {loading ? (
-                        <div className="text-center p-4 text-slate-500">Loading templates...</div>
+                        <div className="text-center p-4 text-slate-500">Cargando plantillas...</div>
                     ) : (
                         templates.map((tpl, idx) => (
-                            <div key={tpl.id} className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
-                                <span className="text-[10px] font-black text-slate-700 w-6">0{idx + 1}</span>
-                                <div className="flex-1">
+                            <div
+                                key={tpl.id}
+                                className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-primary/50 hover:bg-white/5 transition-all cursor-grab active:cursor-grabbing group select-none"
+                                draggable
+                                onDragStart={(e) => {
+                                    e.dataTransfer.setData('application/reactflow/type', 'attribute');
+                                    e.dataTransfer.setData('templateId', tpl.id);
+                                    e.dataTransfer.effectAllowed = 'copy';
+                                }}
+                            >
+                                <span className="text-[10px] font-black text-slate-700 w-6 group-hover:text-primary transition-colors">0{idx + 1}</span>
+                                <div className="flex-1 pointer-events-none">
                                     <div className="text-sm font-bold text-white">{tpl.nombre}</div>
                                     <div className="text-[10px] text-slate-500 uppercase tracking-widest">{tpl.tipo} {tpl.esObligatorio && '• Required'}</div>
                                     {tpl.metadata && <div className="text-[10px] text-slate-600 font-mono mt-1 truncate">{tpl.metadata}</div>}
                                 </div>
+                                <button
+                                    onClick={() => setConfirmDeleteId(tpl.id)}
+                                    className="p-1.5 text-slate-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                                    title="Eliminar Plantilla Global"
+                                >
+                                    <span className="material-symbols-outlined text-sm">delete</span>
+                                </button>
                             </div>
                         ))
                     )}
@@ -108,6 +119,17 @@ const TemplateManager = ({ compact = false, initialFolderSlug }) => {
                     <NewFieldForm onAdd={handleCreateTemplate} />
                 </div>
             </GlassPanel>
+
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={!!confirmDeleteId}
+                onClose={() => setConfirmDeleteId(null)}
+                onConfirm={confirmDeleteAction}
+                title="Eliminar Plantilla"
+                message="¿Estás seguro de que quieres eliminar esta plantilla? Esta acción es irreversible."
+                confirmText="Eliminar"
+                type="danger"
+            />
         </div>
     );
 };

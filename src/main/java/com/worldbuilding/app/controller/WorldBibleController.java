@@ -284,6 +284,14 @@ public class WorldBibleController {
         }
     }
 
+    @GetMapping("/templates/global")
+    public ResponseEntity<?> getGlobalTemplates(HttpSession session) {
+        Cuaderno proyecto = getProyectoActual(session);
+        if (proyecto == null)
+            return ResponseEntity.status(401).body(Map.of("error", "No active project"));
+        return ResponseEntity.ok(worldBibleService.getGlobalTemplates(proyecto));
+    }
+
     @GetMapping("/folders/{idOrSlug}/templates")
     public ResponseEntity<?> getTemplates(@PathVariable String idOrSlug) {
         Long id = resolveFolderId(idOrSlug);

@@ -188,6 +188,10 @@ public class WorldBibleService {
         return allTemplates;
     }
 
+    public List<AtributoPlantilla> getGlobalTemplates(Cuaderno proyecto) {
+        return atributoPlantillaRepository.findByCarpeta_ProyectoAndGlobalTrue(proyecto);
+    }
+
     private Carpeta getRootFolderOf(Carpeta c) {
         if (c == null)
             return null;
