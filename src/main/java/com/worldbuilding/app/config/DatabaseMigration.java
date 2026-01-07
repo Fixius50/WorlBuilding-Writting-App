@@ -108,7 +108,8 @@ public class DatabaseMigration {
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "nombre TEXT NOT NULL, " +
                 "descripcion TEXT, " +
-                "es_raiz INTEGER DEFAULT 0" +
+                "es_raiz INTEGER DEFAULT 0, " +
+                "universo_id INTEGER" +
                 ")");
 
         jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS evento_tiempo (" +
@@ -149,6 +150,13 @@ public class DatabaseMigration {
         if (!columnExists(jdbcTemplate, "entidad_generica", "tags")) {
             try {
                 jdbcTemplate.execute("ALTER TABLE entidad_generica ADD COLUMN tags TEXT");
+            } catch (Exception ignored) {
+            }
+        }
+
+        if (!columnExists(jdbcTemplate, "linea_tiempo", "universo_id")) {
+            try {
+                jdbcTemplate.execute("ALTER TABLE linea_tiempo ADD COLUMN universo_id INTEGER");
             } catch (Exception ignored) {
             }
         }

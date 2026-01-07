@@ -19,6 +19,10 @@ const api = {
             throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
         }
 
+        if (response.status === 204 || response.headers.get('content-length') === '0') {
+            return null;
+        }
+
         return response.json();
     },
 

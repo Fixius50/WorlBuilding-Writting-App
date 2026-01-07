@@ -20,7 +20,7 @@ public class Universo {
     private Cuaderno cuaderno;
 
     @OneToMany(mappedBy = "universo", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<LineaTemporal> lineasTemporales;
+    private List<LineaTiempo> lineasTemporales;
 
     // Getters and Setters
     public Long getId() {
@@ -47,11 +47,11 @@ public class Universo {
         this.cuaderno = cuaderno;
     }
 
-    public List<LineaTemporal> getLineasTemporales() {
+    public List<LineaTiempo> getLineasTemporales() {
         return lineasTemporales;
     }
 
-    public void setLineasTemporales(List<LineaTemporal> lineasTemporales) {
+    public void setLineasTemporales(List<LineaTiempo> lineasTemporales) {
         this.lineasTemporales = lineasTemporales;
     }
 }

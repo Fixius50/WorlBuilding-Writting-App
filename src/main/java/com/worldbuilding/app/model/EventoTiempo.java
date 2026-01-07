@@ -24,7 +24,7 @@ public class EventoTiempo {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "linea_tiempo_id")
-    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
     private LineaTiempo lineaTiempo;
 
     // Constructors

@@ -106,6 +106,12 @@ const ArchitectLayout = () => {
         if (projectName) {
             loadProject(projectName);
         }
+
+        const handleFocus = () => {
+            if (projectName) loadProject(projectName);
+        };
+        window.addEventListener('focus', handleFocus);
+        return () => window.removeEventListener('focus', handleFocus);
     }, [projectName]);
 
     const loadProject = async (identifier) => {

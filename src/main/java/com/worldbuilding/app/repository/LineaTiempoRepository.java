@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface LineaTiempoRepository extends JpaRepository<LineaTiempo, Long> {
     List<LineaTiempo> findByEsRaizTrue();
+
+    List<LineaTiempo> findByUniversoId(Long universoId);
 }

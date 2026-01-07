@@ -61,4 +61,28 @@ public class LineaTiempo {
     public void setEsRaiz(Boolean esRaiz) {
         this.esRaiz = esRaiz;
     }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "universo_id")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private Universo universo;
+
+    public Universo getUniverso() {
+        return universo;
+    }
+
+    public void setUniverso(Universo universo) {
+        this.universo = universo;
+    }
+
+    @OneToMany(mappedBy = "lineaTiempo", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<EventoTiempo> eventos;
+
+    public java.util.List<EventoTiempo> getEventos() {
+        return eventos;
+    }
+
+    public void setEventos(java.util.List<EventoTiempo> eventos) {
+        this.eventos = eventos;
+    }
 }

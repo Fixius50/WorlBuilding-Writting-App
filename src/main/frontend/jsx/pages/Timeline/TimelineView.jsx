@@ -132,7 +132,9 @@ const TimelineView = () => {
     // Update auto-order effect
     useEffect(() => {
         if (activeTab === 'eventos' && !editingEvent) {
-            const maxOrder = events.reduce((max, e) => Math.max(max, e.ordenAbsoluto || 0), 0);
+            const maxOrder = events.length > 0
+                ? Math.max(...events.map(e => e.ordenAbsoluto || 0))
+                : 0;
             setNewEvent(prev => ({ ...prev, ordenAbsoluto: maxOrder + 1 }));
         }
     }, [activeTab, events, editingEvent]);
@@ -145,16 +147,8 @@ const TimelineView = () => {
             const root = unique.find(t => t.esRaiz);
 
             if (unique.length === 0) {
-                console.log("No timelines found. Creating Root...");
-                const newRoot = await api.put('/bd/insertar', {
-                    tipoEntidad: 'lineatiempo',
-                    nombre: 'Línea Principal',
-                    descripcion: 'La línea de tiempo principal del mundo.',
-                    esRaiz: true
-                });
-                const created = newRoot.entidad || newRoot;
-                setTimelines([created]);
-                setSelectedTimelineId(created.id);
+                setTimelines([]);
+                setSelectedTimelineId(null);
             } else {
                 setTimelines(unique);
                 if (!selectedTimelineId) {
@@ -182,10 +176,9 @@ const TimelineView = () => {
 
     const loadEvents = async (lineId) => {
         try {
-            const allEvents = await api.get('/bd/eventotiempo');
-            const filtered = allEvents.filter(e => e.lineaTiempo && e.lineaTiempo.id === parseInt(lineId));
-            filtered.sort((a, b) => (a.ordenAbsoluto || 0) - (b.ordenAbsoluto || 0));
-            setEvents(filtered);
+            const events = await api.get(`/timeline/linea/${lineId}/eventos`);
+            events.sort((a, b) => (a.ordenAbsoluto || 0) - (b.ordenAbsoluto || 0));
+            setEvents(events);
         } catch (error) {
             console.error("Failed to load events", error);
         }
@@ -201,17 +194,14 @@ const TimelineView = () => {
 
         try {
             if (editingEvent) {
-                await api.patch('/bd/modificar', {
-                    tipoEntidad: 'eventotiempo',
-                    id: editingEvent.id,
+                await api.put(`/timeline/evento/${editingEvent.id}`, {
                     ...payload,
-                    lineaTiempoId: selectedTimelineId
+                    lineaTiempo: { id: selectedTimelineId }
                 });
             } else {
-                await api.put('/bd/insertar', {
-                    tipoEntidad: 'eventotiempo',
+                await api.post('/timeline/evento', {
                     ...payload,
-                    lineaTiempoId: selectedTimelineId
+                    lineaTiempo: { id: selectedTimelineId }
                 });
             }
             setNewEvent({ nombre: '', descripcion: '', fechaTexto: '', ordenAbsoluto: 0 }); // Order will auto-update via effect
@@ -226,7 +216,7 @@ const TimelineView = () => {
         e.stopPropagation();
         if (!confirm("Delete this event?")) return;
         try {
-            await api.delete(`/bd/eventotiempo/${id}`);
+            await api.delete(`/timeline/evento/${id}`);
             loadEvents(selectedTimelineId);
             if (editingEvent && editingEvent.id === id) {
                 setEditingEvent(null);
@@ -251,15 +241,13 @@ const TimelineView = () => {
     const handleCreateTimeline = async () => {
         if (!newLine.nombre) return;
         try {
-            const res = await api.put('/bd/insertar', {
-                tipoEntidad: 'lineatiempo',
+            const created = await api.post('/timeline/linea', {
                 ...newLine,
                 esRaiz: false
             });
             setIsCreatingLine(false);
             setNewLine({ nombre: '', descripcion: '' });
             loadTimelines();
-            const created = res.entidad || res;
             if (created && created.id) setSelectedTimelineId(created.id);
         } catch (error) {
             console.error(error);
@@ -270,7 +258,7 @@ const TimelineView = () => {
         e.stopPropagation();
         if (!confirm("Delete this timeline? events will be lost.")) return;
         try {
-            await api.delete(`/bd/lineatiempo/${id}`);
+            await api.delete(`/timeline/linea/${id}`);
             if (selectedTimelineId === id) setSelectedTimelineId(null);
             loadTimelines();
         } catch (error) {
@@ -457,26 +445,20 @@ const TimelineView = () => {
                                 </span>
                                 <span className="text-xs font-bold uppercase tracking-wide truncate">{t.nombre}</span>
                             </div>
-                            {!t.esRaiz && (
-                                <button
-                                    onClick={(e) => handleDeleteTimeline(t.id, e)}
-                                    className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-500 transition-opacity"
-                                >
-                                    <span className="material-symbols-outlined text-sm">delete</span>
-                                </button>
-                            )}
+                            <button
+                                onClick={(e) => handleDeleteTimeline(t.id, e)}
+                                className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-500 transition-opacity"
+                            >
+                                <span className="material-symbols-outlined text-sm">delete</span>
+                            </button>
                         </div>
                     ))}
                 </div>
             </aside>
 
             {/* CENTER: Main Visualization */}
-            <main className="flex-1 relative flex flex-col h-full overflow-hidden bg-background-dark/95">
-                {/* CSS Pattern Background */}
-                <div className="absolute inset-0 z-0 opacity-20" style={{
-                    backgroundImage: 'radial-gradient(circle at 10px 10px, rgba(255, 255, 255, 0.1) 1px, transparent 0)',
-                    backgroundSize: '30px 30px'
-                }}></div>
+            <main className="flex-1 relative flex flex-col h-full overflow-hidden bg-background-dark">
+                {/* Header */}
 
                 {/* Header */}
                 <div className="h-16 border-b border-white/5 bg-background-dark/80 backdrop-blur flex items-center px-8 z-10 shrink-0">
@@ -505,6 +487,14 @@ const TimelineView = () => {
                                     onClick={() => startEditEvent(event)}
                                 ></div>
                                 <div className="ml-4 bg-surface-dark/50 border border-white/5 p-5 rounded-2xl hover:border-primary/30 transition-all hover:bg-surface-dark group-hover:translate-x-1 duration-300 relative group/card">
+                                    <div className="absolute top-3 right-3 opacity-0 group-hover/card:opacity-100 transition-opacity flex gap-1 bg-black/50 rounded-lg backdrop-blur-sm border border-white/5 p-1">
+                                        <button onClick={() => startEditEvent(event)} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Edit">
+                                            <span className="material-symbols-outlined text-sm">edit</span>
+                                        </button>
+                                        <button onClick={(e) => handleDeleteEvent(event.id, e)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Delete">
+                                            <span className="material-symbols-outlined text-sm">delete</span>
+                                        </button>
+                                    </div>
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <div className="flex flex-col mb-1">

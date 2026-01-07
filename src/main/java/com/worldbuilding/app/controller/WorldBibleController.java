@@ -29,11 +29,18 @@ public class WorldBibleController {
     private EntidadGenericaRepository entidadGenericaRepository;
 
     private Cuaderno getProyectoActual(HttpSession session) {
+        // 1. Try by name from session
         String nombreProyecto = (String) session.getAttribute("proyectoActivo");
-        if (nombreProyecto == null)
-            return null;
-        List<Cuaderno> cuadernos = cuadernoRepository.findByNombreProyecto(nombreProyecto);
-        return cuadernos.isEmpty() ? null : cuadernos.get(0);
+        if (nombreProyecto != null) {
+            List<Cuaderno> cuadernos = cuadernoRepository.findByNombreProyecto(nombreProyecto);
+            if (!cuadernos.isEmpty()) {
+                return cuadernos.get(0);
+            }
+        }
+
+        // 2. Fallback: Return any Cuaderno in the current DB (Multi-tenant DBs usually
+        // have 1)
+        return cuadernoRepository.findAll().stream().findFirst().orElse(null);
     }
 
     @GetMapping("/folders")
