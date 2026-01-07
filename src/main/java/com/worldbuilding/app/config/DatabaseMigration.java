@@ -1,6 +1,5 @@
 package com.worldbuilding.app.config;
 
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.stereotype.Component;
@@ -104,6 +103,39 @@ public class DatabaseMigration {
                 "valor TEXT" +
                 ")");
 
+        // --- 6. LINEA_TIEMPO & EVENTO_TIEMPO ---
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS linea_tiempo (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "nombre TEXT NOT NULL, " +
+                "descripcion TEXT, " +
+                "es_raiz INTEGER DEFAULT 0" +
+                ")");
+
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS evento_tiempo (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "nombre TEXT NOT NULL, " +
+                "descripcion TEXT, " +
+                "fecha_texto TEXT, " +
+                "orden_absoluto INTEGER, " +
+                "linea_tiempo_id INTEGER" +
+                ")");
+
+        // --- 7. RELACION (Update) ---
+        // Ensure base table exists first
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS relacion (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "nodo_origen_id INTEGER, " +
+                "nodo_destino_id INTEGER, " +
+                "tipo_relacion TEXT, " +
+                "tipo_origen TEXT, " +
+                "tipo_destino TEXT, " +
+                "descripcion TEXT, " +
+                "metadata TEXT" +
+                ")");
+
+        // Add columns if they don't exist (for existing tables)
+        addRelacionColumns(jdbcTemplate);
+
         // --- Migraciones específicas para columnas añadidas posteriormente ---
         // (Esto es redundante para bases nuevas pero repara las antiguas)
 
@@ -118,6 +150,18 @@ public class DatabaseMigration {
             try {
                 jdbcTemplate.execute("ALTER TABLE entidad_generica ADD COLUMN tags TEXT");
             } catch (Exception ignored) {
+            }
+        }
+    }
+
+    private void addRelacionColumns(JdbcTemplate jdbcTemplate) {
+        String[] newColumns = { "tipo_origen", "tipo_destino", "descripcion", "metadata" };
+        for (String col : newColumns) {
+            if (!columnExists(jdbcTemplate, "relacion", col)) {
+                try {
+                    jdbcTemplate.execute("ALTER TABLE relacion ADD COLUMN " + col + " TEXT");
+                } catch (Exception ignored) {
+                }
             }
         }
     }

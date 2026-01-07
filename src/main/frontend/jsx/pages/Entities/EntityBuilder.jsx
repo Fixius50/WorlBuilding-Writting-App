@@ -4,6 +4,7 @@ import api from '../../../js/services/api';
 import AttributeField from './AttributeField';
 import GlassPanel from '../../components/common/GlassPanel';
 import Avatar from '../../components/common/Avatar';
+import RelationshipManager from '../../components/relationships/RelationshipManager';
 
 const EntityBuilder = ({ mode }) => {
     const { username, projectName, entitySlug, folderSlug, type } = useParams();
@@ -476,9 +477,17 @@ const EntityBuilder = ({ mode }) => {
                     )}
 
                     {activeEntityTab === 'relationships' && (
-                        <div className="p-20 text-center border-2 border-dashed border-white/5 rounded-3xl opacity-30">
-                            <span className="material-symbols-outlined text-4xl mb-4">hub</span>
-                            <p className="text-sm font-bold">Relationships coming soon</p>
+                        <div className="animate-in fade-in duration-500">
+                            <GlassPanel className="min-h-[50vh]">
+                                {isCreation ? (
+                                    <div className="p-20 text-center text-slate-500">
+                                        <span className="material-symbols-outlined text-4xl mb-4">save_as</span>
+                                        <p className="text-sm font-bold">Please save the entity first to manage relationships.</p>
+                                    </div>
+                                ) : (
+                                    <RelationshipManager entityId={entity.id} entityType={entity.tipo || 'entidadindividual'} />
+                                )}
+                            </GlassPanel>
                         </div>
                     )}
 

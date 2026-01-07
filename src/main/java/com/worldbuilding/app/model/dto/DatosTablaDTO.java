@@ -233,4 +233,73 @@ public class DatosTablaDTO {
     public void setTipoRelacion(String tipoRelacion) {
         this.tipoRelacion = tipoRelacion;
     }
+
+    // Relaciones (Extended)
+    private String tipoOrigen;
+    private String tipoDestino;
+    private String metadata;
+
+    // Linea de Tiempo
+    private Boolean esRaiz;
+
+    // Evento de Tiempo
+    private String fechaTexto;
+    private Long ordenAbsoluto;
+    private Long lineaTiempoId;
+
+    public String getTipoOrigen() {
+        return tipoOrigen;
+    }
+
+    public void setTipoOrigen(String tipoOrigen) {
+        this.tipoOrigen = tipoOrigen;
+    }
+
+    public String getTipoDestino() {
+        return tipoDestino;
+    }
+
+    public void setTipoDestino(String tipoDestino) {
+        this.tipoDestino = tipoDestino;
+    }
+
+    public String getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
+    }
+
+    public Boolean getEsRaiz() {
+        return esRaiz;
+    }
+
+    public void setEsRaiz(Boolean esRaiz) {
+        this.esRaiz = esRaiz;
+    }
+
+    public String getFechaTexto() {
+        return fechaTexto;
+    }
+
+    public void setFechaTexto(String fechaTexto) {
+        this.fechaTexto = fechaTexto;
+    }
+
+    public Long getOrdenAbsoluto() {
+        return ordenAbsoluto;
+    }
+
+    public void setOrdenAbsoluto(Long ordenAbsoluto) {
+        this.ordenAbsoluto = ordenAbsoluto;
+    }
+
+    public Long getLineaTiempoId() {
+        return lineaTiempoId;
+    }
+
+    public void setLineaTiempoId(Long lineaTiempoId) {
+        this.lineaTiempoId = lineaTiempoId;
+    }
 }

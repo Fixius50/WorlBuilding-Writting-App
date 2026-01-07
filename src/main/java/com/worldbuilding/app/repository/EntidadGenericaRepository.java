@@ -23,4 +23,10 @@ public interface EntidadGenericaRepository extends JpaRepository<EntidadGenerica
 
     // Count items
     int countByCarpeta(Carpeta carpeta);
+
+    @org.springframework.data.jpa.repository.Query("SELECT e FROM EntidadGenerica e WHERE e.proyecto.nombreProyecto = :nombreProyecto AND e.tipoEspecial = :tipoEspecial AND e.deleted = false")
+    List<EntidadGenerica> findByNombreProyectoAndTipoEspecial(String nombreProyecto, String tipoEspecial);
+
+    @org.springframework.data.jpa.repository.Query("SELECT e FROM EntidadGenerica e WHERE e.proyecto.nombreProyecto = :nombreProyecto AND e.deleted = false")
+    List<EntidadGenerica> findByNombreProyecto(String nombreProyecto);
 }

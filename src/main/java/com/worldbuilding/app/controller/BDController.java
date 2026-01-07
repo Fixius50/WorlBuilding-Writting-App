@@ -40,6 +40,12 @@ public class BDController {
     private NodoRepository nodoRepo;
     @Autowired
     private RelacionRepository relacionRepo;
+    @Autowired
+    private LineaTiempoRepository lineaTiempoRepo;
+    @Autowired
+    private EventoTiempoRepository eventoTiempoRepo;
+    @Autowired
+    private EntidadGenericaRepository entidadGenericaRepo;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -106,6 +112,24 @@ public class BDController {
                     Interaccion i = new Interaccion();
                     mapearInteraccion(dto, i, nombreProyecto);
                     yield interaccionRepo.save(i);
+                }
+                case "relacion" -> {
+                    Relacion r = new Relacion();
+                    mapearRelacion(dto, r);
+                    yield relacionRepo.save(r);
+                }
+                case "lineatiempo" -> {
+                    LineaTiempo lt = new LineaTiempo();
+                    mapearLineaTiempo(dto, lt);
+                    yield lineaTiempoRepo.save(lt);
+                }
+                case "eventotiempo" -> {
+                    EventoTiempo et = new EventoTiempo();
+                    // Need to find LineaTiempo first
+                    LineaTiempo lt = lineaTiempoRepo.findById(dto.getLineaTiempoId())
+                            .orElseThrow(() -> new IllegalArgumentException("LineaTiempo ID required"));
+                    mapearEventoTiempo(dto, et, lt);
+                    yield eventoTiempoRepo.save(et);
                 }
                 default -> throw new IllegalArgumentException("Tipo no soportado: " + tipo);
             };
@@ -178,6 +202,27 @@ public class BDController {
                     mapearInteraccion(dto, i, nombreProyecto);
                     yield interaccionRepo.save(i);
                 }
+                case "relacion" -> {
+                    Relacion r = relacionRepo.findById(id)
+                            .orElseThrow(() -> new RuntimeException("Relacion no encontrada"));
+                    mapearRelacion(dto, r);
+                    yield relacionRepo.save(r);
+                }
+                case "lineatiempo" -> {
+                    LineaTiempo lt = lineaTiempoRepo.findById(id)
+                            .orElseThrow(() -> new RuntimeException("Linea Tiempo no encontrada"));
+                    mapearLineaTiempo(dto, lt);
+                    yield lineaTiempoRepo.save(lt);
+                }
+                case "eventotiempo" -> {
+                    EventoTiempo et = eventoTiempoRepo.findById(id)
+                            .orElseThrow(() -> new RuntimeException("Evento Tiempo no encontrado"));
+                    LineaTiempo lt = dto.getLineaTiempoId() != null
+                            ? lineaTiempoRepo.findById(dto.getLineaTiempoId()).orElse(et.getLineaTiempo())
+                            : et.getLineaTiempo();
+                    mapearEventoTiempo(dto, et, lt);
+                    yield eventoTiempoRepo.save(et);
+                }
                 default -> throw new IllegalArgumentException("Tipo no soportado: " + tipo);
             };
 
@@ -196,14 +241,20 @@ public class BDController {
         String proyecto = getProyectoActivo(session);
         try {
             List<?> resultados = switch (tipo.toLowerCase()) {
-                case "entidadindividual" -> entidadIndRepo.findByNombreProyecto(proyecto);
-                case "entidadcolectiva" -> entidadColRepo.findByNombreProyecto(proyecto);
-                case "zona" -> zonaRepo.findByNombreProyecto(proyecto);
-                case "construccion" -> construccionRepo.findByNombreProyecto(proyecto);
+                case "entidadindividual" ->
+                    entidadGenericaRepo.findByNombreProyectoAndTipoEspecial(proyecto, "entidadindividual");
+                case "entidadcolectiva" ->
+                    entidadGenericaRepo.findByNombreProyectoAndTipoEspecial(proyecto, "entidadcolectiva");
+                case "zona" -> entidadGenericaRepo.findByNombreProyectoAndTipoEspecial(proyecto, "zona");
+                case "construccion" ->
+                    entidadGenericaRepo.findByNombreProyectoAndTipoEspecial(proyecto, "construccion");
+                case "mapa" -> entidadGenericaRepo.findByNombreProyectoAndTipoEspecial(proyecto, "map");
                 case "efectos" -> efectosRepo.findByNombreProyecto(proyecto);
                 case "interaccion" -> interaccionRepo.findByNombreProyecto(proyecto);
                 case "nodo" -> nodoRepo.findAll(); // Nodo y Relacion son globales o necesitan repo method
                 case "relacion" -> relacionRepo.findAll();
+                case "lineatiempo" -> lineaTiempoRepo.findAll();
+                case "eventotiempo" -> eventoTiempoRepo.findAll();
                 default -> throw new IllegalArgumentException("Tipo no soportado: " + tipo);
             };
 
@@ -219,14 +270,17 @@ public class BDController {
     public ResponseEntity<?> buscarPorId(@PathVariable String tipo, @PathVariable Long id, HttpSession session) {
         try {
             Object resultado = switch (tipo.toLowerCase()) {
-                case "entidadindividual" -> entidadIndRepo.findById(id).orElse(null);
-                case "entidadcolectiva" -> entidadColRepo.findById(id).orElse(null);
-                case "zona" -> zonaRepo.findById(id).orElse(null);
-                case "construccion" -> construccionRepo.findById(id).orElse(null);
+                case "entidadindividual" -> entidadGenericaRepo.findById(id).orElse(null);
+                case "entidadcolectiva" -> entidadGenericaRepo.findById(id).orElse(null);
+                case "zona" -> entidadGenericaRepo.findById(id).orElse(null);
+                case "construccion" -> entidadGenericaRepo.findById(id).orElse(null);
+                case "mapa" -> entidadGenericaRepo.findById(id).orElse(null);
                 case "efectos" -> efectosRepo.findById(id).orElse(null);
                 case "interaccion" -> interaccionRepo.findById(id).orElse(null);
                 case "nodo" -> nodoRepo.findById(id).orElse(null);
                 case "relacion" -> relacionRepo.findById(id).orElse(null);
+                case "lineatiempo" -> lineaTiempoRepo.findById(id).orElse(null);
+                case "eventotiempo" -> eventoTiempoRepo.findById(id).orElse(null);
                 default -> throw new IllegalArgumentException("Tipo no soportado: " + tipo);
             };
 
@@ -253,6 +307,8 @@ public class BDController {
                 case "interaccion" -> interaccionRepo.deleteById(id);
                 case "nodo" -> nodoRepo.deleteById(id);
                 case "relacion" -> relacionRepo.deleteById(id);
+                case "lineatiempo" -> lineaTiempoRepo.deleteById(id);
+                case "eventotiempo" -> eventoTiempoRepo.deleteById(id);
                 default -> throw new IllegalArgumentException("Tipo no soportado: " + tipo);
             }
 
@@ -390,5 +446,43 @@ public class BDController {
             i.setResultado(dto.getResultado());
         if (dto.getDescripcion() != null)
             i.setDescripcion(dto.getDescripcion());
+    }
+
+    private void mapearRelacion(DatosTablaDTO dto, Relacion r) {
+        if (dto.getNodoOrigenId() != null)
+            r.setNodoOrigenId(dto.getNodoOrigenId());
+        if (dto.getNodoDestinoId() != null)
+            r.setNodoDestinoId(dto.getNodoDestinoId());
+        if (dto.getTipoRelacion() != null)
+            r.setTipoRelacion(dto.getTipoRelacion());
+        if (dto.getTipoOrigen() != null)
+            r.setTipoOrigen(dto.getTipoOrigen());
+        if (dto.getTipoDestino() != null)
+            r.setTipoDestino(dto.getTipoDestino());
+        if (dto.getDescripcion() != null)
+            r.setDescripcion(dto.getDescripcion());
+        if (dto.getMetadata() != null)
+            r.setMetadata(dto.getMetadata());
+    }
+
+    private void mapearLineaTiempo(DatosTablaDTO dto, LineaTiempo lt) {
+        if (dto.getNombre() != null)
+            lt.setNombre(dto.getNombre());
+        if (dto.getDescripcion() != null)
+            lt.setDescripcion(dto.getDescripcion());
+        if (dto.getEsRaiz() != null)
+            lt.setEsRaiz(dto.getEsRaiz());
+    }
+
+    private void mapearEventoTiempo(DatosTablaDTO dto, EventoTiempo et, LineaTiempo lt) {
+        if (dto.getNombre() != null)
+            et.setNombre(dto.getNombre());
+        if (dto.getDescripcion() != null)
+            et.setDescripcion(dto.getDescripcion());
+        if (dto.getFechaTexto() != null)
+            et.setFechaTexto(dto.getFechaTexto());
+        if (dto.getOrdenAbsoluto() != null)
+            et.setOrdenAbsoluto(dto.getOrdenAbsoluto());
+        et.setLineaTiempo(lt);
     }
 }

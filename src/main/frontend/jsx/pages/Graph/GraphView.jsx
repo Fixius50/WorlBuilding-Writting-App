@@ -17,31 +17,63 @@ const GraphView = () => {
     const loadGraph = async () => {
         setLoading(true);
         try {
-            const rawNodes = await api.get('/bd/nodo');
             const rawRels = await api.get('/bd/relacion');
 
-            // Get names for nodes (this is expensive in a loop, but okay for a mockup phase)
-            const nodesWithNames = await Promise.all(rawNodes.map(async (n, index) => {
+            // Extract unique nodes from relationships
+            const uniqueNodes = new Map();
+            rawRels.forEach(r => {
+                const originKey = `${r.tipoOrigen}-${r.nodoOrigenId}`;
+                const destKey = `${r.tipoDestino}-${r.nodoDestinoId}`;
+
+                if (!uniqueNodes.has(originKey)) uniqueNodes.set(originKey, { id: r.nodoOrigenId, type: r.tipoOrigen });
+                if (!uniqueNodes.has(destKey)) uniqueNodes.set(destKey, { id: r.nodoDestinoId, type: r.tipoDestino });
+            });
+
+            // Fetch details for each node
+            const nodesWithNames = await Promise.all(Array.from(uniqueNodes.values()).map(async (n, index) => {
                 try {
-                    const entity = await api.get(`/bd/${n.tipoEntidad}/${n.entidadId}`);
+                    // Map internal types to user-friendly colors/icons
+                    let endpointType = n.type; // e.g. 'entidadIndividual', 'lineatiempo'
+                    const detail = await api.get(`/bd/${endpointType}/${n.id}`);
+
+                    let color = 'bg-slate-500';
+                    let icon = 'help';
+
+                    switch (n.type.toLowerCase()) {
+                        case 'entidadindividual': color = 'bg-primary'; icon = 'person'; break;
+                        case 'entidadcolectiva': color = 'bg-purple-500'; icon = 'groups'; break;
+                        case 'zona': color = 'bg-emerald-500'; icon = 'location_on'; break;
+                        case 'construccion': color = 'bg-orange-500'; icon = 'apartment'; break;
+                        case 'lineatiempo': color = 'bg-cyan-500'; icon = 'history'; break;
+                        case 'eventotiempo': color = 'bg-red-500'; icon = 'event'; break;
+                        case 'mapa': color = 'bg-amber-500'; icon = 'map'; break;
+                        default: break;
+                    }
+
                     return {
-                        id: n.id,
-                        name: entity.nombre,
-                        type: n.tipoEntidad === 'entidadindividual' ? 'character' : n.tipoEntidad === 'zona' ? 'location' : 'item',
-                        x: 200 + (Math.cos(index) * 200) + (Math.random() * 50),
-                        y: 300 + (Math.sin(index) * 200) + (Math.random() * 50),
-                        color: n.tipoEntidad === 'entidadindividual' ? 'bg-primary' : n.tipoEntidad === 'zona' ? 'bg-emerald-500' : 'bg-amber-500'
+                        id: `${n.type}-${n.id}`, // Unique ID for D3/Vis
+                        originalId: n.id,
+                        originalType: n.type,
+                        name: detail.nombre,
+                        description: detail.descripcion || '',
+                        type: n.type,
+                        icon,
+                        x: 400 + (Math.cos(index) * 300) + (Math.random() * 50),
+                        y: 400 + (Math.sin(index) * 300) + (Math.random() * 50),
+                        color
                     };
-                } catch {
+                } catch (e) {
+                    console.warn(`Node not found: ${n.type} ${n.id}`);
                     return null;
                 }
             }));
 
             setNodes(nodesWithNames.filter(Boolean));
             setConnections(rawRels.map(r => ({
-                from: r.origenId,
-                to: r.destinoId,
-                label: r.tipo || 'Relates to'
+                from: `${r.tipoOrigen}-${r.nodoOrigenId}`,
+                to: `${r.tipoDestino}-${r.nodoDestinoId}`,
+                label: r.tipoRelacion || 'Related',
+                description: r.descripcion
             })));
         } catch (err) {
             console.error("Error loading graph:", err);
@@ -77,33 +109,39 @@ const GraphView = () => {
             </aside>
 
             {/* Main Canvas Area */}
-            <main className="flex-1 relative overflow-hidden cursor-grab active:cursor-grabbing">
-                {/* Connections (SVG layer) */}
-                <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                    {connections.map((conn, i) => {
-                        const from = nodes.find(n => n.id === conn.from);
-                        const to = nodes.find(n => n.id === conn.to);
+            <main className="flex-1 relative overflow-auto bg-[url('/assets/grid-pattern.png')] bg-repeat cursor-move"
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+            >
+                {/* Connections */}
+                <svg className="absolute top-0 left-0 w-[2000px] h-[2000px] pointer-events-none z-0">
+                    {visibleConnections.map((c, i) => {
+                        const fromNode = nodes.find(n => n.id === c.from);
+                        const toNode = nodes.find(n => n.id === c.to);
+                        if (!fromNode || !toNode) return null;
+
                         return (
-                            <g key={i} className="opacity-20 group-hover/canvas:opacity-40 transition-opacity">
+                            <g key={i} className="group/line">
                                 <line
-                                    x1={from.x} y1={from.y} x2={to.x} y2={to.y}
-                                    stroke="white" strokeWidth="1" strokeDasharray="4 4"
+                                    x1={fromNode.x + 20} y1={fromNode.y + 20}
+                                    x2={toNode.x + 20} y2={toNode.y + 20}
+                                    stroke="#4f46e5"
+                                    strokeWidth="2"
+                                    strokeOpacity="0.5"
+                                    className="transition-all group-hover/line:stroke-white group-hover/line:stroke-width-4 cursor-pointer"
                                 />
-                                <text
-                                    x={(from.x + to.x) / 2} y={(from.y + to.y) / 2}
-                                    fill="white" fontSize="8" textAnchor="middle" dy="-8" className="font-extrabold uppercase tracking-widest"
-                                >
-                                    {conn.label}
-                                </text>
+                                <title>{c.label}{c.description ? `: ${c.description}` : ''}</title>
                             </g>
                         );
                     })}
                 </svg>
 
                 {/* Nodes */}
-                {nodes.map(node => (
+                {visibleNodes.map(node => (
                     <div
                         key={node.id}
+                        onMouseDown={(e) => handleMouseDown(e, node.id)}
                         onClick={() => setSelectedNode(node)}
                         className={`absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all hover:scale-110 z-10 ${selectedNode?.id === node.id ? 'scale-125 z-20' : ''}`}
                         style={{ left: node.x, top: node.y }}
@@ -111,7 +149,7 @@ const GraphView = () => {
                         <div className={`p-4 rounded-3xl bg-surface-dark border transition-all flex items-center gap-4 shadow-xl ${selectedNode?.id === node.id ? 'border-primary ring-4 ring-primary/20' : 'border-white/5 hover:border-white/20'}`}>
                             <div className={`size-10 rounded-2xl ${node.color} flex items-center justify-center text-white shadow-lg`}>
                                 <span className="material-symbols-outlined text-xl">
-                                    {node.type === 'character' ? 'person' : node.type === 'location' ? 'location_on' : 'diamond'}
+                                    {node.icon}
                                 </span>
                             </div>
                             <div className="pr-4">

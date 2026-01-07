@@ -52,7 +52,8 @@ const ArchitectLayout = () => {
     const [projectId, setProjectId] = useState(null);
 
     // Right Panel State
-    const [rightPanelMode, setRightPanelMode] = useState('NOTES'); // 'NOTES', 'TOOLBOX'
+    const [rightPanelMode, setRightPanelMode] = useState('NOTES'); // 'NOTES', 'TOOLBOX', 'CUSTOM'
+    const [rightPanelTitle, setRightPanelTitle] = useState(''); // Override title
     const [availableTemplates, setAvailableTemplates] = useState([]); // Use for Toolbox
     const [addAttributeHandler, setAddAttributeHandler] = useState(null); // Handler for Toolbox clicks
     const [createTemplateHandler, setCreateTemplateHandler] = useState(null); // Handler for creating templates
@@ -183,26 +184,24 @@ const ArchitectLayout = () => {
 
                 <div className="flex-1 flex overflow-hidden relative">
                     <Outlet context={{
-                        setRightPanelMode, // Require pages to set this
+                        // Global Layout
+                        setRightPanelMode,
+                        setRightOpen,
+                        setRightPanelTitle,
+
+                        // Project Info
+                        projectName: loadedProjectName,
+                        projectId,
+
+                        // Templates & Attributes
                         availableTemplates, setAvailableTemplates,
                         setAddAttributeHandler,
                         setCreateTemplateHandler,
-                        projectName: loadedProjectName,
-                        projectId,
 
-                        setRightOpen,
-                        // Map Props
-                        mapSettings, setMapSettings,
-                        projectName: loadedProjectName,
-                        projectId,
-
-                        setRightOpen,
                         // Map Props
                         mapSettings, setMapSettings,
                         setOnMapSettingsChange,
 
-                        // Entity Builder Props
-                        entityTabs, setEntityTabs,
                         // Entity Builder Props
                         entityTabs, setEntityTabs,
                         activeEntityTab, setActiveEntityTab,
@@ -225,7 +224,11 @@ const ArchitectLayout = () => {
                 <header className="h-16 flex items-center px-6 border-b border-glass-border justify-between shrink-0">
                     {rightOpen ? (
                         <>
-                            {isBibleContext && rightPanelMode === 'NOTES' ? (
+                            {rightPanelMode === 'CUSTOM' ? (
+                                <h2 className="text-xs font-black uppercase tracking-widest text-primary">
+                                    {rightPanelTitle || 'Panel'}
+                                </h2>
+                            ) : isBibleContext && rightPanelMode === 'NOTES' ? (
                                 <div className="flex bg-white/5 rounded-lg p-1 gap-1">
                                     <button
                                         onClick={() => setActiveBibleTab('notes')}
@@ -248,7 +251,7 @@ const ArchitectLayout = () => {
                                 </div>
                             ) : (
                                 <h2 className="text-xs font-black uppercase tracking-widest text-white">
-                                    {rightPanelMode === 'NOTES' ? 'Notas Globales' : 'Constructor'}
+                                    {rightPanelTitle || (rightPanelMode === 'NOTES' ? 'Notas Globales' : 'Constructor')}
                                 </h2>
                             )}
 
@@ -258,13 +261,17 @@ const ArchitectLayout = () => {
                         </>
                     ) : (
                         <button onClick={() => setRightOpen(true)} className="w-full h-full flex items-center justify-center text-text-muted hover:text-white transition-colors">
-                            <span className="material-symbols-outlined">{rightPanelMode === 'NOTES' ? 'edit_note' : rightPanelMode === 'MAP' ? 'map' : 'handyman'}</span>
+                            <span className="material-symbols-outlined">{rightPanelMode === 'NOTES' ? 'edit_note' : rightPanelMode === 'MAP' ? 'map' : rightPanelMode === 'CUSTOM' ? 'build' : 'handyman'}</span>
                         </button>
                     )
                     }
-                </header><div className="flex-1 overflow-y-auto no-scrollbar p-0">
+                </header>
+
+                <div className="flex-1 overflow-y-auto no-scrollbar p-0">
                     {rightOpen ? (
-                        rightPanelMode === 'NOTES' ? (
+                        rightPanelMode === 'CUSTOM' ? (
+                            <div id="architect-right-panel-portal" className="h-full relative flex flex-col"></div>
+                        ) : rightPanelMode === 'NOTES' ? (
                             activeBibleTab === 'templates' && isBibleContext ? (
                                 <div className="h-full overflow-y-auto no-scrollbar">
                                     <TemplateManager compact={true} />
