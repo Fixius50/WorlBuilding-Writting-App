@@ -41,6 +41,7 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
     const [contextMenu, setContextMenu] = useState(null);
     const [itemName, setItemName] = useState(folder.nombre);
     const [isEditing, setIsEditing] = useState(false);
+    const [renamingEntityId, setRenamingEntityId] = useState(null); // For entities
 
     useEffect(() => { setItemName(folder.nombre); }, [folder.nombre]);
 
@@ -165,20 +166,32 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
             <input
                 autoFocus
                 type="text"
+                defaultValue={item.nombre || ''}
                 className="w-full bg-surface-light border border-primary/50 rounded px-2 py-1 text-xs text-white outline-none"
                 placeholder="Name..."
                 onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
                         const val = e.target.value.trim();
-                        if (val) onConfirmCreate(item.id, val, type, folder.id, item.tipoEspecial);
-                        else onDeleteEntity(item.id, folder.id);
+                        if (val) {
+                            onConfirmCreate(item.id, val, type, folder.id, item.tipoEspecial);
+                        } else {
+                            if (item.isNew) onDeleteEntity(item.id, folder.id);
+                        }
+                        setRenamingEntityId(null);
+                    } else if (e.key === 'Escape') {
+                        setRenamingEntityId(null);
+                        if (item.isNew) onDeleteEntity(item.id, folder.id);
                     }
                 }}
                 onBlur={(e) => {
                     const val = e.target.value.trim();
-                    if (val) onConfirmCreate(item.id, val, type, folder.id, item.tipoEspecial);
-                    else onDeleteEntity(item.id, folder.id);
+                    if (val) {
+                        onConfirmCreate(item.id, val, type, folder.id, item.tipoEspecial);
+                    } else {
+                        if (item.isNew) onDeleteEntity(item.id, folder.id);
+                    }
+                    setRenamingEntityId(null);
                 }}
             />
         </div>
@@ -254,12 +267,7 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
                     ) : (
                         <>
                             <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2 cursor-pointer" onClick={() => {
-                                // Trigger rename for entity (needs separate state or reuse InputItem equivalent?)
-                                // For now, let's keep it simple: Prompt -> API -> Update
-                                const newName = prompt("Rename Entity", contextMenu.name);
-                                if (newName && newName !== contextMenu.name) {
-                                    onConfirmCreate(contextMenu.id, newName, 'entity', folder.id);
-                                }
+                                setRenamingEntityId(contextMenu.id);
                                 closeContextMenu();
                             }}><span className="material-symbols-outlined text-sm">edit</span> Rename</button>
                             <button className="px-4 py-2 hover:bg-red-500/10 text-red-400 text-left flex items-center gap-2" onClick={() => { onDeleteEntity(contextMenu.id, folder.id); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">delete</span> Delete Entity</button>
@@ -288,7 +296,15 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
 
                     {/* Render Entities */}
                     {content.entities.map(ent => (
-                        ent.isNew ? <InputItem key={ent.id} item={ent} type="entity" /> :
+                        (ent.isNew || ent.id === renamingEntityId) ?
+                            <InputItem
+                                key={ent.id}
+                                item={ent}
+                                type="entity"
+                            // Reset state on finish (handled by onConfirmCreate re-render usually, but better to force close on blur/enter inside InputItem or wrapper)
+                            // Actually InputItem handles onConfirmCreate. We need to clear renamingEntityId when done.
+                            // We can wrap onConfirmCreate?
+                            /> :
                             <Link
                                 key={ent.id}
                                 to={getEntityRoute(username, projectName, ent, folder.slug || folder.id)}

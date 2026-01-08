@@ -77,6 +77,7 @@ public class DatabaseMigration {
                 "notas TEXT, " +
                 "color TEXT, " +
                 "tags TEXT, " +
+                "categoria TEXT, " +
                 "deleted INTEGER DEFAULT 0, " +
                 "deleted_date TEXT" +
                 ")");
@@ -143,21 +144,36 @@ public class DatabaseMigration {
         if (!columnExists(jdbcTemplate, "entidad_generica", "color")) {
             try {
                 jdbcTemplate.execute("ALTER TABLE entidad_generica ADD COLUMN color TEXT");
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                System.err.println("Error adding column color: " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
         if (!columnExists(jdbcTemplate, "entidad_generica", "tags")) {
             try {
                 jdbcTemplate.execute("ALTER TABLE entidad_generica ADD COLUMN tags TEXT");
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                System.err.println("Error adding column tags: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
+        if (!columnExists(jdbcTemplate, "entidad_generica", "categoria")) {
+            try {
+                jdbcTemplate.execute("ALTER TABLE entidad_generica ADD COLUMN categoria TEXT");
+            } catch (Exception e) {
+                System.err.println("Error adding column categoria: " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
         if (!columnExists(jdbcTemplate, "linea_tiempo", "universo_id")) {
             try {
                 jdbcTemplate.execute("ALTER TABLE linea_tiempo ADD COLUMN universo_id INTEGER");
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                System.err.println("Error adding column universo_id: " + e.getMessage());
+                e.printStackTrace();
             }
         }
     }
@@ -168,7 +184,9 @@ public class DatabaseMigration {
             if (!columnExists(jdbcTemplate, "relacion", col)) {
                 try {
                     jdbcTemplate.execute("ALTER TABLE relacion ADD COLUMN " + col + " TEXT");
-                } catch (Exception ignored) {
+                } catch (Exception e) {
+                    System.err.println("Error adding column " + col + ": " + e.getMessage());
+                    e.printStackTrace();
                 }
             }
         }

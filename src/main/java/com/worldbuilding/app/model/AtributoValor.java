@@ -15,7 +15,6 @@ public class AtributoValor {
     @JoinColumn(name = "entidad_id", nullable = false)
     private EntidadGenerica entidad;
 
-    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plantilla_id", nullable = false)
     private AtributoPlantilla plantilla;

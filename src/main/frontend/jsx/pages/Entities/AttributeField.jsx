@@ -48,7 +48,9 @@ const AttributeField = ({ attribute, value, onChange, onRemove, linkableEntities
             case 'select':
                 let options = [];
                 try {
-                    const meta = JSON.parse(plantilla.metadata || '{}');
+                    const meta = typeof plantilla.metadata === 'string'
+                        ? JSON.parse(plantilla.metadata || '{}')
+                        : (plantilla.metadata || {});
                     options = meta.options || [];
                 } catch (e) { }
                 return (
@@ -73,7 +75,9 @@ const AttributeField = ({ attribute, value, onChange, onRemove, linkableEntities
             case 'multi_select':
                 let multiOptions = [];
                 try {
-                    const meta = JSON.parse(plantilla.metadata || '{}');
+                    const meta = typeof plantilla.metadata === 'string'
+                        ? JSON.parse(plantilla.metadata || '{}')
+                        : (plantilla.metadata || {});
                     multiOptions = meta.options || [];
                 } catch (e) { }
 
@@ -95,7 +99,14 @@ const AttributeField = ({ attribute, value, onChange, onRemove, linkableEntities
                 return (
                     <div className="bg-black/20 border border-white/5 rounded-xl p-2 space-y-1 max-h-40 overflow-y-auto custom-scrollbar">
                         {multiOptions.map((opt, i) => (
-                            <label key={i} className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-lg cursor-pointer group transition-colors">
+                            <label
+                                key={i}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    toggleOption(opt);
+                                }}
+                                className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-lg cursor-pointer group transition-colors"
+                            >
                                 <div className={`size-4 rounded border flex items-center justify-center transition-all ${selectedValues.includes(opt) ? 'bg-primary border-primary' : 'border-white/10 group-hover:border-white/30'}`}>
                                     {selectedValues.includes(opt) && <span className="material-symbols-outlined text-[10px] text-white">check</span>}
                                 </div>

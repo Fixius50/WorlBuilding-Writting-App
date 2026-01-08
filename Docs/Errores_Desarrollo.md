@@ -140,3 +140,8 @@ pm run build antes de arrancar el servidor Java, garantizando que el frontend si
 * **Soluci√Én:** Redise√Éo de la cabecera de EntityBuilder.jsx para incluir botones persistentes y eliminaci√Én de z-0 en ArchitectLayout.jsx.
 * **Estado:** Resuelto.
 
+
+### Error: Persistencia de Atributos en Entity Builder
+* **Descripci√n:** El usuario reporta que los atributos a√adidos a una entidad no se guardan correctamente, incluso despu√s de corregir la serializaci√n del backend (@JsonIgnore) y el ordenamiento (@OrderBy).
+* **Causa Sospechosa:** Posible fallo en la l√gica de actualizaci√n de estado en el frontend (IDs temporales vs reales) o timeout silencioso en el PATCH.
+* **Estado:** Pendiente de investigar.

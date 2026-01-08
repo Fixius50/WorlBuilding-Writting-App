@@ -6,6 +6,7 @@ import GlassPanel from '../../components/common/GlassPanel';
 import Avatar from '../../components/common/Avatar';
 import Button from '../../components/common/Button';
 import RelationshipManager from '../../components/relationships/RelationshipManager';
+import GlobalNotes from '../../components/layout/GlobalNotes';
 
 const EntityBuilder = ({ mode }) => {
     const { username, projectName, entitySlug, folderSlug, type } = useParams();
@@ -25,7 +26,8 @@ const EntityBuilder = ({ mode }) => {
         notas: '',
         iconUrl: null, // Base64 or Blob URL
         tipoEspecial: type || null,
-        carpeta: null
+        carpeta: null,
+        categoria: 'Individual' // Default category
     });
 
     // Attribute State
@@ -44,7 +46,7 @@ const EntityBuilder = ({ mode }) => {
         // Configure Global Right Panel
         setRightOpen(true);
         setRightPanelMode('ENTITY');
-        setEntityTabs(['identity', 'backstory', 'attributes', 'relationships', 'notes']);
+        setEntityTabs(['identity', 'narrative', 'attributes']);
         setActiveEntityTab('identity');
 
         return () => {
@@ -53,6 +55,8 @@ const EntityBuilder = ({ mode }) => {
             setEntityTabs([]);
         };
     }, []);
+
+
 
     useEffect(() => {
         if (isCreation) loadCreationMode();
@@ -69,12 +73,9 @@ const EntityBuilder = ({ mode }) => {
             const tpl = templates.find(t => t.id === templateId);
             if (tpl) {
                 setFields(prev => {
-                    if (prev.some(f => f.attribute.id === tpl.id)) {
-                        alert("Attribute already added.");
-                        return prev;
-                    }
+                    // Removed duplicate check to allow 0-N attributes
                     return [...prev, {
-                        id: `temp-${tpl.id}`,
+                        id: `temp-${tpl.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                         attribute: tpl,
                         value: tpl.valorDefecto || '',
                         isTemp: true
@@ -102,12 +103,15 @@ const EntityBuilder = ({ mode }) => {
 
             // Auto-populate? Maybe better to let user choose.
             // But if we want to default them:
-            const initialFields = folderTemplates.map(tpl => ({
-                id: `temp-${tpl.id}`,
-                attribute: tpl,
-                value: tpl.valorDefecto || '',
-                isTemp: true
-            }));
+            // Only auto-populate REQUIRED templates
+            const initialFields = folderTemplates
+                .filter(tpl => tpl.esObligatorio)
+                .map(tpl => ({
+                    id: `temp-${tpl.id}-${Math.random().toString(36).substr(2, 9)}`,
+                    attribute: tpl,
+                    value: tpl.valorDefecto || '',
+                    isTemp: true
+                }));
             setFields(initialFields);
         } catch (err) {
             console.error("Error creating draft:", err);
@@ -127,7 +131,8 @@ const EntityBuilder = ({ mode }) => {
                 iconUrl: data.iconUrl || null,
                 tags: data.tags || '',
                 tipo: data.tipoEspecial || getHierarchyType(data.tipo).id, // Ensure 'tipo' is set
-                color: data.color || '#6366f1' // Ensure 'color' is set
+                color: data.color || '#6366f1', // Ensure 'color' is set
+                categoria: data.categoria || 'Individual'
             });
 
             if (data.carpeta?.id) {
@@ -135,12 +140,14 @@ const EntityBuilder = ({ mode }) => {
                 setupContextHandlers(folderTemplates);
             }
 
-            const loadedFields = (data.valores || []).map(val => ({
-                id: val.id.toString(),
-                attribute: val.plantilla,
-                value: val.valor,
-                isTemp: false
-            }));
+            const loadedFields = (data.valores || [])
+                .filter(val => val.plantilla) // Filter out values without a template
+                .map(val => ({
+                    id: val.id.toString(),
+                    attribute: val.plantilla,
+                    value: val.valor,
+                    isTemp: false
+                }));
             setFields(loadedFields);
         } catch (err) {
             console.error("Error loading entity:", err);
@@ -216,7 +223,8 @@ const EntityBuilder = ({ mode }) => {
                 notas: entity.notas,
                 iconUrl: entity.iconUrl,
                 tipoEspecial: entity.tipoEspecial || 'entidadindividual',
-                color: entity.color // Include color in the payload
+                color: entity.color, // Include color in the payload
+                categoria: entity.categoria
             };
 
             let targetId = entity.id;
@@ -227,7 +235,9 @@ const EntityBuilder = ({ mode }) => {
                 targetId = newEntity.id;
 
                 // Save Attributes
-                for (const field of fields) {
+                const updatedFields = [...fields];
+                for (let i = 0; i < updatedFields.length; i++) {
+                    const field = updatedFields[i];
                     if (field.isTemp) {
                         const val = await api.post(`/world-bible/entities/${newEntity.id}/attributes`, {
                             plantillaId: field.attribute.id
@@ -236,15 +246,22 @@ const EntityBuilder = ({ mode }) => {
                             valorId: val.id,
                             nuevoValor: field.value
                         }]);
+
+                        updatedFields[i] = {
+                            ...field,
+                            id: val.id.toString(),
+                            isTemp: false
+                        };
                     }
                 }
+                setFields(updatedFields);
                 setSaving(false);
 
                 if (shouldRedirect) {
                     navigate(`/${username}/${projectName}/bible/folder/${folderSlug}`);
                 } else {
-                    // Update URL without reloading to switch to Edit Mode
-                    navigate(`/${username}/${projectName}/bible/folder/${folderSlug}/entity/${newEntity.slug || newEntity.id}/edit`, { replace: true });
+                    // Update URL without reloading to switch to Edit Mode (View Mode acts as Edit in Builder)
+                    navigate(`/${username}/${projectName}/bible/folder/${folderSlug}/entity/${newEntity.slug || newEntity.id}`, { replace: true });
                 }
                 return;
             }
@@ -273,7 +290,11 @@ const EntityBuilder = ({ mode }) => {
             }
 
             // Also handle newly added fields during edit (converted from temp)
-            for (const field of fields) {
+            let hasNewFields = false;
+            const updatedFields = [...fields];
+
+            for (let i = 0; i < updatedFields.length; i++) {
+                const field = updatedFields[i];
                 if (field.isTemp) {
                     const val = await api.post(`/world-bible/entities/${targetId}/attributes`, {
                         plantillaId: field.attribute.id
@@ -282,10 +303,19 @@ const EntityBuilder = ({ mode }) => {
                         valorId: val.id,
                         nuevoValor: field.value
                     }]);
-                    // Update local state to make it non-temp
-                    field.id = val.id.toString();
-                    field.isTemp = false;
+
+                    // Update field description with real ID
+                    updatedFields[i] = {
+                        ...field,
+                        id: val.id.toString(),
+                        isTemp: false
+                    };
+                    hasNewFields = true;
                 }
+            }
+
+            if (hasNewFields) {
+                setFields(updatedFields);
             }
 
             setSaving(false);
@@ -368,10 +398,19 @@ const EntityBuilder = ({ mode }) => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">Entity Type</label>
-                                        <div className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-sm text-slate-400 capitalize cursor-not-allowed">
-                                            {entity.tipoEspecial || 'Standard'}
-                                        </div>
+                                        <label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">Entity Type / Category</label>
+                                        <select
+                                            value={entity.categoria || 'Individual'}
+                                            onChange={e => handleCoreChange('categoria', e.target.value)}
+                                            className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-sm text-white focus:border-primary/50 outline-none transition-colors appearance-none"
+                                        >
+                                            <option value="Individual">Individual (Character/Person)</option>
+                                            <option value="Group">Group / Faction</option>
+                                            <option value="Location">Location</option>
+                                            <option value="Event">Event</option>
+                                            <option value="Object">Object / Item</option>
+                                            <option value="Concept">Concept / Magic</option>
+                                        </select>
                                     </div>
                                     <div>
                                         <label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">Tags (comma separated)</label>
@@ -480,52 +519,51 @@ const EntityBuilder = ({ mode }) => {
                             ) : (
                                 <GlassPanel className="p-6 lg:col-span-2">
                                     <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2 mb-6">
-                                        <span className="material-symbols-outlined text-sm">psychology</span> Personality / Stats
+                                        <span className="material-symbols-outlined text-sm">sticky_note_2</span> Quick Notes
                                     </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        {fields.filter(f => f.attribute.tipo === 'number').map(f => (
-                                            <div key={f.id} className="space-y-2">
-                                                <div className="flex justify-between">
-                                                    <span className="text-xs font-bold text-white">{f.attribute.nombre}</span>
-                                                    <span className="text-xs text-primary font-mono">{f.value || 0}</span>
-                                                </div>
-                                                <input
-                                                    type="range"
-                                                    min="0" max="100"
-                                                    value={f.value || 0}
-                                                    onChange={e => handleFieldChange(f.id, e.target.value)}
-                                                    className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
-                                                />
-                                            </div>
-                                        ))}
-                                        {fields.filter(f => f.attribute.tipo === 'number').length === 0 && (
-                                            <div className="col-span-2 text-center text-xs text-slate-500 italic py-4">
-                                                No numeric attributes defined. Add them from the Templates tab.
-                                            </div>
-                                        )}
-                                    </div>
+                                    <textarea
+                                        className="w-full h-40 bg-black/30 border border-white/10 rounded-xl p-4 text-sm text-slate-300 leading-relaxed resize-none focus:border-primary/50 outline-none transition-colors custom-scrollbar font-mono placeholder:text-slate-600"
+                                        placeholder="Quick notes about this entity..."
+                                        value={entity.notas || ''}
+                                        onChange={e => handleCoreChange('notas', e.target.value)}
+                                    />
                                 </GlassPanel>
                             )}
                         </div>
                     )}
 
-                    {activeEntityTab === 'backstory' && (
-                        <div className="animate-in fade-in duration-500">
-                            <GlassPanel className="min-h-[60vh] flex flex-col p-8">
+                    {activeEntityTab === 'narrative' && (
+                        <div className="animate-in fade-in duration-500 space-y-8">
+                            <GlassPanel className="min-h-[40vh] flex flex-col p-8">
                                 <div className="flex items-center justify-between mb-6">
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-primary">Biography</h3>
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-sm">history_edu</span> Biography
+                                    </h3>
                                     <span className="text-[10px] text-slate-500 bg-white/5 px-2 py-1 rounded">Markdown Supported</span>
                                 </div>
                                 <textarea
-                                    className="flex-1 w-full bg-transparent border-none outline-none text-slate-300 leading-relaxed resize-none focus:ring-0 placeholder:text-slate-600 custom-scrollbar text-base"
+                                    className="flex-1 w-full bg-transparent border-none outline-none text-slate-300 leading-relaxed resize-none focus:ring-0 placeholder:text-slate-600 custom-scrollbar text-base min-h-[300px]"
                                     placeholder="Write the origin story..."
                                     value={entity.descripcion || ''}
                                     onChange={e => handleCoreChange('descripcion', e.target.value)}
                                 />
                             </GlassPanel>
+
+                            <GlassPanel className="min-h-[40vh]">
+                                <h3 className="text-xs font-black uppercase tracking-widest text-primary p-6 pb-0 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-sm">hub</span> Relationships
+                                </h3>
+                                {isCreation ? (
+                                    <div className="p-12 text-center text-slate-500">
+                                        <span className="material-symbols-outlined text-4xl mb-4">save_as</span>
+                                        <p className="text-sm font-bold">Please save the entity first to manage relationships.</p>
+                                    </div>
+                                ) : (
+                                    <RelationshipManager entityId={entity.id} entityType={entity.tipo || 'entidadindividual'} />
+                                )}
+                            </GlassPanel>
                         </div>
                     )}
-
                     {activeEntityTab === 'attributes' && (
                         <div
                             className={`animate-in fade-in duration-500 space-y-6 min-h-[50vh] transition-colors rounded-2xl p-4 ${window.isDraggingOver ? 'bg-primary/10 border-2 border-dashed border-primary' : ''}`}
@@ -544,16 +582,24 @@ const EntityBuilder = ({ mode }) => {
                                 const type = e.dataTransfer.getData('application/reactflow/type');
                                 if (type !== 'attribute') return;
 
-                                const templateId = parseInt(e.dataTransfer.getData('templateId'));
-                                const tpl = availableTemplatesLocal.find(t => t.id === templateId);
+                                let tpl = null;
+                                try {
+                                    const json = e.dataTransfer.getData('templateData');
+                                    if (json) {
+                                        tpl = JSON.parse(json);
+                                    } else {
+                                        // Fallback to local lookup
+                                        const templateId = parseInt(e.dataTransfer.getData('templateId'));
+                                        tpl = availableTemplatesLocal.find(t => t.id === templateId);
+                                    }
+                                } catch (err) {
+                                    console.error("Drop error", err);
+                                }
 
                                 if (tpl) {
                                     setFields(prev => {
-                                        if (prev.some(f => f.attribute.id === tpl.id)) {
-                                            return prev;
-                                        }
                                         return [...prev, {
-                                            id: `temp-${tpl.id}`,
+                                            id: `temp-${tpl.id}-${Date.now()}`,
                                             attribute: tpl,
                                             value: tpl.valorDefecto || '',
                                             isTemp: true
@@ -575,7 +621,7 @@ const EntityBuilder = ({ mode }) => {
                                         <p>Arrastra plantillas aquí para añadir atributos</p>
                                     </div>
                                 )}
-                                {fields.filter(f => f.attribute.tipo !== 'number').map((field) => (
+                                {fields.filter(f => f.attribute).map((field) => (
                                     <AttributeField
                                         key={field.id}
                                         attribute={field.attribute}
@@ -588,39 +634,7 @@ const EntityBuilder = ({ mode }) => {
                         </div>
                     )}
 
-                    {activeEntityTab === 'relationships' && (
-                        <div className="animate-in fade-in duration-500">
-                            <GlassPanel className="min-h-[50vh]">
-                                {isCreation ? (
-                                    <div className="p-20 text-center text-slate-500">
-                                        <span className="material-symbols-outlined text-4xl mb-4">save_as</span>
-                                        <p className="text-sm font-bold">Please save the entity first to manage relationships.</p>
-                                    </div>
-                                ) : (
-                                    <RelationshipManager entityId={entity.id} entityType={entity.tipo || 'entidadindividual'} />
-                                )}
-                            </GlassPanel>
-                        </div>
-                    )}
 
-                    {activeEntityTab === 'notes' && (
-                        <div className="animate-in fade-in duration-500">
-                            <GlassPanel className="min-h-[60vh] flex flex-col p-8 bg-yellow-900/5 border-yellow-500/10">
-                                <div className="flex items-center justify-between mb-6">
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-yellow-500 flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-sm">sticky_note_2</span> GM Notes (Private)
-                                    </h3>
-                                    <span className="text-[10px] text-yellow-500/50 uppercase font-bold">Not visible to players</span>
-                                </div>
-                                <textarea
-                                    className="flex-1 w-full bg-transparent border-none outline-none text-yellow-100/80 leading-relaxed resize-none focus:ring-0 placeholder:text-yellow-500/20 custom-scrollbar text-sm font-mono"
-                                    placeholder="Secret notes, plot hooks, or truth..."
-                                    value={entity.notas || ''}
-                                    onChange={e => handleCoreChange('notas', e.target.value)}
-                                />
-                            </GlassPanel>
-                        </div>
-                    )}
                 </div>
 
 

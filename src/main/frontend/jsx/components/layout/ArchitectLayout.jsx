@@ -169,6 +169,7 @@ const ArchitectLayout = () => {
                         <NavItem to={`${baseUrl}/bible`} icon="menu_book" label="World Bible" collapsed={!leftOpen} />
                         <NavItem to={`${baseUrl}/map`} icon="map" label="Atlas" collapsed={!leftOpen} />
                         <NavItem to={`${baseUrl}/timeline`} icon="calendar_month" label="Chronology" collapsed={!leftOpen} />
+                        <NavItem to={`${baseUrl}/graph`} icon="hub" label="Graph" collapsed={!leftOpen} />
                         <div className="h-px bg-glass-border my-2 mx-2 opacity-50"></div>
                         <NavItem to={`${baseUrl}/writing`} icon="edit_note" label="Writing" collapsed={!leftOpen} />
                         <NavItem to={`${baseUrl}/settings`} icon="settings" label="Settings" collapsed={!leftOpen} />
@@ -217,6 +218,7 @@ const ArchitectLayout = () => {
                         setOnMapSettingsChange,
 
                         // Entity Builder Props
+                        entityTabs, setEntityTabs,
                         entityTabs, setEntityTabs,
                         activeEntityTab, setActiveEntityTab,
 
@@ -426,9 +428,8 @@ const ArchitectLayout = () => {
                                             const getIcon = (t) => {
                                                 switch (t.toLowerCase()) {
                                                     case 'identity': return 'badge';
-                                                    case 'backstory': return 'auto_stories';
+                                                    case 'narrative': return 'auto_stories';
                                                     case 'attributes': return 'tune';
-                                                    case 'relationships': return 'hub';
                                                     case 'notes': return 'edit_note';
                                                     default: return 'circle';
                                                 }

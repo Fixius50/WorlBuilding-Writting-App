@@ -53,15 +53,15 @@ public class WorldBibleController {
 
     @GetMapping("/folders/{idOrSlug}")
     public ResponseEntity<?> getFolder(@PathVariable String idOrSlug) {
-        if (isNumeric(idOrSlug)) {
-            return carpetaRepository.findById(Long.parseLong(idOrSlug))
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-        } else {
-            return carpetaRepository.findBySlug(idOrSlug)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-        }
+        Long id = resolveFolderId(idOrSlug);
+        if (id == null)
+            return ResponseEntity.notFound().build();
+
+        java.util.Map<String, Object> detail = worldBibleService.getFolderDetail(id);
+        if (detail == null)
+            return ResponseEntity.notFound().build();
+
+        return ResponseEntity.ok(detail);
     }
 
     private boolean isNumeric(String str) {
@@ -165,11 +165,12 @@ public class WorldBibleController {
         String tipoEspecial = (String) payload.get("tipoEspecial");
         String descripcion = (String) payload.get("descripcion");
         String iconUrl = (String) payload.get("iconUrl");
+        String categoria = (String) payload.get("categoria");
 
         try {
             return ResponseEntity
                     .ok(worldBibleService.createEntity(nombre, proyecto, carpetaId.longValue(), tipoEspecial,
-                            descripcion, iconUrl));
+                            descripcion, iconUrl, categoria));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -240,10 +241,11 @@ public class WorldBibleController {
             String tipoEspecial = (String) payload.get("tipoEspecial");
             String descripcion = (String) payload.get("descripcion");
             String iconUrl = (String) payload.get("iconUrl");
+            String categoria = (String) payload.get("categoria");
 
             return ResponseEntity.ok(worldBibleService.updateEntity(id, nombre,
                     carpetaId != null ? carpetaId.longValue() : null,
-                    tipoEspecial, descripcion, iconUrl));
+                    tipoEspecial, descripcion, iconUrl, categoria));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -265,6 +267,9 @@ public class WorldBibleController {
             @RequestBody Map<String, Object> payload) {
         String descripcion = (String) payload.get("descripcion");
         String tags = (String) payload.get("tags");
+        // Also allow updating category here if needed, but usually main updateEntity
+        // handles it.
+        // Let's stick to updateEntity for main props.
         return ResponseEntity.ok(worldBibleService.updateEntityDetails(entityId, descripcion, tags));
     }
 

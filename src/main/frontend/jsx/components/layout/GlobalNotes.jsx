@@ -1,29 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import ConfirmationModal from '../ConfirmationModal'; // Adjust path if needed
 
-const GlobalNotes = ({ projectName }) => {
+const GlobalNotes = ({ projectName, storageKey }) => {
     const [notes, setNotes] = useState([]);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [editingNoteId, setEditingNoteId] = useState(null);
 
+    const getStorageKey = () => storageKey || `notes_v2_${projectName}`;
+
     useEffect(() => {
-        const saved = localStorage.getItem(`notes_v2_${projectName}`);
+        const key = getStorageKey();
+        if (!key) return; // Safety
+
+        const saved = localStorage.getItem(key);
         if (saved) {
             setNotes(JSON.parse(saved));
-        } else {
-            // Migration from old single string if exists
+        } else if (!storageKey) {
+            // Migration from old single string if exists (ONLY for global project notes)
             const oldNotes = localStorage.getItem(`notes_${projectName}`);
             if (oldNotes) {
                 const initialNote = { id: Date.now(), title: 'Nota General', content: oldNotes };
                 setNotes([initialNote]);
-                localStorage.setItem(`notes_v2_${projectName}`, JSON.stringify([initialNote]));
+                localStorage.setItem(key, JSON.stringify([initialNote]));
             }
         }
-    }, [projectName]);
+    }, [projectName, storageKey]);
 
     const saveNotes = (newNotes) => {
         setNotes(newNotes);
-        localStorage.setItem(`notes_v2_${projectName}`, JSON.stringify(newNotes));
+        const key = getStorageKey();
+        if (key) localStorage.setItem(key, JSON.stringify(newNotes));
     };
 
     const addNote = () => {

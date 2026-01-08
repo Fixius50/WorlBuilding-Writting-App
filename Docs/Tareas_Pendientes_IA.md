@@ -25,8 +25,8 @@ El constructor actual es funcional pero necesita alinearse con el nuevo diseño 
     - Permitir subir icono personalizado (Local Image) para la entidad.
 
 ## 3. Mejoras de "Calidad de Vida" (UX)
-- [ ] **Renombrar en Sidebar**: Añadir opción "Rename" al menú contextual del árbol lateral.
-- [ ] **Breadcrumbs**: Implementar migas de pan en la vista de carpetas para mejorar la navegación profunda.
+- [ ] **Renombrar en Sidebar**: Añadir opción "Rename" al menú contextual del árbol lateral (Hecho).
+- [x] **Breadcrumbs**: Implementar migas de pan en la vista de carpetas para mejorar la navegación profunda.
 - [ ] **Favoritos**: Sección en el sidebar para acceso rápido a entidades frecuentes.
 
 ## Notas Técnicas
@@ -35,9 +35,11 @@ El constructor actual es funcional pero necesita alinearse con el nuevo diseño 
 
 ## 4. Refactorización Técnica y Backend (Desde TODOs)
 Tareas extraídas de `WorldBibleController.java`:
-- [ ] **Refactorización Flujo de Creación (Sin Prompts)**: Eliminar el uso de `window.prompt` y usar modales/wizards integrados.
 - [ ] **Restaurar Explorador Lateral**: Limpiar el sidebar para mostrar solo estructura de carpetas relevante.
 - [ ] **Rutas de Creación Directa**: Implementar rutas como `/new/:type` para acceso rápido.
+- [ ] **Guardado Diferido (Post-draft)**: Permitir crear entidades en memoria y solo persistir al guardar (evitar basura en DB).
+- [x] **Refactorización Flujo de Creación (Sin Prompts)**: Reemplazado todos los `window.prompt` por `InputModal` o edición en línea.
+- [x] **Breadcrumbs**: Implementado en Backend (`FolderDetail`) y Frontend (`Breadcrumbs.jsx`).
 - [ ] **Guardado Diferido (Post-draft)**: Permitir crear entidades en memoria y solo persistir al guardar (evitar basura en DB).
 - [x] **Herencia de Plantillas**: Completado mediante la implementación de **Atributos Globales**.
 

@@ -7,6 +7,7 @@ import ProjectView from './pages/ProjectView';
 import Settings from './pages/Settings';
 import ArchitectLayout from './components/layout/ArchitectLayout';
 import GraphView from './pages/Graph/GraphView';
+import GeneralGraphView from './pages/Graph/GeneralGraphView';
 import EntityRouter from './pages/Entities/EntityRouter';
 import TimelineView from './pages/Timeline/TimelineView';
 import MapRouter from './pages/Maps/MapRouter';
@@ -63,7 +64,7 @@ function App() {
                         <Route path="timeline" element={<TimelineView />} />
                         <Route path="languages" element={<LinguisticsRouter />} />
                         <Route path="trash" element={<TrashView />} />
-                        <Route path="graph" element={<GraphView />} />
+                        <Route path="graph" element={<GeneralGraphView />} />
                     </Route>
                 </Route>
             </Routes>

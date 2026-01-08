@@ -96,6 +96,7 @@ const TemplateManager = ({ compact = false }) => {
                                 onDragStart={(e) => {
                                     e.dataTransfer.setData('application/reactflow/type', 'attribute');
                                     e.dataTransfer.setData('templateId', tpl.id);
+                                    e.dataTransfer.setData('templateData', JSON.stringify(tpl));
                                     e.dataTransfer.effectAllowed = 'copy';
                                 }}
                             >
@@ -118,10 +119,10 @@ const TemplateManager = ({ compact = false }) => {
 
                     <NewFieldForm onAdd={handleCreateTemplate} />
                 </div>
-            </GlassPanel>
+            </GlassPanel >
 
             {/* Confirmation Modal */}
-            <ConfirmationModal
+            < ConfirmationModal
                 isOpen={!!confirmDeleteId}
                 onClose={() => setConfirmDeleteId(null)}
                 onConfirm={confirmDeleteAction}
@@ -130,7 +131,7 @@ const TemplateManager = ({ compact = false }) => {
                 confirmText="Eliminar"
                 type="danger"
             />
-        </div>
+        </div >
     );
 };
 

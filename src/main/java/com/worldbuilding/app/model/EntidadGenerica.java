@@ -28,6 +28,7 @@ public class EntidadGenerica {
     private Carpeta carpeta;
 
     @OneToMany(mappedBy = "entidad", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("id ASC")
     private List<AtributoValor> valores;
 
     @Column(name = "tipo_especial")
@@ -59,6 +60,9 @@ public class EntidadGenerica {
 
     @Column(name = "color")
     private String color; // Hex code
+
+    @Column(name = "categoria")
+    private String categoria; // e.g. "Individual", "Group", "Location", "Event"
 
     // Getters y Setters
     public Long getId() {
@@ -181,5 +185,13 @@ public class EntidadGenerica {
 
     public void setColor(String color) {
         this.color = color;
+    }
+
+    public String getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
     }
 }

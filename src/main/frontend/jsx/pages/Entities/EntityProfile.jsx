@@ -68,6 +68,11 @@ const EntityProfile = () => {
                                         {entity.carpeta.nombre}
                                     </span>
                                 )}
+                                {entity.categoria && (
+                                    <span className="px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-[10px] font-black uppercase tracking-widest border border-purple-500/20">
+                                        {entity.categoria}
+                                    </span>
+                                )}
                             </div>
                             <div className="flex gap-2">
                                 {entity.tags && entity.tags.split(',').map((tag, i) => (
@@ -91,7 +96,7 @@ const EntityProfile = () => {
 
             {/* --- TABS --- */}
             <div className="flex items-center gap-8 border-b border-white/5 mb-8">
-                {['overview', 'chronology', 'relationships'].map(tab => (
+                {['overview', 'chronology'].map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
@@ -138,12 +143,66 @@ const EntityProfile = () => {
                             </GlassPanel>
 
                             {/* Full Bio */}
+                            {/* Merged Narrative & Connections Panel */}
                             <GlassPanel className="p-8">
-                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 mb-4">Complete Backstory</h3>
-                                <div className="prose prose-invert prose-sm max-w-none text-slate-300">
-                                    {entity.descripcion?.split('\n').map((p, i) => (
-                                        <p key={i}>{p}</p>
-                                    ))}
+                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 mb-8 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-lg">auto_stories</span>
+                                    Narrative & Connections
+                                </h3>
+
+                                <div className="space-y-8 divide-y divide-white/5">
+                                    {/* Section 1: Biography / Map Config */}
+                                    <section className="pb-8">
+                                        {entity.descripcion && entity.descripcion.startsWith('{"') ? (
+                                            <div className="p-6 rounded-xl border border-amber-500/30 bg-amber-500/5 flex flex-col items-center text-center">
+                                                <span className="material-symbols-outlined text-4xl text-amber-500 mb-3">map</span>
+                                                <h4 className="text-lg font-bold text-amber-500 mb-1">Interactive Map Data</h4>
+                                                <p className="text-sm text-slate-400 max-w-md">
+                                                    This entity contains spatial configuration data. Access the
+                                                    <strong className="text-white ml-1">Map Editor</strong> to visualize and modify this content.
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div className="prose prose-invert prose-sm max-w-none text-slate-300 leading-relaxed">
+                                                {/* Optional: Add dropcap or styling if needed */}
+                                                {(entity.descripcion || "No description provided.").split('\n').map((p, i) => (
+                                                    <p key={i} className="mb-4 last:mb-0">{p}</p>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </section>
+
+                                    {/* Section 2: Relationships */}
+                                    <section className="pt-8">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-primary mb-4 flex items-center gap-2 opacity-80">
+                                            <span className="w-1 h-1 rounded-full bg-primary"></span>
+                                            Established Connections
+                                        </h4>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            {relationships.map((rel, i) => (
+                                                <div key={i} className="group flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5 hover:border-primary/30 hover:bg-white/10 transition-all cursor-pointer">
+                                                    <div className="size-10 rounded-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center text-sm font-bold text-white group-hover:scale-110 transition-transform shadow-inner border border-white/10">
+                                                        {rel.name.charAt(0)}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="text-sm font-bold text-white group-hover:text-primary transition-colors truncate">{rel.name}</div>
+                                                        <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                                                            <span className="material-symbols-outlined text-[10px]">link</span>
+                                                            <span className="truncate">{rel.role}</span>
+                                                        </div>
+                                                    </div>
+                                                    <span className="material-symbols-outlined text-slate-600 group-hover:text-primary text-sm -ml-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">arrow_forward</span>
+                                                </div>
+                                            ))}
+                                            {relationships.length === 0 && (
+                                                <div className="col-span-2 py-8 text-center bg-white/5 rounded-xl border border-dashed border-white/10">
+                                                    <span className="material-symbols-outlined text-slate-600 mb-2">link_off</span>
+                                                    <p className="text-sm text-slate-500 italic">No established relationships found.</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </section>
                                 </div>
                             </GlassPanel>
                         </div>
@@ -153,13 +212,6 @@ const EntityProfile = () => {
                         <div className="p-12 text-center border-2 border-dashed border-white/5 rounded-3xl opacity-50">
                             <span className="material-symbols-outlined text-4xl mb-4">history_edu</span>
                             <p className="text-sm text-slate-500">Timeline events will appear here.</p>
-                        </div>
-                    )}
-
-                    {activeTab === 'relationships' && (
-                        <div className="p-12 text-center border-2 border-dashed border-white/5 rounded-3xl opacity-50">
-                            <span className="material-symbols-outlined text-4xl mb-4">hub</span>
-                            <p className="text-sm text-slate-500">Relationship graph visualization coming soon.</p>
                         </div>
                     )}
 

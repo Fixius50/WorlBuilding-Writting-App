@@ -5,6 +5,7 @@ import { Stage, Layer, Line, Image as KonvaImage, Rect, Text as KonvaText, Trans
 import api from '../../../js/services/api';
 import Button from '../../components/common/Button';
 import GlassPanel from '../../components/common/GlassPanel';
+import InputModal from '../../components/common/InputModal';
 
 // --- COMPONENTS FOR WIZARD ---
 
@@ -130,6 +131,9 @@ const MapEditor = ({ mode: initialMode }) => {
     const [texts, setTexts] = useState([]);
     const [selectedId, setSelectedId] = useState(null);
     const isDrawing = React.useRef(false);
+
+    // Text Editing
+    const [textEditState, setTextEditState] = useState({ isOpen: false, id: null, text: '' });
 
     // Check click on empty space to deselect
     const checkDeselect = (e) => {
@@ -749,14 +753,9 @@ const MapEditor = ({ mode: initialMode }) => {
                                         fill={text.color}
                                         draggable={tool === 'select'}
                                         onClick={() => tool === 'select' && setSelectedId(text.id)}
+                                        onTap={() => tool === 'select' && setSelectedId(text.id)}
                                         onDblClick={(e) => {
-                                            // Simple prompt for now
-                                            const newText = prompt("Edit text:", text.text);
-                                            if (newText !== null) {
-                                                const newTexts = texts.slice();
-                                                newTexts[i].text = newText;
-                                                setTexts(newTexts);
-                                            }
+                                            setTextEditState({ isOpen: true, id: text.id, text: text.text });
                                         }}
                                     />
                                 ))}
@@ -767,6 +766,17 @@ const MapEditor = ({ mode: initialMode }) => {
                     </div>
                 </div>
             </div>
+
+            <InputModal
+                isOpen={textEditState.isOpen}
+                onClose={() => setTextEditState(prev => ({ ...prev, isOpen: false }))}
+                title="Edit Map Text"
+                initialValue={textEditState.text}
+                onConfirm={(newVal) => {
+                    setTexts(prev => prev.map(t => t.id === textEditState.id ? { ...t, text: newVal } : t));
+                }}
+                confirmText="Save Text"
+            />
         </div>
     );
 };

@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -100,6 +102,41 @@ public class WorldBibleService {
         carpetaRepository.save(c);
     }
 
+    @Transactional(readOnly = true)
+    public Map<String, Object> getFolderDetail(Long id) {
+        Optional<Carpeta> folderOpt = carpetaRepository.findById(id);
+        if (folderOpt.isEmpty())
+            return null;
+
+        Carpeta folder = folderOpt.get();
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", folder.getId());
+        map.put("nombre", folder.getNombre());
+        map.put("descripcion", folder.getDescripcion());
+        map.put("slug", folder.getSlug());
+        map.put("tipo", folder.getTipo());
+        if (folder.getPadre() != null) {
+            map.put("padreId", folder.getPadre().getId());
+        } else {
+            map.put("padreId", null);
+        }
+
+        // Add path for breadcrumbs
+        List<Map<String, Object>> path = new ArrayList<>();
+        Carpeta current = folder.getPadre();
+        while (current != null) {
+            Map<String, Object> crumb = new HashMap<>();
+            crumb.put("id", current.getId());
+            crumb.put("nombre", current.getNombre());
+            crumb.put("slug", current.getSlug());
+            path.add(0, crumb); // Add to beginning
+            current = current.getPadre();
+        }
+        map.put("path", path);
+
+        return map;
+    }
+
     @Transactional
     public Carpeta renameFolder(Long id, String newName) {
         Optional<Carpeta> folderOpt = carpetaRepository.findById(id);
@@ -123,7 +160,7 @@ public class WorldBibleService {
 
     @Transactional
     public EntidadGenerica createEntity(String nombre, Cuaderno proyecto, Long carpetaId, String tipoEspecial,
-            String descripcion, String iconUrl) {
+            String descripcion, String iconUrl, String categoria) {
         Optional<Carpeta> carpetaOpt = carpetaRepository.findById(carpetaId);
         if (carpetaOpt.isEmpty())
             throw new RuntimeException("Folder not found");
@@ -142,6 +179,7 @@ public class WorldBibleService {
         // Set optional fields
         entidad.setDescripcion(descripcion != null ? descripcion : "");
         entidad.setIconUrl(iconUrl);
+        entidad.setCategoria(categoria);
         entidad.setTags("");
         entidad.setTags("");
 
@@ -265,7 +303,7 @@ public class WorldBibleService {
 
     @Transactional
     public EntidadGenerica updateEntity(Long id, String nombre, Long carpetaId, String tipoEspecial, String descripcion,
-            String iconUrl) {
+            String iconUrl, String categoria) {
         Optional<EntidadGenerica> entOpt = entidadGenericaRepository.findById(id);
         if (entOpt.isEmpty())
             throw new RuntimeException("Entity not found");
@@ -291,6 +329,8 @@ public class WorldBibleService {
             ent.setDescripcion(descripcion);
         if (iconUrl != null)
             ent.setIconUrl(iconUrl);
+        if (categoria != null)
+            ent.setCategoria(categoria);
 
         return entidadGenericaRepository.save(ent);
     }

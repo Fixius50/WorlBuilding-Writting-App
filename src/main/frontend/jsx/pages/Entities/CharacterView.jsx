@@ -145,30 +145,63 @@ const CharacterView = ({ id }) => {
 
                     </div>
 
-                    {/* Center/Right Col */}
+                    {/* Center/Right Col: Unified Narrative & Relations */}
                     <div className="col-span-2 space-y-6">
                         <GlassPanel className="p-6 relative overflow-hidden group">
-                            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-sm">history_edu</span> Description & Lore
-                            </h3>
-                            <textarea
-                                value={character.descripcion || ''}
-                                onChange={(e) => handleChange('descripcion', e.target.value)}
-                                readOnly={!isEditing}
-                                className="w-full bg-transparent border-none outline-none text-slate-300 text-sm leading-relaxed mb-4 min-h-[150px] resize-none"
-                                placeholder="Write the history of this person..."
-                            />
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-sm">auto_stories</span> Narrative & Connections
+                                </h3>
+                                {!isEditing && <span className="text-[10px] text-slate-600 bg-white/5 px-2 py-1 rounded">Read Only</span>}
+                            </div>
 
-                            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-sm">psychology</span> Behavior
-                            </h3>
-                            <textarea
-                                value={character.comportamiento || ''}
-                                onChange={(e) => handleChange('comportamiento', e.target.value)}
-                                readOnly={!isEditing}
-                                className="w-full bg-transparent border-none outline-none text-slate-300 text-sm leading-relaxed min-h-[100px] resize-none"
-                                placeholder="How does this person act?"
-                            />
+                            {/* Backstory Section */}
+                            <div className="mb-8">
+                                <h4 className="text-[10px] font-black uppercase tracking-widest text-primary mb-3 opacity-80">Biography</h4>
+                                <textarea
+                                    value={character.descripcion || ''}
+                                    onChange={(e) => handleChange('descripcion', e.target.value)}
+                                    readOnly={!isEditing}
+                                    className={`w-full bg-transparent border-none outline-none text-slate-300 text-sm leading-relaxed resize-none custom-scrollbar ${isEditing ? 'min-h-[150px] placeholder-white/20' : 'h-auto overflow-hidden'}`}
+                                    placeholder="Write the history of this person..."
+                                />
+
+                                <h4 className="text-[10px] font-black uppercase tracking-widest text-primary mt-6 mb-3 opacity-80">Behavior & Personality</h4>
+                                <textarea
+                                    value={character.comportamiento || ''}
+                                    onChange={(e) => handleChange('comportamiento', e.target.value)}
+                                    readOnly={!isEditing}
+                                    className={`w-full bg-transparent border-none outline-none text-slate-300 text-sm leading-relaxed resize-none custom-scrollbar ${isEditing ? 'min-h-[100px]' : 'h-auto overflow-hidden'}`}
+                                    placeholder="How does this person act?"
+                                />
+                            </div>
+
+                            {/* Relations Section (Merged) */}
+                            <div className="pt-6 border-t border-white/5">
+                                <h4 className="text-[10px] font-black uppercase tracking-widest text-primary mb-4 flex items-center gap-2 opacity-80">
+                                    <span className="material-symbols-outlined text-sm">hub</span> Established Connections
+                                </h4>
+
+                                {character.relaciones && character.relaciones.length > 0 ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {character.relaciones.map((rel, i) => (
+                                            <div key={i} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5 hover:border-primary/30 transition-colors">
+                                                <div className="size-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold">
+                                                    {rel.entidadDestino?.nombre?.charAt(0) || '?'}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-sm font-bold text-white truncate">{rel.entidadDestino?.nombre || 'Unknown'}</div>
+                                                    <div className="text-[10px] text-primary truncate">{rel.tipoRelacion || 'Connected'}</div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="p-6 text-center bg-white/5 rounded-xl border border-dashed border-white/10">
+                                        <p className="text-xs text-slate-500 italic">No relationships recorded yet.</p>
+                                    </div>
+                                )}
+                            </div>
                         </GlassPanel>
                     </div>
                 </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useOutletContext } from 'react-router-dom';
 import api from '../../../js/services/api';
 import BibleCard from '../../components/bible/BibleCard';
+import Breadcrumbs from '../../components/common/Breadcrumbs';
 import { getHierarchyType, HIERARCHY_TYPES } from '../../../js/constants/hierarchy_types';
 
 const FolderView = () => {
@@ -18,6 +19,7 @@ const FolderView = () => {
     // Local state for data
     const [entities, setEntities] = useState([]);
     const [folder, setFolder] = useState(null);
+    const [path, setPath] = useState([]);
     const [loading, setLoading] = useState(true);
 
     // Filter Logic using Global Context
@@ -58,7 +60,15 @@ const FolderView = () => {
                 api.get(`/world-bible/folders/${folderSlug}`)
             ]);
             setEntities(ents);
-            setFolder(info || { name: 'Folder' });
+            // Handle new response format { folder: ..., path: ... }
+            if (info.folder) {
+                setFolder(info.folder);
+                setPath(info.path || []);
+            } else {
+                // Fallback for old/root?
+                setFolder(info || { name: 'Folder' });
+                setPath([]);
+            }
         } catch (err) {
             console.error("Error loading folder content:", err);
         } finally {
@@ -76,6 +86,11 @@ const FolderView = () => {
             <div className="flex-1 overflow-y-auto bg-[#0a0a0c] text-white w-full h-full relative">
                 <div className={`w-full min-h-[300px] ${typeInfo.bgColor} relative flex items-end p-10 border-b border-white/5`}>
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] to-transparent opacity-80 pointer-events-none"></div>
+
+                    <div className="absolute top-6 left-10 z-20">
+                        <Breadcrumbs path={path} currentFolder={folder} />
+                    </div>
+
                     <div className="relative z-10 flex gap-8 items-end w-full max-w-7xl mx-auto">
                         <div className={`w-32 h-32 rounded-3xl ${typeInfo.bgColor} border border-white/10 flex items-center justify-center shadow-2xl`}>
                             <span className={`material-symbols-outlined text-6xl ${typeInfo.color}`}>{typeInfo.icon}</span>
