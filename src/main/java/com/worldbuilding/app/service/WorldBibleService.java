@@ -144,7 +144,9 @@ public class WorldBibleService {
             Carpeta folder = folderOpt.get();
             folder.setNombre(newName);
             // Optional: update slug? Usually yes to match name.
-            folder.setSlug(generateUniqueSlug(newName, "folder"));
+            // DECISION: Do NOT update slug on rename to avoid breaking existing
+            // URLs/Bookmarks
+            // folder.setSlug(generateUniqueSlug(newName, "folder"));
             return carpetaRepository.save(folder);
         }
         throw new RuntimeException("Folder not found");
@@ -244,12 +246,20 @@ public class WorldBibleService {
 
     @Transactional
     public void updateEntityValues(Long entidadId, List<ValueUpdateDTO> updates) {
+        System.out.println(
+                "DEBUG: updateEntityValues called for Entity " + entidadId + " with " + updates.size() + " updates");
         for (ValueUpdateDTO update : updates) {
+            System.out.println(
+                    "DEBUG: Processing update - ID: " + update.getValorId() + ", Value: " + update.getNuevoValor());
             Optional<AtributoValor> valorOpt = atributoValorRepository.findById(update.getValorId());
-            valorOpt.ifPresent(v -> {
+            if (valorOpt.isPresent()) {
+                AtributoValor v = valorOpt.get();
                 v.setValor(update.getNuevoValor());
                 atributoValorRepository.save(v);
-            });
+                System.out.println("DEBUG: Saved value for ID " + v.getId() + ": " + v.getValor());
+            } else {
+                System.out.println("DEBUG: Value ID " + update.getValorId() + " NOT FOUND");
+            }
         }
     }
 
@@ -365,7 +375,9 @@ public class WorldBibleService {
     }
 
     public static class ValueUpdateDTO {
+        @com.fasterxml.jackson.annotation.JsonProperty("valorId")
         private Long valorId;
+        @com.fasterxml.jackson.annotation.JsonProperty("nuevoValor")
         private String nuevoValor;
 
         public Long getValorId() {

@@ -39,6 +39,9 @@ const FolderView = () => {
             if (folderId === (folder?.id || folderSlug)) {
                 if (removeId) {
                     setEntities(prev => prev.filter(ent => ent.id !== removeId));
+                } else if (item && item.slug && item.slug !== folderSlug) {
+                    // Slug changed (rename), redirect to new URL
+                    navigate(`/${username}/${projectName}/bible/folder/${item.slug}`, { replace: true });
                 } else {
                     loadFolderContent();
                 }
@@ -71,12 +74,27 @@ const FolderView = () => {
             }
         } catch (err) {
             console.error("Error loading folder content:", err);
+            setFolder(null);
+            setPath([]);
         } finally {
             setLoading(false);
         }
     };
 
     if (loading) return <div className="p-20 text-center animate-pulse text-text-muted">Loading sector...</div>;
+
+    if (!folder) {
+        return (
+            <div className="flex-1 flex flex-col items-center justify-center p-20 text-text-muted">
+                <span className="material-symbols-outlined text-6xl mb-4 opacity-20">folder_off</span>
+                <h2 className="text-xl font-bold opacity-50">Folder Not Found</h2>
+                <p className="text-sm opacity-30 mt-2">The sector you are looking for does not exist or has been moved.</p>
+                <Link to={`/${username}/${projectName}/bible`} className="mt-6 px-6 py-2 bg-white/5 hover:bg-white/10 rounded-full text-xs font-bold transition-colors">
+                    Return to Root
+                </Link>
+            </div>
+        );
+    }
 
     const isDashboard = folder && folder.tipo && (['UNIVERSE', 'GALAXY', 'SYSTEM', 'PLANET'].includes(folder.tipo) || folder.tipo === 'MAGIC');
     const typeInfo = folder ? getHierarchyType(folder.tipo) : HIERARCHY_TYPES.FOLDER;

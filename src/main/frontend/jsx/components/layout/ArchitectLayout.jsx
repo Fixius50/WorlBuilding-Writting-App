@@ -219,7 +219,6 @@ const ArchitectLayout = () => {
 
                         // Entity Builder Props
                         entityTabs, setEntityTabs,
-                        entityTabs, setEntityTabs,
                         activeEntityTab, setActiveEntityTab,
 
                         // Folder Filter Props

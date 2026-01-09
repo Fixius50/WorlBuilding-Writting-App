@@ -9,11 +9,11 @@ Este documento resume el estado actual del proyecto y las tareas críticas que d
 
 ## 1. Prioridad Alta: Editor de Mapas
 El esqueleto está listo, pero falta el motor gráfico.
-- [ ] **Re-integrar Konva/Canvas**:
-    - Actualmente `MapEditor.jsx` usa un `CanvasPlaceholder`.
+- [x] **Re-integrar Konva/Canvas**:
+    - Actualmente `MapEditor.jsx` usa un `CanvasPlaceholder` (Corregido: ahora usa `Stage` y `Layer`).
     - Hay que descomentar y adaptar la lógica de `react-konva` (Stage, Layers, Transformers) que está comentada o fue simplificada.
     - Sincronizar el Canvas real con el `gridSize` y `bgImage` del panel derecho.
-- [ ] **Herramientas de Dibujo**:
+- [x] **Herramientas de Dibujo**:
     - Implementar lógica para las herramientas de la barra izquierda (Pincel, Figuras, Texto).
     - Conectar estas herramientas con el estado de Konva.
 
@@ -53,3 +53,12 @@ Tareas extraídas de `WorldBibleController.java`:
     - Renombrado de sección "Dynamic Attributes" a "Atributos especiales".
 - [x] **Consistencia de UI**:
     - Reemplazo de todos los `window.confirm()` nativos por `ConfirmationModal` personalizado (Timeline, Notas, Templates).
+
+## 6. Corrección de Errores Críticos (Persistencia y Visualización) - [2026-01-09]
+- [x] **Persistencia de Entidades**:
+    - Solucionado error `TypeError: Cannot read properties of null` en `EntityBuilder.jsx` añadiendo validación de carpetas nulas.
+    - Corregido error de serialización Backend (`ByteBuddyInterceptor`) en `AtributoValor` mediante `@JsonIgnoreProperties` en `AtributoPlantilla`.
+- [x] **Visualización de Carpetas (404 / Empty)**:
+    - Backend: Desactivada la mutación de `slug` al renombrar carpetas en `WorldBibleService.java` para mantener integridad de URLs.
+    - Frontend: Implementada redirección automática en `FolderView.jsx` si se detecta un cambio de slug legítimo.
+    - Frontend: Nueva pantalla de "Folder Not Found" en lugar de vista rota.

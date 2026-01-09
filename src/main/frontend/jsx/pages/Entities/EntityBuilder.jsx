@@ -230,6 +230,11 @@ const EntityBuilder = ({ mode }) => {
             let targetId = entity.id;
 
             if (isCreation) {
+                if (!entity.carpeta || !entity.carpeta.id) {
+                    alert("Error: No folder selected or folder not found.");
+                    setSaving(false);
+                    return;
+                }
                 payload.carpetaId = entity.carpeta.id;
                 const newEntity = await api.post('/world-bible/entities', payload);
                 targetId = newEntity.id;
@@ -293,24 +298,33 @@ const EntityBuilder = ({ mode }) => {
             let hasNewFields = false;
             const updatedFields = [...fields];
 
+            console.log("Saving fields...", fields); // Debug Log
+
             for (let i = 0; i < updatedFields.length; i++) {
                 const field = updatedFields[i];
                 if (field.isTemp) {
-                    const val = await api.post(`/world-bible/entities/${targetId}/attributes`, {
-                        plantillaId: field.attribute.id
-                    });
-                    await api.patch(`/world-bible/entities/${targetId}/values`, [{
-                        valorId: val.id,
-                        nuevoValor: field.value
-                    }]);
+                    console.log("Processing temp field:", field); // Debug Log
+                    try {
+                        const val = await api.post(`/world-bible/entities/${targetId}/attributes`, {
+                            plantillaId: field.attribute.id
+                        });
+                        console.log("Created attribute value:", val); // Debug Log
 
-                    // Update field description with real ID
-                    updatedFields[i] = {
-                        ...field,
-                        id: val.id.toString(),
-                        isTemp: false
-                    };
-                    hasNewFields = true;
+                        await api.patch(`/world-bible/entities/${targetId}/values`, [{
+                            valorId: val.id,
+                            nuevoValor: field.value
+                        }]);
+
+                        // Update field description with real ID
+                        updatedFields[i] = {
+                            ...field,
+                            id: val.id.toString(),
+                            isTemp: false
+                        };
+                        hasNewFields = true;
+                    } catch (e) {
+                        console.error("Error saving field:", field, e);
+                    }
                 }
             }
 

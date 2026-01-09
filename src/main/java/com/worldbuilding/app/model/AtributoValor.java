@@ -40,7 +40,6 @@ public class AtributoValor {
         this.entidad = entidad;
     }
 
-    @com.fasterxml.jackson.annotation.JsonIgnore
     public AtributoPlantilla getPlantilla() {
         return plantilla;
     }
