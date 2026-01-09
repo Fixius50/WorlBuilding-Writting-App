@@ -20,12 +20,12 @@ El esqueleto está listo, pero falta el motor gráfico.
 ## 2. Refactorización del Constructor de Entidades (`EntityBuilder`)
 El constructor actual es funcional pero necesita alinearse con el nuevo diseño de "Panel Derecho Global".
     - [x] Migrar Tabs al Panel Derecho (Completado).
-- [ ] **Mejoras en Identidad**:
-    - Añadir campo "Apariencia" (Texto rico o imagen).
-    - Permitir subir icono personalizado (Local Image) para la entidad.
+- [x] **Mejoras en Identidad**:
+    - [x] Añadir campo "Apariencia" (Texto rico o imagen).
+    - [x] Permitir subir icono personalizado (Local Image) para la entidad.
 
 ## 3. Mejoras de "Calidad de Vida" (UX)
-- [ ] **Renombrar en Sidebar**: Añadir opción "Rename" al menú contextual del árbol lateral (Hecho).
+- [x] **Renombrar en Sidebar**: Añadir opción "Rename" al menú contextual del árbol lateral (Hecho).
 - [x] **Breadcrumbs**: Implementar migas de pan en la vista de carpetas para mejorar la navegación profunda.
 - [ ] **Favoritos**: Sección en el sidebar para acceso rápido a entidades frecuentes.
 

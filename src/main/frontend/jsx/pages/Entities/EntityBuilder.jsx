@@ -456,14 +456,38 @@ const EntityBuilder = ({ mode }) => {
                             {/* Appearance (Hidden for Maps) */}
                             {entity.tipoEspecial !== 'map' && (
                                 <GlassPanel className="p-6 space-y-6">
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2 mb-6">
-                                        <span className="material-symbols-outlined text-sm">palette</span> Appearance
-                                    </h3>
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-sm">palette</span> Appearance
+                                        </h3>
+                                        <div className="flex gap-2">
+                                            <label className="cursor-pointer text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-white transition-colors flex items-center gap-1">
+                                                <span className="material-symbols-outlined text-sm">add_photo_alternate</span>
+                                                Insert Image
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                    onChange={(e) => {
+                                                        const file = e.target.files[0];
+                                                        if (file) {
+                                                            const reader = new FileReader();
+                                                            reader.onloadend = () => {
+                                                                const markdown = `\n\n![${file.name}](${reader.result})\n`;
+                                                                handleCoreChange('apariencia', (entity.apariencia || '') + markdown);
+                                                            };
+                                                            reader.readAsDataURL(file);
+                                                        }
+                                                    }}
+                                                />
+                                            </label>
+                                        </div>
+                                    </div>
                                     <textarea
                                         value={entity.apariencia}
                                         onChange={e => handleCoreChange('apariencia', e.target.value)}
-                                        className="w-full h-40 bg-black/30 border border-white/10 rounded-xl p-4 text-sm text-slate-300 leading-relaxed resize-none focus:border-primary/50 outline-none transition-colors custom-scrollbar"
-                                        placeholder="Describe their physical appearance, clothing, distinct marks..."
+                                        className="w-full h-80 bg-black/30 border border-white/10 rounded-xl p-4 text-sm text-slate-300 leading-relaxed focus:border-primary/50 outline-none transition-colors custom-scrollbar font-mono"
+                                        placeholder="Describe their physical appearance, clothing, distinct marks... (Markdown Supported)"
                                     />
                                 </GlassPanel>
                             )}

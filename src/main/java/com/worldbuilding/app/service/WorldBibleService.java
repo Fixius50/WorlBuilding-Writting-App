@@ -298,7 +298,7 @@ public class WorldBibleService {
     }
 
     @Transactional
-    public EntidadGenerica updateEntityDetails(Long entityId, String descripcion, String tags) {
+    public EntidadGenerica updateEntityDetails(Long entityId, String descripcion, String tags, String apariencia) {
         Optional<EntidadGenerica> ent = entidadGenericaRepository.findById(entityId);
         if (ent.isPresent()) {
             EntidadGenerica e = ent.get();
@@ -306,6 +306,8 @@ public class WorldBibleService {
                 e.setDescripcion(descripcion);
             if (tags != null)
                 e.setTags(tags);
+            if (apariencia != null)
+                e.setApariencia(apariencia);
             return entidadGenericaRepository.save(e);
         }
         throw new RuntimeException("Entity not found");
@@ -313,7 +315,7 @@ public class WorldBibleService {
 
     @Transactional
     public EntidadGenerica updateEntity(Long id, String nombre, Long carpetaId, String tipoEspecial, String descripcion,
-            String iconUrl, String categoria) {
+            String iconUrl, String categoria, String apariencia) {
         Optional<EntidadGenerica> entOpt = entidadGenericaRepository.findById(id);
         if (entOpt.isEmpty())
             throw new RuntimeException("Entity not found");
@@ -341,6 +343,8 @@ public class WorldBibleService {
             ent.setIconUrl(iconUrl);
         if (categoria != null)
             ent.setCategoria(categoria);
+        if (apariencia != null)
+            ent.setApariencia(apariencia);
 
         return entidadGenericaRepository.save(ent);
     }

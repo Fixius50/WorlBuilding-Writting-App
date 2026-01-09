@@ -242,10 +242,11 @@ public class WorldBibleController {
             String descripcion = (String) payload.get("descripcion");
             String iconUrl = (String) payload.get("iconUrl");
             String categoria = (String) payload.get("categoria");
+            String apariencia = (String) payload.get("apariencia");
 
             return ResponseEntity.ok(worldBibleService.updateEntity(id, nombre,
                     carpetaId != null ? carpetaId.longValue() : null,
-                    tipoEspecial, descripcion, iconUrl, categoria));
+                    tipoEspecial, descripcion, iconUrl, categoria, apariencia));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -267,10 +268,11 @@ public class WorldBibleController {
             @RequestBody Map<String, Object> payload) {
         String descripcion = (String) payload.get("descripcion");
         String tags = (String) payload.get("tags");
+        String apariencia = (String) payload.get("apariencia");
         // Also allow updating category here if needed, but usually main updateEntity
         // handles it.
         // Let's stick to updateEntity for main props.
-        return ResponseEntity.ok(worldBibleService.updateEntityDetails(entityId, descripcion, tags));
+        return ResponseEntity.ok(worldBibleService.updateEntityDetails(entityId, descripcion, tags, apariencia));
     }
 
     @PostMapping("/folders/{id}/templates")
