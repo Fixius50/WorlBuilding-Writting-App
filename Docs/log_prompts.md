@@ -132,3 +132,11 @@
 - [x] ResoluciÃƒn de errores 401 (PermitAll + Session activation temprana).
 - [x] Fix de botÃƒn 'Guardar' desaparecido (RediseÃƒo de Header y Stacking Context).
 
+
+## Sesión 2026-01-10: Análisis y Arranque
+**Prompt:** Análisis, arranque y prueba de rutas.
+**Resultado:** Backend y Frontend levantados. Rutas verificadas (Dashboard accesible). Screenshot capturado.
+
+## Sesión 2026-01-10: Investigación Editores
+**Prompt:** Investigar librerías de texto (React, Clean, Mentions) y actualizar Roadmap.
+**Resultado:** Roadmap actualizado. Reporte de investigación creado (Tiptap como recomendación).

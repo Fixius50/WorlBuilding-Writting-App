@@ -20,6 +20,9 @@ import WorldBibleLayout from './pages/WorldBible/WorldBibleLayout';
 import BibleGridView from './pages/WorldBible/BibleGridView';
 import MapEditor from './pages/Specialized/MapEditor';
 
+// Zen Editor Import (was creating issues earlier, ensuring path is correct)
+// import ZenEditor from './components/editor/ZenEditor'; 
+
 function App() {
     return (
         <BrowserRouter>

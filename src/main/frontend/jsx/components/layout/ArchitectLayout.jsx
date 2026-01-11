@@ -75,6 +75,10 @@ const ArchitectLayout = () => {
     const [folderFilterType, setFolderFilterType] = useState('ALL');
     const isBibleContext = location.pathname.includes('/bible');
 
+    // Writing Context Logic
+    const isWritingContext = location.pathname.includes('/writing');
+    const [activeWritingTab, setActiveWritingTab] = useState('index'); // 'index', 'notes'
+
     // Edit State
     const [editingTemplate, setEditingTemplate] = useState(null);
 
@@ -147,7 +151,7 @@ const ArchitectLayout = () => {
                     {leftOpen ? (
                         <div className="flex items-center gap-2">
                             <div className="size-8 rounded-lg bg-surface-light flex items-center justify-center text-primary shadow-inner">
-                                <span className="material-symbols-outlined text-xl">auto_stories</span>
+                                <span className="material-symbols-outlined">auto_stories</span>
                             </div>
                             <h2 className="text-sm font-black uppercase tracking-widest text-white truncate max-w-[150px]">{loadedProjectName}</h2>
                         </div>
@@ -239,10 +243,26 @@ const ArchitectLayout = () => {
                 <header className="h-16 flex items-center px-6 border-b border-glass-border justify-between shrink-0">
                     {rightOpen ? (
                         <>
-                            {rightPanelMode === 'CUSTOM' ? (
+                            {rightPanelMode === 'CUSTOM' && !isWritingContext ? (
                                 <h2 className="text-xs font-black uppercase tracking-widest text-primary">
                                     {rightPanelTitle || 'Panel'}
                                 </h2>
+                            ) : isWritingContext ? (
+                                // TABS FOR WRITING MODE
+                                <div className="flex bg-white/5 rounded-lg p-1 gap-1 w-full mr-4">
+                                    <button
+                                        onClick={() => setActiveWritingTab('index')}
+                                        className={`flex-1 py-1 rounded-md text-[10px] uppercase font-bold transition-all ${activeWritingTab === 'index' ? 'bg-primary text-white shadow' : 'text-slate-500 hover:text-white'}`}
+                                    >
+                                        Índice
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveWritingTab('notes')}
+                                        className={`flex-1 py-1 rounded-md text-[10px] uppercase font-bold transition-all ${activeWritingTab === 'notes' ? 'bg-primary text-white shadow' : 'text-slate-500 hover:text-white'}`}
+                                    >
+                                        Notas
+                                    </button>
+                                </div>
                             ) : isBibleContext && rightPanelMode === 'NOTES' ? (
                                 <div className="flex bg-white/5 rounded-lg p-1 gap-1">
                                     <button
@@ -270,13 +290,13 @@ const ArchitectLayout = () => {
                                 </h2>
                             )}
 
-                            <button onClick={() => setRightOpen(false)} className="text-text-muted hover:text-white transition-colors">
+                            <button onClick={() => setRightOpen(false)} className="text-text-muted hover:text-white transition-colors shrink-0">
                                 <span className="material-symbols-outlined text-lg">dock_to_right</span>
                             </button>
                         </>
                     ) : (
                         <button onClick={() => setRightOpen(true)} className="w-full h-full flex items-center justify-center text-text-muted hover:text-white transition-colors">
-                            <span className="material-symbols-outlined">{rightPanelMode === 'NOTES' ? 'edit_note' : rightPanelMode === 'MAP' ? 'map' : rightPanelMode === 'CUSTOM' ? 'build' : 'handyman'}</span>
+                            <span className="material-symbols-outlined">{rightPanelMode === 'NOTES' || isWritingContext ? 'edit_note' : rightPanelMode === 'MAP' ? 'map' : rightPanelMode === 'CUSTOM' ? 'build' : 'handyman'}</span>
                         </button>
                     )
                     }
@@ -284,7 +304,18 @@ const ArchitectLayout = () => {
 
                 <div className="flex-1 overflow-y-auto no-scrollbar p-0">
                     {rightOpen ? (
-                        rightPanelMode === 'CUSTOM' ? (
+                        isWritingContext ? (
+                            // WRITING MODE: INDEX (PORTAL) or NOTES
+                            <>
+                                <div
+                                    id="architect-right-panel-portal"
+                                    className={`h-full relative flex flex-col ${activeWritingTab === 'index' ? 'block' : 'hidden'}`}
+                                ></div>
+                                <div className={`h-full p-4 overflow-hidden ${activeWritingTab === 'notes' ? 'block' : 'hidden'}`}>
+                                    <GlobalNotes projectName={projectName} />
+                                </div>
+                            </>
+                        ) : rightPanelMode === 'CUSTOM' ? (
                             <div id="architect-right-panel-portal" className="h-full relative flex flex-col"></div>
                         ) : rightPanelMode === 'NOTES' ? (
                             activeBibleTab === 'templates' && isBibleContext ? (

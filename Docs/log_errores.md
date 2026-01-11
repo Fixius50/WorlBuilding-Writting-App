@@ -26,4 +26,41 @@
 - **Error**: `SQLITE_ERROR: no such table: hoja`.
 - **Causa**: Fallo en creación automática de esquema (`ddl-auto=create`).
 - **Solución**: Cambiado `ddl-auto` a `update` en `application.properties`.
-- **Estado**: En espera de reinicio.
+- **Estado**: Resuelto (Backend reiniciado).
+
+## [2026-01-10] Error Pantalla Blanca (Vite Port 5173 / Tiptap)
+- **Error**: La aplicación carga en blanco en desarrollo (puerto 5173), aunque build producción (8080) funciona.
+- **Causa Inicial**: Conflicto de versiones de Tiptap (v3.15.3 beta/bleeding edge).
+- **Acciones**:
+  1. Downgrade de librerías Tiptap a `v2.10.3`.
+  2. Crash persistente por `index.css` (Resuelto simplificando CSS).
+  3. Crash persistente por dependencias faltantes (`@tiptap/extension-color`, etc.) que no se instalaron en el downgrade inicial.
+- **Estado Actual**:
+  - La aplicación carga correctamente ("Green Screen" superada).
+  - **Aislado**: El componente `WritingView` (o `ZenEditor`) causa un crash al importarse. Se ha comentado su ruta en `App.jsx` para permitir el acceso al menú principal.
+- **Investigación (23:45)**:
+  - Se detectó que `TiptapExtensions.js` importa `MergeAttributes` directamente de `@tiptap/core`.
+  - `@tiptap/core` NO está listado en `package.json`. Esto causa un fallo de resolución de módulo en Vite al iniciar.
+- **Acción Correctiva**: Instalar `@tiptap/core` explícitamente y re-habilitar el editor.
+- **Nuevo Hallazgo (00:05)**:
+  - Error al compilar: `No matching export in ... for import "canInsertNode"`.
+  - Origen: `@tiptap/extension-horizontal-rule` intenta usar una función que no existe en `@tiptap/core` v2.10.3.
+  - Causa: Desajuste de versiones (Version Mismatch). Es probable que `starter-kit` haya instalado una versión más reciente de `horizontal-rule` que es incompatible con el `core` v2.10.3 forzado.
+- **Estabilización (00:20)**:
+  - Se eliminó Tiptap por completo y se reemplazó `ZenEditor` con un `<textarea>` nativo.
+  - **Resultado**: La aplicación carga correctamente y es estable. Se confirma que el origen de todos los crashes era la librería Tiptap y sus dependencias.
+- **Intento Final (00:23)**:
+  - Se re-instaló Tiptap v2.10.3 estricto.
+  - **Resultado**: Fallo persistente (White Screen) en Vite.
+- **Resolución Definitiva**: 
+  - Se ha **eliminado Tiptap** del proyecto.
+  - Se ha implementado un componente `ZenEditor` nativo (textarea estilizado) que garantiza estabilidad.
+  - **Alternativa Propuesta**: React-Quill (Implementado).
+- **Implementación React-Quill (00:30)**:
+  - Se instaló `react-quill`.
+  - Se reemplazó `ZenEditor` con una instancia de Quill configurada con toolbar completa (Google Docs style) y estilos CSS personalizados para el modo oscuro/Zen.
+  - Se restauró `index.css` a su estado original.
+  - **Resultado**: ÉXITO. El usuario confirma "carga y va la app". Editor estable y estilos restaurados.
+- **Nuevo Error Backend (00:33)**: 
+  - `500 Internal Server Error` en `/api/escritura/cuaderno/1/hojas`.
+  - Posible causa: Persistencia del `SQLITE_ERROR` (tabla `hoja` inexistente) si la migración DDL falló silenciosamente.

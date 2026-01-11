@@ -29,36 +29,25 @@ El constructor actual es funcional pero necesita alinearse con el nuevo diseño 
 - [x] **Breadcrumbs**: Implementar migas de pan en la vista de carpetas para mejorar la navegación profunda.
 - [ ] **Favoritos**: Sección en el sidebar para acceso rápido a entidades frecuentes.
 
-## Notas Técnicas
-- **Persistencia**: Recuerda que `EntidadGenerica` usa un campo `descripcion` (String/JSON) para guardar datos complejos. Para los mapas, esto incluye capas, imágenes en base64 (o URLs) y metadatos.
-- **Contexto Global**: `ArchitectLayout` usa `useOutletContext` para pasar estados del Panel Derecho (`rightPanelMode`, `setMapSettings`, etc.) a las páginas hijas. Todo nuevo editor debe engancharse a este contexto.
-
-## 4. Refactorización Técnica y Backend (Desde TODOs)
+## 4. Refactorización Técnica y Backend (Desde TODOs) [COMPLETADO ESTA SESIÓN]
 Tareas extraídas de `WorldBibleController.java`:
-- [ ] **Restaurar Explorador Lateral**: Limpiar el sidebar para mostrar solo estructura de carpetas relevante.
-- [ ] **Rutas de Creación Directa**: Implementar rutas como `/new/:type` para acceso rápido.
-- [ ] **Guardado Diferido (Post-draft)**: Permitir crear entidades en memoria y solo persistir al guardar (evitar basura en DB).
+- [x] **Restaurar Explorador Lateral**: Limpiar el sidebar para mostrar solo estructura de carpetas relevante.
+- [x] **Rutas de Creación Directa**: Implementar rutas como `/new/:type` para acceso rápido.
+- [x] **Guardado Diferido (Post-draft)**: Permitir crear entidades en memoria y solo persistir al guardar (evitar basura en DB).
 - [x] **Refactorización Flujo de Creación (Sin Prompts)**: Reemplazado todos los `window.prompt` por `InputModal` o edición en línea.
 - [x] **Breadcrumbs**: Implementado en Backend (`FolderDetail`) y Frontend (`Breadcrumbs.jsx`).
-- [ ] **Guardado Diferido (Post-draft)**: Permitir crear entidades en memoria y solo persistir al guardar (evitar basura en DB).
 - [x] **Herencia de Plantillas**: Completado mediante la implementación de **Atributos Globales**.
 
-## 5. Tareas Completadas Recientemente (Sesión Actual)
-- [x] **Gestión de Plantillas Globales**:
-    - Refactorización del Backend (`AtributoPlantillaRepository`, `WorldBibleService`, `WorldBibleController`) para soportar plantillas a nivel de proyecto.
-    - Actualización de `TemplateManager` para gestionar plantillas globales en lugar de por carpeta.
-- [x] **UX del Constructor de Entidades (EntityBuilder)**:
-    - Implementación de **Drag & Drop** para añadir atributos desde la plantilla global.
-    - Creación de Drop Zone visual con instrucciones claras.
-    - Renombrado de sección "Dynamic Attributes" a "Atributos especiales".
-- [x] **Consistencia de UI**:
-    - Reemplazo de todos los `window.confirm()` nativos por `ConfirmationModal` personalizado (Timeline, Notas, Templates).
+## 5. Implementación del Editor de Texto "Zen" (Nueva Fase)
+Objetivo: Crear una zona de escritura limpia, minimalista y personalizada, reemplazando cualquier editor estándar.
+- [ ] **Setup Inicial Tiptap**: Instalar dependencias (`@tiptap/react`, `@tiptap/starter-kit`) y configurar el componente base sin estilos (`headless`).
+- [ ] **Diseño "Zen" UI**: Implementar contenedor minimalista con TailwindCSS (Fondo oscuro, tipografía serif para lectura, sin barras de herramientas intrusivas).
+- [ ] **Sistema de Menciones (@)**:
+    - Integrar extensión `@tiptap/extension-mention`.
+    - Crear componente `MentionList.jsx` para mostrar sugerencias flotantes.
+    - Conectar con API para buscar entidades del proyecto real.
+- [ ] **Menú Flotante (Bubble Menu)**: Implementar menú contextual que solo aparece al seleccionar texto (Negrita, Cursiva, H1/H2).
 
-## 6. Corrección de Errores Críticos (Persistencia y Visualización) - [2026-01-09]
-- [x] **Persistencia de Entidades**:
-    - Solucionado error `TypeError: Cannot read properties of null` en `EntityBuilder.jsx` añadiendo validación de carpetas nulas.
-    - Corregido error de serialización Backend (`ByteBuddyInterceptor`) en `AtributoValor` mediante `@JsonIgnoreProperties` en `AtributoPlantilla`.
-- [x] **Visualización de Carpetas (404 / Empty)**:
-    - Backend: Desactivada la mutación de `slug` al renombrar carpetas en `WorldBibleService.java` para mantener integridad de URLs.
-    - Frontend: Implementada redirección automática en `FolderView.jsx` si se detecta un cambio de slug legítimo.
-    - Frontend: Nueva pantalla de "Folder Not Found" en lugar de vista rota.
+## Tareas Completadas Recientemente 
+- [x] **Gestión de Plantillas Globales, UX EntityBuilder, Consistencia UI**.
+- [x] **Corrección de Errores Críticos (Persistencia y Visualización)**.

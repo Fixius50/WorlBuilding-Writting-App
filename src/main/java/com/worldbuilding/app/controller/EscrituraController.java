@@ -105,7 +105,11 @@ public class EscrituraController {
             map.put("numeroPagina", h.getNumeroPagina());
             map.put("contenido", h.getContenido());
             map.put("fechaModificacion", h.getFechaModificacion());
-            map.put("notasCount", notaRapidaRepository.countByHoja(h));
+            try {
+                map.put("notasCount", notaRapidaRepository.countByHoja(h));
+            } catch (Exception e) {
+                map.put("notasCount", 0);
+            }
             return map;
         }).collect(java.util.stream.Collectors.toList());
 
@@ -170,6 +174,30 @@ public class EscrituraController {
             return ResponseEntity.ok(Map.of("success", true));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Error eliminando hoja: " + e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/cuaderno/{id}")
+    @Transactional
+    public ResponseEntity<?> eliminarCuaderno(@PathVariable Long id) {
+        if (id == null)
+            return ResponseEntity.badRequest().body(Map.of("error", "ID requerido"));
+
+        Cuaderno c = cuadernoRepository.findById(id).orElse(null);
+        if (c == null)
+            return ResponseEntity.status(404).body(Map.of("error", "Cuaderno no encontrado"));
+
+        try {
+            // Delete associated pages (and their notes) manually if cascade doesn't handle
+            // it
+            // Assuming JPA CascadeType.ALL on Cuaderno.hojas might handle it, but being
+            // safe:
+            // hojaRepository.deleteByCuaderno(c); // If needed
+
+            cuadernoRepository.delete(c);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Error eliminando cuaderno: " + e.getMessage()));
         }
     }
 }

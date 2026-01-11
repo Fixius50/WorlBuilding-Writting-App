@@ -5,23 +5,37 @@ import path from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [react()],
-    // Root is src/main/frontend where index.html and source code lives
     root: path.resolve(__dirname, 'src/main/frontend'),
     build: {
-        // Output to src/main/resources/static
         outDir: path.resolve(__dirname, 'src/main/resources/static'),
-        emptyOutDir: true, // Clean old assets
+        emptyOutDir: true,
         rollupOptions: {
             input: path.resolve(__dirname, 'src/main/frontend/index.html'),
         },
     },
     server: {
+        // Ensure we bind to all interfaces if needed, though localhost is fine
+        host: true,
         proxy: {
+            // General capture for API requests
             '/api': {
                 target: 'http://localhost:8080',
                 changeOrigin: true,
                 secure: false,
-            }
+                configure: (proxy, _options) => {
+                    proxy.on('error', (err, _req, _res) => {
+                        console.log('proxy error', err);
+                    });
+                    proxy.on('proxyReq', (proxyReq, req, _res) => {
+                        console.log('Sending Request to the Target:', req.method, req.url);
+                    });
+                    proxy.on('proxyRes', (proxyRes, req, _res) => {
+                        console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
+                    });
+                },
+            },
+            // Explicitly proxy some other known root-level paths if they exist entirely on backend (fallback)
+            // But usually /api capture is enough if code uses it.
         }
     },
     resolve: {

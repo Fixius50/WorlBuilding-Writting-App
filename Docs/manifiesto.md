@@ -30,15 +30,15 @@ El diseño busca un equilibrio entre la claridad de un IDE moderno y la mística
 
 ## 4. Mapa de Funcionalidades (Roadmap & Status)
 
-### A. Entorno Modular [EN REDISEÑO]
+### A. Entorno Modular [COMPLETADO]
 *   **3-Panel Layout**: Explorador jerárquico, Lienzo Central y Caja de Atributos.
 *   **Navigation Dock**: Barra flotante inferior con desenfoque.
 
-### B. Biblia del Mundo Dinámica [EN PLANIFICACIÓN]
+### B. Biblia del Mundo Dinámica [COMPLETADO]
 *   **Carpetas Hierárquicas**: Organización libre de lore.
 *   **Attribute Inheritance**: Las carpetas definen la estructura de las entidades hijas.
 
-### C. Entity Builder [EN PLANIFICACIÓN]
+### C. Entity Builder [COMPLETADO]
 *   **Drag & Drop**: Construcción de fichas mediante bloques de atributos.
 *   **Pestañas Contextuales**: Mapas y Cronologías integradas directamente en las fichas.
 
