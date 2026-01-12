@@ -83,6 +83,7 @@ export const entityService = {
     create: (type, data) => api.put('/bd/insertar', { ...data, tipoEntidad: type }),
     update: (type, id, data) => api.patch('/bd/modificar', { ...data, tipoEntidad: type, id }),
     delete: (type, id) => api.delete(`/bd/${type}/${id}`),
+    toggleFavorite: (id) => api.patch(`/world-bible/entities/${id}/favorite`),
 };
 
 export const timelineService = {

@@ -13,6 +13,9 @@ public interface EntidadGenericaRepository extends JpaRepository<EntidadGenerica
     @org.springframework.data.jpa.repository.Query("SELECT e FROM EntidadGenerica e WHERE e.proyecto = :proyecto AND e.deleted = false AND e.carpeta.deleted = false")
     List<EntidadGenerica> findByProyecto(Cuaderno proyecto);
 
+    @org.springframework.data.jpa.repository.Query("SELECT e FROM EntidadGenerica e WHERE e.proyecto = :proyecto AND e.favorite = true AND e.deleted = false AND e.carpeta.deleted = false")
+    List<EntidadGenerica> findByProyectoAndFavoriteTrue(Cuaderno proyecto);
+
     Optional<EntidadGenerica> findBySlug(String slug);
 
     boolean existsBySlug(String slug);

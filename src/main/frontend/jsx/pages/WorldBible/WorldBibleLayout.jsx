@@ -15,6 +15,7 @@ const WorldBibleLayout = () => {
     } = useOutletContext() || {};
 
     const [folders, setFolders] = useState([]);
+    const [favorites, setFavorites] = useState([]);
     const [creationMenuOpen, setCreationMenuOpen] = useState(false);
 
     const [creationModalOpen, setCreationModalOpen] = useState(false);
@@ -28,6 +29,11 @@ const WorldBibleLayout = () => {
 
     useEffect(() => {
         loadFolders();
+        loadFavorites();
+
+        const handleFavUpdate = () => loadFavorites();
+        window.addEventListener('favorites-update', handleFavUpdate);
+        return () => window.removeEventListener('favorites-update', handleFavUpdate);
     }, [projectName]);
 
     const loadFolders = async () => {
@@ -35,6 +41,13 @@ const WorldBibleLayout = () => {
             const rootFolders = await api.get('/world-bible/folders');
             setFolders(rootFolders);
         } catch (err) { console.error("Error loading folders:", err); }
+    };
+
+    const loadFavorites = async () => {
+        try {
+            const favs = await api.get('/world-bible/favorites');
+            setFavorites(favs);
+        } catch (err) { console.error("Error loading favorites:", err); }
     };
 
     // --- Modal Handlers ---
@@ -266,6 +279,32 @@ const WorldBibleLayout = () => {
                         />
                     </div>
 
+                </div>
+
+                {/* Favorites Section */}
+                <div className="px-2 pt-2">
+                    <div className="flex items-center justify-between px-2 mb-1">
+                        <h2 className="text-[10px] font-black uppercase tracking-widest text-text-muted">Favoritos</h2>
+                    </div>
+                    {favorites.length > 0 ? (
+                        <div className="space-y-0.5">
+                            {favorites.map(fav => (
+                                <div key={fav.id}
+                                    onClick={() => navigate(`${baseUrl}/folder/${fav.carpeta.slug || fav.carpeta.id}/entity/${fav.slug || fav.id}`)}
+                                    className="flex items-center gap-3 px-3 py-1.5 rounded-lg text-[11px] font-medium text-text-muted hover:text-white hover:bg-white/5 cursor-pointer transition-all group"
+                                >
+                                    <span className="material-symbols-outlined text-sm text-yellow-500/70 group-hover:text-yellow-400">star</span>
+                                    <span className="truncate">{fav.nombre}</span>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="px-4 py-2 text-[10px] text-text-muted/30 italic">Sin favoritos</div>
+                    )}
+                    <div className="h-px bg-glass-border my-2 opacity-50"></div>
+                </div>
+
+                <div className="p-4 border-b border-glass-border pt-0">
                     <div className="flex items-center justify-between">
                         <h2 className="text-[10px] font-black uppercase tracking-widest text-text-muted">Explorador</h2>
                         <div className="relative">

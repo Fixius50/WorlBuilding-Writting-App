@@ -1,0 +1,703 @@
+2026-01-09T16:29:55.230+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Starting WorldbuildingApplication using Java 24.0.2 with PID 6468 (C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App\target\classes started by Roberto in C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App)
+2026-01-09T16:29:55.237+01:00 DEBUG 6468 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Running with Spring Boot v3.5.6, Spring v6.2.11
+2026-01-09T16:29:55.239+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : No active profile set, falling back to 1 default profile: "default"
+2026-01-09T16:29:55.341+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\xalan\xalan\2.7.3\xalan-2.7.3.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/xalan/xalan/2.7.3/xercesImpl.jar,file:/C:/Users/Roberto/.m2/repository/xalan/xalan/2.7.3/xml-apis.jar,file:/C:/Users/Roberto/.m2/repository/xalan/xalan/2.7.3/serializer.jar
+2026-01-09T16:29:55.342+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\xalan\serializer\2.7.3\serializer-2.7.3.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/xalan/serializer/2.7.3/xml-apis.jar
+2026-01-09T16:29:55.342+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\com\sun\xml\bind\jaxb-impl\4.0.5\jaxb-impl-4.0.5.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-impl/4.0.5/jaxb-core.jar,file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-impl/4.0.5/angus-activation.jar
+2026-01-09T16:29:55.343+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\com\sun\xml\bind\jaxb-core\4.0.5\jaxb-core-4.0.5.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-core/4.0.5/jakarta.activation-api.jar,file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-core/4.0.5/jakarta.xml.bind-api.jar
+2026-01-09T16:29:55.343+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2026-01-09T16:29:55.343+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2026-01-09T16:29:56.682+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-01-09T16:29:56.824+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 127 ms. Found 21 JPA repository interfaces.
+2026-01-09T16:29:57.603+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-01-09T16:29:57.635+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-01-09T16:29:57.636+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
+2026-01-09T16:29:57.700+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-01-09T16:29:57.701+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2356 ms
+2026-01-09T16:29:58.129+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-01-09T16:29:58.229+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.29.Final
+2026-01-09T16:29:58.285+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-01-09T16:29:58.707+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-01-09T16:29:58.796+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'com.worldbuilding.app.config.MultiTenantDataSource@55a0135a']
+	Database driver: undefined/unknown
+	Database version: 3.49.1
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-01-09T16:30:00.284+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-01-09T16:30:00.354+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-01-09T16:30:00.838+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-01-09T16:30:01.733+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-01-09T16:30:02.000+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-01-09T16:30:02.441+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2026-01-09T16:30:02.584+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-01-09T16:30:02.598+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Started WorldbuildingApplication in 8.111 seconds (process running for 8.802)
+2026-01-09T16:31:37.732+01:00  INFO 6468 --- [WorldbuildingAppV2] [File Watcher] rtingClassPathChangeChangedEventListener : Restarting due to 1 class path change (0 additions, 0 deletions, 1 modification)
+2026-01-09T16:31:37.738+01:00  INFO 6468 --- [WorldbuildingAppV2] [Thread-5] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-01-09T16:31:37.767+01:00  INFO 6468 --- [WorldbuildingAppV2] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-01-09T16:31:37.776+01:00  INFO 6468 --- [WorldbuildingAppV2] [Thread-5] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-01-09T16:31:37.924+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Starting WorldbuildingApplication using Java 24.0.2 with PID 6468 (C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App\target\classes started by Roberto in C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App)
+2026-01-09T16:31:37.925+01:00 DEBUG 6468 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Running with Spring Boot v3.5.6, Spring v6.2.11
+2026-01-09T16:31:37.926+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : No active profile set, falling back to 1 default profile: "default"
+2026-01-09T16:31:38.972+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-01-09T16:31:39.151+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 174 ms. Found 21 JPA repository interfaces.
+2026-01-09T16:31:39.358+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-01-09T16:31:39.361+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-01-09T16:31:39.362+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
+2026-01-09T16:31:39.392+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-01-09T16:31:39.393+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1460 ms
+2026-01-09T16:31:39.550+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-01-09T16:31:39.560+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-01-09T16:31:39.584+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-01-09T16:31:39.592+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'com.worldbuilding.app.config.MultiTenantDataSource@6fda30ab']
+	Database driver: undefined/unknown
+	Database version: 3.49.1
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-01-09T16:31:39.945+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-01-09T16:31:39.965+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-01-09T16:31:40.252+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-01-09T16:31:40.400+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-01-09T16:31:40.535+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2026-01-09T16:31:40.568+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-01-09T16:31:40.576+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Started WorldbuildingApplication in 2.705 seconds (process running for 106.781)
+2026-01-09T16:31:40.615+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation unchanged
+2026-01-09T16:31:41.964+01:00  INFO 6468 --- [WorldbuildingAppV2] [File Watcher] rtingClassPathChangeChangedEventListener : Restarting due to 3 class path changes (0 additions, 0 deletions, 3 modifications)
+2026-01-09T16:31:41.968+01:00  INFO 6468 --- [WorldbuildingAppV2] [Thread-7] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-01-09T16:31:41.972+01:00  INFO 6468 --- [WorldbuildingAppV2] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-01-09T16:31:41.976+01:00  INFO 6468 --- [WorldbuildingAppV2] [Thread-7] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-01-09T16:31:42.075+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Starting WorldbuildingApplication using Java 24.0.2 with PID 6468 (C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App\target\classes started by Roberto in C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App)
+2026-01-09T16:31:42.076+01:00 DEBUG 6468 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Running with Spring Boot v3.5.6, Spring v6.2.11
+2026-01-09T16:31:42.076+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : No active profile set, falling back to 1 default profile: "default"
+2026-01-09T16:31:42.377+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-01-09T16:31:42.458+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 80 ms. Found 21 JPA repository interfaces.
+2026-01-09T16:31:42.605+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-01-09T16:31:42.607+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-01-09T16:31:42.607+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
+2026-01-09T16:31:42.633+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-01-09T16:31:42.633+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 553 ms
+2026-01-09T16:31:42.722+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-01-09T16:31:42.727+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-01-09T16:31:42.740+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-01-09T16:31:42.745+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'com.worldbuilding.app.config.MultiTenantDataSource@64e5fc8d']
+	Database driver: undefined/unknown
+	Database version: 3.49.1
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-01-09T16:31:42.949+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-01-09T16:31:42.960+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-01-09T16:31:43.311+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-01-09T16:31:43.401+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-01-09T16:31:43.470+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2026-01-09T16:31:43.488+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-01-09T16:31:43.493+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Started WorldbuildingApplication in 1.441 seconds (process running for 109.697)
+2026-01-09T16:31:43.530+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation unchanged
+2026-01-09T16:32:15.357+01:00  INFO 6468 --- [WorldbuildingAppV2] [File Watcher] rtingClassPathChangeChangedEventListener : Restarting due to 75 class path changes (0 additions, 75 deletions, 0 modifications)
+2026-01-09T16:32:15.360+01:00  INFO 6468 --- [WorldbuildingAppV2] [Thread-11] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-01-09T16:32:15.365+01:00  INFO 6468 --- [WorldbuildingAppV2] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-01-09T16:32:15.370+01:00  INFO 6468 --- [WorldbuildingAppV2] [Thread-11] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-01-09T16:32:15.500+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Starting WorldbuildingApplication using Java 24.0.2 with PID 6468 (C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App\target\classes started by Roberto in C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App)
+2026-01-09T16:32:15.503+01:00 DEBUG 6468 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Running with Spring Boot v3.5.6, Spring v6.2.11
+2026-01-09T16:32:15.503+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : No active profile set, falling back to 1 default profile: "default"
+2026-01-09T16:32:15.945+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-01-09T16:32:15.947+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 0 ms. Found 0 JPA repository interfaces.
+2026-01-09T16:32:16.092+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-01-09T16:32:16.094+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-01-09T16:32:16.095+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
+2026-01-09T16:32:16.150+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-01-09T16:32:16.151+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 640 ms
+2026-01-09T16:32:16.290+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-01-09T16:32:16.296+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-01-09T16:32:16.309+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-01-09T16:32:16.366+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 3.49.1
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-01-09T16:32:16.403+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-01-09T16:32:16.404+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-01-09T16:32:16.454+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-01-09T16:32:16.627+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-01-09T16:32:16.736+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2026-01-09T16:32:16.790+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-01-09T16:32:16.801+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Started WorldbuildingApplication in 1.345 seconds (process running for 143.005)
+2026-01-09T16:32:16.806+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation delta:
+
+
+==========================
+CONDITION EVALUATION DELTA
+==========================
+
+
+Positive matches:
+-----------------
+
+   DataSourceAutoConfiguration.PooledDataSourceConfiguration matched:
+      - AnyNestedCondition 1 matched 1 did not; NestedCondition on DataSourceAutoConfiguration.PooledDataSourceCondition.PooledDataSourceAvailable PooledDataSource found supported DataSource; NestedCondition on DataSourceAutoConfiguration.PooledDataSourceCondition.ExplicitType @ConditionalOnProperty (spring.datasource.type) did not find property 'spring.datasource.type' (DataSourceAutoConfiguration.PooledDataSourceCondition)
+      - @ConditionalOnMissingBean (types: javax.sql.DataSource,javax.sql.XADataSource; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   DataSourceAutoConfiguration.PooledDataSourceConfiguration#jdbcConnectionDetails matched:
+      - @ConditionalOnMissingBean (types: org.springframework.boot.autoconfigure.jdbc.JdbcConnectionDetails; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   DevToolsDataSourceAutoConfiguration matched:
+      - @ConditionalOnClass found required class 'javax.sql.DataSource' (OnClassCondition)
+      - Devtools devtools enabled. (OnEnabledDevToolsCondition)
+      - DevTools DataSource Condition found auto-configured DataSource (DevToolsDataSourceAutoConfiguration.DevToolsDataSourceCondition)
+
+   DevToolsDataSourceAutoConfiguration.DatabaseShutdownExecutorEntityManagerFactoryDependsOnPostProcessor matched:
+      - @ConditionalOnClass found required class 'org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean' (OnClassCondition)
+      - @ConditionalOnBean (types: org.springframework.orm.jpa.AbstractEntityManagerFactoryBean; SearchStrategy: all) found bean '&entityManagerFactory' (OnBeanCondition)
+
+   ManagementWebSecurityAutoConfiguration matched:
+      - found 'session' scope (OnWebApplicationCondition)
+      - AllNestedConditions 2 matched 0 did not; NestedCondition on DefaultWebSecurityCondition.Beans @ConditionalOnMissingBean (types: org.springframework.security.web.SecurityFilterChain; SearchStrategy: all) did not find any beans; NestedCondition on DefaultWebSecurityCondition.Classes @ConditionalOnClass found required classes 'org.springframework.security.web.SecurityFilterChain', 'org.springframework.security.config.annotation.web.builders.HttpSecurity' (DefaultWebSecurityCondition)
+
+   SpringBootWebSecurityConfiguration.WebSecurityEnablerConfiguration matched:
+      - @ConditionalOnClass found required class 'org.springframework.security.config.annotation.web.configuration.EnableWebSecurity' (OnClassCondition)
+      - @ConditionalOnMissingBean (names: springSecurityFilterChain; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+
+Negative matches:
+-----------------
+
+    None
+
+
+Exclusions:
+-----------
+
+    None
+
+
+Unconditional classes:
+----------------------
+
+    None
+
+
+
+2026-01-09T16:32:19.416+01:00  INFO 6468 --- [WorldbuildingAppV2] [File Watcher] rtingClassPathChangeChangedEventListener : Restarting due to 75 class path changes (75 additions, 0 deletions, 0 modifications)
+2026-01-09T16:32:19.419+01:00  INFO 6468 --- [WorldbuildingAppV2] [Thread-15] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-01-09T16:32:19.423+01:00  INFO 6468 --- [WorldbuildingAppV2] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-01-09T16:32:19.426+01:00  INFO 6468 --- [WorldbuildingAppV2] [Thread-15] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-01-09T16:32:19.537+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Starting WorldbuildingApplication using Java 24.0.2 with PID 6468 (C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App\target\classes started by Roberto in C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App)
+2026-01-09T16:32:19.537+01:00 DEBUG 6468 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Running with Spring Boot v3.5.6, Spring v6.2.11
+2026-01-09T16:32:19.538+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : No active profile set, falling back to 1 default profile: "default"
+2026-01-09T16:32:19.812+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-01-09T16:32:19.859+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 46 ms. Found 21 JPA repository interfaces.
+2026-01-09T16:32:19.936+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-01-09T16:32:19.937+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-01-09T16:32:19.937+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
+2026-01-09T16:32:19.952+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-01-09T16:32:19.952+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 411 ms
+2026-01-09T16:32:20.020+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-01-09T16:32:20.024+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-01-09T16:32:20.033+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-01-09T16:32:20.037+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'com.worldbuilding.app.config.MultiTenantDataSource@47301536']
+	Database driver: undefined/unknown
+	Database version: 3.49.1
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-01-09T16:32:20.224+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-01-09T16:32:20.234+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-01-09T16:32:20.469+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-01-09T16:32:20.534+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-01-09T16:32:20.616+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2026-01-09T16:32:20.631+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-01-09T16:32:20.638+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Started WorldbuildingApplication in 1.127 seconds (process running for 146.843)
+2026-01-09T16:32:20.665+01:00  INFO 6468 --- [WorldbuildingAppV2] [restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation delta:
+
+
+==========================
+CONDITION EVALUATION DELTA
+==========================
+
+
+Positive matches:
+-----------------
+
+    None
+
+
+Negative matches:
+-----------------
+
+   DataSourceAutoConfiguration.PooledDataSourceConfiguration:
+      Did not match:
+         - @ConditionalOnMissingBean (types: javax.sql.DataSource,javax.sql.XADataSource; SearchStrategy: all) found beans of type 'javax.sql.DataSource' dataSource (OnBeanCondition)
+      Matched:
+         - AnyNestedCondition 1 matched 1 did not; NestedCondition on DataSourceAutoConfiguration.PooledDataSourceCondition.PooledDataSourceAvailable PooledDataSource found supported DataSource; NestedCondition on DataSourceAutoConfiguration.PooledDataSourceCondition.ExplicitType @ConditionalOnProperty (spring.datasource.type) did not find property 'spring.datasource.type' (DataSourceAutoConfiguration.PooledDataSourceCondition)
+
+   DevToolsDataSourceAutoConfiguration:
+      Did not match:
+         - DevTools DataSource Condition did not find an auto-configured DataSource (DevToolsDataSourceAutoConfiguration.DevToolsDataSourceCondition)
+      Matched:
+         - @ConditionalOnClass found required class 'javax.sql.DataSource' (OnClassCondition)
+         - Devtools devtools enabled. (OnEnabledDevToolsCondition)
+
+   DevToolsDataSourceAutoConfiguration.DatabaseShutdownExecutorEntityManagerFactoryDependsOnPostProcessor:
+      Did not match:
+         - Ancestor org.springframework.boot.devtools.autoconfigure.DevToolsDataSourceAutoConfiguration did not match (ConditionEvaluationReport.AncestorsMatchedCondition)
+      Matched:
+         - @ConditionalOnClass found required class 'org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean' (OnClassCondition)
+
+   ManagementWebSecurityAutoConfiguration:
+      Did not match:
+         - AllNestedConditions 1 matched 1 did not; NestedCondition on DefaultWebSecurityCondition.Beans @ConditionalOnMissingBean (types: org.springframework.security.web.SecurityFilterChain; SearchStrategy: all) found beans of type 'org.springframework.security.web.SecurityFilterChain' securityFilterChain; NestedCondition on DefaultWebSecurityCondition.Classes @ConditionalOnClass found required classes 'org.springframework.security.web.SecurityFilterChain', 'org.springframework.security.config.annotation.web.builders.HttpSecurity' (DefaultWebSecurityCondition)
+      Matched:
+         - found 'session' scope (OnWebApplicationCondition)
+
+   SpringBootWebSecurityConfiguration.WebSecurityEnablerConfiguration:
+      Did not match:
+         - @ConditionalOnMissingBean (names: springSecurityFilterChain; SearchStrategy: all) found beans named springSecurityFilterChain (OnBeanCondition)
+      Matched:
+         - @ConditionalOnClass found required class 'org.springframework.security.config.annotation.web.configuration.EnableWebSecurity' (OnClassCondition)
+
+
+Exclusions:
+-----------
+
+    None
+
+
+Unconditional classes:
+----------------------
+
+    None
+
+
+
+2026-01-09T16:33:43.855+01:00  INFO 6468 --- [WorldbuildingAppV2] [http-nio-8080-exec-2] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-01-09T16:33:43.855+01:00  INFO 6468 --- [WorldbuildingAppV2] [http-nio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-01-09T16:33:43.857+01:00  INFO 6468 --- [WorldbuildingAppV2] [http-nio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2026-01-09T16:35:10.057+01:00  INFO 6468 --- [WorldbuildingAppV2] [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-01-09T16:35:10.061+01:00  INFO 6468 --- [WorldbuildingAppV2] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-01-09T16:35:10.065+01:00  INFO 6468 --- [WorldbuildingAppV2] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-01-09T16:36:42.895+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Starting WorldbuildingApplication using Java 24.0.2 with PID 6188 (C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App\target\classes started by Roberto in C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App)
+2026-01-09T16:36:42.897+01:00 DEBUG 6188 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Running with Spring Boot v3.5.6, Spring v6.2.11
+2026-01-09T16:36:42.898+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : No active profile set, falling back to 1 default profile: "default"
+2026-01-09T16:36:42.961+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\xalan\xalan\2.7.3\xalan-2.7.3.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/xalan/xalan/2.7.3/xercesImpl.jar,file:/C:/Users/Roberto/.m2/repository/xalan/xalan/2.7.3/xml-apis.jar,file:/C:/Users/Roberto/.m2/repository/xalan/xalan/2.7.3/serializer.jar
+2026-01-09T16:36:42.961+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\xalan\serializer\2.7.3\serializer-2.7.3.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/xalan/serializer/2.7.3/xml-apis.jar
+2026-01-09T16:36:42.961+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\com\sun\xml\bind\jaxb-impl\4.0.5\jaxb-impl-4.0.5.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-impl/4.0.5/jaxb-core.jar,file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-impl/4.0.5/angus-activation.jar
+2026-01-09T16:36:42.961+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\com\sun\xml\bind\jaxb-core\4.0.5\jaxb-core-4.0.5.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-core/4.0.5/jakarta.activation-api.jar,file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-core/4.0.5/jakarta.xml.bind-api.jar
+2026-01-09T16:36:42.961+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2026-01-09T16:36:42.962+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2026-01-09T16:36:43.833+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-01-09T16:36:43.929+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 86 ms. Found 21 JPA repository interfaces.
+2026-01-09T16:36:44.394+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-01-09T16:36:44.407+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-01-09T16:36:44.407+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
+2026-01-09T16:36:44.440+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-01-09T16:36:44.440+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1477 ms
+2026-01-09T16:36:44.774+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-01-09T16:36:44.815+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.29.Final
+2026-01-09T16:36:44.841+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-01-09T16:36:45.056+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-01-09T16:36:45.102+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'com.worldbuilding.app.config.MultiTenantDataSource@3a8e866b']
+	Database driver: undefined/unknown
+	Database version: 3.49.1
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-01-09T16:36:46.017+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-01-09T16:36:46.054+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-01-09T16:36:46.385+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-01-09T16:36:47.364+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-01-09T16:36:47.638+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-01-09T16:36:48.080+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2026-01-09T16:36:48.142+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-01-09T16:36:48.152+01:00  INFO 6188 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Started WorldbuildingApplication in 5.745 seconds (process running for 6.224)
+2026-01-09T16:36:51.437+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Starting WorldbuildingApplication using Java 24.0.2 with PID 7460 (C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App\target\classes started by Roberto in C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App)
+2026-01-09T16:36:51.442+01:00 DEBUG 7460 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Running with Spring Boot v3.5.6, Spring v6.2.11
+2026-01-09T16:36:51.444+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : No active profile set, falling back to 1 default profile: "default"
+2026-01-09T16:36:51.516+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\xalan\xalan\2.7.3\xalan-2.7.3.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/xalan/xalan/2.7.3/xercesImpl.jar,file:/C:/Users/Roberto/.m2/repository/xalan/xalan/2.7.3/xml-apis.jar,file:/C:/Users/Roberto/.m2/repository/xalan/xalan/2.7.3/serializer.jar
+2026-01-09T16:36:51.516+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\xalan\serializer\2.7.3\serializer-2.7.3.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/xalan/serializer/2.7.3/xml-apis.jar
+2026-01-09T16:36:51.517+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\com\sun\xml\bind\jaxb-impl\4.0.5\jaxb-impl-4.0.5.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-impl/4.0.5/jaxb-core.jar,file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-impl/4.0.5/angus-activation.jar
+2026-01-09T16:36:51.517+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\com\sun\xml\bind\jaxb-core\4.0.5\jaxb-core-4.0.5.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-core/4.0.5/jakarta.activation-api.jar,file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-core/4.0.5/jakarta.xml.bind-api.jar
+2026-01-09T16:36:51.517+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2026-01-09T16:36:51.517+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2026-01-09T16:36:52.433+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-01-09T16:36:52.552+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 112 ms. Found 21 JPA repository interfaces.
+2026-01-09T16:36:53.128+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-01-09T16:36:53.141+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-01-09T16:36:53.142+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
+2026-01-09T16:36:53.210+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-01-09T16:36:53.212+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1693 ms
+2026-01-09T16:36:53.613+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-01-09T16:36:53.674+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.29.Final
+2026-01-09T16:36:53.706+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-01-09T16:36:53.962+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-01-09T16:36:54.019+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'com.worldbuilding.app.config.MultiTenantDataSource@1b8957cd']
+	Database driver: undefined/unknown
+	Database version: 3.49.1
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-01-09T16:36:55.072+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-01-09T16:36:55.121+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-01-09T16:36:55.439+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-01-09T16:36:56.170+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-01-09T16:36:56.364+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-01-09T16:36:56.707+01:00  WARN 7460 --- [WorldbuildingAppV2] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : Unable to start LiveReload server
+2026-01-09T16:36:56.751+01:00  WARN 7460 --- [WorldbuildingAppV2] [restartedMain] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop'
+2026-01-09T16:36:56.759+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-01-09T16:36:56.787+01:00  INFO 7460 --- [WorldbuildingAppV2] [restartedMain] .s.b.a.l.ConditionEvaluationReportLogger : 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-01-09T16:36:56.815+01:00 ERROR 7460 --- [WorldbuildingAppV2] [restartedMain] o.s.b.d.LoggingFailureAnalysisReporter   : 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Web server failed to start. Port 8080 was already in use.
+
+Action:
+
+Identify and stop the process that's listening on port 8080 or configure this application to listen on another port.
+
+2026-01-09T16:38:06.796+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Starting WorldbuildingApplication using Java 24.0.2 with PID 792 (C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App\target\classes started by Roberto in C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App)
+2026-01-09T16:38:06.798+01:00 DEBUG 792 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Running with Spring Boot v3.5.6, Spring v6.2.11
+2026-01-09T16:38:06.798+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : No active profile set, falling back to 1 default profile: "default"
+2026-01-09T16:38:06.860+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\xalan\xalan\2.7.3\xalan-2.7.3.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/xalan/xalan/2.7.3/xercesImpl.jar,file:/C:/Users/Roberto/.m2/repository/xalan/xalan/2.7.3/xml-apis.jar,file:/C:/Users/Roberto/.m2/repository/xalan/xalan/2.7.3/serializer.jar
+2026-01-09T16:38:06.861+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\xalan\serializer\2.7.3\serializer-2.7.3.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/xalan/serializer/2.7.3/xml-apis.jar
+2026-01-09T16:38:06.861+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\com\sun\xml\bind\jaxb-impl\4.0.5\jaxb-impl-4.0.5.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-impl/4.0.5/jaxb-core.jar,file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-impl/4.0.5/angus-activation.jar
+2026-01-09T16:38:06.861+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\com\sun\xml\bind\jaxb-core\4.0.5\jaxb-core-4.0.5.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-core/4.0.5/jakarta.activation-api.jar,file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-core/4.0.5/jakarta.xml.bind-api.jar
+2026-01-09T16:38:06.862+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2026-01-09T16:38:06.862+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2026-01-09T16:38:07.764+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-01-09T16:38:07.866+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 94 ms. Found 21 JPA repository interfaces.
+2026-01-09T16:38:08.510+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-01-09T16:38:08.526+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-01-09T16:38:08.527+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
+2026-01-09T16:38:08.575+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-01-09T16:38:08.575+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1712 ms
+2026-01-09T16:38:08.887+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-01-09T16:38:08.926+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.29.Final
+2026-01-09T16:38:08.949+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-01-09T16:38:09.205+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-01-09T16:38:09.268+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'com.worldbuilding.app.config.MultiTenantDataSource@70d77f8e']
+	Database driver: undefined/unknown
+	Database version: 3.49.1
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-01-09T16:38:10.244+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-01-09T16:38:10.294+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-01-09T16:38:10.626+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-01-09T16:38:11.318+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-01-09T16:38:11.513+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-01-09T16:38:11.802+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2026-01-09T16:38:11.898+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-01-09T16:38:11.919+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Started WorldbuildingApplication in 5.59 seconds (process running for 5.98)
+2026-01-09T16:38:53.473+01:00  INFO 792 --- [WorldbuildingAppV2] [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-01-09T16:38:53.475+01:00  INFO 792 --- [WorldbuildingAppV2] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-01-09T16:38:53.477+01:00  INFO 792 --- [WorldbuildingAppV2] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2026-01-09T16:39:28.852+01:00  WARN 792 --- [WorldbuildingAppV2] [http-nio-8080-exec-6] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'POST' is not supported]
+2026-01-09T16:48:40.278+01:00  WARN 792 --- [WorldbuildingAppV2] [http-nio-8080-exec-5] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Error: 1, SQLState: null
+2026-01-09T16:48:40.278+01:00 ERROR 792 --- [WorldbuildingAppV2] [http-nio-8080-exec-5] o.h.engine.jdbc.spi.SqlExceptionHelper   : [SQLITE_ERROR] SQL error or missing database (no such table: universo)
+2026-01-09T16:48:40.320+01:00  WARN 792 --- [WorldbuildingAppV2] [http-nio-8080-exec-5] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.orm.jpa.JpaSystemException: could not prepare statement [[SQLITE_ERROR] SQL error or missing database (no such table: universo)] [select u1_0.id,u1_0.cuaderno_id,u1_0.nombre from universo u1_0]]
+2026-01-09T16:48:41.392+01:00  WARN 792 --- [WorldbuildingAppV2] [http-nio-8080-exec-8] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Error: 1, SQLState: null
+2026-01-09T16:48:41.393+01:00 ERROR 792 --- [WorldbuildingAppV2] [http-nio-8080-exec-8] o.h.engine.jdbc.spi.SqlExceptionHelper   : [SQLITE_ERROR] SQL error or missing database (no such table: universo)
+2026-01-09T16:48:41.406+01:00  WARN 792 --- [WorldbuildingAppV2] [http-nio-8080-exec-8] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.orm.jpa.JpaSystemException: could not prepare statement [[SQLITE_ERROR] SQL error or missing database (no such table: universo)] [select u1_0.id,u1_0.cuaderno_id,u1_0.nombre from universo u1_0]]
+2026-01-09T16:49:21.991+01:00  WARN 792 --- [WorldbuildingAppV2] [http-nio-8080-exec-5] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Error: 1, SQLState: null
+2026-01-09T16:49:21.992+01:00 ERROR 792 --- [WorldbuildingAppV2] [http-nio-8080-exec-5] o.h.engine.jdbc.spi.SqlExceptionHelper   : [SQLITE_ERROR] SQL error or missing database (no such table: hoja)
+2026-01-09T16:49:22.025+01:00  WARN 792 --- [WorldbuildingAppV2] [http-nio-8080-exec-2] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Error: 1, SQLState: null
+2026-01-09T16:49:22.030+01:00 ERROR 792 --- [WorldbuildingAppV2] [http-nio-8080-exec-2] o.h.engine.jdbc.spi.SqlExceptionHelper   : [SQLITE_ERROR] SQL error or missing database (no such table: hoja)
+2026-01-09T16:49:22.032+01:00  WARN 792 --- [WorldbuildingAppV2] [http-nio-8080-exec-5] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.orm.jpa.JpaSystemException: could not prepare statement [[SQLITE_ERROR] SQL error or missing database (no such table: hoja)] [select h1_0.id,h1_0.contenido,h1_0.cuaderno_id,h1_0.deleted,h1_0.deleted_date,h1_0.fecha_modificacion,h1_0.numero_pagina from hoja h1_0 where (h1_0.deleted = 0) and h1_0.cuaderno_id=? order by h1_0.numero_pagina]]
+2026-01-09T16:49:22.059+01:00  WARN 792 --- [WorldbuildingAppV2] [http-nio-8080-exec-2] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.orm.jpa.JpaSystemException: could not prepare statement [[SQLITE_ERROR] SQL error or missing database (no such table: hoja)] [select h1_0.id,h1_0.contenido,h1_0.cuaderno_id,h1_0.deleted,h1_0.deleted_date,h1_0.fecha_modificacion,h1_0.numero_pagina from hoja h1_0 where (h1_0.deleted = 0) and h1_0.cuaderno_id=? order by h1_0.numero_pagina]]
+2026-01-09T16:53:28.671+01:00  INFO 792 --- [WorldbuildingAppV2] [File Watcher] rtingClassPathChangeChangedEventListener : Restarting due to 75 class path changes (0 additions, 75 deletions, 0 modifications)
+2026-01-09T16:53:28.678+01:00  INFO 792 --- [WorldbuildingAppV2] [Thread-5] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-01-09T16:53:28.687+01:00  INFO 792 --- [WorldbuildingAppV2] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-01-09T16:53:28.696+01:00  INFO 792 --- [WorldbuildingAppV2] [Thread-5] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-01-09T16:53:28.899+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Starting WorldbuildingApplication using Java 24.0.2 with PID 792 (C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App\target\classes started by Roberto in C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App)
+2026-01-09T16:53:28.899+01:00 DEBUG 792 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Running with Spring Boot v3.5.6, Spring v6.2.11
+2026-01-09T16:53:28.899+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : No active profile set, falling back to 1 default profile: "default"
+2026-01-09T16:53:29.374+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-01-09T16:53:29.381+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 5 ms. Found 0 JPA repository interfaces.
+2026-01-09T16:53:29.571+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-01-09T16:53:29.575+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-01-09T16:53:29.575+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
+2026-01-09T16:53:29.609+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-01-09T16:53:29.610+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 705 ms
+2026-01-09T16:53:29.715+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-01-09T16:53:29.720+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-01-09T16:53:29.738+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-01-09T16:53:29.766+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 3.49.1
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-01-09T16:53:29.792+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-01-09T16:53:29.793+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-01-09T16:53:29.839+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-01-09T16:53:30.059+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-01-09T16:53:30.134+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2026-01-09T16:53:30.165+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-01-09T16:53:30.175+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Started WorldbuildingApplication in 1.337 seconds (process running for 924.235)
+2026-01-09T16:53:30.180+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation delta:
+
+
+==========================
+CONDITION EVALUATION DELTA
+==========================
+
+
+Positive matches:
+-----------------
+
+   DataSourceAutoConfiguration.PooledDataSourceConfiguration matched:
+      - AnyNestedCondition 1 matched 1 did not; NestedCondition on DataSourceAutoConfiguration.PooledDataSourceCondition.PooledDataSourceAvailable PooledDataSource found supported DataSource; NestedCondition on DataSourceAutoConfiguration.PooledDataSourceCondition.ExplicitType @ConditionalOnProperty (spring.datasource.type) did not find property 'spring.datasource.type' (DataSourceAutoConfiguration.PooledDataSourceCondition)
+      - @ConditionalOnMissingBean (types: javax.sql.DataSource,javax.sql.XADataSource; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   DataSourceAutoConfiguration.PooledDataSourceConfiguration#jdbcConnectionDetails matched:
+      - @ConditionalOnMissingBean (types: org.springframework.boot.autoconfigure.jdbc.JdbcConnectionDetails; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+   DevToolsDataSourceAutoConfiguration matched:
+      - @ConditionalOnClass found required class 'javax.sql.DataSource' (OnClassCondition)
+      - Devtools devtools enabled. (OnEnabledDevToolsCondition)
+      - DevTools DataSource Condition found auto-configured DataSource (DevToolsDataSourceAutoConfiguration.DevToolsDataSourceCondition)
+
+   DevToolsDataSourceAutoConfiguration.DatabaseShutdownExecutorEntityManagerFactoryDependsOnPostProcessor matched:
+      - @ConditionalOnClass found required class 'org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean' (OnClassCondition)
+      - @ConditionalOnBean (types: org.springframework.orm.jpa.AbstractEntityManagerFactoryBean; SearchStrategy: all) found bean '&entityManagerFactory' (OnBeanCondition)
+
+   ManagementWebSecurityAutoConfiguration matched:
+      - found 'session' scope (OnWebApplicationCondition)
+      - AllNestedConditions 2 matched 0 did not; NestedCondition on DefaultWebSecurityCondition.Beans @ConditionalOnMissingBean (types: org.springframework.security.web.SecurityFilterChain; SearchStrategy: all) did not find any beans; NestedCondition on DefaultWebSecurityCondition.Classes @ConditionalOnClass found required classes 'org.springframework.security.web.SecurityFilterChain', 'org.springframework.security.config.annotation.web.builders.HttpSecurity' (DefaultWebSecurityCondition)
+
+   SpringBootWebSecurityConfiguration.WebSecurityEnablerConfiguration matched:
+      - @ConditionalOnClass found required class 'org.springframework.security.config.annotation.web.configuration.EnableWebSecurity' (OnClassCondition)
+      - @ConditionalOnMissingBean (names: springSecurityFilterChain; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+
+Negative matches:
+-----------------
+
+    None
+
+
+Exclusions:
+-----------
+
+    None
+
+
+Unconditional classes:
+----------------------
+
+    None
+
+
+
+2026-01-09T16:53:32.019+01:00  INFO 792 --- [WorldbuildingAppV2] [File Watcher] rtingClassPathChangeChangedEventListener : Restarting due to 76 class path changes (76 additions, 0 deletions, 0 modifications)
+2026-01-09T16:53:32.021+01:00  INFO 792 --- [WorldbuildingAppV2] [Thread-7] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-01-09T16:53:32.039+01:00  INFO 792 --- [WorldbuildingAppV2] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-01-09T16:53:32.065+01:00  INFO 792 --- [WorldbuildingAppV2] [Thread-7] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-01-09T16:53:32.225+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Starting WorldbuildingApplication using Java 24.0.2 with PID 792 (C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App\target\classes started by Roberto in C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App)
+2026-01-09T16:53:32.225+01:00 DEBUG 792 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Running with Spring Boot v3.5.6, Spring v6.2.11
+2026-01-09T16:53:32.226+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : No active profile set, falling back to 1 default profile: "default"
+2026-01-09T16:53:32.430+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Starting WorldbuildingApplication using Java 24.0.2 with PID 12876 (C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App\target\classes started by Roberto in C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App)
+2026-01-09T16:53:32.433+01:00 DEBUG 12876 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Running with Spring Boot v3.5.6, Spring v6.2.11
+2026-01-09T16:53:32.434+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : No active profile set, falling back to 1 default profile: "default"
+2026-01-09T16:53:32.494+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\xalan\xalan\2.7.3\xalan-2.7.3.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/xalan/xalan/2.7.3/xercesImpl.jar,file:/C:/Users/Roberto/.m2/repository/xalan/xalan/2.7.3/xml-apis.jar,file:/C:/Users/Roberto/.m2/repository/xalan/xalan/2.7.3/serializer.jar
+2026-01-09T16:53:32.494+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\xalan\serializer\2.7.3\serializer-2.7.3.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/xalan/serializer/2.7.3/xml-apis.jar
+2026-01-09T16:53:32.495+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\com\sun\xml\bind\jaxb-impl\4.0.5\jaxb-impl-4.0.5.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-impl/4.0.5/jaxb-core.jar,file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-impl/4.0.5/angus-activation.jar
+2026-01-09T16:53:32.495+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\com\sun\xml\bind\jaxb-core\4.0.5\jaxb-core-4.0.5.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-core/4.0.5/jakarta.activation-api.jar,file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-core/4.0.5/jakarta.xml.bind-api.jar
+2026-01-09T16:53:32.496+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2026-01-09T16:53:32.496+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2026-01-09T16:53:32.602+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-01-09T16:53:32.695+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 91 ms. Found 21 JPA repository interfaces.
+2026-01-09T16:53:32.807+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-01-09T16:53:32.808+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-01-09T16:53:32.808+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
+2026-01-09T16:53:32.833+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-01-09T16:53:32.833+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 605 ms
+2026-01-09T16:53:32.967+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-01-09T16:53:32.982+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-01-09T16:53:32.999+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-01-09T16:53:33.009+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'com.worldbuilding.app.config.MultiTenantDataSource@764a8805']
+	Database driver: undefined/unknown
+	Database version: 3.49.1
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-01-09T16:53:33.418+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-01-09T16:53:33.429+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-01-09T16:53:33.738+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-01-09T16:53:33.779+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-01-09T16:53:33.874+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-01-09T16:53:33.878+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 129 ms. Found 21 JPA repository interfaces.
+2026-01-09T16:53:33.960+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2026-01-09T16:53:33.975+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-01-09T16:53:33.979+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Started WorldbuildingApplication in 1.796 seconds (process running for 928.039)
+2026-01-09T16:53:34.000+01:00  INFO 792 --- [WorldbuildingAppV2] [restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation delta:
+
+
+==========================
+CONDITION EVALUATION DELTA
+==========================
+
+
+Positive matches:
+-----------------
+
+    None
+
+
+Negative matches:
+-----------------
+
+   DataSourceAutoConfiguration.PooledDataSourceConfiguration:
+      Did not match:
+         - @ConditionalOnMissingBean (types: javax.sql.DataSource,javax.sql.XADataSource; SearchStrategy: all) found beans of type 'javax.sql.DataSource' dataSource (OnBeanCondition)
+      Matched:
+         - AnyNestedCondition 1 matched 1 did not; NestedCondition on DataSourceAutoConfiguration.PooledDataSourceCondition.PooledDataSourceAvailable PooledDataSource found supported DataSource; NestedCondition on DataSourceAutoConfiguration.PooledDataSourceCondition.ExplicitType @ConditionalOnProperty (spring.datasource.type) did not find property 'spring.datasource.type' (DataSourceAutoConfiguration.PooledDataSourceCondition)
+
+   DevToolsDataSourceAutoConfiguration:
+      Did not match:
+         - DevTools DataSource Condition did not find an auto-configured DataSource (DevToolsDataSourceAutoConfiguration.DevToolsDataSourceCondition)
+      Matched:
+         - @ConditionalOnClass found required class 'javax.sql.DataSource' (OnClassCondition)
+         - Devtools devtools enabled. (OnEnabledDevToolsCondition)
+
+   DevToolsDataSourceAutoConfiguration.DatabaseShutdownExecutorEntityManagerFactoryDependsOnPostProcessor:
+      Did not match:
+         - Ancestor org.springframework.boot.devtools.autoconfigure.DevToolsDataSourceAutoConfiguration did not match (ConditionEvaluationReport.AncestorsMatchedCondition)
+      Matched:
+         - @ConditionalOnClass found required class 'org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean' (OnClassCondition)
+
+   ManagementWebSecurityAutoConfiguration:
+      Did not match:
+         - AllNestedConditions 1 matched 1 did not; NestedCondition on DefaultWebSecurityCondition.Beans @ConditionalOnMissingBean (types: org.springframework.security.web.SecurityFilterChain; SearchStrategy: all) found beans of type 'org.springframework.security.web.SecurityFilterChain' securityFilterChain; NestedCondition on DefaultWebSecurityCondition.Classes @ConditionalOnClass found required classes 'org.springframework.security.web.SecurityFilterChain', 'org.springframework.security.config.annotation.web.builders.HttpSecurity' (DefaultWebSecurityCondition)
+      Matched:
+         - found 'session' scope (OnWebApplicationCondition)
+
+   SpringBootWebSecurityConfiguration.WebSecurityEnablerConfiguration:
+      Did not match:
+         - @ConditionalOnMissingBean (names: springSecurityFilterChain; SearchStrategy: all) found beans named springSecurityFilterChain (OnBeanCondition)
+      Matched:
+         - @ConditionalOnClass found required class 'org.springframework.security.config.annotation.web.configuration.EnableWebSecurity' (OnClassCondition)
+
+
+Exclusions:
+-----------
+
+    None
+
+
+Unconditional classes:
+----------------------
+
+    None
+
+
+
+2026-01-09T16:53:34.423+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-01-09T16:53:34.437+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-01-09T16:53:34.437+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
+2026-01-09T16:53:34.483+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-01-09T16:53:34.484+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1988 ms
+2026-01-09T16:53:34.842+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-01-09T16:53:34.891+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.29.Final
+2026-01-09T16:53:34.918+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-01-09T16:53:35.217+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-01-09T16:53:35.263+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'com.worldbuilding.app.config.MultiTenantDataSource@1f860c84']
+	Database driver: undefined/unknown
+	Database version: 3.49.1
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-01-09T16:53:36.202+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-01-09T16:53:36.235+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-01-09T16:53:36.632+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-01-09T16:53:37.465+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-01-09T16:53:37.695+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-01-09T16:53:37.954+01:00  WARN 12876 --- [WorldbuildingAppV2] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : Unable to start LiveReload server
+2026-01-09T16:53:37.992+01:00  WARN 12876 --- [WorldbuildingAppV2] [restartedMain] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop'
+2026-01-09T16:53:37.996+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-01-09T16:53:38.011+01:00  INFO 12876 --- [WorldbuildingAppV2] [restartedMain] .s.b.a.l.ConditionEvaluationReportLogger : 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-01-09T16:53:38.027+01:00 ERROR 12876 --- [WorldbuildingAppV2] [restartedMain] o.s.b.d.LoggingFailureAnalysisReporter   : 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Web server failed to start. Port 8080 was already in use.
+
+Action:
+
+Identify and stop the process that's listening on port 8080 or configure this application to listen on another port.
+
+2026-01-09T16:54:42.407+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Starting WorldbuildingApplication using Java 24.0.2 with PID 3464 (C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App\target\classes started by Roberto in C:\Users\Roberto\Desktop\Proyectos Propios\WorlBuilding-Writting-App)
+2026-01-09T16:54:42.410+01:00 DEBUG 3464 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Running with Spring Boot v3.5.6, Spring v6.2.11
+2026-01-09T16:54:42.411+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : No active profile set, falling back to 1 default profile: "default"
+2026-01-09T16:54:42.462+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\xalan\xalan\2.7.3\xalan-2.7.3.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/xalan/xalan/2.7.3/xercesImpl.jar,file:/C:/Users/Roberto/.m2/repository/xalan/xalan/2.7.3/xml-apis.jar,file:/C:/Users/Roberto/.m2/repository/xalan/xalan/2.7.3/serializer.jar
+2026-01-09T16:54:42.463+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\xalan\serializer\2.7.3\serializer-2.7.3.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/xalan/serializer/2.7.3/xml-apis.jar
+2026-01-09T16:54:42.463+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\com\sun\xml\bind\jaxb-impl\4.0.5\jaxb-impl-4.0.5.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-impl/4.0.5/jaxb-core.jar,file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-impl/4.0.5/angus-activation.jar
+2026-01-09T16:54:42.463+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Roberto\.m2\repository\com\sun\xml\bind\jaxb-core\4.0.5\jaxb-core-4.0.5.jar referenced one or more files that do not exist: file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-core/4.0.5/jakarta.activation-api.jar,file:/C:/Users/Roberto/.m2/repository/com/sun/xml/bind/jaxb-core/4.0.5/jakarta.xml.bind-api.jar
+2026-01-09T16:54:42.464+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2026-01-09T16:54:42.464+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2026-01-09T16:54:43.383+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-01-09T16:54:43.531+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 135 ms. Found 21 JPA repository interfaces.
+2026-01-09T16:54:44.030+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-01-09T16:54:44.042+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-01-09T16:54:44.043+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.46]
+2026-01-09T16:54:44.079+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-01-09T16:54:44.080+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1615 ms
+2026-01-09T16:54:44.402+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-01-09T16:54:44.442+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.29.Final
+2026-01-09T16:54:44.471+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-01-09T16:54:44.751+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-01-09T16:54:44.793+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'com.worldbuilding.app.config.MultiTenantDataSource@3509268b']
+	Database driver: undefined/unknown
+	Database version: 3.49.1
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-01-09T16:54:45.737+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-01-09T16:54:45.776+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-01-09T16:54:46.096+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-01-09T16:54:46.788+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-01-09T16:54:46.973+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-01-09T16:54:47.283+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2026-01-09T16:54:47.332+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-01-09T16:54:47.340+01:00  INFO 3464 --- [WorldbuildingAppV2] [restartedMain] c.w.app.WorldbuildingApplication         : Started WorldbuildingApplication in 5.343 seconds (process running for 5.799)
+2026-01-09T16:55:29.254+01:00  INFO 3464 --- [WorldbuildingAppV2] [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-01-09T16:55:29.254+01:00  INFO 3464 --- [WorldbuildingAppV2] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-01-09T16:55:29.256+01:00  INFO 3464 --- [WorldbuildingAppV2] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms

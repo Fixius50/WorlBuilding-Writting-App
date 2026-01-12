@@ -228,6 +228,10 @@ public class WorldBibleService {
         return allTemplates;
     }
 
+    public List<EntidadGenerica> getFavorites(Cuaderno proyecto) {
+        return entidadGenericaRepository.findByProyectoAndFavoriteTrue(proyecto);
+    }
+
     public List<AtributoPlantilla> getGlobalTemplates(Cuaderno proyecto) {
         return atributoPlantillaRepository.findByCarpeta_ProyectoAndGlobalTrue(proyecto);
     }
@@ -361,6 +365,19 @@ public class WorldBibleService {
         // Let's manually delete to be safe if DB isn't strict.
         atributoValorRepository.deleteByPlantillaId(id);
         atributoPlantillaRepository.deleteById(id);
+    }
+
+    @Transactional
+    public Map<String, Object> toggleFavorite(Long id) {
+        Optional<EntidadGenerica> entOpt = entidadGenericaRepository.findById(id);
+        if (entOpt.isPresent()) {
+            EntidadGenerica ent = entOpt.get();
+            boolean newState = !ent.isFavorite();
+            ent.setFavorite(newState);
+            entidadGenericaRepository.save(ent);
+            return Map.of("success", true, "id", id, "isFavorite", newState);
+        }
+        throw new RuntimeException("Entity not found");
     }
 
     @Transactional

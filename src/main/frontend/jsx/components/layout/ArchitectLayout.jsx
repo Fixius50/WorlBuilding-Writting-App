@@ -126,6 +126,18 @@ const ArchitectLayout = () => {
         return () => window.removeEventListener('focus', handleFocus);
     }, [projectName]);
 
+    // Auto-collapse Left Sidebar in Bible Context to avoid double-sidebar look
+    useEffect(() => {
+        if (isBibleContext) {
+            setLeftOpen(false);
+        } else {
+            // Optional: Re-open in other views? Or leave as user left it?
+            // Let's leave it as user left it, or default open if they navigate away?
+            // Better UX: Collapse only when entering Bible.
+            // If we want it to "restore", we need previous state. For now, just collapse.
+        }
+    }, [isBibleContext]);
+
     const loadProject = async (identifier) => {
         try {
             const proj = await api.get(`/proyectos/${identifier}`);

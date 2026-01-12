@@ -185,6 +185,15 @@ public class WorldBibleController {
         return ResponseEntity.ok(entidadGenericaRepository.findByProyecto(proyecto));
     }
 
+    @GetMapping("/favorites")
+    public ResponseEntity<?> getFavorites(HttpSession session) {
+        Cuaderno proyecto = getProyectoActual(session);
+        if (proyecto == null)
+            return ResponseEntity.status(401).body(Map.of("error", "No active project"));
+
+        return ResponseEntity.ok(worldBibleService.getFavorites(proyecto));
+    }
+
     @GetMapping("/entities/{idOrSlug}")
     public ResponseEntity<?> getEntity(@PathVariable String idOrSlug, HttpSession session) {
         Cuaderno proyecto = getProyectoActual(session);
@@ -273,6 +282,15 @@ public class WorldBibleController {
         // handles it.
         // Let's stick to updateEntity for main props.
         return ResponseEntity.ok(worldBibleService.updateEntityDetails(entityId, descripcion, tags, apariencia));
+    }
+
+    @PatchMapping("/entities/{id}/favorite")
+    public ResponseEntity<?> toggleFavorite(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(worldBibleService.toggleFavorite(id));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PostMapping("/folders/{id}/templates")

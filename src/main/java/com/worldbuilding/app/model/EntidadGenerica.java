@@ -64,7 +64,18 @@ public class EntidadGenerica {
     @Column(name = "categoria")
     private String categoria; // e.g. "Individual", "Group", "Location", "Event"
 
+    @Column(name = "favorite")
+    private Boolean favorite = false;
+
     // Getters y Setters
+    public Boolean isFavorite() {
+        return favorite != null ? favorite : false;
+    }
+
+    public void setFavorite(Boolean favorite) {
+        this.favorite = favorite;
+    }
+
     public Long getId() {
         return id;
     }

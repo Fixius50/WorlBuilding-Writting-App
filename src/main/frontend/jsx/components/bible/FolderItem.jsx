@@ -270,6 +270,17 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
                                 setRenamingEntityId(contextMenu.id);
                                 closeContextMenu();
                             }}><span className="material-symbols-outlined text-sm">edit</span> Rename</button>
+                            <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2 cursor-pointer" onClick={async () => {
+                                try {
+                                    await api.entityService.toggleFavorite(contextMenu.id);
+                                    window.dispatchEvent(new CustomEvent('favorites-update'));
+                                    // Also reload folder content to update the icon state
+                                    window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: folder.id } }));
+                                } catch (e) { console.error(e); }
+                                closeContextMenu();
+                            }}>
+                                <span className="material-symbols-outlined text-sm text-yellow-500">star</span> Toggle Favorite
+                            </button>
                             <button className="px-4 py-2 hover:bg-red-500/10 text-red-400 text-left flex items-center gap-2" onClick={() => { onDeleteEntity(contextMenu.id, folder.id); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">delete</span> Delete Entity</button>
                         </>
                     )}
@@ -317,7 +328,8 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
                                 }}
                             >
                                 <span className={`material-symbols-outlined text-sm opacity-70 group-hover:text-primary transition-colors`}>{getIconForType(ent.tipoEspecial)}</span>
-                                <span className="truncate">{ent.nombre}</span>
+                                <span className="truncate flex-1">{ent.nombre}</span>
+                                {ent.favorite && <span className="material-symbols-outlined text-[10px] text-yellow-500" title="Favorito">star</span>}
                             </Link>
                     ))}
                     {loaded && content.folders.length === 0 && content.entities.length === 0 && (
