@@ -1,113 +1,73 @@
-import React, { useEffect } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
-/* 
-   WORKAROUND: In version 3.x/beta of tiptap, menus seem to be split. 
-   Package.json 'exports' shows "./menus" -> "./dist/menus/index.js".
-   If this fails, we will try another path, but this matches the package.json definition.
-*/
-import { BubbleMenu, FloatingMenu } from '@tiptap/react/menus';
+import React from 'react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
-import StarterKit from '@tiptap/starter-kit';
-import Placeholder from '@tiptap/extension-placeholder';
-import Typography from '@tiptap/extension-typography';
+// Custom Toolbar configured for a "Google Docs" style but dark themed via CSS
+const modules = {
+    toolbar: [
+        [{ 'header': [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        ['blockquote', 'code-block'],
+        [{ 'color': [] }, { 'background': [] }],
+        ['clean']
+    ],
+};
 
 const ZenEditor = ({ content, onUpdate }) => {
-    const editor = useEditor({
-        extensions: [
-            StarterKit,
-            Typography,
-            Placeholder.configure({
-                placeholder: 'Escribe algo increíble...',
-            }),
-        ],
-        content: content || '',
-        onUpdate: ({ editor }) => {
-            const html = editor.getHTML();
-            if (onUpdate) {
-                onUpdate(html);
-            }
-        },
-        editorProps: {
-            attributes: {
-                class: 'prose prose-invert prose-lg max-w-none focus:outline-none min-h-[500px] text-text-main font-serif leading-relaxed selection:bg-primary/30',
-            },
-        },
-    });
-
-    // Update content if it changes externally (careful with loops)
-    useEffect(() => {
-        if (editor && content !== editor.getHTML()) {
-            // Only update if difference to avoid cursor jumps?
-            // Usually need a diff check or just set content.
-            // For now, let's assume one-way binding priority or check empty.
-            if (editor.getText() === '' && content) {
-                editor.commands.setContent(content);
-            }
+    
+    const handleChange = (value) => {
+        if (onUpdate) {
+            onUpdate(value);
         }
-    }, [content, editor]);
-
-    if (!editor) {
-        return null;
-    }
+    };
 
     return (
-        <div className="zen-editor-container relative w-full h-full">
-            {/* BUBBLE MENU: Selection formatting */}
-            <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }} className="flex bg-surface-dark border border-glass-border rounded-lg shadow-xl overflow-hidden p-1 gap-1">
-                <button
-                    onClick={() => editor.chain().focus().toggleBold().run()}
-                    className={`p-1 rounded hover:bg-white/10 ${editor.isActive('bold') ? 'text-primary' : 'text-text-muted'}`}
-                >
-                    <span className="material-symbols-outlined text-sm">format_bold</span>
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleItalic().run()}
-                    className={`p-1 rounded hover:bg-white/10 ${editor.isActive('italic') ? 'text-primary' : 'text-text-muted'}`}
-                >
-                    <span className="material-symbols-outlined text-sm">format_italic</span>
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleStrike().run()}
-                    className={`p-1 rounded hover:bg-white/10 ${editor.isActive('strike') ? 'text-primary' : 'text-text-muted'}`}
-                >
-                    <span className="material-symbols-outlined text-sm">strikethrough_s</span>
-                </button>
-            </BubbleMenu>
-
-            {/* FLOATING MENU: Empty line actions */}
-            <FloatingMenu editor={editor} tippyOptions={{ duration: 100 }} className="flex bg-surface-dark border border-glass-border rounded-lg shadow-xl overflow-hidden p-1 gap-1">
-                <button
-                    onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-                    className={`p-1 rounded hover:bg-white/10 ${editor.isActive('heading', { level: 1 }) ? 'text-primary' : 'text-text-muted'}`}
-                >
-                    <span className="material-symbols-outlined text-sm">format_h1</span>
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                    className={`p-1 rounded hover:bg-white/10 ${editor.isActive('heading', { level: 2 }) ? 'text-primary' : 'text-text-muted'}`}
-                >
-                    <span className="material-symbols-outlined text-sm">format_h2</span>
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleBulletList().run()}
-                    className={`p-1 rounded hover:bg-white/10 ${editor.isActive('bulletList') ? 'text-primary' : 'text-text-muted'}`}
-                >
-                    <span className="material-symbols-outlined text-sm">format_list_bulleted</span>
-                </button>
-            </FloatingMenu>
-
-            <EditorContent editor={editor} className="w-full h-full" />
-
+        <div className="zen-editor-container h-full flex flex-col">
             <style>{`
-                /* Tiptap Placeholder */
-                .ProseMirror p.is-editor-empty:first-child::before {
-                    color: #adb5bd;
-                    content: attr(data-placeholder);
-                    float: left;
-                    height: 0;
-                    pointer-events: none;
+                /* Dark Mode Overrides for Quill */
+                .ql-toolbar.ql-snow {
+                    border: none;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                    background: rgba(255, 255, 255, 0.02);
+                }
+                .ql-container.ql-snow {
+                    border: none;
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                }
+                .ql-editor {
+                    flex: 1;
+                    font-family: 'Outfit', sans-serif; /* Or generic serif if preferred */
+                    font-size: 1.1rem;
+                    color: #e2e8f0;
+                    line-height: 1.8;
+                    padding: 2rem;
+                }
+                .ql-editor.ql-blank::before {
+                    color: rgba(255,255,255,0.2);
+                    font-style: italic;
+                }
+                
+                /* Toolbar Icons */
+                .ql-snow .ql-stroke {
+                    stroke: #94a3b8;
+                }
+                .ql-snow .ql-fill {
+                    fill: #94a3b8;
+                }
+                .ql-snow .ql-picker {
+                    color: #94a3b8;
                 }
             `}</style>
+            <ReactQuill 
+                theme="snow"
+                value={content || ''}
+                onChange={handleChange}
+                modules={modules}
+                className="h-full flex flex-col"
+            />
         </div>
     );
 };

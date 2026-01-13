@@ -39,14 +39,11 @@ Tareas extraídas de `WorldBibleController.java`:
 - [x] **Herencia de Plantillas**: Completado mediante la implementación de **Atributos Globales**.
 
 ## 5. Implementación del Editor de Texto "Zen" (Nueva Fase)
-Objetivo: Crear una zona de escritura limpia, minimalista y personalizada, reemplazando cualquier editor estándar.
-- [ ] **Setup Inicial Tiptap**: Instalar dependencias (`@tiptap/react`, `@tiptap/starter-kit`) y configurar el componente base sin estilos (`headless`).
-- [ ] **Diseño "Zen" UI**: Implementar contenedor minimalista con TailwindCSS (Fondo oscuro, tipografía serif para lectura, sin barras de herramientas intrusivas).
-- [ ] **Sistema de Menciones (@)**:
-    - Integrar extensión `@tiptap/extension-mention`.
-    - Crear componente `MentionList.jsx` para mostrar sugerencias flotantes.
-    - Conectar con API para buscar entidades del proyecto real.
-- [ ] **Menú Flotante (Bubble Menu)**: Implementar menú contextual que solo aparece al seleccionar texto (Negrita, Cursiva, H1/H2).
+Objetivo: Crear una zona de escritura limpia, minimalista y personalizada.
+- [x] **Setup Inicial**: Se ha optado por **React-Quill** en lugar de Tiptap debido a estabilidad.
+- [x] **Diseño "Zen" UI**: Implementado mediante CSS personalizado en `ZenEditor.jsx` (Dark Mode, bordes ocultos).
+- [ ] **Sistema de Menciones (@)**: Pendiente de investigación para React-Quill.
+- [x] **Toolbar**: Integrada toolbar estilo Google Docs (Snow theme) con overrides oscuros.
 
 ## Tareas Completadas Recientemente 
 - [x] **Gestión de Plantillas Globales, UX EntityBuilder, Consistencia UI**.

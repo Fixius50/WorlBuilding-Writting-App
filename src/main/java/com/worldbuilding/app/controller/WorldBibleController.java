@@ -185,6 +185,30 @@ public class WorldBibleController {
         return ResponseEntity.ok(entidadGenericaRepository.findByProyecto(proyecto));
     }
 
+    @GetMapping("/entities/search")
+    public ResponseEntity<?> searchEntities(@RequestParam String q, HttpSession session) {
+        Cuaderno proyecto = getProyectoActual(session);
+        if (proyecto == null)
+            return ResponseEntity.status(401).body(Map.of("error", "No active project"));
+
+        List<EntidadGenerica> all = entidadGenericaRepository.findByProyecto(proyecto);
+        String query = q.toLowerCase();
+
+        List<Map<String, Object>> results = all.stream()
+                .filter(e -> e.getNombre().toLowerCase().contains(query))
+                .limit(10)
+                .map(e -> Map.<String, Object>of(
+                        "id", e.getId(),
+                        "value", e.getNombre(),
+                        "nombre", e.getNombre(),
+                        "categoria", e.getCategoria() != null ? e.getCategoria() : "entity",
+                        "iconUrl", e.getIconUrl() != null ? e.getIconUrl() : "",
+                        "slug", e.getSlug() != null ? e.getSlug() : ""))
+                .toList();
+
+        return ResponseEntity.ok(results);
+    }
+
     @GetMapping("/favorites")
     public ResponseEntity<?> getFavorites(HttpSession session) {
         Cuaderno proyecto = getProyectoActual(session);

@@ -19,6 +19,7 @@
     "framer-motion": "^11.0.8",
     "konva": "^9.3.16",
     "lucide-react": "^0.344.0",
+    "quill-mention": "^6.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-konva": "^18.2.10",

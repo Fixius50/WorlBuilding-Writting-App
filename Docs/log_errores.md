@@ -63,4 +63,11 @@
   - **Resultado**: ÉXITO. El usuario confirma "carga y va la app". Editor estable y estilos restaurados.
 - **Nuevo Error Backend (00:33)**: 
   - `500 Internal Server Error` en `/api/escritura/cuaderno/1/hojas`.
-  - Posible causa: Persistencia del `SQLITE_ERROR` (tabla `hoja` inexistente) si la migración DDL falló silenciosamente.
+  - **Causa**: `spring.jpa.hibernate.ddl-auto` estaba en `create` (reseteando DB) pero fallaba al crear las tablas por bloqueos o configuración, o simplemente borraba los datos.
+  - **Solución (2026-01-13)**: Se cambió `ddl-auto` a `update` en `application.properties`. Se verificó Entidad `Hoja.java`.
+  - **Estado**: Resuelto.
+
+## [2026-01-13] Inconsistencia Frontend Zen Editor
+- **Error**: El código fuente mostraba `Tiptap` v3.15.3 instalado y en uso, a pesar de que los logs decían que se había reemplazado por Quill.
+- **Acción**: Se ha reescrito `ZenEditor.jsx` para usar `React-Quill` (ya instalado en package.json), aplicando estilos Dark Mode.
+- **Estado**: Implementado.
