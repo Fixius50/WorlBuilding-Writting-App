@@ -4,7 +4,7 @@ import Mention from '@tiptap/extension-mention'
 import StarterKit from '@tiptap/starter-kit'
 import { ReactRenderer } from '@tiptap/react'
 import tippy from 'tippy.js'
-import MentionList from './MentionList'
+import MentionList from '../jsx/components/editor/MentionList'
 
 const suggestion = {
     items: ({ query }) => {

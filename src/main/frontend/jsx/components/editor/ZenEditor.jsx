@@ -1,60 +1,19 @@
 import React, { useMemo } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import 'quill-mention';
-import 'quill-mention/dist/quill.mention.css';
-import api from '../../../js/services/api';
 
 const ZenEditor = ({ content, onUpdate }) => {
-    
+
     // Memoize modules to avoid re-initialization
     const modules = useMemo(() => ({
         toolbar: [
             [{ 'header': [1, 2, 3, false] }],
             ['bold', 'italic', 'underline', 'strike'],
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
             ['blockquote', 'code-block'],
             [{ 'color': [] }, { 'background': [] }],
             ['clean']
-        ],
-        mention: {
-            allowedChars: /^[A-Za-z\sÅÄÖåäö]*$/,
-            mentionDenotationChars: ["@"],
-            source: async function(searchTerm, renderList, mentionChar) {
-                if (searchTerm.length === 0) {
-                    renderList([], searchTerm);
-                    return;
-                }
-                try {
-                    // Call backend search
-                    const results = await api.get(`/biblia/search?q=${searchTerm}`);
-                    
-                    // Map to quill-mention format
-                    // Assuming backend returns: [{ id: 1, nombre: "Gandalf", tipo: "Personaje", ... }]
-                    const matches = results.map(entity => ({
-                        id: entity.id,
-                        value: entity.nombre,
-                        link: `/biblia/entidad/${entity.id}`, // Link for future navigation
-                        type: entity.tipo // Custom field for styling if needed
-                    }));
-                    
-                    renderList(matches, searchTerm);
-                } catch (error) {
-                    console.error("Error searching entities for mention:", error);
-                    renderList([], searchTerm);
-                }
-            },
-            renderItem: function(item, searchTerm) {
-                // Custom render for the dropdown list item
-                return `
-                    <div class="flex items-center gap-2 py-1">
-                        <span class="w-2 h-2 rounded-full ${item.type === 'Personaje' ? 'bg-indigo-500' : 'bg-emerald-500'}"></span>
-                        <span class="font-bold text-slate-200">${item.value}</span>
-                        <span class="text-xs text-slate-500 ml-auto uppercase tracking-wider">${item.type || 'Entity'}</span>
-                    </div>
-                `;
-            }
-        }
+        ]
     }), []);
 
     const handleChange = (value) => {
@@ -144,7 +103,7 @@ const ZenEditor = ({ content, onUpdate }) => {
                     color: white;
                 }
             `}</style>
-            <ReactQuill 
+            <ReactQuill
                 theme="snow"
                 value={content || ''}
                 onChange={handleChange}

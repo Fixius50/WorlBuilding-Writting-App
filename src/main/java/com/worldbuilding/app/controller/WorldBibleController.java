@@ -102,14 +102,20 @@ public class WorldBibleController {
 
     @GetMapping("/folders/{idOrSlug}/entities")
     public ResponseEntity<?> getEntitiesInFolder(@PathVariable String idOrSlug) {
-        Long id = resolveFolderId(idOrSlug);
-        if (id == null)
-            return ResponseEntity.notFound().build();
+        try {
+            Long id = resolveFolderId(idOrSlug);
+            if (id == null)
+                return ResponseEntity.notFound().build();
 
-        Optional<Carpeta> carpeta = carpetaRepository.findById(id);
-        if (carpeta.isEmpty())
-            return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(entidadGenericaRepository.findByCarpeta(carpeta.get()));
+            Optional<Carpeta> carpeta = carpetaRepository.findById(id);
+            if (carpeta.isEmpty())
+                return ResponseEntity.notFound().build();
+            return ResponseEntity.ok(entidadGenericaRepository.findByCarpeta(carpeta.get()));
+        } catch (Exception e) {
+            System.err.println("[ERROR] getEntitiesInFolder failed: " + e.getMessage());
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Unknown error"));
+        }
     }
 
     @PostMapping("/folders")
@@ -124,14 +130,28 @@ public class WorldBibleController {
             return ResponseEntity.status(401).body(Map.of("error", "No active project"));
         }
 
-        String nombre = (String) payload.get("nombre");
-        String descripcion = (String) payload.get("descripcion");
-        Number padreId = (Number) payload.get("padreId");
-        String tipo = (String) payload.get("tipo");
+        try {
+            String nombre = (String) payload.get("nombre");
+            String descripcion = (String) payload.get("descripcion");
+            Number padreId = (Number) payload.get("padreId");
+            String tipo = (String) payload.get("tipo");
 
-        return ResponseEntity
-                .ok(worldBibleService.createFolder(nombre, descripcion, proyecto,
-                        padreId != null ? padreId.longValue() : null, tipo));
+            Carpeta created = worldBibleService.createFolder(nombre, descripcion, proyecto,
+                    padreId != null ? padreId.longValue() : null, tipo);
+
+            // Return a simple map instead of the full entity to avoid serialization issues
+            return ResponseEntity.ok(Map.of(
+                    "id", created.getId(),
+                    "nombre", created.getNombre() != null ? created.getNombre() : "",
+                    "slug", created.getSlug() != null ? created.getSlug() : "",
+                    "tipo", created.getTipo() != null ? created.getTipo() : "",
+                    "itemCount", created.getItemCount()));
+        } catch (Exception e) {
+            System.err.println("[ERROR] createFolder failed: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Unknown error"));
+        }
     }
 
     @PutMapping("/folders/{id}")
@@ -182,7 +202,13 @@ public class WorldBibleController {
         if (proyecto == null)
             return ResponseEntity.status(401).body(Map.of("error", "No active project"));
 
-        return ResponseEntity.ok(entidadGenericaRepository.findByProyecto(proyecto));
+        try {
+            return ResponseEntity.ok(entidadGenericaRepository.findByProyecto(proyecto));
+        } catch (Exception e) {
+            System.err.println("[ERROR] getAllEntities failed: " + e.getMessage());
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Unknown error"));
+        }
     }
 
     @GetMapping("/entities/search")
@@ -292,20 +318,29 @@ public class WorldBibleController {
     @PatchMapping("/entities/{entityId}/values")
     public ResponseEntity<?> updateEntityValues(@PathVariable Long entityId,
             @RequestBody List<WorldBibleService.ValueUpdateDTO> updates) {
-        worldBibleService.updateEntityValues(entityId, updates);
-        return ResponseEntity.ok().build();
+        try {
+            worldBibleService.updateEntityValues(entityId, updates);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            System.err.println("[ERROR] updateEntityValues failed: " + e.getMessage());
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Unknown error"));
+        }
     }
 
     @PatchMapping("/entities/{entityId}/details")
-    public ResponseEntity<EntidadGenerica> updateEntityDetails(@PathVariable Long entityId,
+    public ResponseEntity<?> updateEntityDetails(@PathVariable Long entityId,
             @RequestBody Map<String, Object> payload) {
-        String descripcion = (String) payload.get("descripcion");
-        String tags = (String) payload.get("tags");
-        String apariencia = (String) payload.get("apariencia");
-        // Also allow updating category here if needed, but usually main updateEntity
-        // handles it.
-        // Let's stick to updateEntity for main props.
-        return ResponseEntity.ok(worldBibleService.updateEntityDetails(entityId, descripcion, tags, apariencia));
+        try {
+            String descripcion = (String) payload.get("descripcion");
+            String tags = (String) payload.get("tags");
+            String apariencia = (String) payload.get("apariencia");
+            return ResponseEntity.ok(worldBibleService.updateEntityDetails(entityId, descripcion, tags, apariencia));
+        } catch (Exception e) {
+            System.err.println("[ERROR] updateEntityDetails failed: " + e.getMessage());
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Unknown error"));
+        }
     }
 
     @PatchMapping("/entities/{id}/favorite")

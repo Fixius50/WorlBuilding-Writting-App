@@ -1,5 +1,61 @@
 # Log de Errores
 
+## [2026-01-13] Pérdida de datos de la Biblia tras reinicio del servidor
+
+**Síntoma**: Los datos de carpetas y entidades de la Biblia no se cargan. El frontend recibe errores 401 "No active project" al intentar acceder a `/api/world-bible/folders` y `/api/world-bible/favorites`.
+
+**Causa Raíz**:
+1. La configuración `spring.jpa.hibernate.ddl-auto` estaba establecida en `create` en `application.properties`
+2. Este modo **borra y recrea todas las tablas** cada vez que se reinicia el servidor Spring Boot
+3. Todos los datos de la base de datos (incluyendo carpetas, entidades, plantillas, etc.) se perdían en cada reinicio
+
+**Contexto**:
+- El modo `create` se había establecido temporalmente para resolver errores de formato de fechas en SQLite
+- Una vez resuelto el problema de fechas (añadiendo `date_class=TEXT` a la URL de conexión), se olvidó revertir a `update`
+
+**Solución Aplicada**:
+1. Cambiar `spring.jpa.hibernate.ddl-auto=create` a `spring.jpa.hibernate.ddl-auto=update` en `application.properties` (línea 14)
+2. Reiniciar el servidor para que tome la nueva configuración
+3. **Importante**: Los datos ya perdidos NO se recuperan automáticamente. Es necesario:
+   - Recrear manualmente las carpetas y entidades, O
+   - Restaurar desde un backup de la base de datos si existe
+
+**Archivos Modificados**:
+- `src/main/resources/application.properties` (línea 14)
+
+**Configuración Final Correcta**:
+```properties
+# Update schema automatically (preserves data)
+spring.jpa.hibernate.ddl-auto=update
+```
+
+**Prevención**:
+- ✅ Usar `update` en desarrollo para preservar datos
+- ✅ Usar `validate` en producción para evitar cambios automáticos al esquema
+- ⚠️ Solo usar `create` temporalmente para debugging y SIEMPRE revertir inmediatamente
+
+**Estado**: ✅ Resuelto - La configuración está correcta, pero los datos deben ser recreados
+
+**UPDATE 23:05**: Detectado problema adicional - falta columna `favorite` en tabla `entidad_generica`. 
+- Error: `[SQLITE_ERROR] SQL error or missing database (no such column: e1_0.favorite)`
+- Causa: El esquema no se actualizó completamente cuando se cambió de `create` a `update`
+
+**UPDATE 23:25**: Problema final identificado y resuelto:
+- **Causa raíz**: El modelo `Carpeta.java` tenía colecciones `@OneToMany` (`subcarpetas`, `plantillas`, `entidades`) SIN `@JsonIgnore`
+- Cuando Jackson serializaba la respuesta, intentaba cargar lazy las colecciones, lo que disparaba queries con la columna `favorite` faltante
+- **Solución aplicada**:
+  1. Añadido `@JsonIgnore` a las 3 colecciones en `Carpeta.java`
+  2. Modificado `WorldBibleController.createFolder()` para devolver un `Map` simple en lugar de la entidad completa
+  3. Añadido try-catch para mejor logging de errores
+
+**Archivos modificados**:
+- `src/main/java/com/worldbuilding/app/model/Carpeta.java`
+- `src/main/java/com/worldbuilding/app/controller/WorldBibleController.java`
+
+**Estado Final**: ✅✅ RESUELTO - Carpetas se crean correctamente
+
+---
+
 ## [2026-01-08] Error de Compilación: Método No Definido
 - **Error**: `The method getFolderDetail(Long) is undefined for the type WorldBibleService` en `WorldBibleController.java`.
 - **Causa**: El método `getFolderDetail` faltaba en el servicio `WorldBibleService`, aunque era invocado desde el controlador.

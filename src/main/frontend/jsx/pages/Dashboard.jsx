@@ -92,7 +92,7 @@ const Dashboard = () => {
     };
 
     return (
-        <div className="flex-1 flex flex-col items-center p-12 pt-28 overflow-y-auto custom-scrollbar relative">
+        <div className="flex-1 flex flex-col items-center p-12 pt-14 overflow-y-auto custom-scrollbar relative">
             <div className="w-full max-w-6xl space-y-12">
                 <header className="flex flex-col gap-2">
                     <h1 className="text-5xl font-manrope font-black text-white tracking-tight">Chronos Atlas</h1>

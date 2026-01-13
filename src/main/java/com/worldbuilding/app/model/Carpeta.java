@@ -34,12 +34,15 @@ public class Carpeta {
     private String descripcion;
     private String slug;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @OneToMany(mappedBy = "padre", cascade = CascadeType.ALL)
     private List<Carpeta> subcarpetas;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @OneToMany(mappedBy = "carpeta", cascade = CascadeType.ALL)
     private List<AtributoPlantilla> plantillas;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @OneToMany(mappedBy = "carpeta", cascade = CascadeType.ALL)
     private List<EntidadGenerica> entidades;
 

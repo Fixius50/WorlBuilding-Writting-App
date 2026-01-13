@@ -14,7 +14,7 @@ const Settings = () => {
         fontSize: 16,
         focusMode: false,
         transparencyEffects: true,
-        vaultPath: 'C:/Users/Author/Documents/ChronosAtlas/MyFirstWorld'
+        vaultPath: './data' // Local vault path (relative)
     });
 
     useEffect(() => {

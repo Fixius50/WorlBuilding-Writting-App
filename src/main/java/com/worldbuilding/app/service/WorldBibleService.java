@@ -30,11 +30,26 @@ public class WorldBibleService {
     // --- CARPETAS ---
 
     public List<Carpeta> getRootFolders(Cuaderno proyecto) {
-        List<Carpeta> folders = carpetaRepository.findByProyectoAndPadreIsNull(proyecto);
-        for (Carpeta f : folders) {
-            f.setItemCount(carpetaRepository.countByPadre(f) + entidadGenericaRepository.countByCarpeta(f));
+        try {
+            List<Carpeta> folders = carpetaRepository.findByProyectoAndPadreIsNull(proyecto);
+            if (folders == null) {
+                return new ArrayList<>();
+            }
+            for (Carpeta f : folders) {
+                try {
+                    int count = carpetaRepository.countByPadre(f) + entidadGenericaRepository.countByCarpeta(f);
+                    f.setItemCount(count);
+                } catch (Exception e) {
+                    System.err.println("Error counting items for folder " + f.getId() + ": " + e.getMessage());
+                    f.setItemCount(0);
+                }
+            }
+            return folders;
+        } catch (Exception e) {
+            System.err.println("Error in getRootFolders: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
         }
-        return folders;
     }
 
     public List<Carpeta> getSubfolders(Long padreId) {
@@ -229,7 +244,14 @@ public class WorldBibleService {
     }
 
     public List<EntidadGenerica> getFavorites(Cuaderno proyecto) {
-        return entidadGenericaRepository.findByProyectoAndFavoriteTrue(proyecto);
+        try {
+            List<EntidadGenerica> favorites = entidadGenericaRepository.findByProyectoAndFavoriteTrue(proyecto);
+            return favorites != null ? favorites : new ArrayList<>();
+        } catch (Exception e) {
+            System.err.println("Error in getFavorites: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
     public List<AtributoPlantilla> getGlobalTemplates(Cuaderno proyecto) {

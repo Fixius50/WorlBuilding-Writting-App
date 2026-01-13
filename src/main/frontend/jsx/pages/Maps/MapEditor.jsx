@@ -100,11 +100,14 @@ const MapEditor = ({ mapTitle = 'Reino de Aethelgard', onSave, onBack }) => {
         if (activeLayer === id) setActiveLayer(layers[0].id);
     };
 
-    const handleSave = () => {
+    const handleSave = (shouldRedirect = true) => {
         const dataUrl = canvasRef.current?.toDataURL();
         console.log("Saving Map Data:", dataUrl ? "Data present" : "Empty");
-        // onSave(dataUrl); // Allow parent to handle
-        alert("Mapa guardado localmente (Simulado)");
+
+        if (shouldRedirect && onSave) {
+            onSave(dataUrl);
+        }
+        // When staying in editor, silently continue (no alert)
     };
 
     return (
@@ -126,14 +129,29 @@ const MapEditor = ({ mapTitle = 'Reino de Aethelgard', onSave, onBack }) => {
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <button onClick={handleSave} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-sm font-bold">
-                        <span className="material-symbols-outlined text-xl">cloud_upload</span>
-                        Guardar
+                    <button
+                        onClick={onBack}
+                        className="px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 text-xs font-bold uppercase tracking-widest transition-all"
+                    >
+                        Cancelar
                     </button>
-                    <Button variant="primary" icon="ios_share" className="px-6 py-2.5 shadow-lg shadow-primary/20">
-                        Exportar
-                    </Button>
-                    <div className="size-10 rounded-full bg-gradient-to-br from-primary to-cyan-400 border-2 border-white/10 shadow-lg"></div>
+                    <div className="flex bg-white/5 rounded-xl p-1 gap-1 border border-white/10">
+                        <button
+                            onClick={() => handleSave(true)}
+                            className="h-9 px-4 rounded-lg bg-primary hover:bg-primary-light text-white text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
+                        >
+                            <span className="material-symbols-outlined text-sm">save</span>
+                            Guardar
+                        </button>
+                        <div className="w-px bg-white/10 my-1"></div>
+                        <button
+                            onClick={() => handleSave(false)}
+                            className="h-9 px-3 rounded-lg bg-transparent hover:bg-white/10 text-white transition-all flex items-center justify-center"
+                            title="Guardar y Seguir Editando"
+                        >
+                            <span className="material-symbols-outlined text-sm">edit_document</span>
+                        </button>
+                    </div>
                 </div>
             </header>
 
