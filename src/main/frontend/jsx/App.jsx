@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AppLayout from './components/layout/AppLayout';
-import Dashboard from './pages/Dashboard';
 
 import WorkspaceSelector from './pages/WorkspaceSelector';
 import ProjectView from './pages/ProjectView';
@@ -31,7 +30,6 @@ function App() {
                 <Route path="/" element={<WorkspaceSelector />} />
 
                 <Route element={<AppLayout />}>
-                    <Route path="/dashboard" element={<Dashboard />} />
                     {/* <Route path="/settings" element={<Settings />} /> */}
 
                     {/* Architect View for Projects */}
