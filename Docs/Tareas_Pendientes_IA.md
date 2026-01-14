@@ -42,7 +42,7 @@ Tareas extraídas de `WorldBibleController.java`:
 Objetivo: Crear una zona de escritura limpia, minimalista y personalizada.
 - [x] **Setup Inicial**: Se ha optado por **React-Quill** en lugar de Tiptap debido a estabilidad.
 - [x] **Diseño "Zen" UI**: Implementado mediante CSS personalizado en `ZenEditor.jsx` (Dark Mode, bordes ocultos).
-- [ ] **Sistema de Menciones (@)**: Pendiente de investigación para React-Quill.
+- [x] **Sistema de Menciones (@)**: Implementado en `ZenEditor.jsx` usando `quill-mention` y API de entidades.
 - [x] **Toolbar**: Integrada toolbar estilo Google Docs (Snow theme) con overrides oscuros.
 
 ## Tareas Completadas Recientemente 

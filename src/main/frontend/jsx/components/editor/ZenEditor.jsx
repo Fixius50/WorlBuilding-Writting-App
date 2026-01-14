@@ -1,10 +1,40 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import 'quill-mention';
+// import 'quill-mention/dist/quill.mention.css'; // Usamos estilos personalizados definidos abajo
+
+import api from '../../../js/services/api';
 
 const ZenEditor = ({ content, onUpdate }) => {
+    const [mentions, setMentions] = useState([]);
+
+    // Cargar entidades para las menciones
+    useEffect(() => {
+        const fetchEntities = async () => {
+            try {
+                // Usamos el endpoint de búsqueda o listado completo. 
+                // Para simplificar y rendimiento en cliente, cargamos todas las entidades (si no son miles)
+                // O podríamos usar la función source de quill-mention para buscar en servidor.
+                // Por ahora, cargamos lista simple.
+                const entities = await api.get('/world-bible/entities');
+
+                const formatted = entities.map(e => ({
+                    id: e.id,
+                    value: e.nombre,
+                    link: `/${e.proyecto?.id || 'p'}/bible/entity/${e.slug || e.id}` // Link referencial
+                }));
+                setMentions(formatted);
+            } catch (err) {
+                console.error("Error loading mentions:", err);
+            }
+        };
+
+        fetchEntities();
+    }, []);
 
     // Memoize modules to avoid re-initialization
+    // IMPORTANTE: 'mention' debe estar definido aquí
     const modules = useMemo(() => ({
         toolbar: [
             [{ 'header': [1, 2, 3, false] }],
@@ -13,8 +43,30 @@ const ZenEditor = ({ content, onUpdate }) => {
             ['blockquote', 'code-block'],
             [{ 'color': [] }, { 'background': [] }],
             ['clean']
-        ]
-    }), []);
+        ],
+        mention: {
+            allowedChars: /^[A-Za-z\sÅÄÖåäö]*$/,
+            mentionDenotationChars: ["@"],
+            source: function (searchTerm, renderList, mentionChar) {
+                let values;
+                if (searchTerm.length === 0) {
+                    values = mentions;
+                } else {
+                    values = mentions.filter(m =>
+                        m.value.toLowerCase().includes(searchTerm.toLowerCase())
+                    );
+                }
+
+                // Limit results to avoid huge list
+                renderList(values.slice(0, 20), searchTerm);
+            },
+            renderItem: (item, searchTerm) => {
+                return `<div class="ql-mention-list-item-content">
+                    <span class="l-name">${item.value}</span>
+                </div>`;
+            }
+        }
+    }), [mentions]); // Re-crear módulos cuando cambian las menciones (necesario para que 'source' tenga los datos)
 
     const handleChange = (value) => {
         if (onUpdate) {
@@ -77,6 +129,7 @@ const ZenEditor = ({ content, onUpdate }) => {
                     cursor: pointer !important;
                     transition: all 0.2s !important;
                     color: #e2e8f0 !important; /* Text color */
+                    background: transparent !important;
                 }
 
                 .ql-mention-list-item.selected {

@@ -39,6 +39,7 @@ build/
 ### Frontend ###
 node_modules/
 *.log
+*.log.*.gz
 
 ### Data files ###
 data/*
