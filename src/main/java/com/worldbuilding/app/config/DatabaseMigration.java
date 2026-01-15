@@ -44,7 +44,7 @@ public class DatabaseMigration {
 
     public void migrateDatabase(File dbFile) {
         String jdbcUrl = "jdbc:sqlite:" + dbFile.getAbsolutePath()
-                + "?date_class=TEXT&date_string_format=yyyy-MM-dd HH:mm:ss";
+                + "?date_class=TEXT&date_string_format=yyyy-MM-dd'T'HH:mm:ss";
 
         try (Connection conn = DriverManager.getConnection(jdbcUrl);
                 Statement stmt = conn.createStatement()) {

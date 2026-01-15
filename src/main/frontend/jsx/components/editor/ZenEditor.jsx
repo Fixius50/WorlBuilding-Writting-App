@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import 'quill-mention';
+import '../../../js/libs/quill.mention.js';
 // import 'quill-mention/dist/quill.mention.css'; // Usamos estilos personalizados definidos abajo
 
 import api from '../../../js/services/api';
