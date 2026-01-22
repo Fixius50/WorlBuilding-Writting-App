@@ -5,6 +5,7 @@ import path from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [react()],
+    base: './', // Ensure relative paths
     root: path.resolve(__dirname, 'src/main/frontend'),
     build: {
         outDir: path.resolve(__dirname, 'src/main/resources/static'),
@@ -16,6 +17,7 @@ export default defineConfig({
     server: {
         // Ensure we bind to all interfaces if needed, though localhost is fine
         host: true,
+        port: 3000,
         proxy: {
             // General capture for API requests
             '/api': {

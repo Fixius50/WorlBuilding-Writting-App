@@ -67,7 +67,19 @@ public class EntidadGenerica {
     @Column(name = "favorite")
     private Boolean favorite = false;
 
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(name = "json_attributes", columnDefinition = "TEXT")
+    private java.util.Map<String, Object> attributes = new java.util.HashMap<>();
+
     // Getters y Setters
+    public java.util.Map<String, Object> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(java.util.Map<String, Object> attributes) {
+        this.attributes = attributes;
+    }
+
     public Boolean isFavorite() {
         return favorite != null ? favorite : false;
     }

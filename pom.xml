@@ -44,6 +44,12 @@
 			<artifactId>hibernate-community-dialects</artifactId>
 		</dependency>
 		
+		<!-- Flyway for DB Migration -->
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-core</artifactId>
+		</dependency>
+		
 
 		<!-- NLP & Linguistics -->
 		<dependency>

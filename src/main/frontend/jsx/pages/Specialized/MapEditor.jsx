@@ -308,7 +308,7 @@ const MapEditor = ({ mode: initialMode }) => {
                     type: formData.type,
                     width: formData.dims.width,
                     height: formData.dims.height,
-                    bgImage: formData.bgImage ? 'BINARY_DATA' : null,
+                    bgImage: formData.bgImage, // Save actual DataURL
                     layers: { lines, rectangles, texts },
                     snapshotUrl: previewUrl
                 }),
@@ -413,7 +413,7 @@ const MapEditor = ({ mode: initialMode }) => {
                     type: formData.type,
                     width: formData.dims.width,
                     height: formData.dims.height,
-                    bgImage: formData.bgImage ? 'BINARY_DATA' : null,
+                    bgImage: formData.bgImage, // Save actual DataURL
                     layers: { lines, rectangles, texts },
                     snapshotUrl: previewUrl // Save snapshot for dedicated preview
                 }),

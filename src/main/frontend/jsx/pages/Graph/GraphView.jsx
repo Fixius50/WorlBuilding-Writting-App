@@ -109,7 +109,7 @@ const GraphView = () => {
             </aside>
 
             {/* Main Canvas Area */}
-            <main className="flex-1 relative overflow-auto bg-[url('/assets/grid-pattern.png')] bg-repeat cursor-move"
+            <main className="flex-1 relative overflow-auto bg-background-dark bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gray-700/10 via-background to-background cursor-move"
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}

@@ -1,17 +1,61 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Space+Mono:wght@400;700&family=Cormorant+Garamond:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@200..800&family=Space+Mono:wght@400;700&family=Cormorant+Garamond:wght@400;600&display=swap');
 @import url('https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --background: 240 10% 3.9%; /* #09090b Void Dark */
+    --foreground: 0 0% 98%; /* #fafafa */
+
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 243 75% 59%; /* #6366f1 Indigo 500 */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 240 4% 16%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+    
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-display selection:bg-primary selection:text-white antialiased overflow-hidden;
+  }
+}
+
 @layer utilities {
     .glass-panel {
-        @apply bg-glass backdrop-blur-xl border border-glass-border;
+        @apply bg-background/60 backdrop-blur-xl border border-white/5;
     }
     .text-shadow {
         text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
+    /* ... Scrollbar utils ... */
     .no-scrollbar::-webkit-scrollbar {
         display: none;
     }
@@ -24,18 +68,14 @@
         height: 6px;
     }
     .custom-scrollbar::-webkit-scrollbar-track {
-        @apply bg-background-dark;
+        @apply bg-background;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb {
-        @apply bg-surface-lighter rounded-full;
+        @apply bg-muted rounded-full;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
         @apply bg-primary;
     }
-}
-
-body {
-    @apply bg-background-dark text-text-main font-display selection:bg-primary selection:text-white antialiased overflow-hidden;
 }
 
 #root {

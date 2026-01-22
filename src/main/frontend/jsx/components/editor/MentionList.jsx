@@ -1,14 +1,13 @@
-
 import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
 
-export default forwardRef((props, ref) => {
+const MentionList = forwardRef((props, ref) => {
   const [selectedIndex, setSelectedIndex] = useState(0)
 
   const selectItem = index => {
     const item = props.items[index]
 
     if (item) {
-      props.command({ id: item })
+      props.command({ id: item.id, label: item.label })
     }
   }
 
@@ -24,9 +23,7 @@ export default forwardRef((props, ref) => {
     selectItem(selectedIndex)
   }
 
-  useEffect(() => {
-    setSelectedIndex(0)
-  }, [props.items])
+  useEffect(() => setSelectedIndex(0), [props.items])
 
   useImperativeHandle(ref, () => ({
     onKeyDown: ({ event }) => {
@@ -50,27 +47,23 @@ export default forwardRef((props, ref) => {
   }))
 
   return (
-    <div className="bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl overflow-hidden min-w-[200px] z-50">
+    <div className="items bg-popover border border-border rounded-md shadow-lg overflow-hidden min-w-[200px] p-1">
       {props.items.length ? (
         props.items.map((item, index) => (
           <button
-            className={`flex items-center w-full text-left px-3 py-2 text-sm transition-colors ${
-              index === selectedIndex ? 'bg-indigo-600 text-white' : 'text-zinc-300 hover:bg-zinc-800'
-            }`}
+            className={`flex w-full items-center text-sm px-2 py-1.5 rounded-sm outline-none text-left ${index === selectedIndex ? 'bg-accent text-accent-foreground' : 'text-popover-foreground'
+              }`}
             key={index}
             onClick={() => selectItem(index)}
           >
-             <span className="w-5 h-5 flex items-center justify-center bg-zinc-800 rounded mr-2 text-xs font-bold opacity-70">
-                @
-             </span>
-             {item}
+            {item.label}
           </button>
         ))
       ) : (
-        <div className="px-3 py-2 text-sm text-zinc-500">
-          No result
-        </div>
+        <div className="item text-sm px-2 py-1.5 text-muted-foreground">No result</div>
       )}
     </div>
   )
 })
+
+export default MentionList
