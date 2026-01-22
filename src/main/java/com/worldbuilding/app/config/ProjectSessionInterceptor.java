@@ -24,6 +24,15 @@ public class ProjectSessionInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        // Single User Mode Adaptation:
+        // If no session exists or no project is selected, auto-inject defaults.
+        jakarta.servlet.http.HttpSession session = request.getSession(true); // Create session if needed
+        if (session.getAttribute("proyectoActivo") == null) {
+            session.setAttribute("proyectoActivo", "Default World");
+            session.setAttribute("user", "Architect");
+            // System.out.println(">>> Auto-Injected Single User Session: Default World");
+        }
+
         String projectName = (String) request.getSession().getAttribute("proyectoActivo");
         if (projectName != null) {
             // System.out.println(">>> Context Set: " + projectName);

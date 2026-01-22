@@ -65,8 +65,20 @@ public class MultiTenantDataSource implements DataSource {
             System.out.println(">>> PROJECT DB PATH [" + id + "]: " + dbPath); // Debug Log
 
             // Ensure schema exists via manual migration
+            // MANUAL FLYWAY MIGRATION FOR TENANTS
+            // Since Spring only runs Flyway on the @Primary DataSource (Master),
+            // we must run it manually for each new tenant DB we open.
+            org.flywaydb.core.Flyway flyway = org.flywaydb.core.Flyway.configure()
+                    .dataSource("jdbc:sqlite:" + dbPath, "", "")
+                    .locations("classpath:db/migration")
+                    .baselineOnMigrate(true)
+                    // .baselineVersion("1") // Do NOT set this or V1 won't run on empty!
+                    .load();
+            flyway.migrate();
+
             if (databaseMigration != null) {
-                databaseMigration.migrateDatabase(new java.io.File(dbPath));
+                // databaseMigration.migrateDatabase(new java.io.File(dbPath)); // Optional:
+                // Keep only if V1 doesn't cover it
             }
 
             DriverManagerDataSource ds = new DriverManagerDataSource();
