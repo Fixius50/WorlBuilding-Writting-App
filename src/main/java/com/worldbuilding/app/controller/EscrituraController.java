@@ -38,12 +38,16 @@ public class EscrituraController {
             return ResponseEntity.status(401).body("No hay proyecto activo");
 
         List<Cuaderno> cuadernos = cuadernoRepository.findByNombreProyecto(proyecto);
+        if (cuadernos == null) {
+            return ResponseEntity.ok(List.of());
+        }
         return ResponseEntity.ok(cuadernos.stream()
+                .filter(c -> c != null) // Defensive check against nulls in list
                 .map(c -> Map.of(
                         "id", c.getId(),
                         "titulo", c.getTitulo() != null ? c.getTitulo() : "Sin título",
                         "descripcion", c.getDescripcion() != null ? c.getDescripcion() : "",
-                        "nombreProyecto", c.getNombreProyecto()))
+                        "nombreProyecto", c.getNombreProyecto() != null ? c.getNombreProyecto() : ""))
                 .toList());
     }
 

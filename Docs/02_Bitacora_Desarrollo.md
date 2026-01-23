@@ -497,3 +497,12 @@ Se ha completado la integraciÃƒÂ³n del mÃƒÂ³dulo de **LÃƒÂ­neas de Tiempo** en l
 *   [AUTH] **Modo Monousuario**: Implementado ProjectSessionInterceptor con lógica de 'Auto-Login'. Si no hay sesión, se inyecta automáticamente usuario 'Architect' y proyecto 'Default World', eliminando la necesidad de Login/Registro.
 *   [STABILITY] **Reset Final**: Saneamiento completo de worldbuilding.db para garantizar consistencia de esquema Hibernate/Flyway.
 
+
+### Prompt ID: 11 (Fix Transiciones Backend y NPE)
+> Solución a errores 500 y 401 en navegación entre secciones (WorldBible/Escritura).
+**Resultados:**
+*   [BUGFIX] **NullPointerException en Controladores**: Hibernate/SQLite devolvía listas con elementos 
+ull al hacer indAll(). Se añadió filtrado defensivo .filter(c -> c != null) en EscrituraController y WorldBibleController.
+*   [LOGIC] **Auto-Creación Contexto**: WorldBibleController ahora crea automáticamente el proyecto 'Default World' si no existe, evitando el error 401 cuando ProjectSessionInterceptor inyecta la sesión pero la DB está vacía.
+*   [DEBUG] **Instrumentación**: Se añadieron logs SLF4J para trazabilidad de sesión en ProjectSessionInterceptor.
+

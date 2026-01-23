@@ -13,6 +13,7 @@ import org.springframework.web.servlet.ModelAndView;
  */
 @Component
 public class ProjectSessionInterceptor implements HandlerInterceptor {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ProjectSessionInterceptor.class);
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
@@ -27,10 +28,19 @@ public class ProjectSessionInterceptor implements HandlerInterceptor {
         // Single User Mode Adaptation:
         // If no session exists or no project is selected, auto-inject defaults.
         jakarta.servlet.http.HttpSession session = request.getSession(true); // Create session if needed
-        if (session.getAttribute("proyectoActivo") == null) {
-            session.setAttribute("proyectoActivo", "Default World");
+        String current = (String) session.getAttribute("proyectoActivo");
+
+        // Auto-inject or Migrate "Default World" to "Prime World"
+        if (current == null || "Default World".equals(current)) {
+            if ("Default World".equals(current)) {
+                logger.info(">>> [Interceptor] Migrating Session 'Default World' -> 'Prime World'");
+            } else {
+                logger.info(">>> [Interceptor] Auto-Injecting Session Defaults: Prime World");
+            }
+            session.setAttribute("proyectoActivo", "Prime World");
             session.setAttribute("user", "Architect");
-            // System.out.println(">>> Auto-Injected Single User Session: Default World");
+        } else {
+            logger.debug(">>> [Interceptor] Existing Session: " + current);
         }
 
         String projectName = (String) request.getSession().getAttribute("proyectoActivo");

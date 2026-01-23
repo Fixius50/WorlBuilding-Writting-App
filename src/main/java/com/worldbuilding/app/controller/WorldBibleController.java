@@ -15,6 +15,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/world-bible")
 public class WorldBibleController {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WorldBibleController.class);
 
     @Autowired
     private WorldBibleService worldBibleService;
@@ -29,23 +30,33 @@ public class WorldBibleController {
     private EntidadGenericaRepository entidadGenericaRepository;
 
     private Cuaderno getProyectoActual(HttpSession session) {
-        // 1. Try by name from session
         String nombreProyecto = (String) session.getAttribute("proyectoActivo");
+
         if (nombreProyecto != null) {
-            List<Cuaderno> cuadernos = cuadernoRepository.findByNombreProyecto(nombreProyecto);
-            if (!cuadernos.isEmpty()) {
-                return cuadernos.get(0);
-            }
+            // Strict lookup: Expected to exist via DataInitializer
+            return cuadernoRepository.findByNombreProyecto(nombreProyecto).stream()
+                    .filter(c -> c != null)
+                    .findFirst()
+                    .orElse(null);
         }
 
-        // 2. Fallback: Return any Cuaderno in the current DB (Multi-tenant DBs usually
-        // have 1)
-        return cuadernoRepository.findAll().stream().findFirst().orElse(null);
+        // Fallback (Should be Prime World if Interceptor worked)
+        return cuadernoRepository.findAll().stream()
+                .filter(c -> c != null)
+                .findFirst()
+                .orElseGet(() -> {
+                    // This fallback should rarely be hit if DataInitializer works
+                    return cuadernoRepository.findByNombreProyecto("Prime World").stream().findFirst().orElse(null);
+                });
     }
 
     @GetMapping("/folders")
     public ResponseEntity<?> getRootFolders(HttpSession session) {
+        logger.info(">>> [Controller] getRootFolders called. Session: " + session.getId());
+
         Cuaderno proyecto = getProyectoActual(session);
+        logger.info(">>> [Controller] Project resolved: " + (proyecto != null ? proyecto.getTitulo() : "NULL"));
+
         if (proyecto == null)
             return ResponseEntity.status(401).body(Map.of("error", "No active project"));
         return ResponseEntity.ok(worldBibleService.getRootFolders(proyecto));
