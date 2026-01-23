@@ -33,6 +33,7 @@ public class EscrituraController {
             com.worldbuilding.app.config.TenantContext.setCurrentTenant("Prime World");
             return "Prime World";
         }
+        com.worldbuilding.app.config.TenantContext.setCurrentTenant(proyecto);
         return proyecto;
     }
 

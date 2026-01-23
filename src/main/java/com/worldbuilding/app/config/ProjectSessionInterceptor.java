@@ -45,9 +45,10 @@ public class ProjectSessionInterceptor implements HandlerInterceptor {
 
         String projectName = (String) request.getSession().getAttribute("proyectoActivo");
         if (projectName != null) {
-            // System.out.println(">>> Context Set: " + projectName);
+            logger.info(">>> [Interceptor] Setting TenantContext to: " + projectName);
             TenantContext.setCurrentTenant(projectName);
         } else {
+            logger.warn(">>> [Interceptor] No project active. Clearing TenantContext.");
             TenantContext.clear();
         }
 

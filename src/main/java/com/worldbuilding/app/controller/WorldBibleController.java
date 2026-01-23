@@ -39,12 +39,25 @@ public class WorldBibleController {
             com.worldbuilding.app.config.TenantContext.setCurrentTenant("Prime World");
         }
 
-        // Strict lookup
+        String currentContext = com.worldbuilding.app.config.TenantContext.getCurrentTenant();
+        logger.info(">>> [Controller] getProyectoActual. SessionProject: " + nombreProyecto + ", TenantContext: "
+                + currentContext);
+
+        if (nombreProyecto != null && !nombreProyecto.equals(currentContext)) {
+            logger.warn(">>> [Controller] MISMATCH! Forcing Context Sync: " + nombreProyecto);
+            com.worldbuilding.app.config.TenantContext.setCurrentTenant(nombreProyecto);
+        }
+
+        // Strict lookup: deterministic sort by ID to ensure we get the ROOT project (ID
+        // 1)
         Optional<Cuaderno> found = cuadernoRepository.findByNombreProyecto(nombreProyecto).stream()
                 .filter(c -> c != null)
+                .sorted(java.util.Comparator.comparing(Cuaderno::getId))
                 .findFirst();
 
         if (found.isPresent()) {
+            logger.info(">>> [Controller] Project Found: ID=" + found.get().getId() + ", Name="
+                    + found.get().getNombreProyecto());
             return found.get();
         }
 
