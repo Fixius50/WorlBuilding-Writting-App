@@ -28,7 +28,12 @@ public class EscrituraController {
     private com.worldbuilding.app.repository.NotaRapidaRepository notaRapidaRepository;
 
     private String getProyectoActivo(HttpSession session) {
-        return (String) session.getAttribute("proyectoActivo");
+        String proyecto = (String) session.getAttribute("proyectoActivo");
+        if (proyecto == null || "Default World".equals(proyecto)) {
+            com.worldbuilding.app.config.TenantContext.setCurrentTenant("Prime World");
+            return "Prime World";
+        }
+        return proyecto;
     }
 
     @GetMapping("/cuadernos")

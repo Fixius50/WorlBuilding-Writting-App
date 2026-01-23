@@ -32,30 +32,34 @@ public class WorldBibleController {
     private Cuaderno getProyectoActual(HttpSession session) {
         String nombreProyecto = (String) session.getAttribute("proyectoActivo");
 
-        if (nombreProyecto != null) {
-            // Strict lookup: Expected to exist via DataInitializer
-            return cuadernoRepository.findByNombreProyecto(nombreProyecto).stream()
-                    .filter(c -> c != null)
-                    .findFirst()
-                    .orElse(null);
+        // Resilience: Force Prime World if missing or legacy Default
+        if (nombreProyecto == null || "Default World".equals(nombreProyecto)) {
+            nombreProyecto = "Prime World";
+            // CRITICAL: Ensure DataSource switches to Prime World DB
+            com.worldbuilding.app.config.TenantContext.setCurrentTenant("Prime World");
         }
 
-        // Fallback (Should be Prime World if Interceptor worked)
-        return cuadernoRepository.findAll().stream()
+        // Strict lookup
+        Optional<Cuaderno> found = cuadernoRepository.findByNombreProyecto(nombreProyecto).stream()
                 .filter(c -> c != null)
-                .findFirst()
-                .orElseGet(() -> {
-                    // This fallback should rarely be hit if DataInitializer works
-                    return cuadernoRepository.findByNombreProyecto("Prime World").stream().findFirst().orElse(null);
-                });
+                .findFirst();
+
+        if (found.isPresent()) {
+            return found.get();
+        }
+
+        // Self-Healing
+        System.out.println(">>> [Controller] '" + nombreProyecto + "' missing in runtime DB. Self-healing...");
+        Cuaderno def = new Cuaderno();
+        def.setTitulo(nombreProyecto);
+        def.setNombreProyecto(nombreProyecto);
+        def.setDescripcion("Auto-recovered world context.");
+        return cuadernoRepository.save(def);
     }
 
     @GetMapping("/folders")
     public ResponseEntity<?> getRootFolders(HttpSession session) {
-        logger.info(">>> [Controller] getRootFolders called. Session: " + session.getId());
-
         Cuaderno proyecto = getProyectoActual(session);
-        logger.info(">>> [Controller] Project resolved: " + (proyecto != null ? proyecto.getTitulo() : "NULL"));
 
         if (proyecto == null)
             return ResponseEntity.status(401).body(Map.of("error", "No active project"));
@@ -86,17 +90,6 @@ public class WorldBibleController {
         }
     }
 
-    /*
-     * - [x] Renombrar "Estructura/Zona" a "Espacio".
-     * - [x] Corrección Root Index: Eliminar botones "Character/Map/Timeline" y usar
-     * Modal para "Espacio/Mapa".
-     * - [ ] **Refactorización Flujo de Creación (Sin Prompts)**
-     * - [ ] Restaurar Explorador Lateral (Solo Carpeta).
-     * - [ ] Rutas de Creación Directa (e.g., `/new/:type`).
-     * - [ ] Refactor `EntityBuilder` para modo "Creación".
-     * - [ ] Implementar guardado diferido (Post-draft).
-     * - [ ] Soporte para Herencia de Plantillas en modo borrador.
-     */
     @GetMapping("/folders/{idOrSlug}/subfolders")
     public ResponseEntity<?> getSubfolders(@PathVariable String idOrSlug) {
         Long id = resolveFolderId(idOrSlug);
@@ -131,13 +124,8 @@ public class WorldBibleController {
 
     @PostMapping("/folders")
     public ResponseEntity<?> createFolder(@RequestBody Map<String, Object> payload, HttpSession session) {
-        System.out.println("[DEBUG] createFolder called");
-        System.out.println("[DEBUG] Session ID: " + session.getId());
-        System.out.println("[DEBUG] proyectoActivo: " + session.getAttribute("proyectoActivo"));
-
         Cuaderno proyecto = getProyectoActual(session);
         if (proyecto == null) {
-            System.out.println("[DEBUG] proyecto is NULL - returning 401");
             return ResponseEntity.status(401).body(Map.of("error", "No active project"));
         }
 
@@ -150,7 +138,6 @@ public class WorldBibleController {
             Carpeta created = worldBibleService.createFolder(nombre, descripcion, proyecto,
                     padreId != null ? padreId.longValue() : null, tipo);
 
-            // Return a simple map instead of the full entity to avoid serialization issues
             return ResponseEntity.ok(Map.of(
                     "id", created.getId(),
                     "nombre", created.getNombre() != null ? created.getNombre() : "",
@@ -158,8 +145,6 @@ public class WorldBibleController {
                     "tipo", created.getTipo() != null ? created.getTipo() : "",
                     "itemCount", created.getItemCount()));
         } catch (Exception e) {
-            System.err.println("[ERROR] createFolder failed: " + e.getMessage());
-            e.printStackTrace();
             return ResponseEntity.status(500)
                     .body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Unknown error"));
         }
@@ -216,7 +201,6 @@ public class WorldBibleController {
         try {
             return ResponseEntity.ok(entidadGenericaRepository.findByProyecto(proyecto));
         } catch (Exception e) {
-            System.err.println("[ERROR] getAllEntities failed: " + e.getMessage());
             return ResponseEntity.status(500)
                     .body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Unknown error"));
         }
@@ -322,6 +306,7 @@ public class WorldBibleController {
         }
     }
 
+    @GetMapping("/entities/{id}") // Overloaded convenience method if needed internally or externally
     public ResponseEntity<?> getEntity(@PathVariable Long id) {
         return ResponseEntity.of(entidadGenericaRepository.findById(id));
     }
@@ -333,7 +318,6 @@ public class WorldBibleController {
             worldBibleService.updateEntityValues(entityId, updates);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            System.err.println("[ERROR] updateEntityValues failed: " + e.getMessage());
             return ResponseEntity.status(500)
                     .body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Unknown error"));
         }
@@ -348,7 +332,6 @@ public class WorldBibleController {
             String apariencia = (String) payload.get("apariencia");
             return ResponseEntity.ok(worldBibleService.updateEntityDetails(entityId, descripcion, tags, apariencia));
         } catch (Exception e) {
-            System.err.println("[ERROR] updateEntityDetails failed: " + e.getMessage());
             return ResponseEntity.status(500)
                     .body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Unknown error"));
         }

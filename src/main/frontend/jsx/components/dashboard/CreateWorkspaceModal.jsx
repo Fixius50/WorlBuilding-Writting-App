@@ -79,7 +79,7 @@ const CreateWorkspaceModal = ({ isOpen, onClose, onCreate }) => {
                                 value={formData.title}
                                 onChange={handleChange}
                                 placeholder="e.g. Las Crónicas de Etheria"
-                                className="w-full bg-surface-dark border border-glass-border rounded-xl px-4 py-3 text-white text-sm focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all"
+                                className="w-full bg-[#13141f] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all"
                                 autoFocus
                             />
                         </div>
@@ -93,7 +93,7 @@ const CreateWorkspaceModal = ({ isOpen, onClose, onCreate }) => {
                                 value={formData.name}
                                 onChange={handleChange}
                                 placeholder="e.g. etheria-v1"
-                                className="w-full bg-surface-dark border border-glass-border rounded-xl px-4 py-3 text-white font-mono text-xs focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all placeholder:text-white/10"
+                                className="w-full bg-[#13141f] border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-xs focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all placeholder:text-white/10"
                             />
                             <p className="text-[10px] text-white/20">Se usará como nombre del archivo .db</p>
                         </div>
@@ -107,7 +107,7 @@ const CreateWorkspaceModal = ({ isOpen, onClose, onCreate }) => {
                                         key={g}
                                         type="button"
                                         onClick={() => setFormData(p => ({ ...p, genre: g }))}
-                                        className={`px-3 py-2 rounded-lg text-[10px] font-bold border transition-all ${formData.genre === g ? 'bg-primary text-white border-primary' : 'bg-surface-dark border-glass-border text-text-muted hover:border-white/20'}`}
+                                        className={`px-3 py-2 rounded-lg text-[10px] font-bold border transition-all ${formData.genre === g ? 'bg-primary text-white border-primary' : 'bg-[#13141f] border-white/10 text-text-muted hover:border-white/20'}`}
                                     >
                                         {g}
                                     </button>
@@ -123,7 +123,7 @@ const CreateWorkspaceModal = ({ isOpen, onClose, onCreate }) => {
                                 name="imageUrl"
                                 value={formData.imageUrl}
                                 onChange={(e) => { setFormData(p => ({ ...p, imageUrl: e.target.value })); setImgError(false); }}
-                                className="w-full bg-surface-dark border border-glass-border rounded-xl px-4 py-3 text-white text-xs focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all truncate"
+                                className="w-full bg-[#13141f] border border-white/10 rounded-xl px-4 py-3 text-white text-xs focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all truncate"
                             />
                         </div>
 
@@ -131,7 +131,7 @@ const CreateWorkspaceModal = ({ isOpen, onClose, onCreate }) => {
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="flex-1 px-4 py-3 bg-surface-dark hover:bg-white/5 border border-glass-border rounded-xl text-xs font-bold text-text-muted transition-all"
+                                className="flex-1 px-4 py-3 bg-[#13141f] hover:bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-text-muted transition-all"
                             >
                                 Cancelar
                             </button>
