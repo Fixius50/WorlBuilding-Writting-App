@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate, useOutletContext } from 'react-router-dom
 import api from '../../../js/services/api';
 import BibleCard from '../../components/bible/BibleCard';
 import Breadcrumbs from '../../components/common/Breadcrumbs';
+import SpecializedTimeline from './Specialized/SpecializedTimeline';
 import { getHierarchyType, HIERARCHY_TYPES } from '../../../js/constants/hierarchy_types';
 
 const FolderView = () => {
@@ -229,17 +230,26 @@ const FolderView = () => {
 
             {/* Filter Toolbar REMOVED - Moved to Global Right Panel */}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                {filteredEntities.map(entity => (
-                    <BibleCard
-                        key={entity.id}
-                        item={entity}
-                        type="entity"
-                        linkTo={`/${username}/${projectName}/bible/folder/${folder?.slug || folderSlug}/entity/${entity.slug || entity.id}`}
-                        onDelete={() => handleDeleteEntity(entity.id, folder?.id || folderSlug)}
-                    />
-                ))}
-            </div>
+            {/* Specialized Views based on Folder Type */}
+            {folder?.tipo === 'TIMELINE' ? (
+                <SpecializedTimeline
+                    entities={filteredEntities}
+                    folderId={folderSlug}
+                    onAddEvent={() => navigate(`/${username}/${projectName}/bible/folder/${folderSlug}/entity/new/evento`)}
+                />
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    {filteredEntities.map(entity => (
+                        <BibleCard
+                            key={entity.id}
+                            item={entity}
+                            type="entity"
+                            linkTo={`/${username}/${projectName}/bible/folder/${folder?.slug || folderSlug}/entity/${entity.slug || entity.id}`}
+                            onDelete={() => handleDeleteEntity(entity.id, folder?.id || folderSlug)}
+                        />
+                    ))}
+                </div>
+            )}
             {entities.length === 0 && (
                 <div className="p-20 text-center border-2 border-dashed border-glass-border rounded-[3rem] opacity-30 mt-8">
                     <p className="text-text-muted font-bold uppercase tracking-widest">Empty Folder</p>

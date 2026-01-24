@@ -22,6 +22,9 @@ public class TimelineController {
     @Autowired
     private com.worldbuilding.app.repository.UniversoRepository universoRepository;
 
+    @Autowired
+    private com.worldbuilding.app.repository.CuadernoRepository cuadernoRepository;
+
     @GetMapping("/linea/{lineaId}/eventos")
     public List<EventoTiempo> listarEventosPorLinea(@PathVariable Long lineaId) {
         return eventoRepository.findByLineaTiempoIdOrderByOrdenAbsolutoAsc(lineaId);
@@ -63,19 +66,59 @@ public class TimelineController {
         lineaRepository.deleteById(id);
     }
 
-    @PostMapping("/linea")
-    public LineaTiempo crearLinea(@RequestBody LineaTiempo linea) {
-        // Fallback: Use the first universe found in the current tenant DB.
-        // In this architecture, each project has its own DB, so usually there's 1
-        // Universe per DB.
-        List<com.worldbuilding.app.model.Universo> universos = universoRepository.findAll();
-        com.worldbuilding.app.model.Universo universo;
+    // [DEBUG BYPASS]
+    // @PostMapping("/linea")
+    // public LineaTiempo crearLinea(@RequestBody LineaTiempo linea) { ... }
 
-        if (!universos.isEmpty()) {
-            universo = universos.get(0);
+    @PostMapping("/linea")
+    public org.springframework.http.ResponseEntity<?> crearLinea(@RequestBody LineaTiempo linea) {
+        try {
+            // Fallback: Use the first universe found in the current tenant DB.
+            List<com.worldbuilding.app.model.Universo> universos = universoRepository.findAll();
+            com.worldbuilding.app.model.Universo universo;
+
+            if (!universos.isEmpty()) {
+                universo = universos.get(0);
+            } else {
+                // Self-Healing: Create default Universe if missing
+                universo = new com.worldbuilding.app.model.Universo();
+                universo.setNombre("Prime Universe");
+
+                // Ensure Cuaderno is linked (Required by FK)
+                // Filter nulls to prevent stream.findFirst() NPE if repo returns null elements
+                com.worldbuilding.app.model.Cuaderno cuaderno = cuadernoRepository.findAll().stream()
+                        .filter(java.util.Objects::nonNull)
+                        .findFirst()
+                        .orElse(null);
+                if (cuaderno == null) {
+                    cuaderno = new com.worldbuilding.app.model.Cuaderno();
+                    cuaderno.setTitulo("Prime World");
+                    cuaderno.setNombreProyecto("Prime World");
+                    cuaderno = cuadernoRepository.save(cuaderno);
+                }
+                universo.setCuaderno(cuaderno);
+
+                universo = universoRepository.save(universo);
+            }
+
             linea.setUniverso(universo);
+            LineaTiempo saved = lineaRepository.save(linea);
+
+            // Return detached/simplified object or just ID to prevent
+            // Serialization/LazyLoad issues
+            // because Open-In-View is disabled.
+            java.util.Map<String, Object> result = new java.util.HashMap<>();
+            result.put("id", saved.getId());
+            result.put("nombre", saved.getNombre());
+            result.put("descripcion", saved.getDescripcion());
+            result.put("esRaiz", saved.getEsRaiz());
+
+            return org.springframework.http.ResponseEntity.ok(result);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return org.springframework.http.ResponseEntity.status(500).body("Server Error: " + e.getMessage());
         }
-        return lineaRepository.save(linea);
     }
 
     @Autowired

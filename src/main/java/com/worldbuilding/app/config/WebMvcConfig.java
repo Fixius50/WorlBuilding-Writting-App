@@ -14,5 +14,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(projectSessionInterceptor).addPathPatterns("/api/**");
+        // System.out.println(">>> [WebMvcConfig] Interceptor DISABLED for debugging.");
     }
 }

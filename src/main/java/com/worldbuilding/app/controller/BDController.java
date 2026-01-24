@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Map;
 
@@ -60,10 +62,11 @@ public class BDController {
      */
     private String getProyectoActivo(HttpSession session) {
         String proyecto = (String) session.getAttribute("proyectoActivo");
-        if (proyecto != null && !proyecto.isBlank()) {
-            return proyecto;
-        }
-        return "default";
+        // [MODIFIED LOGIC]
+        // Strictly return what is in the session.
+        // If null, we return null, allowing the caller to decide (usually resulting in
+        // a 400 Bad Request).
+        return proyecto;
     }
 
     // ==================== INSERTAR ====================
@@ -237,6 +240,7 @@ public class BDController {
     // ==================== LISTAR POR TIPO ====================
 
     @GetMapping("/{tipo}")
+    @Transactional(readOnly = true)
     public ResponseEntity<?> listarPorTipo(@PathVariable String tipo, HttpSession session) {
         String proyecto = getProyectoActivo(session);
         try {
@@ -253,13 +257,29 @@ public class BDController {
                 case "interaccion" -> interaccionRepo.findByNombreProyecto(proyecto);
                 case "nodo" -> nodoRepo.findAll(); // Nodo y Relacion son globales o necesitan repo method
                 case "relacion" -> relacionRepo.findAll();
-                case "lineatiempo" -> lineaTiempoRepo.findAll();
+                case "lineatiempo" -> {
+                    // Manual DTO mapping to prevent Jackson serialization issues with Hibernate
+                    // Proxies (Open-In-View=false)
+                    List<LineaTiempo> entities = lineaTiempoRepo.findAll();
+                    yield entities.stream().map(lt -> {
+                        System.out.println(
+                                ">>> [BDController] Mapping Timeline ID: " + lt.getId() + ", Name: " + lt.getNombre());
+                        java.util.Map<String, Object> dto = new java.util.HashMap<>();
+                        dto.put("id", lt.getId());
+                        dto.put("nombre", lt.getNombre());
+                        dto.put("descripcion", lt.getDescripcion());
+                        dto.put("esRaiz", lt.getEsRaiz());
+                        return dto;
+                    }).toList();
+                }
                 case "eventotiempo" -> eventoTiempoRepo.findAll();
                 default -> throw new IllegalArgumentException("Tipo no soportado: " + tipo);
             };
 
             return ResponseEntity.ok(resultados);
         } catch (Exception e) {
+            System.out.println(">>> [BDController] ERROR: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
     }

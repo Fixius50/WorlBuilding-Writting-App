@@ -21,35 +21,38 @@ public class ProjectSessionInterceptor implements HandlerInterceptor {
 
         // Skip static resources/error paths if needed (optional)
         String path = request.getRequestURI();
+        logger.info(">>> [Interceptor] Request: " + request.getMethod() + " " + path);
         if (!path.startsWith("/api/")) {
             return true;
         }
 
-        // Single User Mode Adaptation:
-        // If no session exists or no project is selected, auto-inject defaults.
-        jakarta.servlet.http.HttpSession session = request.getSession(true); // Create session if needed
-        String current = (String) session.getAttribute("proyectoActivo");
+        try {
+            // Single User Mode Adaptation:
+            // If no session exists or no project is selected, auto-inject defaults.
+            jakarta.servlet.http.HttpSession session = request.getSession(true); // Create session if needed
+            String current = (String) session.getAttribute("proyectoActivo");
 
-        // Auto-inject or Migrate "Default World" to "Prime World"
-        if (current == null || "Default World".equals(current)) {
-            if ("Default World".equals(current)) {
-                logger.info(">>> [Interceptor] Migrating Session 'Default World' -> 'Prime World'");
-            } else {
-                logger.info(">>> [Interceptor] Auto-Injecting Session Defaults: Prime World");
+            // [MODIFIED LOGIC]
+            // We do NOT auto-inject "Prime World" or any default.
+            // The session must rely explicitly on 'proyectoActivo' set by the Login/Project
+            // Selector.
+            // If null, the TenantContext remains empty, strictly enforcing explicit project
+            // selection.
+            if (current != null) {
+                logger.debug(">>> [Interceptor] Existing Session: " + current);
             }
-            session.setAttribute("proyectoActivo", "Prime World");
-            session.setAttribute("user", "Architect");
-        } else {
-            logger.debug(">>> [Interceptor] Existing Session: " + current);
-        }
 
-        String projectName = (String) request.getSession().getAttribute("proyectoActivo");
-        if (projectName != null) {
-            logger.info(">>> [Interceptor] Setting TenantContext to: " + projectName);
-            TenantContext.setCurrentTenant(projectName);
-        } else {
-            logger.warn(">>> [Interceptor] No project active. Clearing TenantContext.");
-            TenantContext.clear();
+            String projectName = (String) request.getSession().getAttribute("proyectoActivo");
+            if (projectName != null) {
+                logger.info(">>> [Interceptor] Setting TenantContext to: " + projectName);
+                TenantContext.setCurrentTenant(projectName);
+            } else {
+                logger.warn(">>> [Interceptor] No project active. Clearing TenantContext.");
+                TenantContext.clear();
+            }
+        } catch (Exception e) {
+            logger.error(">>> [Interceptor] CRITICAL ERROR IN PREHANDLE: ", e);
+            throw e; // Re-throw to ensure we don't hide it, but now we have a log.
         }
 
         return true;

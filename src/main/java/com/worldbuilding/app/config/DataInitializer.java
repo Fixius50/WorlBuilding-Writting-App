@@ -23,19 +23,20 @@ public class DataInitializer implements org.springframework.boot.CommandLineRunn
     public void run(String... args) throws Exception {
         logger.info(">>> [DataInitializer] STARTING INITIALIZATION...");
 
-        // Ensure context is set to Prime World
+        // [TARGET DB]: Force context to 'Prime World'.
+        // This ensures the following JPA operations run against
+        // 'src/main/resources/data/Prime World.db'
         TenantContext.setCurrentTenant("Prime World");
 
         try {
-            // Optional: Wipe if ghost data appears in Prime World too (Unlikely but safe)
+            // Correct Logic: Only initialize if EMPTY. Do NOT wipe existing data.
             long count = cuadernoRepository.count();
             if (count > 0) {
-                logger.warn(">>> [DataInitializer] Found " + count + " potential ghost rows. Wiping Prime World...");
-                jdbcTemplate.update("DELETE FROM hoja");
-                jdbcTemplate.update("DELETE FROM universo");
-                jdbcTemplate.update("DELETE FROM carpeta");
-                jdbcTemplate.update("DELETE FROM entidad_generica");
-                jdbcTemplate.update("DELETE FROM cuaderno");
+                logger.info(">>> [DataInitializer] Found " + count
+                        + " existing records in Prime World. Skipping initialization.");
+            } else {
+                // Initialize only if empty
+                logger.info(">>> [DataInitializer] 'Prime World' is empty. performing clean init...");
             }
 
             // Verify clean

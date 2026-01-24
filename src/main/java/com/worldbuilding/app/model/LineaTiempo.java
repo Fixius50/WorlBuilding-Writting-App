@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "linea_tiempo")
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class LineaTiempo {
 
     @Id
@@ -76,6 +77,7 @@ public class LineaTiempo {
     }
 
     @OneToMany(mappedBy = "lineaTiempo", cascade = CascadeType.ALL, orphanRemoval = true)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private java.util.List<EventoTiempo> eventos;
 
     public java.util.List<EventoTiempo> getEventos() {
