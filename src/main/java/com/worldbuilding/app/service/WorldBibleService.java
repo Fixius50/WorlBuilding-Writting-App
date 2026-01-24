@@ -324,7 +324,7 @@ public class WorldBibleService {
     }
 
     @Transactional
-    public EntidadGenerica updateEntityDetails(Long entityId, String descripcion, String tags, String apariencia) {
+    public EntidadGenerica updateEntityDetails(Long entityId, String descripcion, String tags, String apariencia, Map<String, Object> attributes) {
         Optional<EntidadGenerica> ent = entidadGenericaRepository.findById(entityId);
         if (ent.isPresent()) {
             EntidadGenerica e = ent.get();
@@ -334,6 +334,12 @@ public class WorldBibleService {
                 e.setTags(tags);
             if (apariencia != null)
                 e.setApariencia(apariencia);
+            if (attributes != null) {
+                if (e.getAttributes() == null) {
+                    e.setAttributes(new HashMap<>());
+                }
+                e.getAttributes().putAll(attributes);
+            }
             return entidadGenericaRepository.save(e);
         }
         throw new RuntimeException("Entity not found");

@@ -107,6 +107,18 @@
         <section>
             <h2>3. Registro de Cambios Recientes (Hotfixes)</h2>
             <div class="log-entry">
+                <span class="log-date">Sesión: 2026-01-25</span>
+                <h3 style="margin-top:0;">Evolución Híbrida de Datos (JSON + SQL)</h3>
+                <p>Se ha modernizado la arquitectura de datos para soportar flexibilidad total sin perder la integridad relacional:</p>
+                <ul>
+                    <li><strong>Columna JSON Dinámica:</strong> Implementada <code>json_attributes</code> en <code>EntidadGenerica</code>. Permite almacenar datos arbitrarios (ej. stats de RPG, configuraciones de clima) sin alterar el esquema SQL.</li>
+                    <li><strong>Migración Inteligente:</strong> El sistema detecta y aplica automáticamente cambios de esquema (DDL) de forma segura en bases de datos SQLite existentes.</li>
+                    <li><strong>Frontend Builder:</strong> El <em>Entity Builder</em> ahora incluye un editor JSON nativo para desarrolladores y usuarios avanzados.</li>
+                </ul>
+                <p><em>Impacto:</em> Facilita la creación de plantillas complejas y módulos futuros (sistemas de magia, inventarios) sin migraciones costosas.</p>
+            </div>
+
+            <div class="log-entry">
                 <span class="log-date">Sesión de Debugging Crítico</span>
                 <h3 style="margin-top:0;">Estabilización de Multi-Tenancy</h3>
                 <p>Se resolvieron dos bugs bloqueantes que afectaban a los nuevos proyectos:</p>

@@ -1,4 +1,0 @@
-Run to verify backend compiles and starts: mvn spring-boot:run
-Run to verify frontend builds: npm run dev
-Run to verify frontend builds: npm run build
-Run to verify frontend builds: npm run preview

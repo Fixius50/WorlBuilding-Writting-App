@@ -1,18 +1,14 @@
 package com.worldbuilding.app.config;
 
 import jakarta.annotation.PostConstruct;
+import org.flywaydb.core.Flyway;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
 
 /**
  * Runs database migrations on application startup.
- * Adds missing columns to SQLite databases that Hibernate ddl-auto=update can't
- * handle.
+ * Uses Flyway to migrate all discovered SQLite databases in the data directory.
  */
 @Component
 public class DatabaseMigration {
@@ -21,7 +17,7 @@ public class DatabaseMigration {
 
     @PostConstruct
     public void runMigrations() {
-        System.out.println("=== Running SQLite Migrations ===");
+        System.out.println("=== Running SQLite Migrations (Flyway) ===");
 
         File dataDir = new File(DATA_DIR);
         if (!dataDir.exists() || !dataDir.isDirectory()) {
@@ -43,26 +39,31 @@ public class DatabaseMigration {
     }
 
     public void migrateDatabase(File dbFile) {
-        String jdbcUrl = "jdbc:sqlite:" + dbFile.getAbsolutePath()
-                + "?date_class=TEXT&date_string_format=yyyy-MM-dd'T'HH:mm:ss";
+        // Use raw SQLite connection for Flyway (no strict date parsing) to avoid
+        // "Unparseable date" errors
+        // on existing schema_history timestamps (which might use spaces instead of 'T')
+        String jdbcUrl = "jdbc:sqlite:" + dbFile.getAbsolutePath();
 
-        try (Connection conn = DriverManager.getConnection(jdbcUrl);
-                Statement stmt = conn.createStatement()) {
+        try {
+            System.out.println("[MIGRATION] Migrating: " + dbFile.getName());
 
-            // Try to add favorite column - will fail silently if already exists
-            try {
-                stmt.execute("ALTER TABLE entidad_generica ADD COLUMN favorite BOOLEAN DEFAULT 0");
-                System.out.println("[MIGRATION] Added 'favorite' column to: " + dbFile.getName());
-            } catch (SQLException e) {
-                if (e.getMessage().contains("duplicate column name")) {
-                    System.out.println("[MIGRATION] Column 'favorite' already exists in: " + dbFile.getName());
-                } else {
-                    System.out.println("[MIGRATION] Skipped " + dbFile.getName() + ": " + e.getMessage());
-                }
-            }
+            Flyway flyway = Flyway.configure()
+                    .dataSource(jdbcUrl, "", "")
+                    .locations("classpath:db/migration")
+                    // Baseline existing DBs to V1 (assuming they match V1 schema)
+                    // If DB is empty, V1 runs.
+                    // If DB has tables but no history, it's marked V1.
+                    .baselineOnMigrate(true)
+                    .baselineVersion("1")
+                    .load();
 
-        } catch (SQLException e) {
+            flyway.repair(); // Auto-repair checksums for dev iterations
+            flyway.migrate();
+            System.out.println("[MIGRATION] Success: " + dbFile.getName());
+
+        } catch (Exception e) {
             System.err.println("[MIGRATION ERROR] Failed to migrate " + dbFile.getName() + ": " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

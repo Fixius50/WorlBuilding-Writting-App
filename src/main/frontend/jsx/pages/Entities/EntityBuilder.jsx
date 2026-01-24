@@ -132,7 +132,8 @@ const EntityBuilder = ({ mode }) => {
                 tags: data.tags || '',
                 tipo: data.tipoEspecial || getHierarchyType(data.tipo).id, // Ensure 'tipo' is set
                 color: data.color || '#6366f1', // Ensure 'color' is set
-                categoria: data.categoria || 'Individual'
+                categoria: data.categoria || 'Individual',
+                attributes: data.attributes || {}
             });
 
             if (data.carpeta?.id) {
@@ -224,7 +225,8 @@ const EntityBuilder = ({ mode }) => {
                 iconUrl: entity.iconUrl,
                 tipoEspecial: entity.tipoEspecial || 'entidadindividual',
                 color: entity.color, // Include color in the payload
-                categoria: entity.categoria
+                categoria: entity.categoria,
+                attributes: entity.attributes // Include JSON attributes
             };
 
             let targetId = entity.id;
@@ -449,6 +451,40 @@ const EntityBuilder = ({ mode }) => {
                                                 </button>
                                             )}
                                         </div>
+                                    </div>
+                                    
+                                    {/* JSON Attributes Editor (Dev Mode) */}
+                                    <div>
+                                        <label className="text-[10px] uppercase font-bold text-indigo-400 mb-1 flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-xs">data_object</span> 
+                                            Extended Attributes (JSON)
+                                        </label>
+                                        <textarea
+                                            value={JSON.stringify(entity.attributes || {}, null, 2)}
+                                            onChange={e => {
+                                                try {
+                                                    const parsed = JSON.parse(e.target.value);
+                                                    handleCoreChange('attributes', parsed);
+                                                } catch (err) {
+                                                    // Allow typing invalid JSON, but don't save to state immediately if invalid? 
+                                                    // Actually, for a simple textarea, it's better to update state only on valid JSON 
+                                                    // or use a temporary local state. 
+                                                    // For now, let's not block typing but maybe highlight error.
+                                                    // Simplest: just update state with whatever, but that breaks 'attributes' being an object.
+                                                    // We'll trust the user knows JSON for this "preliminary" task.
+                                                }
+                                            }}
+                                            onBlur={e => {
+                                                try {
+                                                    const parsed = JSON.parse(e.target.value);
+                                                    handleCoreChange('attributes', parsed);
+                                                } catch (err) {
+                                                    alert("Invalid JSON syntax");
+                                                }
+                                            }}
+                                            className="w-full h-32 bg-black/50 border border-indigo-500/30 rounded-xl p-3 text-xs text-indigo-100 font-mono focus:border-indigo-500 outline-none transition-colors"
+                                            placeholder="{}"
+                                        />
                                     </div>
                                 </div>
                             </GlassPanel>

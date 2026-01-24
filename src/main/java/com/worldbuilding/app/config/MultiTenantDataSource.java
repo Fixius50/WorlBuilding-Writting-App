@@ -70,12 +70,16 @@ public class MultiTenantDataSource implements DataSource {
                 // MANUAL FLYWAY MIGRATION FOR TENANTS
                 // Since Spring only runs Flyway on the @Primary DataSource (Master),
                 // we must run it manually for each new tenant DB we open.
+                // Use raw URL without date format constraints to allow reading legacy
+                // timestamps
                 org.flywaydb.core.Flyway flyway = org.flywaydb.core.Flyway.configure()
                         .dataSource("jdbc:sqlite:" + dbPath, "", "")
                         .locations("classpath:db/migration")
                         .baselineOnMigrate(true)
                         // .baselineVersion("1") // Do NOT set this or V1 won't run on empty!
                         .load();
+
+                flyway.repair(); // Auto-repair checksums for dev resilience
                 flyway.migrate();
 
                 if (databaseMigration != null) {

@@ -343,7 +343,9 @@ public class WorldBibleController {
             String descripcion = (String) payload.get("descripcion");
             String tags = (String) payload.get("tags");
             String apariencia = (String) payload.get("apariencia");
-            return ResponseEntity.ok(worldBibleService.updateEntityDetails(entityId, descripcion, tags, apariencia));
+            @SuppressWarnings("unchecked")
+            Map<String, Object> attributes = (Map<String, Object>) payload.get("attributes");
+            return ResponseEntity.ok(worldBibleService.updateEntityDetails(entityId, descripcion, tags, apariencia, attributes));
         } catch (Exception e) {
             return ResponseEntity.status(500)
                     .body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Unknown error"));
