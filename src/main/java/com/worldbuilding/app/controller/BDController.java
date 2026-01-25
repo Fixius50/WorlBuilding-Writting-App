@@ -2,7 +2,7 @@ package com.worldbuilding.app.controller;
 
 // import com.worldbuilding.app.config.DynamicDataSourceConfig;
 import com.worldbuilding.app.model.*;
-import com.worldbuilding.app.model.dto.DatosTablaDTO;
+import com.worldbuilding.app.dto.DatosTablaDTO;
 import com.worldbuilding.app.repository.*;
 import com.worldbuilding.app.exception.UnauthorizedException;
 import jakarta.servlet.http.HttpSession;

@@ -1,4 +1,4 @@
-package com.worldbuilding.app.model.dto;
+package com.worldbuilding.app.dto;
 
 /**
  * DTO unificado para transferencia de datos entre frontend y backend.

@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name = "nota_rapida")
 @org.hibernate.annotations.SQLDelete(sql = "UPDATE nota_rapida SET deleted = true, deleted_date = CURRENT_TIMESTAMP WHERE id = ?")
-@org.hibernate.annotations.Where(clause = "deleted = false")
+@org.hibernate.annotations.SQLRestriction("deleted = 0")
 public class NotaRapida {
 
     @Id

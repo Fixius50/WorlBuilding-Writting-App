@@ -3,12 +3,11 @@ package com.worldbuilding.app.model;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "entidad_individual")
 @org.hibernate.annotations.SQLDelete(sql = "UPDATE entidad_individual SET deleted = true, deleted_date = CURRENT_TIMESTAMP WHERE id = ?")
-@org.hibernate.annotations.Where(clause = "deleted = false")
+@org.hibernate.annotations.SQLRestriction("deleted = 0")
 public class EntidadIndividual {
 
     @Id

@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "hoja")
 @org.hibernate.annotations.SQLDelete(sql = "UPDATE hoja SET deleted = true, deleted_date = CURRENT_TIMESTAMP WHERE id = ?")
-@org.hibernate.annotations.Where(clause = "deleted = false")
+@org.hibernate.annotations.SQLRestriction("deleted = 0")
 public class Hoja {
 
     @Id
