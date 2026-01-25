@@ -14,6 +14,9 @@ public class Universo {
     @Column(nullable = false)
     private String nombre;
 
+    @Column
+    private String descripcion;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "proyecto_id", nullable = false)
     @com.fasterxml.jackson.annotation.JsonIgnore
@@ -37,6 +40,14 @@ public class Universo {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 
     public Cuaderno getCuaderno() {

@@ -73,7 +73,7 @@ public class LineaTiempo {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "universo_id")
-    @com.fasterxml.jackson.annotation.JsonIgnore
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties("lineasTemporales")
     private Universo universo;
 
     public Universo getUniverso() {

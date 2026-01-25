@@ -112,59 +112,38 @@ const TimelineView = () => {
         };
     }, []);
 
+    // --- Multiverse State ---
+    const [universes, setUniverses] = useState([]);
+    const [selectedUniverseId, setSelectedUniverseId] = useState(null);
+
+    // Initial Load
     useEffect(() => {
         if (!initialized.current) {
             initialized.current = true;
-            loadTimelines();
+            loadMultiverse();
         }
     }, []);
 
-    useEffect(() => {
-        if (selectedTimelineId) {
-            loadEvents(selectedTimelineId);
-            refreshLinks(selectedTimelineId, timelines);
-            setEditingEvent(null);
-            setNewEvent({ nombre: '', descripcion: '', fechaTexto: '', ordenAbsoluto: 0 });
-        } else {
-            setEvents([]);
-        }
-    }, [selectedTimelineId]);
-
-    // Update auto-order effect
-    useEffect(() => {
-        if (activeTab === 'eventos' && !editingEvent) {
-            const maxOrder = events.length > 0
-                ? Math.max(...events.map(e => e.ordenAbsoluto || 0))
-                : 0;
-            setNewEvent(prev => ({ ...prev, ordenAbsoluto: maxOrder + 1 }));
-        }
-    }, [activeTab, events, editingEvent]);
-
-    const loadTimelines = async (forceSelectId = null) => {
-        setLoading(true);
+    const loadMultiverse = async () => {
         try {
-            const unique = await api.get('/timeline/list');
-            const root = unique.find(t => t.esRaiz);
-
-            if (unique.length === 0) {
-                setTimelines([]);
-                setSelectedTimelineId(null);
-            } else {
-                setTimelines(unique);
-                // Priority: 1. Forced selection (newly created), 2. Previously selected, 3. Root, 4. First available
-                if (forceSelectId) {
-                    setSelectedTimelineId(forceSelectId);
-                } else if (!selectedTimelineId) {
-                    if (root) setSelectedTimelineId(root.id);
-                    else setSelectedTimelineId(unique[0].id);
+            const data = await api.get('/multiverso/list');
+            setUniverses(data);
+            // Auto-select logic? Maybe don't auto-select a specific timeline, just show the tree.
+            // OR select the first timeline of the first universe.
+            if (!selectedTimelineId && data.length > 0) {
+                const firstUni = data[0];
+                if (firstUni.lineasTemporales && firstUni.lineasTemporales.length > 0) {
+                    setSelectedTimelineId(firstUni.lineasTemporales[0].id);
                 }
             }
         } catch (error) {
-            console.error("Failed to load timelines", error);
-        } finally {
-            setLoading(false);
+            console.error("Failed to load multiverse", error);
         }
     };
+
+    // ... (Existing Event Logic remains mostly same, just context changed) ...
+
+
 
     const loadEvents = async (lineId) => {
         try {
@@ -219,25 +198,93 @@ const TimelineView = () => {
     };
 
     const handleCreateTimeline = async () => {
-        if (!newLine.nombre) return;
+        if (!newLine.nombre || !newLine.universoId) return;
         try {
             const created = await api.post('/timeline/linea', {
                 ...newLine,
-                esRaiz: false
+                esRaiz: false,
+                universo: { id: newLine.universoId }
             });
             setIsCreatingLine(false);
-            setNewLine({ nombre: '', descripcion: '' });
-            // Load and automatically select the new timeline
-            await loadTimelines(created.id);
+            setNewLine({ nombre: '', descripcion: '', universoId: null });
+
+            // Reload Multiverse and Select
+            await loadMultiverse();
+            setSelectedTimelineId(created.id);
         } catch (error) {
-            console.error(error);
+            console.error("Error creating timeline:", error);
         }
     };
 
+    // --- Universe CRUD ---
+    const [newUniverse, setNewUniverse] = useState({ nombre: '', descripcion: '' });
+
+    const handleCreateUniverse = async () => {
+        if (!newUniverse.nombre) return;
+        try {
+            const created = await api.post('/multiverso/crear', newUniverse);
+            setNewUniverse({ nombre: '', descripcion: '' });
+            setRightOpen(false); // Close panel
+            await loadMultiverse(); // Refresh tree
+        } catch (e) {
+            console.error("Error creating universe", e);
+        }
+    };
+
+    const handleUpdateUniverse = async () => {
+        if (!selectedUniverseId) return;
+        // Find current data to fallback? Or assume newUniverse state is populated on select?
+        // Better: use a separate state or reuse newUniverse but careful.
+        // Let's reuse newUniverse logic but call it 'universeForm'.
+        // For now, let's assume we bind to 'newUniverse' when opening edit mode.
+        try {
+            await api.put(`/multiverso/${selectedUniverseId}`, {
+                nombre: newUniverse.nombre,
+                descripcion: newUniverse.descripcion
+            });
+            setRightOpen(false);
+            await loadMultiverse();
+        } catch (e) {
+            console.error("Error updating universe", e);
+        }
+    };
+
+    const handleDeleteUniverse = async () => {
+        if (!selectedUniverseId) return;
+        if (!window.confirm("Delete this universe and ALL its timelines? This cannot be undone.")) return;
+        try {
+            await api.delete(`/multiverso/${selectedUniverseId}`);
+            setRightOpen(false);
+            setSelectedUniverseId(null);
+            await loadMultiverse();
+        } catch (e) {
+            console.error("Error deleting universe", e);
+        }
+    };
+
+    // Helper to prep edit form
+    const startEditUniverse = (uni) => {
+        setSelectedUniverseId(uni.id);
+        setNewUniverse({ nombre: uni.nombre, descripcion: uni.descripcion || '' });
+        setRightPanelTitle('Universe Settings');
+        setActiveTab('universe-edit');
+        setRightPanelMode('CUSTOM');
+        setRightOpen(true);
+    };
+
+    // Helper for create
+    useEffect(() => {
+        if (activeTab === 'universe-create') {
+            setNewUniverse({ nombre: '', descripcion: '' });
+        } else if (activeTab === 'universe-edit' && selectedUniverseId) {
+            const uni = universes.find(u => u.id === selectedUniverseId);
+            if (uni) setNewUniverse({ nombre: uni.nombre, descripcion: uni.descripcion || '' });
+        }
+    }, [activeTab, selectedUniverseId, universes]);
     // Confirmation State
     const [confirmState, setConfirmState] = useState({
         open: false,
-        type: null, // 'TIMELINE' | 'EVENT'
+        type: null,
         id: null,
         title: '',
         message: ''
@@ -274,10 +321,11 @@ const TimelineView = () => {
                 await api.delete(`/timeline/linea/${id}`);
                 // Verify if we deleted the active timeline
                 if (selectedTimelineId === id) {
-                    const remaining = timelines.filter(t => t.id !== id);
+                    const allTimelines = universes.flatMap(u => u.lineasTemporales || []);
+                    const remaining = allTimelines.filter(t => t.id !== id);
                     setSelectedTimelineId(remaining.length > 0 ? remaining[0].id : null);
                 }
-                loadTimelines();
+                await loadMultiverse();
             } else if (type === 'EVENT') {
                 await api.delete(`/timeline/evento/${id}`);
                 loadEvents(selectedTimelineId);
@@ -296,19 +344,30 @@ const TimelineView = () => {
         <>
             {/* Tabs Switch */}
             <div className="p-4 border-b border-white/5">
-                <div className="flex bg-black/40 rounded-lg p-1">
-                    <button
-                        onClick={() => setActiveTab('eventos')}
-                        className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-md transition-all ${activeTab === 'eventos' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
-                    >
-                        Eventos
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('anexos')}
-                        className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-md transition-all ${activeTab === 'anexos' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
-                    >
-                        Anexos
-                    </button>
+                <div className="flex bg-black/40 rounded-lg p-1 overflow-x-auto">
+                    {/* Dynamic Tabs based on Context */}
+                    {(activeTab === 'universe-create' || activeTab === 'universe-edit') ? (
+                        <button
+                            className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-md bg-amber-600/20 text-amber-500 shadow-lg`}
+                        >
+                            {activeTab === 'universe-create' ? 'New Universe' : 'Universe Settings'}
+                        </button>
+                    ) : (
+                        <>
+                            <button
+                                onClick={() => setActiveTab('eventos')}
+                                className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-md transition-all ${activeTab === 'eventos' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                            >
+                                Eventos
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('anexos')}
+                                className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-md transition-all ${activeTab === 'anexos' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                            >
+                                Anexos
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -389,6 +448,7 @@ const TimelineView = () => {
 
                 {activeTab === 'anexos' && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+                        {/* ... existing anexos content (implicit) ... */}
                         <div className="bg-black/20 rounded-xl p-4 border border-white/5">
                             <h3 className="text-xs font-black uppercase text-primary mb-4">Annexed Timelines</h3>
                             <p className="text-xs text-slate-500 mb-4">Link other localized timelines to this one to verify chronological consistency.</p>
@@ -425,6 +485,52 @@ const TimelineView = () => {
                         </div>
                     </div>
                 )}
+
+                {(activeTab === 'universe-create' || activeTab === 'universe-edit') && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+                        <div className="bg-black/20 rounded-xl p-4 border border-white/5">
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Universe Name</label>
+                                    <input
+                                        className="w-full bg-background-dark border border-white/10 rounded-lg p-2 text-sm text-white outline-none focus:border-primary"
+                                        value={newUniverse.nombre}
+                                        onChange={e => setNewUniverse({ ...newUniverse, nombre: e.target.value })}
+                                        placeholder="e.g. Alternate Reality 1"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Description</label>
+                                    <textarea
+                                        className="w-full bg-background-dark border border-white/10 rounded-lg p-2 text-sm text-white outline-none focus:border-primary h-24 resize-none"
+                                        value={newUniverse.descripcion}
+                                        onChange={e => setNewUniverse({ ...newUniverse, descripcion: e.target.value })}
+                                        placeholder="Context for this universe..."
+                                    />
+                                </div>
+
+                                <div className="pt-2">
+                                    <Button
+                                        variant="primary"
+                                        onClick={activeTab === 'universe-edit' ? handleUpdateUniverse : handleCreateUniverse}
+                                        className="w-full justify-center"
+                                    >
+                                        {activeTab === 'universe-edit' ? 'Save Changes' : 'Create Universe'}
+                                    </Button>
+                                </div>
+
+                                {activeTab === 'universe-edit' && (
+                                    <button
+                                        onClick={handleDeleteUniverse}
+                                        className="w-full text-center text-xs text-red-500 hover:text-red-400 py-2 border border-red-500/20 rounded-lg hover:bg-red-500/10 transition-colors"
+                                    >
+                                        Delete Universe
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </>
     );
@@ -434,48 +540,76 @@ const TimelineView = () => {
             {/* Render Portal if Target Found */}
             {portalTarget && createPortal(sidebarContent, portalTarget)}
 
-            {/* LEFT SIDEBAR: Timeline Selector */}
+            {/* LEFT SIDEBAR: Multiverse Selector */}
             <aside className="w-64 bg-surface-dark border-r border-white/5 flex flex-col p-4 z-20 shrink-0">
                 <header className="flex justify-between items-center mb-6">
-                    <h2 className="text-xs font-black uppercase tracking-widest text-primary">Timelines</h2>
-                    <button onClick={() => setIsCreatingLine(!isCreatingLine)} className="text-slate-400 hover:text-white">
-                        <span className="material-symbols-outlined">add</span>
+                    <h2 className="text-xs font-black uppercase tracking-widest text-primary">Multiverse</h2>
+                    <button onClick={() => { setRightPanelMode('CUSTOM'); setRightPanelTitle('New Universe'); setActiveTab('universe-create'); setRightOpen(true); }} className="text-slate-400 hover:text-white" title="New Universe">
+                        <span className="material-symbols-outlined">add_circle</span>
                     </button>
                 </header>
 
-                {isCreatingLine && (
-                    <div className="mb-4 p-3 bg-black/20 rounded-xl space-y-2 border border-white/10 animate-in fade-in slide-in-from-left-2">
-                        <input
-                            className="w-full bg-transparent border-b border-white/20 text-sm p-1 outline-none focus:border-primary"
-                            placeholder="Name"
-                            value={newLine.nombre}
-                            onChange={e => setNewLine({ ...newLine, nombre: e.target.value })}
-                        />
-                        <div className="flex justify-end">
-                            <button onClick={handleCreateTimeline} className="text-xs font-bold text-primary">CREATE</button>
-                        </div>
-                    </div>
-                )}
-
-                <div className="space-y-2 overflow-y-auto flex-1 custom-scrollbar">
-                    {timelines.map(t => (
-                        <div
-                            key={t.id}
-                            onClick={() => setSelectedTimelineId(t.id)}
-                            className={`group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all border ${selectedTimelineId === t.id ? 'bg-primary/10 border-primary text-white shadow-[0_0_15px_rgba(var(--primary-rgb),0.1)]' : 'bg-transparent border-transparent hover:bg-white/5 text-slate-400'}`}
-                        >
-                            <div className="flex items-center gap-2 truncate">
-                                <span className={`material-symbols-outlined text-sm shrink-0 ${t.esRaiz ? 'text-amber-400' : ''}`}>
-                                    {t.esRaiz ? 'public' : 'timeline'}
-                                </span>
-                                <span className="text-xs font-bold uppercase tracking-wide truncate">{t.nombre}</span>
+                <div className="space-y-6 overflow-y-auto flex-1 custom-scrollbar">
+                    {universes.map(uni => (
+                        <div key={uni.id} className="space-y-2">
+                            {/* Universe Header */}
+                            <div className="flex items-center justify-between group">
+                                <h3
+                                    className={`text-[10px] font-bold uppercase pl-2 cursor-pointer ${selectedUniverseId === uni.id ? 'text-white' : 'text-slate-500'}`}
+                                    onClick={() => { setSelectedUniverseId(uni.id); setRightPanelTitle('Universe settings'); setActiveTab('universe-edit'); setRightPanelMode('CUSTOM'); setRightOpen(true); }}
+                                >
+                                    {uni.nombre}
+                                </h3>
+                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        onClick={() => { setNewLine({ ...newLine, universoId: uni.id }); setIsCreatingLine(true); }}
+                                        className="text-slate-500 hover:text-primary"
+                                        title="Add Timeline here"
+                                    >
+                                        <span className="material-symbols-outlined text-sm">add</span>
+                                    </button>
+                                </div>
                             </div>
-                            <button
-                                onClick={(e) => handleDeleteTimeline(t.id, e)}
-                                className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-500 transition-opacity"
-                            >
-                                <span className="material-symbols-outlined text-sm">delete</span>
-                            </button>
+
+                            {/* Quick Create Input for this Universe */}
+                            {isCreatingLine && newLine.universoId === uni.id && (
+                                <div className="ml-2 mb-2 p-2 bg-black/20 rounded-lg animate-in fade-in">
+                                    <input
+                                        className="w-full bg-transparent border-b border-white/20 text-xs p-1 outline-none focus:border-primary mb-1"
+                                        placeholder="Timeline Name"
+                                        value={newLine.nombre}
+                                        onChange={e => setNewLine({ ...newLine, nombre: e.target.value })}
+                                        autoFocus
+                                        onKeyDown={(e) => e.key === 'Enter' && handleCreateTimeline()}
+                                    />
+                                    <div className="flex justify-end gap-1">
+                                        <button onClick={() => setIsCreatingLine(false)} className="text-[10px] text-slate-500 hover:text-white">CANCEL</button>
+                                        <button onClick={handleCreateTimeline} className="text-[10px] font-bold text-primary">CREATE</button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Timelines List */}
+                            <div className="space-y-1 pl-2 border-l border-white/5 ml-1">
+                                {uni.lineasTemporales && uni.lineasTemporales.map(t => (
+                                    <div
+                                        key={t.id}
+                                        onClick={() => setSelectedTimelineId(t.id)}
+                                        className={`group flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all ${selectedTimelineId === t.id ? 'bg-primary/10 text-white shadow-[0_0_10px_rgba(var(--primary-rgb),0.1)]' : 'text-slate-400 hover:bg-white/5'}`}
+                                    >
+                                        <span className="text-xs truncate">{t.nombre}</span>
+                                        <button
+                                            onClick={(e) => handleDeleteTimeline(t.id, e)}
+                                            className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-500 transition-opacity"
+                                        >
+                                            <span className="material-symbols-outlined text-[10px]">delete</span>
+                                        </button>
+                                    </div>
+                                ))}
+                                {(!uni.lineasTemporales || uni.lineasTemporales.length === 0) && (
+                                    <div className="p-2 text-[10px] italic text-slate-600">No timelines here</div>
+                                )}
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -488,11 +622,19 @@ const TimelineView = () => {
                 {/* Header */}
                 <div className="h-16 border-b border-white/5 bg-background-dark/80 backdrop-blur flex items-center px-8 z-10 shrink-0">
                     <div>
-                        <h1 className="text-xl font-bold flex items-center gap-2">
-                            {timelines.find(t => t.id === selectedTimelineId)?.esRaiz && <span className="text-amber-400 material-symbols-outlined">star</span>}
-                            {timelines.find(t => t.id === selectedTimelineId)?.nombre || 'Select Timeline'}
-                        </h1>
-                        <p className="text-xs text-slate-500">{timelines.find(t => t.id === selectedTimelineId)?.descripcion}</p>
+                        {(() => {
+                            const allTimelines = universes.flatMap(u => u.lineasTemporales || []);
+                            const active = allTimelines.find(t => t.id === selectedTimelineId);
+                            return (
+                                <>
+                                    <h1 className="text-xl font-bold flex items-center gap-2">
+                                        {active?.esRaiz && <span className="text-amber-400 material-symbols-outlined">star</span>}
+                                        {active?.nombre || 'Select Timeline'}
+                                    </h1>
+                                    <p className="text-xs text-slate-500">{active?.descripcion}</p>
+                                </>
+                            );
+                        })()}
                     </div>
                 </div>
 
