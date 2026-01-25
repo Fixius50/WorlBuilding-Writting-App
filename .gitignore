@@ -50,3 +50,4 @@ data/*
 
 Docs/Referencias_visuales/
 .github
+src/main/resources/data/*.db

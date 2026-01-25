@@ -49,3 +49,13 @@
   - **Project Creation**: Refactored `ProjectDiscoveryService` to ensure ATOMIC creation. If seeding fails, the `.db` file is deleted (preventing zombie empty projects).
   - **Timeline CRUD**: Diagnosis showed `no such column: u1_0.cuaderno_id`. Fixed `Universo.java` mapping to use `proyecto_id` instead of `cuaderno_id` to match Flyway V1 schema.
 - **Status**: Completed. Timeline creation verified after compilation. Zombie projects prevented by new atomic logic.
+
+## [2026-01-25] Multiverse System & UI Polish
+
+- **Goal**: Implement "Multiverse" hierarchy (Universe -> Timelines) and fix navigation context.
+- **Action**:
+  - **Backend**: Verified `UniversoController` and `LineaTiempo` entity mapping.
+  - **Migration**: Added `V2__Add_Relacion.sql` to fix missing table usage.
+  - **Frontend**: integrated `TimelineView` with Multiverse API. Created unified "3-Tab" layout (`Eventos`, `Anexos`, `Universo`).
+  - **UI**: Added Dynamic Header Subtitle ("LÍNEA DE TIEMPO" + Name) and unified navigation logic to prevent context loss.
+- **Status**: Completed. Verified via Stress Test V3 (Browser). Creation, Deletion and Navigation fully functional.
