@@ -255,11 +255,11 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
                     <div className="px-4 py-2 border-b border-white/5 font-bold text-text-muted truncate">{contextMenu.name}</div>
                     {contextMenu.type === 'folder' ? (
                         <>
-                            <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2" onClick={() => { onCreateEntity(folder.id, 'entidadindividual'); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">person</span> New Character</button>
+                            <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2" onClick={() => { onCreateEntity(folder.id, 'entidadindividual'); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">person</span> Add Character</button>
                             <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2" onClick={() => {
                                 navigate(`/${username}/${projectName}/map-editor/create/${folder.id}`);
                                 closeContextMenu();
-                            }}><span className="material-symbols-outlined text-sm">map</span> New Map</button>
+                            }}><span className="material-symbols-outlined text-sm">map</span> Add Map</button>
                             <div className="h-px bg-white/5 my-1" />
                             <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2" onClick={() => { setIsEditing(true); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">edit</span> Rename Folder</button>
                             <button className="px-4 py-2 hover:bg-red-500/10 text-red-400 text-left flex items-center gap-2" onClick={() => { onDeleteFolder(folder.id, folder.parentId); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">delete</span> Delete Folder</button>

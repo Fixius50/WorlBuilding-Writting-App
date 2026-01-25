@@ -331,7 +331,7 @@ const WorldBibleLayout = () => {
                             <FolderItem
                                 key={folder.uiKey || folder.id}
                                 folder={folder}
-                                onCreateSubfolder={handleCreateSimpleFolder} // Simple folder creation for sidebar
+                                onCreateSubfolder={() => { }} // Flat hierarchy: no subfolders from sidebar
                                 onRename={handleRenameFolder}
                                 onDeleteFolder={handleDeleteFolder}
                                 onDeleteEntity={handleDeleteFolder}

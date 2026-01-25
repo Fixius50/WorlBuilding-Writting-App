@@ -4,6 +4,7 @@ import com.worldbuilding.app.model.EventoTiempo;
 import com.worldbuilding.app.model.LineaTiempo;
 import com.worldbuilding.app.repository.EventoTiempoRepository;
 import com.worldbuilding.app.repository.LineaTiempoRepository;
+import com.worldbuilding.app.exception.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +25,37 @@ public class TimelineController {
 
     @Autowired
     private com.worldbuilding.app.repository.CuadernoRepository cuadernoRepository;
+
+    private com.worldbuilding.app.model.Cuaderno getProyectoActual(jakarta.servlet.http.HttpSession session) {
+        String nombreProyecto = (String) session.getAttribute("proyectoActivo");
+        if (nombreProyecto == null)
+            throw new UnauthorizedException("No hay proyecto activo en sesión.");
+
+        String currentContext = com.worldbuilding.app.config.TenantContext.getCurrentTenant();
+        if (!nombreProyecto.equals(currentContext)) {
+            com.worldbuilding.app.config.TenantContext.setCurrentTenant(nombreProyecto);
+        }
+
+        return cuadernoRepository.findByNombreProyecto(nombreProyecto).stream()
+                .filter(java.util.Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new UnauthorizedException("Proyecto no encontrado."));
+    }
+
+    @GetMapping("/list")
+    public List<java.util.Map<String, Object>> listarLineas(jakarta.servlet.http.HttpSession session) {
+        getProyectoActual(session); // Sync TenantContext
+        return lineaRepository.findAll().stream()
+                .filter(java.util.Objects::nonNull)
+                .map(lt -> {
+                    java.util.Map<String, Object> dto = new java.util.HashMap<>();
+                    dto.put("id", lt.getId());
+                    dto.put("nombre", lt.getNombre());
+                    dto.put("descripcion", lt.getDescripcion());
+                    dto.put("esRaiz", lt.getEsRaiz());
+                    return dto;
+                }).toList();
+    }
 
     @GetMapping("/linea/{lineaId}/eventos")
     public List<EventoTiempo> listarEventosPorLinea(@PathVariable Long lineaId) {
@@ -71,54 +103,32 @@ public class TimelineController {
     // public LineaTiempo crearLinea(@RequestBody LineaTiempo linea) { ... }
 
     @PostMapping("/linea")
-    public org.springframework.http.ResponseEntity<?> crearLinea(@RequestBody LineaTiempo linea) {
-        try {
-            // Fallback: Use the first universe found in the current tenant DB.
+    public org.springframework.http.ResponseEntity<?> crearLinea(@RequestBody LineaTiempo linea,
+            jakarta.servlet.http.HttpSession session) {
+        getProyectoActual(session);
+
+        if (linea.getUniverso() == null) {
+            // No fallback allowed per 'no self-healing' policy
             List<com.worldbuilding.app.model.Universo> universos = universoRepository.findAll();
-            com.worldbuilding.app.model.Universo universo;
-
-            if (!universos.isEmpty()) {
-                universo = universos.get(0);
-            } else {
-                // Self-Healing: Create default Universe if missing
-                universo = new com.worldbuilding.app.model.Universo();
-                universo.setNombre("Prime Universe");
-
-                // Ensure Cuaderno is linked (Required by FK)
-                // Filter nulls to prevent stream.findFirst() NPE if repo returns null elements
-                com.worldbuilding.app.model.Cuaderno cuaderno = cuadernoRepository.findAll().stream()
-                        .filter(java.util.Objects::nonNull)
-                        .findFirst()
-                        .orElse(null);
-                if (cuaderno == null) {
-                    cuaderno = new com.worldbuilding.app.model.Cuaderno();
-                    cuaderno.setTitulo("Prime World");
-                    cuaderno.setNombreProyecto("Prime World");
-                    cuaderno = cuadernoRepository.save(cuaderno);
-                }
-                universo.setCuaderno(cuaderno);
-
-                universo = universoRepository.save(universo);
+            if (universos.isEmpty()) {
+                throw new RuntimeException(
+                        "No Universe found for this project context. Please create a Universe or Folder first.");
             }
-
-            linea.setUniverso(universo);
-            LineaTiempo saved = lineaRepository.save(linea);
-
-            // Return detached/simplified object or just ID to prevent
-            // Serialization/LazyLoad issues
-            // because Open-In-View is disabled.
-            java.util.Map<String, Object> result = new java.util.HashMap<>();
-            result.put("id", saved.getId());
-            result.put("nombre", saved.getNombre());
-            result.put("descripcion", saved.getDescripcion());
-            result.put("esRaiz", saved.getEsRaiz());
-
-            return org.springframework.http.ResponseEntity.ok(result);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return org.springframework.http.ResponseEntity.status(500).body("Server Error: " + e.getMessage());
+            // If the request didn't specify one, we take the first but we LOG it as a
+            // warning or throw.
+            // USER REQUESTED: Remove self-healing. Picking a random one IS self-healing.
+            throw new RuntimeException("Universe is required to create a Timeline. (No fallback selected)");
         }
+
+        LineaTiempo saved = lineaRepository.save(linea);
+
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        result.put("id", saved.getId());
+        result.put("nombre", saved.getNombre());
+        result.put("descripcion", saved.getDescripcion());
+        result.put("esRaiz", saved.getEsRaiz());
+
+        return org.springframework.http.ResponseEntity.ok(result);
     }
 
     @Autowired

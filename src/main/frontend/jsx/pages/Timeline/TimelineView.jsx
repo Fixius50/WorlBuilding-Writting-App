@@ -140,11 +140,10 @@ const TimelineView = () => {
         }
     }, [activeTab, events, editingEvent]);
 
-    const loadTimelines = async () => {
+    const loadTimelines = async (forceSelectId = null) => {
         setLoading(true);
         try {
-            const all = await api.get('/bd/lineatiempo');
-            const unique = [...new Map(all.map(item => [item.id, item])).values()];
+            const unique = await api.get('/timeline/list');
             const root = unique.find(t => t.esRaiz);
 
             if (unique.length === 0) {
@@ -152,21 +151,13 @@ const TimelineView = () => {
                 setSelectedTimelineId(null);
             } else {
                 setTimelines(unique);
-                if (!selectedTimelineId) {
+                // Priority: 1. Forced selection (newly created), 2. Previously selected, 3. Root, 4. First available
+                if (forceSelectId) {
+                    setSelectedTimelineId(forceSelectId);
+                } else if (!selectedTimelineId) {
                     if (root) setSelectedTimelineId(root.id);
                     else setSelectedTimelineId(unique[0].id);
                 }
-            }
-            // Cleanup duplicates
-            const roots = unique.filter(t => t.esRaiz);
-            if (roots.length > 1) {
-                roots.sort((a, b) => a.id - b.id);
-                const toKeep = roots[0];
-                const toDelete = roots.slice(1);
-                toDelete.forEach(d => api.delete(`/bd/lineatiempo/${d.id}`).catch(console.error));
-                const cleaned = unique.filter(t => t.id === toKeep.id || !toDelete.find(d => d.id === t.id));
-                setTimelines(cleaned);
-                if (!selectedTimelineId) setSelectedTimelineId(toKeep.id);
             }
         } catch (error) {
             console.error("Failed to load timelines", error);
@@ -236,8 +227,8 @@ const TimelineView = () => {
             });
             setIsCreatingLine(false);
             setNewLine({ nombre: '', descripcion: '' });
-            loadTimelines();
-            if (created && created.id) setSelectedTimelineId(created.id);
+            // Load and automatically select the new timeline
+            await loadTimelines(created.id);
         } catch (error) {
             console.error(error);
         }

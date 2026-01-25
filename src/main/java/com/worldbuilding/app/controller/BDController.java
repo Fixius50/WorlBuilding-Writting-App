@@ -4,6 +4,7 @@ package com.worldbuilding.app.controller;
 import com.worldbuilding.app.model.*;
 import com.worldbuilding.app.model.dto.DatosTablaDTO;
 import com.worldbuilding.app.repository.*;
+import com.worldbuilding.app.exception.UnauthorizedException;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -62,10 +63,10 @@ public class BDController {
      */
     private String getProyectoActivo(HttpSession session) {
         String proyecto = (String) session.getAttribute("proyectoActivo");
-        // [MODIFIED LOGIC]
-        // Strictly return what is in the session.
-        // If null, we return null, allowing the caller to decide (usually resulting in
-        // a 400 Bad Request).
+        if (proyecto == null) {
+            throw new UnauthorizedException("No hay proyecto activo en sesión.");
+        }
+        com.worldbuilding.app.config.TenantContext.setCurrentTenant(proyecto);
         return proyecto;
     }
 
@@ -75,80 +76,67 @@ public class BDController {
     public ResponseEntity<?> insertar(@RequestBody DatosTablaDTO dto, HttpSession session) {
         String nombreProyecto = getProyectoActivo(session);
         // ... (rest of insert method is fine, it uses getProyectoActivo)
-        if (nombreProyecto == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "No hay proyecto activo"));
-        }
 
         String tipo = dto.getTipoEntidad();
         if (tipo == null || tipo.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "tipoEntidad es requerido"));
         }
 
-        try {
-            Object entidadGuardada = switch (tipo.toLowerCase()) {
-                case "entidadindividual" -> {
-                    EntidadIndividual e = new EntidadIndividual();
-                    mapearEntidadIndividual(dto, e, nombreProyecto);
-                    yield entidadIndRepo.save(e);
-                }
-                case "entidadcolectiva" -> {
-                    EntidadColectiva e = new EntidadColectiva();
-                    mapearEntidadColectiva(dto, e, nombreProyecto);
-                    yield entidadColRepo.save(e);
-                }
-                case "zona" -> {
-                    Zona z = new Zona();
-                    mapearZona(dto, z, nombreProyecto);
-                    yield zonaRepo.save(z);
-                }
-                case "construccion" -> {
-                    Construccion c = new Construccion();
-                    mapearConstruccion(dto, c, nombreProyecto);
-                    yield construccionRepo.save(c);
-                }
-                case "efectos" -> {
-                    Efectos ef = new Efectos();
-                    mapearEfectos(dto, ef, nombreProyecto);
-                    yield efectosRepo.save(ef);
-                }
-                case "interaccion" -> {
-                    Interaccion i = new Interaccion();
-                    mapearInteraccion(dto, i, nombreProyecto);
-                    yield interaccionRepo.save(i);
-                }
-                case "relacion" -> {
-                    Relacion r = new Relacion();
-                    mapearRelacion(dto, r);
-                    yield relacionRepo.save(r);
-                }
-                case "lineatiempo" -> {
-                    LineaTiempo lt = new LineaTiempo();
-                    mapearLineaTiempo(dto, lt);
-                    yield lineaTiempoRepo.save(lt);
-                }
-                case "eventotiempo" -> {
-                    EventoTiempo et = new EventoTiempo();
-                    // Need to find LineaTiempo first
-                    LineaTiempo lt = lineaTiempoRepo.findById(dto.getLineaTiempoId())
-                            .orElseThrow(() -> new IllegalArgumentException("LineaTiempo ID required"));
-                    mapearEventoTiempo(dto, et, lt);
-                    yield eventoTiempoRepo.save(et);
-                }
-                default -> throw new IllegalArgumentException("Tipo no soportado: " + tipo);
-            };
-
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "entidad", entidadGuardada));
-        } catch (Exception e) {
-            e.printStackTrace();
-            String errorMsg = e.getMessage();
-            if (errorMsg == null || errorMsg.isBlank()) {
-                errorMsg = e.getClass().getName() + " - "
-                        + (e.getCause() != null ? e.getCause().getMessage() : "Sin mensaje");
+        Object entidadGuardada = switch (tipo.toLowerCase()) {
+            case "entidadindividual" -> {
+                EntidadIndividual e = new EntidadIndividual();
+                mapearEntidadIndividual(dto, e, nombreProyecto);
+                yield entidadIndRepo.save(e);
             }
-            return ResponseEntity.status(500).body(Map.of("error", errorMsg));
-        }
+            case "entidadcolectiva" -> {
+                EntidadColectiva e = new EntidadColectiva();
+                mapearEntidadColectiva(dto, e, nombreProyecto);
+                yield entidadColRepo.save(e);
+            }
+            case "zona" -> {
+                Zona z = new Zona();
+                mapearZona(dto, z, nombreProyecto);
+                yield zonaRepo.save(z);
+            }
+            case "construccion" -> {
+                Construccion c = new Construccion();
+                mapearConstruccion(dto, c, nombreProyecto);
+                yield construccionRepo.save(c);
+            }
+            case "efectos" -> {
+                Efectos ef = new Efectos();
+                mapearEfectos(dto, ef, nombreProyecto);
+                yield efectosRepo.save(ef);
+            }
+            case "interaccion" -> {
+                Interaccion i = new Interaccion();
+                mapearInteraccion(dto, i, nombreProyecto);
+                yield interaccionRepo.save(i);
+            }
+            case "relacion" -> {
+                Relacion r = new Relacion();
+                mapearRelacion(dto, r);
+                yield relacionRepo.save(r);
+            }
+            case "lineatiempo" -> {
+                LineaTiempo lt = new LineaTiempo();
+                mapearLineaTiempo(dto, lt);
+                yield lineaTiempoRepo.save(lt);
+            }
+            case "eventotiempo" -> {
+                EventoTiempo et = new EventoTiempo();
+                // Need to find LineaTiempo first
+                LineaTiempo lt = lineaTiempoRepo.findById(dto.getLineaTiempoId())
+                        .orElseThrow(() -> new IllegalArgumentException("LineaTiempo ID required"));
+                mapearEventoTiempo(dto, et, lt);
+                yield eventoTiempoRepo.save(et);
+            }
+            default -> throw new IllegalArgumentException("Tipo no soportado: " + tipo);
+        };
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "entidad", entidadGuardada));
     }
 
     // ==================== MODIFICAR ====================
@@ -261,16 +249,19 @@ public class BDController {
                     // Manual DTO mapping to prevent Jackson serialization issues with Hibernate
                     // Proxies (Open-In-View=false)
                     List<LineaTiempo> entities = lineaTiempoRepo.findAll();
-                    yield entities.stream().map(lt -> {
-                        System.out.println(
-                                ">>> [BDController] Mapping Timeline ID: " + lt.getId() + ", Name: " + lt.getNombre());
-                        java.util.Map<String, Object> dto = new java.util.HashMap<>();
-                        dto.put("id", lt.getId());
-                        dto.put("nombre", lt.getNombre());
-                        dto.put("descripcion", lt.getDescripcion());
-                        dto.put("esRaiz", lt.getEsRaiz());
-                        return dto;
-                    }).toList();
+                    yield entities.stream()
+                            .filter(java.util.Objects::nonNull) // PREVENT NPE
+                            .map(lt -> {
+                                System.out.println(
+                                        ">>> [BDController] Mapping Timeline ID: " + lt.getId() + ", Name: "
+                                                + lt.getNombre());
+                                java.util.Map<String, Object> dto = new java.util.HashMap<>();
+                                dto.put("id", lt.getId());
+                                dto.put("nombre", lt.getNombre());
+                                dto.put("descripcion", lt.getDescripcion());
+                                dto.put("esRaiz", lt.getEsRaiz());
+                                return dto;
+                            }).toList();
                 }
                 case "eventotiempo" -> eventoTiempoRepo.findAll();
                 default -> throw new IllegalArgumentException("Tipo no soportado: " + tipo);

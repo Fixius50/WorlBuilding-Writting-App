@@ -80,6 +80,16 @@ const WritingView = () => {
         }
     };
 
+    const handleUpdateNotebook = async (id, title, description) => {
+        try {
+            const updated = await api.put(`/escritura/cuaderno/${id}`, { titulo: title, descripcion: description });
+            setNotebooks(notebooks.map(n => n.id === id ? updated : n));
+        } catch (err) {
+            console.error(err);
+            alert("Error updating notebook");
+        }
+    };
+
     // --- Page Actions ---
 
     const handleNotebookSelect = async (selectedNotebook) => {
@@ -194,8 +204,8 @@ const WritingView = () => {
                         key={page.id}
                         onClick={() => handlePageSelect(idx)}
                         className={`w-full text-left p-3 rounded-lg border transition-all group ${idx === currentPageIndex
-                                ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-200'
-                                : 'bg-transparent border-transparent hover:bg-white/5 text-slate-400'
+                            ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-200'
+                            : 'bg-transparent border-transparent hover:bg-white/5 text-slate-400'
                             }`}
                     >
                         <div className="flex justify-between items-center mb-1">
@@ -232,6 +242,7 @@ const WritingView = () => {
                     onSelectNotebook={handleNotebookSelect}
                     onCreateNotebook={handleCreateNotebook}
                     onDeleteNotebook={handleDeleteNotebook}
+                    onUpdateNotebook={handleUpdateNotebook}
                 />
             </>
         );

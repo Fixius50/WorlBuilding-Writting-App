@@ -43,16 +43,16 @@ public class MigrationService {
         if (legacyChars.isEmpty())
             return;
 
-        // 1. Ensure Folder exists
-        Carpeta folder = getOrCreateFolder(proyecto, "Legacy Characters");
+        // 1. Get Folder (Must exist)
+        Carpeta folder = getExistingFolder(proyecto, "Legacy Characters");
 
-        // 2. Ensure Templates exist
-        AtributoPlantilla tApellidos = getOrCreateTemplate(folder, "Apellidos", "short_text", 1);
-        AtributoPlantilla tEstado = getOrCreateTemplate(folder, "Estado", "short_text", 2);
-        AtributoPlantilla tTipo = getOrCreateTemplate(folder, "Tipo", "short_text", 3);
-        AtributoPlantilla tOrigen = getOrCreateTemplate(folder, "Origen", "short_text", 4);
-        AtributoPlantilla tComportamiento = getOrCreateTemplate(folder, "Comportamiento", "text", 5);
-        AtributoPlantilla tDesc = getOrCreateTemplate(folder, "Descripción", "text", 6);
+        // 2. Get Templates (Must exist)
+        AtributoPlantilla tApellidos = getExistingTemplate(folder, "Apellidos", "short_text", 1);
+        AtributoPlantilla tEstado = getExistingTemplate(folder, "Estado", "short_text", 2);
+        AtributoPlantilla tTipo = getExistingTemplate(folder, "Tipo", "short_text", 3);
+        AtributoPlantilla tOrigen = getExistingTemplate(folder, "Origen", "short_text", 4);
+        AtributoPlantilla tComportamiento = getExistingTemplate(folder, "Comportamiento", "text", 5);
+        AtributoPlantilla tDesc = getExistingTemplate(folder, "Descripción", "text", 6);
 
         // 3. Migrate Records
         for (EntidadIndividual old : legacyChars) {
@@ -79,12 +79,12 @@ public class MigrationService {
         if (legacyZones.isEmpty())
             return;
 
-        Carpeta folder = getOrCreateFolder(proyecto, "Legacy Zones");
+        Carpeta folder = getExistingFolder(proyecto, "Legacy Zones");
 
-        AtributoPlantilla tTamanno = getOrCreateTemplate(folder, "Tamaño", "short_text", 1);
-        AtributoPlantilla tTipo = getOrCreateTemplate(folder, "Tipo", "short_text", 2);
-        AtributoPlantilla tDesarrollo = getOrCreateTemplate(folder, "Desarrollo", "short_text", 3);
-        AtributoPlantilla tDesc = getOrCreateTemplate(folder, "Descripción", "text", 4);
+        AtributoPlantilla tTamanno = getExistingTemplate(folder, "Tamaño", "short_text", 1);
+        AtributoPlantilla tTipo = getExistingTemplate(folder, "Tipo", "short_text", 2);
+        AtributoPlantilla tDesarrollo = getExistingTemplate(folder, "Desarrollo", "short_text", 3);
+        AtributoPlantilla tDesc = getExistingTemplate(folder, "Descripción", "text", 4);
 
         for (Zona old : legacyZones) {
             if (isAlreadyMigrated(proyecto, old.getNombre(), folder))
@@ -103,30 +103,20 @@ public class MigrationService {
         }
     }
 
-    private Carpeta getOrCreateFolder(Cuaderno proyecto, String name) {
+    private Carpeta getExistingFolder(Cuaderno proyecto, String name) {
         return carpetaRepository.findByProyectoAndPadreIsNull(proyecto).stream()
                 .filter(c -> c.getNombre().equals(name))
                 .findFirst()
-                .orElseGet(() -> {
-                    Carpeta c = new Carpeta();
-                    c.setNombre(name);
-                    c.setProyecto(proyecto);
-                    return carpetaRepository.save(c);
-                });
+                .orElseThrow(() -> new RuntimeException(
+                        "Migration failed: Target folder '" + name + "' not found. No self-healing allowed."));
     }
 
-    private AtributoPlantilla getOrCreateTemplate(Carpeta carpeta, String name, String type, int order) {
+    private AtributoPlantilla getExistingTemplate(Carpeta carpeta, String name, String type, int order) {
         return atributoPlantillaRepository.findByCarpetaOrderByOrdenVisualAsc(carpeta).stream()
                 .filter(t -> t.getNombre().equals(name))
                 .findFirst()
-                .orElseGet(() -> {
-                    AtributoPlantilla t = new AtributoPlantilla();
-                    t.setNombre(name);
-                    t.setTipo(type);
-                    t.setCarpeta(carpeta);
-                    t.setOrdenVisual(order);
-                    return atributoPlantillaRepository.save(t);
-                });
+                .orElseThrow(() -> new RuntimeException("Migration failed: Target template '" + name
+                        + "' not found in folder '" + carpeta.getNombre() + "'."));
     }
 
     private void createValue(EntidadGenerica entity, AtributoPlantilla template, String value) {

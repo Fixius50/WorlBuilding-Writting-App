@@ -23,4 +23,6 @@ public interface CarpetaRepository extends JpaRepository<Carpeta, Long> {
 
     // Count items
     int countByPadre(Carpeta padre);
+
+    long countByPadreIsNull();
 }

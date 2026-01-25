@@ -5,6 +5,7 @@ import com.worldbuilding.app.model.Hoja;
 import com.worldbuilding.app.repository.CuadernoRepository;
 import com.worldbuilding.app.repository.HojaRepository;
 import jakarta.servlet.http.HttpSession;
+import com.worldbuilding.app.exception.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,55 +28,48 @@ public class EscrituraController {
     @Autowired
     private com.worldbuilding.app.repository.NotaRapidaRepository notaRapidaRepository;
 
-    private String getProyectoActivo(HttpSession session) {
-        String proyecto = (String) session.getAttribute("proyectoActivo");
-        if (proyecto == null || "Default World".equals(proyecto)) {
-            com.worldbuilding.app.config.TenantContext.setCurrentTenant("Prime World");
-            return "Prime World";
+    private Cuaderno getProyectoActual(HttpSession session) {
+        String nombreProyecto = (String) session.getAttribute("proyectoActivo");
+        if (nombreProyecto == null)
+            throw new UnauthorizedException("No hay proyecto activo en sesión.");
+
+        String currentContext = com.worldbuilding.app.config.TenantContext.getCurrentTenant();
+        if (!nombreProyecto.equals(currentContext)) {
+            com.worldbuilding.app.config.TenantContext.setCurrentTenant(nombreProyecto);
         }
-        com.worldbuilding.app.config.TenantContext.setCurrentTenant(proyecto);
-        return proyecto;
+
+        return cuadernoRepository.findByNombreProyecto(nombreProyecto).stream()
+                .filter(java.util.Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new UnauthorizedException("Proyecto no encontrado en la base de datos de gestión."));
     }
 
     @GetMapping("/cuadernos")
-    public ResponseEntity<?> listarCuadernos(HttpSession session) {
-        String proyecto = getProyectoActivo(session);
-        if (proyecto == null)
-            return ResponseEntity.status(401).body("No hay proyecto activo");
+    public List<java.util.Map<String, Object>> listarCuadernos(HttpSession session) {
+        Cuaderno proyecto = getProyectoActual(session);
 
-        List<Cuaderno> cuadernos = cuadernoRepository.findByNombreProyecto(proyecto);
-        if (cuadernos == null) {
-            return ResponseEntity.ok(List.of());
-        }
-        return ResponseEntity.ok(cuadernos.stream()
-                .filter(c -> c != null) // Defensive check against nulls in list
-                .map(c -> Map.of(
-                        "id", c.getId(),
-                        "titulo", c.getTitulo() != null ? c.getTitulo() : "Sin título",
-                        "descripcion", c.getDescripcion() != null ? c.getDescripcion() : "",
-                        "nombreProyecto", c.getNombreProyecto() != null ? c.getNombreProyecto() : ""))
-                .toList());
+        return List.of(java.util.Map.of(
+                "id", proyecto.getId(),
+                "titulo", proyecto.getTitulo() != null ? proyecto.getTitulo() : "Sin título",
+                "descripcion", proyecto.getDescripcion() != null ? proyecto.getDescripcion() : "",
+                "nombreProyecto", proyecto.getNombreProyecto()));
     }
 
     @PostMapping("/cuaderno")
     public ResponseEntity<?> crearCuaderno(@RequestBody Map<String, String> body, HttpSession session) {
-        String proyecto = getProyectoActivo(session);
+        Cuaderno proyecto = getProyectoActual(session);
         if (proyecto == null)
             return ResponseEntity.status(401).body("No hay proyecto activo");
 
-        Cuaderno c = new Cuaderno();
-        c.setNombreProyecto(proyecto);
-        c.setTitulo(body.getOrDefault("titulo", "Nuevo Cuaderno"));
-        c.setDescripcion(body.get("descripcion"));
+        // Note: This endpoint creates internal metadata for the *already selected
+        // project* (tenant)
+        // If meta exists, it updates it.
+        proyecto.setTitulo(body.getOrDefault("titulo", proyecto.getTitulo()));
+        proyecto.setDescripcion(body.get("descripcion"));
+        Cuaderno guardado = cuadernoRepository.save(proyecto);
 
-        Cuaderno guardado = cuadernoRepository.save(c);
-
-        // Crear primera hoja automáticamente
-        Hoja primera = new Hoja();
-        primera.setCuaderno(guardado);
-        primera.setNumeroPagina(1);
-        primera.setContenido("");
-        hojaRepository.save(primera);
+        // Explicitly NOT creating a default page anymore per 'no self-healing' policy.
+        // If the user wants a page, they must create it.
 
         return ResponseEntity.ok(Map.of(
                 "id", guardado.getId(),
@@ -108,7 +102,6 @@ public class EscrituraController {
 
         List<Hoja> hojas = hojaRepository.findByCuadernoOrderByNumeroPaginaAsc(c);
 
-        // Transform to include note count
         List<Map<String, Object>> response = hojas.stream().map(h -> {
             Map<String, Object> map = new java.util.HashMap<>();
             map.put("id", h.getId());
@@ -140,7 +133,7 @@ public class EscrituraController {
         Hoja h = new Hoja();
         h.setCuaderno(c);
         h.setNumeroPagina(nxt);
-        h.setContenido("");
+        h.setContenido("<p></p>");
 
         return ResponseEntity.ok(hojaRepository.save(h));
     }
@@ -177,14 +170,31 @@ public class EscrituraController {
             return ResponseEntity.status(404).body(Map.of("error", "Hoja no encontrada"));
 
         try {
-            // Eliminar notas asociadas manualmente para evitar restricciones de FK
             notaRapidaRepository.deleteByHoja(h);
-
             hojaRepository.delete(h);
             return ResponseEntity.ok(Map.of("success", true));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Error eliminando hoja: " + e.getMessage()));
         }
+    }
+
+    @PutMapping("/cuaderno/{id}")
+    public ResponseEntity<?> actualizarCuaderno(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        if (id == null)
+            return ResponseEntity.badRequest().body(Map.of("error", "ID requerido"));
+
+        Cuaderno c = cuadernoRepository.findById(id).orElse(null);
+        if (c == null)
+            throw new com.worldbuilding.app.exception.ResourceNotFoundException("Cuaderno no encontrado");
+
+        if (body.containsKey("titulo")) {
+            c.setTitulo(body.get("titulo"));
+        }
+        if (body.containsKey("descripcion")) {
+            c.setDescripcion(body.get("descripcion"));
+        }
+
+        return ResponseEntity.ok(cuadernoRepository.save(c));
     }
 
     @DeleteMapping("/cuaderno/{id}")
@@ -195,15 +205,9 @@ public class EscrituraController {
 
         Cuaderno c = cuadernoRepository.findById(id).orElse(null);
         if (c == null)
-            return ResponseEntity.status(404).body(Map.of("error", "Cuaderno no encontrado"));
+            throw new com.worldbuilding.app.exception.ResourceNotFoundException("Cuaderno no encontrado");
 
         try {
-            // Delete associated pages (and their notes) manually if cascade doesn't handle
-            // it
-            // Assuming JPA CascadeType.ALL on Cuaderno.hojas might handle it, but being
-            // safe:
-            // hojaRepository.deleteByCuaderno(c); // If needed
-
             cuadernoRepository.delete(c);
             return ResponseEntity.ok(Map.of("success", true));
         } catch (Exception e) {

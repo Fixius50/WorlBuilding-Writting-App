@@ -30,26 +30,15 @@ public class WorldBibleService {
     // --- CARPETAS ---
 
     public List<Carpeta> getRootFolders(Cuaderno proyecto) {
-        try {
-            List<Carpeta> folders = carpetaRepository.findByProyectoAndPadreIsNull(proyecto);
-            if (folders == null) {
-                return new ArrayList<>();
-            }
-            for (Carpeta f : folders) {
-                try {
-                    int count = carpetaRepository.countByPadre(f) + entidadGenericaRepository.countByCarpeta(f);
-                    f.setItemCount(count);
-                } catch (Exception e) {
-                    System.err.println("Error counting items for folder " + f.getId() + ": " + e.getMessage());
-                    f.setItemCount(0);
-                }
-            }
-            return folders;
-        } catch (Exception e) {
-            System.err.println("Error in getRootFolders: " + e.getMessage());
-            e.printStackTrace();
+        List<Carpeta> folders = carpetaRepository.findByProyectoAndPadreIsNull(proyecto);
+        if (folders == null) {
             return new ArrayList<>();
         }
+        for (Carpeta f : folders) {
+            int count = carpetaRepository.countByPadre(f) + entidadGenericaRepository.countByCarpeta(f);
+            f.setItemCount(count);
+        }
+        return folders;
     }
 
     public List<Carpeta> getSubfolders(Long padreId) {
@@ -324,7 +313,8 @@ public class WorldBibleService {
     }
 
     @Transactional
-    public EntidadGenerica updateEntityDetails(Long entityId, String descripcion, String tags, String apariencia, Map<String, Object> attributes) {
+    public EntidadGenerica updateEntityDetails(Long entityId, String descripcion, String tags, String apariencia,
+            Map<String, Object> attributes) {
         Optional<EntidadGenerica> ent = entidadGenericaRepository.findById(entityId);
         if (ent.isPresent()) {
             EntidadGenerica e = ent.get();

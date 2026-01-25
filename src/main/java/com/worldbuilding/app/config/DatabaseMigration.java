@@ -19,6 +19,17 @@ public class DatabaseMigration {
     public void runMigrations() {
         System.out.println("=== Running SQLite Migrations (Flyway) ===");
 
+        // Fix for [java.nio.file.AccessDeniedException: C:\WINDOWS\TEMP] on some
+        // Windows systems.
+        // Redirect SQLite native library extraction to a local directory.
+        String rootDir = System.getProperty("user.dir");
+        File sqliteTmpDir = new File(rootDir, "target/sqlite-tmp");
+        if (!sqliteTmpDir.exists()) {
+            sqliteTmpDir.mkdirs();
+        }
+        System.setProperty("org.sqlite.tmpdir", sqliteTmpDir.getAbsolutePath());
+        System.out.println(">>> SQLite Temporary Directory set to: " + sqliteTmpDir.getAbsolutePath());
+
         File dataDir = new File(DATA_DIR);
         if (!dataDir.exists() || !dataDir.isDirectory()) {
             System.out.println("Data directory not found: " + DATA_DIR);

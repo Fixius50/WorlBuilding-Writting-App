@@ -242,7 +242,7 @@ const ArchitectLayout = () => {
             {/* --- RIGHT PANEL: TOOLBOX / NOTES --- */}
             <aside
                 className={`
-                    flex-none bg-surface-dark border-l border-glass-border transition-all duration-500 relative flex flex-col z-30
+                    flex-none bg-surface-dark border-l border-glass-border transition-all duration-500 relative flex flex-col z-30 shrink-0
                     ${rightOpen ? 'w-80' : 'w-20'}
                 `}
             >
@@ -578,10 +578,38 @@ const ArchitectLayout = () => {
                         )
                     ) : (
                         // COLLAPSED ICONS
-                        <div className="flex flex-col items-center gap-4 py-4">
-                            {rightPanelMode === 'NOTES' ? (
-                                <button className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted" title="Notes">
+                        <div className="flex flex-col items-center gap-4 py-4 w-full">
+                            {rightPanelMode === 'NOTES' || isWritingContext ? (
+                                <button
+                                    onClick={() => setRightOpen(true)}
+                                    className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted hover:text-white"
+                                    title="Notas Globales"
+                                >
                                     <span className="material-symbols-outlined text-lg">edit_note</span>
+                                </button>
+                            ) : rightPanelMode === 'MAP' ? (
+                                <button
+                                    onClick={() => setRightOpen(true)}
+                                    className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted hover:text-white"
+                                    title="Ajustes de Mapa"
+                                >
+                                    <span className="material-symbols-outlined text-lg">tune</span>
+                                </button>
+                            ) : rightPanelMode === 'ENTITY' ? (
+                                <button
+                                    onClick={() => setRightOpen(true)}
+                                    className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted hover:text-white"
+                                    title="Atributos"
+                                >
+                                    <span className="material-symbols-outlined text-lg">fact_check</span>
+                                </button>
+                            ) : rightPanelMode === 'CUSTOM' ? (
+                                <button
+                                    onClick={() => setRightOpen(true)}
+                                    className="size-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary hover:bg-primary/20 transition-all"
+                                    title={rightPanelTitle || 'Panel'}
+                                >
+                                    <span className="material-symbols-outlined text-lg">extension</span>
                                 </button>
                             ) : (
                                 availableTemplates.slice(0, 5).map(tpl => (
@@ -593,6 +621,7 @@ const ArchitectLayout = () => {
                                             e.dataTransfer.setData('application/reactflow/type', 'attribute');
                                             e.dataTransfer.setData('templateId', tpl.id);
                                         }}
+                                        title={tpl.nombre}
                                     >
                                         {tpl.global && <span className="absolute top-0 right-0 size-2 bg-blue-500 rounded-full border border-surface-dark"></span>}
                                         <span className="material-symbols-outlined text-lg">{getIconForType(tpl.tipo)}</span>

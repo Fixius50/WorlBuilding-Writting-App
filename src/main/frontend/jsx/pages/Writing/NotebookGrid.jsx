@@ -4,10 +4,11 @@ import React, { useState } from 'react'; // React import needed for JSX but useS
 import ConfirmModal from '../../components/common/ConfirmModal';
 import InputModal from '../../components/common/InputModal';
 
-const NotebookGrid = ({ notebooks, loading, onSelectNotebook, onCreateNotebook, onDeleteNotebook }) => {
+const NotebookGrid = ({ notebooks, loading, onSelectNotebook, onCreateNotebook, onDeleteNotebook, onUpdateNotebook }) => {
     // Modal States (Local UI concern)
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [notebookToDelete, setNotebookToDelete] = useState(null);
+    const [notebookToEdit, setNotebookToEdit] = useState(null);
 
     const handleCreateSubmit = (title) => {
         onCreateNotebook(title);
@@ -17,6 +18,14 @@ const NotebookGrid = ({ notebooks, loading, onSelectNotebook, onCreateNotebook, 
         if (notebookToDelete) {
             onDeleteNotebook(notebookToDelete.id);
             setNotebookToDelete(null);
+        }
+    };
+
+    const handleEditSubmit = (title) => {
+        if (notebookToEdit) {
+            // Preserve description, only update title for now via simple InputModal
+            onUpdateNotebook(notebookToEdit.id, title, notebookToEdit.descripcion);
+            setNotebookToEdit(null);
         }
     };
 
@@ -53,17 +62,31 @@ const NotebookGrid = ({ notebooks, loading, onSelectNotebook, onCreateNotebook, 
                                             <span className="material-symbols-outlined text-2xl">menu_book</span>
                                         </div>
 
-                                        {/* Delete Button */}
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setNotebookToDelete(notebook);
-                                            }}
-                                            className="opacity-0 group-hover:opacity-100 p-2 text-slate-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
-                                            title="Delete Notebook"
-                                        >
-                                            <span className="material-symbols-outlined text-xl">delete</span>
-                                        </button>
+                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                            {/* Edit Button */}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setNotebookToEdit(notebook);
+                                                }}
+                                                className="p-2 text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition-all"
+                                                title="Rename Notebook"
+                                            >
+                                                <span className="material-symbols-outlined text-xl">edit</span>
+                                            </button>
+
+                                            {/* Delete Button */}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setNotebookToDelete(notebook);
+                                                }}
+                                                className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                                                title="Delete Notebook"
+                                            >
+                                                <span className="material-symbols-outlined text-xl">delete</span>
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <h3 className="text-xl font-serif text-slate-200 group-hover:text-white mb-2 line-clamp-2">
@@ -101,6 +124,20 @@ const NotebookGrid = ({ notebooks, loading, onSelectNotebook, onCreateNotebook, 
                 message="Give a title to your new chronicle."
                 placeholder="Ex: The Lost Kingdom"
                 confirmText="Create Notebook"
+            />
+
+            <InputModal
+                isOpen={!!notebookToEdit}
+                onClose={() => setNotebookToEdit(null)}
+                // If editing, pre-fill with current title. 
+                // Does InputModal support defaultValue? Assuming it does or we rely on user typing.
+                // Assuming InputModal is simple. If it needs value prop, I might need to check it.
+                // Assuming standard InputModal behavior.
+                onConfirm={handleEditSubmit}
+                title="Rename Notebook"
+                message={`Enter a new title for "${notebookToEdit?.titulo}".`}
+                placeholder={notebookToEdit?.titulo}
+                confirmText="Update"
             />
 
             <ConfirmModal

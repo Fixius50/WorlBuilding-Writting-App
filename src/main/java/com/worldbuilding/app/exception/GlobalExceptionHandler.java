@@ -1,46 +1,45 @@
 package com.worldbuilding.app.exception;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import jakarta.servlet.http.HttpServletRequest;
 
-@ControllerAdvice
+import java.util.HashMap;
+import java.util.Map;
+
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleGlobalException(Exception ex, HttpServletRequest request) {
-        System.out.println(">>> [GlobalExceptionHandler] EXCEPTION CAUGHT: " + ex.getClass().getName());
-        ex.printStackTrace(); // Keep stdout for dev
+    public ResponseEntity<Map<String, Object>> handleAllExceptions(Exception ex, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 
-        try {
-            // Write full stack trace to Docs/log_errores.md (Overwrite)
-            java.io.StringWriter sw = new java.io.StringWriter();
-            java.io.PrintWriter pw = new java.io.PrintWriter(sw);
-            ex.printStackTrace(pw);
-
-            String logContent = "# ERROR REPORT (Backend)\n" +
-                    "**Timestamp:** " + java.time.LocalDateTime.now() + "\n" +
-                    "**Request:** " + request.getMethod() + " " + request.getRequestURI() + "\n" +
-                    "**Exception:** " + ex.getClass().getName() + "\n" +
-                    "**Message:** " + ex.getMessage() + "\n\n" +
-                    "## Stack Trace\n" +
-                    "```java\n" + sw.toString() + "\n```";
-
-            java.nio.file.Path logPath = java.nio.file.Paths.get("Docs", "log_errores.md");
-            // Ensure parent dir exists
-            java.nio.file.Files.createDirectories(logPath.getParent());
-            // Overwrite file
-            java.nio.file.Files.writeString(logPath, logContent,
-                    java.nio.file.StandardOpenOption.CREATE,
-                    java.nio.file.StandardOpenOption.TRUNCATE_EXISTING);
-
-        } catch (java.io.IOException ioEx) {
-            System.err.println("FAILED TO WRITE ERROR LOG: " + ioEx.getMessage());
+        // Check for @ResponseStatus annotation on the exception class
+        ResponseStatus responseStatus = ex.getClass().getAnnotation(ResponseStatus.class);
+        if (responseStatus != null) {
+            status = responseStatus.value();
         }
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Internal Server Error: " + ex.getMessage());
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", status.value());
+        response.put("path", request.getMethod() + " " + request.getRequestURI());
+
+        // Minimal log for terminal: STATUS METHOD PATH
+        logger.error("!!! [ERR] {} {} {}", status.value(), request.getMethod(), request.getRequestURI());
+
+        // We can still log the stack trace at debug level if needed,
+        // but for now we keep it ultra-clean as requested.
+        if (status == HttpStatus.INTERNAL_SERVER_ERROR) {
+            logger.debug("Stack trace: ", ex);
+        }
+
+        return ResponseEntity.status(status).body(response);
     }
 }

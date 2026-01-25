@@ -11,6 +11,8 @@ import edu.mit.jwi.item.ISynset;
 import edu.mit.jwi.item.IWord;
 import edu.mit.jwi.item.POS;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -23,18 +25,24 @@ public class ConlangService {
 
     private IDictionary wordnetDict;
 
+    private static final Logger logger = LoggerFactory.getLogger(ConlangService.class);
+
     public ConlangService() {
-        // Initialize WordNet (assuming dictionary files are in a known location or
-        // classpath)
-        // ideally configurable via properties
+        // Initialize WordNet
         try {
             // Placeholder: Point to a real path in a real env, or use a bundled resource
-            // String path = "data/wordnet/dict";
-            // URL url = new File(path).toURI().toURL();
-            // wordnetDict = new Dictionary(url);
-            // wordnetDict.open();
+            String path = "data/wordnet/dict";
+            java.io.File dictFile = new java.io.File(path);
+            if (dictFile.exists()) {
+                URL url = dictFile.toURI().toURL();
+                wordnetDict = new Dictionary(url);
+                wordnetDict.open();
+            } else {
+                logger.warn(">>> [ConlangService] WordNet Dictionary not found at '{}'. Semantic features disabled.",
+                        path);
+            }
         } catch (Exception e) {
-            System.err.println("WordNet Dictionary not found. Semantic features disabled.");
+            logger.error(">>> [ConlangService] Error initializing WordNet: {}", e.getMessage());
         }
     }
 

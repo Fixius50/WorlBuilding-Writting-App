@@ -56,9 +56,19 @@ El diseño busca un equilibrio entre la claridad de un IDE moderno y la mística
 2. **Contexto es Rey:** La información del mundo debe fluir hacia el texto, no al revés.
 3. **Local-First:** Tus datos son tuyos. La sincronización es una opción, no un requisito.
 
+## 6. Mandamientos de Desarrollo (Strict Rules)
+
+Estas reglas son absolutas y deben ser seguidas por cualquier IA o desarrollador en el proyecto. Ver detalle en [04_Reglas_Strictas_Proyecto.md](file:///c:/Users/rober/Desktop/Proyectos propios/WorldbuildingApp/Docs/04_Reglas_Strictas_Proyecto.md).
+
+1. **Exposición Total de Errores**: Prohibido el "Self-Healing" que oculte fallos de datos.
+2. **Jerarquía Plana**: Root -> Carpeta -> Entidad. Sin anidamiento excesivo.
+3. **Contexto Explícito**: Prohibidos los fallbacks hardcoded; el proyecto debe estar activo en sesión.
+4. **Backend Limpio**: Errores centralizados y respuestas libres de ruido técnico.
+
 ## Estado Actual (2026-01-07)
 
-- [x] **Fase de Estabilidad Core**: Completada. Persistencia de datos asegurada y esquema multi-tenant funcional.
+* [x] **Fase de Estabilidad Core**: Completada. Persistencia de datos asegurada y esquema multi-tenant funcional.
+
 * [x] **Seguridad**: Configurada para desarrollo fluido (PermitAll) sin comprometer la activaciÃn de sesiones de proyecto.
 * [x] **UI/UX Biblia**: Entity Builder optimizado con controles en cabecera y visualizaciÃn corregida.
 
@@ -158,7 +168,8 @@ Chronos Atlas evoluciona hacia un entorno de trabajo aún más potente y flexibl
 
 ### Estructura de Carpetas Personalizable
 
-- **Propósito**: Sustituir las categorías fijas por una estructura de carpetas completamente personalizable, permitiendo una organización jerárquica y temática de tu lore.
+* **Propósito**: Sustituir las categorías fijas por una estructura de carpetas completamente personalizable, permitiendo una organización jerárquica y temática de tu lore.
+
 * **Qué puedes hacer**:
   * **Crear Carpetas y Subcarpetas**: Un botón o un menú contextual (clic derecho) permite crear nuevas carpetas. Se pueden anidar para construir una estructura tan compleja como necesites (ej. "Personajes de Eldoria" dentro de "Eldoria").
   * **Nombrar Carpetas**: Asigna nombres descriptivos ("Lugares Importantes", "Deidades Antiguas").
@@ -171,7 +182,8 @@ Chronos Atlas evoluciona hacia un entorno de trabajo aún más potente y flexibl
 
 ### Lienzo Flexible y Arrastrar y Soltar Atributos
 
-- **Propósito**: El área central se transforma en un lienzo dinámico para construir fichas de entidad únicas, adaptándose a las necesidades de cada elemento de tu mundo.
+* **Propósito**: El área central se transforma en un lienzo dinámico para construir fichas de entidad únicas, adaptándose a las necesidades de cada elemento de tu mundo.
+
 * **Qué puedes hacer**:
   * **Campos por Defecto**: Al crear una entidad, el lienzo se precarga automáticamente con los atributos definidos en la carpeta padre.
   * **Caja de Herramientas de Atributos**: El panel lateral derecho se transforma en una biblioteca de "cajas" de atributos arrastrables cuando el constructor está activo.
@@ -193,7 +205,8 @@ Chronos Atlas evoluciona hacia un entorno de trabajo aún más potente y flexibl
 
 ### Flujo en Dos Pasos (Post-Guardado)
 
-- **Paso 1: Atributos Básicos**: Se definen los atributos generales y se cataloga la entidad (Personaje, Lugar, etc., o tipos especiales como **Línea de Tiempo**, **Zona/Mapa** o **Lenguaje**).
+* **Paso 1: Atributos Básicos**: Se definen los atributos generales y se cataloga la entidad (Personaje, Lugar, etc., o tipos especiales como **Línea de Tiempo**, **Zona/Mapa** o **Lenguaje**).
+
 * **Paso 2: Pestañas de Funciones Especiales**: Al detectar un tipo especializado, el área central habilita pestañas superiores con herramientas específicas:
   * **Pestaña "Cronología"**: Cargará el interfaz del Módulo Cronológico Interconectado (para entidades tipo Línea de Tiempo).
   * **Pestaña "Cartografía"**: Cargará el Editor de Mapas y Herramientas de Dibujo (para para entidades tipo Zona/Mapa).
@@ -203,6 +216,7 @@ Chronos Atlas evoluciona hacia un entorno de trabajo aún más potente y flexibl
 ## 4. Unificación del Espacio de Trabajo
 
 El nuevo paradigma unifica todas las pantallas clave bajo la estructura de tres paneles:
+
 * **Explorador (Biblia)** a la izquierda.
 * **Lienzo de Trabajo (Vistas Centrales)**:
   * **Ficha de Entidad**: Visualización y edición de atributos y contenido anidado.
@@ -216,14 +230,15 @@ El nuevo paradigma unifica todas las pantallas clave bajo la estructura de tres 
 
 ### 5. Pantalla de Bienvenida a Nuevo Cuaderno
 
-- **Propósito**: Guiar al usuario en la configuración inicial y ofrecer acceso rápido a acciones clave.
+* **Propósito**: Guiar al usuario en la configuración inicial y ofrecer acceso rápido a acciones clave.
+
 * **Diseño**:
   * **Central/Horizontal**: Título de bienvenida, mensajes motivadores y tarjetas de acción destacadas ("Añadir Primera Entidad", "Crear Primer Mapa", "Empezar a Escribir", "Ver Ideas Rápidas").
   * **Visualización**: Ocupa el área central manteniendo visibles los paneles laterales y la navegación superior. Estilo Glassmorphism Oscuro.
 
 ### 6. Creación y Edición de Mapas (Implementado)
 
-- **Editor de Mapas (`MapEditor.jsx`)**:
+* **Editor de Mapas (`MapEditor.jsx`)**:
   * **Panel Derecho Global**: Integrado con diseño de Acordeón de 3 secciones:
         1. **Identidad**: Nombre, Tipo (Regional, Mundo, etc.).
         2. **Sistema de Rejilla**: Toggle On/Off y Slider de tamaño (px).
@@ -249,13 +264,15 @@ Este documento resume el estado actual del proyecto y las tareas críticas que d
 
 ## Estado Actual
 
-- **Editor de Mapas**: Funcional en estructura (Panel Derecho de Ajustes, Guardado) pero falta la interactividad real del Canvas.
+* **Editor de Mapas**: Funcional en estructura (Panel Derecho de Ajustes, Guardado) pero falta la interactividad real del Canvas.
+
 * **Biblia**: Navegación por carpetas funcional, creación de entidades y mapas operativa.
 * **Interfaz**: Migrada a un diseño de 3 paneles (Explorer, Canvas, Contexto).
 
 ## 1. Prioridad Alta: Editor de Mapas
 
 El esqueleto está listo, pero falta el motor gráfico.
+
 * [x] **Re-integrar Konva/Canvas**:
   * Actualmente `MapEditor.jsx` usa un `CanvasPlaceholder` (Corregido: ahora usa `Stage` y `Layer`).
   * Hay que descomentar y adaptar la lógica de `react-konva` (Stage, Layers, Transformers) que está comentada o fue simplificada.
@@ -268,19 +285,22 @@ El esqueleto está listo, pero falta el motor gráfico.
 
 El constructor actual es funcional pero necesita alinearse con el nuevo diseño de "Panel Derecho Global".
     - [x] Migrar Tabs al Panel Derecho (Completado).
+
 * [x] **Mejoras en Identidad**:
   * [x] Añadir campo "Apariencia" (Texto rico o imagen).
   * [x] Permitir subir icono personalizado (Local Image) para la entidad.
 
 ## 3. Mejoras de "Calidad de Vida" (UX)
 
-- [x] **Renombrar en Sidebar**: Añadir opción "Rename" al menú contextual del árbol lateral (Hecho).
+* [x] **Renombrar en Sidebar**: Añadir opción "Rename" al menú contextual del árbol lateral (Hecho).
+
 * [x] **Breadcrumbs**: Implementar migas de pan en la vista de carpetas para mejorar la navegación profunda.
 * [ ] **Favoritos**: Sección en el sidebar para acceso rápido a entidades frecuentes.
 
 ## 4. Refactorización Técnica y Backend (Desde TODOs) [COMPLETADO ESTA SESIÓN]
 
 Tareas extraídas de `WorldBibleController.java`:
+
 * [x] **Restaurar Explorador Lateral**: Limpiar el sidebar para mostrar solo estructura de carpetas relevante.
 * [x] **Rutas de Creación Directa**: Implementar rutas como `/new/:type` para acceso rápido.
 * [x] **Guardado Diferido (Post-draft)**: Permitir crear entidades en memoria y solo persistir al guardar (evitar basura en DB).
@@ -291,6 +311,7 @@ Tareas extraídas de `WorldBibleController.java`:
 ## 5. Implementación del Editor de Texto "Zen" (Nueva Fase)
 
 Objetivo: Crear una zona de escritura limpia, minimalista y personalizada.
+
 * [x] **Setup Inicial**: Se ha optado por **React-Quill** en lugar de Tiptap debido a estabilidad.
 * [x] **Diseño "Zen" UI**: Implementado mediante CSS personalizado en `ZenEditor.jsx` (Dark Mode, bordes ocultos).
 * [x] **Sistema de Menciones (@)**: Implementado en `ZenEditor.jsx` usando `quill-mention` y API de entidades.
@@ -298,7 +319,8 @@ Objetivo: Crear una zona de escritura limpia, minimalista y personalizada.
 
 ## Tareas Completadas Recientemente
 
-- [x] **Gestión de Plantillas Globales, UX EntityBuilder, Consistencia UI**.
+* [x] **Gestión de Plantillas Globales, UX EntityBuilder, Consistencia UI**.
+
 * [x] **Corrección de Errores Críticos (Persistencia y Visualización)**.
 
 # Guía de Pruebas para Agentes de IA (Worldbuilding App)
@@ -307,7 +329,8 @@ Esta guía está diseñada para que un modelo de IA pueda navegar, probar y ente
 
 ## URL Base
 
-- **Frontend**: `http://localhost:5173`
+* **Frontend**: `http://localhost:5173`
+
 * **Backend**: `http://localhost:8080` (API REST)
 
 ## 1. Navegación Principal
@@ -347,6 +370,7 @@ El sistema de mapas es una característica destacada y compleja.
 ### B. Editor de Mapas (`MapEditor`)
 
 Tras crear, serás redirigido al editor.
+
 * **Panel Central (Lienzo)**: Muestra el mapa/imagen y la rejilla.
 * **Panel Derecho (Ajustes)**:
   * **Identidad**: Cambia el nombre o tipo.
@@ -359,10 +383,11 @@ Tras crear, serás redirigido al editor.
 
 ## 4. Estructura Técnica Relevante
 
-- **Backend (Spring Boot)**:
+* **Backend (Spring Boot)**:
   * Entidades se guardan en `EntidadGenerica`.
   * Mapas son entidades con `tipoEspecial = 'map'`.
   * Los datos del mapa (grid, imagen, capas) se serializan en JSON dentro del campo `descripcion`.
+
 * **Frontend (React/Vite)**:
   * `MapEditor.jsx`: Componente monolítico para la edición. Usa `useOutletContext` para comunicarse con el `ArchitectLayout` (Panel Derecho).
 

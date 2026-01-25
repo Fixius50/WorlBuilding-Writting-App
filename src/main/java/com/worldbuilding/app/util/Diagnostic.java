@@ -82,8 +82,11 @@ public class Diagnostic implements CommandLineRunner {
             System.out.println("Testing Repository findAll()...");
             long count = cuadernoRepository.count();
             System.out.println("Repository found " + count + " projects.");
-            cuadernoRepository.findAll().forEach(
-                    c -> System.out.println(" - Found: " + c.getNombreProyecto() + ", Deleted: " + c.isDeleted()));
+            cuadernoRepository.findAll().forEach(c -> {
+                if (c != null) {
+                    System.out.println(" - Found: " + c.getNombreProyecto() + ", Deleted: " + c.isDeleted());
+                }
+            });
             System.out.println("Repository Test: PASS");
         } catch (Exception e) {
             System.out.println("Repository Test: FAIL (" + e.getMessage() + ")");

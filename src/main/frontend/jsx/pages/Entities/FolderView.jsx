@@ -22,10 +22,11 @@ const FolderView = () => {
     const [folder, setFolder] = useState(null);
     const [path, setPath] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [creationMenuOpen, setCreationMenuOpen] = useState(false);
 
     // Filter Logic using Global Context
     const filteredEntities = entities.filter(ent => {
-        const matchesSearch = ent.nombre.toLowerCase().includes(folderSearchTerm.toLowerCase());
+        const matchesSearch = ent.nombre.toLowerCase().includes(folderSearchTerm || '');
         const matchesType = folderFilterType === 'ALL' ||
             (folderFilterType === 'MAP' && ent.tipoEspecial === 'map') ||
             (folderFilterType === 'TIMELINE' && ent.tipoEspecial === 'timeline') ||
@@ -203,28 +204,41 @@ const FolderView = () => {
                     <p className="text-white/50 text-sm mt-2 max-w-xl">{folder?.descripcion}</p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3 relative">
                     <button
-                        onClick={() => navigate(`/${username}/${projectName}/bible/folder/${folderSlug}/entity/new/entidadindividual`)}
-                        className="h-10 px-4 rounded-xl bg-primary hover:bg-primary-light transition flex items-center gap-2 text-xs font-bold text-white shadow-lg shadow-primary/20"
+                        onClick={() => setCreationMenuOpen(!creationMenuOpen)}
+                        className="h-10 px-6 rounded-xl bg-primary hover:bg-primary-light transition flex items-center gap-2 text-xs font-bold text-white shadow-lg shadow-primary/20"
                     >
-                        <span className="material-symbols-outlined text-sm">person</span>
-                        <span>Nueva Entidad</span>
+                        <span className="material-symbols-outlined text-sm">add</span>
+                        <span>Añadir Elemento</span>
                     </button>
-                    <button
-                        onClick={() => navigate(`/${username}/${projectName}/map-editor/create/${folderSlug}`, { state: { folderId: folder?.id } })}
-                        className="h-10 px-4 rounded-xl bg-surface-light border border-white/5 hover:bg-white/10 transition flex items-center gap-2 text-xs font-bold text-white shadow-lg"
-                    >
-                        <span className="material-symbols-outlined text-sm">map</span>
-                        <span>Mapa</span>
-                    </button>
-                    <button
-                        onClick={() => handleCreateSimpleFolder(folder, 'TIMELINE')}
-                        className="h-10 px-4 rounded-xl bg-surface-light border border-white/5 hover:bg-white/10 transition flex items-center gap-2 text-xs font-bold text-white"
-                    >
-                        <span className="material-symbols-outlined text-sm">timeline</span>
-                        <span>Timeline</span>
-                    </button>
+
+                    {creationMenuOpen && (
+                        <div className="absolute top-full right-0 mt-2 w-56 bg-surface-dark border border-glass-border rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                            <button onClick={() => { navigate(`/${username}/${projectName}/bible/folder/${folderSlug}/entity/new/entidadindividual`); setCreationMenuOpen(false); }} className="w-full px-4 py-2.5 hover:bg-white/5 text-left text-xs font-bold flex items-center gap-3 text-white/70 hover:text-white">
+                                <span className="material-symbols-outlined text-sm text-primary">person</span> Personaje
+                            </button>
+                            <button onClick={() => { navigate(`/${username}/${projectName}/bible/folder/${folderSlug}/entity/new/entidadcolectiva`); setCreationMenuOpen(false); }} className="w-full px-4 py-2.5 hover:bg-white/5 text-left text-xs font-bold flex items-center gap-3 text-white/70 hover:text-white">
+                                <span className="material-symbols-outlined text-sm text-blue-400">groups</span> Cultura / Grupo
+                            </button>
+                            <button onClick={() => { navigate(`/${username}/${projectName}/bible/folder/${folderSlug}/entity/new/zona`); setCreationMenuOpen(false); }} className="w-full px-4 py-2.5 hover:bg-white/5 text-left text-xs font-bold flex items-center gap-3 text-white/70 hover:text-white">
+                                <span className="material-symbols-outlined text-sm text-green-400">location_on</span> Lugar / Geografía
+                            </button>
+                            <button onClick={() => { navigate(`/${username}/${projectName}/bible/folder/${folderSlug}/entity/new/interaccion`); setCreationMenuOpen(false); }} className="w-full px-4 py-2.5 hover:bg-white/5 text-left text-xs font-bold flex items-center gap-3 text-white/70 hover:text-white">
+                                <span className="material-symbols-outlined text-sm text-amber-400">history_edu</span> Lore / Interacción
+                            </button>
+                            <button onClick={() => { navigate(`/${username}/${projectName}/bible/folder/${folderSlug}/entity/new/efectos`); setCreationMenuOpen(false); }} className="w-full px-4 py-2.5 hover:bg-white/5 text-left text-xs font-bold flex items-center gap-3 text-white/70 hover:text-white">
+                                <span className="material-symbols-outlined text-sm text-purple-400">magic_button</span> Objeto / Efecto
+                            </button>
+                            <div className="h-px bg-white/5 my-1" />
+                            <button onClick={() => { navigate(`/${username}/${projectName}/map-editor/create/${folderSlug}`, { state: { folderId: folder?.id } }); setCreationMenuOpen(false); }} className="w-full px-4 py-2.5 hover:bg-white/5 text-left text-xs font-bold flex items-center gap-3 text-white/70 hover:text-white">
+                                <span className="material-symbols-outlined text-sm text-red-400">map</span> Nuevo Mapa
+                            </button>
+                            <button onClick={() => { handleCreateSimpleFolder(folder, 'TIMELINE'); setCreationMenuOpen(false); }} className="w-full px-4 py-2.5 hover:bg-white/5 text-left text-xs font-bold flex items-center gap-3 text-white/70 hover:text-white">
+                                <span className="material-symbols-outlined text-sm text-cyan-400">timeline</span> Timeline
+                            </button>
+                        </div>
+                    )}
                 </div>
             </header>
 
@@ -239,15 +253,18 @@ const FolderView = () => {
                 />
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                    {filteredEntities.map(entity => (
-                        <BibleCard
-                            key={entity.id}
-                            item={entity}
-                            type="entity"
-                            linkTo={`/${username}/${projectName}/bible/folder/${folder?.slug || folderSlug}/entity/${entity.slug || entity.id}`}
-                            onDelete={() => handleDeleteEntity(entity.id, folder?.id || folderSlug)}
-                        />
-                    ))}
+                    {filteredEntities.map(entity => {
+                        const typePart = (entity.tipoEspecial === 'map' || entity.tipoEspecial === 'timeline') ? entity.tipoEspecial : 'entity';
+                        return (
+                            <BibleCard
+                                key={entity.id}
+                                item={entity}
+                                type="entity"
+                                linkTo={`/${username}/${projectName}/bible/folder/${folder?.slug || folderSlug}/${typePart}/${entity.slug || entity.id}`}
+                                onDelete={() => handleDeleteEntity(entity.id, folder?.id || folderSlug)}
+                            />
+                        );
+                    })}
                 </div>
             )}
             {entities.length === 0 && (
