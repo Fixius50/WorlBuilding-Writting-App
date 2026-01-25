@@ -246,29 +246,34 @@ const EntityBuilder = ({ mode }) => {
                 for (let i = 0; i < updatedFields.length; i++) {
                     const field = updatedFields[i];
                     if (field.isTemp) {
-                        const val = await api.post(`/world-bible/entities/${newEntity.id}/attributes`, {
-                            plantillaId: field.attribute.id
-                        });
-                        await api.patch(`/world-bible/entities/${newEntity.id}/values`, [{
-                            valorId: val.id,
-                            nuevoValor: field.value
-                        }]);
+                        try {
+                            const val = await api.post(`/world-bible/entities/${newEntity.id}/attributes`, {
+                                plantillaId: field.attribute.id
+                            });
+                            await api.patch(`/world-bible/entities/${newEntity.id}/values`, [{
+                                valorId: val.id,
+                                nuevoValor: field.value
+                            }]);
 
-                        updatedFields[i] = {
-                            ...field,
-                            id: val.id.toString(),
-                            isTemp: false
-                        };
+                            updatedFields[i] = {
+                                ...field,
+                                id: val.id.toString(),
+                                isTemp: false
+                            };
+                        } catch (e) { console.error("Attr save failed", e); }
                     }
                 }
                 setFields(updatedFields);
                 setSaving(false);
 
                 if (shouldRedirect) {
-                    navigate(`/${username}/${projectName}/bible/folder/${folderSlug}`);
+                    const targetFolder = newEntity.carpeta ? (newEntity.carpeta.slug || newEntity.carpeta.id) : folderSlug;
+                    navigate(`/${username}/${projectName}/bible/folder/${targetFolder}`);
                 } else {
-                    // Update URL without reloading to switch to Edit Mode (View Mode acts as Edit in Builder)
-                    navigate(`/${username}/${projectName}/bible/folder/${folderSlug}/entity/${newEntity.slug || newEntity.id}`, { replace: true });
+                    // Update URL without reloading to switch to Edit Mode
+                    // Ensure we use the correct folder slug from the server response if available
+                    const targetFolder = newEntity.carpeta ? (newEntity.carpeta.slug || newEntity.carpeta.id) : folderSlug;
+                    navigate(`/${username}/${projectName}/bible/folder/${targetFolder}/entity/${newEntity.slug || newEntity.id}`, { replace: true });
                 }
                 return;
             }
@@ -280,7 +285,8 @@ const EntityBuilder = ({ mode }) => {
                 tags: payload.tags,
                 apariencia: payload.apariencia,
                 notas: payload.notas,
-                iconUrl: payload.iconUrl
+                iconUrl: payload.iconUrl,
+                attributes: payload.attributes
             });
 
             if (removedFieldIds.length > 0) {
@@ -300,17 +306,13 @@ const EntityBuilder = ({ mode }) => {
             let hasNewFields = false;
             const updatedFields = [...fields];
 
-            console.log("Saving fields...", fields); // Debug Log
-
             for (let i = 0; i < updatedFields.length; i++) {
                 const field = updatedFields[i];
                 if (field.isTemp) {
-                    console.log("Processing temp field:", field); // Debug Log
                     try {
                         const val = await api.post(`/world-bible/entities/${targetId}/attributes`, {
                             plantillaId: field.attribute.id
                         });
-                        console.log("Created attribute value:", val); // Debug Log
 
                         await api.patch(`/world-bible/entities/${targetId}/values`, [{
                             valorId: val.id,
@@ -335,11 +337,18 @@ const EntityBuilder = ({ mode }) => {
             }
 
             setSaving(false);
+            if (shouldRedirect) {
+                // Use folderSlug from params, or fallback to entity's folder from state
+                const targetFolder = folderSlug || (entity.carpeta ? (entity.carpeta.slug || entity.carpeta.id) : 'root');
+                navigate(`/${username}/${projectName}/bible/folder/${targetFolder}`);
+            }
+
         } catch (err) {
             console.error("Save error", err);
             setSaving(false);
         }
     };
+
 
     if (loading) return <div className="p-20 text-center animate-pulse">Loading Builder...</div>;
 
@@ -452,11 +461,11 @@ const EntityBuilder = ({ mode }) => {
                                             )}
                                         </div>
                                     </div>
-                                    
+
                                     {/* JSON Attributes Editor (Dev Mode) */}
                                     <div>
                                         <label className="text-[10px] uppercase font-bold text-indigo-400 mb-1 flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-xs">data_object</span> 
+                                            <span className="material-symbols-outlined text-xs">data_object</span>
                                             Extended Attributes (JSON)
                                         </label>
                                         <textarea
@@ -735,5 +744,6 @@ const EntityBuilder = ({ mode }) => {
         </div>
     );
 };
+
 
 export default EntityBuilder;

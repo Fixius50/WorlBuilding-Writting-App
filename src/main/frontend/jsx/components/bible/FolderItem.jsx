@@ -230,15 +230,19 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
                         defaultValue={itemName}
                         onKeyDown={async (e) => {
                             if (e.key === 'Enter') {
+                                e.preventDefault();
+                                e.stopPropagation();
                                 const val = e.target.value.trim();
                                 if (val && val !== itemName) {
                                     try {
                                         await onRename(folder.id, val);
                                         setItemName(val);
-                                    } catch (err) { console.error(err); }
+                                    } catch (err) { console.error("Rename failed", err); }
                                 }
                                 setIsEditing(false);
                             } else if (e.key === 'Escape') {
+                                e.preventDefault();
+                                e.stopPropagation();
                                 setIsEditing(false);
                             }
                         }}

@@ -59,3 +59,12 @@
   - **Frontend**: integrated `TimelineView` with Multiverse API. Created unified "3-Tab" layout (`Eventos`, `Anexos`, `Universo`).
   - **UI**: Added Dynamic Header Subtitle ("LÍNEA DE TIEMPO" + Name) and unified navigation logic to prevent context loss.
 - **Status**: Completed. Verified via Stress Test V3 (Browser). Creation, Deletion and Navigation fully functional.
+
+## [2026-01-25] Favorites Implementation
+
+- **Goal**: Add "Favorites" section to Sidebar and allow toggling favorites in Context Menu.
+- **Action**:
+  - **Backend**: Added `favorite` boolean to Entity schema. Fixed `LazyInitializationException` by adding Transactional Service method.
+  - **Backend Fix**: Fixed `SQLITE_ERROR` (missing `descripcion` column) by updating `V1__Initial_Schema.sql`.
+  - **Frontend**: Integrated Favorites list in `WorldBibleView` and Context Menu action.
+- **Status**: Completed. Verified via `verify_favorites.ps1` (API Test).

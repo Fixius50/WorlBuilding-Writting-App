@@ -168,6 +168,8 @@ public class WorldBibleService {
     public EntidadGenerica createEntity(String nombre, Cuaderno proyecto, Long carpetaId, String tipoEspecial,
             String descripcion, String iconUrl, String categoria) {
         Optional<Carpeta> carpetaOpt = carpetaRepository.findById(carpetaId);
+        System.out.println("DEBUG: createEntity - Tenant: "
+                + com.worldbuilding.app.config.TenantContext.getCurrentTenant() + ", FolderID: " + carpetaId);
         if (carpetaOpt.isEmpty())
             throw new RuntimeException("Folder not found");
 
@@ -201,7 +203,14 @@ public class WorldBibleService {
             atributoValorRepository.save(valor);
         }
 
+        hydrateEntity(savedEntity);
         return savedEntity;
+    }
+
+    @Transactional(readOnly = true)
+    public List<AtributoPlantilla> getAllInheritedTemplates(Long folderId) {
+        Carpeta c = carpetaRepository.findById(folderId).orElseThrow(() -> new RuntimeException("Folder not found"));
+        return getAllInheritedTemplates(c);
     }
 
     public List<AtributoPlantilla> getAllInheritedTemplates(Carpeta carpeta) {
@@ -255,6 +264,33 @@ public class WorldBibleService {
             curr = curr.getPadre();
         }
         return curr;
+    }
+
+    @Transactional(readOnly = true)
+    public List<EntidadGenerica> getEntitiesInFolder(Carpeta carpeta) {
+        List<EntidadGenerica> entidades = entidadGenericaRepository.findByCarpeta(carpeta);
+        // Initialize lazy collection
+        for (EntidadGenerica e : entidades) {
+            hydrateEntity(e);
+        }
+        return entidades;
+    }
+
+    @Transactional(readOnly = true)
+    public EntidadGenerica getEntity(String idOrSlug) {
+        Optional<EntidadGenerica> opt;
+        if (idOrSlug.matches("-?\\d+")) {
+            opt = entidadGenericaRepository.findById(Long.parseLong(idOrSlug));
+        } else {
+            opt = entidadGenericaRepository.findBySlug(idOrSlug);
+        }
+
+        if (opt.isPresent()) {
+            EntidadGenerica e = opt.get();
+            hydrateEntity(e);
+            return e;
+        }
+        return null;
     }
 
     // --- ATRIBUTOS ---
@@ -330,7 +366,9 @@ public class WorldBibleService {
                 }
                 e.getAttributes().putAll(attributes);
             }
-            return entidadGenericaRepository.save(e);
+            EntidadGenerica saved = entidadGenericaRepository.save(e);
+            hydrateEntity(saved);
+            return saved;
         }
         throw new RuntimeException("Entity not found");
     }
@@ -368,7 +406,19 @@ public class WorldBibleService {
         if (apariencia != null)
             ent.setApariencia(apariencia);
 
-        return entidadGenericaRepository.save(ent);
+        EntidadGenerica saved = entidadGenericaRepository.save(ent);
+        hydrateEntity(saved);
+        return saved;
+    }
+
+    private void hydrateEntity(EntidadGenerica e) {
+        org.hibernate.Hibernate.initialize(e.getCarpeta());
+        org.hibernate.Hibernate.initialize(e.getValores());
+        if (e.getValores() != null) {
+            for (AtributoValor val : e.getValores()) {
+                org.hibernate.Hibernate.initialize(val.getPlantilla());
+            }
+        }
     }
 
     @Transactional

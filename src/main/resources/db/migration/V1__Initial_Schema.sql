@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS atributo_plantilla (
     nombre VARCHAR(255) NOT NULL,
     tipo VARCHAR(50) NOT NULL,
     metadata TEXT,
+    descripcion TEXT,
     valor_defecto TEXT,
     es_obligatorio BOOLEAN DEFAULT 0,
     global BOOLEAN DEFAULT 0,

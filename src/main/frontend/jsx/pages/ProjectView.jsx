@@ -20,7 +20,7 @@ const ActionCard = ({ icon, title, desc, color }) => (
 
 const ProjectView = () => {
     // We can access sidebar controls if needed, but for now we match the image
-    const { projectName, handleCreateEntity } = useOutletContext();
+    const { projectName } = useOutletContext();
     const navigate = useNavigate();
     const { username } = useParams(); // Should be available if ProjectView is child of route with :username
 
@@ -42,15 +42,15 @@ const ProjectView = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 w-full items-stretch animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-300">
-                <div onClick={() => handleCreateEntity(null, 'default')}>
+                <div onClick={() => navigate('bible')}>
                     <ActionCard
                         icon="person_add"
                         title="Añadir Entidad"
-                        desc="Agrega un personaje, lugar o item importante a tu base de datos."
+                        desc="Ve a la Biblia para agregar un personaje, lugar o item."
                         color="bg-indigo-600"
                     />
                 </div>
-                <div onClick={() => handleCreateEntity(null, 'map')}>
+                <div onClick={() => navigate('map')}>
                     <ActionCard
                         icon="map"
                         title="Crear Mapa"

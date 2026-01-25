@@ -107,7 +107,7 @@ public class WorldBibleController {
             Optional<Carpeta> carpeta = carpetaRepository.findById(id);
             if (carpeta.isEmpty())
                 return ResponseEntity.notFound().build();
-            return ResponseEntity.ok(entidadGenericaRepository.findByCarpeta(carpeta.get()));
+            return ResponseEntity.ok(worldBibleService.getEntitiesInFolder(carpeta.get()));
         } catch (Exception e) {
             System.err.println("[ERROR] getEntitiesInFolder failed: " + e.getMessage());
             return ResponseEntity.status(500)
@@ -251,15 +251,10 @@ public class WorldBibleController {
         if (proyecto == null)
             return ResponseEntity.status(401).body(Map.of("error", "No active project"));
 
-        if (isNumeric(idOrSlug)) {
-            return entidadGenericaRepository.findById(Long.parseLong(idOrSlug))
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-        } else {
-            return entidadGenericaRepository.findBySlug(idOrSlug)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-        }
+        EntidadGenerica entity = worldBibleService.getEntity(idOrSlug);
+        if (entity == null)
+            return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(entity);
     }
 
     @DeleteMapping("/entities/{id}")
@@ -310,11 +305,6 @@ public class WorldBibleController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
-    }
-
-    @GetMapping("/entities/{id}") // Overloaded convenience method if needed internally or externally
-    public ResponseEntity<?> getEntity(@PathVariable Long id) {
-        return ResponseEntity.of(entidadGenericaRepository.findById(id));
     }
 
     @PatchMapping("/entities/{entityId}/values")
@@ -385,10 +375,7 @@ public class WorldBibleController {
         if (id == null)
             return ResponseEntity.notFound().build();
 
-        Optional<Carpeta> carpeta = carpetaRepository.findById(id);
-        if (carpeta.isEmpty())
-            return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(worldBibleService.getAllInheritedTemplates(carpeta.get()));
+        return ResponseEntity.ok(worldBibleService.getAllInheritedTemplates(id));
     }
 
     @PostMapping("/entities/{id}/attributes")

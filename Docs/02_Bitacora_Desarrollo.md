@@ -95,3 +95,13 @@
 - [CLEANUP] **Eliminación de Self-Healing**: Eliminada toda lógica de auto-recuperación silenciosa en controladores para exponer errores de contexto reales.
 - [FIX] **Gestión Global de Errores**: Implementado `GlobalExceptionHandler.java` para interceptar y limpiar excepciones de Java, devolviendo errores legibles al frontend.
 - [DOCS] **Formalización de Reglas**: Creado [04_Reglas_Strictas_Proyecto.md](file:///c:/Users/rober/Desktop/Proyectos propios/WorldbuildingApp/Docs/04_Reglas_Strictas_Proyecto.md) consolidando prohibición de self-healing, jerarquía plana y gestión estricta de errores como estándares definitivos del proyecto.
+
+### [2026-01-25] Sesión: Estabilización de Biblia (Guardado, Edición y Navegación)
+
+**Prompt:** Fix urgente de guardado (Error 500) y navegación rota tras edición.
+**Resultados:**
+
+- [FIX] **LazyInitializationException**: Solucionado error crítico 500 al guardar/editar entidades. Implementado helper `hydrateEntity` en `WorldBibleService` para inicializar profundamente (`valores`, `plantilla`, `carpeta`) antes de devolver la respuesta JSON.
+- [FIX] **Navegación**: Corregida la redirección tras guardar. Ahora el frontend usa la `carpeta` devuelta por el servidor (ya hidratada) para saber a dónde volver, solucionando el bug donde la interfaz de edición no se cerraba si se accedía desde favoritos/búsqueda.
+- [UX] **Renombrado**: Corregido evento `Enter` en `FolderItem` para evitar recargas de página al cambiar nombres de carpeta.
+- [DOCS] Actualizada documentación técnica con estas soluciones.
