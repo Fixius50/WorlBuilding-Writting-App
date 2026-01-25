@@ -7,7 +7,7 @@ import java.util.List;
 @Entity
 @Table(name = "carpeta")
 @org.hibernate.annotations.SQLDelete(sql = "UPDATE carpeta SET deleted = 1, deleted_date = CURRENT_TIMESTAMP WHERE id = ?")
-@org.hibernate.annotations.Where(clause = "deleted = false")
+@org.hibernate.annotations.SQLRestriction("deleted = 0")
 public class Carpeta {
 
     @Id

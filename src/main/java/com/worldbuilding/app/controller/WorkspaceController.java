@@ -17,8 +17,8 @@ public class WorkspaceController {
     private ProjectDiscoveryService projectDiscoveryService;
 
     @GetMapping
-    public List<String> listWorkspaces() {
-        return projectDiscoveryService.listProjects();
+    public List<com.worldbuilding.app.dto.ProjectMetadataDTO> listWorkspaces() {
+        return projectDiscoveryService.listProjectsFull();
     }
 
     @PostMapping
@@ -54,5 +54,29 @@ public class WorkspaceController {
                 "success", true,
                 "projectName", projectName,
                 "redirect", "/local/" + projectName));
+    }
+
+    @DeleteMapping("/{name}")
+    public ResponseEntity<?> deleteWorkspace(@PathVariable String name) {
+        try {
+            projectDiscoveryService.deleteProject(name);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{name}")
+    public ResponseEntity<?> updateWorkspace(@PathVariable String name, @RequestBody Map<String, String> payload) {
+        try {
+            String title = payload.get("title");
+            String genre = payload.get("genre");
+            String imageUrl = payload.get("imageUrl");
+
+            projectDiscoveryService.updateProjectMetadata(name, title, genre, imageUrl);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
     }
 }

@@ -7,7 +7,12 @@ CREATE TABLE IF NOT EXISTS cuaderno (
     nombre_proyecto VARCHAR(255) NOT NULL,
     titulo VARCHAR(255) NOT NULL,
     descripcion TEXT,
-    fecha_creacion TEXT
+    tipo VARCHAR(50),
+    genero VARCHAR(50),
+    imagen_url TEXT,
+    fecha_creacion TEXT,
+    deleted BOOLEAN DEFAULT 0,
+    deleted_date TEXT
 );
 
 -- 2. Folders (Carpetas)
@@ -20,6 +25,8 @@ CREATE TABLE IF NOT EXISTS carpeta (
     padre_id INTEGER,
     proyecto_id INTEGER,
     item_count INTEGER DEFAULT 0,
+    deleted BOOLEAN DEFAULT 0,
+    deleted_date TEXT,
     CONSTRAINT fk_carpeta_padre FOREIGN KEY (padre_id) REFERENCES carpeta(id),
     CONSTRAINT fk_carpeta_proyecto FOREIGN KEY (proyecto_id) REFERENCES cuaderno(id)
 );
@@ -100,6 +107,8 @@ CREATE TABLE IF NOT EXISTS universo (
     nombre VARCHAR(255),
     descripcion TEXT,
     proyecto_id INTEGER,
+    deleted BOOLEAN DEFAULT 0,
+    deleted_date TEXT,
     CONSTRAINT fk_universo_proyecto FOREIGN KEY (proyecto_id) REFERENCES cuaderno(id)
 );
 
@@ -109,6 +118,8 @@ CREATE TABLE IF NOT EXISTS linea_tiempo (
     descripcion TEXT,
     es_raiz BOOLEAN DEFAULT 0,
     universo_id INTEGER,
+    deleted BOOLEAN DEFAULT 0,
+    deleted_date TEXT,
     CONSTRAINT fk_linea_universo FOREIGN KEY (universo_id) REFERENCES universo(id)
 );
 
@@ -119,5 +130,7 @@ CREATE TABLE IF NOT EXISTS evento_tiempo (
     descripcion TEXT,
     fecha_texto VARCHAR(255),
     orden_absoluto INTEGER,
+    deleted BOOLEAN DEFAULT 0,
+    deleted_date TEXT,
     CONSTRAINT fk_evento_linea FOREIGN KEY (linea_tiempo_id) REFERENCES linea_tiempo(id)
 );

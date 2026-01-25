@@ -13,6 +13,9 @@ import com.worldbuilding.app.config.TenantContext;
 
 public class MultiTenantDataSource implements DataSource {
 
+    private static final java.util.logging.Logger logger = java.util.logging.Logger
+            .getLogger(MultiTenantDataSource.class.getName());
+
     private final Map<String, DataSource> tenantDataSources = new ConcurrentHashMap<>();
     private final DataSource masterDataSource;
     private final DatabaseMigration databaseMigration;
@@ -21,7 +24,7 @@ public class MultiTenantDataSource implements DataSource {
         this.databaseMigration = databaseMigration;
         // Use persistent file 'worldbuilding.db' for Master Context
         String masterDbPath = resolveDataPath("worldbuilding.db");
-        System.out.println(">>> MASTER DB PATH: " + masterDbPath);
+        logger.info(">>> MASTER DB PATH: " + masterDbPath);
 
         // Run migration on Master DB too (ensures schema exists even for Master)
         if (databaseMigration != null) {
@@ -60,31 +63,12 @@ public class MultiTenantDataSource implements DataSource {
         // If tenant exists, retrieve or create its DataSource
         return tenantDataSources.computeIfAbsent(tenantId, id -> {
             try {
-                // [ROUTING LOGIC] Project DB is named '{id}.db' directly in the data folder.
                 // E.g., 'Prime World' -> 'src/main/resources/data/Prime World.db'
                 String dbPath = resolveDataPath(id + ".db");
 
-                System.out.println(">>> PROJECT DB PATH [" + id + "]: " + dbPath); // Debug Log
-
                 // Ensure schema exists via manual migration
-                // MANUAL FLYWAY MIGRATION FOR TENANTS
-                // Since Spring only runs Flyway on the @Primary DataSource (Master),
-                // we must run it manually for each new tenant DB we open.
-                // Use raw URL without date format constraints to allow reading legacy
-                // timestamps
-                org.flywaydb.core.Flyway flyway = org.flywaydb.core.Flyway.configure()
-                        .dataSource("jdbc:sqlite:" + dbPath, "", "")
-                        .locations("classpath:db/migration")
-                        .baselineOnMigrate(true)
-                        // .baselineVersion("1") // Do NOT set this or V1 won't run on empty!
-                        .load();
-
-                flyway.repair(); // Auto-repair checksums for dev resilience
-                flyway.migrate();
-
                 if (databaseMigration != null) {
-                    // databaseMigration.migrateDatabase(new java.io.File(dbPath)); // Optional:
-                    // Keep only if V1 doesn't cover it
+                    databaseMigration.migrateDatabase(new java.io.File(dbPath));
                 }
 
                 DriverManagerDataSource ds = new DriverManagerDataSource();

@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "linea_tiempo")
 @com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+@org.hibernate.annotations.SQLRestriction("deleted = 0")
+@org.hibernate.annotations.SQLDelete(sql = "UPDATE linea_tiempo SET deleted = 1, deleted_date = CURRENT_TIMESTAMP WHERE id = ?")
 public class LineaTiempo {
 
     @Id
@@ -19,6 +21,12 @@ public class LineaTiempo {
 
     @Column(name = "es_raiz")
     private Boolean esRaiz = false; // "Global" timeline
+
+    @Column(columnDefinition = "boolean default false")
+    private Boolean deleted = false;
+
+    @Column(name = "deleted_date")
+    private java.time.LocalDateTime deletedDate;
 
     // Constructors
     public LineaTiempo() {

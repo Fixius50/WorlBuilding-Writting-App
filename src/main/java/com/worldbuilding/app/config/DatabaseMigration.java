@@ -60,12 +60,7 @@ public class DatabaseMigration {
 
             Flyway flyway = Flyway.configure()
                     .dataSource(jdbcUrl, "", "")
-                    .locations("classpath:db/migration")
-                    // Baseline existing DBs to V1 (assuming they match V1 schema)
-                    // If DB is empty, V1 runs.
-                    // If DB has tables but no history, it's marked V1.
-                    .baselineOnMigrate(true)
-                    .baselineVersion("1")
+                    .locations("filesystem:src/main/resources/db/migration")
                     .load();
 
             flyway.repair(); // Auto-repair checksums for dev iterations

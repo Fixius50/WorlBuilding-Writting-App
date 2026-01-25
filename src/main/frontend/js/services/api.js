@@ -74,6 +74,7 @@ export const workspaceService = {
     list: () => api.get('/workspaces'),
     create: (name, title, genre, imageUrl) => api.post('/workspaces', { name, title, genre, imageUrl }),
     delete: (name) => api.delete('/workspaces/' + name),
+    update: (name, data) => api.put('/workspaces/' + name, data),
     select: (projectName) => api.post('/workspaces/select', { projectName }),
 };
 

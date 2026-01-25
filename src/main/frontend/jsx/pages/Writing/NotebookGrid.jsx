@@ -62,7 +62,7 @@ const NotebookGrid = ({ notebooks, loading, onSelectNotebook, onCreateNotebook, 
                                             <span className="material-symbols-outlined text-2xl">menu_book</span>
                                         </div>
 
-                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                        <div className="flex items-center gap-1 transition-opacity duration-200">
                                             {/* Edit Button */}
                                             <button
                                                 onClick={(e) => {

@@ -50,4 +50,13 @@ La comunicación con el usuario y la documentación principal deben ser claras y
 
 ---
 
-*Última actualización: 2026-01-25 (Añadido Protocolo de Idioma)*
+## 7. Estándares de Frontend (Rutas y Diseño)
+
+Para garantizar portabilidad y diseño responsive coherente:
+
+* **Rutas**: Se DEBEN usar rutas relativas siempre que sea posible (ej: `./assets/img.png`, `../components/Header`). Evitar rutas absolutas hardcoded que dependan del dominio raíz.
+* **CSS**: Se DEBEN usar unidades relativas (`rem`, `em`, `%`) para espaciados, fuentes y tamaños. Evitar `px` salvo para bordes finos o casos estrictamente necesarios.
+
+---
+
+*Última actualización: 2026-01-25 (Añadido Estándares de Frontend)*

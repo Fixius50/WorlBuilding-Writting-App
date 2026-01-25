@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { workspaceService } from '../../js/services/api';
 import CreateWorkspaceModal from "../components/dashboard/CreateWorkspaceModal";
+import EditWorkspaceModal from "../components/dashboard/EditWorkspaceModal";
+import ConfirmModal from "../components/common/ConfirmModal";
 
 const WorkspaceSelector = () => {
     const navigate = useNavigate();
@@ -10,6 +12,10 @@ const WorkspaceSelector = () => {
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+    // CRUD State
+    const [projectToDelete, setProjectToDelete] = useState(null);
+    const [projectToEdit, setProjectToEdit] = useState(null);
 
     useEffect(() => {
         loadWorkspaces();
@@ -43,7 +49,6 @@ const WorkspaceSelector = () => {
     };
 
     const handleCreateWorkspace = async (formData) => {
-        // formData: { name, title, genre, imageUrl }
         try {
             setLoading(true);
             const res = await workspaceService.create(formData.name, formData.title, formData.genre, formData.imageUrl);
@@ -54,26 +59,34 @@ const WorkspaceSelector = () => {
         }
     };
 
-    // Random Mock Data for Redesign Mockup alignment
-    const getMockData = (name) => {
-        const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-        const tags = ['FANTASÍA', 'SCI-FI', 'HORROR', 'LORE', 'MISTERIO'];
-        const images = [
-            'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=800',
-            'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800',
-            'https://images.unsplash.com/photo-1505634467193-785724601157?auto=format&fit=crop&q=80&w=800',
-            'https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&q=80&w=800'
-        ];
-        return {
-            tag: tags[hash % tags.length],
-            img: images[hash % images.length],
-            desc: "Una tierra dividida por la magia y la tecnología antigua...",
-            initials: name.substring(0, 2).toUpperCase(),
-            time: "hace 2h"
-        };
+    const handleDeleteConfirm = async () => {
+        if (!projectToDelete) return;
+        try {
+            setLoading(true);
+            await workspaceService.delete(projectToDelete);
+            await loadWorkspaces();
+            setProjectToDelete(null);
+        } catch (err) {
+            setError("Error al borrar el cuaderno");
+            setLoading(false);
+        }
     };
 
-    const filteredWorkspaces = workspaces.filter(w => w.toLowerCase().includes(searchTerm.toLowerCase()));
+    const handleUpdateWorkspace = async (name, data) => {
+        try {
+            setLoading(true);
+            await workspaceService.update(name, data);
+            await loadWorkspaces();
+            setProjectToEdit(null);
+        } catch (err) {
+            setError("Error al actualizar cuaderno");
+            setLoading(false);
+        }
+    };
+
+    const filteredWorkspaces = workspaces.filter(w =>
+        (w.title || w.filename || '').toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="h-screen w-full bg-[#0a0b14] text-white flex flex-col items-center font-sans selection:bg-indigo-500/30 overflow-hidden">
@@ -130,31 +143,56 @@ const WorkspaceSelector = () => {
                             </div>
 
                             {/* Project Cards */}
-                            {filteredWorkspaces.map(projectName => {
-                                const meta = getMockData(projectName);
+                            {filteredWorkspaces.map(workspace => {
+                                // Fallback image if empty
+                                const displayImg = workspace.imageUrl || 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800';
+
                                 return (
                                     <div
-                                        key={projectName}
-                                        onClick={() => handleSelect(projectName)}
+                                        key={workspace.filename}
+                                        onClick={() => handleSelect(workspace.filename)}
                                         className="group relative h-[380px] rounded-[2.5rem] bg-[#13141f] border border-white/5 overflow-hidden transition-all hover:-translate-y-2 hover:shadow-2xl hover:shadow-indigo-500/10 cursor-pointer animate-in fade-in slide-in-from-bottom-4 w-full md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]"
                                     >
                                         {/* Image Background */}
                                         <div className="absolute inset-x-0 top-0 h-2/3">
-                                            <img src={meta.img} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity" alt="" />
+                                            <img src={displayImg} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity" alt="" />
                                             <div className="absolute inset-0 bg-gradient-to-t from-[#13141f] via-transparent to-transparent"></div>
+                                        </div>
+
+                                        {/* ACTION BUTTONS (HOVER) */}
+                                        <div className="absolute top-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setProjectToEdit(workspace.filename); }}
+                                                className="w-10 h-10 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-indigo-500 hover:border-indigo-400 transition-all"
+                                                title="Editar"
+                                            >
+                                                <span className="material-symbols-outlined text-sm">edit</span>
+                                            </button>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setProjectToDelete(workspace.filename); }}
+                                                className="w-10 h-10 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-red-500 hover:border-red-400 transition-all"
+                                                title="Eliminar"
+                                            >
+                                                <span className="material-symbols-outlined text-sm">delete</span>
+                                            </button>
                                         </div>
 
                                         {/* Content */}
                                         <div className="absolute inset-0 flex flex-col justify-end p-8">
                                             <div className="mt-auto space-y-3">
                                                 <span className="inline-block px-3 py-1 bg-red-500/20 border border-red-500/30 text-[9px] font-black text-red-100 rounded-lg tracking-widest uppercase">
-                                                    {meta.tag}
+                                                    {workspace.tag}
                                                 </span>
                                                 <h3 className="text-3xl font-black text-white tracking-tighter leading-tight group-hover:text-indigo-400 transition-colors">
-                                                    {projectName}
+                                                    {workspace.title}
                                                 </h3>
+                                                {/* Filename subtext if title differs */}
+                                                {workspace.title !== workspace.filename && (
+                                                    <p className="text-[10px] text-white/30 font-mono mb-1">{workspace.filename}</p>
+                                                )}
+
                                                 <p className="text-xs text-white/40 line-clamp-2 leading-relaxed">
-                                                    {meta.desc}
+                                                    Una tierra dividida por la magia y la tecnología antigua...
                                                 </p>
 
                                                 {/* Footer with status */}
@@ -162,11 +200,11 @@ const WorkspaceSelector = () => {
                                                     <div className="flex items-center gap-2">
                                                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
                                                         <span className="text-[9px] font-black uppercase tracking-widest text-white/20">
-                                                            Última edición: <span className="text-white/40">{meta.time}</span>
+                                                            Última edición: <span className="text-white/40">{workspace.lastModified}</span>
                                                         </span>
                                                     </div>
                                                     <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black text-indigo-300">
-                                                        {meta.initials}
+                                                        {workspace.initials}
                                                     </div>
                                                 </div>
                                             </div>
@@ -189,6 +227,23 @@ const WorkspaceSelector = () => {
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
                 onCreate={handleCreateWorkspace}
+            />
+
+            <EditWorkspaceModal
+                isOpen={!!projectToEdit}
+                onClose={() => setProjectToEdit(null)}
+                project={projectToEdit}
+                onUpdate={handleUpdateWorkspace}
+            />
+
+            <ConfirmModal
+                isOpen={!!projectToDelete}
+                onClose={() => setProjectToDelete(null)}
+                onConfirm={handleDeleteConfirm}
+                title="¿Eliminar Proyecto?"
+                message={`Estás a punto de borrar "${projectToDelete}" y todo su contenido permanentemente. Esta acción no se puede deshacer.`}
+                confirmText="Eliminar Universo"
+                isDestructive={true}
             />
         </div>
     );
