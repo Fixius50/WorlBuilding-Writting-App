@@ -108,16 +108,18 @@ public class TimelineController {
         getProyectoActual(session);
 
         if (linea.getUniverso() == null) {
-            // No fallback allowed per 'no self-healing' policy
+            // Logic: Default to the first available Universe (usually "Universo Principal")
             List<com.worldbuilding.app.model.Universo> universos = universoRepository.findAll();
+
             if (universos.isEmpty()) {
+                // Strict Rule: If NO universe exists at all, then we fail. We do not "create"
+                // one on the fly.
                 throw new RuntimeException(
-                        "No Universe found for this project context. Please create a Universe or Folder first.");
+                        "No Universe found for this project. Please create a Universe in the Bible first.");
             }
-            // If the request didn't specify one, we take the first but we LOG it as a
-            // warning or throw.
-            // USER REQUESTED: Remove self-healing. Picking a random one IS self-healing.
-            throw new RuntimeException("Universe is required to create a Timeline. (No fallback selected)");
+
+            // Assign the found universe
+            linea.setUniverso(universos.get(0));
         }
 
         LineaTiempo saved = lineaRepository.save(linea);

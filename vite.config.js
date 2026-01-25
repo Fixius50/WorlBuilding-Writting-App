@@ -16,7 +16,7 @@ export default defineConfig({
     },
     server: {
         // Ensure we bind to all interfaces if needed, though localhost is fine
-        host: true,
+        host: 'localhost',
         port: 3000,
         proxy: {
             // General capture for API requests

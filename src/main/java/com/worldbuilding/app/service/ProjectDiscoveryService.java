@@ -65,17 +65,32 @@ public class ProjectDiscoveryService {
             throw new RuntimeException("Project already exists");
         }
 
-        // Migration will create the file and schema
-        databaseMigration.migrateDatabase(dbPath.toFile());
+        try {
+            // 1. Migration will create the file and schema (Flyway V1)
+            databaseMigration.migrateDatabase(dbPath.toFile());
 
-        // Seed initial data
-        seedProjectData(dbPath.toFile(), safeName, title, genre, imageUrl);
+            // 2. Seed initial data (Must succeed, or we are left with empty DB)
+            seedProjectData(dbPath.toFile(), safeName, title, genre, imageUrl);
+
+        } catch (Exception e) {
+            // ATOMICITY: If creation fails at any step, cleanup the partial DB file
+            // to prevent "zombie" empty projects (404s).
+            try {
+                Files.deleteIfExists(dbPath);
+            } catch (IOException cleanupEx) {
+                logger.error("Failed to cleanup corrupted DB file: {}", dbPath, cleanupEx);
+            }
+            throw new RuntimeException("Failed to create project: " + e.getMessage(), e);
+        }
     }
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ProjectDiscoveryService.class);
 
-    private void seedProjectData(File dbFile, String projectName, String title, String genre, String imageUrl) {
+    private void seedProjectData(File dbFile, String projectName, String title, String genre, String imageUrl)
+            throws Exception {
         String url = "jdbc:sqlite:" + dbFile.getAbsolutePath();
+
+        // Use try-with-resources for Connection to ensure close
         try (Connection conn = DriverManager.getConnection(url)) {
             conn.setAutoCommit(false);
             try {
@@ -99,7 +114,9 @@ public class ProjectDiscoveryService {
                             throw new RuntimeException("Failed to get project ID");
                     }
                 }
-                conn.commit();
+
+                // ... (Rest of logical inserts for folders, universe, etc.)
+                // Re-implementing the inner logic to ensure full replacement block context
 
                 // 2. Insert Default Bible Folders
                 String[] folderNames = { "Personajes", "Geografía y Lugares", "Cultura y Tradiciones",
@@ -117,7 +134,6 @@ public class ProjectDiscoveryService {
                         stmt.executeUpdate();
                     }
                 }
-                conn.commit();
 
                 // 3. Insert Initial Universe and Timeline
                 long universoId;
@@ -150,10 +166,8 @@ public class ProjectDiscoveryService {
             } catch (Exception ex) {
                 logger.error("Error in seeding transaction: {}", ex.getMessage());
                 conn.rollback();
-                throw ex;
+                throw ex; // Re-throw to trigger cleanup in createProject
             }
-        } catch (Exception e) {
-            logger.error("Critical failure during project seeding: {}", e.getMessage(), e);
         }
     }
 

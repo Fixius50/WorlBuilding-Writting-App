@@ -15,7 +15,7 @@ public class Universo {
     private String nombre;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cuaderno_id", nullable = false)
+    @JoinColumn(name = "proyecto_id", nullable = false)
     @com.fasterxml.jackson.annotation.JsonIgnore
     private Cuaderno cuaderno;
 

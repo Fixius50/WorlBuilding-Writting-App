@@ -140,7 +140,12 @@ const ArchitectLayout = () => {
                 setLoadedProjectName(proj.nombreProyecto);
                 setProjectId(proj.id);
             }
-        } catch (err) { console.error("Error loading project:", err); }
+        } catch (err) {
+            console.error("Error loading project:", err);
+            // If project not found or unauthorized, redirect to selector
+            setLoadedProjectName('Error');
+            navigate('/');
+        }
     };
 
     return (
@@ -309,21 +314,26 @@ const ArchitectLayout = () => {
                     }
                 </header>
 
-                <div className="flex-1 overflow-y-auto no-scrollbar p-0">
+                <div className="flex-1 overflow-y-auto no-scrollbar p-0 relative">
+                    {/* PERSISTENT PORTAL TARGET (Moved outside conditional to prevent ref loss) */}
+                    <div
+                        id="architect-right-panel-portal"
+                        className={`
+                            ${(isWritingContext || rightPanelMode === 'CUSTOM') && rightOpen ? 'flex flex-col h-full relative' : 'hidden'}
+                        `}
+                    ></div>
+
                     {rightOpen ? (
                         isWritingContext ? (
-                            // WRITING MODE: INDEX (PORTAL) or NOTES
+                            // WRITING MODE: NOTES (Index is in portal)
                             <>
-                                <div
-                                    id="architect-right-panel-portal"
-                                    className={`h-full relative flex flex-col ${activeWritingTab === 'index' ? 'block' : 'hidden'}`}
-                                ></div>
                                 <div className={`h-full p-4 overflow-hidden ${activeWritingTab === 'notes' ? 'block' : 'hidden'}`}>
                                     <GlobalNotes projectName={projectName} />
                                 </div>
                             </>
                         ) : rightPanelMode === 'CUSTOM' ? (
-                            <div id="architect-right-panel-portal" className="h-full relative flex flex-col"></div>
+                            // CUSTOM MODE (Content is in portal)
+                            <></>
                         ) : rightPanelMode === 'NOTES' ? (
                             activeBibleTab === 'templates' && isBibleContext ? (
                                 <div className="h-full overflow-y-auto no-scrollbar">

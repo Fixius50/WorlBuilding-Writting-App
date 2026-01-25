@@ -92,7 +92,7 @@ const TimelineView = () => {
         // Activate Custom Mode
         setRightPanelMode('CUSTOM');
         setRightPanelTitle('Línea de Tiempo');
-        setRightOpen(true);
+        // setRightOpen(true); // Don't force open
 
         // Poll for target node availability
         const interval = setInterval(() => {
