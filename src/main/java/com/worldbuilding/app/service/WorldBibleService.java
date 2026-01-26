@@ -27,6 +27,9 @@ public class WorldBibleService {
     @Autowired
     private AtributoValorRepository atributoValorRepository;
 
+    @Autowired
+    private RelacionRepository relacionRepository;
+
     // --- CARPETAS ---
 
     public List<Carpeta> getRootFolders(Cuaderno proyecto) {
@@ -441,9 +444,15 @@ public class WorldBibleService {
         if (entOpt.isPresent()) {
             EntidadGenerica ent = entOpt.get();
             boolean newState = !ent.isFavorite();
-            ent.setFavorite(newState);
-            entidadGenericaRepository.save(ent);
-            return Map.of("success", true, "id", id, "isFavorite", newState);
+            try {
+                hydrateEntity(ent); // Fix: Ensure lazy relations are loaded to prevent rollback
+                entidadGenericaRepository.save(ent);
+                return Map.of("success", true, "id", id, "isFavorite", newState);
+            } catch (Exception e) {
+                System.err.println("CRITICAL ERROR SAVING FAVORITE: " + e.getMessage());
+                e.printStackTrace();
+                throw e;
+            }
         }
         throw new RuntimeException("Entity not found");
     }
@@ -484,6 +493,91 @@ public class WorldBibleService {
         public void setNuevoValor(String nuevoValor) {
             this.nuevoValor = nuevoValor;
         }
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> getGraphData(Cuaderno proyecto) {
+        List<EntidadGenerica> entities = entidadGenericaRepository.findByProyecto(proyecto);
+        List<Map<String, Object>> nodes = new ArrayList<>();
+        List<Map<String, Object>> edges = new ArrayList<>();
+
+        for (EntidadGenerica e : entities) {
+            // 1. Create Node
+            Map<String, Object> nodeData = new HashMap<>();
+            nodeData.put("id", e.getId().toString());
+            nodeData.put("label", e.getNombre());
+            nodeData.put("category", e.getCategoria() != null ? e.getCategoria() : "Generic");
+            nodeData.put("type", e.getTipoEspecial());
+            // Add visual clues
+            if (e.getIconUrl() != null && !e.getIconUrl().isEmpty()) {
+                nodeData.put("icon", e.getIconUrl());
+            }
+
+            Map<String, Object> nodeWrapper = new HashMap<>();
+            nodeWrapper.put("data", nodeData);
+            nodes.add(nodeWrapper);
+
+            // 2. Create Edges from AtributoValor (Legacy/Current)
+            // Need to hydrate values? They are lazy.
+            // Using logic similar to hydrateEntity but inside loop
+            org.hibernate.Hibernate.initialize(e.getValores());
+            if (e.getValores() != null) {
+                for (AtributoValor val : e.getValores()) {
+                    org.hibernate.Hibernate.initialize(val.getPlantilla());
+                    if ("entity_link".equals(val.getPlantilla().getTipo()) && val.getValor() != null) {
+                        try {
+                            // Verify target exists (optional, but good for integrity)
+                            // Assuming val.getValor() is the ID
+                            // We construct the edge blindly for performance, client will filter if node
+                            // missing?
+                            // Better: check if target ID is in 'entities' list? O(N) lookup.
+                            // For thousands, map is better.
+
+                            Map<String, Object> edgeData = new HashMap<>();
+                            edgeData.put("source", e.getId().toString());
+                            edgeData.put("target", val.getValor());
+                            edgeData.put("label", val.getPlantilla().getNombre());
+
+                            Map<String, Object> edgeWrapper = new HashMap<>();
+                            edgeWrapper.put("data", edgeData);
+                            edges.add(edgeWrapper);
+                        } catch (Exception ex) {
+                            // Ignore malformed links
+                        }
+                    }
+                }
+            }
+
+            // 3. Create Edges from JSON Attributes (Future/Hybrid)
+            if (e.getAttributes() != null) {
+                // Logic: Look for keys ending in "_link" or specific metadata?
+                // For now, let's assume if we decide to store links in JSON, we will define a
+                // schema.
+                // Placeholder for now.
+            }
+        }
+
+        // Fetch new relationships
+        List<Long> entityIds = entities.stream().map(EntidadGenerica::getId).toList();
+        if (!entityIds.isEmpty()) {
+            List<Relacion> rels = relacionRepository.findByNodoOrigenIdInOrNodoDestinoIdIn(entityIds, entityIds);
+            for (Relacion r : rels) {
+                Map<String, Object> edgeData = new HashMap<>();
+                // Verify types if needed, but usually IDs are unique enough for now
+                // Ideally we check implicit type. Relacion stores it.
+                // Construct ID based on stored data
+                edgeData.put("source", r.getNodoOrigenId().toString());
+                edgeData.put("target", r.getNodoDestinoId().toString());
+                edgeData.put("label", r.getTipoRelacion());
+                edgeData.put("id", "rel-" + r.getId()); // Unique ID for edge
+
+                Map<String, Object> edgeWrapper = new HashMap<>();
+                edgeWrapper.put("data", edgeData);
+                edges.add(edgeWrapper);
+            }
+        }
+
+        return Map.of("nodes", nodes, "edges", edges);
     }
 
     private String generateUniqueSlug(String name, String type) {

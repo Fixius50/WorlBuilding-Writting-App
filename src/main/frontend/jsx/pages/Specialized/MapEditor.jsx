@@ -235,7 +235,8 @@ const MapEditor = ({ mode: initialMode }) => {
                 // Update local form data when panel changes
                 setFormData(prev => ({
                     ...prev,
-                    dims: { width: newSettings.width, height: newSettings.height }
+                    dims: { width: newSettings.width, height: newSettings.height },
+                    bgImage: newSettings.bgImage || prev.bgImage // Sync image if provided, else keep current
                 }));
             });
         }

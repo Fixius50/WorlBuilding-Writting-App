@@ -37,9 +37,11 @@ TypeError: handleCreateEntity is not a function
 
 ## Frontend Resolution
 
-- **TypeError**: `handleCreateEntity`... (Resolved)
-- **Save Failure**: Caused by `LazyInitializationException` on nested `AtributoValor.plantilla`.
-- **Final Fix**: Created `hydrateEntity` helper in Service to deeply initialize `valores` AND `plantilla`. Applied to all entity-returning methods.
+- **Msg**: `TypeError: handleCreateEntity is not a function`. (Fixed in Frontend).
+- **Msg**: `LazyInitializationException` on `Entity.carpeta` / `Entity.plantilla`.
+- **Fix**: Created `WorldBibleService.hydrateEntity` to force partial graph loading inside transaction.
+- **Msg**: Navigation failure after Save (Stuck in editor).
+- **Fix**: Frontend now uses `entity.carpeta` from server response to determine redirect target, handling "Search/Favorite" context loss.
 
 ```
 org.hibernate.exception.GenericJDBCException: could not prepare statement [[SQLITE_ERROR] SQL error or missing database (no such column: ap1_0.descripcion)]

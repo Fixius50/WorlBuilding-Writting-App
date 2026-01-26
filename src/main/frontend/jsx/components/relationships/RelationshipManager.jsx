@@ -3,25 +3,28 @@ import api from '../../../js/services/api';
 import Button from '../../components/common/Button';
 
 // Mapping of internal types to user-friendly labels and endpoints
+// Mapping of internal types to user-friendly labels (Matches 'Categoria' in EntidadGenerica)
 const ENTITY_TYPES = [
-    { value: 'entidadIndividual', label: 'Character' },
-    { value: 'entidadColectiva', label: 'Group' },
-    { value: 'zona', label: 'Location' },
-    { value: 'construccion', label: 'Building' },
-    { value: 'efectos', label: 'Effect' },
-    { value: 'interaccion', label: 'Interaction' },
-    { value: 'lineatiempo', label: 'Timeline' },
-    { value: 'eventotiempo', label: 'Event' },
-    { value: 'mapa', label: 'Map' } // Assuming 'mapa' exists or will exist
+    { value: 'Individual', label: 'Personaje' },
+    { value: 'Group', label: 'Grupo/Facción' },
+    { value: 'Location', label: 'Lugar' },
+    { value: 'Item', label: 'Objeto' },
+    { value: 'Event', label: 'Evento' },
+    { value: 'Timeline', label: 'Línea de Tiempo' },
+    { value: 'Map', label: 'Mapa' },
+    { value: 'Structure', label: 'Construcción' },
+    { value: 'Creature', label: 'Criatura' },
+    { value: 'Plant', label: 'Flora' }
 ];
 
 const RelationshipManager = ({ entityId, entityType }) => {
+    console.log(">>> RELATIONSHIP MANAGER V2 LOADED");
     const [relationships, setRelationships] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
-    
+
     // Form State
-    const [targetType, setTargetType] = useState('entidadIndividual');
+    const [targetType, setTargetType] = useState('Individual');
     const [targetItems, setTargetItems] = useState([]);
     const [selectedTargetId, setSelectedTargetId] = useState('');
     const [relType, setRelType] = useState('');
@@ -45,26 +48,23 @@ const RelationshipManager = ({ entityId, entityType }) => {
         try {
             // In a real app we would filter on backend, but for Alpha we filter client-side
             const allRels = await api.get('/bd/relacion');
-            const relevant = allRels.filter(r => 
-                (r.nodoOrigenId === parseInt(entityId) && r.tipoOrigen === entityType) ||
-                (r.nodoDestinoId === parseInt(entityId) && r.tipoDestino === entityType)
+            const relevant = allRels.filter(r =>
+                (r.nodoOrigenId === parseInt(entityId) && (r.tipoOrigen === entityType || r.tipoOrigen === 'GenericEntity')) ||
+                (r.nodoDestinoId === parseInt(entityId) && (r.tipoDestino === entityType || r.tipoDestino === 'GenericEntity'))
             );
-            
+
             // Enrich with details (fetch names)
             const enriched = await Promise.all(relevant.map(async r => {
                 const isOutgoing = r.nodoOrigenId === parseInt(entityId);
                 const otherId = isOutgoing ? r.nodoDestinoId : r.nodoOrigenId;
-                const otherType = isOutgoing ? r.tipoDestino : r.tipoOrigen;
-                
-                try {
-                    // This creates N+1 requests, optimize later with bulk fetch or backend implementation
-                    const otherEntity = await api.get(`/bd/${otherType}/${otherId}`);
-                    return { ...r, otherName: otherEntity.nombre, otherType, isOutgoing };
-                } catch (e) {
-                    return { ...r, otherName: 'Unknown/Deleted', otherType, isOutgoing };
-                }
+                // const otherType = isOutgoing ? r.tipoDestino : r.tipoOrigen;
+
+                // Unified fetch: Everything is an Entity now
+                const otherEntity = await api.get(`/world-bible/entities/${otherId}`);
+                if (!otherEntity) throw new Error(`Entity ${otherId} not found`);
+                return { ...r, otherName: otherEntity.nombre, otherType: otherEntity.categoria || 'Entity', isOutgoing };
             }));
-            
+
             setRelationships(enriched);
         } catch (error) {
             console.error("Failed to load relationships", error);
@@ -76,8 +76,22 @@ const RelationshipManager = ({ entityId, entityType }) => {
     const fetchTargets = async (type) => {
         setFetchingTargets(true);
         try {
-            const items = await api.get(`/bd/${type}`);
-            setTargetItems(items || []);
+            // Fetch ALL entities and filter logic client-side
+            const all = await api.get('/world-bible/entities');
+
+            // Filter by category OR type
+            // If type is "All" (not implemented yet) return all
+            // Match against 'categoria' (e.g. Individual) or 'tipoEspecial' (e.g. map)
+
+            const filtered = all.filter(e => {
+                // Determine category of entity
+                const cat = e.categoria || 'Generic';
+                // loose match because case might differ
+                return cat.toLowerCase() === type.toLowerCase() ||
+                    (e.tipoEspecial && e.tipoEspecial.toLowerCase() === type.toLowerCase());
+            });
+
+            setTargetItems(filtered || []);
         } catch (error) {
             console.error("Failed to fetch targets", error);
             setTargetItems([]);
@@ -94,9 +108,11 @@ const RelationshipManager = ({ entityId, entityType }) => {
                 nodoOrigenId: parseInt(entityId),
                 tipoOrigen: entityType,
                 nodoDestinoId: parseInt(selectedTargetId),
-                tipoDestino: targetType,
+                tipoDestino: 'GenericEntity', // Uniform type for lookups
                 tipoRelacion: relType,
                 descripcion: description,
+                // Metadata to store real category if needed
+                metadata: JSON.stringify({ originalCategory: targetType }),
                 tipoEntidad: 'relacion' // For BDController switch
             };
 
@@ -111,17 +127,17 @@ const RelationshipManager = ({ entityId, entityType }) => {
     };
 
     const handleDelete = async (id) => {
-        if(!confirm("Are you sure?")) return;
+        if (!confirm("Are you sure?")) return;
         try {
-             await api.delete(`/bd/relacion/${id}`);
-             loadRelationships();
+            await api.delete(`/bd/relacion/${id}`);
+            loadRelationships();
         } catch (error) {
             console.error("Failed to delete", error);
         }
     }
 
     const resetForm = () => {
-        setTargetType('entidadIndividual');
+        setTargetType('Individual');
         setSelectedTargetId('');
         setRelType('');
         setDescription('');
@@ -141,7 +157,7 @@ const RelationshipManager = ({ entityId, entityType }) => {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
                             <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Target Type</label>
-                            <select 
+                            <select
                                 className="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-sm text-white outline-none focus:border-primary"
                                 value={targetType}
                                 onChange={e => setTargetType(e.target.value)}
@@ -151,7 +167,7 @@ const RelationshipManager = ({ entityId, entityType }) => {
                         </div>
                         <div className="space-y-1">
                             <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Target Entity</label>
-                            <select 
+                            <select
                                 className="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-sm text-white outline-none focus:border-primary"
                                 value={selectedTargetId}
                                 onChange={e => setSelectedTargetId(e.target.value)}
@@ -167,9 +183,9 @@ const RelationshipManager = ({ entityId, entityType }) => {
 
                     <div className="space-y-1">
                         <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Relationship Type</label>
-                        <input 
-                            type="text" 
-                            placeholder="e.g. Father of, Located in, Enemy of..." 
+                        <input
+                            type="text"
+                            placeholder="e.g. Father of, Located in, Enemy of..."
                             className="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-sm text-white outline-none focus:border-primary"
                             value={relType}
                             onChange={e => setRelType(e.target.value)}
@@ -178,8 +194,8 @@ const RelationshipManager = ({ entityId, entityType }) => {
 
                     <div className="space-y-1">
                         <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Description (The Why)</label>
-                        <textarea 
-                            placeholder="Explain the nature of this connection..." 
+                        <textarea
+                            placeholder="Explain the nature of this connection..."
                             className="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-sm text-white outline-none focus:border-primary h-20 resize-none"
                             value={description}
                             onChange={e => setDescription(e.target.value)}
@@ -218,7 +234,7 @@ const RelationshipManager = ({ entityId, entityType }) => {
                                     </p>
                                 )}
                             </div>
-                            <button 
+                            <button
                                 onClick={() => handleDelete(rel.id)}
                                 className="opacity-0 group-hover:opacity-100 p-2 text-slate-600 hover:text-red-400 transition-all"
                             >

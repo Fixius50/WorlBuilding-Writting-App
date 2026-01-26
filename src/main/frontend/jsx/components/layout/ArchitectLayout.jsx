@@ -465,6 +465,70 @@ const ArchitectLayout = () => {
                                         </div>
                                     </div>
                                 </div>
+
+                                <div className="h-px bg-glass-border"></div>
+
+                                {/* Background Image Settings */}
+                                <div className="space-y-4">
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-text-muted">Background Image</h3>
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2">
+                                            <label className="cursor-pointer bg-white/5 hover:bg-white/10 text-white rounded-lg px-3 py-2 text-xs font-bold transition-colors border border-glass-border flex items-center gap-2 flex-1">
+                                                <span className="material-symbols-outlined text-sm">upload</span>
+                                                <span>Upload New Image</span>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                    onChange={(e) => {
+                                                        const file = e.target.files[0];
+                                                        if (file) {
+                                                            const reader = new FileReader();
+                                                            reader.onload = (ev) => {
+                                                                const img = new Image();
+                                                                img.onload = () => {
+                                                                    const newVal = {
+                                                                        ...mapSettings,
+                                                                        bgImage: ev.target.result,
+                                                                        width: img.width,
+                                                                        height: img.height
+                                                                    };
+                                                                    setMapSettings(newVal);
+                                                                    if (onMapSettingsChange) onMapSettingsChange(newVal);
+                                                                };
+                                                                img.src = ev.target.result;
+                                                            };
+                                                            reader.readAsDataURL(file);
+                                                        }
+                                                    }}
+                                                />
+                                            </label>
+                                            {mapSettings.bgImage && (
+                                                <button
+                                                    onClick={() => {
+                                                        const newVal = { ...mapSettings, bgImage: null };
+                                                        setMapSettings(newVal);
+                                                        if (onMapSettingsChange) onMapSettingsChange(newVal);
+                                                    }}
+                                                    className="p-2 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg border border-red-500/20"
+                                                    title="Remove Image"
+                                                >
+                                                    <span className="material-symbols-outlined text-sm">delete</span>
+                                                </button>
+                                            )}
+                                        </div>
+                                        {mapSettings.bgImage && (
+                                            <div className="rounded-lg overflow-hidden border border-glass-border bg-black/20 h-32 relative group">
+                                                <img src={mapSettings.bgImage} alt="Background" className="w-full h-full object-cover opacity-70" />
+                                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                    <span className="text-[10px] font-mono bg-black/50 px-2 py-1 rounded text-white backdrop-blur-sm">
+                                                        {mapSettings.width} x {mapSettings.height}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         ) : rightPanelMode === 'ENTITY' ? (
                             // ENTITY BUILDER NAVIGATION (Switch Style)

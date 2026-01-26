@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import CytoscapeComponent from 'react-cytoscapejs';
 import cytoscape from 'cytoscape';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../../js/services/api';
 import Avatar from '../../components/common/Avatar';
 import Button from '../../components/common/Button';
@@ -86,6 +86,8 @@ const GeneralGraphView = () => {
     const [loading, setLoading] = useState(true);
     const cyRef = useRef(null);
 
+    const navigate = useNavigate(); // Add hook
+
     useEffect(() => {
         loadData();
     }, []);
@@ -93,45 +95,24 @@ const GeneralGraphView = () => {
     const loadData = async () => {
         setLoading(true);
         try {
-            const allEntities = await api.get('/world-bible/entities');
-            setEntities(allEntities);
-            generateGraph(allEntities);
+            // New Endpoint: returns { nodes: [], edges: [] }
+            const graphData = await api.get('/world-bible/graph');
+            // Transform if necessary, but backend should match cytoscape format
+            // Backend returns: { nodes: [{data:{...}}], edges: [{data:{...}}] }
+
+            // Log for debug
+            console.log("Graph Data Loaded:", graphData);
+
+            if (graphData && graphData.nodes) {
+                setElements([...graphData.nodes, ...graphData.edges]);
+            }
         } catch (err) {
             console.error("Failed to load graph data", err);
+            // On error (likely 401), redirect to main menu
+            navigate('/');
         } finally {
             setLoading(false);
         }
-    };
-
-    const generateGraph = (data) => {
-        const nodes = data.map(ent => ({
-            data: {
-                id: ent.id.toString(),
-                label: ent.nombre,
-                category: ent.categoria || 'Generic',
-                type: ent.tipoEspecial
-            }
-        }));
-
-        const edges = [];
-        data.forEach(ent => {
-            // Check legacy 'valores' link
-            if (ent.valores && Array.isArray(ent.valores)) {
-                ent.valores.forEach(val => {
-                    // Check logic for 'entity_link' type. 
-                    // Assuming value is the ID of target
-                    if (val.plantilla?.tipo === 'entity_link' && val.valor) {
-                        edges.push({
-                            data: { source: ent.id.toString(), target: val.valor.toString() }
-                        });
-                    }
-                });
-            }
-
-            // TODO: Check new 'json_attributes' for links when implemented
-        });
-
-        setElements([...nodes, ...edges]);
     };
 
     const runLayout = () => {

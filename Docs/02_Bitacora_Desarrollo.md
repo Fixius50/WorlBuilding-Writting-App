@@ -94,7 +94,7 @@
 - [UX] **Sistema CRUD Biblia**: Añadido menú de creación rápida dentro de las carpetas para todos los tipos de entidad (Personajes, Mapas, Lore, etc.).
 - [CLEANUP] **Eliminación de Self-Healing**: Eliminada toda lógica de auto-recuperación silenciosa en controladores para exponer errores de contexto reales.
 - [FIX] **Gestión Global de Errores**: Implementado `GlobalExceptionHandler.java` para interceptar y limpiar excepciones de Java, devolviendo errores legibles al frontend.
-- [DOCS] **Formalización de Reglas**: Creado [04_Reglas_Strictas_Proyecto.md](file:///c:/Users/rober/Desktop/Proyectos propios/WorldbuildingApp/Docs/04_Reglas_Strictas_Proyecto.md) consolidando prohibición de self-healing, jerarquía plana y gestión estricta de errores como estándares definitivos del proyecto.
+- [DOCS] **Formalización de Reglas**: Creado [00_Reglas_Strictas_Proyecto.md](file:///c:/Users/rober/Desktop/Proyectos propios/WorldbuildingApp/Docs/00_Reglas_Strictas_Proyecto.md) consolidando prohibición de self-healing, jerarquía plana y gestión estricta de errores como estándares definitivos del proyecto.
 
 ### [2026-01-25] Sesión: Estabilización de Biblia (Guardado, Edición y Navegación)
 
@@ -105,3 +105,12 @@
 - [FIX] **Navegación**: Corregida la redirección tras guardar. Ahora el frontend usa la `carpeta` devuelta por el servidor (ya hidratada) para saber a dónde volver, solucionando el bug donde la interfaz de edición no se cerraba si se accedía desde favoritos/búsqueda.
 - [UX] **Renombrado**: Corregido evento `Enter` en `FolderItem` para evitar recargas de página al cambiar nombres de carpeta.
 - [DOCS] Actualizada documentación técnica con estas soluciones.
+
+### [2026-01-26] Sesión: Implementación de Flyway y Estabilidad de Dependencias
+
+**Prompt:** "mira lo de la migracion a FlyWay pero segun las reglas puestas"
+**Resultados:**
+
+- [MIGRATION] **Flyway Activado**: Configurado Flyway para gestionar migraciones SQLite en entorno Multi-Tenant.
+- [FIX] **Dependencias Maven**: Resuelto error de construcción crítico (`dependency.version missing`) eliminando la dependencia conflictiva `flyway-database-sqlite` y confiando en `flyway-core` + `sqlite-jdbc`.
+- [VERIFICACIÓN] Confirmado que todos los archivos `.db` existentes se migran correctamente al arrancar el servidor.

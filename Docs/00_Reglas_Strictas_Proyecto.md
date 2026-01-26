@@ -59,4 +59,20 @@ Para garantizar portabilidad y diseño responsive coherente:
 
 ---
 
-*Última actualización: 2026-01-25 (Añadido Estándares de Frontend)*
+## 8. Seguridad de Lazy Loading (Hibernate)
+
+* **Problema**: La serialización de objetos con relaciones `Lazy` fuera de una transacción causa errores 500 (`LazyInitializationException`).
+* **Regla**: **PROHIBIDO** devolver entidades JPA crudas directamente desde el Controlador si tienen relaciones Lazy no inicializadas.
+* **Solución**: Usar siempre un helper de hidratación (ej: `hydrateEntity`) dentro del Servicio `@Transactional` para inicializar explícitamente (`Hibernate.initialize()`) todas las relaciones necesarias antes de retornar el objeto.
+
+---
+
+## 9. Especialización de Agentes (Meta-Regla)
+
+* **Principio**: Divide y Vencerás.
+* **Regla**: El sistema NO debe actuar como un generalista monolítico. Debe invocar o simular "Agentes Especializados" según la naturaleza de la tarea o la regla a aplicar (ej: "Agente de Persistencia" para fixes de BBDD, "Agente de UI" para diseño, "Auditor de Reglas" para verificación).
+* **Justificación**: Aumenta la precisión y reduce el riesgo de alucinaciones o mezclas de contexto.
+
+---
+
+*Última actualización: 2026-01-26 (Añadido Especialización de Agentes)*

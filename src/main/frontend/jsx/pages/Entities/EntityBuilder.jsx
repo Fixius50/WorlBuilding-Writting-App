@@ -232,12 +232,19 @@ const EntityBuilder = ({ mode }) => {
             let targetId = entity.id;
 
             if (isCreation) {
-                if (!entity.carpeta || !entity.carpeta.id) {
-                    alert("Error: No folder selected or folder not found.");
-                    setSaving(false);
+                if (!entity.carpeta && !folderSlug) {
+                    alert("Error: Missing context (no folder). Redirecting.");
+                    navigate(`/${username}/${projectName}/bible`);
                     return;
                 }
-                payload.carpetaId = entity.carpeta.id;
+                payload.carpetaId = entity.carpeta?.id;
+                if (!payload.carpetaId && folderSlug) {
+                    // Try to fetch folder ID from slug if not in entity state
+                    try {
+                        const f = await api.get(`/world-bible/folders/${folderSlug}`);
+                        payload.carpetaId = f.id;
+                    } catch (e) { console.error("Could not resolve folder", e); }
+                }
                 const newEntity = await api.post('/world-bible/entities', payload);
                 targetId = newEntity.id;
 
@@ -338,9 +345,11 @@ const EntityBuilder = ({ mode }) => {
 
             setSaving(false);
             if (shouldRedirect) {
-                // Use folderSlug from params, or fallback to entity's folder from state
+                // Use folderSlug from params, or fallback to entity's folder from state, or default to 'root'
                 const targetFolder = folderSlug || (entity.carpeta ? (entity.carpeta.slug || entity.carpeta.id) : 'root');
-                navigate(`/${username}/${projectName}/bible/folder/${targetFolder}`);
+                // Fix: Ensure targetFolder is never undefined/null to prevent router crash
+                const finalTarget = targetFolder || 'root';
+                navigate(`/${username}/${projectName}/bible/folder/${finalTarget}`);
             }
 
         } catch (err) {

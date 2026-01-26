@@ -28,12 +28,48 @@ public class MigrationService {
     @Autowired
     private ZonaRepository zonaRepository;
 
-    @Transactional
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
+    // @Transactional <-- Removed to allow schema fixes to commit independently
     public void runFullMigration() {
-        List<Cuaderno> proyectos = cuadernoRepository.findAll();
-        for (Cuaderno proyecto : proyectos) {
-            migrateCharacters(proyecto);
-            migrateZones(proyecto);
+        applySchemaFixes();
+        try {
+            List<Cuaderno> proyectos = cuadernoRepository.findAll();
+            for (Cuaderno proyecto : proyectos) {
+                migrateCharacters(proyecto);
+                migrateZones(proyecto);
+            }
+        } catch (Exception e) {
+            System.err.println(
+                    "Migration logic failed (but schema fixes should persist if DDL auto-commits): " + e.getMessage());
+        }
+    }
+
+    private void applySchemaFixes() {
+        // Fix for missing 'deleted' columns in all relevant tables
+        // SQLite doesn't support IF NOT EXISTS in ADD COLUMN in all versions, so we
+        // try-catch
+
+        String[] queries = {
+                "ALTER TABLE hoja ADD COLUMN deleted BOOLEAN DEFAULT 0",
+                "ALTER TABLE hoja ADD COLUMN deleted_date TEXT",
+                "ALTER TABLE nota_rapida ADD COLUMN deleted BOOLEAN DEFAULT 0",
+                "ALTER TABLE nota_rapida ADD COLUMN deleted_date TEXT",
+                "ALTER TABLE entidad_individual ADD COLUMN deleted BOOLEAN DEFAULT 0",
+                "ALTER TABLE entidad_individual ADD COLUMN deleted_date TEXT",
+                "ALTER TABLE zona ADD COLUMN deleted BOOLEAN DEFAULT 0",
+                "ALTER TABLE zona ADD COLUMN deleted_date TEXT"
+        };
+
+        for (String sql : queries) {
+            try {
+                jdbcTemplate.execute(sql);
+                System.out.println("Applied schema fix: " + sql);
+            } catch (Exception e) {
+                // Ignore if column likely exists
+                System.out.println("Schema fix skipped (likely exists): " + sql + " | Error: " + e.getMessage());
+            }
         }
     }
 

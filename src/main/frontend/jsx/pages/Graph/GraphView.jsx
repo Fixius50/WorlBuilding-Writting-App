@@ -32,31 +32,42 @@ const GraphView = () => {
             // Fetch details for each node
             const nodesWithNames = await Promise.all(Array.from(uniqueNodes.values()).map(async (n, index) => {
                 try {
-                    // Map internal types to user-friendly colors/icons
-                    let endpointType = n.type; // e.g. 'entidadIndividual', 'lineatiempo'
-                    const detail = await api.get(`/bd/${endpointType}/${n.id}`);
+                    // Unified fetch: Use ID directly
+                    const detail = await api.get(`/world-bible/entities/${n.id}`);
 
                     let color = 'bg-slate-500';
                     let icon = 'help';
 
-                    switch (n.type.toLowerCase()) {
+                    // Use category from detail, fallback to n.type
+                    const typeToCheck = (detail.categoria || n.type || '').toLowerCase();
+
+                    switch (typeToCheck) {
+                        case 'individual':
                         case 'entidadindividual': color = 'bg-primary'; icon = 'person'; break;
+                        case 'group':
                         case 'entidadcolectiva': color = 'bg-purple-500'; icon = 'groups'; break;
+                        case 'location':
                         case 'zona': color = 'bg-emerald-500'; icon = 'location_on'; break;
+                        case 'structure':
                         case 'construccion': color = 'bg-orange-500'; icon = 'apartment'; break;
+                        case 'timeline':
                         case 'lineatiempo': color = 'bg-cyan-500'; icon = 'history'; break;
+                        case 'event':
                         case 'eventotiempo': color = 'bg-red-500'; icon = 'event'; break;
+                        case 'map':
                         case 'mapa': color = 'bg-amber-500'; icon = 'map'; break;
+                        case 'item':
+                        case 'objeto': color = 'bg-yellow-500'; icon = 'diamond'; break;
                         default: break;
                     }
 
                     return {
-                        id: `${n.type}-${n.id}`, // Unique ID for D3/Vis
+                        id: `${n.type}-${n.id}`,
                         originalId: n.id,
                         originalType: n.type,
                         name: detail.nombre,
                         description: detail.descripcion || '',
-                        type: n.type,
+                        type: detail.categoria || n.type, // Show real category
                         icon,
                         x: 400 + (Math.cos(index) * 300) + (Math.random() * 50),
                         y: 400 + (Math.sin(index) * 300) + (Math.random() * 50),

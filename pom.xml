@@ -44,6 +44,7 @@
 			<artifactId>hibernate-community-dialects</artifactId>
 		</dependency>
 		
+
 		<!-- Flyway for DB Migration -->
 		<dependency>
 			<groupId>org.flywaydb</groupId>

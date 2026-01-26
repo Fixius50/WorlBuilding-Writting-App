@@ -68,3 +68,20 @@
   - **Backend Fix**: Fixed `SQLITE_ERROR` (missing `descripcion` column) by updating `V1__Initial_Schema.sql`.
   - **Frontend**: Integrated Favorites list in `WorldBibleView` and Context Menu action.
 - **Status**: Completed. Verified via `verify_favorites.ps1` (API Test).
+
+## [2026-01-26] Stabilization Phase (Entity Persistence & UX)
+
+- **Goal**: Resolve critical 500 Errors during Save/Edit and fix broken navigation in Editor.
+- **Action**:
+  - **Backend**: Implemented `hydrateEntity` in Service to fix `LazyInitializationException` by deep-loading relationships (`valores`, `plantilla`, `carpeta`) before serialization.
+  - **Frontend**: Updated `EntityBuilder.jsx` to use server-provided `carpeta` data for redirection fallback, enabling "Save and Continue" and "Save and Exit" to work reliably from any context (Search/Favorites).
+  - **Frontend**: Fixed `Enter` key in `FolderItem` (Renaming) to prevent page reload.
+- **Status**: Completed. Verified via Manual Testing (Create, Edit, Rename, Save & Continue).
+
+## [2026-01-26] Graph Visualization Migration (Cytoscape)
+
+- **Goal**: Migrate the graph visualization to Cytoscape.js for better performance and implement server-side graph data generation.
+- **Action**:
+  - **Backend**: Created `GET /api/world-bible/graph` and implemented `getGraphData` in `WorldBibleService` to build nodes and edges on the server.
+  - **Frontend**: Refactored `GeneralGraphView.jsx` to consume the new endpoint and implement Cytoscape.js logic.
+- **Status**: Completed. Verified via Browser. Nodes and layout are rendering correctly.

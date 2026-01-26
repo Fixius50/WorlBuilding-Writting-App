@@ -5,7 +5,7 @@ import path from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [react()],
-    base: './', // Ensure relative paths
+    base: '/', // Absolute path for deep linking support
     root: path.resolve(__dirname, 'src/main/frontend'),
     build: {
         outDir: path.resolve(__dirname, 'src/main/resources/static'),

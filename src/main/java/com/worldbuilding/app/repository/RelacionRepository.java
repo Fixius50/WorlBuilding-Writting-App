@@ -16,7 +16,10 @@ public interface RelacionRepository extends JpaRepository<Relacion, Long> {
 
     List<Relacion> findByNodoDestinoIdAndTipoDestino(Long nodoDestinoId, String tipoDestino);
 
-    // Find all relationships for a node (either as origin or destination)
+    // Find all relationships where origin or destination is in the given list
+    List<Relacion> findByNodoOrigenIdInOrNodoDestinoIdIn(java.util.Collection<Long> originIds,
+            java.util.Collection<Long> destIds);
+
     @Query("SELECT r FROM Relacion r WHERE (r.nodoOrigenId = :id AND r.tipoOrigen = :type) OR (r.nodoDestinoId = :id AND r.tipoDestino = :type)")
     List<Relacion> findAllByNode(@Param("id") Long id, @Param("type") String type);
 }

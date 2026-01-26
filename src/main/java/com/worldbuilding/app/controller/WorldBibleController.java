@@ -59,6 +59,20 @@ public class WorldBibleController {
         return ResponseEntity.ok(worldBibleService.getRootFolders(proyecto));
     }
 
+    @GetMapping("/graph")
+    public ResponseEntity<?> getGraphData(HttpSession session) {
+        Cuaderno proyecto = getProyectoActual(session);
+        if (proyecto == null)
+            return ResponseEntity.status(401).body(Map.of("error", "No active project"));
+
+        try {
+            return ResponseEntity.ok(worldBibleService.getGraphData(proyecto));
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Unknown error"));
+        }
+    }
+
     @GetMapping("/folders/{idOrSlug}")
     public ResponseEntity<?> getFolder(@PathVariable String idOrSlug) {
         Long id = resolveFolderId(idOrSlug);

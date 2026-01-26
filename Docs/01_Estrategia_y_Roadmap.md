@@ -58,7 +58,7 @@ El diseño busca un equilibrio entre la claridad de un IDE moderno y la mística
 
 ## 6. Mandamientos de Desarrollo (Strict Rules)
 
-Estas reglas son absolutas y deben ser seguidas por cualquier IA o desarrollador en el proyecto. Ver detalle en [04_Reglas_Strictas_Proyecto.md](file:///c:/Users/rober/Desktop/Proyectos propios/WorldbuildingApp/Docs/04_Reglas_Strictas_Proyecto.md).
+Estas reglas son absolutas y deben ser seguidas por cualquier IA o desarrollador en el proyecto. Ver detalle en [00_Reglas_Strictas_Proyecto.md](file:///c:/Users/rober/Desktop/Proyectos propios/WorldbuildingApp/Docs/00_Reglas_Strictas_Proyecto.md).
 
 1. **Exposición Total de Errores**: Prohibido el "Self-Healing" que oculte fallos de datos.
 2. **Jerarquía Plana**: Root -> Carpeta -> Entidad. Sin anidamiento excesivo.
@@ -69,8 +69,20 @@ Estas reglas son absolutas y deben ser seguidas por cualquier IA o desarrollador
 
 * [x] **Fase de Estabilidad Core**: Completada. Persistencia de datos asegurada y esquema multi-tenant funcional.
 
-* [x] **Seguridad**: Configurada para desarrollo fluido (PermitAll) sin comprometer la activaciÃn de sesiones de proyecto.
-* [x] **UI/UX Biblia**: Entity Builder optimizado con controles en cabecera y visualizaciÃn corregida.
+* [x] **Seguridad**: Configurada para desarrollo fluido (PermitAll) sin comprometer la activación de sesiones de proyecto.
+* [x] **UI/UX Biblia**: Entity Builder optimizado con controles en cabecera y visualización corregida.
+
+## Estado Actual (2026-01-26)
+
+* [x] **Estabilidad Crítica Backend**: Solucionado el problema de `LazyInitializationException` mediante hidratación profunda en `WorldBibleService`.
+* [x] **Robustez Navegación**: El `EntityBuilder` ahora maneja correctamente la redirección post-guardado incluso si se pierde el contexto de la URL (fallback a `entity.carpeta`).
+* [x] **UX Edición**: Implementado flujo "Guardar y Continuar" y "Guardar y Salir" sin errores 500.
+
+## Estado Actual (2026-01-26) - Sesión Flyway
+
+* [x] **Seguridad de Datos**: Implementada migración de base de datos con **Flyway**.
+  * Solucionado conflicto de versiones con `flyway-database-sqlite` usando drivers nativos.
+  * Verificada migración correcta en múltiples proyectos (`FavTestFinal.db`, etc.).
 
 # Plan Maestro de Migración de Stack Tecnológico (Worldbuilding)
 
@@ -156,7 +168,7 @@ Este documento define la evolución tecnológica de **WorldbuildingApp** para co
 
 🔴 **EN ESPERA DE ORDEN "YA"**
 
-1. Configurar Flyway (Prioridad de Seguridad).
+1. [x] Configurar Flyway (Prioridad de Seguridad).
 2. Añadir columna JSON a `EntidadGenerica`.
 3. Comenzar migración Frontend (Cytoscape).
 

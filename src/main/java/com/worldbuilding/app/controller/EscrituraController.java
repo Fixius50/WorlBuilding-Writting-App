@@ -94,29 +94,42 @@ public class EscrituraController {
 
     @GetMapping("/cuaderno/{id}/hojas")
     public ResponseEntity<?> listarHojas(@PathVariable Long id) {
-        if (id == null)
-            return ResponseEntity.badRequest().body(Map.of("error", "ID requerido"));
-        Cuaderno c = cuadernoRepository.findById(id).orElse(null);
-        if (c == null)
-            return ResponseEntity.status(404).body(Map.of("error", "Cuaderno no encontrado"));
+        try {
+            if (id == null)
+                return ResponseEntity.badRequest().body(Map.of("error", "ID requerido"));
+            Cuaderno c = cuadernoRepository.findById(id).orElse(null);
+            if (c == null)
+                return ResponseEntity.status(404).body(Map.of("error", "Cuaderno no encontrado"));
 
-        List<Hoja> hojas = hojaRepository.findByCuadernoOrderByNumeroPaginaAsc(c);
+            List<Hoja> hojas = hojaRepository.findByCuadernoOrderByNumeroPaginaAsc(c);
 
-        List<Map<String, Object>> response = hojas.stream().map(h -> {
-            Map<String, Object> map = new java.util.HashMap<>();
-            map.put("id", h.getId());
-            map.put("numeroPagina", h.getNumeroPagina());
-            map.put("contenido", h.getContenido());
-            map.put("fechaModificacion", h.getFechaModificacion());
+            List<Map<String, Object>> response = hojas.stream().map(h -> {
+                Map<String, Object> map = new java.util.HashMap<>();
+                map.put("id", h.getId());
+                map.put("numeroPagina", h.getNumeroPagina());
+                map.put("contenido", h.getContenido());
+                map.put("fechaModificacion", h.getFechaModificacion());
+                try {
+                    map.put("notasCount", notaRapidaRepository.countByHoja(h));
+                } catch (Exception e) {
+                    map.put("notasCount", 0);
+                }
+                return map;
+            }).collect(java.util.stream.Collectors.toList());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
             try {
-                map.put("notasCount", notaRapidaRepository.countByHoja(h));
-            } catch (Exception e) {
-                map.put("notasCount", 0);
+                java.nio.file.Files.writeString(
+                        java.nio.file.Path
+                                .of("c:/Users/rober/Desktop/Proyectos propios/WorldbuildingApp/Docs/debug_error.log"),
+                        e.toString() + "\n" + java.util.Arrays.toString(e.getStackTrace()));
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
-            return map;
-        }).collect(java.util.stream.Collectors.toList());
-
-        return ResponseEntity.ok(response);
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Error interno: " + e.getMessage()));
+        }
     }
 
     @PostMapping("/cuaderno/{id}/hoja")
