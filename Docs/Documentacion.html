@@ -1,146 +1,71 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Documentación del Proyecto: WorldbuildingApp (Chronos Atlas)</title>
+    <title>Documentación WorldbuildingApp</title>
     <style>
-        :root {
-            --bg-dark: #09090b;
-            --surface: #18181b;
-            --primary: #6366f1;
-            --text-main: #fafafa;
-            --text-muted: #a1a1aa;
-            --border: rgba(255, 255, 255, 0.1);
-        }
         body {
-            font-family: 'Inter', system-ui, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
+            font-family: sans-serif;
             line-height: 1.6;
-            margin: 0;
-            padding: 40px;
-        }
-        .container {
-            max-width: 900px;
+            max-width: 800px;
             margin: 0 auto;
+            padding: 20px;
         }
-        h1, h2, h3 {
-            color: var(--text-main);
-            letter-spacing: -0.02em;
+
+        h1,
+        h2 {
+            color: #333;
         }
-        h1 { font-size: 2.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
-        h2 { color: var(--primary); margin-top: 3rem; font-size: 1.5rem; }
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 20px;
+
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            overflow-x: auto;
         }
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 999px;
-            background: rgba(16, 185, 129, 0.2);
-            color: #34d399;
-            font-size: 0.8rem;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
+
         code {
-            background: rgba(0,0,0,0.3);
-            padding: 2px 6px;
-            border-radius: 4px;
             font-family: monospace;
-            color: #e2e8f0;
         }
-        ul { padding-left: 20px; }
-        li { margin-bottom: 8px; color: var(--text-muted); }
-        .log-entry {
-            border-left: 2px solid var(--primary);
-            padding-left: 16px;
-            margin-bottom: 24px;
+
+        .error {
+            color: red;
         }
-        .log-date { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; display: block; }
+
+        .success {
+            color: green;
+        }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <header>
-            <span class="status-badge">Sistema Estable (v2.0 Beta)</span>
-            <h1>Documentación Técnica: Chronos Atlas</h1>
-            <p style="color: var(--text-muted);">Generado automáticamente por el Agente Técnico (Rol: Documentador)</p>
-        </header>
+    <h1>Estado del Proyecto WorldbuildingApp</h1>
+    <p><strong>Última Actualización:</strong> 2026-01-26</p>
 
-        <section>
-            <h2>1. Resumen de Arquitectura</h2>
-            <div class="card">
-                <p><strong>Backend:</strong> Spring Boot 3 (Java 17+). Arquitectura Multi-Tenant basada en SQLite.
-                <br>Cada proyecto es un archivo <code>.db</code> independiente, garantizando portabilidad y aislamiento de datos.</p>
-                <p><strong>Frontend:</strong> React + Vite. Diseño "Arcane Void" implementado con Tailwind CSS y Shadcn/ui.
-                <br>Componentes clave: <code>MapEditor.jsx</code> (Konva), <code>ArchitectLayout.jsx</code> (Navegación).</p>
-                <p><strong>Base de Datos:</strong> Esquema dinámico gestionado por <strong>Flyway</strong>.
-                <br>Tablas principales: <code>cuaderno</code>, <code>carpeta</code>, <code>entidad_generica</code> (JSON Support).</p>
-            </div>
-        </section>
+    <h2>Visión General</h2>
+    <p>Aplicación de gestión de mundos (Worldbuilding) con soporte para líneas de tiempo, mapas mentales (grafos) y
+        escritura de novelas. Arquitectura estricta multi-tenant basada en SQLite.</p>
 
-        <section>
-            <h2>2. Estado de Características (Roadmap)</h2>
-            <div class="card">
-                <h3>Completado</h3>
-                <ul>
-                    <li>✅ <strong>Sistema Multi-Tenant:</strong> Creación, selección y borrado de proyectos (Archivos .db).</li>
-                    <li>✅ <strong>Biblia del Mundo:</strong> Árbol jerárquico de carpetas y entidades.</li>
-                    <li>✅ <strong>Editor de Mapas:</strong> Herramientas de dibujo (Konva), Guardado de imagen, Grid System.</li>
-                    <li>✅ <strong>Tema UI:</strong> Implementación completa del Dark Glassmorphism "Arcane Void".</li>
-                    <li>✅ <strong>Single User Mode:</strong> Adaptación de seguridad para uso local sin login complejo.</li>
-                </ul>
-                <h3>En Progreso / Pendiente</h3>
-                <ul>
-                    <li>🟡 <strong>Editor de Texto "Zen":</strong> Refinamiento de la toolbar y modo pantalla completa.</li>
-                    <li>⚪ <strong>Exportación:</strong> Generación de PDF/Epub del proyecto.</li>
-                </ul>
-            </div>
-        </section>
+    <h2>Incidencias Recientes</h2>
+    <h3>Error 500 en Vista de Escritura</h3>
+    <p class="error">Estado: Parcialmente Resuelto / Pendiente Verificación</p>
+    <p>El endpoint <code>GET /escritura/cuaderno/{id}</code> fallaba debido a que la tabla <code>hoja</code> en SQLite
+        carecía de la columna <code>deleted</code> (soft-delete), requerida por la entidad JPA.</p>
+    <p><strong>Acción Tomada:</strong> Se modificó <code>MigrationService</code> para inyectar las columnas faltantes
+        mediante SQL directo.</p>
 
-        <section>
-            <h2>3. Registro de Cambios Recientes (Hotfixes)</h2>
-            <div class="log-entry">
-                <span class="log-date">Sesión: 2026-01-25</span>
-                <h3 style="margin-top:0;">Evolución Híbrida de Datos (JSON + SQL)</h3>
-                <p>Se ha modernizado la arquitectura de datos para soportar flexibilidad total sin perder la integridad relacional:</p>
-                <ul>
-                    <li><strong>Columna JSON Dinámica:</strong> Implementada <code>json_attributes</code> en <code>EntidadGenerica</code>. Permite almacenar datos arbitrarios (ej. stats de RPG, configuraciones de clima) sin alterar el esquema SQL.</li>
-                    <li><strong>Migración Inteligente:</strong> El sistema detecta y aplica automáticamente cambios de esquema (DDL) de forma segura en bases de datos SQLite existentes.</li>
-                    <li><strong>Frontend Builder:</strong> El <em>Entity Builder</em> ahora incluye un editor JSON nativo para desarrolladores y usuarios avanzados.</li>
-                </ul>
-                <p><em>Impacto:</em> Facilita la creación de plantillas complejas y módulos futuros (sistemas de magia, inventarios) sin migraciones costosas.</p>
-            </div>
+    <h2>Logs del Sistema</h2>
+    <ul>
+        <li><a href="log_prompts.md">Registro de Prompts (Debugging Session)</a></li>
+        <li><a href="log_errores.md">Registro de Errores (Detalle Técnico)</a></li>
+    </ul>
 
-            <div class="log-entry">
-                <span class="log-date">Sesión de Debugging Crítico</span>
-                <h3 style="margin-top:0;">Estabilización de Multi-Tenancy</h3>
-                <p>Se resolvieron dos bugs bloqueantes que afectaban a los nuevos proyectos:</p>
-                <ul>
-                    <li><strong>Bug "Split-Brain":</strong> El sistema creaba registros duplicados vacíos. Solucionado implementando <em>Deterministic Root Resolution</em> (Ordenación por ID estricta) en los controladores.</li>
-                    <li><strong>Bug "Infinite Loading":</strong> Excepciones 500 por datos corruptos (IDs nulos). Solucionado implementando filtros <em>Null-Safe</em> y lógica de <em>Self-Healing</em> en el backend.</li>
-                </ul>
-                <p><em>Resultado:</em> La creación de proyectos "Prueba" y la persistencia de datos son ahora 100% fiables.</p>
-            </div>
-        </section>
-
-        <section>
-            <h2>4. Guía de Operación Rápida</h2>
-            <div class="card">
-                <p>Para levantar el entorno de desarrollo:</p>
-                <ol>
-                    <li>Iniciar Backend: <code>.\mvnw.cmd spring-boot:run</code></li>
-                    <li>Iniciar Frontend: <code>cd .../WorldbuildingApp/ & npm run dev</code></li>
-                    <li>Acceso: Navegador en <code>http://localhost:3000</code></li>
-                </ol>
-            </div>
-        </section>
-    </div>
+    <h2>Próximos Pasos</h2>
+    <ol>
+        <li>Reiniciar servidor para asegurar liberación de locks en DB.</li>
+        <li>Verificar persistencia de columnas <code>deleted</code> en <code>FavTestFinal.db</code>.</li>
+        <li>Validar carga de editor de escritura.</li>
+    </ol>
 </body>
+
 </html>

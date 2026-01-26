@@ -47,4 +47,29 @@ TypeError: handleCreateEntity is not a function
 org.hibernate.exception.GenericJDBCException: could not prepare statement [[SQLITE_ERROR] SQL error or missing database (no such column: ap1_0.descripcion)]
     at org.hibernate.exception.internal.StandardSQLExceptionConverter.convert(StandardSQLExceptionConverter.java:63)
     ...
+
+# ERROR REPORT (Writing View 500)
+
+**Timestamp:** 2026-01-26T14:45:00+01:00
+**Message:** SQL error or missing database (no such column: h1_0.deleted)
+**Context:** Writing View / Notebook Listing
+
+## Details
+
+1. **Schema Mismatch**: The JPA entity `Hoja` defines:
+   ```java
+   @Column(columnDefinition = "BOOLEAN DEFAULT false")
+   private boolean deleted = false;
+   ```
+
+   However, the SQLite table `hoja` was created before this column existed and `ddl-auto` is disabled.
+2. **Impact**:
+
+- `HojaRepository.findByCuadernoOrderByNumeroPaginaAsc` fails with 500 Internal Server Error.
+- User sees a blank/broken editor.
+
+3. **Fix Attempt**:
+   - Manually running `ALTER TABLE hoja ADD COLUMN deleted BOOLEAN DEFAULT 0` via `MigrationService`.
+   - Verification pending application restart/cache clear.
+
 ```

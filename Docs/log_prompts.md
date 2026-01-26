@@ -10,6 +10,21 @@
   - Modified `DataInitializer.java` to stop context forcing on startup.
 - **Status**: Completed. Projects are now isolated in their own SQLite files based on session name.
 
+## [2026-01-26] Debugging Writing View (Error 500) & Schema Mismatch
+
+- **Goal**: Fix 500 Internal Server Error when accessing `/escritura/cuaderno/{id}`.
+- **Diagnosis**:
+  - Backend logs revealed `SQLITE_ERROR: no such column: h1_0.deleted`.
+  - The `Hoja`, `NotaRapida`, and `EntidadIndividual` entities introduced soft-delete fields (`deleted`, `deleted_date`) which were missing in existing SQLite databases because `spring.jpa.hibernate.ddl-auto=none` prevents automatic updates.
+- **Action**:
+  - Implemented schema fix in `MigrationService.java` to execute `ALTER TABLE` commands manually via `JdbcTemplate`.
+  - Removed `@Transactional` from `runFullMigration` to ensure schema changes commit even if data migration logic (legacy character migration) encounters errors.
+  - Triggered migration via `POST /api/migration/run`.
+- **Status**: **PARTIALLY RESOLVED / VERIFICATION PENDING**.
+  - Migration executed without critical failures in logs, but browser verification of Writing View initially showed persistence of "no such column" error.
+  - Server required restarts to potentially unlock DB files or clear caches.
+  - Next steps involve confirming if columns now strictly exist in the `.db` files and if the application can now read them without error.
+
 ## [2026-01-25] Project Conditions Formalization
 
 - **Goal**: Document strict development rules (No self-healing, Global error control, Flat Hierarchy).
