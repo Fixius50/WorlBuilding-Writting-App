@@ -169,7 +169,7 @@ public class WorldBibleService {
 
     @Transactional
     public EntidadGenerica createEntity(String nombre, Cuaderno proyecto, Long carpetaId, String tipoEspecial,
-            String descripcion, String iconUrl, String categoria) {
+            String descripcion, String iconUrl, String categoria, Map<String, Object> attributes) {
         Optional<Carpeta> carpetaOpt = carpetaRepository.findById(carpetaId);
         System.out.println("DEBUG: createEntity - Tenant: "
                 + com.worldbuilding.app.config.TenantContext.getCurrentTenant() + ", FolderID: " + carpetaId);
@@ -192,7 +192,7 @@ public class WorldBibleService {
         entidad.setIconUrl(iconUrl);
         entidad.setCategoria(categoria);
         entidad.setTags("");
-        entidad.setTags("");
+        entidad.setAttributes(attributes); // Save JSON attributes
 
         EntidadGenerica savedEntity = entidadGenericaRepository.save(entidad);
 
@@ -378,7 +378,7 @@ public class WorldBibleService {
 
     @Transactional
     public EntidadGenerica updateEntity(Long id, String nombre, Long carpetaId, String tipoEspecial, String descripcion,
-            String iconUrl, String categoria, String apariencia) {
+            String iconUrl, String categoria, String apariencia, Map<String, Object> attributes) {
         Optional<EntidadGenerica> entOpt = entidadGenericaRepository.findById(id);
         if (entOpt.isEmpty())
             throw new RuntimeException("Entity not found");
@@ -408,6 +408,14 @@ public class WorldBibleService {
             ent.setCategoria(categoria);
         if (apariencia != null)
             ent.setApariencia(apariencia);
+
+        if (attributes != null) {
+            // Merge attributes
+            if (ent.getAttributes() == null) {
+                ent.setAttributes(new HashMap<>());
+            }
+            ent.getAttributes().putAll(attributes);
+        }
 
         EntidadGenerica saved = entidadGenericaRepository.save(ent);
         hydrateEntity(saved);

@@ -471,7 +471,8 @@ const EntityBuilder = ({ mode }) => {
                                         </div>
                                     </div>
 
-                                    {/* JSON Attributes Editor (Dev Mode) */}
+                                    {/* JSON Attributes Editor (HIDDEN - INTERNAL USE ONLY) */}
+                                    {/* 
                                     <div>
                                         <label className="text-[10px] uppercase font-bold text-indigo-400 mb-1 flex items-center gap-2">
                                             <span className="material-symbols-outlined text-xs">data_object</span>
@@ -479,31 +480,11 @@ const EntityBuilder = ({ mode }) => {
                                         </label>
                                         <textarea
                                             value={JSON.stringify(entity.attributes || {}, null, 2)}
-                                            onChange={e => {
-                                                try {
-                                                    const parsed = JSON.parse(e.target.value);
-                                                    handleCoreChange('attributes', parsed);
-                                                } catch (err) {
-                                                    // Allow typing invalid JSON, but don't save to state immediately if invalid? 
-                                                    // Actually, for a simple textarea, it's better to update state only on valid JSON 
-                                                    // or use a temporary local state. 
-                                                    // For now, let's not block typing but maybe highlight error.
-                                                    // Simplest: just update state with whatever, but that breaks 'attributes' being an object.
-                                                    // We'll trust the user knows JSON for this "preliminary" task.
-                                                }
-                                            }}
-                                            onBlur={e => {
-                                                try {
-                                                    const parsed = JSON.parse(e.target.value);
-                                                    handleCoreChange('attributes', parsed);
-                                                } catch (err) {
-                                                    alert("Invalid JSON syntax");
-                                                }
-                                            }}
-                                            className="w-full h-32 bg-black/50 border border-indigo-500/30 rounded-xl p-3 text-xs text-indigo-100 font-mono focus:border-indigo-500 outline-none transition-colors"
-                                            placeholder="{}"
+                                            readOnly
+                                            className="w-full h-32 bg-black/50 border border-indigo-500/30 rounded-xl p-3 text-xs text-indigo-100 font-mono focus:border-indigo-500 outline-none transition-colors opacity-50 cursor-not-allowed"
                                         />
                                     </div>
+                                    */}
                                 </div>
                             </GlassPanel>
 
@@ -547,37 +528,28 @@ const EntityBuilder = ({ mode }) => {
                             )}
 
 
-                            {entity.tipoEspecial === 'map' ? (
+                            {entity.tipoEspecial === 'map' && (
                                 <GlassPanel className="p-6 lg:col-span-2 space-y-6">
                                     <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2 mb-6">
                                         <span className="material-symbols-outlined text-sm">map</span> Cartography
                                     </h3>
                                     <div
                                         onClick={() => {
-                                            // Prefer snapshotUrl from JSON, fallback to iconUrl
-                                            let preview = entity.iconUrl;
-                                            try {
-                                                const json = JSON.parse(entity.descripcion || '{}');
-                                                if (json.snapshotUrl) preview = json.snapshotUrl;
-                                            } catch (e) { }
-
-                                            // Hack: We need to pass the correct URL to the modal. 
-                                            // Since modal currently uses entity.iconUrl, and we haven't updated the Modal component to accept a prop override,
-                                            // we will trust the Modal uses entity.iconUrl.
-                                            // BUT wait, we want to separate them.
-                                            // If preview != entity.iconUrl, the modal will show the Wrong Image (Avatar).
-                                            // We must update the Modal logic too or use a temporary state override.
-                                            // Let's assume for now we just show the modal, but we really should update the modal to use "previewImage" state if set.
                                             setShowImageModal(true);
                                         }}
                                         className="w-full aspect-[21/9] bg-black/30 border border-white/10 rounded-xl overflow-hidden cursor-pointer group relative"
                                     >
                                         {(() => {
-                                            let preview = entity.iconUrl;
-                                            try {
-                                                const json = JSON.parse(entity.descripcion || '{}');
-                                                if (json.snapshotUrl) preview = json.snapshotUrl;
-                                            } catch (e) { }
+                                            // Priority: 1. attributes.snapshotUrl, 2. attributes.bgImage, 3. iconUrl
+                                            let preview = entity.attributes?.snapshotUrl || entity.attributes?.bgImage || entity.iconUrl;
+
+                                            // Legacy Fallback
+                                            if (!preview) {
+                                                try {
+                                                    const json = JSON.parse(entity.descripcion || '{}');
+                                                    if (json.snapshotUrl) preview = json.snapshotUrl;
+                                                } catch (e) { }
+                                            }
 
                                             if (preview) {
                                                 return (
@@ -608,7 +580,9 @@ const EntityBuilder = ({ mode }) => {
                                         </Button>
                                     </div>
                                 </GlassPanel>
-                            ) : (
+                            )}
+
+                            {entity.tipoEspecial !== 'map' && (
                                 <GlassPanel className="p-6 lg:col-span-2">
                                     <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2 mb-6">
                                         <span className="material-symbols-outlined text-sm">sticky_note_2</span> Quick Notes
@@ -750,7 +724,7 @@ const EntityBuilder = ({ mode }) => {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 };
 

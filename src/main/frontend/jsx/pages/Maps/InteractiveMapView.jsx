@@ -6,13 +6,29 @@ import Button from '../../components/common/Button';
 const InteractiveMapView = ({ map }) => {
     const [selectedMarker, setSelectedMarker] = useState(null);
     const mapName = map?.nombre || 'Explorador de Mundo';
-    const mapImage = "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?auto=format&fit=crop&w=2000&q=80"; // Fallback/Default
 
-    const markers = [
-        { id: 1, name: 'Torre Carmesí', type: 'location', x: '45%', y: '42%', color: 'bg-primary' },
-        { id: 2, name: 'Costa de Zafiro', type: 'region', x: '55%', y: '35%', color: 'bg-cyan-500' },
-        { id: 3, name: 'Páramos de Hierro', type: 'danger', x: '62%', y: '58%', color: 'bg-amber-500' }
-    ];
+    // Resolve Map Image: attributes.bgImage -> attributes.snapshotUrl -> iconUrl -> fallback
+    const mapAttributes = map?.attributes || {};
+
+    // Check for legacy description JSON if attributes are empty
+    let legacyData = {};
+    if (!mapAttributes.bgImage && map?.descripcion && map?.descripcion.startsWith('{')) {
+        try { legacyData = JSON.parse(map.descripcion); } catch (e) { }
+    }
+
+    const mapImage = mapAttributes.bgImage || legacyData.bgImage || map?.iconUrl || "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?auto=format&fit=crop&w=2000&q=80";
+
+    // Convert Editor Layers to Viewable Markers
+    // This is a basic mapping. In the future, we might want dedicated "pins" layer.
+    // For now, we'll strip out texts or specific shapes if we want them as markers, 
+    // BUT the editor draws them on the canvas. 
+    // The previous implementation used an overlay. 
+    // Since the editor "burns" drawing into the conceptual map, we probably just want to show the IMAGE for now.
+    // OR if we saved layers separately (we did), we could render them.
+    // Let's stick to just the image for this pass to fix the "default map" issue, 
+    // as the user's created map is likely just an image + drawings.
+
+    const markers = []; // TODO: Parse 'point of interest' from map.attributes.layers if we add that feature.
 
     return (
         <div className="flex-1 flex overflow-hidden bg-background-dark font-sans text-slate-300 relative">
@@ -20,11 +36,18 @@ const InteractiveMapView = ({ map }) => {
             <main className="flex-1 overflow-hidden relative group">
                 <div className="absolute inset-4 rounded-[2.5rem] overflow-hidden border border-white/5 shadow-2xl bg-surface-dark">
                     {/* World Map Background */}
-                    <img
-                        src="https://images.unsplash.com/photo-1521295121783-8a321d551ad2?auto=format&fit=crop&w=2000&q=80"
-                        alt="Background Map"
-                        className="w-full h-full object-cover opacity-60 mix-blend-luminosity grayscale-[0.2]"
-                    />
+                    {/* World Map Background */}
+                    {mapImage ? (
+                        <img
+                            src={mapImage}
+                            alt={mapName}
+                            className="w-full h-full object-contain bg-black/20"
+                        />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-500">
+                            Map Image Not Found
+                        </div>
+                    )}
 
                     {/* Markers Overlay */}
                     <div className="absolute inset-0">

@@ -285,15 +285,11 @@ const MapEditor = ({ mode: initialMode }) => {
             // Capture Stage Preview
             let previewUrl = formData.bgImage;
             if (stageRef.current) {
-                // Determine scale to fit within reasonable preview size if needed,
-                // but direct dataURL is simplest.
-                // Hide transformer for snapshot if selected
                 const tr = stageRef.current.findOne('Transformer');
                 if (tr) tr.nodes([]);
 
-                previewUrl = stageRef.current.toDataURL({ pixelRatio: 0.5 }); // Reduced quality for icon
+                previewUrl = stageRef.current.toDataURL({ pixelRatio: 0.5 });
 
-                // Restore transformer
                 if (tr && selectedId) {
                     const node = stageRef.current.findOne('#' + selectedId);
                     if (node) tr.nodes([node]);
@@ -303,22 +299,21 @@ const MapEditor = ({ mode: initialMode }) => {
             const payload = {
                 nombre: formData.name,
                 tipoEspecial: 'map',
-                carpetaId: realFolderId, // Use resolved numeric ID
-                descripcion: JSON.stringify({
-                    description: formData.description,
+                carpetaId: realFolderId,
+                descripcion: formData.description, // Save plain text description
+                attributes: { // Save map data in JSON attributes
                     type: formData.type,
                     width: formData.dims.width,
                     height: formData.dims.height,
-                    bgImage: formData.bgImage, // Save actual DataURL
+                    bgImage: formData.bgImage,
                     layers: { lines, rectangles, texts },
                     snapshotUrl: previewUrl
-                }),
+                },
                 iconUrl: previewUrl
             };
 
             const res = await api.post('/world-bible/entities', payload);
 
-            // Force sidebar refresh
             window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: realFolderId } }));
 
             navigate(`/${username}/${projectName}/map-editor/edit/${res.id}`, { replace: true });
@@ -335,52 +330,65 @@ const MapEditor = ({ mode: initialMode }) => {
 
     // Load Entity Data (Edit Mode)
     useEffect(() => {
-        // Fix: Use permissive check or explicit check for 'edit'
         if ((!initialMode || initialMode === 'edit') && entityId) {
             api.get(`/world-bible/entities/${entityId}`)
                 .then(ent => {
                     setRealFolderId(ent.carpetaId);
                     originalIconUrlRef.current = ent.iconUrl;
 
-                    // Force Editor Mode just in case
                     setStep('editor');
 
-                    // Parse descripcion safely
-                    let mapData = {};
-                    try {
-                        mapData = ent.descripcion ? JSON.parse(ent.descripcion) : {};
-                    } catch (e) { console.error("Error parsing map data", e); }
+                    // LOAD LOGIC: Support both new 'attributes' and legacy 'descripcion' JSON
+                    let mapData = ent.attributes || {};
+                    let legacyData = {};
+
+                    // Check for legacy data if attributes are empty or missing map specific fields
+                    const hasMapAttributes = mapData.layers || mapData.bgImage;
+
+                    if (!hasMapAttributes && ent.descripcion && ent.descripcion.trim().startsWith('{')) {
+                        try {
+                            legacyData = JSON.parse(ent.descripcion);
+                        } catch (e) { console.error("Error parsing legacy map data", e); }
+                    }
+
+                    // Merge: attributes take precedence, but if empty, use legacy
+                    const sourceData = hasMapAttributes ? mapData : legacyData;
+
+                    // Determine description text: if legacy used, description is inside JSON. If new, it's ent.descripcion.
+                    let descriptionText = ent.descripcion;
+                    if (ent.descripcion && ent.descripcion.trim().startsWith('{')) {
+                        descriptionText = legacyData.description || '';
+                    }
 
                     setFormData({
                         name: ent.nombre,
-                        description: mapData.description || '',
+                        description: descriptionText || '',
                         parentZone: null,
-                        type: mapData.type || 'regional',
-                        sourceType: mapData.bgImage ? 'upload' : 'blank',
+                        type: sourceData.type || 'regional',
+                        sourceType: sourceData.bgImage ? 'upload' : 'blank',
                         dims: {
-                            width: mapData.width || 800,
-                            height: mapData.height || 600
+                            width: sourceData.width || 800,
+                            height: sourceData.height || 600
                         },
-                        bgImage: mapData.bgImage
+                        bgImage: sourceData.bgImage
                     });
 
                     // Restore Shapes
-                    if (mapData.layers) {
-                        setLines(mapData.layers.lines || []);
-                        setRectangles(mapData.layers.rectangles || []);
-                        setTexts(mapData.layers.texts || []);
+                    if (sourceData.layers) {
+                        setLines(sourceData.layers.lines || []);
+                        setRectangles(sourceData.layers.rectangles || []);
+                        setTexts(sourceData.layers.texts || []);
                     }
 
-                    // Sync global settings
                     setMapSettings({
                         name: ent.nombre,
-                        description: mapData.description || '',
-                        type: mapData.type || 'regional',
-                        showGrid: true, // Default
-                        gridSize: 50, // Default
-                        width: mapData.width || 800,
-                        height: mapData.height || 600,
-                        bgImage: mapData.bgImage
+                        description: descriptionText || '',
+                        type: sourceData.type || 'regional',
+                        showGrid: true,
+                        gridSize: 50,
+                        width: sourceData.width || 800,
+                        height: sourceData.height || 600,
+                        bgImage: sourceData.bgImage
                     });
                 })
                 .catch(err => console.error("Error loading entity", err));
@@ -390,14 +398,9 @@ const MapEditor = ({ mode: initialMode }) => {
     const handleEditorSave = async () => {
         setSaving(true);
         try {
-            // Capture Stage Preview
             let previewUrl = formData.bgImage;
             if (stageRef.current) {
-                // Ensure transformer is hidden
                 setSelectedId(null);
-                // Slight delay to allow state update if needed, but synchronous set usually fine?
-                // Actually toDataURL is sync.
-                // Better: manually detach transformer node
                 const tr = stageRef.current.findOne('Transformer');
                 if (tr) tr.nodes([]);
 
@@ -409,21 +412,20 @@ const MapEditor = ({ mode: initialMode }) => {
                 nombre: formData.name,
                 tipoEspecial: 'map',
                 carpetaId: realFolderId,
-                descripcion: JSON.stringify({
-                    description: formData.description,
+                descripcion: formData.description, // Save plain text
+                attributes: { // Save map data in attributes
                     type: formData.type,
                     width: formData.dims.width,
                     height: formData.dims.height,
-                    bgImage: formData.bgImage, // Save actual DataURL
+                    bgImage: formData.bgImage,
                     layers: { lines, rectangles, texts },
-                    snapshotUrl: previewUrl // Save snapshot for dedicated preview
-                }),
+                    snapshotUrl: previewUrl
+                },
                 iconUrl: originalIconUrlRef.current
             };
 
             await api.put(`/world-bible/entities/${entityId}`, payload);
 
-            // Navigate back to folder
             if (realFolderId) {
                 navigate(`/${username}/${projectName}/bible/folder/${realFolderId}`);
             } else {
@@ -688,6 +690,8 @@ const MapEditor = ({ mode: initialMode }) => {
                                         y={0}
                                         width={formData.dims.width}
                                         height={formData.dims.height}
+                                        onMouseDown={handleMouseDown}
+                                        onTouchStart={handleMouseDown}
                                     />
                                 )}
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import MapCreationWizard from './MapCreationWizard';
-import MapEditor from './MapEditor';
+import MapEditor from '../Specialized/MapEditor';
 import InteractiveMapView from './InteractiveMapView';
 import MapSelectionModal from './MapSelectionModal';
 import api from '../../../js/services/api';

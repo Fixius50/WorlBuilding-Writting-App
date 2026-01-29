@@ -189,11 +189,13 @@ public class WorldBibleController {
         String descripcion = (String) payload.get("descripcion");
         String iconUrl = (String) payload.get("iconUrl");
         String categoria = (String) payload.get("categoria");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> attributes = (Map<String, Object>) payload.get("attributes");
 
         try {
             EntidadGenerica created = worldBibleService.createEntity(nombre, proyecto, carpetaId.longValue(),
                     tipoEspecial,
-                    descripcion, iconUrl, categoria);
+                    descripcion, iconUrl, categoria, attributes);
             return ResponseEntity.ok(Map.of(
                     "id", created.getId(),
                     "nombre", created.getNombre(),
@@ -312,10 +314,12 @@ public class WorldBibleController {
             String iconUrl = (String) payload.get("iconUrl");
             String categoria = (String) payload.get("categoria");
             String apariencia = (String) payload.get("apariencia");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> attributes = (Map<String, Object>) payload.get("attributes");
 
             return ResponseEntity.ok(worldBibleService.updateEntity(id, nombre,
                     carpetaId != null ? carpetaId.longValue() : null,
-                    tipoEspecial, descripcion, iconUrl, categoria, apariencia));
+                    tipoEspecial, descripcion, iconUrl, categoria, apariencia, attributes));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
