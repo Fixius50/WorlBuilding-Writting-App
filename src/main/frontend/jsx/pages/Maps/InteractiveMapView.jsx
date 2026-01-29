@@ -16,7 +16,7 @@ const InteractiveMapView = ({ map }) => {
         try { legacyData = JSON.parse(map.descripcion); } catch (e) { }
     }
 
-    const mapImage = mapAttributes.bgImage || legacyData.bgImage || map?.iconUrl || "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?auto=format&fit=crop&w=2000&q=80";
+    const mapImage = mapAttributes.bgImage || legacyData.bgImage || map?.iconUrl || null;
 
     // Convert Editor Layers to Viewable Markers
     // This is a basic mapping. In the future, we might want dedicated "pins" layer.
