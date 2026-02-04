@@ -30,16 +30,15 @@ function App() {
                 <Route path="/" element={<WorkspaceSelector />} />
 
                 <Route element={<AppLayout />}>
-                    {/* <Route path="/settings" element={<Settings />} /> */}
+                    <Route path="/settings" element={<Settings />} />
 
                     {/* Architect View for Projects */}
                     <Route path="/:username/:projectName" element={<ArchitectLayout />}>
                         <Route index element={<ProjectView />} />
                         <Route path="writing" element={<WritingView />} />
+                        <Route path="writing/:notebookId" element={<WritingView />} />
 
-                        {/* Specialized Entity Views */}
                         <Route path="entities/:type/:entityId" element={<EntityRouter />} />
-                        <Route path="settings" element={<Settings />} />
 
                         <Route path="map-editor/create/:folderId" element={<MapEditor mode="create" />} />
                         <Route path="map-editor/edit/:entityId" element={<MapEditor mode="edit" />} />

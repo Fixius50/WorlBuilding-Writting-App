@@ -84,6 +84,10 @@ const WorkspaceSelector = () => {
         }
     };
 
+    const handleDownloadBackup = () => {
+        window.location.href = '/api/backup/download';
+    };
+
     const filteredWorkspaces = workspaces.filter(w =>
         (w.title || w.filename || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -104,6 +108,26 @@ const WorkspaceSelector = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
+                        {/* SETTINGS BUTTON */}
+                        <button
+                            onClick={() => navigate('/settings')}
+                            className="flex items-center gap-2 px-5 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all text-xs font-bold text-slate-400 hover:text-white group"
+                            title="Configuración Global"
+                        >
+                            <span className="material-symbols-outlined text-lg group-hover:rotate-90 transition-transform duration-500">settings</span>
+                            <span className="hidden sm:inline">Ajustes</span>
+                        </button>
+
+                        {/* BACKUP BUTTON */}
+                        <button
+                            onClick={handleDownloadBackup}
+                            className="flex items-center gap-2 px-5 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all text-xs font-bold text-slate-400 hover:text-white group"
+                            title="Descargar copia de seguridad de todos los universos"
+                        >
+                            <span className="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">cloud_download</span>
+                            <span className="hidden sm:inline">Backup Global</span>
+                        </button>
+
                         {/* SEARCH INPUT */}
                         <div className="relative group min-w-[300px]">
                             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/20 text-xl group-focus-within:text-indigo-400 transition-colors pointer-events-none">search</span>

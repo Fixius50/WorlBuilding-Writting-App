@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import CytoscapeComponent from 'react-cytoscapejs';
 import cytoscape from 'cytoscape';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import api from '../../../js/services/api';
 import Avatar from '../../components/common/Avatar';
 import Button from '../../components/common/Button';
@@ -11,9 +12,9 @@ const graphStylesheet = [
     {
         selector: 'node',
         style: {
-            'background-color': '#1f2937', // Default dark
+            'background-color': '#1f2937',
             'label': 'data(label)',
-            'color': '#cbd5e1', // slate-300
+            'color': '#cbd5e1',
             'font-family': 'Outfit, sans-serif',
             'font-size': '12px',
             'text-valign': 'bottom',
@@ -31,8 +32,8 @@ const graphStylesheet = [
     {
         selector: 'node[category="Individual"]',
         style: {
-            'background-color': 'rgba(49, 46, 129, 0.9)', // Indigo-900
-            'border-color': '#6366f1', // Indigo-500
+            'background-color': 'rgba(49, 46, 129, 0.9)',
+            'border-color': '#6366f1',
             'shape': 'ellipse',
             'width': 50,
             'height': 50
@@ -41,8 +42,8 @@ const graphStylesheet = [
     {
         selector: 'node[category="Location"]',
         style: {
-            'background-color': 'rgba(6, 78, 59, 0.9)', // Emerald-900
-            'border-color': '#10b981', // Emerald-500
+            'background-color': 'rgba(6, 78, 59, 0.9)',
+            'border-color': '#10b981',
             'shape': 'hexagon',
             'width': 60,
             'height': 60
@@ -51,8 +52,8 @@ const graphStylesheet = [
     {
         selector: 'node[category="Group"]',
         style: {
-            'background-color': 'rgba(88, 28, 135, 0.9)', // Purple-900
-            'border-color': '#a855f7', // Purple-500
+            'background-color': 'rgba(88, 28, 135, 0.9)',
+            'border-color': '#a855f7',
             'shape': 'round-rectangle'
         }
     },
@@ -60,7 +61,7 @@ const graphStylesheet = [
         selector: 'edge',
         style: {
             'width': 2,
-            'line-color': '#334155', // slate-700
+            'line-color': '#334155',
             'target-arrow-color': '#334155',
             'target-arrow-shape': 'triangle',
             'curve-style': 'bezier'
@@ -80,35 +81,45 @@ const graphStylesheet = [
 
 const GeneralGraphView = () => {
     const { username, projectName } = useParams();
+    const { setRightPanelMode, setRightOpen, setRightPanelTitle } = useOutletContext();
+    const navigate = useNavigate();
+
     const [elements, setElements] = useState([]);
-    const [entities, setEntities] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(true);
+    const [selectedNode, setSelectedNode] = useState(null);
     const cyRef = useRef(null);
 
-    const navigate = useNavigate(); // Add hook
+    // Portal Target
+    const [portalRef, setPortalRef] = useState(null);
 
     useEffect(() => {
+        setRightPanelMode('CUSTOM');
+        setRightPanelTitle('Inspector');
         loadData();
+    }, []);
+
+    // Find portal target
+    useEffect(() => {
+        const checkPortal = setInterval(() => {
+            const el = document.getElementById('architect-right-panel-portal');
+            if (el) {
+                setPortalRef(el);
+                clearInterval(checkPortal);
+            }
+        }, 100);
+        return () => clearInterval(checkPortal);
     }, []);
 
     const loadData = async () => {
         setLoading(true);
         try {
-            // New Endpoint: returns { nodes: [], edges: [] }
             const graphData = await api.get('/world-bible/graph');
-            // Transform if necessary, but backend should match cytoscape format
-            // Backend returns: { nodes: [{data:{...}}], edges: [{data:{...}}] }
-
-            // Log for debug
-            console.log("Graph Data Loaded:", graphData);
-
             if (graphData && graphData.nodes) {
                 setElements([...graphData.nodes, ...graphData.edges]);
             }
         } catch (err) {
             console.error("Failed to load graph data", err);
-            // On error (likely 401), redirect to main menu
             navigate('/');
         } finally {
             setLoading(false);
@@ -130,13 +141,23 @@ const GeneralGraphView = () => {
     useEffect(() => {
         if (cyRef.current) {
             runLayout();
+
+            // Listen for selection
+            cyRef.current.on('select', 'node', (evt) => {
+                const node = evt.target;
+                setSelectedNode(node.data());
+                setRightOpen(true);
+            });
+
+            cyRef.current.on('unselect', 'node', () => {
+                setSelectedNode(null);
+            });
         }
     }, [elements]);
 
     const handleSearch = () => {
         if (!cyRef.current || !searchQuery) return;
         const cy = cyRef.current;
-
         cy.elements().removeClass('highlighted faded');
 
         if (searchQuery.length > 0) {
@@ -145,17 +166,77 @@ const GeneralGraphView = () => {
             );
 
             if (matches.length > 0) {
-                cy.elements().not(matches).addClass('faded'); // Define class if needed or use opacity
+                cy.elements().not(matches).addClass('faded');
                 matches.addClass('highlighted');
-                cy.animate({
-                    fit: { eles: matches, padding: 50 }
-                });
+                cy.animate({ fit: { eles: matches, padding: 50 } });
             }
         }
     };
 
+    const renderInspector = () => {
+        if (!selectedNode) {
+            return (
+                <div className="p-8 flex flex-col items-center justify-center h-full text-slate-500 text-center opacity-50">
+                    <span className="material-symbols-outlined text-4xl mb-4">touch_app</span>
+                    <p className="text-xs font-black uppercase tracking-widest leading-loose">
+                        Select a node<br />to reveal its secrets
+                    </p>
+                </div>
+            );
+        }
+
+        return (
+            <div className="p-6 flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-500">
+                <div className="mb-8">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className={`size-12 rounded-xl flex items-center justify-center text-white shadow-xl ${selectedNode.category === 'Individual' ? 'bg-indigo-600 shadow-indigo-500/20' :
+                                selectedNode.category === 'Location' ? 'bg-emerald-600 shadow-emerald-500/20' :
+                                    'bg-purple-600 shadow-purple-500/20'
+                            }`}>
+                            <span className="material-symbols-outlined">{
+                                selectedNode.category === 'Individual' ? 'person' :
+                                    selectedNode.category === 'Location' ? 'location_on' : 'groups'
+                            }</span>
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-serif font-bold text-white leading-tight">{selectedNode.label}</h3>
+                            <span className="text-[10px] font-black uppercase tracking-tighter text-slate-500">{selectedNode.category}</span>
+                        </div>
+                    </div>
+                    <p className="text-sm text-slate-400 font-serif leading-relaxed italic opacity-80">
+                        {selectedNode.summary || "No description available for this cosmic entity."}
+                    </p>
+                </div>
+
+                <div className="mt-auto pt-6 border-t border-white/5 space-y-3">
+                    <button
+                        onClick={() => navigate(`/${username}/${projectName}/entities/${selectedNode.type || 'individual'}/${selectedNode.id}`)}
+                        className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-300 transition-all flex items-center justify-center gap-2"
+                    >
+                        <span className="material-symbols-outlined text-sm">open_in_new</span>
+                        <span>Open Bible Entry</span>
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            if (!cyRef.current) return;
+                            const node = cyRef.current.$id(selectedNode.id);
+                            cyRef.current.animate({ center: { eles: node }, zoom: 2 });
+                        }}
+                        className="w-full py-3 bg-indigo-600/10 hover:bg-indigo-600/20 border border-indigo-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-indigo-300 transition-all flex items-center justify-center gap-2"
+                    >
+                        <span className="material-symbols-outlined text-sm">center_focus_strong</span>
+                        <span>Focus on Graph</span>
+                    </button>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="w-full h-full flex bg-background-dark relative overflow-hidden font-display text-foreground">
+            {portalRef && createPortal(renderInspector(), portalRef)}
+
             {/* Sidebar Overlay */}
             <div className="absolute top-4 left-4 z-20 w-80 pointer-events-none">
                 <div className="bg-card/90 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-2xl pointer-events-auto space-y-4">
@@ -163,41 +244,40 @@ const GeneralGraphView = () => {
                         <div className="size-8 rounded bg-primary flex items-center justify-center">
                             <span className="material-symbols-outlined text-primary-foreground">hub</span>
                         </div>
-                        <h2 className="font-bold text-lg tracking-tight">Graph View</h2>
+                        <h2 className="font-bold text-lg tracking-tight">Graph Network</h2>
                     </div>
 
                     <div className="flex gap-2">
                         <input
-                            className="bg-accent/50 border border-input rounded-md px-3 py-2 text-sm w-full outline-none focus:ring-1 focus:ring-primary"
-                            placeholder="Find node..."
+                            className="bg-accent/50 border border-input rounded-md px-3 py-2 text-sm w-full outline-none focus:ring-1 focus:ring-primary placeholder:text-slate-600 text-slate-200"
+                            placeholder="Search nodes..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                         />
-                        <button onClick={handleSearch} className="bg-primary/20 hover:bg-primary/30 text-primary border border-primary/50 rounded-md px-3 transition-colors">
-                            <span className="material-symbols-outlined text-sm">search</span>
-                        </button>
                     </div>
 
-                    <div className="flex flex-wrap gap-2 text-[10px] uppercase font-bold text-muted-foreground pt-2 border-t border-border/50">
-                        <div className="flex items-center gap-1"><div className="size-2 rounded-full bg-indigo-500"></div> Individual</div>
-                        <div className="flex items-center gap-1"><div className="size-2 rounded-full bg-emerald-500"></div> Location</div>
-                        <div className="flex items-center gap-1"><div className="size-2 rounded-full bg-purple-500"></div> Group</div>
-                    </div>
-
-                    <div className="pt-2">
-                        <Button onClick={runLayout} size="sm" variant="outline" className="w-full text-xs">
-                            <span className="material-symbols-outlined text-sm mr-2">refresh</span>
-                            Re-Layout
-                        </Button>
+                    <div className="flex items-center justify-between gap-4 pt-2 border-t border-border/50">
+                        <div className="flex gap-2">
+                            <button onClick={runLayout} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors border border-white/5" title="Re-simulate Gravity">
+                                <span className="material-symbols-outlined text-sm">refresh</span>
+                            </button>
+                            <button onClick={() => cyRef.current?.fit()} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors border border-white/5" title="Fit View">
+                                <span className="material-symbols-outlined text-sm">fit_screen</span>
+                            </button>
+                        </div>
+                        <div className="flex flex-wrap gap-2 text-[10px] uppercase font-bold text-slate-500">
+                            <div className="flex items-center gap-1"><div className="size-1.5 rounded-full bg-indigo-500"></div> IND</div>
+                            <div className="flex items-center gap-1"><div className="size-1.5 rounded-full bg-emerald-500"></div> LOC</div>
+                            <div className="flex items-center gap-1"><div className="size-1.5 rounded-full bg-purple-500"></div> GRP</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Helper text if empty */}
             {elements.length === 0 && !loading && (
                 <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                    <div className="text-muted text-lg">No entities found. Create some in the Bible!</div>
+                    <div className="text-muted text-lg font-serif italic text-slate-600">The void is empty. Document your world in the Bible.</div>
                 </div>
             )}
 
@@ -209,7 +289,7 @@ const GeneralGraphView = () => {
                 minZoom={0.2}
                 maxZoom={3}
                 wheelSensitivity={0.3}
-                className="bg-background-dark"
+                className="bg-[#050508]"
             />
         </div>
     );

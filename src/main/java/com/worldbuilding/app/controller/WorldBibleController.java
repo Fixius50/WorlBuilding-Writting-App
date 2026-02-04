@@ -216,11 +216,18 @@ public class WorldBibleController {
         try {
             return ResponseEntity.ok(entidadGenericaRepository.findByProyecto(proyecto).stream()
                     .filter(java.util.Objects::nonNull)
-                    .map(e -> Map.of(
-                            "id", e.getId(),
-                            "nombre", e.getNombre(),
-                            "slug", e.getSlug(),
-                            "categoria", e.getCategoria() != null ? e.getCategoria() : ""))
+                    .map(e -> {
+                        Map<String, Object> entityMap = new java.util.HashMap<>();
+                        entityMap.put("id", e.getId());
+                        entityMap.put("nombre", e.getNombre());
+                        entityMap.put("slug", e.getSlug());
+                        entityMap.put("categoria", e.getCategoria() != null ? e.getCategoria() : "");
+                        entityMap.put("tipoEspecial", e.getTipoEspecial() != null ? e.getTipoEspecial() : "");
+                        entityMap.put("iconUrl", e.getIconUrl() != null ? e.getIconUrl() : "");
+                        entityMap.put("attributes",
+                                e.getAttributes() != null ? e.getAttributes() : new java.util.HashMap<>());
+                        return entityMap;
+                    })
                     .toList());
         } catch (Exception e) {
             return ResponseEntity.status(500)

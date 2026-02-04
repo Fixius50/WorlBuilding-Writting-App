@@ -5,46 +5,93 @@ import api from '../../js/services/api';
 const Settings = () => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
-    const [activeTab, setActiveTab] = useState('appearance');
+    const [projects, setProjects] = useState([]);
+    const [selectedProjects, setSelectedProjects] = useState([]);
+    const [activeTab, setActiveTab] = useState('general');
+    const [notifications, setNotifications] = useState([]);
 
     // Settings State
     const [settings, setSettings] = useState({
-        theme: 'deep_space', // deep_space, nebula, high_contrast
+        theme: 'deep_space',
         font: 'Manrope',
-        fontSize: 16,
-        focusMode: false,
-        transparencyEffects: true,
-        vaultPath: './data' // Local vault path (relative)
+        fontSize: 16
     });
 
     useEffect(() => {
-        console.log("Settings Page Mounted");
         try {
             const storedUser = localStorage.getItem('user');
             if (storedUser && storedUser !== "undefined") {
                 setUser(JSON.parse(storedUser));
             }
+            const savedSettings = localStorage.getItem('app_settings');
+            if (savedSettings) {
+                setSettings(JSON.parse(savedSettings));
+            }
+            const savedSync = localStorage.getItem('sync_projects');
+            if (savedSync) {
+                setSelectedProjects(JSON.parse(savedSync));
+            }
+            loadProjects();
         } catch (e) {
             console.error("Failed to parse user settings", e);
         }
     }, []);
 
-    const handleLogout = async () => {
-        try { await api.post('/auth/logout', {}); }
-        catch (err) { console.error('Logout error', err); }
-        finally {
-            localStorage.removeItem('user');
-            sessionStorage.clear();
-            navigate('/');
+    const loadProjects = async () => {
+        try {
+            const data = await api.get('/workspaces');
+            if (data) setProjects(data);
+        } catch (err) {
+            console.error("Error loading projects for sync", err);
         }
     };
 
+    const addNotification = (message, type = 'success') => {
+        const id = Date.now();
+        setNotifications(prev => [...prev, { id, message, type }]);
+        setTimeout(() => {
+            setNotifications(prev => prev.filter(n => n.id !== id));
+        }, 3000);
+    };
+
+    const updateSetting = (key, value) => {
+        const newSettings = { ...settings, [key]: value };
+        setSettings(newSettings);
+        localStorage.setItem('app_settings', JSON.stringify(newSettings));
+        addNotification(`Ajuste actualizado: ${key}`);
+    };
+
+    const toggleProjectSelection = (id) => {
+        const isSelected = selectedProjects.includes(id);
+        const newSelection = isSelected
+            ? selectedProjects.filter(p => p !== id)
+            : [...selectedProjects, id];
+
+        setSelectedProjects(newSelection);
+        localStorage.setItem('sync_projects', JSON.stringify(newSelection));
+        addNotification(isSelected ? "Universo desmarcado de sincronización" : "Universo incluido en sincronización");
+    };
+
+    const handleDownloadBackup = () => {
+        addNotification("Iniciando descarga de backup...", "info");
+        const link = document.createElement('a');
+
+        // Build URL with selected projects
+        const baseUrl = '/api/backup/download';
+        const params = selectedProjects.length > 0
+            ? `?projects=${selectedProjects.join(',')}`
+            : '';
+
+        link.href = baseUrl + params;
+        link.setAttribute('download', `worldbuilding_backup_${Date.now()}.zip`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     const tabs = [
-        { id: 'general', label: 'General', icon: 'settings' },
-        { id: 'appearance', label: 'Apariencia', icon: 'palette' },
-        { id: 'editor', label: 'Editor', icon: 'edit_note' },
-        { id: 'sync', label: 'Sincronización', icon: 'sync_lock' },
-        { id: 'notifications', label: 'Notificaciones', icon: 'notifications' }
+        { id: 'general', label: 'General / Sincro', icon: 'person' },
+        { id: 'appearance', label: 'Apariencia y Editor', icon: 'palette' }
     ];
 
     const themes = [
@@ -54,227 +101,189 @@ const Settings = () => {
     ];
 
     return (
-        <div className="flex w-full h-full bg-[#050508] text-white font-sans overflow-hidden">
-            {/* Sidebar Navigation */}
-            <aside className="w-64 flex-none flex flex-col border-r border-white/5 bg-[#0a0a0e]">
-                <div className="p-8 pb-4">
-                    <div className="size-10 rounded-full bg-white flex items-center justify-center text-black mb-4">
-                        <span className="material-symbols-outlined text-2xl">settings</span>
+        <div className="flex flex-col w-full h-full bg-[#050508] text-white font-sans overflow-hidden">
+            {/* TOAST NOTIFICATIONS */}
+            <div className="fixed top-24 right-8 z-[100] flex flex-col gap-3">
+                {notifications.map(n => (
+                    <div key={n.id} className="flex items-center gap-3 px-6 py-4 bg-surface-dark border border-white/10 rounded-2xl shadow-2xl animate-slide-in-right">
+                        <span className={`material-symbols-outlined ${n.type === 'success' ? 'text-green-400' : 'text-indigo-400'}`}>
+                            {n.type === 'success' ? 'check_circle' : 'info'}
+                        </span>
+                        <span className="text-sm font-bold">{n.message}</span>
                     </div>
-                    <h1 className="text-xl font-bold tracking-tight">Ajustes</h1>
-                    <p className="text-xs text-slate-500 font-mono mt-1">v2.4.0 Local-Build</p>
+                ))}
+            </div>
+
+            {/* TOP NAVIGATION BAR */}
+            <header className="h-20 flex-none flex items-center justify-between px-12 border-b border-white/5 bg-[#0a0a0e] z-30">
+                <div className="flex items-center gap-8">
+                    <div className="flex items-center gap-4">
+                        <div className="size-10 rounded-xl bg-indigo-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+                            <span className="material-symbols-outlined text-2xl">settings</span>
+                        </div>
+                        <h1 className="text-xl font-bold tracking-tight hidden sm:block">Ajustes</h1>
+                    </div>
+
+                    <nav className="flex items-center gap-2 p-1 bg-white/5 rounded-2xl">
+                        {tabs.map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === tab.id
+                                    ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
+                                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                                    }`}
+                            >
+                                <span className="material-symbols-outlined text-sm">{tab.icon}</span>
+                                {tab.label}
+                            </button>
+                        ))}
+                    </nav>
                 </div>
 
-                <nav className="flex-1 px-4 py-4 space-y-1">
-                    {tabs.map(tab => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === tab.id
-                                ? 'bg-indigo-500/10 text-indigo-400'
-                                : 'text-slate-400 hover:text-white hover:bg-white/5'
-                                }`}
-                        >
-                            <span className="material-symbols-outlined text-lg">{tab.icon}</span>
-                            {tab.label}
-                        </button>
-                    ))}
-                </nav>
+                <button
+                    onClick={() => navigate(-1)}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all text-xs font-bold text-slate-400 hover:text-white"
+                >
+                    <span className="material-symbols-outlined text-sm">arrow_back</span>
+                    <span>Volver</span>
+                </button>
+            </header>
 
-                <div className="p-4 border-t border-white/5">
-                    <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-red-400 hover:bg-red-500/10 transition-colors"
-                    >
-                        <span className="material-symbols-outlined text-lg">logout</span>
-                        Cerrar Sesión
-                    </button>
-                </div>
-            </aside>
-
-            {/* Main Content */}
+            {/* Main Content Area */}
             <main className="flex-1 overflow-y-auto p-12 custom-scrollbar">
-                <div className="max-w-3xl mx-auto space-y-12">
+                <div className="max-w-3xl mx-auto pb-24 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
-                    {/* Header */}
-                    <header>
-                        <h2 className="text-3xl font-bold mb-2">
-                            {tabs.find(t => t.id === activeTab)?.label}
-                        </h2>
-                        <p className="text-slate-500">
-                            Personaliza la interfaz visual y tu entorno de escritura para maximizar tu creatividad y concentración.
-                        </p>
-                    </header>
+                    {activeTab === 'general' && (
+                        <div className="space-y-6">
+                            <section className="bg-[#0f0f13] border border-white/5 rounded-3xl p-8">
+                                <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-indigo-400">
+                                    <span className="material-symbols-outlined">person</span>
+                                    Perfil de Arquitecto
+                                </h3>
+                                <div className="flex items-center gap-6 p-4 bg-white/5 rounded-2xl border border-white/5">
+                                    <div className="size-16 rounded-full bg-indigo-500 flex items-center justify-center text-white text-2xl font-black">
+                                        {user?.username?.substring(0, 2).toUpperCase() || 'AR'}
+                                    </div>
+                                    <div className="flex-1">
+                                        <h4 className="text-xl font-bold text-white">{user?.username || 'Arquitecto Local'}</h4>
+                                        <p className="text-xs text-slate-500 mt-1">Sincronización guardada automáticamente.</p>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section className="bg-[#0f0f13] border border-white/5 rounded-3xl p-8 space-y-6">
+                                <div className="flex justify-between items-center">
+                                    <h3 className="text-lg font-bold flex items-center gap-2 text-indigo-400">
+                                        <span className="material-symbols-outlined">sync_lock</span>
+                                        Sincronización y Respaldo
+                                    </h3>
+                                    <button
+                                        onClick={handleDownloadBackup}
+                                        className="flex items-center gap-2 px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-500/30"
+                                    >
+                                        <span className="material-symbols-outlined text-sm">cloud_download</span>
+                                        Descargar Backup ZIP
+                                    </button>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block">Universos para sincronización</label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {projects.length > 0 ? projects.map(project => (
+                                            <button
+                                                key={project.filename}
+                                                onClick={() => toggleProjectSelection(project.filename)}
+                                                className={`flex items-center gap-3 p-4 rounded-2xl border transition-all text-left ${selectedProjects.includes(project.filename)
+                                                    ? 'border-indigo-500 bg-indigo-500/10 text-white'
+                                                    : 'border-white/5 bg-black/20 text-slate-400 hover:border-white/10'
+                                                    }`}
+                                            >
+                                                <span className="material-symbols-outlined text-lg">
+                                                    {selectedProjects.includes(project.filename) ? 'check_circle' : 'circle'}
+                                                </span>
+                                                <div className="truncate">
+                                                    <p className="text-xs font-bold truncate">{project.title}</p>
+                                                </div>
+                                            </button>
+                                        )) : (
+                                            <div className="col-span-2 p-8 border border-dashed border-white/5 rounded-2xl text-center text-slate-600 text-xs italic text-glass-muted">
+                                                No hay universos detectados...
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    )}
 
                     {activeTab === 'appearance' && (
-                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
-                            {/* Theme Selector */}
+                        <div className="space-y-6">
                             <section className="bg-[#0f0f13] border border-white/5 rounded-3xl p-8">
-                                <h3 className="text-lg font-bold mb-1">Tema de la Interfaz</h3>
-                                <p className="text-xs text-slate-500 mb-6">Selecciona el esquema de colores que prefieras.</p>
-
+                                <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-indigo-400">
+                                    <span className="material-symbols-outlined">palette</span>
+                                    Estética del Sistema
+                                </h3>
                                 <div className="grid grid-cols-3 gap-6">
                                     {themes.map(theme => (
                                         <button
                                             key={theme.id}
-                                            onClick={() => setSettings({ ...settings, theme: theme.id })}
-                                            className={`relative group text-left transition-all ${settings.theme === theme.id ? 'ring-2 ring-indigo-500' : 'hover:ring-1 hover:ring-white/20'} rounded-2xl overflow-hidden`}
+                                            onClick={() => updateSetting('theme', theme.id)}
+                                            className={`relative flex flex-col gap-3 group text-left transition-all p-3 rounded-2xl border ${settings.theme === theme.id ? 'border-indigo-500 bg-indigo-500/5 ring-1 ring-indigo-500/50' : 'border-white/5 bg-black/20 hover:border-white/20'}`}
                                         >
-                                            <div className="h-32 bg-black/20 relative p-4 flex items-center justify-center">
-                                                <div className="w-full h-full rounded-xl flex items-center justify-center" style={{ backgroundColor: theme.color }}>
-                                                    <div className="size-8 rounded-full bg-white/10 backdrop-blur-md"></div>
-                                                </div>
+                                            <div className="h-24 rounded-xl flex items-center justify-center overflow-hidden" style={{ backgroundColor: theme.color }}>
+                                                <div className="size-10 rounded-full bg-white/10 backdrop-blur-xl border border-white/10"></div>
                                             </div>
-                                            <div className="p-4 bg-[#18181b]">
-                                                <span className="text-xs font-bold text-slate-300 group-hover:text-white">{theme.label}</span>
-                                            </div>
+                                            <span className="text-xs font-bold text-center">{theme.label}</span>
                                         </button>
                                     ))}
                                 </div>
                             </section>
 
-                            {/* Editor Configuration */}
-                            <section className="bg-[#0f0f13] border border-white/5 rounded-3xl p-8 space-y-8">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <span className="material-symbols-outlined text-indigo-400">text_fields</span>
-                                    <h3 className="text-lg font-bold">Configuración del Editor</h3>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-12 border-b border-white/5 pb-8">
-                                    <div className="space-y-3">
-                                        <label className="text-xs font-bold text-slate-500">Tipografía</label>
+                            <section className="bg-[#0f0f13] border border-white/5 rounded-3xl p-8">
+                                <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-indigo-400">
+                                    <span className="material-symbols-outlined">text_fields</span>
+                                    Tipografía y Lectura
+                                </h3>
+                                <div className="grid grid-cols-2 gap-12">
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Fuente del Codex</label>
                                         <div className="relative">
                                             <select
                                                 value={settings.font}
-                                                onChange={(e) => setSettings({ ...settings, font: e.target.value })}
-                                                className="w-full bg-[#18181b] border border-white/10 rounded-xl px-4 py-3 text-sm text-white appearance-none outline-none focus:border-indigo-500 transition-colors"
+                                                onChange={(e) => updateSetting('font', e.target.value)}
+                                                className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-3.5 text-sm text-white appearance-none outline-none focus:border-indigo-500 transition-all font-sans"
                                             >
-                                                <option value="Manrope">Manrope (Sans-serif)</option>
-                                                <option value="Inter">Inter</option>
+                                                <option value="Manrope">Manrope (Moderno)</option>
                                                 <option value="Merriweather">Merriweather (Serif)</option>
+                                                <option value="Inter">Inter (Legibilidad)</option>
+                                                <option value="JetBrains Mono">JetBrains (Mono)</option>
                                             </select>
-                                            <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none text-sm">expand_more</span>
+                                            <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">expand_more</span>
                                         </div>
-                                        <p className="text-[10px] text-slate-600">La fuente utilizada en el lienzo de escritura.</p>
                                     </div>
-
-                                    <div className="space-y-3">
-                                        <div className="flex justify-between">
-                                            <label className="text-xs font-bold text-slate-500">Tamaño de Fuente</label>
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Tamaño del Texto</label>
                                             <span className="text-xs font-bold text-indigo-400">{settings.fontSize}px</span>
                                         </div>
-                                        <input
-                                            type="range"
-                                            min="12" max="24"
-                                            value={settings.fontSize}
-                                            onChange={(e) => setSettings({ ...settings, fontSize: parseInt(e.target.value) })}
-                                            className="w-full accent-indigo-500 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
-                                        />
-                                        <div className="flex justify-between text-[10px] text-slate-600 font-bold uppercase">
-                                            <span>Aa</span>
-                                            <span>Aa</span>
+                                        <div className="flex items-center gap-4 py-3">
+                                            <input
+                                                type="range"
+                                                min="12" max="24"
+                                                value={settings.fontSize}
+                                                onChange={(e) => updateSetting('fontSize', parseInt(e.target.value))}
+                                                className="flex-1 accent-indigo-500 h-1 bg-white/10 rounded-full appearance-none cursor-pointer"
+                                            />
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* Toggles */}
-                                <div className="space-y-6">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex gap-4">
-                                            <div className="size-10 rounded-full bg-white/5 flex items-center justify-center text-slate-400">
-                                                <span className="material-symbols-outlined">center_focus_strong</span>
-                                            </div>
-                                            <div>
-                                                <h4 className="text-sm font-bold text-white">Modo Enfoque</h4>
-                                                <p className="text-xs text-slate-500">Oculta todos los paneles laterales al escribir.</p>
-                                            </div>
-                                        </div>
-                                        <label className="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" checked={settings.focusMode} onChange={e => setSettings({ ...settings, focusMode: e.target.checked })} className="sr-only peer" />
-                                            <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500 peer-checked:after:bg-white"></div>
-                                        </label>
-                                    </div>
-
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex gap-4">
-                                            <div className="size-10 rounded-full bg-white/5 flex items-center justify-center text-slate-400">
-                                                <span className="material-symbols-outlined">blur_on</span>
-                                            </div>
-                                            <div>
-                                                <h4 className="text-sm font-bold text-white">Efectos de Transparencia</h4>
-                                                <p className="text-xs text-slate-500">Desactivar para mejorar el rendimiento.</p>
-                                            </div>
-                                        </div>
-                                        <label className="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" checked={settings.transparencyEffects} onChange={e => setSettings({ ...settings, transparencyEffects: e.target.checked })} className="sr-only peer" />
-                                            <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500 peer-checked:after:bg-white"></div>
-                                        </label>
-                                    </div>
+                                <div className="mt-8 p-6 bg-black/40 rounded-2xl border border-white/5 text-center shadow-inner">
+                                    <p style={{ fontFamily: settings.font, fontSize: `${settings.fontSize}px` }} className="text-slate-200 transition-all duration-300">
+                                        "El universo es un libro escrito en el lenguaje de las historias."
+                                    </p>
                                 </div>
                             </section>
-
-                            {/* Storage */}
-                            <section className="bg-[#0f0f13] border border-white/5 rounded-3xl p-1 relative overflow-hidden">
-                                <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500 rounded-l-3xl"></div>
-                                <div className="p-8">
-                                    <div className="flex justify-between items-start mb-6">
-                                        <div className="flex gap-4">
-                                            <span className="material-symbols-outlined text-indigo-400 text-2xl">folder_special</span>
-                                            <div>
-                                                <h3 className="text-lg font-bold text-white">Almacenamiento Local</h3>
-                                                <p className="text-xs text-slate-500">Tus datos viven en tu dispositivo. Gestiona tus copias de seguridad.</p>
-                                            </div>
-                                        </div>
-                                        <span className="px-3 py-1 bg-green-500/10 text-green-400 rounded-full text-[10px] font-bold uppercase border border-green-500/20 flex items-center gap-2">
-                                            <span className="size-1.5 rounded-full bg-green-500 animate-pulse"></span> Sincronizado
-                                        </span>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="text-xs font-bold text-slate-500 block mb-2">Ruta de la Bóveda</label>
-                                            <div className="flex gap-2">
-                                                <div className="flex-1 bg-[#18181b] border border-white/10 rounded-xl px-4 py-3 text-xs font-mono text-slate-300 truncate">
-                                                    {settings.vaultPath}
-                                                </div>
-                                                <button className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl text-xs font-bold transition-colors">
-                                                    Cambiar
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-[#18181b] rounded-xl p-4 flex items-center justify-between border border-white/5">
-                                            <div className="flex items-center gap-4">
-                                                <div className="size-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400">
-                                                    <span className="material-symbols-outlined">history</span>
-                                                </div>
-                                                <div>
-                                                    <h4 className="text-sm font-bold text-white">Copia de Seguridad Automática</h4>
-                                                    <p className="text-[10px] text-slate-500">Ultima copia: Hace 12 minutos</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                <button className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg text-xs font-bold transition-colors">Restaurar</button>
-                                                <button className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-xs font-bold transition-colors shadow-lg shadow-indigo-500/20">Respaldar Ahora</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <div className="flex justify-end pt-8 pb-20">
-                                <button className="px-8 py-3 bg-white text-black font-bold rounded-full hover:scale-105 transition-transform shadow-xl">
-                                    Guardar Cambios
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab !== 'appearance' && (
-                        <div className="flex flex-col items-center justify-center h-[50vh] text-slate-600">
-                            <span className="material-symbols-outlined text-6xl mb-4 opacity-20">construction</span>
-                            <h3 className="text-xl font-bold text-slate-500">En Construcción</h3>
-                            <p className="text-sm">El módulo {tabs.find(t => t.id === activeTab)?.label} estará disponible pronto.</p>
                         </div>
                     )}
                 </div>

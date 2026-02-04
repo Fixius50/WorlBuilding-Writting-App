@@ -78,11 +78,12 @@ Estas reglas son absolutas y deben ser seguidas por cualquier IA o desarrollador
 * [x] **Robustez Navegación**: El `EntityBuilder` ahora maneja correctamente la redirección post-guardado incluso si se pierde el contexto de la URL (fallback a `entity.carpeta`).
 * [x] **UX Edición**: Implementado flujo "Guardar y Continuar" y "Guardar y Salir" sin errores 500.
 
-## Estado Actual (2026-01-26) - Sesión Flyway
+## Estado Actual (2025-02-04) - Sesión Settings & Respaldo Reactivo
 
-* [x] **Seguridad de Datos**: Implementada migración de base de datos con **Flyway**.
-  * Solucionado conflicto de versiones con `flyway-database-sqlite` usando drivers nativos.
-  * Verificada migración correcta en múltiples proyectos (`FavTestFinal.db`, etc.).
+* [x] **UI/UX Global**: Rediseño de la interfaz de Ajustes (Top Bar Navigation) y eliminación de botones de guardado manual.
+* [x] **Persistencia Reactiva**: Implementación de Auto-save y sistema de notificaciones Toasts con animaciones fluidas (`index.css`).
+* [x] **Arquitectura de Migraciones**: Creado un "Programmatic Column Patcher" en `DatabaseMigration.java` para solventar limitaciones de SQLite y evitar errores de columnas duplicadas al arrancar el servidor.
+* [x] **Sistema de Backup V2**: Exportación ZIP optimizada que empaqueta únicamente archivos SQLite de todos los universos detectados, excluyendo documentos estáticos para máxima velocidad.
 
 # Plan Maestro de Migración de Stack Tecnológico (Worldbuilding)
 

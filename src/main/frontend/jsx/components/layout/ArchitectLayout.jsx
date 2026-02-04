@@ -163,7 +163,15 @@ const ArchitectLayout = () => {
                     {leftOpen ? (
                         <div className="flex items-center gap-2">
                             <div className="size-8 rounded-lg bg-surface-light flex items-center justify-center text-primary shadow-inner">
-                                <span className="material-symbols-outlined">auto_stories</span>
+                                <span className="material-symbols-outlined">
+                                    {location.pathname.includes('/writing') ? 'edit_note' :
+                                        location.pathname.includes('/graph') ? 'hub' :
+                                            location.pathname.includes('/bible') ? 'auto_stories' :
+                                                location.pathname.includes('/map') ? 'map' :
+                                                    location.pathname.includes('/timeline') ? 'timeline' :
+                                                        location.pathname.includes('/languages') ? 'translate' :
+                                                            'auto_stories'}
+                                </span>
                             </div>
                             <h2 className="text-sm font-black uppercase tracking-widest text-white truncate max-w-[150px]">{loadedProjectName}</h2>
                         </div>
@@ -188,7 +196,9 @@ const ArchitectLayout = () => {
                         <NavItem to={`${baseUrl}/graph`} icon="hub" label="Graph" collapsed={!leftOpen} />
                         <div className="h-px bg-glass-border my-2 mx-2 opacity-50"></div>
                         <NavItem to={`${baseUrl}/writing`} icon="edit_note" label="Writing" collapsed={!leftOpen} />
-                        <NavItem to={`${baseUrl}/settings`} icon="settings" label="Settings" collapsed={!leftOpen} />
+                        {/* Settings removed from project sidebar - now global in the hub */}
+                        <div className="h-px bg-glass-border my-2 mx-2 opacity-10"></div>
+                        <NavItem to="/" icon="logout" label="Salir al Hub" collapsed={!leftOpen} />
                     </div>
                 </div>
 

@@ -58,6 +58,10 @@ public class DatabaseMigration {
         try {
             System.out.println("[MIGRATION] Migrating: " + dbFile.getName());
 
+            // 1. Pre-Flyway: Manual patch for common missing columns to avoid duplicate
+            // errors in Flyway
+            manualPatchMissingColumns(jdbcUrl);
+
             Flyway flyway = Flyway.configure()
                     .dataSource(jdbcUrl, "", "")
                     .locations("filesystem:src/main/resources/db/migration")
@@ -70,6 +74,43 @@ public class DatabaseMigration {
         } catch (Exception e) {
             System.err.println("[MIGRATION ERROR] Failed to migrate " + dbFile.getName() + ": " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    private void manualPatchMissingColumns(String jdbcUrl) {
+        try (java.sql.Connection conn = java.sql.DriverManager.getConnection(jdbcUrl);
+                java.sql.Statement stmt = conn.createStatement()) {
+
+            patchTable(stmt, "hoja", new String[] { "deleted", "deleted_date", "numero_pagina" });
+            patchTable(stmt, "nota_rapida", new String[] { "deleted", "deleted_date" });
+            patchTable(stmt, "relacion", new String[] { "deleted", "deleted_date" });
+
+        } catch (java.sql.SQLException e) {
+            // Ignore if table doesn't exist yet
+        }
+    }
+
+    private void patchTable(java.sql.Statement stmt, String table, String[] columns) throws java.sql.SQLException {
+        java.util.Set<String> existingCols = new java.util.HashSet<>();
+        try (java.sql.ResultSet rs = stmt.executeQuery("PRAGMA table_info(" + table + ")")) {
+            while (rs.next()) {
+                existingCols.add(rs.getString("name").toLowerCase());
+            }
+        } catch (java.sql.SQLException e) {
+            return; // Table probably doesn't exist
+        }
+
+        for (String col : columns) {
+            if (!existingCols.contains(col.toLowerCase())) {
+                String type = col.contains("date") ? "TEXT"
+                        : (col.equals("numero_pagina") ? "INTEGER" : "BOOLEAN DEFAULT 0");
+                try {
+                    stmt.execute("ALTER TABLE " + table + " ADD COLUMN " + col + " " + type);
+                    System.out.println("   [PATCH] Added column " + col + " to " + table);
+                } catch (java.sql.SQLException e) {
+                    // Column might have been added by another thread/process
+                }
+            }
         }
     }
 }

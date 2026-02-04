@@ -6,6 +6,25 @@ const MapCreationWizard = ({ onCancel, onCreate }) => {
     const [step, setStep] = useState(1);
     const [mapType, setMapType] = useState('regional');
     const [canvasSource, setCanvasSource] = useState('upload');
+    const [uploadedFile, setUploadedFile] = useState(null);
+    const [mapName, setMapName] = useState('');
+    const fileInputRef = React.useRef(null);
+
+    const handleFileSelect = (e) => {
+        const file = e.target.files?.[0];
+        if (file && file.type.startsWith('image/')) {
+            setUploadedFile(file);
+            setCanvasSource('upload');
+        }
+    };
+
+    const handleUploadClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleCreate = () => {
+        onCreate(canvasSource, mapName || 'Nuevo Mapa', uploadedFile);
+    };
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background-dark/80 backdrop-blur-xl animate-in fade-in duration-300">
@@ -36,7 +55,16 @@ const MapCreationWizard = ({ onCancel, onCreate }) => {
                                 <h2 className="text-sm font-black uppercase tracking-[0.2em] text-white">Identidad y Jerarquía</h2>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pl-12">
-                                <InputField label="Nombre del Mapa" placeholder="ej. La Costa de Zafiro" />
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-600 ml-1">Nombre del Mapa</label>
+                                    <input
+                                        type="text"
+                                        placeholder="ej. La Costa de Zafiro"
+                                        value={mapName}
+                                        onChange={(e) => setMapName(e.target.value)}
+                                        className="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-3 text-sm text-white focus:border-primary/50 transition-all outline-none"
+                                    />
+                                </div>
                                 <div className="space-y-1.5 row-span-2">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-600 ml-1">Descripción</label>
                                     <textarea
@@ -98,12 +126,19 @@ const MapCreationWizard = ({ onCancel, onCreate }) => {
                                 <h2 className="text-sm font-black uppercase tracking-[0.2em] text-white">Fuente del Lienzo</h2>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pl-12">
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileSelect}
+                                    className="hidden"
+                                />
                                 <SourceCard
                                     active={canvasSource === 'upload'}
-                                    onClick={() => setCanvasSource('upload')}
+                                    onClick={handleUploadClick}
                                     icon="cloud_upload"
-                                    label="Cargar Archivo de Imagen"
-                                    desc="Arrastra y suelta o haz clic para buscar"
+                                    label={uploadedFile ? uploadedFile.name : "Cargar Archivo de Imagen"}
+                                    desc={uploadedFile ? "Archivo seleccionado" : "Arrastra y suelta o haz clic para buscar"}
                                     subdesc="JPG, PNG, WEBP • MAX 25MB"
                                 />
                                 <SourceCard
@@ -126,7 +161,7 @@ const MapCreationWizard = ({ onCancel, onCreate }) => {
                             <Button
                                 variant="primary"
                                 className="px-10 py-3 shadow-xl"
-                                onClick={() => onCreate(canvasSource)}
+                                onClick={handleCreate}
                             >
                                 Crear Mapa
                             </Button>

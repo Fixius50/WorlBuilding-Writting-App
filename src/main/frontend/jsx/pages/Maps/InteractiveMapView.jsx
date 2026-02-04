@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import GlassPanel from '../../components/common/GlassPanel';
 import Avatar from '../../components/common/Avatar';
 import Button from '../../components/common/Button';
+import LeafletMapView from '../../components/maps/LeafletMapView';
 
 const InteractiveMapView = ({ map }) => {
     const [selectedMarker, setSelectedMarker] = useState(null);
@@ -18,77 +19,61 @@ const InteractiveMapView = ({ map }) => {
 
     const mapImage = mapAttributes.bgImage || legacyData.bgImage || map?.iconUrl || null;
 
-    // Convert Editor Layers to Viewable Markers
-    // This is a basic mapping. In the future, we might want dedicated "pins" layer.
-    // For now, we'll strip out texts or specific shapes if we want them as markers, 
-    // BUT the editor draws them on the canvas. 
-    // The previous implementation used an overlay. 
-    // Since the editor "burns" drawing into the conceptual map, we probably just want to show the IMAGE for now.
-    // OR if we saved layers separately (we did), we could render them.
-    // Let's stick to just the image for this pass to fix the "default map" issue, 
-    // as the user's created map is likely just an image + drawings.
+    // Get markers from attributes
+    const markers = mapAttributes.markers || [];
 
-    const markers = []; // TODO: Parse 'point of interest' from map.attributes.layers if we add that feature.
+    // Get image dimensions (default to 1920x1080 if not specified)
+    const imageWidth = mapAttributes.imageWidth || 1920;
+    const imageHeight = mapAttributes.imageHeight || 1080;
+
+    const handleMarkerClick = (marker) => {
+        setSelectedMarker(marker);
+        console.log('Marker clicked:', marker);
+    };
 
     return (
         <div className="flex-1 flex overflow-hidden bg-background-dark font-sans text-slate-300 relative">
             {/* Map Canvas */}
             <main className="flex-1 overflow-hidden relative group">
                 <div className="absolute inset-4 rounded-[2.5rem] overflow-hidden border border-white/5 shadow-2xl bg-surface-dark">
-                    {/* World Map Background */}
-                    {/* World Map Background */}
+                    {/* Interactive Leaflet Map */}
                     {mapImage ? (
-                        <img
-                            src={mapImage}
-                            alt={mapName}
-                            className="w-full h-full object-contain bg-black/20"
+                        <LeafletMapView
+                            mapImage={mapImage}
+                            markers={markers}
+                            onMarkerClick={handleMarkerClick}
+                            imageWidth={imageWidth}
+                            imageHeight={imageHeight}
                         />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center text-slate-500">
-                            Map Image Not Found
+                            <div className="text-center space-y-4">
+                                <span className="material-symbols-outlined text-6xl opacity-20">map</span>
+                                <p>Map Image Not Found</p>
+                                <p className="text-xs text-slate-600">Upload a map image in the editor to get started</p>
+                            </div>
                         </div>
                     )}
-
-                    {/* Markers Overlay */}
-                    <div className="absolute inset-0">
-                        {markers.map(marker => (
-                            <div
-                                key={marker.id}
-                                onClick={() => setSelectedMarker(marker)}
-                                className={`absolute size-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all hover:scale-125 z-10 ${selectedMarker?.id === marker.id ? 'scale-125' : ''}`}
-                                style={{ left: marker.x, top: marker.y }}
-                            >
-                                <div className={`size-full rounded-2xl ${marker.color} border-4 border-background-dark shadow-[0_0_20px_rgba(0,0,0,0.5)] flex items-center justify-center text-white relative group/marker`}>
-                                    <span className="material-symbols-outlined text-lg">{marker.type === 'location' ? 'fort' : marker.type === 'region' ? 'terrain' : 'skull'}</span>
-
-                                    {/* Tooltip Label */}
-                                    <div className="absolute top-12 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-lg bg-surface-dark border border-white/10 text-[9px] font-black uppercase tracking-widest text-white whitespace-nowrap opacity-0 group-hover/marker:opacity-100 transition-opacity">
-                                        {marker.name}
-                                    </div>
-
-                                    {/* Pulse Effect */}
-                                    <div className={`absolute -inset-2 rounded-[1.5rem] opacity-20 animate-ping -z-10 ${marker.color}`}></div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
                 </div>
 
-                {/* Left Floating Controls */}
-                <aside className="absolute left-12 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-4">
-                    <GlassPanel className="p-2 flex flex-col gap-2 rounded-2xl border-white/10 bg-surface-dark/40 backdrop-blur-2xl shadow-2xl">
-                        <MapControlButton icon="near_me" active />
-                        <MapControlButton icon="location_on" />
-                        <MapControlButton icon="brush" />
-                        <MapControlButton icon="layers" />
-                        <div className="w-8 h-px bg-white/10 mx-auto my-1"></div>
-                        <MapControlButton icon="tune" />
+                {/* Floating Map Title */}
+                <div className="absolute top-8 left-8 z-[1000]">
+                    <GlassPanel className="px-6 py-3 border-white/10">
+                        <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-3">
+                            <span className="material-symbols-outlined text-primary">public</span>
+                            {mapName}
+                        </h1>
                     </GlassPanel>
-                </aside>
+                </div>
 
-                {/* Zoom Indicator */}
-                <div className="absolute bottom-12 left-12 z-20 px-4 py-2 rounded-xl bg-black/40 border border-white/10 backdrop-blur-md text-[10px] font-black tracking-widest text-slate-400">
-                    125%
+                {/* Quick Actions */}
+                <div className="absolute top-8 right-8 z-[1000] flex gap-3">
+                    <button className="size-12 rounded-xl bg-surface-dark/90 backdrop-blur-xl border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-primary/50 transition-all shadow-lg">
+                        <span className="material-symbols-outlined">fullscreen</span>
+                    </button>
+                    <button className="size-12 rounded-xl bg-surface-dark/90 backdrop-blur-xl border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-primary/50 transition-all shadow-lg">
+                        <span className="material-symbols-outlined">share</span>
+                    </button>
                 </div>
             </main>
 
@@ -111,11 +96,11 @@ const InteractiveMapView = ({ map }) => {
 
                             <div className="space-y-4">
                                 <div className="flex justify-between items-start">
-                                    <h2 className="text-3xl font-manrope font-black text-white tracking-tight leading-none">{selectedMarker.name}</h2>
+                                    <h2 className="text-3xl font-manrope font-black text-white tracking-tight leading-none">{selectedMarker.label || selectedMarker.name}</h2>
                                     <button className="text-slate-500 hover:text-white transition-colors p-2 rounded-xl hover:bg-white/5"><span className="material-symbols-outlined">edit</span></button>
                                 </div>
                                 <p className="text-sm text-slate-400 leading-relaxed font-manrope">
-                                    La antigua sede de los Magos de Fuego, erigida sobre la caldera inactiva del Monte Ignis. Sus muros están imbuidos de magia protectora.
+                                    {selectedMarker.description || 'No description available'}
                                 </p>
                             </div>
                         </header>

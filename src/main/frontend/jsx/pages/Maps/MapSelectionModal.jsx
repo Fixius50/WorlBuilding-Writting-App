@@ -32,21 +32,36 @@ const MapSelectionModal = ({ maps, onSelect, onCreateNew, onClose }) => {
                         </div>
 
                         {/* Existing Maps */}
-                        {maps.map(map => (
-                            <div
-                                key={map.id}
-                                onClick={() => onSelect(map)}
-                                className="group p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/50 hover:bg-white/10 transition-all cursor-pointer space-y-3"
-                            >
-                                <div className="aspect-video rounded-xl bg-surface-light border border-white/5 flex items-center justify-center overflow-hidden">
-                                    <span className="material-symbols-outlined text-4xl opacity-20 group-hover:opacity-40 transition-opacity">image</span>
+                        {maps.map(map => {
+                            // Get map preview image
+                            const previewImage = map.attributes?.snapshotUrl || map.attributes?.bgImage || map.iconUrl;
+
+                            return (
+                                <div
+                                    key={map.id}
+                                    onClick={() => onSelect(map)}
+                                    className="group p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/50 hover:bg-white/10 transition-all cursor-pointer space-y-3"
+                                >
+                                    <div className="aspect-video rounded-xl bg-surface-light border border-white/5 flex items-center justify-center overflow-hidden">
+                                        {previewImage ? (
+                                            <img
+                                                src={previewImage}
+                                                alt={map.nombre}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            />
+                                        ) : (
+                                            <span className="material-symbols-outlined text-4xl opacity-20 group-hover:opacity-40 transition-opacity">image</span>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <h3 className="text-sm font-bold text-white truncate">{map.nombre}</h3>
+                                        <p className="text-[10px] text-slate-500 uppercase font-black tracking-tighter">
+                                            {map.attributes?.layers?.length || 0} capas
+                                        </p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 className="text-sm font-bold text-white truncate">{map.nombre}</h3>
-                                    <p className="text-[10px] text-slate-500 uppercase font-black tracking-tighter">Última edición: Reciente</p>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
 
                     <footer className="p-6 bg-white/[0.02] border-t border-white/5 flex justify-end">
