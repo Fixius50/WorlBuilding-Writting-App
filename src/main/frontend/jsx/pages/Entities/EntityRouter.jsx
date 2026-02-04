@@ -31,9 +31,9 @@ const EntityRouter = () => {
             case 'construccion':
                 return <LocationView id={entityId} />; // Reusing LocationView for now
             case 'efectos':
-                return <div className="p-8 text-white">Effect/Spell View for ID: {id}</div>;
+                return <div className="p-8 text-white">Effect/Spell View for ID: {entityId}</div>;
             case 'interaccion':
-                return <div className="p-8 text-white">Interaction/Event View for ID: {id}</div>;
+                return <div className="p-8 text-white">Interaction/Event View for ID: {entityId}</div>;
             case 'magic':
                 return <div className="p-8 text-white">Magic System View for ID: {id}</div>;
             default:

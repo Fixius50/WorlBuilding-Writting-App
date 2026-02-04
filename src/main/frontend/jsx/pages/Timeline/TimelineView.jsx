@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 import { useOutletContext } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import api from '../../../js/services/api';
@@ -7,6 +8,7 @@ import GlassPanel from '../../components/common/GlassPanel';
 import Button from '../../components/common/Button';
 
 const TimelineView = () => {
+    const { t } = useLanguage();
     // Context from ArchitectLayout
     const { setRightPanelMode, setRightOpen, setRightPanelTitle } = useOutletContext();
 
@@ -91,7 +93,7 @@ const TimelineView = () => {
     useEffect(() => {
         // Activate Custom Mode
         setRightPanelMode('CUSTOM');
-        setRightPanelTitle('Línea de Tiempo');
+        setRightPanelTitle(t('timeline.title'));
         // setRightOpen(true); // Don't force open
 
         // Poll for target node availability
@@ -127,7 +129,7 @@ const TimelineView = () => {
     const updateTitle = (timelineName) => {
         setRightPanelTitle(
             <div className="flex flex-col">
-                <span>LÍNEA DE TIEMPO</span>
+                <span>{t('timeline.title').toUpperCase()}</span>
                 {timelineName && <span className="text-[10px] text-slate-400 font-medium normal-case tracking-normal mt-0.5">{timelineName}</span>}
             </div>
         );
@@ -145,7 +147,7 @@ const TimelineView = () => {
                 updateTitle(null);
             }
         } else if (activeTab === 'universo') {
-            setRightPanelTitle('Multiverso');
+            setRightPanelTitle(t('timeline.multiverse'));
         }
     }, [selectedTimelineId, activeTab, universes]);
 
@@ -277,7 +279,7 @@ const TimelineView = () => {
 
     const handleDeleteUniverse = async () => {
         if (!selectedUniverseId) return;
-        if (!window.confirm("Delete this universe and ALL its timelines? This cannot be undone.")) return;
+        if (!window.confirm(t('timeline.delete_universe_confirm'))) return;
         try {
             await api.delete(`/multiverso/${selectedUniverseId}`);
             setRightOpen(false);
@@ -322,8 +324,8 @@ const TimelineView = () => {
             open: true,
             type: 'TIMELINE',
             id,
-            title: 'Delete Timeline',
-            message: 'Are you sure you want to delete this timeline? All events will be lost.'
+            title: t('timeline.delete_line'),
+            message: t('bible.delete_folder_msg')
         });
     };
 
@@ -333,8 +335,8 @@ const TimelineView = () => {
             open: true,
             type: 'EVENT',
             id,
-            title: 'Delete Event',
-            message: 'Are you sure you want to delete this event?'
+            title: t('timeline.delete_event'),
+            message: t('common.are_you_sure')
         });
     };
 
@@ -361,7 +363,7 @@ const TimelineView = () => {
             }
         } catch (error) {
             console.error(error);
-            alert("Error deleting item");
+            alert(t('common.error_delete'));
         }
     };
 
@@ -375,19 +377,19 @@ const TimelineView = () => {
                         onClick={() => setActiveTab('eventos')}
                         className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-md transition-all ${activeTab === 'eventos' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                     >
-                        Eventos
+                        {t('timeline.events_tab')}
                     </button>
                     <button
                         onClick={() => setActiveTab('anexos')}
                         className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-md transition-all ${activeTab === 'anexos' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                     >
-                        Anexos
+                        {t('timeline.annexes_tab')}
                     </button>
                     <button
                         onClick={() => setActiveTab('universo')}
                         className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-md transition-all ${activeTab === 'universo' ? 'bg-amber-600 text-white shadow-lg' : 'text-slate-500 hover:text-amber-500/80'}`}
                     >
-                        Universo
+                        {t('timeline.multiverse')}
                     </button>
                 </div>
             </div>
@@ -397,27 +399,27 @@ const TimelineView = () => {
                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
                         <div className="bg-black/20 rounded-xl p-4 border border-white/5">
                             <h3 className="text-xs font-black uppercase text-primary mb-4 flex items-center justify-between">
-                                {editingEvent ? 'Edit Event' : 'New Event'}
+                                {editingEvent ? t('timeline.edit_event') : t('timeline.add_event')}
                                 {editingEvent && (
                                     <button onClick={() => { setEditingEvent(null); setNewEvent({ nombre: '', descripcion: '', fechaTexto: '', ordenAbsoluto: events.length + 1 }); }} className="text-[10px] text-slate-500 hover:text-white underline">
-                                        CANCEL
+                                        {t('common.cancel').toUpperCase()}
                                     </button>
                                 )}
                             </h3>
 
                             <div className="space-y-3">
                                 <div>
-                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Title</label>
+                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">{t('timeline.event_name')}</label>
                                     <input
                                         className="w-full bg-background-dark border border-white/10 rounded-lg p-2 text-sm text-white outline-none focus:border-primary"
                                         value={newEvent.nombre}
                                         onChange={e => setNewEvent({ ...newEvent, nombre: e.target.value })}
-                                        placeholder="Event Name"
+                                        placeholder={t('timeline.event_name')}
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-2">
                                     <div>
-                                        <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Date Label</label>
+                                        <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">{t('timeline.date_label')}</label>
                                         <input
                                             className="w-full bg-background-dark border border-white/10 rounded-lg p-2 text-sm text-white outline-none focus:border-primary"
                                             value={newEvent.fechaTexto}
@@ -426,7 +428,7 @@ const TimelineView = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Order (Sort)</label>
+                                        <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">{t('timeline.order')}</label>
                                         <input
                                             type="text"
                                             className="w-full bg-background-dark border border-white/10 rounded-lg p-2 text-sm text-white outline-none focus:border-primary"
@@ -440,17 +442,17 @@ const TimelineView = () => {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Description</label>
+                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">{t('timeline.description')}</label>
                                     <textarea
                                         className="w-full bg-background-dark border border-white/10 rounded-lg p-2 text-sm text-white outline-none focus:border-primary h-24 resize-none"
                                         value={newEvent.descripcion}
                                         onChange={e => setNewEvent({ ...newEvent, descripcion: e.target.value })}
-                                        placeholder="Describe what happened..."
+                                        placeholder={t('timeline.description')}
                                     />
                                 </div>
                                 <div className="pt-2">
                                     <Button variant="primary" onClick={handleSaveEvent} className="w-full justify-center">
-                                        {editingEvent ? 'Save Changes' : 'Create Event'}
+                                        {editingEvent ? t('timeline.save_changes') : t('timeline.create_event')}
                                     </Button>
                                 </div>
 
@@ -459,7 +461,7 @@ const TimelineView = () => {
                                         onClick={(e) => handleDeleteEvent(editingEvent.id, e)}
                                         className="w-full text-center text-xs text-red-500 hover:text-red-400 py-2 border border-red-500/20 rounded-lg hover:bg-red-500/10 transition-colors"
                                     >
-                                        Delete Event
+                                        {t('timeline.delete_event_btn')}
                                     </button>
                                 )}
                             </div>
@@ -471,8 +473,8 @@ const TimelineView = () => {
                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
                         {/* ... existing anexos content (implicit) ... */}
                         <div className="bg-black/20 rounded-xl p-4 border border-white/5">
-                            <h3 className="text-xs font-black uppercase text-primary mb-4">Annexed Timelines</h3>
-                            <p className="text-xs text-slate-500 mb-4">Link other localized timelines to this one to verify chronological consistency.</p>
+                            <h3 className="text-xs font-black uppercase text-primary mb-4">{t('timeline.linked_timelines')}</h3>
+                            <p className="text-xs text-slate-500 mb-4">{t('timeline.annexed_desc')}</p>
 
                             <div className="space-y-2 mb-6">
                                 {linkedTimelines.map(lt => (
@@ -486,10 +488,10 @@ const TimelineView = () => {
                                         </button>
                                     </div>
                                 ))}
-                                {linkedTimelines.length === 0 && <span className="text-xs text-slate-600 italic">No linked timelines.</span>}
+                                {linkedTimelines.length === 0 && <span className="text-xs text-slate-600 italic">{t('timeline.no_linked')}</span>}
                             </div>
 
-                            <h4 className="text-[10px] font-bold uppercase text-slate-400 mb-2">Available to Link</h4>
+                            <h4 className="text-[10px] font-bold uppercase text-slate-400 mb-2">{t('timeline.available_to_link')}</h4>
                             <div className="space-y-1">
                                 {availableTimelines.map(at => (
                                     <button
@@ -501,7 +503,7 @@ const TimelineView = () => {
                                         <span className="text-xs text-slate-400 group-hover:text-white">{at.nombre}</span>
                                     </button>
                                 ))}
-                                {availableTimelines.length === 0 && <span className="text-xs text-slate-600 italic">No other timelines available.</span>}
+                                {availableTimelines.length === 0 && <span className="text-xs text-slate-600 italic">{t('timeline.no_available')}</span>}
                             </div>
                         </div>
                     </div>
@@ -510,10 +512,10 @@ const TimelineView = () => {
                 {activeTab === 'universo' && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
                         <div className="bg-black/20 rounded-xl p-4 border border-white/5">
-                            <h3 className="text-xs font-black uppercase text-amber-500 mb-4">{selectedUniverseId ? 'Edit Universe' : 'New Universe'}</h3>
+                            <h3 className="text-xs font-black uppercase text-amber-500 mb-4">{selectedUniverseId ? t('timeline.universe_settings') : t('timeline.new_universe')}</h3>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Universe Name</label>
+                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">{t('timeline.universe_name')}</label>
                                     <input
                                         className="w-full bg-background-dark border border-white/10 rounded-lg p-2 text-sm text-white outline-none focus:border-primary"
                                         value={newUniverse.nombre}
@@ -527,7 +529,7 @@ const TimelineView = () => {
                                         className="w-full bg-background-dark border border-white/10 rounded-lg p-2 text-sm text-white outline-none focus:border-primary h-24 resize-none"
                                         value={newUniverse.descripcion}
                                         onChange={e => setNewUniverse({ ...newUniverse, descripcion: e.target.value })}
-                                        placeholder="Context for this universe..."
+                                        placeholder={t('timeline.universe_desc')}
                                     />
                                 </div>
 
@@ -537,7 +539,7 @@ const TimelineView = () => {
                                         onClick={selectedUniverseId ? handleUpdateUniverse : handleCreateUniverse}
                                         className="w-full justify-center"
                                     >
-                                        {selectedUniverseId ? 'Save Changes' : 'Create Universe'}
+                                        {selectedUniverseId ? t('common.save') : t('common.create')}
                                     </Button>
                                 </div>
 
@@ -546,7 +548,7 @@ const TimelineView = () => {
                                         onClick={handleDeleteUniverse}
                                         className="w-full text-center text-xs text-red-500 hover:text-red-400 py-2 border border-red-500/20 rounded-lg hover:bg-red-500/10 transition-colors"
                                     >
-                                        Delete Universe
+                                        {t('common.delete')}
                                     </button>
                                 )}
                             </div>
@@ -565,7 +567,7 @@ const TimelineView = () => {
             {/* LEFT SIDEBAR: Multiverse Selector */}
             <aside className="w-64 bg-surface-dark border-r border-white/5 flex flex-col p-4 z-20 shrink-0">
                 <header className="flex justify-between items-center mb-6">
-                    <h2 className="text-xs font-black uppercase tracking-widest text-primary">Multiverse</h2>
+                    <h2 className="text-xs font-black uppercase tracking-widest text-primary">{t('timeline.multiverse')}</h2>
                     <button onClick={() => { setRightPanelMode('CUSTOM'); setActiveTab('universo'); setSelectedUniverseId(null); setNewUniverse({ nombre: '', descripcion: '' }); setRightOpen(true); }} className="text-slate-400 hover:text-white" title="New Universe">
                         <span className="material-symbols-outlined">add_circle</span>
                     </button>
@@ -605,8 +607,8 @@ const TimelineView = () => {
                                         onKeyDown={(e) => e.key === 'Enter' && handleCreateTimeline()}
                                     />
                                     <div className="flex justify-end gap-1">
-                                        <button onClick={() => setIsCreatingLine(false)} className="text-[10px] text-slate-500 hover:text-white">CANCEL</button>
-                                        <button onClick={handleCreateTimeline} className="text-[10px] font-bold text-primary">CREATE</button>
+                                        <button onClick={() => setIsCreatingLine(false)} className="text-[10px] text-slate-500 hover:text-white">{t('common.cancel').toUpperCase()}</button>
+                                        <button onClick={handleCreateTimeline} className="text-[10px] font-bold text-primary">{t('common.create').toUpperCase()}</button>
                                     </div>
                                 </div>
                             )}
@@ -629,7 +631,7 @@ const TimelineView = () => {
                                     </div>
                                 ))}
                                 {(!uni.lineasTemporales || uni.lineasTemporales.length === 0) && (
-                                    <div className="p-2 text-[10px] italic text-slate-600">No timelines here</div>
+                                    <div className="p-2 text-[10px] italic text-slate-600">{t('timeline.no_timelines')}</div>
                                 )}
                             </div>
                         </div>
@@ -651,7 +653,7 @@ const TimelineView = () => {
                                 <>
                                     <h1 className="text-xl font-bold flex items-center gap-2">
                                         {active?.esRaiz && <span className="text-amber-400 material-symbols-outlined">star</span>}
-                                        {active?.nombre || 'Select Timeline'}
+                                        {active?.nombre || t('timeline.select_timeline')}
                                     </h1>
                                     <p className="text-xs text-slate-500">{active?.descripcion}</p>
                                 </>
@@ -665,7 +667,7 @@ const TimelineView = () => {
                     <div className="max-w-2xl mx-auto relative pl-8 border-l-2 border-white/10 space-y-8 pb-32">
                         {events.length === 0 && (
                             <div className="text-center text-slate-600 italic py-20">
-                                No events yet. Use the right panel to add one.
+                                {t('timeline.no_events')}
                             </div>
                         )}
 
@@ -708,7 +710,7 @@ const TimelineView = () => {
                 onConfirm={executeDeletion}
                 title={confirmState.title}
                 message={confirmState.message}
-                confirmText="Delete"
+                confirmText={t('common.delete')}
                 type="danger"
             />
         </div>

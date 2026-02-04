@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 import { Outlet, useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import api from '../../../js/services/api';
 import FolderItem from '../../components/bible/FolderItem';
@@ -13,6 +14,7 @@ const WorldBibleLayout = () => {
         handleCreateEntity: propHandleCreateEntity, // In case it's passed down, but we define it here mostly
         ...architectContext
     } = useOutletContext() || {};
+    const { t } = useLanguage();
 
     const [folders, setFolders] = useState([]);
     const [favorites, setFavorites] = useState([]);
@@ -62,7 +64,7 @@ const WorldBibleLayout = () => {
         try {
             const parentId = parentFolder ? (typeof parentFolder === 'object' ? parentFolder.id : parentFolder) : null;
             const newFolder = await api.post('/world-bible/folders', {
-                nombre: type === 'TIMELINE' ? 'Nueva Línea de Tiempo' : 'Nueva Carpeta',
+                nombre: type === 'TIMELINE' ? t('bible.new_timeline') : t('bible.new_folder'),
                 padreId: parentId,
                 tipo: type
             });
@@ -274,7 +276,7 @@ const WorldBibleLayout = () => {
                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm group-focus-within:text-primary transition-colors">search</span>
                         <input
                             type="text"
-                            placeholder="Buscar en Biblia..."
+                            placeholder={t('bible.search_entity')}
                             className="w-full bg-surface-light/50 border border-glass-border rounded-xl py-2 pl-9 pr-3 text-xs focus:border-primary/50 outline-none transition-all text-white placeholder:text-text-muted/50"
                         />
                     </div>
@@ -284,7 +286,7 @@ const WorldBibleLayout = () => {
                 {/* Favorites Section */}
                 <div className="px-2 pt-2">
                     <div className="flex items-center justify-between px-2 mb-1">
-                        <h2 className="text-[10px] font-black uppercase tracking-widest text-text-muted">Favoritos</h2>
+                        <h2 className="text-[10px] font-black uppercase tracking-widest text-text-muted">{t('bible.favorites')}</h2>
                     </div>
                     {favorites.length > 0 ? (
                         <div className="space-y-0.5">
@@ -299,19 +301,19 @@ const WorldBibleLayout = () => {
                             ))}
                         </div>
                     ) : (
-                        <div className="px-4 py-2 text-[10px] text-text-muted/30 italic">Sin favoritos</div>
+                        <div className="px-4 py-2 text-[10px] text-text-muted/30 italic">{t('bible.no_favorites')}</div>
                     )}
                     <div className="h-px bg-glass-border my-2 opacity-50"></div>
                 </div>
 
                 <div className="p-4 border-b border-glass-border pt-0">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-[10px] font-black uppercase tracking-widest text-text-muted">Explorador</h2>
+                        <h2 className="text-[10px] font-black uppercase tracking-widest text-text-muted">{t('bible.explorer')}</h2>
                         <div className="relative">
                             <button
                                 className="transition-colors hover:text-white text-primary"
                                 onClick={() => handleCreateSimpleFolder(null)}
-                                title="Crear Carpeta"
+                                title={t('bible.new_folder')}
                             >
                                 <span className="material-symbols-outlined text-sm">create_new_folder</span>
                             </button>
@@ -324,7 +326,7 @@ const WorldBibleLayout = () => {
                     {folders.length === 0 ? (
                         <div className="p-8 text-center opacity-30">
                             <span className="material-symbols-outlined text-3xl mb-2">folder_off</span>
-                            <p className="text-[10px] uppercase font-bold">Biblia Vacía</p>
+                            <p className="text-[10px] uppercase font-bold">{t('bible.empty_archive')}</p>
                         </div>
                     ) : (
                         folders.map(folder => (
@@ -370,12 +372,12 @@ const WorldBibleLayout = () => {
                 isOpen={confirmOpen}
                 onClose={() => setConfirmOpen(false)}
                 onConfirm={confirmDeletion}
-                title={deletionTarget?.type === 'folder' ? "Borrar Carpeta" : "Borrar Entidad"}
+                title={deletionTarget?.type === 'folder' ? t('bible.delete_folder') : t('bible.delete_entity')}
                 message={deletionTarget?.type === 'folder'
-                    ? "Esta acción eliminará la carpeta y todo su contenido. ¿Estás seguro?"
-                    : "¿Estás seguro de querer eliminar esta entidad de tu mundo?"
+                    ? t('bible.delete_folder_msg')
+                    : t('bible.delete_entity_msg')
                 }
-                confirmText="Sí, borrar"
+                confirmText={t('common.confirm_delete')}
             />
         </div>
     );

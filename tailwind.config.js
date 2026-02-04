@@ -57,8 +57,13 @@ export default {
                     foreground: "hsl(var(--card-foreground))",
                 },
                 // Legacy Arcane Void aliases for existing components
-                "background-dark": "#09090b",
-                "glass": "rgba(9, 9, 11, 0.6)",
+                "background-dark": "hsl(var(--background))",
+                "surface-dark": "hsl(var(--background) / 0.95)",
+                "surface-light": "hsl(var(--foreground) / 0.05)",
+                "glass": "hsl(var(--background) / 0.6)",
+                "glass-border": "hsl(var(--foreground) / 0.1)",
+                "text-main": "hsl(var(--foreground))",
+                "text-muted": "hsl(var(--foreground) / 0.6)",
             },
             borderRadius: {
                 lg: "var(--radius)",

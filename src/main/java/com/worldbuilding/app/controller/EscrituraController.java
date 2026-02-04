@@ -5,7 +5,6 @@ import com.worldbuilding.app.model.Hoja;
 import com.worldbuilding.app.repository.CuadernoRepository;
 import com.worldbuilding.app.repository.HojaRepository;
 import jakarta.servlet.http.HttpSession;
-import com.worldbuilding.app.exception.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,53 +27,28 @@ public class EscrituraController {
     @Autowired
     private com.worldbuilding.app.repository.NotaRapidaRepository notaRapidaRepository;
 
-    private Cuaderno getProyectoActual(HttpSession session) {
+    @GetMapping("/cuadernos")
+    public List<Cuaderno> listarCuadernos(HttpSession session) {
         String nombreProyecto = (String) session.getAttribute("proyectoActivo");
         if (nombreProyecto == null)
-            throw new UnauthorizedException("No hay proyecto activo en sesión.");
+            return List.of();
 
-        String currentContext = com.worldbuilding.app.config.TenantContext.getCurrentTenant();
-        if (!nombreProyecto.equals(currentContext)) {
-            com.worldbuilding.app.config.TenantContext.setCurrentTenant(nombreProyecto);
-        }
-
-        return cuadernoRepository.findByNombreProyecto(nombreProyecto).stream()
-                .filter(java.util.Objects::nonNull)
-                .findFirst()
-                .orElseThrow(() -> new UnauthorizedException("Proyecto no encontrado en la base de datos de gestión."));
-    }
-
-    @GetMapping("/cuadernos")
-    public List<java.util.Map<String, Object>> listarCuadernos(HttpSession session) {
-        Cuaderno proyecto = getProyectoActual(session);
-
-        return List.of(java.util.Map.of(
-                "id", proyecto.getId(),
-                "titulo", proyecto.getTitulo() != null ? proyecto.getTitulo() : "Sin título",
-                "descripcion", proyecto.getDescripcion() != null ? proyecto.getDescripcion() : "",
-                "nombreProyecto", proyecto.getNombreProyecto()));
+        return cuadernoRepository.findByNombreProyecto(nombreProyecto);
     }
 
     @PostMapping("/cuaderno")
     public ResponseEntity<?> crearCuaderno(@RequestBody Map<String, String> body, HttpSession session) {
-        Cuaderno proyecto = getProyectoActual(session);
-        if (proyecto == null)
+        String nombreProyecto = (String) session.getAttribute("proyectoActivo");
+        if (nombreProyecto == null)
             return ResponseEntity.status(401).body("No hay proyecto activo");
 
-        // Note: This endpoint creates internal metadata for the *already selected
-        // project* (tenant)
-        // If meta exists, it updates it.
-        proyecto.setTitulo(body.getOrDefault("titulo", proyecto.getTitulo()));
-        proyecto.setDescripcion(body.get("descripcion"));
-        Cuaderno guardado = cuadernoRepository.save(proyecto);
+        Cuaderno nuevo = new Cuaderno();
+        nuevo.setNombreProyecto(nombreProyecto);
+        nuevo.setTitulo(body.getOrDefault("titulo", "Nuevo Archivador"));
+        nuevo.setDescripcion(body.get("descripcion"));
 
-        // Explicitly NOT creating a default page anymore per 'no self-healing' policy.
-        // If the user wants a page, they must create it.
-
-        return ResponseEntity.ok(Map.of(
-                "id", guardado.getId(),
-                "titulo", guardado.getTitulo(),
-                "nombreProyecto", guardado.getNombreProyecto()));
+        Cuaderno guardado = cuadernoRepository.save(nuevo);
+        return ResponseEntity.ok(guardado);
     }
 
     @GetMapping("/cuaderno/{id}")

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 import GlassPanel from '../../components/common/GlassPanel';
 import Avatar from '../../components/common/Avatar';
 import Button from '../../components/common/Button';
 import LeafletMapView from '../../components/maps/LeafletMapView';
 
 const InteractiveMapView = ({ map }) => {
+    const { t } = useLanguage();
     const [selectedMarker, setSelectedMarker] = useState(null);
-    const mapName = map?.nombre || 'Explorador de Mundo';
+    const mapName = map?.nombre || t('maps.explorer');
 
     // Resolve Map Image: attributes.bgImage -> attributes.snapshotUrl -> iconUrl -> fallback
     const mapAttributes = map?.attributes || {};
@@ -49,8 +51,8 @@ const InteractiveMapView = ({ map }) => {
                         <div className="w-full h-full flex items-center justify-center text-slate-500">
                             <div className="text-center space-y-4">
                                 <span className="material-symbols-outlined text-6xl opacity-20">map</span>
-                                <p>Map Image Not Found</p>
-                                <p className="text-xs text-slate-600">Upload a map image in the editor to get started</p>
+                                <p>{t('maps.not_found')}</p>
+                                <p className="text-xs text-slate-600">{t('maps.upload_desc')}</p>
                             </div>
                         </div>
                     )}
@@ -68,10 +70,10 @@ const InteractiveMapView = ({ map }) => {
 
                 {/* Quick Actions */}
                 <div className="absolute top-8 right-8 z-[1000] flex gap-3">
-                    <button className="size-12 rounded-xl bg-surface-dark/90 backdrop-blur-xl border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-primary/50 transition-all shadow-lg">
+                    <button className="size-12 rounded-xl bg-surface-dark/90 backdrop-blur-xl border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-primary/50 transition-all shadow-lg" title={t('maps.fullscreen')}>
                         <span className="material-symbols-outlined">fullscreen</span>
                     </button>
-                    <button className="size-12 rounded-xl bg-surface-dark/90 backdrop-blur-xl border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-primary/50 transition-all shadow-lg">
+                    <button className="size-12 rounded-xl bg-surface-dark/90 backdrop-blur-xl border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-primary/50 transition-all shadow-lg" title={t('maps.share')}>
                         <span className="material-symbols-outlined">share</span>
                     </button>
                 </div>
@@ -89,8 +91,8 @@ const InteractiveMapView = ({ map }) => {
                                     <button onClick={() => setSelectedMarker(null)} className="size-8 rounded-lg bg-black/40 border border-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition-colors"><span className="material-symbols-outlined text-sm">close</span></button>
                                 </div>
                                 <div className="absolute bottom-4 left-4 flex gap-2">
-                                    <span className="px-3 py-1 rounded bg-primary/20 text-primary border border-primary/20 text-[8px] font-black uppercase tracking-widest backdrop-blur-md">Lugar</span>
-                                    <span className="px-3 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-[8px] font-black uppercase tracking-widest backdrop-blur-md">Capital</span>
+                                    <span className="px-3 py-1 rounded bg-primary/20 text-primary border border-primary/20 text-[8px] font-black uppercase tracking-widest backdrop-blur-md">{t('maps.place')}</span>
+                                    <span className="px-3 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-[8px] font-black uppercase tracking-widest backdrop-blur-md">{t('maps.capital')}</span>
                                 </div>
                             </div>
 
@@ -109,8 +111,8 @@ const InteractiveMapView = ({ map }) => {
                             {/* Key Inhabitants */}
                             <section className="space-y-4">
                                 <div className="flex justify-between items-center px-1">
-                                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Habitantes Clave</h3>
-                                    <button className="text-[10px] font-bold text-primary hover:underline transition-all">Ver todos</button>
+                                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{t('maps.inhabitants')}</h3>
+                                    <button className="text-[10px] font-bold text-primary hover:underline transition-all">{t('maps.view_all')}</button>
                                 </div>
                                 <div className="space-y-3">
                                     <InhabitantRow name="Lyra Ignis" role="Gran Maga" />
@@ -120,7 +122,7 @@ const InteractiveMapView = ({ map }) => {
 
                             {/* Related Events */}
                             <section className="space-y-4">
-                                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 px-1">Eventos Relacionados</h3>
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 px-1">{t('maps.related_events')}</h3>
                                 <GlassPanel className="p-4 border-white/5 hover:border-white/10 transition-all cursor-pointer group">
                                     <div className="flex gap-4 items-center">
                                         <div className="size-10 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center">
@@ -137,7 +139,7 @@ const InteractiveMapView = ({ map }) => {
 
                         <footer className="pt-6 border-t border-white/5">
                             <Button variant="primary" icon="auto_stories" className="w-full py-4 rounded-2xl shadow-xl shadow-primary/20">
-                                Abrir en la Biblia
+                                {t('maps.open_bible')}
                             </Button>
                         </footer>
                     </div>

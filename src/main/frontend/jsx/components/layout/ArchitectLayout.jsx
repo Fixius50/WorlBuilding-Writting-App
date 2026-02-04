@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useParams, useNavigate, useLocation, NavLink } from 'react-router-dom';
+import { useLanguage } from '../../context/LanguageContext';
 import api from '../../../js/services/api';
 import TemplateManager from '../settings/TemplateManager';
 import GlobalNotes from './GlobalNotes';
@@ -46,6 +47,7 @@ const ArchitectLayout = () => {
     console.log("ArchitectLayout Mounting");
     const { username, projectName, folderSlug } = useParams();
     const navigate = useNavigate();
+    const { t } = useLanguage();
     const location = useLocation(); // Hook location
     const [leftOpen, setLeftOpen] = useState(true);
     const [rightOpen, setRightOpen] = useState(false);
@@ -148,6 +150,15 @@ const ArchitectLayout = () => {
         }
     };
 
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser && storedUser !== "undefined") {
+            setUser(JSON.parse(storedUser));
+        }
+    }, []);
+
     return (
         <div className="flex h-screen w-full overflow-hidden bg-background-dark text-text-main font-sans selection:bg-primary/30">
 
@@ -189,30 +200,34 @@ const ArchitectLayout = () => {
 
                 <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col">
                     <div className="p-3 space-y-1">
-                        <NavItem to={baseUrl} icon="home" label="Dashboard" collapsed={!leftOpen} end />
-                        <NavItem to={`${baseUrl}/bible`} icon="menu_book" label="World Bible" collapsed={!leftOpen} />
-                        <NavItem to={`${baseUrl}/map`} icon="map" label="Atlas" collapsed={!leftOpen} />
-                        <NavItem to={`${baseUrl}/timeline`} icon="calendar_month" label="Chronology" collapsed={!leftOpen} />
-                        <NavItem to={`${baseUrl}/graph`} icon="hub" label="Graph" collapsed={!leftOpen} />
+                        <NavItem to={baseUrl} icon="home" label={t('nav.dashboard')} collapsed={!leftOpen} end />
+                        <NavItem to={`${baseUrl}/bible`} icon="menu_book" label={t('nav.bible')} collapsed={!leftOpen} />
+                        <NavItem to={`${baseUrl}/map`} icon="map" label={t('nav.atlas')} collapsed={!leftOpen} />
+                        <NavItem to={`${baseUrl}/timeline`} icon="calendar_month" label={t('nav.chronology')} collapsed={!leftOpen} />
+                        <NavItem to={`${baseUrl}/graph`} icon="hub" label={t('nav.graph')} collapsed={!leftOpen} />
                         <div className="h-px bg-glass-border my-2 mx-2 opacity-50"></div>
-                        <NavItem to={`${baseUrl}/writing`} icon="edit_note" label="Writing" collapsed={!leftOpen} />
+                        <NavItem to={`${baseUrl}/writing`} icon="edit_note" label={t('nav.writing')} collapsed={!leftOpen} />
                         {/* Settings removed from project sidebar - now global in the hub */}
                         <div className="h-px bg-glass-border my-2 mx-2 opacity-10"></div>
-                        <NavItem to="/" icon="logout" label="Salir al Hub" collapsed={!leftOpen} />
+                        <NavItem to="/" icon="logout" label={t('nav.logout')} collapsed={!leftOpen} />
                     </div>
                 </div>
 
                 <footer className="p-4 border-t border-glass-border">
                     <div className={`flex items-center gap-3 ${!leftOpen && 'justify-center'}`}>
-                        <div className="size-10 rounded-full border border-glass-border p-1 bg-surface-light relative">
-                            <div className="w-full h-full rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center text-white font-black text-xs">
-                                {username ? username.substring(0, 2).toUpperCase() : 'US'}
-                            </div>
+                        <div className="size-10 rounded-full border border-glass-border p-1 bg-surface-light relative overflow-hidden">
+                            {user?.avatarUrl ? (
+                                <img src={user.avatarUrl} alt="Me" className="w-full h-full rounded-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center text-white font-black text-xs">
+                                    {(user?.displayName || username)?.substring(0, 2).toUpperCase() || 'US'}
+                                </div>
+                            )}
                         </div>
                         {leftOpen && (
                             <div className="overflow-hidden">
-                                <h4 className="text-xs font-bold text-white truncate">{username || 'User'}</h4>
-                                <p className="text-[10px] text-text-muted uppercase font-black tracking-tighter">Architect</p>
+                                <h4 className="text-xs font-bold text-white truncate">{user?.displayName || username || 'User'}</h4>
+                                <p className="text-[10px] text-text-muted uppercase font-black tracking-tighter">{t('common.architect')}</p>
                             </div>
                         )}
                     </div>
@@ -276,13 +291,13 @@ const ArchitectLayout = () => {
                                         onClick={() => setActiveWritingTab('index')}
                                         className={`flex-1 py-1 rounded-md text-[10px] uppercase font-bold transition-all ${activeWritingTab === 'index' ? 'bg-primary text-white shadow' : 'text-slate-500 hover:text-white'}`}
                                     >
-                                        Índice
+                                        {t('writing.index')}
                                     </button>
                                     <button
                                         onClick={() => setActiveWritingTab('notes')}
                                         className={`flex-1 py-1 rounded-md text-[10px] uppercase font-bold transition-all ${activeWritingTab === 'notes' ? 'bg-primary text-white shadow' : 'text-slate-500 hover:text-white'}`}
                                     >
-                                        Notas
+                                        {t('writing.notes')}
                                     </button>
                                 </div>
                             ) : isBibleContext && rightPanelMode === 'NOTES' ? (
@@ -291,24 +306,24 @@ const ArchitectLayout = () => {
                                         onClick={() => setActiveBibleTab('notes')}
                                         className={`px-3 py-1 rounded-md text-[10px] uppercase font-bold transition-all ${activeBibleTab === 'notes' ? 'bg-primary text-white shadow' : 'text-slate-500 hover:text-white'}`}
                                     >
-                                        Notas
+                                        {t('writing.notes')}
                                     </button>
                                     <button
                                         onClick={() => setActiveBibleTab('templates')}
                                         className={`px-3 py-1 rounded-md text-[10px] uppercase font-bold transition-all ${activeBibleTab === 'templates' ? 'bg-primary text-white shadow' : 'text-slate-500 hover:text-white'}`}
                                     >
-                                        Plantillas
+                                        {t('bible.templates')}
                                     </button>
                                     <button
                                         onClick={() => setActiveBibleTab('filters')}
                                         className={`px-3 py-1 rounded-md text-[10px] uppercase font-bold transition-all ${activeBibleTab === 'filters' ? 'bg-primary text-white shadow' : 'text-slate-500 hover:text-white'}`}
                                     >
-                                        Explorar
+                                        {t('bible.explore')}
                                     </button>
                                 </div>
                             ) : (
                                 <h2 className="text-xs font-black uppercase tracking-widest text-white">
-                                    {rightPanelTitle || (rightPanelMode === 'NOTES' ? 'Notas Globales' : 'Constructor')}
+                                    {rightPanelTitle || (rightPanelMode === 'NOTES' ? t('settings.notes_global') : t('common.architect'))}
                                 </h2>
                             )}
 
@@ -358,7 +373,7 @@ const ArchitectLayout = () => {
                                             <input
                                                 value={folderSearchTerm}
                                                 onChange={e => setFolderSearchTerm(e.target.value)}
-                                                placeholder="Buscar entidad..."
+                                                placeholder={t('bible.search_entity')}
                                                 className="bg-transparent border-none outline-none text-sm text-white w-full placeholder-slate-600"
                                             />
                                             {folderSearchTerm && (
@@ -375,10 +390,10 @@ const ArchitectLayout = () => {
                                         <h3 className="text-xs font-black uppercase tracking-widest text-text-muted">Filtrar por Tipo</h3>
                                         <div className="grid grid-cols-2 gap-2">
                                             {[
-                                                { id: 'ALL', label: 'Todos', icon: 'grid_view' },
-                                                { id: 'ENTITY', label: 'Entidades', icon: 'person' },
-                                                { id: 'MAP', label: 'Mapas', icon: 'map' },
-                                                { id: 'TIMELINE', label: 'Timelines', icon: 'timeline' }
+                                                { id: 'ALL', label: t('bible.all'), icon: 'grid_view' },
+                                                { id: 'ENTITY', label: t('bible.entities'), icon: 'person' },
+                                                { id: 'MAP', label: t('bible.maps'), icon: 'map' },
+                                                { id: 'TIMELINE', label: t('bible.timelines'), icon: 'timeline' }
                                             ].map(type => (
                                                 <button
                                                     key={type.id}
@@ -447,10 +462,10 @@ const ArchitectLayout = () => {
 
                                 {/* Dimensions Settings */}
                                 <div className="space-y-4">
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-text-muted">Canvas Data</h3>
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-text-muted">{t('atlas.canvas_data')}</h3>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-1">
-                                            <label className="text-[10px] uppercase font-bold text-slate-500">Width (px)</label>
+                                            <label className="text-[10px] uppercase font-bold text-slate-500">{t('atlas.width')}</label>
                                             <input
                                                 type="number"
                                                 value={mapSettings.width}
@@ -462,7 +477,7 @@ const ArchitectLayout = () => {
                                                 className="w-full bg-black/20 border border-white/10 rounded-lg p-2 text-white text-right font-mono text-sm focus:border-primary outline-none" />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[10px] uppercase font-bold text-slate-500">Height (px)</label>
+                                            <label className="text-[10px] uppercase font-bold text-slate-500">{t('atlas.height')}</label>
                                             <input
                                                 type="number"
                                                 value={mapSettings.height}
@@ -480,12 +495,12 @@ const ArchitectLayout = () => {
 
                                 {/* Background Image Settings */}
                                 <div className="space-y-4">
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-text-muted">Background Image</h3>
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-text-muted">{t('atlas.background_image')}</h3>
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-2">
                                             <label className="cursor-pointer bg-white/5 hover:bg-white/10 text-white rounded-lg px-3 py-2 text-xs font-bold transition-colors border border-glass-border flex items-center gap-2 flex-1">
                                                 <span className="material-symbols-outlined text-sm">upload</span>
-                                                <span>Upload New Image</span>
+                                                <span>{t('atlas.upload_image')}</span>
                                                 <input
                                                     type="file"
                                                     accept="image/*"
@@ -580,7 +595,7 @@ const ArchitectLayout = () => {
                                 {activeEntityTab === 'attributes' && (
                                     <div className="flex-1 overflow-hidden flex flex-col bg-black/20">
                                         <div className="px-6 py-4 text-[10px] font-black uppercase text-slate-500 tracking-widest flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-sm">drag_indicator</span> Drag Attributes
+                                            <span className="material-symbols-outlined text-sm">drag_indicator</span> {t('bible.drag_attributes')}
                                         </div>
                                         <div className="flex-1 overflow-y-auto custom-scrollbar px-2">
                                             <TemplateManager compact={true} initialFolderSlug={folderSlug} />
@@ -593,7 +608,7 @@ const ArchitectLayout = () => {
                             <div className="p-4 space-y-6">
                                 <div className="space-y-3">
                                     <h3 className="text-[10px] font-black uppercase tracking-widest text-text-muted px-2 flex justify-between items-center">
-                                        <span>Plantillas Disponibles</span>
+                                        <span>{t('settings.available_templates')}</span>
                                         <button
                                             className="text-primary hover:text-white transition-colors"
                                             title="Crear Nueva Plantilla"
@@ -605,7 +620,7 @@ const ArchitectLayout = () => {
 
                                     {availableTemplates.length === 0 ? (
                                         <div className="p-6 text-center border border-dashed border-glass-border rounded-2xl opacity-30">
-                                            <p className="text-[10px] uppercase font-bold">Sin Plantillas</p>
+                                            <p className="text-[10px] uppercase font-bold">{t('settings.no_templates')}</p>
                                         </div>
                                     ) : (
                                         availableTemplates.map(tpl => (
@@ -721,10 +736,10 @@ const ArchitectLayout = () => {
                 editingTemplate && (
                     <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
                         <div className="bg-surface-dark border border-glass-border rounded-2xl p-6 w-full max-w-md shadow-2xl animate-scale-in">
-                            <h3 className="text-xl font-black text-white mb-4">Editar Plantilla</h3>
+                            <h3 className="text-xl font-black text-white mb-4">{t('settings.edit_template')}</h3>
                             <form onSubmit={handleUpdateTemplate} className="space-y-4">
                                 <div>
-                                    <label className="text-xs uppercase font-bold text-text-muted block mb-1">Nombre</label>
+                                    <label className="text-xs uppercase font-bold text-text-muted block mb-1">{t('settings.name')}</label>
                                     <input
                                         autoFocus
                                         className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white focus:border-primary outline-none"
@@ -735,7 +750,7 @@ const ArchitectLayout = () => {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-xs uppercase font-bold text-text-muted block mb-1">Tipo</label>
+                                        <label className="text-xs uppercase font-bold text-text-muted block mb-1">{t('settings.type')}</label>
                                         <select
                                             className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-white focus:border-primary outline-none"
                                             value={editingTemplate.tipo}
@@ -758,13 +773,13 @@ const ArchitectLayout = () => {
                                                 onChange={e => setEditingTemplate({ ...editingTemplate, global: e.target.checked })}
                                                 className="accent-primary size-4"
                                             />
-                                            <span className="text-sm font-bold text-white">Es Global?</span>
+                                            <span className="text-sm font-bold text-white">{t('settings.is_global')}</span>
                                         </label>
                                     </div>
                                 </div>
                                 <div className="flex justify-end gap-3 pt-4">
-                                    <button type="button" onClick={() => setEditingTemplate(null)} className="px-4 py-2 text-text-muted hover:text-white font-bold transition-colors">Cancelar</button>
-                                    <button type="submit" className="px-6 py-2 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-transform">Guardar</button>
+                                    <button type="button" onClick={() => setEditingTemplate(null)} className="px-4 py-2 text-text-muted hover:text-white font-bold transition-colors">{t('common.cancel')}</button>
+                                    <button type="submit" className="px-6 py-2 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-transform">{t('common.save')}</button>
                                 </div>
                             </form>
                         </div>
@@ -776,9 +791,9 @@ const ArchitectLayout = () => {
                 isOpen={!!confirmTemplateDelete}
                 onClose={() => setConfirmTemplateDelete(null)}
                 onConfirm={confirmDeleteAction}
-                title="Eliminar Plantilla"
-                message="¿Estás seguro de que quieres eliminar esta plantilla? Esta acción no se puede deshacer."
-                confirmText="Eliminar"
+                title={t('settings.delete_template')}
+                message={t('common.are_you_sure')}
+                confirmText={t('common.confirm_delete')}
                 type="danger"
             />
         </div>

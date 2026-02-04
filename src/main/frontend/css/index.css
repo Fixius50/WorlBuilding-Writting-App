@@ -1,88 +1,171 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@200..800&family=Space+Mono:wght@400;700&family=Cormorant+Garamond:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@200..800&family=Cormorant+Garamond:wght@400;600&family=Lexend:wght@300;400;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=JetBrains+Mono:wght@400;700&family=Manrope:wght@300;400;700&display=swap');
 @import url('https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 240 10% 3.9%; /* #09090b Void Dark */
-    --foreground: 0 0% 98%; /* #fafafa */
+/* Global Theme Variables - Outside layers for high priority */
+:root {
+  --background: 240 10% 4%;
+  --foreground: 0 0% 98%;
+  --primary: 243 75% 59%;
+  --primary-foreground: 210 40% 98%;
+  --radius: 12px;
+}
 
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
+.theme-deep_space {
+  --background: 240 10% 2%;
+  --primary: 243 75% 59%;
+}
 
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
+.theme-nebula {
+  --background: 260 40% 5%;
+  --primary: 260 80% 65%;
+}
 
-    --primary: 243 75% 59%; /* #6366f1 Indigo 500 */
-    --primary-foreground: 210 40% 98%;
+.theme-high_contrast {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --primary: 0 0% 100%;
+}
 
-    --secondary: 240 4% 16%;
-    --secondary-foreground: 210 40% 98%;
+/* Zen Editor Migrated Styles */
+.mention {
+  @apply bg-primary/20 text-indigo-400 font-medium rounded-sm px-1 py-0.5 cursor-pointer hover:bg-primary/30 transition-colors;
+  border-bottom: 2px solid rgba(139, 92, 246, 0.3);
+}
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+.tiptap p.is-editor-empty:first-child::before {
+  color: #4b5563;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  font-style: italic;
+}
 
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+.prose h1,
+.prose h2,
+.prose h3 {
+  @apply text-white font-black tracking-tight mt-8 mb-4;
+  font-family: 'Outfit', sans-serif !important;
+}
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+.prose p {
+  @apply mb-6;
+  text-align: justify;
+}
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    
-    --radius: 0.5rem;
-  }
+.prose strong {
+  @apply text-indigo-400 font-black;
+}
+
+.prose-slate strong {
+  @apply text-indigo-700 font-black;
+}
+
+.prose-slate h1,
+.prose-slate h2,
+.prose-slate h3 {
+  @apply text-slate-900 !important;
+}
+
+.zen-editor-container {
+  background-image:
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.05) 0px, transparent 50%);
+  position: relative;
+  overflow: hidden;
+}
+
+.zen-editor-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  pointer-events: none;
+  background-image: url("https://www.transparenttextures.com/patterns/asfalt-dark.png");
+  z-index: 10;
 }
 
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground font-display selection:bg-primary selection:text-white antialiased overflow-hidden;
+    @apply bg-background text-foreground font-display selection:bg-primary selection:text-white antialiased overflow-hidden transition-colors duration-500;
+  }
+
+  /* Immersive Background Grain / Pattern */
+  body::before {
+    content: "";
+    @apply fixed inset-0 pointer-events-none opacity-[0.03] z-[100];
+    background-image: url("https://www.transparenttextures.com/patterns/asfalt-dark.png");
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display tracking-tight;
   }
 }
 
 @layer utilities {
-    .glass-panel {
-        @apply bg-background/60 backdrop-blur-xl border border-white/5;
+  .glass-panel {
+    @apply bg-background/60 backdrop-blur-xl border border-white/5;
+  }
+
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+
+  /* ... Scrollbar utils ... */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-background;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-muted rounded-full;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary;
+  }
+
+  @keyframes slide-in-right {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
     }
-    .text-shadow {
-        text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+
+    to {
+      transform: translateX(0);
+      opacity: 1;
     }
-    /* ... Scrollbar utils ... */
-    .no-scrollbar::-webkit-scrollbar {
-        display: none;
-    }
-    .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-    .custom-scrollbar::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-        @apply bg-background;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        @apply bg-muted rounded-full;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        @apply bg-primary;
-    }
-    @keyframes slide-in-right {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    .animate-slide-in-right {
-        animation: slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
+  }
+
+  .animate-slide-in-right {
+    animation: slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
 }
 
 #root {

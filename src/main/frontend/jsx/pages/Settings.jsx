@@ -13,7 +13,7 @@ const Settings = () => {
     // Settings State
     const [settings, setSettings] = useState({
         theme: 'deep_space',
-        font: 'Manrope',
+        font: 'Outfit',
         fontSize: 16
     });
 
@@ -58,6 +58,7 @@ const Settings = () => {
         const newSettings = { ...settings, [key]: value };
         setSettings(newSettings);
         localStorage.setItem('app_settings', JSON.stringify(newSettings));
+        window.dispatchEvent(new Event('storage_update'));
         addNotification(`Ajuste actualizado: ${key}`);
     };
 
@@ -119,6 +120,39 @@ const Settings = () => {
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
+    const handleAvatarChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Simple size check: 1MB limit for localStorage safety
+        if (file.size > 1024 * 1024) {
+            addNotification("Imagen demasiado grande (máx 1MB)", "error");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const newAvatar = ev.target.result;
+            const updatedUser = { ...(user || {}), avatarUrl: newAvatar };
+            setUser(updatedUser);
+            try {
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+                addNotification("Foto de perfil actualizada", "success");
+            } catch (err) {
+                addNotification("Error al guardar imagen (memoria llena)", "error");
+                console.error("Storage error", err);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const updateProfile = (key, value) => {
+        const updatedUser = { ...(user || {}), [key]: value };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        window.dispatchEvent(new Event('storage_update'));
+    };
+
     const tabs = [
         { id: 'general', label: 'General / Sincro', icon: 'person' },
         { id: 'appearance', label: 'Apariencia y Editor', icon: 'palette' }
@@ -131,7 +165,11 @@ const Settings = () => {
     ];
 
     return (
-        <div className="flex flex-col w-full h-full bg-[#050508] text-white font-sans overflow-hidden">
+        <div className="flex flex-col w-full h-full bg-[#050508] text-white font-sans overflow-hidden relative">
+            <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-50">
+                <div className="absolute -top-[10%] -left-[10%] size-[40%] bg-indigo-500/10 blur-[120px] rounded-full animate-pulse"></div>
+                <div className="absolute -bottom-[10%] -right-[10%] size-[40%] bg-purple-500/5 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+            </div>
             {/* TOAST NOTIFICATIONS */}
             <div className="fixed top-24 right-8 z-[100] flex flex-col gap-3">
                 {notifications.map(n => (
@@ -191,13 +229,30 @@ const Settings = () => {
                                     <span className="material-symbols-outlined">person</span>
                                     Perfil de Arquitecto
                                 </h3>
-                                <div className="flex items-center gap-6 p-4 bg-white/5 rounded-2xl border border-white/5">
-                                    <div className="size-16 rounded-full bg-indigo-500 flex items-center justify-center text-white text-2xl font-black">
-                                        {user?.username?.substring(0, 2).toUpperCase() || 'AR'}
+                                <div className="flex items-center gap-6 p-6 bg-white/5 rounded-3xl border border-white/5 group relative overflow-hidden">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                                    <div className="relative">
+                                        <div className="size-20 rounded-full bg-indigo-500 flex items-center justify-center text-white text-3xl font-black shadow-2xl border-4 border-white/10 overflow-hidden">
+                                            {user?.avatarUrl ? (
+                                                <img src={user.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                                            ) : (
+                                                user?.displayName?.substring(0, 2).toUpperCase() || user?.username?.substring(0, 2).toUpperCase() || 'AR'
+                                            )}
+                                        </div>
+                                        <label className="absolute -bottom-1 -right-1 size-8 bg-indigo-500 rounded-full flex items-center justify-center text-white cursor-pointer hover:scale-110 transition-all border-4 border-[#0f0f13] shadow-lg">
+                                            <span className="material-symbols-outlined text-sm">photo_camera</span>
+                                            <input type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
+                                        </label>
                                     </div>
-                                    <div className="flex-1">
-                                        <h4 className="text-xl font-bold text-white">{user?.username || 'Arquitecto Local'}</h4>
-                                        <p className="text-xs text-slate-500 mt-1">Sincronización guardada automáticamente.</p>
+                                    <div className="flex-1 space-y-2">
+                                        <input
+                                            type="text"
+                                            value={user?.displayName ?? ''}
+                                            onChange={(e) => updateProfile('displayName', e.target.value)}
+                                            placeholder={user?.username || "Tu nombre de arquitecto..."}
+                                            className="bg-transparent border-none text-2xl font-black text-white outline-none focus:ring-0 w-full p-0 placeholder-white/20"
+                                        />
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Architect Rank • Local Session</p>
                                     </div>
                                 </div>
                             </section>
@@ -298,12 +353,14 @@ const Settings = () => {
                                             <select
                                                 value={settings.font}
                                                 onChange={(e) => updateSetting('font', e.target.value)}
-                                                className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-3.5 text-sm text-white appearance-none outline-none focus:border-indigo-500 transition-all font-sans"
+                                                className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-3.5 text-sm text-white appearance-none outline-none focus:border-indigo-500 transition-all"
+                                                style={{ fontFamily: settings.font }}
                                             >
-                                                <option value="Manrope">Manrope (Moderno)</option>
-                                                <option value="Merriweather">Merriweather (Serif)</option>
-                                                <option value="Inter">Inter (Legibilidad)</option>
-                                                <option value="JetBrains Mono">JetBrains (Mono)</option>
+                                                <option value="Lexend">Lexend (UI Moderna)</option>
+                                                <option value="Outfit">Outfit (Sleek)</option>
+                                                <option value="Cormorant Garamond">Cormorant (Legendaria)</option>
+                                                <option value="Playfair Display">Playfair (Elegante)</option>
+                                                <option value="JetBrains Mono">JetBrains Mono (Codex)</option>
                                             </select>
                                             <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">expand_more</span>
                                         </div>
@@ -322,6 +379,26 @@ const Settings = () => {
                                                 className="flex-1 accent-indigo-500 h-1 bg-white/10 rounded-full appearance-none cursor-pointer"
                                             />
                                         </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-12 space-y-4 border-t border-white/5 pt-8">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Preferencia de Idioma / Language</label>
+                                    <div className="flex gap-4">
+                                        <button
+                                            onClick={() => updateSetting('language', 'es')}
+                                            className={`flex-1 py-4 rounded-2xl border transition-all flex items-center justify-center gap-3 font-bold text-xs ${settings.language === 'es' || !settings.language ? 'border-primary bg-primary/10 text-white shadow-lg' : 'border-white/5 bg-black/20 text-slate-400'}`}
+                                        >
+                                            <span className="text-xl">🇪🇸</span>
+                                            Castellano
+                                        </button>
+                                        <button
+                                            onClick={() => updateSetting('language', 'en')}
+                                            className={`flex-1 py-4 rounded-2xl border transition-all flex items-center justify-center gap-3 font-bold text-xs ${settings.language === 'en' ? 'border-primary bg-primary/10 text-white shadow-lg' : 'border-white/5 bg-black/20 text-slate-400'}`}
+                                        >
+                                            <span className="text-xl">🇺🇸</span>
+                                            English
+                                        </button>
                                     </div>
                                 </div>
                                 <div className="mt-8 p-6 bg-black/40 rounded-2xl border border-white/5 text-center shadow-inner">
