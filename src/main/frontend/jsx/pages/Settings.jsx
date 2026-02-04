@@ -89,6 +89,36 @@ const Settings = () => {
         document.body.removeChild(link);
     };
 
+    const fileInputRef = React.useRef(null);
+
+    const handleImportDatabase = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (!file.name.endsWith('.db')) {
+            addNotification("Solo se permiten archivos .db", "error");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        addNotification("Importando universo...", "info");
+
+        try {
+            const response = await api.post('/import/database', formData);
+            addNotification(response.message || "Universo importado con éxito");
+            loadProjects(); // Refresh list
+        } catch (err) {
+            console.error("Import error", err);
+            const errorMessage = err.response?.data?.error || "Error al importar el archivo";
+            addNotification(errorMessage, "error");
+        }
+
+        // Clear input
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
     const tabs = [
         { id: 'general', label: 'General / Sincro', icon: 'person' },
         { id: 'appearance', label: 'Apariencia y Editor', icon: 'palette' }
@@ -178,13 +208,29 @@ const Settings = () => {
                                         <span className="material-symbols-outlined">sync_lock</span>
                                         Sincronización y Respaldo
                                     </h3>
-                                    <button
-                                        onClick={handleDownloadBackup}
-                                        className="flex items-center gap-2 px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-500/30"
-                                    >
-                                        <span className="material-symbols-outlined text-sm">cloud_download</span>
-                                        Descargar Backup ZIP
-                                    </button>
+                                    <div className="flex gap-3">
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            onChange={handleImportDatabase}
+                                            accept=".db"
+                                            className="hidden"
+                                        />
+                                        <button
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="flex items-center gap-2 px-6 py-3 border border-white/5 bg-white/5 hover:bg-white/10 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all"
+                                        >
+                                            <span className="material-symbols-outlined text-sm">upload_file</span>
+                                            Importar Universo
+                                        </button>
+                                        <button
+                                            onClick={handleDownloadBackup}
+                                            className="flex items-center gap-2 px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-500/30"
+                                        >
+                                            <span className="material-symbols-outlined text-sm">cloud_download</span>
+                                            Descargar Backup ZIP
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div className="space-y-4">

@@ -3,8 +3,10 @@ const BASE_URL = '/api';
 const api = {
     async request(endpoint, options = {}) {
         const url = `${BASE_URL}${endpoint}`;
+        const isFormData = options.body instanceof FormData;
+
         const headers = {
-            'Content-Type': 'application/json',
+            ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
             ...options.headers,
         };
 
@@ -33,7 +35,7 @@ const api = {
     post(endpoint, body, headers = {}) {
         return this.request(endpoint, {
             method: 'POST',
-            body: JSON.stringify(body),
+            body: body instanceof FormData ? body : JSON.stringify(body),
             headers,
         });
     },
@@ -41,7 +43,7 @@ const api = {
     put(endpoint, body, headers = {}) {
         return this.request(endpoint, {
             method: 'PUT',
-            body: JSON.stringify(body),
+            body: body instanceof FormData ? body : JSON.stringify(body),
             headers,
         });
     },
@@ -49,7 +51,7 @@ const api = {
     patch(endpoint, body, headers = {}) {
         return this.request(endpoint, {
             method: 'PATCH',
-            body: JSON.stringify(body),
+            body: body instanceof FormData ? body : JSON.stringify(body),
             headers,
         });
     },
