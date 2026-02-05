@@ -50,7 +50,7 @@ const TypeCard = ({ icon, title, desc, selected, onClick }) => (
     </div>
 );
 
-const URLImage = ({ src, x, y, width, height }) => {
+const URLImage = ({ src, x, y, width, height, ...props }) => {
     const [image, setImage] = useState(null);
     useEffect(() => {
         if (!src) return;
@@ -61,7 +61,7 @@ const URLImage = ({ src, x, y, width, height }) => {
             setImage(img);
         };
     }, [src]);
-    return <KonvaImage image={image} x={x} y={y} width={width} height={height} />;
+    return <KonvaImage image={image} x={x} y={y} width={width} height={height} {...props} />;
 };
 
 // Canvas Placeholder Removed - Using Real Stage
@@ -138,7 +138,7 @@ const MapEditor = ({ mode: initialMode }) => {
     // Check click on empty space to deselect
     const checkDeselect = (e) => {
         // deselect when clicked on empty area
-        const clickedOnEmpty = e.target === e.target.getStage();
+        const clickedOnEmpty = e.target === e.target.getStage() || e.target.name() === 'bg-image';
         if (clickedOnEmpty) {
             setSelectedId(null);
         }
@@ -685,6 +685,7 @@ const MapEditor = ({ mode: initialMode }) => {
                                 {/* Background Image */}
                                 {formData.bgImage && (
                                     <URLImage
+                                        name="bg-image"
                                         src={formData.bgImage}
                                         x={0}
                                         y={0}
