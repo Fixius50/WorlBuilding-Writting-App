@@ -204,6 +204,7 @@ const ArchitectLayout = () => {
                         <NavItem to={`${baseUrl}/bible`} icon="menu_book" label={t('nav.bible')} collapsed={!leftOpen} />
                         <NavItem to={`${baseUrl}/map`} icon="map" label={t('nav.atlas')} collapsed={!leftOpen} />
                         <NavItem to={`${baseUrl}/timeline`} icon="calendar_month" label={t('nav.chronology')} collapsed={!leftOpen} />
+                        <NavItem to={`${baseUrl}/languages`} icon="translate" label={t('nav.languages')} collapsed={!leftOpen} />
                         <NavItem to={`${baseUrl}/graph`} icon="hub" label={t('nav.graph')} collapsed={!leftOpen} />
                         <div className="h-px bg-glass-border my-2 mx-2 opacity-50"></div>
                         <NavItem to={`${baseUrl}/writing`} icon="edit_note" label={t('nav.writing')} collapsed={!leftOpen} />

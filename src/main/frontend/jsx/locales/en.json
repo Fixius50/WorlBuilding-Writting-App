@@ -27,7 +27,8 @@
         "settings": "Settings",
         "logout": "Exit to Hub",
         "chronology": "Chronology",
-        "graph": "Graph"
+        "graph": "Graph",
+        "languages": "Linguistics"
     },
     "settings": {
         "title": "Settings",

@@ -1,11 +1,87 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Stage, Layer, Line } from 'react-konva';
 import GlassPanel from '../../components/common/GlassPanel';
 import Button from '../../components/common/Button';
 
-const SymbologyEditor = ({ onBack, onSave }) => {
+const SymbologyEditor = ({ onBack, onSave, word }) => {
     const [strokeWidth, setStrokeWidth] = useState(4);
     const [activeTool, setActiveTool] = useState('curve');
     const [activeLayer, setActiveLayer] = useState(1);
+    const [lines, setLines] = useState([]);
+    const isDrawing = useRef(false);
+    const stageRef = useRef(null);
+
+    const exportSVG = () => {
+        if (!stageRef.current) return;
+        // Simple SVG conversion (crude but works for paths)
+        const svgHeader = `<svg width="600" height="600" xmlns="http://www.w3.org/2000/svg">`;
+        const svgFooter = `</svg>`;
+        const paths = lines.map(line => {
+            const pathData = line.points.reduce((acc, point, i) => {
+                return acc + (i % 2 === 0 ? (i === 0 ? 'M' : 'L') + point : ',' + point);
+            }, '');
+            return `<path d="${pathData}" stroke="${line.color}" stroke-width="${line.strokeWidth}" fill="none" stroke-linecap="round" stroke-linejoin="round" />`;
+        }).join('\n');
+
+        const blob = new Blob([svgHeader + paths + svgFooter], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `glyph_${word?.lema || 'custom'}.svg`;
+        link.click();
+    };
+
+    const handleSaveLocal = () => {
+        if (onSave) {
+            onSave({
+                wordId: word?.id,
+                lines,
+                svgPathData: lines.map(line => {
+                    return line.points.reduce((acc, point, i) => {
+                        return acc + (i % 2 === 0 ? (i === 0 ? 'M' : 'L') + point : ',' + point);
+                    }, '');
+                }).join(' '),
+                svgData: stageRef.current.toDataURL()
+            });
+        }
+    };
+
+    const handleMouseDown = (e) => {
+        if (activeTool === 'select') return;
+        isDrawing.current = true;
+        const pos = e.target.getStage().getPointerPosition();
+        setLines([...lines, {
+            tool: activeTool,
+            points: [pos.x, pos.y],
+            color: '#6366f1',
+            strokeWidth: parseInt(strokeWidth)
+        }]);
+    };
+
+    const handleMouseMove = (e) => {
+        if (!isDrawing.current || activeTool === 'select') return;
+        const stage = e.target.getStage();
+        const point = stage.getPointerPosition();
+        let lastLine = lines[lines.length - 1];
+        // add point
+        lastLine.points = lastLine.points.concat([point.x, point.y]);
+
+        // replace last
+        lines.splice(lines.length - 1, 1, lastLine);
+        setLines(lines.concat());
+    };
+
+    const handleMouseUp = () => {
+        isDrawing.current = false;
+    };
+
+    const handleUndo = () => {
+        setLines(lines.slice(0, -1));
+    };
+
+    const handleClear = () => {
+        setLines([]);
+    };
 
     const tools = [
         { id: 'select', icon: 'near_me' },
@@ -35,12 +111,12 @@ const SymbologyEditor = ({ onBack, onSave }) => {
                         <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-0.5">
                             <span>Idiomas</span>
                             <span className="material-symbols-outlined text-sm">chevron_right</span>
-                            <span className="text-white">Editor Gráfico</span>
+                            <span className="text-white">Editor de Glifos {word ? `• ${word.lema || word.palabraOriginal}` : ''}</span>
                         </nav>
                         <div className="flex items-center gap-2">
                             <div className="flex items-center gap-4 text-slate-500">
-                                <button className="hover:text-white transition-colors"><span className="material-symbols-outlined text-xl">undo</span></button>
-                                <button className="hover:text-white transition-colors"><span className="material-symbols-outlined text-xl">redo</span></button>
+                                <button onClick={handleUndo} className="hover:text-white transition-colors" title="Deshacer"><span className="material-symbols-outlined text-xl">undo</span></button>
+                                <button className="hover:text-white transition-colors opacity-20 cursor-not-allowed"><span className="material-symbols-outlined text-xl">redo</span></button>
                             </div>
                             <div className="w-px h-4 bg-white/10 mx-2"></div>
                             <div className="flex gap-1">
@@ -52,11 +128,14 @@ const SymbologyEditor = ({ onBack, onSave }) => {
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <button className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-xs font-black uppercase tracking-widest text-slate-400">
+                    <button
+                        onClick={exportSVG}
+                        className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-xs font-black uppercase tracking-widest text-slate-400"
+                    >
                         <span className="material-symbols-outlined text-lg">download</span>
                         Exportar SVG
                     </button>
-                    <Button variant="primary" icon="save" className="px-8 py-3 shadow-xl shadow-primary/30" onClick={onSave}>
+                    <Button variant="primary" icon="save" className="px-8 py-3 shadow-xl shadow-primary/30" onClick={handleSaveLocal}>
                         Guardar Glifo
                     </Button>
                     <div className="size-10 rounded-full bg-gradient-to-br from-primary to-orange-400 border-2 border-white/10 shadow-lg ml-2"></div>
@@ -91,22 +170,32 @@ const SymbologyEditor = ({ onBack, onSave }) => {
                         <div className="absolute inset-x-0 bottom-10 h-px bg-white/10"></div>
 
                         <div className="w-[600px] h-[600px] border border-white/5 rounded-3xl bg-black/40 flex items-center justify-center relative overflow-hidden">
-                            {/* Vector Simbol Rendering (Mock Visual) */}
-                            <svg width="400" height="400" className="drop-shadow-[0_0_20px_rgba(99,102,242,0.5)] scale-125">
-                                <circle cx="200" cy="230" r="100" fill="none" stroke="#6366f1" strokeWidth="6" strokeLinecap="round" />
-                                <line x1="200" y1="230" x2="200" y2="380" stroke="#6366f1" strokeWidth="6" strokeLinecap="round" />
-                                <circle cx="200" cy="230" r="4" fill="white" />
-                                <rect x="196" y="376" width="8" height="8" fill="white" />
-                                {/* Blue highlight nodes */}
-                                <rect x="96" y="226" width="8" height="8" fill="#6366f1" />
-                                <rect x="296" y="226" width="8" height="8" fill="#6366f1" />
-                                <rect x="136" y="160" width="6" height="6" fill="#6366f1" className="opacity-40" />
-                                <rect x="256" y="160" width="6" height="6" fill="#6366f1" className="opacity-40" />
-                            </svg>
-
-                            {/* Anchor Point Labels Mock */}
-                            <div className="absolute top-[160px] left-[136px] size-1 border border-primary/40 border-dashed w-[20px] h-[100px] pointer-events-none"></div>
-                            <div className="absolute top-[160px] right-[136px] size-1 border border-primary/40 border-dashed w-[20px] h-[100px] pointer-events-none"></div>
+                            <Stage
+                                ref={stageRef}
+                                width={600}
+                                height={600}
+                                onMouseDown={handleMouseDown}
+                                onMousemove={handleMouseMove}
+                                onMouseup={handleMouseUp}
+                                className="cursor-crosshair"
+                            >
+                                <Layer>
+                                    {lines.map((line, i) => (
+                                        <Line
+                                            key={i}
+                                            points={line.points}
+                                            stroke={line.color}
+                                            strokeWidth={line.strokeWidth}
+                                            tension={0.5}
+                                            lineCap="round"
+                                            lineJoin="round"
+                                            globalCompositeOperation={
+                                                line.tool === 'eraser' ? 'destination-out' : 'source-over'
+                                            }
+                                        />
+                                    ))}
+                                </Layer>
+                            </Stage>
                         </div>
                     </div>
 

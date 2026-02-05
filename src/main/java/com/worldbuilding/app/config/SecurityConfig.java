@@ -19,9 +19,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().permitAll() // Allow all requests (we handle auth via session manually in
                                                   // controllers for now)
-                )
-                .headers(headers -> headers.frameOptions(frame -> frame.disable())); // Allow frames for h2-console if
-                                                                                     // needed
+                );
 
         return http.build();
     }

@@ -27,7 +27,7 @@ public class EntidadGenerica {
     @JoinColumn(name = "carpeta_id", nullable = false)
     private Carpeta carpeta;
 
-    @OneToMany(mappedBy = "entidad", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "entidad", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @OrderBy("id ASC")
     private List<AtributoValor> valores;
 

@@ -331,6 +331,11 @@ public class BDController {
 
     // ==================== ACTIVAR NODO ====================
 
+    @Autowired
+    private com.worldbuilding.app.service.GraphService graphService;
+
+    // ==================== ACTIVAR NODO ====================
+
     @PostMapping("/activar-nodo")
     public ResponseEntity<?> activarNodo(@RequestBody DatosTablaDTO dto, HttpSession session) {
         try {
@@ -342,15 +347,8 @@ public class BDController {
                 return ResponseEntity.badRequest().body(Map.of("error", "entidadId y tipoEntidad son requeridos"));
             }
 
-            // En H2, usamos la función Java registrada como ALIAS
-            // Llamamos directamente desde Java en lugar de usar CALL
-            /*
-             * com.worldbuilding.app.h2.H2Functions.activarNodo(
-             * jdbcTemplate.getDataSource().getConnection(),
-             * entidadId, tipoEntidad, caracteristica);
-             */
-            // TODO: Portar lógica de activarNodo a servicio JPA puro para SQLite
-            System.out.println("Activando nodo (Simulado para SQLite): " + entidadId);
+            graphService.activarNodo(entidadId, tipoEntidad, caracteristica);
+            System.out.println("Activando nodo en Grafo SQLite: " + entidadId);
 
             return ResponseEntity.ok(Map.of("success", true, "mensaje", "Nodo activado"));
         } catch (Exception e) {

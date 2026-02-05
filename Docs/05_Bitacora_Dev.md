@@ -28,6 +28,35 @@ Este documento consolida el historial de prompts, decisiones y errores técnicos
 * **Acción**: Refactor total de controladores para usar sesión estricta.
 * **Estado**: Completado. Aislamiento total por archivo SQLite.
 
+### [2026-02-05] Verificación Map Editor (JSON Attributes)
+
+* **Objetivo**: Asegurar que capas complejas (1000+ puntos) se guardan en SQLite sin corrupción.
+* **Acción**: Creado `MapPersistenceTest.java` (Integration Test @SpringBootTest).
+* **Resultado**: `Tests run: 1, Failures: 0`. Persistencia de JSON anidado confirmada.
+
+### [2026-02-05] Rune Foundry v2.0 & Glyph Automation
+
+* **Objetivo**: Automatizar la creación de fuentes y eliminar prompts manuales en Lingüística.
+* **Acción**:
+  * Implementación de asignación automática Unicode PUA (E000+).
+  * Integración de `opentype.js` para compilación TTF en tiempo real.
+  * Persistencia binaria (`@Lob`) en el backend para archivos `.ttf`.
+  * Traducción completa de la interfaz de "Biblia Léxica" al español.
+* **Estado**: Completado. Sistema 100% autónomo.
+
+### [2026-02-06] Critical Fix: Glyph System Persistence & Initialization
+
+* **Estado**: Completado - Estable
+* **Incidente**: Fallo crítico (Error 500) al intentar inicializar el sistema de glifos y acceder al editor (`SymbologyEditor`).
+* **Diagnóstico**:
+    1. **Incompatibilidad JDBC SQLite**: El driver de SQLite lanza `SQLFeatureNotSupportedException` cuando Hibernate intenta leer campos `@Lob` usando `getBlob()`.
+    2. **Fallo de Migración**: Flyway no aplicaba consistentemente los cambios de esquema (`V5`) debido a conflictos de bloqueo de archivo en Windows.
+    3. **Payload Incorrecto**: El frontend enviaba propiedades no mapeadas (`proyectoId`) durante la creación automática de lenguas.
+* **Resolución**:
+  * **Backend**: Se eliminó la anotación `@Lob` de `Conlang.java` para usar mapeo directo de `byte[]`. Se implementó un parche manual en `DatabaseMigration.java` para forzar la creación de columnas `font_binary` y `unicode_code` al arranque.
+  * **Frontend**: Se corrigió la lógica de inicialización en `LinguisticsHub.jsx` y se migró `opentype.js` a una dependencia npm gestionada localmente.
+* **Resultado**: El flujo "Dibujar Glifo" ahora funciona correctamente, persistiendo datos binarios y metadatos sin errores.
+
 ---
 
 ## 🐛 Registro de Errores Notables (Histórico)

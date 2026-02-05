@@ -27,6 +27,9 @@ public class Palabra {
     @Column(name = "raster_image_path")
     private String rasterImagePath;
 
+    @Column(name = "unicode_code")
+    private String unicodeCode;
+
     public Long getId() {
         return id;
     }
@@ -97,5 +100,13 @@ public class Palabra {
 
     public void setRasterImagePath(String rasterImagePath) {
         this.rasterImagePath = rasterImagePath;
+    }
+
+    public String getUnicodeCode() {
+        return unicodeCode;
+    }
+
+    public void setUnicodeCode(String unicodeCode) {
+        this.unicodeCode = unicodeCode;
     }
 }

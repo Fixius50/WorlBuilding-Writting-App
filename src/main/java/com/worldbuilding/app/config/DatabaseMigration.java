@@ -84,6 +84,8 @@ public class DatabaseMigration {
             patchTable(stmt, "hoja", new String[] { "deleted", "deleted_date", "numero_pagina" });
             patchTable(stmt, "nota_rapida", new String[] { "deleted", "deleted_date" });
             patchTable(stmt, "relacion", new String[] { "deleted", "deleted_date" });
+            patchTable(stmt, "conlang", new String[] { "font_binary" });
+            patchTable(stmt, "palabra", new String[] { "unicode_code" });
 
         } catch (java.sql.SQLException e) {
             // Ignore if table doesn't exist yet
@@ -103,7 +105,8 @@ public class DatabaseMigration {
         for (String col : columns) {
             if (!existingCols.contains(col.toLowerCase())) {
                 String type = col.contains("date") ? "TEXT"
-                        : (col.equals("numero_pagina") ? "INTEGER" : "BOOLEAN DEFAULT 0");
+                        : (col.equals("numero_pagina") ? "INTEGER"
+                                : (col.equals("font_binary") ? "BLOB" : "TEXT"));
                 try {
                     stmt.execute("ALTER TABLE " + table + " ADD COLUMN " + col + " " + type);
                     System.out.println("   [PATCH] Added column " + col + " to " + table);

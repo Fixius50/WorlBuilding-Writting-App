@@ -1,0 +1,289 @@
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.google.inject.internal.aop.HiddenClassDefiner (file:/C:/Users/rober/.m2/wrapper/dists/apache-maven-3.9.10/a38810a491b03367137adfdfbe7d14c4/lib/guice-5.1.0-classes.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.inject.internal.aop.HiddenClassDefiner
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------< com.worldbuilding:worldbuilding-app-v2 >---------------
+[INFO] Building WorldbuildingAppV2 2.0.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ worldbuilding-app-v2 ---
+[INFO] Copying 8 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ worldbuilding-app-v2 ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ worldbuilding-app-v2 ---
+[INFO] skip non existing resourceDirectory C:\Users\rober\Desktop\Proyectos propios\WorldbuildingApp\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ worldbuilding-app-v2 ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 3 source files with javac [debug parameters release 24] to target\test-classes
+[INFO] /C:/Users/rober/Desktop/Proyectos propios/WorldbuildingApp/src/test/java/com/worldbuilding/app/model/MapPersistenceTest.java: C:\Users\rober\Desktop\Proyectos propios\WorldbuildingApp\src\test\java\com\worldbuilding\app\model\MapPersistenceTest.java uses unchecked or unsafe operations.
+[INFO] /C:/Users/rober/Desktop/Proyectos propios/WorldbuildingApp/src/test/java/com/worldbuilding/app/model/MapPersistenceTest.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ worldbuilding-app-v2 ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+Downloading from spring-snapshots: https://repo.spring.io/snapshot/org/junit/platform/junit-platform-launcher/6.0.2/junit-platform-launcher-6.0.2.pom
+Downloading from spring-milestones: https://repo.spring.io/milestone/org/junit/platform/junit-platform-launcher/6.0.2/junit-platform-launcher-6.0.2.pom
+Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.2/junit-platform-launcher-6.0.2.pom
+Progress (1): 971 BProgress (1): 2.6 kBProgress (1): 3.2 kB                    Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.2/junit-platform-launcher-6.0.2.pom (3.2 kB at 35 kB/s)
+Downloading from spring-snapshots: https://repo.spring.io/snapshot/org/junit/platform/junit-platform-launcher/6.0.2/junit-platform-launcher-6.0.2.jar
+Downloading from spring-milestones: https://repo.spring.io/milestone/org/junit/platform/junit-platform-launcher/6.0.2/junit-platform-launcher-6.0.2.jar
+Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.2/junit-platform-launcher-6.0.2.jar
+Progress (1): 0.9/246 kBProgress (1): 2.3/246 kBProgress (1): 3.7/246 kBProgress (1): 5.0/246 kBProgress (1): 6.4/246 kBProgress (1): 7.8/246 kBProgress (1): 9.1/246 kBProgress (1): 11/246 kB Progress (1): 12/246 kBProgress (1): 13/246 kBProgress (1): 15/246 kBProgress (1): 16/246 kBProgress (1): 17/246 kBProgress (1): 19/246 kBProgress (1): 20/246 kBProgress (1): 21/246 kBProgress (1): 23/246 kBProgress (1): 24/246 kBProgress (1): 26/246 kBProgress (1): 27/246 kBProgress (1): 28/246 kBProgress (1): 30/246 kBProgress (1): 31/246 kBProgress (1): 32/246 kBProgress (1): 34/246 kBProgress (1): 35/246 kBProgress (1): 37/246 kBProgress (1): 38/246 kBProgress (1): 39/246 kBProgress (1): 41/246 kBProgress (1): 42/246 kBProgress (1): 43/246 kBProgress (1): 45/246 kBProgress (1): 46/246 kBProgress (1): 47/246 kBProgress (1): 49/246 kBProgress (1): 50/246 kBProgress (1): 52/246 kBProgress (1): 53/246 kBProgress (1): 57/246 kBProgress (1): 61/246 kBProgress (1): 66/246 kBProgress (1): 70/246 kBProgress (1): 74/246 kBProgress (1): 78/246 kBProgress (1): 83/246 kBProgress (1): 87/246 kBProgress (1): 91/246 kBProgress (1): 95/246 kBProgress (1): 99/246 kBProgress (1): 104/246 kBProgress (1): 108/246 kBProgress (1): 112/246 kBProgress (1): 116/246 kBProgress (1): 121/246 kBProgress (1): 125/246 kBProgress (1): 129/246 kBProgress (1): 133/246 kBProgress (1): 138/246 kBProgress (1): 142/246 kBProgress (1): 146/246 kBProgress (1): 150/246 kBProgress (1): 154/246 kBProgress (1): 159/246 kBProgress (1): 163/246 kBProgress (1): 167/246 kBProgress (1): 171/246 kBProgress (1): 176/246 kBProgress (1): 180/246 kBProgress (1): 184/246 kBProgress (1): 188/246 kBProgress (1): 192/246 kBProgress (1): 197/246 kBProgress (1): 201/246 kBProgress (1): 205/246 kBProgress (1): 209/246 kBProgress (1): 214/246 kBProgress (1): 218/246 kBProgress (1): 222/246 kBProgress (1): 238/246 kBProgress (1): 246 kB                        Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.2/junit-platform-launcher-6.0.2.jar (246 kB at 4.8 MB/s)
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.worldbuilding.app.model.MapPersistenceTest
+21:19:19.207 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.worldbuilding.app.model.MapPersistenceTest]: MapPersistenceTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+21:19:19.440 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.worldbuilding.app.WorldbuildingApplication for test class com.worldbuilding.app.model.MapPersistenceTest
+21:19:19.788 [main] INFO org.springframework.boot.devtools.restart.RestartApplicationListener -- Restart disabled due to context in which it is running
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.2)
+
+2026-02-05T21:19:20.111+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] c.w.app.model.MapPersistenceTest         : Starting MapPersistenceTest using Java 24.0.1 with PID 24792 (started by rober in C:\Users\rober\Desktop\Proyectos propios\WorldbuildingApp)
+2026-02-05T21:19:20.113+01:00 DEBUG 24792 --- [WorldbuildingAppV2] [           main] c.w.app.model.MapPersistenceTest         : Running with Spring Boot v4.0.2, Spring v7.0.3
+2026-02-05T21:19:20.114+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] c.w.app.model.MapPersistenceTest         : No active profile set, falling back to 1 default profile: "default"
+2026-02-05T21:19:21.182+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-02-05T21:19:21.297+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 103 ms. Found 21 JPA repository interfaces.
+=== Running SQLite Migrations (Flyway) ===
+>>> SQLite Temporary Directory set to: C:\Users\rober\Desktop\Proyectos propios\WorldbuildingApp\target\sqlite-tmp
+[MIGRATION] Migrating: FavTestFinal.db
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.sqlite.SQLiteJDBCLoader in an unnamed module (file:/C:/Users/rober/.m2/repository/org/xerial/sqlite-jdbc/3.50.3.0/sqlite-jdbc-3.50.3.0.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+2026-02-05T21:19:22.236+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:sqlite:C:\Users\rober\Desktop\Proyectos propios\WorldbuildingApp\.\src\main\resources\data\FavTestFinal.db (SQLite 3.50)
+2026-02-05T21:19:22.272+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Repair of failed migration in Schema History table "main"."flyway_schema_history" not necessary. No failed migration detected.
+2026-02-05T21:19:22.296+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.core.internal.command.DbRepair       : Successfully repaired schema history table "main"."flyway_schema_history" (execution time 00:00.036s).
+2026-02-05T21:19:22.313+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 3 migrations (execution time 00:00.005s)
+2026-02-05T21:19:22.320+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "main": 3
+2026-02-05T21:19:22.326+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.core.internal.command.DbMigrate      : Schema "main" is up to date. No migration necessary.
+[MIGRATION] Success: FavTestFinal.db
+[MIGRATION] Migrating: FavTestProject.db
+2026-02-05T21:19:22.350+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:sqlite:C:\Users\rober\Desktop\Proyectos propios\WorldbuildingApp\.\src\main\resources\data\FavTestProject.db (SQLite 3.50)
+2026-02-05T21:19:22.355+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Repair of failed migration in Schema History table "main"."flyway_schema_history" not necessary. No failed migration detected.
+2026-02-05T21:19:22.358+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.core.internal.command.DbRepair       : Successfully repaired schema history table "main"."flyway_schema_history" (execution time 00:00.004s).
+2026-02-05T21:19:22.368+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 3 migrations (execution time 00:00.003s)
+2026-02-05T21:19:22.370+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "main": 3
+2026-02-05T21:19:22.370+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.core.internal.command.DbMigrate      : Schema "main" is up to date. No migration necessary.
+[MIGRATION] Success: FavTestProject.db
+[MIGRATION] Migrating: Prueba.db
+2026-02-05T21:19:22.392+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:sqlite:C:\Users\rober\Desktop\Proyectos propios\WorldbuildingApp\.\src\main\resources\data\Prueba.db (SQLite 3.50)
+2026-02-05T21:19:22.395+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Repair of failed migration in Schema History table "main"."flyway_schema_history" not necessary. No failed migration detected.
+2026-02-05T21:19:22.397+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.core.internal.command.DbRepair       : Successfully repaired schema history table "main"."flyway_schema_history" (execution time 00:00.002s).
+2026-02-05T21:19:22.409+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 3 migrations (execution time 00:00.004s)
+2026-02-05T21:19:22.410+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "main": 3
+2026-02-05T21:19:22.410+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.core.internal.command.DbMigrate      : Schema "main" is up to date. No migration necessary.
+[MIGRATION] Success: Prueba.db
+[MIGRATION] Migrating: worldbuilding.db
+2026-02-05T21:19:22.430+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:sqlite:C:\Users\rober\Desktop\Proyectos propios\WorldbuildingApp\.\src\main\resources\data\worldbuilding.db (SQLite 3.50)
+2026-02-05T21:19:22.434+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Repair of failed migration in Schema History table "main"."flyway_schema_history" not necessary. No failed migration detected.
+2026-02-05T21:19:22.436+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.core.internal.command.DbRepair       : Successfully repaired schema history table "main"."flyway_schema_history" (execution time 00:00.004s).
+2026-02-05T21:19:22.444+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 3 migrations (execution time 00:00.001s)
+2026-02-05T21:19:22.445+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "main": 3
+2026-02-05T21:19:22.445+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.core.internal.command.DbMigrate      : Schema "main" is up to date. No migration necessary.
+[MIGRATION] Success: worldbuilding.db
+=== SQLite Migrations Complete ===
+2026-02-05T21:19:22.447+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] c.w.app.config.MultiTenantDataSource     : >>> MASTER DB PATH: C:\Users\rober\Desktop\Proyectos propios\WorldbuildingApp\src\main\resources\data\worldbuilding.db
+[MIGRATION] Migrating: worldbuilding.db
+2026-02-05T21:19:22.464+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:sqlite:C:\Users\rober\Desktop\Proyectos propios\WorldbuildingApp\src\main\resources\data\worldbuilding.db (SQLite 3.50)
+2026-02-05T21:19:22.468+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Repair of failed migration in Schema History table "main"."flyway_schema_history" not necessary. No failed migration detected.
+2026-02-05T21:19:22.471+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.core.internal.command.DbRepair       : Successfully repaired schema history table "main"."flyway_schema_history" (execution time 00:00.004s).
+2026-02-05T21:19:22.479+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 3 migrations (execution time 00:00.001s)
+2026-02-05T21:19:22.480+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "main": 3
+2026-02-05T21:19:22.480+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.f.core.internal.command.DbMigrate      : Schema "main" is up to date. No migration necessary.
+[MIGRATION] Success: worldbuilding.db
+2026-02-05T21:19:22.610+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-02-05T21:19:22.711+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.1.Final
+2026-02-05T21:19:23.353+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-02-05T21:19:23.428+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:sqlite:C:\Users\rober\Desktop\Proyectos propios\WorldbuildingApp\src\main\resources\data\worldbuilding.db]
+	Database driver: SQLite JDBC
+	Database dialect: SQLiteDialect
+	Database version: 3.50.3
+	Default catalog/schema: undefined/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: SERIALIZABLE [default SERIALIZABLE]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-02-05T21:19:24.800+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-02-05T21:19:24.809+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-02-05T21:19:24.912+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-02-05T21:19:26.033+01:00  WARN 24792 --- [WorldbuildingAppV2] [           main] c.w.app.service.ConlangService           : >>> [ConlangService] WordNet Dictionary not found at 'data/wordnet/dict'. Semantic features disabled.
+2026-02-05T21:19:26.445+01:00  WARN 24792 --- [WorldbuildingAppV2] [           main] .s.a.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 7a088329-20c3-43f8-b774-85031f1910a8
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-02-05T21:19:26.457+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-02-05T21:19:26.756+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.s.b.w.a.WelcomePageHandlerMapping      : Adding welcome page: class path resource [static/index.html]
+2026-02-05T21:19:27.362+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-02-05T21:19:27.430+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] c.w.app.model.MapPersistenceTest         : Started MapPersistenceTest in 7.653 seconds (process running for 9.256)
+2026-02-05T21:19:27.520+01:00  INFO 24792 --- [WorldbuildingAppV2] [           main] c.w.app.config.DataInitializer           : >>> [DataInitializer] STARTING INITIALIZATION...
+=== STARTING DIAGNOSTIC ===
+Checking 'cuaderno' table schema...
+ - Column (cuaderno): id [INTEGER]
+ - Column (cuaderno): nombre_proyecto [VARCHAR(255)]
+ - Column (cuaderno): titulo [VARCHAR(255)]
+ - Column (cuaderno): descripcion [TEXT]
+ - Column (cuaderno): tipo [VARCHAR(50)]
+ - Column (cuaderno): genero [VARCHAR(50)]
+ - Column (cuaderno): imagen_url [TEXT]
+ - Column (cuaderno): fecha_creacion [TEXT]
+ - Column (cuaderno): deleted [BOOLEAN]
+ - Column (cuaderno): deleted_date [TEXT]
+Checking 'carpeta' table schema...
+ - Column (carpeta): id [INTEGER]
+ - Column (carpeta): nombre [VARCHAR(255)]
+ - Column (carpeta): slug [VARCHAR(255)]
+ - Column (carpeta): tipo [VARCHAR(50)]
+ - Column (carpeta): descripcion [TEXT]
+ - Column (carpeta): padre_id [INTEGER]
+ - Column (carpeta): proyecto_id [INTEGER]
+ - Column (carpeta): item_count [INTEGER]
+ - Column (carpeta): deleted [BOOLEAN]
+ - Column (carpeta): deleted_date [TEXT]
+ - Column (entidad_generica): id [INTEGER]
+ - Column (entidad_generica): nombre [VARCHAR(255)]
+ - Column (entidad_generica): proyecto_id [INTEGER]
+ - Column (entidad_generica): carpeta_id [INTEGER]
+ - Column (entidad_generica): tipo_especial [VARCHAR(50)]
+ - Column (entidad_generica): deleted [BOOLEAN]
+ - Column (entidad_generica): deleted_date [TEXT]
+ - Column (entidad_generica): descripcion [TEXT]
+ - Column (entidad_generica): tags [VARCHAR(255)]
+ - Column (entidad_generica): slug [VARCHAR(255)]
+ - Column (entidad_generica): apariencia [TEXT]
+ - Column (entidad_generica): notas [TEXT]
+ - Column (entidad_generica): icon_url [TEXT]
+ - Column (entidad_generica): color [VARCHAR(50)]
+ - Column (entidad_generica): categoria [VARCHAR(50)]
+ - Column (entidad_generica): favorite [BOOLEAN]
+ - Column (entidad_generica): json_attributes [TEXT]
+ - Column (atributo_plantilla): id [INTEGER]
+ - Column (atributo_plantilla): carpeta_id [INTEGER]
+ - Column (atributo_plantilla): nombre [VARCHAR(255)]
+ - Column (atributo_plantilla): tipo [VARCHAR(50)]
+ - Column (atributo_plantilla): metadata [TEXT]
+ - Column (atributo_plantilla): valor_defecto [TEXT]
+ - Column (atributo_plantilla): es_obligatorio [BOOLEAN]
+ - Column (atributo_plantilla): global [BOOLEAN]
+ - Column (atributo_plantilla): orden_visual [INTEGER]
+Testing Repository findAll()...
+Repository found 0 projects.
+Repository Test: PASS
+=== DIAGNOSTIC COMPLETE ===
+=== PATH DEBUG ===
+User Dir: C:\Users\rober\Desktop\Proyectos propios\WorldbuildingApp
+Datasource URL: jdbc:sqlite:./src/main/resources/data/worldbuilding.db
+==================
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (C:\Users\rober\.m2\repository\net\bytebuddy\byte-buddy-agent\1.17.8\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 9.147 s <<< FAILURE! -- in com.worldbuilding.app.model.MapPersistenceTest
+[ERROR] com.worldbuilding.app.model.MapPersistenceTest.testComplexMapLayersPersistence -- Time elapsed: 0.482 s <<< ERROR!
+org.springframework.dao.DataIntegrityViolationException: not-null property references a null or transient value for entity com.worldbuilding.app.model.Cuaderno.nombreProyecto
+	at org.springframework.orm.jpa.hibernate.HibernateExceptionTranslator.convertHibernateAccessException(HibernateExceptionTranslator.java:186)
+	at org.springframework.orm.jpa.hibernate.HibernateExceptionTranslator.convertHibernateAccessException(HibernateExceptionTranslator.java:131)
+	at org.springframework.orm.jpa.hibernate.HibernateExceptionTranslator.translateExceptionIfPossible(HibernateExceptionTranslator.java:105)
+	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:199)
+	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.translateExceptionIfPossible(AbstractEntityManagerFactoryBean.java:556)
+	at org.springframework.dao.support.ChainedPersistenceExceptionTranslator.translateExceptionIfPossible(ChainedPersistenceExceptionTranslator.java:61)
+	at org.springframework.dao.support.DataAccessUtils.translateIfNecessary(DataAccessUtils.java:346)
+	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:157)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.data.jpa.repository.support.CrudMethodMetadataPostProcessor$CrudMethodMetadataPopulatingMethodInterceptor.invoke(CrudMethodMetadataPostProcessor.java:166)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:222)
+	at jdk.proxy2/jdk.proxy2.$Proxy192.save(Unknown Source)
+	at com.worldbuilding.app.model.MapPersistenceTest.testComplexMapLayersPersistence(MapPersistenceTest.java:41)
+Caused by: org.hibernate.PropertyValueException: not-null property references a null or transient value for entity com.worldbuilding.app.model.Cuaderno.nombreProyecto
+	at org.hibernate.engine.internal.Nullability.checkNullability(Nullability.java:120)
+	at org.hibernate.action.internal.AbstractEntityInsertAction.nullifyTransientReferencesIfNotAlready(AbstractEntityInsertAction.java:120)
+	at org.hibernate.action.internal.EntityIdentityInsertAction.execute(EntityIdentityInsertAction.java:67)
+	at org.hibernate.engine.spi.ActionQueue.execute(ActionQueue.java:667)
+	at org.hibernate.engine.spi.ActionQueue.addResolvedEntityInsertAction(ActionQueue.java:291)
+	at org.hibernate.engine.spi.ActionQueue.addInsertAction(ActionQueue.java:270)
+	at org.hibernate.engine.spi.ActionQueue.addAction(ActionQueue.java:322)
+	at org.hibernate.event.internal.AbstractSaveEventListener.addInsertAction(AbstractSaveEventListener.java:371)
+	at org.hibernate.event.internal.AbstractSaveEventListener.performSaveOrReplicate(AbstractSaveEventListener.java:285)
+	at org.hibernate.event.internal.AbstractSaveEventListener.performSave(AbstractSaveEventListener.java:215)
+	at org.hibernate.event.internal.AbstractSaveEventListener.saveWithGeneratedId(AbstractSaveEventListener.java:133)
+	at org.hibernate.event.internal.DefaultPersistEventListener.entityIsTransient(DefaultPersistEventListener.java:145)
+	at org.hibernate.event.internal.DefaultPersistEventListener.persist(DefaultPersistEventListener.java:89)
+	at org.hibernate.event.internal.DefaultPersistEventListener.onPersist(DefaultPersistEventListener.java:73)
+	at org.hibernate.event.internal.DefaultPersistEventListener.onPersist(DefaultPersistEventListener.java:49)
+	at org.hibernate.event.service.internal.EventListenerGroupImpl.fireEventOnEachListener(EventListenerGroupImpl.java:138)
+	at org.hibernate.internal.SessionImpl.firePersist(SessionImpl.java:689)
+	at org.hibernate.internal.SessionImpl.persist(SessionImpl.java:672)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at org.springframework.orm.jpa.SharedEntityManagerCreator$SharedEntityManagerInvocationHandler.invoke(SharedEntityManagerCreator.java:317)
+	at jdk.proxy2/jdk.proxy2.$Proxy169.persist(Unknown Source)
+	at org.springframework.data.jpa.repository.support.SimpleJpaRepository.save(SimpleJpaRepository.java:664)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359)
+	at org.springframework.data.repository.core.support.RepositoryMethodInvoker$RepositoryFragmentMethodInvoker.lambda$new$0(RepositoryMethodInvoker.java:278)
+	at org.springframework.data.repository.core.support.RepositoryMethodInvoker.doInvoke(RepositoryMethodInvoker.java:169)
+	at org.springframework.data.repository.core.support.RepositoryMethodInvoker.invoke(RepositoryMethodInvoker.java:158)
+	at org.springframework.data.repository.core.support.RepositoryComposition$RepositoryFragments.invoke(RepositoryComposition.java:545)
+	at org.springframework.data.repository.core.support.RepositoryComposition.invoke(RepositoryComposition.java:290)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$ImplementationMethodExecutionInterceptor.invoke(RepositoryFactorySupport.java:690)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.doInvoke(QueryExecutorMethodInterceptor.java:171)
+	at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.invoke(QueryExecutorMethodInterceptor.java:146)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor.invoke(DefaultMethodInvokingMethodInterceptor.java:69)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:133)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:371)
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:130)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:135)
+	... 6 more
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Errors: 
+[ERROR]   MapPersistenceTest.testComplexMapLayersPersistence:41 » DataIntegrityViolation not-null property references a null or transient value for entity com.worldbuilding.app.model.Cuaderno.nombreProyecto
+[INFO] 
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  14.650 s
+[INFO] Finished at: 2026-02-05T21:19:28+01:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project worldbuilding-app-v2: 
+[ERROR] 
+[ERROR] See C:\Users\rober\Desktop\Proyectos propios\WorldbuildingApp\target\surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

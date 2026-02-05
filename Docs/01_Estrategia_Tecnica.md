@@ -34,6 +34,11 @@ Este documento detalla las decisiones arquitectónicas y el stack tecnológico d
   * Permite almacenar atributos dinámicos (Clima, Daño, Inventario) sin alterar el esquema SQL.
   * Evita la tabla EAV `AtributoValor` para lecturas de alto rendimiento.
 
+### D. Gestión de Recursos Binarios (LOBs)
+
+* **Implementación**: Uso de columnas `@Lob` (BLOB en SQLite) para persistir recursos pesados generados por el usuario.
+* **Caso de Uso**: Almacenamiento de archivos `.ttf` base para lenguajes personalizados, asegurando que la fuente sea parte del archivo de proyecto `.db` y no dependa de archivos externos volátiles.
+
 ### C. Sistema de Proyectos (Multi-Tenant)
 
 * **Arquitectura**: 1 Proyecto = 1 Archivo SQLite.

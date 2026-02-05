@@ -5,7 +5,7 @@ Registro vivo de tareas, hitos completados y deuda técnica.
 ## 🔴 Prioridad Inmediata (Next Steps)
 
 1. **Refinamiento Editor de Mapas**:
-    * [ ] **Persistencia**: Verificar que las capas complejas se guardan correctamente en `json_attributes`.
+    * [x] **Persistencia**: Verificar que las capas complejas se guardan correctamente en `json_attributes`. (Verificado por Test `MapPersistenceTest`)
 
 ---
 
@@ -16,6 +16,7 @@ Registro vivo de tareas, hitos completados y deuda técnica.
 * [x] **Map Editor Fix**: Corregido bug de selección/deselección. El fondo ahora actúa como zona neutra.
 * [x] **UI Check**: Verificado `ProjectView.jsx` para error `t is not defined`. No reproducible en código actual.
 * [x] **Doc Refactor**: Separación de estrategia en documentos técnicos, de diseño y roadmap (`00` a `04`).
+* [x] **Linguistics Hub & Rune Foundry v2.0**: Implementada automatización total de glifos, motor de fuentes TTF y almacenamiento binario.
 
 ### Febrero 2026 - Análisis de Arquitectura
 

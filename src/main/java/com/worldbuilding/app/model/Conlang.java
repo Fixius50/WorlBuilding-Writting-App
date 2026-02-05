@@ -28,7 +28,18 @@ public class Conlang {
     @Column(name = "nombre_proyecto")
     private String nombreProyecto;
 
+    @Column(name = "font_binary")
+    private byte[] fontBinary;
+
     private LocalDateTime fechaCreacion = LocalDateTime.now();
+
+    public byte[] getFontBinary() {
+        return fontBinary;
+    }
+
+    public void setFontBinary(byte[] fontBinary) {
+        this.fontBinary = fontBinary;
+    }
 
     public Long getId() {
         return id;

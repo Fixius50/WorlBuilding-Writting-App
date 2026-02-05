@@ -28,6 +28,9 @@ public class ConlangController {
     @Autowired
     private ConlangService conlangService;
 
+    @Autowired
+    private com.worldbuilding.app.repository.GramaticaRuleRepository gramaticaRuleRepository;
+
     @GetMapping("/lenguas")
     public List<Conlang> listarLenguas(jakarta.servlet.http.HttpSession session) {
         String proyecto = (String) session.getAttribute("proyectoActivo");
@@ -44,6 +47,11 @@ public class ConlangController {
         return conlangRepository.save(conlang);
     }
 
+    @GetMapping("/{id}")
+    public Conlang obtenerLengua(@PathVariable Long id) {
+        return conlangRepository.findById(id).orElseThrow();
+    }
+
     @GetMapping("/{id}/diccionario")
     public List<Palabra> listarDiccionario(@PathVariable Long id) {
         return palabraRepository.findByConlangId(id);
@@ -51,14 +59,52 @@ public class ConlangController {
 
     @PostMapping("/{id}/palabra")
     public Palabra agregarPalabra(@PathVariable Long id, @RequestBody Palabra palabra) {
-        // En una app real, buscaríamos la entidad Conlang y la asignaríamos
-        // Aquí asumimos que el objeto palabra ya tiene el ID o lo seteamos manualmente
-        // si es posible,
-        // pero JPA requiere la entidad Conlang.
-        // Simplificación:
         Conlang c = conlangRepository.findById(id).orElseThrow();
         palabra.setConlang(c);
         return palabraRepository.save(palabra);
+    }
+
+    @PatchMapping("/{id}/palabra/{palabraId}/glyph")
+    public Palabra actualizarGlifo(@PathVariable Long id, @PathVariable Long palabraId,
+            @RequestBody Map<String, String> data) {
+        Palabra p = palabraRepository.findById(palabraId).orElseThrow();
+        if (data.containsKey("svgPathData")) {
+            p.setSvgPathData(data.get("svgPathData"));
+        }
+        return palabraRepository.save(p);
+    }
+
+    // --- Grammar Rules ---
+    @GetMapping("/{id}/rules")
+    public List<com.worldbuilding.app.model.GramaticaRule> listarReglas(@PathVariable Long id) {
+        return gramaticaRuleRepository.findByConlangId(id);
+    }
+
+    @PostMapping("/{id}/rule")
+    public com.worldbuilding.app.model.GramaticaRule agregarRegla(@PathVariable Long id,
+            @RequestBody com.worldbuilding.app.model.GramaticaRule rule) {
+        rule.setConlangId(id);
+        if (rule.getStatus() == null)
+            rule.setStatus("Draft");
+        return gramaticaRuleRepository.save(rule);
+    }
+
+    @DeleteMapping("/rule/{ruleId}")
+    public ResponseEntity<?> eliminarRegla(@PathVariable Long ruleId) {
+        gramaticaRuleRepository.deleteById(ruleId);
+        return ResponseEntity.ok(Map.of("success", true));
+    }
+
+    @PostMapping("/{id}/upload-font")
+    public ResponseEntity<?> subirFuente(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        try {
+            Conlang c = conlangRepository.findById(id).orElseThrow();
+            c.setFontBinary(file.getBytes());
+            conlangRepository.save(c);
+            return ResponseEntity.ok(Map.of("success", true, "message", "Fuente binaria actualizada"));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("success", false, "error", e.getMessage()));
+        }
     }
 
     // --- Stats ---
@@ -74,24 +120,11 @@ public class ConlangController {
         long glyphCount = 0;
 
         for (Conlang c : langs) {
-            wordCount += palabraRepository.findByConlangId(c.getId()).size(); // Assuming you add this to Repo
-            // ruleCount... we need finding rules by conlang.
-            // For now, let's mock or use repository access if methods exist.
-            // glyphCount += palabraRepository.countWithSVG...
-        }
+            wordCount += palabraRepository.findByConlangId(c.getId()).size();
+            ruleCount += gramaticaRuleRepository.findByConlangId(c.getId()).size();
 
-        // Simplified Logic: Just count all words for now, as Repo methods might be
-        // missing.
-        // We will implement `countByConlangId` in PalabraRepository next step if
-        // needed.
-        // For now, let's fetch all and filter in memory to avoid compilation error if
-        // method missing.
-
-        // Better: Fetch all words and filter.
-        List<Palabra> allWords = palabraRepository.findAll();
-        for (Palabra p : allWords) {
-            if (p.getConlang() != null && proyecto.equals(p.getConlang().getNombreProyecto())) {
-                wordCount++;
+            List<Palabra> words = palabraRepository.findByConlangId(c.getId());
+            for (Palabra p : words) {
                 if (p.getSvgPathData() != null && !p.getSvgPathData().isEmpty()) {
                     glyphCount++;
                 }
@@ -100,7 +133,7 @@ public class ConlangController {
 
         return ResponseEntity.ok(Map.of(
                 "words", wordCount,
-                "rules", 32, // Hardcoded for now until RuleRepo is ready
+                "rules", ruleCount,
                 "glyphs", glyphCount));
     }
 
@@ -129,13 +162,6 @@ public class ConlangController {
         if (proyecto == null)
             return ResponseEntity.badRequest().body("No hay proyecto activo");
 
-        // 1. Save/Update Conlang (Generic logic, or assume generic id=1 for now if not
-        // passed)
-        // In a real app we'd pass an ID. Here we'll just check if Entity exists under
-        // this project
-
-        // Note: Repository findByName might need project filter too, assuming
-        // uniqueness per project
         boolean exists = entidadColectivaRepository.findByNombreProyecto(proyecto).stream()
                 .anyMatch(e -> e.getNombre().equalsIgnoreCase(name));
 
@@ -146,7 +172,7 @@ public class ConlangController {
             ent.setTipo("Lenguaje");
             ent.setNombreProyecto(proyecto);
             ent.setComportamiento("Evolutivo");
-            ent.setCantidadMiembros(1); // Placeholder
+            ent.setCantidadMiembros(1);
             entidadColectivaRepository.save(ent);
             return ResponseEntity.ok("Generada nueva entidad de lenguaje.");
         }
