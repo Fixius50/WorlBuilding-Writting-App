@@ -81,7 +81,7 @@ const graphStylesheet = [
 
 const GeneralGraphView = () => {
     const { username, projectName } = useParams();
-    const { setRightPanelMode, setRightOpen, setRightPanelTitle } = useOutletContext();
+    const { setRightPanelTab, setRightOpen } = useOutletContext();
     const navigate = useNavigate();
 
     const [elements, setElements] = useState([]);
@@ -94,21 +94,23 @@ const GeneralGraphView = () => {
     const [portalRef, setPortalRef] = useState(null);
 
     useEffect(() => {
-        setRightPanelMode('CUSTOM');
-        setRightPanelTitle('Inspector');
+        if (setRightPanelTab) setRightPanelTab('CONTEXT');
         loadData();
     }, []);
 
     // Find portal target
     useEffect(() => {
         const checkPortal = setInterval(() => {
-            const el = document.getElementById('architect-right-panel-portal');
+            const el = document.getElementById('global-right-panel-portal'); // UPDATED ID
             if (el) {
                 setPortalRef(el);
                 clearInterval(checkPortal);
             }
         }, 100);
-        return () => clearInterval(checkPortal);
+        return () => {
+            clearInterval(checkPortal);
+            if (setRightPanelTab) setRightPanelTab('NOTEBOOKS');
+        };
     }, []);
 
     const loadData = async () => {

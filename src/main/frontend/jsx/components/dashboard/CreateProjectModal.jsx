@@ -42,12 +42,12 @@ const CreateProjectModal = ({ isOpen, onClose, onCreate }) => {
                                 onChange={(e) => setGenre(e.target.value)}
                                 className="w-full bg-background-dark/50 border border-glass-border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none"
                             >
-                                <option value="Fantasy">Fantasy</option>
-                                <option value="Sci-Fi">Sci-Fi</option>
-                                <option value="Horror">Horror</option>
-                                <option value="Steampunk">Steampunk</option>
-                                <option value="Modern">Modern</option>
-                                <option value="Historical">Historical</option>
+                                <option className="bg-[#0f0f13] text-white" value="Fantasy">Fantasy</option>
+                                <option className="bg-[#0f0f13] text-white" value="Sci-Fi">Sci-Fi</option>
+                                <option className="bg-[#0f0f13] text-white" value="Horror">Horror</option>
+                                <option className="bg-[#0f0f13] text-white" value="Steampunk">Steampunk</option>
+                                <option className="bg-[#0f0f13] text-white" value="Modern">Modern</option>
+                                <option className="bg-[#0f0f13] text-white" value="Historical">Historical</option>
                             </select>
                         </div>
 

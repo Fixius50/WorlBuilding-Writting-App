@@ -60,7 +60,7 @@ const AttributeField = ({ attribute, value, onChange, onRemove, linkableEntities
                             value={value || ''}
                             onChange={(e) => onChange(e.target.value)}
                         >
-                            <option value="">Select an option...</option>
+                            <option value="" className="bg-[#1a1a20] text-white">Select an option...</option>
                             {options.map((opt, i) => (
                                 <option key={i} value={opt} className="bg-surface-dark text-white p-2">
                                     {opt}
@@ -133,7 +133,7 @@ const AttributeField = ({ attribute, value, onChange, onRemove, linkableEntities
                             value={value || ''}
                             onChange={(e) => onChange(e.target.value)}
                         >
-                            <option value="">Select an Entity Link...</option>
+                            <option value="" className="bg-[#1a1a20] text-white">Select an Entity Link...</option>
                             {linkableEntities.map((ent) => (
                                 <option key={ent.id} value={ent.id} className="bg-surface-dark text-white p-2">
                                     {ent.nombre}

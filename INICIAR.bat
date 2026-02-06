@@ -5,6 +5,13 @@ echo  WorldBuilding App V2 - INICIAR
 echo ========================================
 echo.
 
+REM Limpiar instancias previas
+echo [0/3] Limpiando procesos anteriores...
+taskkill /F /IM java.exe >nul 2>&1
+taskkill /F /IM node.exe >nul 2>&1
+echo [OK] Entorno limpio.
+echo.
+
 REM Construir Frontend
 echo [1/3] Construyendo Frontend (React)...
 call npm run build

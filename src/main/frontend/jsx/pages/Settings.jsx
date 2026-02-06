@@ -353,14 +353,14 @@ const Settings = () => {
                                             <select
                                                 value={settings.font}
                                                 onChange={(e) => updateSetting('font', e.target.value)}
-                                                className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-3.5 text-sm text-white appearance-none outline-none focus:border-indigo-500 transition-all"
+                                                className="w-full bg-[#0f0f13] border border-white/10 rounded-xl px-5 py-3.5 text-sm text-white appearance-none outline-none focus:border-indigo-500 transition-all"
                                                 style={{ fontFamily: settings.font }}
                                             >
-                                                <option value="Lexend">Lexend (UI Moderna)</option>
-                                                <option value="Outfit">Outfit (Sleek)</option>
-                                                <option value="Cormorant Garamond">Cormorant (Legendaria)</option>
-                                                <option value="Playfair Display">Playfair (Elegante)</option>
-                                                <option value="JetBrains Mono">JetBrains Mono (Codex)</option>
+                                                <option value="Lexend" className="bg-[#0f0f13] text-white">Lexend (UI Moderna)</option>
+                                                <option value="Outfit" className="bg-[#0f0f13] text-white">Outfit (Sleek)</option>
+                                                <option value="Cormorant Garamond" className="bg-[#0f0f13] text-white">Cormorant (Legendaria)</option>
+                                                <option value="Playfair Display" className="bg-[#0f0f13] text-white">Playfair (Elegante)</option>
+                                                <option value="JetBrains Mono" className="bg-[#0f0f13] text-white">JetBrains Mono (Codex)</option>
                                             </select>
                                             <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">expand_more</span>
                                         </div>

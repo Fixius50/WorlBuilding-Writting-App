@@ -8,18 +8,17 @@ const WritingHub = () => {
     const { username, projectName } = useParams();
     const navigate = useNavigate();
     const { t } = useLanguage();
-    const { setRightPanelMode, setRightOpen, setRightPanelTitle } = useOutletContext();
+    const { setRightPanelTab, setRightOpen } = useOutletContext();
     const [notebooks, setNotebooks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isCreating, setIsCreating] = useState(false);
     const [newTitle, setNewTitle] = useState('');
 
     useEffect(() => {
-        setRightPanelMode('NOTES');
-        setRightOpen(false);
-        setRightPanelTitle(t('writing.library'));
+        if (setRightPanelTab) setRightPanelTab('NOTEBOOKS');
+        // setRightOpen(false); // Let user decide or default
         loadNotebooks();
-    }, []);
+    }, [setRightPanelTab]);
 
     const loadNotebooks = async () => {
         try {

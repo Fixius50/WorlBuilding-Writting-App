@@ -74,10 +74,10 @@ const MapCreationWizard = ({ onCancel, onCreate }) => {
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-600 ml-1">Zona Padre (Opcional)</label>
-                                    <select className="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-3 text-sm text-white focus:border-primary/50 outline-none appearance-none">
-                                        <option>Ninguna (Nivel Superior)</option>
-                                        <option>Reino de Aethelgard</option>
-                                        <option>Continente de Aurum</option>
+                                    <select className="w-full bg-[#1a1a20] border border-white/5 rounded-2xl px-4 py-3 text-sm text-white focus:border-primary/50 outline-none appearance-none">
+                                        <option className="bg-[#1a1a20] text-white">Ninguna (Nivel Superior)</option>
+                                        <option className="bg-[#1a1a20] text-white">Reino de Aethelgard</option>
+                                        <option className="bg-[#1a1a20] text-white">Continente de Aurum</option>
                                     </select>
                                     <p className="text-[9px] text-slate-500 italic mt-1 ml-1 text-primary/70">Seleccionar un padre convierte esto en sub-zona.</p>
                                 </div>

@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useOutletContext, useLocation } from 'react-router-dom';
+import { createPortal } from 'react-dom'; // Added Portal
 import { Stage, Layer, Line, Image as KonvaImage, Rect, Text as KonvaText, Transformer } from 'react-konva';
 
 import api from '../../../js/services/api';
 import Button from '../../components/common/Button';
 import GlassPanel from '../../components/common/GlassPanel';
 import InputModal from '../../components/common/InputModal';
+import MapEditorSettings from '../../components/map/MapEditorSettings'; // Added Settings Component
 
 // --- COMPONENTS FOR WIZARD ---
+// ... (Keep existing wizard components)
 
 const AccordionSection = ({ stepNumber, title, isOpen, onClick, children }) => (
     <div className={`border border-white/10 rounded-2xl bg-[#13141f] overflow-hidden transition-all duration-300 ${isOpen ? 'ring-1 ring-primary/50' : 'opacity-80'}`}>
@@ -91,16 +94,18 @@ const MapEditor = ({ mode: initialMode }) => {
 
     const {
         setRightOpen,
-        setRightPanelMode,
+        setRightPanelTab, // CHANGED from setRightPanelMode
         setAvailableTemplates,
         // Map Settings Context
         mapSettings,
         setMapSettings,
-        setOnMapSettingsChange
+        // setOnMapSettingsChange // REMOVED (No longer needed)
     } = useOutletContext();
 
     // Editor Step State
     const [step, setStep] = useState(initialMode === 'create' ? 'setup' : 'editor');
+    // Portal Target
+    const [portalTarget, setPortalTarget] = useState(null);
 
     // Force step sync if mode changes (e.g. navigation from create -> edit)
     useEffect(() => {
@@ -218,9 +223,9 @@ const MapEditor = ({ mode: initialMode }) => {
     useEffect(() => {
         setRightOpen(step === 'editor');
         if (step === 'editor') {
-            setRightPanelMode('MAP'); // Set to new MAP mode
+            if (setRightPanelTab) setRightPanelTab('CONTEXT'); // Set to CONTEXT mode
 
-            // Push current settings to global panel
+            // Push current settings to global panel (Implicitly done by updating mapSettings via portal component)
             const initialSettings = {
                 showGrid: true,
                 gridSize: 50,
@@ -228,19 +233,33 @@ const MapEditor = ({ mode: initialMode }) => {
                 height: formData.dims.height
             };
             setMapSettings(initialSettings);
-
-            // Register callback to receive updates from panel
-            setOnMapSettingsChange((newSettings) => {
-                if (!newSettings) return;
-                // Update local form data when panel changes
-                setFormData(prev => ({
-                    ...prev,
-                    dims: { width: newSettings.width, height: newSettings.height },
-                    bgImage: newSettings.bgImage || prev.bgImage // Sync image if provided, else keep current
-                }));
-            });
         }
-    }, [step]);
+
+        // Poll for Portal
+        const interval = setInterval(() => {
+            const el = document.getElementById('global-right-panel-portal');
+            if (el) {
+                setPortalTarget(el);
+                clearInterval(interval);
+            }
+        }, 100);
+
+        return () => {
+            clearInterval(interval);
+            if (setRightPanelTab) setRightPanelTab('NOTEBOOKS');
+        }
+    }, [step, setRightPanelTab]);
+
+    // Respond to Map Settings updates (from Portal)
+    const handleSettingsUpdate = (newSettings) => {
+        setMapSettings(newSettings);
+        // Sync local form data
+        setFormData(prev => ({
+            ...prev,
+            dims: { width: newSettings.width, height: newSettings.height },
+            bgImage: newSettings.bgImage || prev.bgImage
+        }));
+    };
 
     // Resolve Folder ID on Mount IF not provided in state
     useEffect(() => {
@@ -622,6 +641,15 @@ const MapEditor = ({ mode: initialMode }) => {
     // --- RENDER: EDITOR ---
     return (
         <div className="flex flex-col h-screen w-full bg-[#0f0f13] text-white overflow-hidden">
+            {/* Portal for Settings */}
+            {portalTarget && createPortal(
+                <MapEditorSettings
+                    settings={mapSettings}
+                    onUpdate={handleSettingsUpdate}
+                />,
+                portalTarget
+            )}
+
             {/* Header */}
             <header className="h-14 border-b border-white/5 flex items-center justify-between px-4 bg-[#1a1a20] shrink-0">
                 <div className="flex items-center gap-4">

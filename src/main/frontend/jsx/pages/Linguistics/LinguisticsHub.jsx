@@ -5,21 +5,24 @@ import { useLanguage } from '../../context/LanguageContext';
 import GlassPanel from '../../components/common/GlassPanel';
 import Avatar from '../../components/common/Avatar';
 import Button from '../../components/common/Button';
-import GlobalNotes from '../../components/layout/GlobalNotes';
+// import GlobalNotes from '../../components/layout/GlobalNotes'; // REMOVED unused
 import api from '../../../js/services/api';
 import * as opentype from 'opentype.js';
 import UniversalCanvas from '../../components/common/editor/UniversalCanvas';
 import UniversalCanvasProperties from '../../components/common/editor/UniversalCanvasProperties';
 import ConfirmModal from '../../components/common/ConfirmModal';
+import LinguisticsSidebar from '../../components/linguistics/LinguisticsSidebar'; // ADDED
 
 const LinguisticsHub = ({ onOpenEditor }) => {
     const { t } = useLanguage();
     const { projectName: projectParam } = useParams();
-    const { setRightPanelMode, setRightOpen, setRightPanelTitle } = useOutletContext();
+    const { setRightPanelTab, setRightOpen } = useOutletContext(); // CHANGED
     const [projectName, setProjectName] = useState('...');
     const [stats, setStats] = useState({ words: 0, rules: 0, glyphs: 0 });
     const [langName, setLangName] = useState('...');
     const [lexicon, setLexicon] = useState([]);
+
+    // ... (Keep existing states) ...
     const [rules, setRules] = useState([]);
     const [activeLangId, setActiveLangId] = useState(null);
     const [sourceText, setSourceText] = useState('');
@@ -35,6 +38,9 @@ const LinguisticsHub = ({ onOpenEditor }) => {
     const [editingWord, setEditingWord] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [wordToDelete, setWordToDelete] = useState(null);
+
+    // Portal Target
+    const [portalTarget, setPortalTarget] = useState(null);
 
     // Foundry State
     const [fontName, setFontName] = useState('CHRONOS_ATLAS_V1');
@@ -134,14 +140,22 @@ const LinguisticsHub = ({ onOpenEditor }) => {
 
     useEffect(() => {
         loadData();
-        setRightPanelMode('LINGUISTICS');
-        setRightPanelTitle('Lingüística');
         setRightOpen(true);
+        if (setRightPanelTab) setRightPanelTab('CONTEXT'); // Updated Mode
         setIsMounted(true);
 
+        // Find Portal
+        const interval = setInterval(() => {
+            const el = document.getElementById('global-right-panel-portal');
+            if (el) {
+                setPortalTarget(el);
+                clearInterval(interval);
+            }
+        }, 100);
+
         return () => {
-            setRightPanelMode('NOTES');
-            setRightPanelTitle('');
+            clearInterval(interval);
+            if (setRightPanelTab) setRightPanelTab('NOTEBOOKS');
         };
     }, []);
 
@@ -1107,7 +1121,7 @@ const LinguisticsHub = ({ onOpenEditor }) => {
                 )}
             </main>
 
-            {createPortal(
+            {portalTarget && createPortal(
                 <div className="h-full flex flex-col bg-background relative overflow-hidden" >
                     {editorMode ? (
                         <UniversalCanvasProperties
@@ -1134,7 +1148,7 @@ const LinguisticsHub = ({ onOpenEditor }) => {
                                 setActiveLayerId(newId);
                             }}
                             onDeleteLayer={(id) => {
-                                if (layers.length === 1) return; // Prevent deleting last layer
+                                if (layers.length === 1) return;
                                 setLayers(prev => {
                                     const filtered = prev.filter(l => l.id !== id);
                                     if (activeLayerId === id) setActiveLayerId(filtered[0].id);
@@ -1150,108 +1164,19 @@ const LinguisticsHub = ({ onOpenEditor }) => {
                             }}
                         />
                     ) : (
-                        <>
-                            <div className="flex border-b border-white/5 bg-surface-dark/50 p-2 gap-1">
-                                {['NOTES', 'MANAGEMENT'].map(tab => (
-                                    <button
-                                        key={tab}
-                                        onClick={() => setSidebarTab(tab)}
-                                        className={`flex-1 py-2 text-[9px] font-black uppercase tracking-widest transition-all rounded-lg ${sidebarTab === tab ? 'bg-primary text-white shadow-lg' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
-                                    >
-                                        {tab === 'NOTES' ? 'NOTAS' : 'HERRAMIENTAS'}
-                                    </button>
-                                ))}
-                            </div>
-
-                            <div className="flex-1 overflow-y-auto no-scrollbar custom-scrollbar p-0">
-                                {sidebarTab === 'NOTES' && (
-                                    <div className="h-full">
-                                        <GlobalNotes projectName={projectParam} />
-                                    </div>
-                                )}
-
-                                {sidebarTab === 'MANAGEMENT' && (
-                                    <div className="p-4 space-y-8 pb-24 animate-in fade-in slide-in-from-right-4 duration-500">
-                                        <section className="space-y-4">
-                                            <div className="flex justify-between items-center px-1">
-                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-text-muted">Sistemas de Escritura</h4>
-                                                <span className="material-symbols-outlined text-text-muted text-sm">history_edu</span>
-                                            </div>
-                                            <div className="space-y-2">
-                                                {Object.values(WRITING_SYSTEM_TYPES).map(sys => (
-                                                    <button
-                                                        key={sys.id}
-                                                        onClick={() => setWritingSystem(sys.id)}
-                                                        className={`w-full p-3 rounded-xl border text-left transition-all group ${writingSystem === sys.id ? 'bg-primary/10 border-primary/40' : 'bg-surface-dark border-white/5 hover:border-white/10'}`}
-                                                    >
-                                                        <div className="flex justify-between items-center mb-1">
-                                                            <span className={`text-[10px] font-black uppercase tracking-widest group-hover:text-primary transition-colors ${writingSystem === sys.id ? 'text-primary' : 'text-text-muted'}`}>{sys.name}</span>
-                                                            {writingSystem === sys.id && <div className="size-1.5 rounded-full bg-primary animate-pulse"></div>}
-                                                        </div>
-                                                        <p className="text-[9px] text-slate-500 leading-tight">{sys.desc}</p>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </section>
-
-                                        <section className="space-y-4">
-                                            <div className="flex justify-between items-center">
-                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-text-muted">{t('linguistics.writing_system')}</h4>
-                                                <button onClick={handleCreateNewGlyph} className="text-primary hover:text-white transition-colors" title="Crear Nuevo Glifo">
-                                                    <span className="material-symbols-outlined text-lg">add_circle</span>
-                                                </button>
-                                            </div>
-                                            <div className="p-4 bg-surface-dark border border-white/5 rounded-2xl">
-                                                <div className="grid grid-cols-4 gap-2">
-                                                    {foundryGlyphs.slice(0, 12).map(g => (
-                                                        <div
-                                                            key={g.id}
-                                                            onClick={() => handleOpenEditor(g)}
-                                                            className="aspect-square rounded-lg bg-black/40 border border-white/5 flex items-center justify-center text-xl font-serif text-primary hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer"
-                                                            title={g.lema}
-                                                        >
-                                                            <span>{g.lema}</span>
-                                                        </div>
-                                                    ))}
-                                                    {foundryGlyphs.length === 0 && (
-                                                        <div className="col-span-4 py-8 flex items-center justify-center opacity-20">
-                                                            <span className="text-[8px] font-black uppercase font-mono">Sin Glifos</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="mt-3 text-center">
-                                                    <button onClick={() => setCenterView('lexicon')} className="text-[9px] font-bold text-primary hover:underline uppercase tracking-wide">Ver todos ({foundryGlyphs.length})</button>
-                                                </div>
-                                            </div>
-                                        </section>
-
-                                        <section className="space-y-4">
-                                            <div className="flex justify-between items-center">
-                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-text-muted">{t('linguistics.grammar')}</h4>
-                                                <button onClick={handleAddRule} className="text-primary hover:text-white transition-colors">
-                                                    <span className="material-symbols-outlined text-lg">add_circle</span>
-                                                </button>
-                                            </div>
-                                            <div className="space-y-2">
-                                                {rules.map(rule => (
-                                                    <div key={rule.id} className="p-3 bg-surface-dark border border-white/5 rounded-xl hover:border-primary/30 transition-all cursor-pointer group">
-                                                        <div className="flex items-center gap-2 mb-1">
-                                                            <div className={`size-1.5 rounded-full ${rule.status === 'complete' ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
-                                                            <span className="text-[10px] font-bold text-white group-hover:text-primary transition-colors">{rule.titulo}</span>
-                                                        </div>
-                                                        <p className="text-[9px] text-slate-500 leading-tight line-clamp-2">{rule.descripcion}</p>
-                                                    </div>
-                                                ))}
-                                                {rules.length === 0 && <p className="text-[9px] text-slate-600 italic px-2">No hay reglas definidas.</p>}
-                                            </div>
-                                        </section>
-                                    </div>
-                                )}
-                            </div>
-                        </>
+                        <LinguisticsSidebar
+                            stats={stats}
+                            langName={langName}
+                            glyphs={foundryGlyphs}
+                            rules={rules}
+                            onEditGlyph={handleOpenEditor}
+                            onCreateGlyph={handleCreateNewGlyph}
+                            onCreateRule={handleAddRule}
+                            onViewAllGlyphs={() => setCenterView('lexicon')}
+                        />
                     )}
                 </div>,
-                isMounted && document.getElementById('architect-right-panel-portal') ? document.getElementById('architect-right-panel-portal') : document.body
+                portalTarget
             )}
 
             {/* Modals */}
@@ -1265,18 +1190,20 @@ const LinguisticsHub = ({ onOpenEditor }) => {
                 cancelText="Cancelar"
             />
 
-            {isMeaningModalOpen && (
-                <MeaningEditorModal
-                    word={editingWord}
-                    onClose={() => setIsMeaningModalOpen(false)}
-                    onSave={handleSaveMeaning}
-                    onEditSymbol={(word) => {
-                        setIsMeaningModalOpen(false);
-                        handleOpenEditor(word);
-                    }}
-                />
-            )}
-        </div>
+            {
+                isMeaningModalOpen && (
+                    <MeaningEditorModal
+                        word={editingWord}
+                        onClose={() => setIsMeaningModalOpen(false)}
+                        onSave={handleSaveMeaning}
+                        onEditSymbol={(word) => {
+                            setIsMeaningModalOpen(false);
+                            handleOpenEditor(word);
+                        }}
+                    />
+                )
+            }
+        </div >
     );
 };
 
@@ -1407,16 +1334,16 @@ const MeaningEditorModal = ({ word, onClose, onSave, onEditSymbol }) => {
                             <select
                                 value={data.categoriaGramatical}
                                 onChange={e => setData(prev => ({ ...prev, categoriaGramatical: e.target.value }))}
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-xs font-bold focus:border-primary/40 outline-none transition-all appearance-none"
+                                className="w-full bg-[#1a1a20] border border-white/10 rounded-2xl py-4 px-6 text-white text-xs font-bold focus:border-primary/40 outline-none transition-all appearance-none"
                             >
-                                <option value="Noun">Sustantivo</option>
-                                <option value="Verb">Verbo</option>
-                                <option value="Adj">Adjetivo</option>
-                                <option value="Adv">Adverbio</option>
-                                <option value="Conj">Conjunción</option>
-                                <option value="GLYPH">Glifo / Símbolo</option>
-                                <option value="GLYFO">Glifo / Símbolo (Alt)</option>
-                                <option value="GLIFO">Glifo / Símbolo (ES)</option>
+                                <option value="Noun" className="bg-[#1a1a20] text-white">Sustantivo</option>
+                                <option value="Verb" className="bg-[#1a1a20] text-white">Verbo</option>
+                                <option value="Adj" className="bg-[#1a1a20] text-white">Adjetivo</option>
+                                <option value="Adv" className="bg-[#1a1a20] text-white">Adverbio</option>
+                                <option value="Conj" className="bg-[#1a1a20] text-white">Conjunción</option>
+                                <option value="GLYPH" className="bg-[#1a1a20] text-white">Glifo / Símbolo</option>
+                                <option value="GLYFO" className="bg-[#1a1a20] text-white">Glifo / Símbolo (Alt)</option>
+                                <option value="GLIFO" className="bg-[#1a1a20] text-white">Glifo / Símbolo (ES)</option>
                             </select>
                         </div>
                         <div className="flex items-end pb-1">

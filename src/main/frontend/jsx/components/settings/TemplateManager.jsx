@@ -179,13 +179,13 @@ const NewFieldForm = ({ onAdd }) => {
                     onChange={e => setType(e.target.value)}
                     className="bg-black/20 border border-white/5 rounded-xl px-4 py-2 text-xs text-white outline-none"
                 >
-                    <option value="text">Text (Long)</option>
-                    <option value="short_text">Text (Short)</option>
-                    <option value="number">Number</option>
-                    <option value="date">Date</option>
-                    <option value="select">Single Selection (Dropdown)</option>
-                    <option value="multi_select">Multiple Selection</option>
-                    <option value="boolean">Switch (True/False)</option>
+                    <option className="bg-[#1a1a20] text-white" value="text">Text (Long)</option>
+                    <option className="bg-[#1a1a20] text-white" value="short_text">Text (Short)</option>
+                    <option className="bg-[#1a1a20] text-white" value="number">Number</option>
+                    <option className="bg-[#1a1a20] text-white" value="date">Date</option>
+                    <option className="bg-[#1a1a20] text-white" value="select">Single Selection (Dropdown)</option>
+                    <option className="bg-[#1a1a20] text-white" value="multi_select">Multiple Selection</option>
+                    <option className="bg-[#1a1a20] text-white" value="boolean">Switch (True/False)</option>
                 </select>
             </div>
 

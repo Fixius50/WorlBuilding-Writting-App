@@ -10,7 +10,7 @@ import Button from '../../components/common/Button';
 const TimelineView = () => {
     const { t } = useLanguage();
     // Context from ArchitectLayout
-    const { setRightPanelMode, setRightOpen, setRightPanelTitle } = useOutletContext();
+    const { setRightPanelTab, setRightOpen } = useOutletContext(); // Removed legacy props
 
     const [timelines, setTimelines] = useState([]);
     const [selectedTimelineId, setSelectedTimelineId] = useState(null);
@@ -91,14 +91,13 @@ const TimelineView = () => {
 
     // Portal Setup
     useEffect(() => {
-        // Activate Custom Mode
-        setRightPanelMode('CUSTOM');
-        setRightPanelTitle(t('timeline.title'));
-        // setRightOpen(true); // Don't force open
+        // Activate Context Mode
+        if (setRightPanelTab) setRightPanelTab('CONTEXT');
+        // setRightOpen(true); // Don't force open on mount
 
         // Poll for target node availability
         const interval = setInterval(() => {
-            const temp = document.getElementById('architect-right-panel-portal');
+            const temp = document.getElementById('global-right-panel-portal'); // UPDATED ID
             if (temp) {
                 setPortalTarget(temp);
                 clearInterval(interval);
@@ -108,11 +107,9 @@ const TimelineView = () => {
         return () => {
             clearInterval(interval);
             // On Unmount, reset to default notes
-            setRightPanelMode('NOTES');
-            setRightPanelTitle('');
-            // setRightOpen(false); // Optional: keep open if user navigates? No, close or reset.
+            if (setRightPanelTab) setRightPanelTab('NOTEBOOKS');
         };
-    }, []);
+    }, [setRightPanelTab]);
 
     // --- Multiverse State ---
     const [universes, setUniverses] = useState([]);

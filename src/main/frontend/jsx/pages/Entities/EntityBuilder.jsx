@@ -1,20 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useOutletContext, useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom'; // ADDED
 import api from '../../../js/services/api';
 import AttributeField from './AttributeField';
 import GlassPanel from '../../components/common/GlassPanel';
 import Avatar from '../../components/common/Avatar';
 import Button from '../../components/common/Button';
 import RelationshipManager from '../../components/relationships/RelationshipManager';
-import GlobalNotes from '../../components/layout/GlobalNotes';
+import EntityBuilderSidebar from '../../components/entities/EntityBuilderSidebar'; // ADDED
+
 
 const EntityBuilder = ({ mode }) => {
     const { username, projectName, entitySlug, folderSlug, type } = useParams();
     const navigate = useNavigate();
     const isCreation = mode === 'creation';
 
-    // Layout Context
-    const { setRightOpen, setAvailableTemplates, setRightPanelMode, setAddAttributeHandler, setEntityTabs, activeEntityTab, setActiveEntityTab } = useOutletContext();
+    // Layout Context - Simplified
+    const {
+        setRightOpen,
+        setRightPanelTab, // CHANGED
+        setAvailableTemplates, // Keep for legacy if needed, but likely unused by Layout for sidebar now
+        setAddAttributeHandler
+    } = useOutletContext();
 
     // Core Data State
     const [entity, setEntity] = useState({
@@ -38,21 +45,31 @@ const EntityBuilder = ({ mode }) => {
     const [availableTemplatesLocal, setAvailableTemplatesLocal] = useState([]); // Local copy for Drag & Drop
 
     // UI State
-    // const [activeTab, setActiveTab] = useState('identity'); // REMOVED: Now managed by Layout
+    const [activeEntityTab, setActiveEntityTab] = useState('identity'); // LOCAL STATE FOR TABS
     const [showImageModal, setShowImageModal] = useState(false);
+
+    // Portal Target
+    const [portalTarget, setPortalTarget] = useState(null);
 
     // --- INITIALIZATION ---
     useEffect(() => {
         // Configure Global Right Panel
         setRightOpen(true);
-        setRightPanelMode('ENTITY');
-        setEntityTabs(['identity', 'narrative', 'attributes']);
-        setActiveEntityTab('identity');
+        if (setRightPanelTab) setRightPanelTab('CONTEXT'); // Use Context Tab
+
+        // Find Portal
+        const interval = setInterval(() => {
+            const el = document.getElementById('global-right-panel-portal');
+            if (el) {
+                setPortalTarget(el);
+                clearInterval(interval);
+            }
+        }, 100);
 
         return () => {
+            clearInterval(interval);
             // Restore default panel state when leaving builder
-            setRightPanelMode('NOTES');
-            setEntityTabs([]);
+            if (setRightPanelTab) setRightPanelTab('NOTEBOOKS');
         };
     }, []);
 
@@ -408,7 +425,37 @@ const EntityBuilder = ({ mode }) => {
                     </div>
                 </div>
 
-                {/* Tabs Removed - Moved to Right Panel */}
+                {/* Portal for Sidebar */}
+                {portalTarget && createPortal(
+                    <EntityBuilderSidebar
+                        templates={availableTemplatesLocal}
+                        onAddTemplate={(tpl) => {
+                            setFields(prev => [...prev, {
+                                id: `temp-${tpl.id}-${Date.now()}`,
+                                attribute: tpl,
+                                value: tpl.valorDefecto || '',
+                                isTemp: true
+                            }]);
+                        }}
+                    />,
+                    portalTarget
+                )}
+
+                {/* Local Tabs */}
+                <div className="flex border-b border-white/5 px-8 gap-6 bg-background-dark/80 backdrop-blur sticky top-[73px] z-20">
+                    {['identity', 'narrative', 'attributes'].map(tab => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveEntityTab(tab)}
+                            className={`py-4 text-[10px] font-black uppercase tracking-widest border-b-2 transition-colors ${activeEntityTab === tab
+                                ? 'border-primary text-primary'
+                                : 'border-transparent text-slate-500 hover:text-white'
+                                }`}
+                        >
+                            {tab}
+                        </button>
+                    ))}
+                </div>
 
                 {/* Content */}
                 <div className="p-8 pb-32 max-w-5xl mx-auto w-full">
@@ -438,12 +485,12 @@ const EntityBuilder = ({ mode }) => {
                                             onChange={e => handleCoreChange('categoria', e.target.value)}
                                             className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-sm text-white focus:border-primary/50 outline-none transition-colors appearance-none"
                                         >
-                                            <option value="Individual">Individual (Character/Person)</option>
-                                            <option value="Group">Group / Faction</option>
-                                            <option value="Location">Location</option>
-                                            <option value="Event">Event</option>
-                                            <option value="Object">Object / Item</option>
-                                            <option value="Concept">Concept / Magic</option>
+                                            <option className="bg-[#1a1a20] text-white" value="Individual">Individual (Character/Person)</option>
+                                            <option className="bg-[#1a1a20] text-white" value="Group">Group / Faction</option>
+                                            <option className="bg-[#1a1a20] text-white" value="Location">Location</option>
+                                            <option className="bg-[#1a1a20] text-white" value="Event">Event</option>
+                                            <option className="bg-[#1a1a20] text-white" value="Object">Object / Item</option>
+                                            <option className="bg-[#1a1a20] text-white" value="Concept">Concept / Magic</option>
                                         </select>
                                     </div>
                                     <div>
@@ -730,3 +777,8 @@ const EntityBuilder = ({ mode }) => {
 
 
 export default EntityBuilder;
+
+// Helper for hierarchy types
+const getHierarchyType = (type) => {
+    return { id: type, label: type };
+};

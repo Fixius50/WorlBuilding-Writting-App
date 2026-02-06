@@ -3,16 +3,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import MapCreationWizard from './MapCreationWizard';
 import MapEditor from '../Specialized/MapEditor';
 import InteractiveMapView from './InteractiveMapView';
-import MapSelectionModal from './MapSelectionModal';
+import MapManager from './MapManager'; // New Manager
 import api from '../../../js/services/api';
 
 const MapRouter = () => {
     const { username, projectName } = useParams();
     const navigate = useNavigate();
-    const [view, setView] = useState('viewer'); // 'viewer', 'wizard', 'editor'
+    const [view, setView] = useState('manager'); // Default to manager
     const [maps, setMaps] = useState([]);
     const [selectedMap, setSelectedMap] = useState(null);
-    const [showSelectionModal, setShowSelectionModal] = useState(false);
     const [newMapId, setNewMapId] = useState(null);
 
     React.useEffect(() => {
@@ -24,9 +23,6 @@ const MapRouter = () => {
             const allEntities = await api.get('/world-bible/entities');
             const mapEntities = allEntities.filter(e => e.tipoEspecial === 'map');
             setMaps(mapEntities);
-            if (mapEntities.length > 0 && !selectedMap) {
-                setSelectedMap(mapEntities[0]);
-            }
         } catch (err) { console.error("Error loading maps", err); }
     };
 
@@ -55,16 +51,13 @@ const MapRouter = () => {
                 }
             });
 
-            // If user uploaded a file, we could handle it here
-            // For now, we'll just navigate to the editor with the new entity ID
             setNewMapId(newEntity.id);
-            setView('wizard'); // Close the wizard first
-            setShowSelectionModal(false); // Close the selection modal
+            setView('wizard'); // Close wizard
 
-            // Reload maps to include the new one
+            // Reload maps
             await loadMaps();
 
-            // Then switch to editor
+            // Switch to editor
             setTimeout(() => {
                 setView('editor');
             }, 100);
@@ -75,37 +68,41 @@ const MapRouter = () => {
 
     return (
         <div className="flex-1 flex flex-col h-full bg-background-dark overflow-hidden">
-            {view === 'viewer' && (
-                <div className="flex-1 flex flex-col h-full relative">
-                    {/* Tiny Creation Button Overlay */}
-                    <button
-                        onClick={() => setShowSelectionModal(true)}
-                        className="absolute right-12 bottom-12 z-50 size-16 rounded-3xl bg-primary text-white flex items-center justify-center shadow-2xl shadow-primary/40 hover:scale-110 active:scale-95 transition-all group"
-                    >
-                        <span className="material-symbols-outlined text-3xl group-hover:rotate-90 transition-transform duration-300">add</span>
-                    </button>
-                    <InteractiveMapView map={selectedMap} />
+            {view === 'manager' && (
+                <MapManager
+                    maps={maps}
+                    onSelectMap={(map) => {
+                        setSelectedMap(map);
+                        setView('viewer');
+                    }}
+                    onCreateMap={() => setView('wizard')}
+                    onDeleteMap={async (map) => {
+                        if (confirm(`¿Eliminar mapa "${map.nombre}"?`)) {
+                            await api.delete(`/world-bible/entities/${map.id}`);
+                            loadMaps();
+                        }
+                    }}
+                />
+            )}
 
-                    {showSelectionModal && (
-                        <MapSelectionModal
-                            maps={maps}
-                            onSelect={(map) => {
-                                setSelectedMap(map);
-                                setShowSelectionModal(false);
-                            }}
-                            onCreateNew={() => {
-                                setShowSelectionModal(false);
-                                setView('wizard');
-                            }}
-                            onClose={() => setShowSelectionModal(false)}
-                        />
-                    )}
+            {view === 'viewer' && selectedMap && (
+                <div className="flex-1 flex flex-col h-full relative">
+                    <div className="absolute top-4 left-4 z-[1001]">
+                        <button
+                            onClick={() => setView('manager')}
+                            className="bg-black/60 hover:bg-black/80 text-white backdrop-blur-md px-4 py-2 rounded-xl flex items-center gap-2 border border-white/10 transition-all font-bold text-sm"
+                        >
+                            <span className="material-symbols-outlined text-sm">arrow_back</span>
+                            Volver al Atlas
+                        </button>
+                    </div>
+                    <InteractiveMapView map={selectedMap} />
                 </div>
             )}
 
             {view === 'wizard' && (
                 <MapCreationWizard
-                    onCancel={() => setView('viewer')}
+                    onCancel={() => setView(maps.length > 0 ? 'manager' : 'manager')}
                     onCreate={handleCreateMap}
                 />
             )}
@@ -115,16 +112,15 @@ const MapRouter = () => {
                     mode={newMapId ? 'create' : 'edit'}
                     entityId={newMapId}
                     onBack={() => {
-                        setView('viewer');
+                        setView('manager');
                         setNewMapId(null);
                     }}
                     onSave={async () => {
-                        await loadMaps(); // Reload maps to include the newly created one
+                        await loadMaps();
                         if (newMapId) {
-                            // Navigate to the entity detail page
                             navigate(`/local/${projectName}/entity/${newMapId}`);
                         } else {
-                            setView('viewer');
+                            setView('manager');
                         }
                         setNewMapId(null);
                     }}

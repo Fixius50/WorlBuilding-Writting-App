@@ -10,7 +10,8 @@ const WritingView = () => {
     const navigate = useNavigate();
 
     // --- Context from ArchitectLayout ---
-    const { setRightPanelMode, setRightOpen, setRightPanelTitle } = useOutletContext();
+    // --- Context from ArchitectLayout ---
+    const { setRightPanelTab, setRightOpen } = useOutletContext();
     const { t } = useLanguage();
 
     const [notebook, setNotebook] = useState(null);
@@ -33,25 +34,27 @@ const WritingView = () => {
 
     // Initial Load
     useEffect(() => {
-        setRightPanelMode('CUSTOM');
+        if (setRightPanelTab) setRightPanelTab('CONTEXT');
         setRightOpen(true);
-        setRightPanelTitle(t('writing.tools'));
         if (notebookId) {
             loadNotebookAndPages(notebookId);
         }
-    }, [notebookId]);
+    }, [notebookId, setRightPanelTab]);
 
     // Find portal target
     useEffect(() => {
         const checkPortal = setInterval(() => {
-            const el = document.getElementById('architect-right-panel-portal');
+            const el = document.getElementById('global-right-panel-portal');
             if (el) {
                 setPortalRef(el);
                 clearInterval(checkPortal);
             }
         }, 100);
-        return () => clearInterval(checkPortal);
-    }, []);
+        return () => {
+            clearInterval(checkPortal);
+            if (setRightPanelTab) setRightPanelTab('NOTEBOOKS');
+        };
+    }, [setRightPanelTab]);
 
     // Cleanup & Save on Unmount
     // Cleanup & Save on Unmount

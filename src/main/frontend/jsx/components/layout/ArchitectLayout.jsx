@@ -3,7 +3,7 @@ import { Outlet, useParams, useNavigate, useLocation, NavLink } from 'react-rout
 import { useLanguage } from '../../context/LanguageContext';
 import api from '../../../js/services/api';
 import TemplateManager from '../settings/TemplateManager';
-import GlobalNotes from './GlobalNotes';
+import GlobalRightPanel from './GlobalRightPanel';
 import ConfirmationModal from '../ConfirmationModal'; // Adjust path based on structure
 
 const NavItem = ({ to, icon, label, collapsed, end }) => (
@@ -49,19 +49,18 @@ const ArchitectLayout = () => {
     const navigate = useNavigate();
     const { t } = useLanguage();
     const location = useLocation(); // Hook location
+
+    // Layout State
     const [leftOpen, setLeftOpen] = useState(true);
     const [rightOpen, setRightOpen] = useState(false);
     const [loadedProjectName, setLoadedProjectName] = useState('Loading...');
     const [projectId, setProjectId] = useState(null);
 
-    // Right Panel State
-    const [rightPanelMode, setRightPanelMode] = useState('NOTES'); // 'NOTES', 'TOOLBOX', 'CUSTOM'
-    const [rightPanelTitle, setRightPanelTitle] = useState(''); // Override title
-    const [availableTemplates, setAvailableTemplates] = useState([]); // Use for Toolbox
-    const [addAttributeHandler, setAddAttributeHandler] = useState(null); // Handler for Toolbox clicks
-    const [createTemplateHandler, setCreateTemplateHandler] = useState(null); // Handler for creating templates
+    // Right Panel Context Content (Injected by pages)
+    const [globalPanelContent, setGlobalPanelContent] = useState(null);
+    const [rightPanelTab, setRightPanelTab] = useState('NOTEBOOKS');
 
-    // Map Settings State (Global)
+    // Map Settings State (Global) - KEEPING FOR BACKWARDS COMPATIBILITY IF NEEDED
     const [mapSettings, setMapSettings] = useState({
         name: '', description: '', type: 'regional',
         showGrid: true, gridSize: 50,
@@ -69,6 +68,13 @@ const ArchitectLayout = () => {
         bgImage: null
     });
     const [onMapSettingsChange, setOnMapSettingsChange] = useState(null);
+
+    // Helper to allow pages to set the panel content
+    const setRightPanelContent = (content) => {
+        setGlobalPanelContent(content);
+        if (content) setRightOpen(true); // Auto-open if content is pushed
+    };
+
     const [activeMapSection, setActiveMapSection] = useState('identity'); // 'identity', 'grid', 'canvas'
 
     // Notes vs Templates vs Filters (Bible Context)
@@ -242,502 +248,52 @@ const ArchitectLayout = () => {
             <main className="flex-1 flex flex-col min-w-0 bg-background-dark relative">
                 <div className="h-16 w-full absolute top-0 left-0 bg-gradient-to-b from-background-dark to-transparent pointer-events-none"></div>
 
-                <div className="flex-1 flex overflow-hidden relative">
+                <div className="flex-1 flex flex-col min-w-0 bg-background-dark relative overflow-hidden">
                     <Outlet context={{
-                        // Global Layout
-                        setRightPanelMode,
+                        // New Global Panel Context
+                        setRightPanelContent,
                         setRightOpen,
-                        setRightPanelTitle,
+                        rightPanelTab,
+                        setRightPanelTab,
 
-                        // Project Info
-                        projectName: loadedProjectName,
+                        // Legacy Context (Keep only what's needed for other pages to not crash)
                         projectId,
-
-                        // Templates & Attributes
-                        availableTemplates, setAvailableTemplates,
-                        setAddAttributeHandler,
-                        setCreateTemplateHandler,
-
-                        // Map Props
                         mapSettings, setMapSettings,
-                        setOnMapSettingsChange,
+                        onMapSettingsChange, setOnMapSettingsChange,
 
-                        // Entity Builder Props
-                        entityTabs, setEntityTabs,
-                        activeEntityTab, setActiveEntityTab,
-
-                        // Folder Filter Props
-                        folderSearchTerm, setFolderSearchTerm,
-                        folderFilterType, setFolderFilterType
-                    }} />
+                        // Pass other necessary handlers
+                    }}
+                    />
                 </div>
+
+                {/* --- RIGHT PANEL (GLOBAL) --- */}
+                <GlobalRightPanel
+                    isOpen={rightOpen}
+                    onClose={() => setRightOpen(false)}
+                    contextContent={globalPanelContent}
+                    projectId={projectId}
+                    activeTab={rightPanelTab}
+                    setActiveTab={setRightPanelTab}
+                />
             </main>
 
-            {/* --- RIGHT PANEL: TOOLBOX / NOTES --- */}
+            {/* --- RIGHT PANEL TRIGGERS --- */}
             <aside
-                className={`
-                    flex-none bg-surface-dark border-l border-glass-border transition-all duration-500 relative flex flex-col z-30 shrink-0
-                    ${rightOpen ? 'w-80' : 'w-20'}
-                `}
+                className="flex-none bg-surface-dark border-l border-glass-border transition-all duration-500 relative flex flex-col z-30 w-20 shrink-0"
             >
-                {/* Header */}
-                <header className="h-16 flex items-center px-6 border-b border-glass-border justify-between shrink-0">
-                    {rightOpen ? (
-                        <>
-                            {rightPanelMode === 'CUSTOM' && !isWritingContext ? (
-                                <h2 className="text-xs font-black uppercase tracking-widest text-primary">
-                                    {rightPanelTitle || 'Panel'}
-                                </h2>
-                            ) : rightPanelMode === 'LINGUISTICS' ? (
-                                <div className="flex bg-white/5 rounded-lg p-1 gap-1 w-full mr-4">
-                                    <button
-                                        className="flex-1 py-1 rounded-md text-[10px] uppercase font-bold bg-primary text-white shadow transition-all"
-                                    >
-                                        <span className="material-symbols-outlined text-sm align-middle mr-1">draw</span>
-                                        Herramientas
-                                    </button>
-                                </div>
-                            ) : isWritingContext ? (
-                                // TABS FOR WRITING MODE
-                                <div className="flex bg-white/5 rounded-lg p-1 gap-1 w-full mr-4">
-                                    <button
-                                        onClick={() => setActiveWritingTab('index')}
-                                        className={`flex-1 py-1 rounded-md text-[10px] uppercase font-bold transition-all ${activeWritingTab === 'index' ? 'bg-primary text-white shadow' : 'text-slate-500 hover:text-white'}`}
-                                    >
-                                        {t('writing.index')}
-                                    </button>
-                                    <button
-                                        onClick={() => setActiveWritingTab('notes')}
-                                        className={`flex-1 py-1 rounded-md text-[10px] uppercase font-bold transition-all ${activeWritingTab === 'notes' ? 'bg-primary text-white shadow' : 'text-slate-500 hover:text-white'}`}
-                                    >
-                                        {t('writing.notes')}
-                                    </button>
-                                </div>
-                            ) : isBibleContext && rightPanelMode === 'NOTES' ? (
-                                <div className="flex bg-white/5 rounded-lg p-1 gap-1">
-                                    <button
-                                        onClick={() => setActiveBibleTab('notes')}
-                                        className={`px-3 py-1 rounded-md text-[10px] uppercase font-bold transition-all ${activeBibleTab === 'notes' ? 'bg-primary text-white shadow' : 'text-slate-500 hover:text-white'}`}
-                                    >
-                                        {t('writing.notes')}
-                                    </button>
-                                    <button
-                                        onClick={() => setActiveBibleTab('templates')}
-                                        className={`px-3 py-1 rounded-md text-[10px] uppercase font-bold transition-all ${activeBibleTab === 'templates' ? 'bg-primary text-white shadow' : 'text-slate-500 hover:text-white'}`}
-                                    >
-                                        {t('bible.templates')}
-                                    </button>
-                                    <button
-                                        onClick={() => setActiveBibleTab('filters')}
-                                        className={`px-3 py-1 rounded-md text-[10px] uppercase font-bold transition-all ${activeBibleTab === 'filters' ? 'bg-primary text-white shadow' : 'text-slate-500 hover:text-white'}`}
-                                    >
-                                        {t('bible.explore')}
-                                    </button>
-                                </div>
-                            ) : (
-                                <h2 className="text-xs font-black uppercase tracking-widest text-white">
-                                    {rightPanelTitle || (rightPanelMode === 'NOTES' ? t('settings.notes_global') : t('common.architect'))}
-                                </h2>
-                            )}
+                <div className="flex-1 flex flex-col items-center gap-4 py-4 w-full">
+                    <button
+                        onClick={() => setRightOpen(prev => !prev)}
+                        className={`size-12 rounded-xl flex items-center justify-center transition-all ${rightOpen ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'}`}
+                        title="Panel Global"
+                    >
+                        <span className="material-symbols-outlined text-xl">side_navigation</span>
+                    </button>
 
-                            <button onClick={() => setRightOpen(false)} className="text-text-muted hover:text-white transition-colors shrink-0">
-                                <span className="material-symbols-outlined text-lg">dock_to_right</span>
-                            </button>
-                        </>
-                    ) : (
-                        <button onClick={() => setRightOpen(true)} className="w-full h-full flex items-center justify-center text-text-muted hover:text-white transition-colors">
-                            <span className="material-symbols-outlined">{rightPanelMode === 'NOTES' || isWritingContext ? 'edit_note' : rightPanelMode === 'MAP' ? 'map' : rightPanelMode === 'LINGUISTICS' ? 'draw' : rightPanelMode === 'CUSTOM' ? 'build' : 'handyman'}</span>
-                        </button>
-                    )
-                    }
-                </header>
-
-                <div className="flex-1 overflow-y-auto no-scrollbar p-0 relative">
-                    {/* PERSISTENT PORTAL TARGET (Moved outside conditional to prevent ref loss) */}
-                    <div
-                        id="architect-right-panel-portal"
-                        className={`
-                            ${(isWritingContext || rightPanelMode === 'CUSTOM' || rightPanelMode === 'LINGUISTICS') && rightOpen ? 'flex flex-col h-full relative' : 'hidden'}
-                        `}
-                    ></div>
-
-                    {rightOpen ? (
-                        isWritingContext ? (
-                            // WRITING MODE: NOTES (Index is in portal)
-                            <>
-                                <div className={`h-full p-4 overflow-hidden ${activeWritingTab === 'notes' ? 'block' : 'hidden'}`}>
-                                    <GlobalNotes projectName={projectName} />
-                                </div>
-                            </>
-                        ) : rightPanelMode === 'CUSTOM' ? (
-                            // CUSTOM MODE (Content is in portal)
-                            <></>
-                        ) : rightPanelMode === 'NOTES' ? (
-                            activeBibleTab === 'templates' && isBibleContext ? (
-                                <div className="h-full overflow-y-auto no-scrollbar">
-                                    <TemplateManager compact={true} />
-                                </div>
-                            ) : activeBibleTab === 'filters' && isBibleContext ? (
-                                <div className="h-full p-6 space-y-6 animate-in fade-in slide-in-from-right-4">
-                                    <div className="space-y-4">
-                                        <h3 className="text-xs font-black uppercase tracking-widest text-text-muted">Búsqueda</h3>
-                                        <div className="bg-black/20 border border-white/10 rounded-xl p-3 flex items-center gap-2 focus-within:border-primary transition-colors">
-                                            <span className="material-symbols-outlined text-slate-500">search</span>
-                                            <input
-                                                value={folderSearchTerm}
-                                                onChange={e => setFolderSearchTerm(e.target.value)}
-                                                placeholder={t('bible.search_entity')}
-                                                className="bg-transparent border-none outline-none text-sm text-white w-full placeholder-slate-600"
-                                            />
-                                            {folderSearchTerm && (
-                                                <button onClick={() => setFolderSearchTerm('')} className="text-slate-500 hover:text-white">
-                                                    <span className="material-symbols-outlined text-sm">close</span>
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div className="h-px bg-glass-border"></div>
-
-                                    <div className="space-y-4">
-                                        <h3 className="text-xs font-black uppercase tracking-widest text-text-muted">Filtrar por Tipo</h3>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {[
-                                                { id: 'ALL', label: t('bible.all'), icon: 'grid_view' },
-                                                { id: 'ENTITY', label: t('bible.entities'), icon: 'person' },
-                                                { id: 'MAP', label: t('bible.maps'), icon: 'map' },
-                                                { id: 'TIMELINE', label: t('bible.timelines'), icon: 'timeline' }
-                                            ].map(type => (
-                                                <button
-                                                    key={type.id}
-                                                    onClick={() => setFolderFilterType(type.id)}
-                                                    className={`
-                                                        p-3 rounded-xl border flex flex-col items-center gap-2 transition-all
-                                                        ${folderFilterType === type.id
-                                                            ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
-                                                            : 'bg-white/5 border-transparent text-slate-500 hover:bg-white/10 hover:text-white'}
-                                                    `}
-                                                >
-                                                    <span className="material-symbols-outlined">{type.icon}</span>
-                                                    <span className="text-[10px] font-bold uppercase">{type.label}</span>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="h-full p-4 overflow-hidden">
-                                    <GlobalNotes projectName={projectName} />
-                                </div>
-                            )
-                        ) : rightPanelMode === 'MAP' ? (
-                            // MAP SETTINGS MODE
-                            <div className="p-6 space-y-8 animate-in fade-in slide-in-from-right-4">
-                                {/* Grid Settings */}
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="text-xs font-black uppercase tracking-widest text-text-muted">Grid System</h3>
-                                        <label className="relative inline-flex items-center cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                checked={mapSettings.showGrid}
-                                                onChange={(e) => {
-                                                    const newVal = { ...mapSettings, showGrid: e.target.checked };
-                                                    setMapSettings(newVal);
-                                                    if (onMapSettingsChange) onMapSettingsChange(newVal);
-                                                }}
-                                                className="sr-only peer" />
-                                            <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
-                                        </label>
-                                    </div>
-
-                                    <div className={`space-y-2 transition-opacity ${mapSettings.showGrid ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
-                                        <div className="flex justify-between text-xs font-bold text-white">
-                                            <span>Size</span>
-                                            <span className="font-mono text-primary">{mapSettings.gridSize}px</span>
-                                        </div>
-                                        <input
-                                            type="range"
-                                            min="10"
-                                            max="200"
-                                            step="10"
-                                            value={mapSettings.gridSize}
-                                            onChange={(e) => {
-                                                const newVal = { ...mapSettings, gridSize: parseInt(e.target.value) };
-                                                setMapSettings(newVal);
-                                                if (onMapSettingsChange) onMapSettingsChange(newVal);
-                                            }}
-                                            className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary" />
-                                    </div>
-                                </div>
-
-                                <div className="h-px bg-glass-border"></div>
-
-                                {/* Dimensions Settings */}
-                                <div className="space-y-4">
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-text-muted">{t('atlas.canvas_data')}</h3>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] uppercase font-bold text-slate-500">{t('atlas.width')}</label>
-                                            <input
-                                                type="number"
-                                                value={mapSettings.width}
-                                                onChange={(e) => {
-                                                    const newVal = { ...mapSettings, width: parseInt(e.target.value) };
-                                                    setMapSettings(newVal);
-                                                    if (onMapSettingsChange) onMapSettingsChange(newVal);
-                                                }}
-                                                className="w-full bg-black/20 border border-white/10 rounded-lg p-2 text-white text-right font-mono text-sm focus:border-primary outline-none" />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] uppercase font-bold text-slate-500">{t('atlas.height')}</label>
-                                            <input
-                                                type="number"
-                                                value={mapSettings.height}
-                                                onChange={(e) => {
-                                                    const newVal = { ...mapSettings, height: parseInt(e.target.value) };
-                                                    setMapSettings(newVal);
-                                                    if (onMapSettingsChange) onMapSettingsChange(newVal);
-                                                }}
-                                                className="w-full bg-black/20 border border-white/10 rounded-lg p-2 text-white text-right font-mono text-sm focus:border-primary outline-none" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="h-px bg-glass-border"></div>
-
-                                {/* Background Image Settings */}
-                                <div className="space-y-4">
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-text-muted">{t('atlas.background_image')}</h3>
-                                    <div className="space-y-2">
-                                        <div className="flex items-center gap-2">
-                                            <label className="cursor-pointer bg-white/5 hover:bg-white/10 text-white rounded-lg px-3 py-2 text-xs font-bold transition-colors border border-glass-border flex items-center gap-2 flex-1">
-                                                <span className="material-symbols-outlined text-sm">upload</span>
-                                                <span>{t('atlas.upload_image')}</span>
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    className="hidden"
-                                                    onChange={(e) => {
-                                                        const file = e.target.files[0];
-                                                        if (file) {
-                                                            const reader = new FileReader();
-                                                            reader.onload = (ev) => {
-                                                                const img = new Image();
-                                                                img.onload = () => {
-                                                                    const newVal = {
-                                                                        ...mapSettings,
-                                                                        bgImage: ev.target.result,
-                                                                        width: img.width,
-                                                                        height: img.height
-                                                                    };
-                                                                    setMapSettings(newVal);
-                                                                    if (onMapSettingsChange) onMapSettingsChange(newVal);
-                                                                };
-                                                                img.src = ev.target.result;
-                                                            };
-                                                            reader.readAsDataURL(file);
-                                                        }
-                                                    }}
-                                                />
-                                            </label>
-                                            {mapSettings.bgImage && (
-                                                <button
-                                                    onClick={() => {
-                                                        const newVal = { ...mapSettings, bgImage: null };
-                                                        setMapSettings(newVal);
-                                                        if (onMapSettingsChange) onMapSettingsChange(newVal);
-                                                    }}
-                                                    className="p-2 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg border border-red-500/20"
-                                                    title="Remove Image"
-                                                >
-                                                    <span className="material-symbols-outlined text-sm">delete</span>
-                                                </button>
-                                            )}
-                                        </div>
-                                        {mapSettings.bgImage && (
-                                            <div className="rounded-lg overflow-hidden border border-glass-border bg-black/20 h-32 relative group">
-                                                <img src={mapSettings.bgImage} alt="Background" className="w-full h-full object-cover opacity-70" />
-                                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                                    <span className="text-[10px] font-mono bg-black/50 px-2 py-1 rounded text-white backdrop-blur-sm">
-                                                        {mapSettings.width} x {mapSettings.height}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        ) : rightPanelMode === 'ENTITY' ? (
-                            // ENTITY BUILDER NAVIGATION (Switch Style)
-                            <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4">
-                                <div className="p-4 border-b border-glass-border">
-                                    <div className="bg-black/40 p-1 rounded-xl flex">
-                                        {entityTabs.map(tab => {
-                                            const getIcon = (t) => {
-                                                switch (t.toLowerCase()) {
-                                                    case 'identity': return 'badge';
-                                                    case 'narrative': return 'auto_stories';
-                                                    case 'attributes': return 'tune';
-                                                    case 'notes': return 'edit_note';
-                                                    default: return 'circle';
-                                                }
-                                            }
-                                            return (
-                                                <button
-                                                    key={tab}
-                                                    onClick={() => setActiveEntityTab(tab)}
-                                                    className={`
-                                                        flex-1 py-2 rounded-lg transition-all group relative flex items-center justify-center
-                                                        ${activeEntityTab === tab
-                                                            ? 'bg-primary text-white shadow-lg'
-                                                            : 'text-text-muted hover:text-white hover:bg-white/5'}
-                                                    `}
-                                                    title={tab}
-                                                >
-                                                    <span className="material-symbols-outlined text-lg">{getIcon(tab)}</span>
-                                                    {/* Tooltip on Hover */}
-                                                    <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/90 text-white text-[10px] uppercase font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                                                        {tab}
-                                                    </span>
-                                                </button>
-                                            )
-                                        })}
-                                    </div>
-                                </div>
-                                {activeEntityTab === 'attributes' && (
-                                    <div className="flex-1 overflow-hidden flex flex-col bg-black/20">
-                                        <div className="px-6 py-4 text-[10px] font-black uppercase text-slate-500 tracking-widest flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-sm">drag_indicator</span> {t('bible.drag_attributes')}
-                                        </div>
-                                        <div className="flex-1 overflow-y-auto custom-scrollbar px-2">
-                                            <TemplateManager compact={true} initialFolderSlug={folderSlug} />
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ) : rightPanelMode === 'TOOLBOX' ? (
-                            // TOOLBOX MODE
-                            <div className="p-4 space-y-6">
-                                <div className="space-y-3">
-                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-text-muted px-2 flex justify-between items-center">
-                                        <span>{t('settings.available_templates')}</span>
-                                        <button
-                                            className="text-primary hover:text-white transition-colors"
-                                            title="Crear Nueva Plantilla"
-                                            onClick={() => createTemplateHandler && createTemplateHandler()}
-                                        >
-                                            <span className="material-symbols-outlined text-sm">add</span>
-                                        </button>
-                                    </h3>
-
-                                    {availableTemplates.length === 0 ? (
-                                        <div className="p-6 text-center border border-dashed border-glass-border rounded-2xl opacity-30">
-                                            <p className="text-[10px] uppercase font-bold">{t('settings.no_templates')}</p>
-                                        </div>
-                                    ) : (
-                                        availableTemplates.map(tpl => (
-                                            <button
-                                                key={tpl.id}
-                                                className="w-full flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-glass-border hover:border-primary/50 hover:bg-primary/5 transition-all text-left group relative"
-                                                draggable
-                                                onDragStart={(e) => {
-                                                    e.dataTransfer.setData('application/reactflow/type', 'attribute');
-                                                    e.dataTransfer.setData('templateId', tpl.id);
-                                                    e.dataTransfer.effectAllowed = 'move';
-                                                }}
-                                                onClick={() => addAttributeHandler && addAttributeHandler(tpl.id)}
-                                            >
-                                                {tpl.global && (
-                                                    <span className="absolute top-2 right-2 flex size-2 bg-blue-500 rounded-full shadow-lg shadow-blue-500/50" title="Global"></span>
-                                                )}
-                                                <div className="size-8 rounded-lg bg-surface-light flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                                                    <span className="material-symbols-outlined text-sm">{getIconForType(tpl.tipo)}</span>
-                                                </div>
-                                                <div className="overflow-hidden">
-                                                    <p className="text-xs font-bold text-white truncate">{tpl.nombre}</p>
-                                                    <p className="text-[10px] text-text-muted uppercase font-black tracking-tighter">{tpl.tipo}</p>
-                                                </div>
-
-                                                {/* Actions */}
-                                                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <div
-                                                        onClick={(e) => { e.stopPropagation(); setEditingTemplate(tpl); }}
-                                                        className="p-1 hover:text-white text-text-muted hover:bg-white/10 rounded cursor-pointer"
-                                                        title="Edit"
-                                                    >
-                                                        <span className="material-symbols-outlined text-sm">edit</span>
-                                                    </div>
-                                                    <div
-                                                        onClick={(e) => handleDeleteTemplate(e, tpl.id)}
-                                                        className="p-1 hover:text-red-400 text-text-muted hover:bg-white/10 rounded cursor-pointer"
-                                                        title="Delete"
-                                                    >
-                                                        <span className="material-symbols-outlined text-sm">delete</span>
-                                                    </div>
-                                                </div>
-                                            </button>
-                                        ))
-                                    )}
-                                </div>
-                            </div>
-                        ) : null
-                    ) : (
-                        // COLLAPSED ICONS
-                        <div className="flex flex-col items-center gap-4 py-4 w-full">
-                            {rightPanelMode === 'NOTES' || isWritingContext ? (
-                                <button
-                                    onClick={() => setRightOpen(true)}
-                                    className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted hover:text-white"
-                                    title="Notas Globales"
-                                >
-                                    <span className="material-symbols-outlined text-lg">edit_note</span>
-                                </button>
-                            ) : rightPanelMode === 'MAP' ? (
-                                <button
-                                    onClick={() => setRightOpen(true)}
-                                    className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted hover:text-white"
-                                    title="Ajustes de Mapa"
-                                >
-                                    <span className="material-symbols-outlined text-lg">tune</span>
-                                </button>
-                            ) : rightPanelMode === 'ENTITY' ? (
-                                <button
-                                    onClick={() => setRightOpen(true)}
-                                    className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted hover:text-white"
-                                    title="Atributos"
-                                >
-                                    <span className="material-symbols-outlined text-lg">fact_check</span>
-                                </button>
-                            ) : rightPanelMode === 'CUSTOM' ? (
-                                <button
-                                    onClick={() => setRightOpen(true)}
-                                    className="size-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary hover:bg-primary/20 transition-all"
-                                    title={rightPanelTitle || 'Panel'}
-                                >
-                                    <span className="material-symbols-outlined text-lg">extension</span>
-                                </button>
-                            ) : (
-                                availableTemplates.slice(0, 5).map(tpl => (
-                                    <button
-                                        key={tpl.id}
-                                        className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted hover:text-white hover:bg-primary/20 transition-all relative"
-                                        draggable
-                                        onDragStart={(e) => {
-                                            e.dataTransfer.setData('application/reactflow/type', 'attribute');
-                                            e.dataTransfer.setData('templateId', tpl.id);
-                                        }}
-                                        title={tpl.nombre}
-                                    >
-                                        {tpl.global && <span className="absolute top-0 right-0 size-2 bg-blue-500 rounded-full border border-surface-dark"></span>}
-                                        <span className="material-symbols-outlined text-lg">{getIconForType(tpl.tipo)}</span>
-                                    </button>
-                                ))
-                            )}
-                        </div>
-                    )}
+                    {/* Placeholder for future shortcuts */}
+                    {/* <div className="h-px w-8 bg-white/10 my-2"></div> */}
                 </div>
-            </aside >
+            </aside>
             {/* Edit Modal */}
             {
                 editingTemplate && (
@@ -763,13 +319,13 @@ const ArchitectLayout = () => {
                                             value={editingTemplate.tipo}
                                             onChange={e => setEditingTemplate({ ...editingTemplate, tipo: e.target.value })}
                                         >
-                                            <option value="text">Texto Largo</option>
-                                            <option value="short_text">Texto Corto</option>
-                                            <option value="number">Número</option>
-                                            <option value="boolean">Si/No</option>
-                                            <option value="date">Fecha</option>
-                                            <option value="entity_link">Vínculo Entidad</option>
-                                            <option value="image">Imagen URL</option>
+                                            <option className="bg-[#1a1a20] text-white" value="text">Texto Largo</option>
+                                            <option className="bg-[#1a1a20] text-white" value="short_text">Texto Corto</option>
+                                            <option className="bg-[#1a1a20] text-white" value="number">Número</option>
+                                            <option className="bg-[#1a1a20] text-white" value="boolean">Si/No</option>
+                                            <option className="bg-[#1a1a20] text-white" value="date">Fecha</option>
+                                            <option className="bg-[#1a1a20] text-white" value="entity_link">Vínculo Entidad</option>
+                                            <option className="bg-[#1a1a20] text-white" value="image">Imagen URL</option>
                                         </select>
                                     </div>
                                     <div className="flex items-center">

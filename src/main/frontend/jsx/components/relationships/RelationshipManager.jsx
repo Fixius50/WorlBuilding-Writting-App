@@ -162,7 +162,7 @@ const RelationshipManager = ({ entityId, entityType }) => {
                                 value={targetType}
                                 onChange={e => setTargetType(e.target.value)}
                             >
-                                {ENTITY_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                                {ENTITY_TYPES.map(t => <option key={t.value} value={t.value} className="bg-[#1a1a20] text-white">{t.label}</option>)}
                             </select>
                         </div>
                         <div className="space-y-1">
@@ -173,9 +173,9 @@ const RelationshipManager = ({ entityId, entityType }) => {
                                 onChange={e => setSelectedTargetId(e.target.value)}
                                 disabled={fetchingTargets}
                             >
-                                <option value="">Select Target...</option>
+                                <option value="" className="bg-[#1a1a20] text-white">Select Target...</option>
                                 {targetItems.map(item => (
-                                    <option key={item.id} value={item.id}>{item.nombre}</option>
+                                    <option key={item.id} value={item.id} className="bg-[#1a1a20] text-white">{item.nombre}</option>
                                 ))}
                             </select>
                         </div>
