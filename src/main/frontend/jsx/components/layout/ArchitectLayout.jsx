@@ -81,6 +81,9 @@ const ArchitectLayout = () => {
     const isWritingContext = location.pathname.includes('/writing');
     const [activeWritingTab, setActiveWritingTab] = useState('index'); // 'index', 'notes'
 
+    // Linguistics Context Logic
+    const isLinguisticsContext = location.pathname.includes('/languages');
+
     // Edit State
     const [editingTemplate, setEditingTemplate] = useState(null);
 
@@ -285,6 +288,15 @@ const ArchitectLayout = () => {
                                 <h2 className="text-xs font-black uppercase tracking-widest text-primary">
                                     {rightPanelTitle || 'Panel'}
                                 </h2>
+                            ) : rightPanelMode === 'LINGUISTICS' ? (
+                                <div className="flex bg-white/5 rounded-lg p-1 gap-1 w-full mr-4">
+                                    <button
+                                        className="flex-1 py-1 rounded-md text-[10px] uppercase font-bold bg-primary text-white shadow transition-all"
+                                    >
+                                        <span className="material-symbols-outlined text-sm align-middle mr-1">draw</span>
+                                        Herramientas
+                                    </button>
+                                </div>
                             ) : isWritingContext ? (
                                 // TABS FOR WRITING MODE
                                 <div className="flex bg-white/5 rounded-lg p-1 gap-1 w-full mr-4">
@@ -334,7 +346,7 @@ const ArchitectLayout = () => {
                         </>
                     ) : (
                         <button onClick={() => setRightOpen(true)} className="w-full h-full flex items-center justify-center text-text-muted hover:text-white transition-colors">
-                            <span className="material-symbols-outlined">{rightPanelMode === 'NOTES' || isWritingContext ? 'edit_note' : rightPanelMode === 'MAP' ? 'map' : rightPanelMode === 'CUSTOM' ? 'build' : 'handyman'}</span>
+                            <span className="material-symbols-outlined">{rightPanelMode === 'NOTES' || isWritingContext ? 'edit_note' : rightPanelMode === 'MAP' ? 'map' : rightPanelMode === 'LINGUISTICS' ? 'draw' : rightPanelMode === 'CUSTOM' ? 'build' : 'handyman'}</span>
                         </button>
                     )
                     }
@@ -345,7 +357,7 @@ const ArchitectLayout = () => {
                     <div
                         id="architect-right-panel-portal"
                         className={`
-                            ${(isWritingContext || rightPanelMode === 'CUSTOM') && rightOpen ? 'flex flex-col h-full relative' : 'hidden'}
+                            ${(isWritingContext || rightPanelMode === 'CUSTOM' || rightPanelMode === 'LINGUISTICS') && rightOpen ? 'flex flex-col h-full relative' : 'hidden'}
                         `}
                     ></div>
 

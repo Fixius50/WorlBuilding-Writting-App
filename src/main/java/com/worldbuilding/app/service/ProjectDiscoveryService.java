@@ -33,7 +33,7 @@ public class ProjectDiscoveryService {
             }
         }
 
-        return basePath.resolve("src").resolve("main").resolve("resources").resolve("data");
+        return basePath.resolve("src").resolve("main").resolve("resources").resolve("db").resolve("data");
     }
 
     public List<String> listProjects() {

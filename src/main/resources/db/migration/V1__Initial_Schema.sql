@@ -1,5 +1,6 @@
 -- V1__Initial_Schema.sql
--- Base Schema for WorldbuildingApp V2 (SQLite)
+-- Consolidated Schema for WorldbuildingApp V2 (SQLite)
+-- Includes Tables from V1, V2, V3, V4, V5 and fixes for missing columns
 
 -- 1. Projects (Cuadernos)
 CREATE TABLE IF NOT EXISTS cuaderno (
@@ -87,6 +88,10 @@ CREATE TABLE IF NOT EXISTS hoja (
     contenido TEXT,
     numero INTEGER,
     fecha_modificacion TEXT,
+    -- Columns previously added by manual patch
+    numero_pagina INTEGER,
+    deleted BOOLEAN DEFAULT 0,
+    deleted_date TEXT,
     CONSTRAINT fk_hoja_cuaderno FOREIGN KEY (cuaderno_id) REFERENCES cuaderno(id)
 );
 
@@ -99,6 +104,9 @@ CREATE TABLE IF NOT EXISTS nota_rapida (
     color VARCHAR(50),
     x INTEGER,
     y INTEGER,
+    -- Columns previously added by manual patch
+    deleted BOOLEAN DEFAULT 0,
+    deleted_date TEXT,
     CONSTRAINT fk_nota_hoja FOREIGN KEY (hoja_id) REFERENCES hoja(id)
 );
 
@@ -134,4 +142,101 @@ CREATE TABLE IF NOT EXISTS evento_tiempo (
     deleted BOOLEAN DEFAULT 0,
     deleted_date TEXT,
     CONSTRAINT fk_evento_linea FOREIGN KEY (linea_tiempo_id) REFERENCES linea_tiempo(id)
+);
+
+-- 8. Relacion (From V2)
+CREATE TABLE IF NOT EXISTS relacion (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nodo_origen_id INTEGER NOT NULL,
+    nodo_destino_id INTEGER NOT NULL,
+    tipo_relacion VARCHAR(50),
+    tipo_origen VARCHAR(50),
+    tipo_destino VARCHAR(50),
+    descripcion TEXT,
+    metadata TEXT,
+    -- Columns previously added by manual patch
+    deleted BOOLEAN DEFAULT 0,
+    deleted_date TEXT
+);
+
+-- 9. Entidad Individual (From V3)
+CREATE TABLE IF NOT EXISTS entidad_individual (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre_proyecto VARCHAR(255) NOT NULL,
+    nombre VARCHAR(255),
+    apellidos VARCHAR(255),
+    estado VARCHAR(50),
+    tipo VARCHAR(50),
+    origen VARCHAR(255),
+    comportamiento TEXT,
+    descripcion TEXT,
+    es_nodo BOOLEAN DEFAULT 0,
+    deleted BOOLEAN DEFAULT 0,
+    deleted_date TEXT
+);
+
+-- 10. Linguistics Module (From V4 & V5)
+-- Conlang
+CREATE TABLE IF NOT EXISTS conlang (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre VARCHAR(255) NOT NULL,
+    descripcion TEXT,
+    fonologia TEXT,
+    gramatica TEXT,
+    font_family_name VARCHAR(255),
+    nombre_proyecto VARCHAR(255),
+    fecha_creacion TEXT,
+    -- From V5 / Manual Patch
+    font_binary BLOB
+);
+
+-- Gramatica Rule
+CREATE TABLE IF NOT EXISTS gramatica_rule (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    titulo VARCHAR(255) NOT NULL,
+    descripcion TEXT,
+    categoria VARCHAR(50),
+    conlang_id INTEGER,
+    status VARCHAR(50),
+    CONSTRAINT fk_rule_conlang FOREIGN KEY (conlang_id) REFERENCES conlang(id)
+);
+
+-- Palabra (Diccionario)
+CREATE TABLE IF NOT EXISTS palabra (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    conlang_id INTEGER,
+    lema VARCHAR(255),
+    ipa VARCHAR(255),
+    definicion TEXT,
+    categoria_gramatical VARCHAR(50),
+    notas TEXT,
+    svg_path_data TEXT,
+    raster_image_path TEXT,
+    -- From V5 / Manual Patch
+    unicode_code VARCHAR(20),
+    CONSTRAINT fk_palabra_conlang FOREIGN KEY (conlang_id) REFERENCES conlang(id)
+);
+
+-- Lexemes
+CREATE TABLE IF NOT EXISTS conlang_lexemes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    gloss VARCHAR(255) NOT NULL,
+    description TEXT,
+    ipa_pronunciation VARCHAR(255) NOT NULL,
+    svg_path_data TEXT,
+    raster_image_path TEXT,
+    project_id INTEGER,
+    created_at TEXT,
+    CONSTRAINT fk_lexeme_project FOREIGN KEY (project_id) REFERENCES cuaderno(id)
+);
+
+-- Morphological Rules
+CREATE TABLE IF NOT EXISTS conlang_rules (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    rule_name VARCHAR(255) NOT NULL,
+    regex_pattern VARCHAR(255) NOT NULL,
+    replacement_pattern VARCHAR(255) NOT NULL,
+    priority INTEGER NOT NULL,
+    conlang_id INTEGER,
+    CONSTRAINT fk_morph_conlang FOREIGN KEY (conlang_id) REFERENCES conlang(id)
 );

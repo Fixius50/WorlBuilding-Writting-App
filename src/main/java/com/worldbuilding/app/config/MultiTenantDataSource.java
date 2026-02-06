@@ -48,7 +48,8 @@ public class MultiTenantDataSource implements DataSource {
             }
         }
 
-        return basePath.resolve("src").resolve("main").resolve("resources").resolve("data").resolve(fileName)
+        return basePath.resolve("src").resolve("main").resolve("resources").resolve("db").resolve("data")
+                .resolve(fileName)
                 .toString();
     }
 

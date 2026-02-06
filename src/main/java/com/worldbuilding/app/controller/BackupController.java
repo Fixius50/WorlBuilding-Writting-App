@@ -18,7 +18,7 @@ import java.util.zip.ZipOutputStream;
 @RequestMapping("/api/backup")
 public class BackupController {
 
-    private static final String DATA_DIR = "src/main/resources/data/";
+    private static final String DATA_DIR = "src/main/resources/db/data/";
 
     @GetMapping("/download")
     public ResponseEntity<Resource> downloadBackup(

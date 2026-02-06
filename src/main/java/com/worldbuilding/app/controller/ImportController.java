@@ -15,7 +15,7 @@ import java.util.Map;
 @RequestMapping("/api/import")
 public class ImportController {
 
-    private static final String DATA_DIR = "src/main/resources/data/";
+    private static final String DATA_DIR = "src/main/resources/db/data/";
 
     @Autowired
     private DatabaseMigration databaseMigration;

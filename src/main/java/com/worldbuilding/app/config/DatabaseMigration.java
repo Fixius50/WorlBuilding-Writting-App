@@ -13,7 +13,7 @@ import java.io.File;
 @Component
 public class DatabaseMigration {
 
-    private static final String DATA_DIR = "./src/main/resources/data/";
+    private static final String DATA_DIR = "./src/main/resources/db/data/";
 
     @PostConstruct
     public void runMigrations() {
@@ -65,6 +65,8 @@ public class DatabaseMigration {
             Flyway flyway = Flyway.configure()
                     .dataSource(jdbcUrl, "", "")
                     .locations("filesystem:src/main/resources/db/migration")
+                    .ignoreMigrationPatterns("*:missing") // Ignore missing files (Flyway 10+)
+                    .baselineOnMigrate(true)
                     .load();
 
             flyway.repair(); // Auto-repair checksums for dev iterations

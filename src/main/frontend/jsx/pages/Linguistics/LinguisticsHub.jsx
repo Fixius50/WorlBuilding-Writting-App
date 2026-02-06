@@ -8,6 +8,8 @@ import Button from '../../components/common/Button';
 import GlobalNotes from '../../components/layout/GlobalNotes';
 import api from '../../../js/services/api';
 import * as opentype from 'opentype.js';
+import GlyphEditorCanvas from './components/GlyphEditorCanvas';
+import GlyphEditorProperties from './components/GlyphEditorProperties';
 
 const LinguisticsHub = ({ onOpenEditor }) => {
     const { t } = useLanguage();
@@ -76,9 +78,26 @@ const LinguisticsHub = ({ onOpenEditor }) => {
         setTimeout(() => addLog('Datos sincronizados con éxito [v2.2]', 'success'), 800);
     };
 
+    // --- GLYPH EDITOR STATE ---
+    const [editorMode, setEditorMode] = useState(false); // true if editing a glyph
+    const [activeGlyphId, setActiveGlyphId] = useState(null);
+    const [layers, setLayers] = useState([
+        { id: 'layer1', name: 'Trazo Principal', visible: true, locked: false, shapes: [] },
+        { id: 'layer2', name: 'Guías', visible: true, locked: false, shapes: [] }
+    ]);
+    const [activeLayerId, setActiveLayerId] = useState('layer1');
+    const [selectedShapeId, setSelectedShapeId] = useState(null);
+    const [tool, setTool] = useState('brush'); // select, brush, eraser, line, rect, circle
+    const [strokeWidth, setStrokeWidth] = useState(4);
+    const [color, setColor] = useState('#00E5FF');
+    const [opacity, setOpacity] = useState(1);
+
+    // Canvas Ref
+    const stageRef = React.useRef(null);
+
     useEffect(() => {
         loadData();
-        setRightPanelMode('CUSTOM');
+        setRightPanelMode('LINGUISTICS');
         setRightPanelTitle('Lingüística');
         setRightOpen(true);
 
@@ -87,6 +106,100 @@ const LinguisticsHub = ({ onOpenEditor }) => {
             setRightPanelTitle('');
         };
     }, []);
+
+    // --- EDITOR HANDLERS ---
+    const handleOpenEditor = (glyph) => {
+        setActiveGlyphId(glyph.id);
+        // Load glyph data if exists (parse SVG to shapes? For now start fresh or mock)
+        // If glyph has data, we would parse it here.
+        setEditorMode(true);
+        setRightPanelMode('LINGUISTICS'); // Ensure panel is open
+    };
+
+    const handleCloseEditor = () => {
+        setEditorMode(false);
+        setActiveGlyphId(null);
+    };
+
+    const handleDrawEnd = (phase, data) => {
+        // Handle drawing logic updates to layers state
+        if (phase === 'START') {
+            // Create new shape in active layer
+            const newShape = {
+                id: crypto.randomUUID(),
+                type: tool,
+                points: [data.pos.x, data.pos.y], // For lines
+                x: data.pos.x, y: data.pos.y, // For shapes
+                stroke: color,
+                strokeWidth: strokeWidth,
+                opacity: opacity,
+                lineCap: 'round',
+                lineJoin: 'round',
+                // specific props based on tool...
+            };
+
+            if (tool === 'brush') {
+                newShape.type = 'line';
+                newShape.points = [data.pos.x, data.pos.y];
+            } else if (tool === 'rect') {
+                newShape.width = 0; newShape.height = 0;
+            }
+
+            setLayers(prev => prev.map(l => {
+                if (l.id === activeLayerId) {
+                    return { ...l, shapes: [...l.shapes, newShape] };
+                }
+                return l;
+            }));
+            setSelectedShapeId(newShape.id); // Auto select? maybe not for brush
+        } else if (phase === 'MOVE') {
+            // Update last shape in active layer
+            setLayers(prev => prev.map(l => {
+                if (l.id === activeLayerId) {
+                    const shapes = [...l.shapes];
+                    const lastShape = shapes[shapes.length - 1];
+                    if (!lastShape) return l;
+
+                    if (tool === 'brush') {
+                        lastShape.points = lastShape.points.concat([data.pos.x, data.pos.y]);
+                    } else if (tool === 'rect') {
+                        lastShape.width = data.pos.x - lastShape.x;
+                        lastShape.height = data.pos.y - lastShape.y;
+                    }
+                    // Handle other tools...
+
+                    shapes[shapes.length - 1] = lastShape;
+                    return { ...l, shapes };
+                }
+                return l;
+            }));
+        }
+    };
+
+    const handleCreateNewGlyph = () => {
+        // Create a blank glyph
+        const newGlyph = {
+            id: crypto.randomUUID(),
+            lema: 'Nuevo Glifo',
+            shapes: []
+        };
+        // Mocking adding it to our local state or just opening editor for it
+        setActiveGlyphId(newGlyph.id);
+        const newLayerId = crypto.randomUUID();
+        setLayers([
+            { id: newLayerId, name: 'Capa 1', visible: true, locked: false, shapes: [] }
+        ]);
+        setActiveLayerId(newLayerId);
+        setEditorMode(true);
+        setRightPanelMode('LINGUISTICS');
+    };
+
+    const handleChangeShape = (id, newAttrs) => {
+        setLayers(prev => prev.map(l => ({
+            ...l,
+            shapes: l.shapes.map(s => s.id === id ? { ...s, ...newAttrs } : s)
+        })));
+    };
 
     const loadData = async () => {
         try {
@@ -224,48 +337,7 @@ const LinguisticsHub = ({ onOpenEditor }) => {
         return `U+${nextVal.toString(16).toUpperCase()}`;
     };
 
-    const handleCreateNewGlyph = async () => {
-        let targetLangId = activeLangId;
 
-        if (!targetLangId) {
-            try {
-                const langs = await api.get('/conlang/lenguas');
-                if (langs && langs.length > 0) {
-                    targetLangId = langs[0].id;
-                    setActiveLangId(targetLangId);
-                    setLangName(langs[0].nombre);
-                } else {
-                    // Solo enviamos el nombre, el backend asocia el proyecto vía sesión
-                    const newLang = await api.post('/conlang/lengua', { nombre: "Lengua Principal" });
-                    targetLangId = newLang.id;
-                    setActiveLangId(targetLangId);
-                }
-            } catch (e) {
-                console.error("Error crítico inicializando conlang:", e);
-                alert("Error inicializando sistema de glifos. Revisa la consola del servidor.");
-                return;
-            }
-        }
-
-        const nextCode = getNextUnicodeCode();
-        // Automatic assignment: Use the hex code as the 'lema' for technical mapping
-        // but we'll use it mostly as a unique visual ID.
-        const char = String.fromCharCode(parseInt(nextCode.replace('U+', ''), 16));
-
-        try {
-            const response = await api.post(`/conlang/${targetLangId}/palabra`, {
-                lema: char,
-                categoriaGramatical: 'GLYFO',
-                definicion: `Glifo automático ${nextCode}`,
-                unicodeCode: nextCode
-            });
-            loadLexicon(targetLangId);
-            onOpenEditor(response);
-        } catch (err) {
-            console.error("Error al crear glifo:", err);
-            alert("Error al crear glifo automático.");
-        }
-    };
 
     const fileInputRef = useRef(null);
 
@@ -433,7 +505,7 @@ const LinguisticsHub = ({ onOpenEditor }) => {
                                         <h3 className="text-3xl font-black text-white tracking-tight italic">{t('linguistics.lexicon')}</h3>
                                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{stats.words} Palabras Mapeadas</p>
                                     </div>
-                                    <Button variant="primary" size="md" onClick={handleNewWord} icon="add">Añadir Palabra</Button>
+                                    <Button variant="primary" size="md" onClick={handleCreateNewGlyph} icon="draw">Nuevo Glifo</Button>
                                 </div>
 
                                 <GlassPanel className="p-0 border-white/5 bg-surface-dark/40 overflow-hidden shadow-2xl rounded-[2.5rem]">
@@ -504,6 +576,35 @@ const LinguisticsHub = ({ onOpenEditor }) => {
                             </section>
                         )}
                     </div>
+                ) : editorMode ? (
+                    /* KONVA EDITOR VIEW */
+                    <div className="flex-1 flex flex-col h-full relative">
+                        <div className="absolute top-4 left-4 z-10">
+                            <Button
+                                onClick={handleCloseEditor}
+                                variant="glass"
+                                className="flex items-center gap-2 px-4 py-2 bg-black/60 backdrop-blur-md border border-white/10 hover:border-white/30 text-white rounded-full text-xs font-black uppercase tracking-widest"
+                            >
+                                <span className="material-symbols-outlined text-sm">arrow_back</span>
+                                Volver
+                            </Button>
+                        </div>
+
+                        <GlyphEditorCanvas
+                            stageRef={stageRef}
+                            layers={layers}
+                            selectedShapeId={selectedShapeId}
+                            onSelectShape={setSelectedShapeId}
+                            onChangeShape={handleChangeShape}
+                            tool={tool}
+                            color={color}
+                            strokeWidth={strokeWidth}
+                            onDrawEnd={handleDrawEnd}
+                        />
+
+                        {/* Floating Toolbar (Left) */}
+                        {/* Floating Toolbar MOVED to Right Panel */}
+                    </div>
                 ) : (
                     /* Biblia Léxica View */
                     <section className="max-w-7xl mx-auto w-full animate-in fade-in slide-in-from-bottom-8 duration-1000 flex flex-col gap-12">
@@ -540,7 +641,7 @@ const LinguisticsHub = ({ onOpenEditor }) => {
                                             symbol={g.lema}
                                             keyLabel={g.lema.toUpperCase()}
                                             active={false}
-                                            onClick={() => onOpenEditor(g)}
+                                            onClick={() => handleOpenEditor(g)}
                                         />
                                     ))}
                                     {/* Action Buttons: Manual Create & Import */}
@@ -643,8 +744,8 @@ const LinguisticsHub = ({ onOpenEditor }) => {
 
             {
                 createPortal(
-                    <div className="h-full flex flex-col bg-[#0d0d12] relative overflow-hidden" >
-                        <div className="flex border-b border-white/5 bg-black/40 p-2">
+                    <div className="h-full flex flex-col bg-background relative overflow-hidden" >
+                        <div className="flex border-b border-white/5 bg-surface-dark/50 p-2 gap-1">
                             {['NOTES', 'MANAGEMENT', 'BIBLIA'].map(tab => (
                                 <button
                                     key={tab}
@@ -653,14 +754,14 @@ const LinguisticsHub = ({ onOpenEditor }) => {
                                         if (tab === 'BIBLIA') setHubMode('biblia');
                                         else setHubMode('linguistics');
                                     }}
-                                    className={`flex-1 py-3 text-[9px] font-black uppercase tracking-widest transition-all rounded-lg ${sidebarTab === tab ? 'bg-primary text-white shadow-lg' : 'text-slate-600 hover:text-slate-300'}`}
+                                    className={`flex-1 py-2 text-[9px] font-black uppercase tracking-widest transition-all rounded-lg ${sidebarTab === tab ? 'bg-primary text-white shadow-lg' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
                                 >
-                                    {tab}
+                                    {tab === 'NOTES' ? 'NOTAS' : tab === 'MANAGEMENT' ? 'HERRAMIENTAS' : 'BIBLIA'}
                                 </button>
                             ))}
                         </div>
 
-                        <div className="flex-1 overflow-y-auto no-scrollbar custom-scrollbar">
+                        <div className="flex-1 overflow-y-auto no-scrollbar custom-scrollbar p-0">
                             {sidebarTab === 'NOTES' && (
                                 <div className="h-full">
                                     <GlobalNotes projectName={projectParam} />
@@ -668,168 +769,153 @@ const LinguisticsHub = ({ onOpenEditor }) => {
                             )}
 
                             {sidebarTab === 'MANAGEMENT' && (
-                                <div className="p-6 space-y-12 pb-24 animate-in fade-in slide-in-from-right-4 duration-500">
-                                    <section className="space-y-6">
+                                <div className="p-4 space-y-8 pb-24 animate-in fade-in slide-in-from-right-4 duration-500">
+                                    <section className="space-y-4">
                                         <div className="flex justify-between items-center px-1">
-                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Sistemas de Escritura</h4>
-                                            <span className="material-symbols-outlined text-slate-700 text-sm">history_edu</span>
+                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-text-muted">Sistemas de Escritura</h4>
+                                            <span className="material-symbols-outlined text-text-muted text-sm">history_edu</span>
                                         </div>
-                                        <div className="space-y-4">
+                                        <div className="space-y-2">
                                             {Object.values(WRITING_SYSTEM_TYPES).map(sys => (
                                                 <button
                                                     key={sys.id}
                                                     onClick={() => setWritingSystem(sys.id)}
-                                                    className={`w-full p-4 rounded-2xl border text-left transition-all ${writingSystem === sys.id ? 'bg-primary/10 border-primary/40' : 'bg-white/5 border-white/5 hover:border-white/10'}`}
+                                                    className={`w-full p-3 rounded-xl border text-left transition-all group ${writingSystem === sys.id ? 'bg-primary/10 border-primary/40' : 'bg-surface-dark border-white/5 hover:border-white/10'}`}
                                                 >
                                                     <div className="flex justify-between items-center mb-1">
-                                                        <span className={`text-[10px] font-black uppercase tracking-widest ${writingSystem === sys.id ? 'text-primary' : 'text-white/60'}`}>{sys.name}</span>
+                                                        <span className={`text-[10px] font-black uppercase tracking-widest group-hover:text-primary transition-colors ${writingSystem === sys.id ? 'text-primary' : 'text-text-muted'}`}>{sys.name}</span>
                                                         {writingSystem === sys.id && <div className="size-1.5 rounded-full bg-primary animate-pulse"></div>}
                                                     </div>
                                                     <p className="text-[9px] text-slate-500 leading-tight">{sys.desc}</p>
                                                 </button>
                                             ))}
-
-                                            {/* Profundización de Reglas */}
-                                            <div className="p-4 rounded-2xl bg-black/40 border border-[#00E5FF]/10 space-y-3">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="material-symbols-outlined text-[#00E5FF] text-xs">info</span>
-                                                    <span className="text-[8px] font-black uppercase tracking-widest text-[#00E5FF]/60">Guía del Sistema</span>
-                                                </div>
-                                                <p className="text-[9px] text-slate-400 leading-relaxed italic">
-                                                    {writingSystem === 'ALPHABET' && "Los sistemas alfabéticos son ideales para lenguas donde cada sonido (fonema) importa. Asegúrate de tener glifos para vocales y consonantes por separado."}
-                                                    {writingSystem === 'ABJAD' && "En un Abjad, el foco está en la raíz de las palabras (consonantes). Puedes usar diacríticos para marcar vocales opcionales o simplemente no mapearlas visualmente."}
-                                                    {writingSystem === 'SYLLABARY' && "Los silabarios reducen el número de caracteres necesarios para palabras largas, pero requieren una rejilla de glifos mucho más extensa (e.g., Kana japonés)."}
-                                                    {writingSystem === 'ABUGIDA' && "Sistema híbrido muy común en escrituras índicas. El glifo cambia de forma o recibe marcas según la vocal que le sigue."}
-                                                </p>
-                                            </div>
                                         </div>
                                     </section>
 
-                                    <section className="space-y-6">
+                                    <section className="space-y-4">
                                         <div className="flex justify-between items-center">
-                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t('linguistics.writing_system')}</h4>
-                                            <button onClick={handleCreateNewGlyph} className="text-primary hover:text-white transition-colors">
+                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-text-muted">{t('linguistics.writing_system')}</h4>
+                                            <button onClick={handleCreateNewGlyph} className="text-primary hover:text-white transition-colors" title="Crear Nuevo Glifo">
                                                 <span className="material-symbols-outlined text-lg">add_circle</span>
                                             </button>
                                         </div>
-                                        <div className="p-6 bg-white/5 border border-white/5 rounded-3xl">
+                                        <div className="p-4 bg-surface-dark border border-white/5 rounded-2xl">
                                             <div className="grid grid-cols-4 gap-2">
-                                                {foundryGlyphs.slice(0, 8).map(g => (
+                                                {foundryGlyphs.slice(0, 12).map(g => (
                                                     <div
                                                         key={g.id}
                                                         onClick={() => onOpenEditor(g)}
-                                                        className="aspect-square rounded-xl bg-black/40 border border-white/5 flex items-center justify-center text-xl font-serif text-[#00E5FF] hover:border-primary/40 transition-all cursor-pointer"
+                                                        className="aspect-square rounded-lg bg-black/40 border border-white/5 flex items-center justify-center text-xl font-serif text-primary hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer"
+                                                        title={g.lema}
                                                     >
                                                         <span>{g.lema}</span>
                                                     </div>
                                                 ))}
                                                 {foundryGlyphs.length === 0 && (
                                                     <div className="col-span-4 py-8 flex items-center justify-center opacity-20">
-                                                        <span className="text-[8px] font-black uppercase font-mono">No data</span>
+                                                        <span className="text-[8px] font-black uppercase font-mono">Sin Glifos</span>
                                                     </div>
                                                 )}
+                                            </div>
+                                            <div className="mt-3 text-center">
+                                                <button onClick={() => setCenterView('lexicon')} className="text-[9px] font-bold text-primary hover:underline uppercase tracking-wide">Ver todos ({foundryGlyphs.length})</button>
                                             </div>
                                         </div>
                                     </section>
 
-                                    <section className="space-y-6">
+                                    <section className="space-y-4">
                                         <div className="flex justify-between items-center">
-                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t('linguistics.grammar')}</h4>
+                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-text-muted">{t('linguistics.grammar')}</h4>
                                             <button onClick={handleAddRule} className="text-primary hover:text-white transition-colors">
                                                 <span className="material-symbols-outlined text-lg">add_circle</span>
                                             </button>
                                         </div>
-                                        <div className="space-y-3">
+                                        <div className="space-y-2">
                                             {rules.map(rule => (
-                                                <div key={rule.id} className="p-4 bg-white/5 border border-white/5 rounded-2xl hover:border-primary/30 transition-all cursor-pointer group">
-                                                    <div className="flex items-center gap-2 mb-2">
+                                                <div key={rule.id} className="p-3 bg-surface-dark border border-white/5 rounded-xl hover:border-primary/30 transition-all cursor-pointer group">
+                                                    <div className="flex items-center gap-2 mb-1">
                                                         <div className={`size-1.5 rounded-full ${rule.status === 'complete' ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
                                                         <span className="text-[10px] font-bold text-white group-hover:text-primary transition-colors">{rule.titulo}</span>
                                                     </div>
                                                     <p className="text-[9px] text-slate-500 leading-tight line-clamp-2">{rule.descripcion}</p>
                                                 </div>
                                             ))}
-                                        </div>
-                                    </section>
-
-                                    <section className="space-y-6">
-                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t('linguistics.phonology')}</h4>
-                                        <div className="flex flex-wrap gap-1.5 opacity-60">
-                                            {['/a/', '/e/', '/i/', '/o/', '/u/', '/p/', '/t/', '/k/'].map(v => (
-                                                <div key={v} className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/5 text-[9px] font-mono font-bold text-slate-400">{v}</div>
-                                            ))}
+                                            {rules.length === 0 && <p className="text-[9px] text-slate-600 italic px-2">No hay reglas definidas.</p>}
                                         </div>
                                     </section>
                                 </div>
                             )}
 
                             {sidebarTab === 'BIBLIA' && (
-                                <div className="p-8 space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
-                                    <div className="space-y-2 text-[#00E5FF]">
-                                        <h4 className="text-[10px] font-black uppercase tracking-[0.3em]">Matriz de Configuración</h4>
-                                        <p className="text-[9px] opacity-40 font-bold">Compilador de Lenguaje Visual</p>
+                                <div className="p-6 space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                                    <div className="space-y-1 text-primary">
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.3em]">Configuración</h4>
+                                        <p className="text-[9px] opacity-60 font-bold">Parámetros de Fuente</p>
                                     </div>
 
-                                    <div className="space-y-6">
-                                        <GlassPanel className="p-6 border-[#00E5FF]/20 bg-[#00E5FF]/[0.02] space-y-6 rounded-2xl">
-                                            <div className="space-y-3">
-                                                <label className="text-[8px] font-black uppercase tracking-widest text-[#00E5FF]/60 block">Nombre de Fuente</label>
+                                    <div className="space-y-4">
+                                        <GlassPanel className="p-4 border-primary/20 bg-primary/5 space-y-4 rounded-xl">
+                                            <div className="space-y-2">
+                                                <label className="text-[8px] font-black uppercase tracking-widest text-primary/70 block">Nombre de Fuente</label>
                                                 <input
                                                     type="text"
-                                                    defaultValue="CHRONOS_ATLAS_V1"
-                                                    className="w-full bg-black/60 border border-[#00E5FF]/30 px-4 py-3 text-[10px] font-black text-[#00E5FF] outline-none tracking-widest uppercase italic"
+                                                    value={fontName}
+                                                    onChange={(e) => setFontName(e.target.value)}
+                                                    className="w-full bg-black/40 border border-primary/30 px-3 py-2 text-[10px] font-black text-primary outline-none tracking-widest uppercase rounded-lg focus:ring-1 focus:ring-primary/50"
                                                 />
                                             </div>
 
-                                            <div className="space-y-3">
-                                                <label className="text-[8px] font-black uppercase tracking-widest text-[#00E5FF]/60 block">Autor</label>
+                                            <div className="space-y-2">
+                                                <label className="text-[8px] font-black uppercase tracking-widest text-primary/70 block">Autor</label>
                                                 <input
                                                     type="text"
+                                                    value={fontAuthor}
+                                                    onChange={(e) => setFontAuthor(e.target.value)}
                                                     placeholder="ARCHITECT_ID"
-                                                    className="w-full bg-black/60 border border-[#00E5FF]/30 px-4 py-3 text-[10px] font-black text-[#00E5FF] outline-none tracking-widest uppercase italic"
+                                                    className="w-full bg-black/40 border border-primary/30 px-3 py-2 text-[10px] font-black text-primary outline-none tracking-widest uppercase rounded-lg"
                                                 />
                                             </div>
 
-                                            <div className="space-y-3">
-                                                <label className="text-[8px] font-black uppercase tracking-widest text-[#00E5FF]/60 block">Formato</label>
-                                                <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-[8px] font-black uppercase tracking-widest text-primary/70 block">Formato</label>
+                                                <div className="grid grid-cols-2 gap-2">
                                                     <button
                                                         onClick={() => { setFontFormat('TTF'); addLog('Formato cambiado a TTF'); }}
-                                                        className={`py-3 border text-xs font-black tracking-widest transition-all ${fontFormat === 'TTF' ? 'border-[#00E5FF] bg-[#00E5FF]/10 text-[#00E5FF] shadow-[0_0_15px_rgba(0,229,255,0.2)]' : 'border-[#00E5FF]/20 text-[#00E5FF]/40 hover:border-[#00E5FF]/40'}`}
+                                                        className={`py-2 border text-[9px] font-black tracking-widest transition-all rounded-lg ${fontFormat === 'TTF' ? 'border-primary bg-primary/10 text-primary shadow-sm' : 'border-primary/20 text-primary/40 hover:border-primary/40'}`}
                                                     >
                                                         .TTF
                                                     </button>
                                                     <button
                                                         onClick={() => { setFontFormat('OTF'); addLog('Formato cambiado a OTF'); }}
-                                                        className={`py-3 border text-xs font-black tracking-widest transition-all ${fontFormat === 'OTF' ? 'border-[#00E5FF] bg-[#00E5FF]/10 text-[#00E5FF] shadow-[0_0_15px_rgba(0,229,255,0.2)]' : 'border-[#00E5FF]/20 text-[#00E5FF]/40 hover:border-[#00E5FF]/40'}`}
+                                                        className={`py-2 border text-[9px] font-black tracking-widest transition-all rounded-lg ${fontFormat === 'OTF' ? 'border-primary bg-primary/10 text-primary shadow-sm' : 'border-primary/20 text-primary/40 hover:border-primary/40'}`}
                                                     >
                                                         .OTF
                                                     </button>
                                                 </div>
                                             </div>
 
-                                            <div className="space-y-4 pt-2">
+                                            <div className="space-y-2 pt-2 border-t border-primary/10">
                                                 <Toggle label="Ligaduras" active={fontLigatures} onToggle={() => { setFontLigatures(!fontLigatures); addLog(`Ligaduras ${!fontLigatures ? 'Activadas' : 'Desactivadas'}`); }} />
                                                 <Toggle label="Interletraje" active={fontKerning} onToggle={() => { setFontKerning(!fontKerning); addLog(`Interletraje ${!fontKerning ? 'Activado' : 'Desactivado'}`); }} />
                                             </div>
 
                                             <button
                                                 onClick={handleExportFont}
-                                                className="w-full py-4 bg-[#00E5FF] text-black font-black uppercase text-[10px] tracking-widest rounded-lg flex items-center justify-center gap-2 hover:shadow-[0_0_20px_rgba(0,229,255,0.4)] transition-all"
+                                                className="w-full py-3 bg-primary text-white font-black uppercase text-[9px] tracking-widest rounded-lg flex items-center justify-center gap-2 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 transition-all mt-4"
                                             >
                                                 <span className="material-symbols-outlined text-sm">download</span>
                                                 Exportar Recursos
                                             </button>
                                         </GlassPanel>
 
-                                        <div className="p-6 rounded-2xl border border-white/5 bg-black/20 space-y-4 font-mono text-[7px]">
-                                            <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-widest text-[#00E5FF]/40 font-sans">
-                                                <span>Registro en Tiempo Real</span>
-                                                <span className="size-1 bg-[#00E5FF] rounded-full animate-pulse"></span>
+                                        <div className="p-4 rounded-xl border border-white/5 bg-black/20 space-y-3 font-mono text-[7px]">
+                                            <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-widest text-text-muted font-sans">
+                                                <span>Registro</span>
+                                                <span className="size-1.5 bg-primary rounded-full animate-pulse"></span>
                                             </div>
-                                            <div className="space-y-1.5 opacity-60">
+                                            <div className="space-y-1 opacity-60">
                                                 {logs.map((log, idx) => (
-                                                    <p key={idx} className={log.type === 'success' ? 'text-emerald-400' : 'text-[#00E5FF]'}>
+                                                    <p key={idx} className={log.type === 'success' ? 'text-emerald-400' : 'text-primary'}>
                                                         [{new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}] {log.msg}
                                                     </p>
                                                 ))}

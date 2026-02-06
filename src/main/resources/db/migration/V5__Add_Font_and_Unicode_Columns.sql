@@ -1,5 +1,0 @@
--- V5__Add_Font_and_Unicode_Columns.sql
--- Note: These columns are now handled by the manual patch in DatabaseMigration.java 
--- to ensure they exist before Hibernate/Flyway validation in multi-tenant SQLite.
--- ALTER TABLE conlang ADD COLUMN font_binary BLOB;
--- ALTER TABLE palabra ADD COLUMN unicode_code VARCHAR(20);
