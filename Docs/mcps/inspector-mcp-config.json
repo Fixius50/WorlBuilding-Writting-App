@@ -1,0 +1,37 @@
+{
+    "mcpServers": {
+        "inspector": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/inspector"
+            ],
+            "description": "MCP Inspector for debugging and testing other MCPs",
+            "capabilities": [
+                "listTools",
+                "callTool",
+                "listResources",
+                "readResource",
+                "inspectMessages"
+            ],
+            "usage": {
+                "webUI": "http://localhost:5173 (default port)",
+                "cli": "npx @modelcontextprotocol/inspector --server <server-command>",
+                "debugging": [
+                    "Inspect MCP server responses",
+                    "Test tool invocations",
+                    "Validate resource access",
+                    "Monitor message flow"
+                ]
+            },
+            "testingWorkflow": [
+                "1. Start MCP Inspector",
+                "2. Connect to target MCP server",
+                "3. List available tools and resources",
+                "4. Test individual tool calls",
+                "5. Verify responses match expectations",
+                "6. Debug any errors or unexpected behavior"
+            ]
+        }
+    }
+}

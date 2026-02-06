@@ -1,0 +1,49 @@
+{
+    "mcpServers": {
+        "playwright": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@playwright/mcp"
+            ],
+            "env": {
+                "PLAYWRIGHT_HEADLESS": "false",
+                "PLAYWRIGHT_BASE_URL": "http://localhost:5173"
+            },
+            "description": "Playwright MCP for browser automation with semantic DOM context",
+            "capabilities": [
+                "navigate",
+                "click",
+                "fill",
+                "screenshot",
+                "waitForSelector",
+                "evaluate"
+            ],
+            "testScenarios": [
+                {
+                    "name": "Test Glyph Editor",
+                    "steps": [
+                        "Navigate to http://localhost:5173",
+                        "Click on a workspace",
+                        "Navigate to Linguistics section",
+                        "Open glyph editor",
+                        "Draw shapes on canvas",
+                        "Click 'Apply and Save'",
+                        "Verify glyph appears in lexicon"
+                    ]
+                },
+                {
+                    "name": "Test Workspace Creation",
+                    "steps": [
+                        "Navigate to http://localhost:5173",
+                        "Click 'New Workspace' button",
+                        "Fill in workspace name",
+                        "Fill in workspace title",
+                        "Click 'Create'",
+                        "Verify workspace appears in list"
+                    ]
+                }
+            ]
+        }
+    }
+}

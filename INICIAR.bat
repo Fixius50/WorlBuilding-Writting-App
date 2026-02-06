@@ -6,7 +6,7 @@ echo ========================================
 echo.
 
 REM Construir Frontend
-echo [2/4] Construyendo Frontend (React)...
+echo [1/3] Construyendo Frontend (React)...
 call npm run build
 if %errorlevel% neq 0 (
     echo.
@@ -17,22 +17,38 @@ if %errorlevel% neq 0 (
 echo [OK] Frontend actualizado.
 echo.
 
-REM Limpiar compilaciones anteriores (Java)
-echo [3/4] Limpiando compilaciones anteriores...
-if exist target rmdir /s /q target 2>nul
-echo [OK] Limpieza completada
+REM Crear script de auto-restart para backend
+echo [2/3] Preparando Backend con Auto-Restart...
+echo @echo off > backend_runner.bat
+echo :START >> backend_runner.bat
+echo call mvnw.cmd clean spring-boot:run >> backend_runner.bat
+echo if exist restart.flag ( >> backend_runner.bat
+echo     del restart.flag >> backend_runner.bat
+echo     timeout /t 2 /nobreak ^>nul >> backend_runner.bat
+echo     goto START >> backend_runner.bat
+echo ) >> backend_runner.bat
+
+REM Iniciar backend en segundo plano
+start /b cmd /c backend_runner.bat
+echo [OK] Backend iniciando en segundo plano...
 echo.
 
-REM Iniciar la aplicacion
-echo [4/4] Iniciando WorldBuilding App V2...
+REM Esperar a que el backend arranque
+echo [3/3] Esperando a que el backend inicie (15 segundos)...
+timeout /t 15 /nobreak >nul
+
+REM Iniciar Frontend
 echo.
 echo ========================================
-echo  La aplicacion se esta iniciando...
-echo  Espera a ver: "Started WorldbuildingApplication"
-echo  Luego abre: http://localhost:8080
+echo  FRONTEND INICIANDO...
+echo  Backend: http://localhost:8080
+echo  Frontend: http://localhost:3000
 echo ========================================
 echo.
+echo NOTA: Para detener todo, presiona Ctrl+C
+echo.
 
-call mvnw.cmd spring-boot:run
+call npm run dev
 
-pause
+REM Limpiar
+if exist backend_runner.bat del backend_runner.bat

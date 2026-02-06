@@ -681,13 +681,7 @@ const ArchitectLayout = () => {
                                     )}
                                 </div>
                             </div>
-                        ) : (
-                            // DEFAULT / EMPTY
-                            <div className="flex flex-col items-center justify-center h-full text-text-muted opacity-50">
-                                <span className="material-symbols-outlined text-4xl mb-2">dashboard</span>
-                                <p className="text-xs uppercase font-bold tracking-widest">Select an item</p>
-                            </div>
-                        )
+                        ) : null
                     ) : (
                         // COLLAPSED ICONS
                         <div className="flex flex-col items-center gap-4 py-4 w-full">

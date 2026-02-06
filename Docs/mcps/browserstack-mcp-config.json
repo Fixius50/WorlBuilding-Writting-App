@@ -1,0 +1,63 @@
+{
+    "mcpServers": {
+        "browserstack": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@browserstack/mcp-server"
+            ],
+            "env": {
+                "BROWSERSTACK_USERNAME": "${BROWSERSTACK_USERNAME}",
+                "BROWSERSTACK_ACCESS_KEY": "${BROWSERSTACK_ACCESS_KEY}"
+            },
+            "description": "BrowserStack MCP for cross-browser testing",
+            "capabilities": [
+                "runTest",
+                "getSessionStatus",
+                "getSessionLogs",
+                "takeScreenshot"
+            ],
+            "testMatrix": [
+                {
+                    "browser": "Chrome",
+                    "version": "latest",
+                    "os": "Windows",
+                    "osVersion": "11"
+                },
+                {
+                    "browser": "Firefox",
+                    "version": "latest",
+                    "os": "Windows",
+                    "osVersion": "11"
+                },
+                {
+                    "browser": "Edge",
+                    "version": "latest",
+                    "os": "Windows",
+                    "osVersion": "11"
+                },
+                {
+                    "browser": "Safari",
+                    "version": "latest",
+                    "os": "macOS",
+                    "osVersion": "Ventura"
+                }
+            ],
+            "criticalPaths": [
+                "Workspace creation and selection",
+                "Glyph editor drawing and saving",
+                "Lexicon CRUD operations",
+                "Backend restart functionality"
+            ]
+        }
+    },
+    "setup": {
+        "instructions": [
+            "1. Sign up for BrowserStack at https://www.browserstack.com/",
+            "2. Get your username and access key from account settings",
+            "3. Set environment variables or create .env file",
+            "4. BROWSERSTACK_USERNAME=your_username",
+            "5. BROWSERSTACK_ACCESS_KEY=your_access_key"
+        ]
+    }
+}

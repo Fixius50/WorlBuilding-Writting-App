@@ -30,6 +30,9 @@ public class Palabra {
     @Column(name = "unicode_code")
     private String unicodeCode;
 
+    @Column(name = "raw_editor_data", columnDefinition = "CLOB")
+    private String rawEditorData;
+
     public Long getId() {
         return id;
     }
@@ -108,5 +111,13 @@ public class Palabra {
 
     public void setUnicodeCode(String unicodeCode) {
         this.unicodeCode = unicodeCode;
+    }
+
+    public String getRawEditorData() {
+        return rawEditorData;
+    }
+
+    public void setRawEditorData(String rawEditorData) {
+        this.rawEditorData = rawEditorData;
     }
 }

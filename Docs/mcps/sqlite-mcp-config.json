@@ -1,0 +1,61 @@
+{
+    "mcpServers": {
+        "sqlite": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-sqlite",
+                "--db-path",
+                "./src/main/resources/data/worldbuilding.db"
+            ],
+            "description": "SQLite MCP for database validation and queries",
+            "capabilities": [
+                "query",
+                "schema",
+                "tables",
+                "insert",
+                "update",
+                "delete"
+            ],
+            "testQueries": [
+                {
+                    "name": "Verify raw_editor_data column exists",
+                    "query": "PRAGMA table_info(palabra);",
+                    "expectedColumns": [
+                        "raw_editor_data"
+                    ]
+                },
+                {
+                    "name": "Check migration history",
+                    "query": "SELECT * FROM flyway_schema_history ORDER BY installed_rank DESC LIMIT 5;"
+                },
+                {
+                    "name": "Count total words in lexicon",
+                    "query": "SELECT COUNT(*) as total_words FROM palabra;"
+                },
+                {
+                    "name": "Get words with raw editor data",
+                    "query": "SELECT id, lema, LENGTH(raw_editor_data) as data_size FROM palabra WHERE raw_editor_data IS NOT NULL;"
+                },
+                {
+                    "name": "Verify conlang tables exist",
+                    "query": "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'conlang%';"
+                }
+            ],
+            "validationScripts": [
+                {
+                    "name": "Schema Integrity Check",
+                    "description": "Verify all expected tables and columns exist",
+                    "tables": [
+                        "palabra",
+                        "conlang",
+                        "gramatica_rule",
+                        "cuaderno",
+                        "carpeta",
+                        "entidad_generica"
+                    ]
+                }
+            ]
+        }
+    }
+}

@@ -126,24 +126,13 @@ const GlyphEditorCanvas = ({
 // Helper for Transformer to avoid clutter
 const TransformerComponent = ({ selectedShapeId }) => {
     const trRef = useRef();
-    const { Layer } = React.useContext(React.createContext(null)); // Mock, actually need access to stage?
-    // React-Konva Transformer finds node by ref usually.
-    // Better pattern: pass ref to Shape, or use stage.findOne('#id').
-
-    // Simpler pattern for React-Konva:
-    // The Transformer must be rendered in the Layer (or a separate top layer)
-    // and manually attached to the node.
 
     return (
         <Transformer
             ref={(node) => {
                 if (node) {
-                    // We need to attach to the shape. 
-                    // This often requires the shape to have a Ref, or use `node.getStage().findOne('#'+selectedShapeId)`
-                    // Let's rely on the parent updating this.
-                    // Actually, simpler standard way:
                     const stage = node.getStage();
-                    const selectedNode = stage.findOne('.' + selectedShapeId); // Assuming we add name={id} or id={id}
+                    const selectedNode = stage.findOne('#' + selectedShapeId);
                     if (selectedNode) {
                         node.nodes([selectedNode]);
                         node.getLayer().batchDraw();

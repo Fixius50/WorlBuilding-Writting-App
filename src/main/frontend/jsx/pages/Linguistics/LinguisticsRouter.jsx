@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import LinguisticsHub from './LinguisticsHub';
 import GlyphFoundry from './GlyphFoundry';
-import SymbologyEditor from './SymbologyEditor';
+
 import api from '../../../js/services/api';
 
 const LinguisticsRouter = () => {
@@ -10,7 +10,8 @@ const LinguisticsRouter = () => {
 
     const handleOpenEditor = (word) => {
         setSelectedWord(word);
-        setView('editor');
+        // setView('editor'); // Deprecated, handled internally by Hub
+        console.log("Opening editor for", word);
     };
 
     const handleSaveGlyph = async (saveData) => {
@@ -42,13 +43,7 @@ const LinguisticsRouter = () => {
                 <LinguisticsHub onOpenEditor={handleOpenEditor} />
             )}
 
-            {view === 'editor' && (
-                <SymbologyEditor
-                    word={selectedWord}
-                    onBack={() => setView('hub')}
-                    onSave={handleSaveGlyph}
-                />
-            )}
+
         </div>
     );
 };

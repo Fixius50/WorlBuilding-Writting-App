@@ -8,8 +8,9 @@ import Button from '../../components/common/Button';
 import GlobalNotes from '../../components/layout/GlobalNotes';
 import api from '../../../js/services/api';
 import * as opentype from 'opentype.js';
-import GlyphEditorCanvas from './components/GlyphEditorCanvas';
-import GlyphEditorProperties from './components/GlyphEditorProperties';
+import UniversalCanvas from '../../components/common/editor/UniversalCanvas';
+import UniversalCanvasProperties from '../../components/common/editor/UniversalCanvasProperties';
+import ConfirmModal from '../../components/common/ConfirmModal';
 
 const LinguisticsHub = ({ onOpenEditor }) => {
     const { t } = useLanguage();
@@ -25,9 +26,14 @@ const LinguisticsHub = ({ onOpenEditor }) => {
     const [renderOutput, setRenderOutput] = useState('');
 
     // New UI States
-    const [hubMode, setHubMode] = useState('linguistics'); // 'linguistics', 'biblia'
-    const [centerView, setCenterView] = useState('lexicon'); // 'lexicon', 'translator'
-    const [sidebarTab, setSidebarTab] = useState('MANAGEMENT'); // 'NOTES', 'MANAGEMENT', 'BIBLIA'
+    // Unified Navigation State
+    const [centerView, setCenterView] = useState('lexicon'); // 'lexicon', 'translator', 'biblia'
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sidebarTab, setSidebarTab] = useState('MANAGEMENT'); // 'NOTES', 'MANAGEMENT'
+    const [isMeaningModalOpen, setIsMeaningModalOpen] = useState(false);
+    const [editingWord, setEditingWord] = useState(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [wordToDelete, setWordToDelete] = useState(null);
 
     // Foundry State
     const [fontName, setFontName] = useState('CHRONOS_ATLAS_V1');
@@ -87,10 +93,38 @@ const LinguisticsHub = ({ onOpenEditor }) => {
     ]);
     const [activeLayerId, setActiveLayerId] = useState('layer1');
     const [selectedShapeId, setSelectedShapeId] = useState(null);
+
+    // History (Undo/Redo)
+    const [past, setPast] = useState([]);
+    const [future, setFuture] = useState([]);
+
+    const pushToHistory = (newLayers) => {
+        setPast(prev => [...prev.slice(-19), layers]); // Keep last 20
+        setFuture([]);
+    };
+
+    const undo = () => {
+        if (past.length === 0) return;
+        const previous = past[past.length - 1];
+        setPast(prev => prev.slice(0, -1));
+        setFuture(prev => [layers, ...prev]);
+        setLayers(previous);
+    };
+
+    const redo = () => {
+        if (future.length === 0) return;
+        const next = future[0];
+        setFuture(prev => prev.slice(1));
+        setPast(prev => [...prev, layers]);
+        setLayers(next);
+    };
+
     const [tool, setTool] = useState('brush'); // select, brush, eraser, line, rect, circle
     const [strokeWidth, setStrokeWidth] = useState(4);
     const [color, setColor] = useState('#00E5FF');
     const [opacity, setOpacity] = useState(1);
+    const [lineCap, setLineCap] = useState('round');
+    const [strokeStyle, setStrokeStyle] = useState('linear'); // linear, points, quadratic
 
     // Canvas Ref
     const stageRef = React.useRef(null);
@@ -107,20 +141,230 @@ const LinguisticsHub = ({ onOpenEditor }) => {
         };
     }, []);
 
+    // Apply stroke style to selected shape when strokeStyle changes
+    useEffect(() => {
+        if (!selectedShapeId || Array.isArray(selectedShapeId)) return;
+
+        setLayers(prev => {
+            const newLayers = prev.map(layer => ({
+                ...layer,
+                shapes: layer.shapes.map(shape => {
+                    if (shape.id === selectedShapeId && (shape.type === 'line' || shape.type === 'brush')) {
+                        const updated = { ...shape };
+                        if (strokeStyle === 'points') {
+                            updated.dash = [2, 10];
+                            delete updated.tension;
+                        } else if (strokeStyle === 'quadratic') {
+                            updated.tension = 0.8;
+                            delete updated.dash;
+                        } else {
+                            delete updated.dash;
+                            delete updated.tension;
+                        }
+                        return updated;
+                    }
+                    return shape;
+                })
+            }));
+            pushToHistory(newLayers);
+            return newLayers;
+        });
+    }, [strokeStyle]);
+
     // --- EDITOR HANDLERS ---
     const handleOpenEditor = (glyph) => {
         setActiveGlyphId(glyph.id);
-        // Load glyph data if exists (parse SVG to shapes? For now start fresh or mock)
-        // If glyph has data, we would parse it here.
         setEditorMode(true);
-        setRightPanelMode('LINGUISTICS'); // Ensure panel is open
+        setRightPanelMode('LINGUISTICS');
+
+        if (glyph.rawEditorData) {
+            try {
+                const savedLayers = JSON.parse(glyph.rawEditorData);
+                if (Array.isArray(savedLayers) && savedLayers.length > 0) {
+                    setLayers(savedLayers);
+                    setActiveLayerId(savedLayers[0].id);
+                    return;
+                }
+            } catch (err) {
+                console.error("Error parsing rawEditorData:", err);
+            }
+        }
+
+        const initialShapes = [];
+        if (glyph.svgPathData) {
+            initialShapes.push({
+                id: crypto.randomUUID(),
+                type: 'path',
+                data: glyph.svgPathData,
+                x: 0,
+                y: 0,
+                stroke: '#00E5FF',
+                strokeWidth: 2,
+                fill: null,
+                scaleX: 1,
+                scaleY: 1
+            });
+        }
+
+        setLayers([
+            { id: 'layer1', name: 'Trazo Principal', visible: true, locked: false, shapes: initialShapes },
+            { id: 'layer2', name: 'Guías', visible: true, locked: false, shapes: [] }
+        ]);
+        setActiveLayerId('layer1');
     };
 
     const handleCloseEditor = () => {
         setEditorMode(false);
         setActiveGlyphId(null);
+        setSelectedShapeId(null);
     };
 
+    const handleSaveCurrentGlyph = async () => {
+        if (!activeGlyphId || !activeLangId) return;
+
+        const allShapes = layers
+            .filter(l => l.visible && !l.name.toLowerCase().includes('guía'))
+            .flatMap(l => l.shapes);
+
+        if (allShapes.length === 0) {
+            addLog('No hay trazos para guardar', 'warning');
+            return;
+        }
+
+        let minX = Infinity, minY = Infinity, maxY = -Infinity, maxX = -Infinity;
+        const computeBBox = (shape) => {
+            const sx = shape.x || 0;
+            const sy = shape.y || 0;
+            if (shape.type === 'line' && shape.points) {
+                for (let i = 0; i < shape.points.length; i += 2) {
+                    const x = shape.points[i] + sx;
+                    const y = shape.points[i + 1] + sy;
+                    minX = Math.min(minX, x); minY = Math.min(minY, y);
+                    maxX = Math.max(maxX, x); maxY = Math.max(maxY, y);
+                }
+            } else if (shape.type === 'rect') {
+                minX = Math.min(minX, sx); minY = Math.min(minY, sy);
+                maxX = Math.max(maxX, sx + (shape.width || 0)); maxY = Math.max(maxY, sy + (shape.height || 0));
+            } else if (shape.type === 'circle') {
+                const r = shape.radius || 0;
+                minX = Math.min(minX, sx - r); minY = Math.min(minY, sy - r);
+                maxX = Math.max(maxX, sx + r); maxY = Math.max(maxY, sy + r);
+            }
+        };
+
+        allShapes.forEach(computeBBox);
+
+        if (minX === Infinity) return;
+
+        const centerX = (minX + maxX) / 2;
+        const centerY = (minY + maxY) / 2;
+        const stage = stageRef.current;
+        const offsetX = (stage.width() / 2) - centerX;
+        const offsetY = (stage.height() / 2) - centerY;
+
+        const centeredLayers = layers.map(l => ({
+            ...l,
+            shapes: l.shapes.map(s => ({
+                ...s,
+                x: (s.x || 0) + offsetX,
+                y: (s.y || 0) + offsetY
+            }))
+        }));
+
+        let svgPath = "";
+        allShapes.forEach(s => {
+            if (s.type === 'line' && s.points && s.points.length >= 4) {
+                const ox = (s.x || 0) + offsetX;
+                const oy = (s.y || 0) + offsetY;
+                svgPath += `M ${s.points[0] + ox} ${s.points[1] + oy} `;
+                for (let i = 2; i < s.points.length; i += 2) {
+                    svgPath += `L ${s.points[i] + ox} ${s.points[i + 1] + oy} `;
+                }
+            }
+        });
+
+        try {
+            const word = lexicon.find(w => w.id === activeGlyphId) || {
+                lema: 'Nuevo Glifo',
+                categoriaGramatical: 'GLYPH',
+                definicion: 'Glifo dibujado manualmente'
+            };
+
+            const isPersisted = lexicon.some(w => w.id === activeGlyphId);
+
+            if (isPersisted) {
+                await api.put(`/conlang/${activeLangId}/palabra/${activeGlyphId}`, {
+                    ...word,
+                    svgPathData: svgPath,
+                    rawEditorData: JSON.stringify(centeredLayers)
+                });
+            } else {
+                await api.post(`/conlang/${activeLangId}/palabra`, {
+                    ...word,
+                    id: activeGlyphId, // Keep generated ID
+                    svgPathData: svgPath,
+                    rawEditorData: JSON.stringify(centeredLayers)
+                });
+            }
+
+            loadLexicon(activeLangId);
+            addLog('Glifo guardado y centrado con éxito', 'success');
+        } catch (err) {
+            console.error("Error saving glyph:", err);
+            addLog('Error al guardar glifo', 'error');
+            throw err; // Propagate to prevent closing if desired
+        }
+    };
+
+    const handleDeleteWord = (id) => {
+        setWordToDelete(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDeleteWord = async () => {
+        if (!wordToDelete || !activeLangId) return;
+        try {
+            await api.delete(`/conlang/${activeLangId}/palabra/${wordToDelete}`);
+            loadLexicon(activeLangId);
+            addLog('Palabra eliminada', 'success');
+            setWordToDelete(null);
+            setIsDeleteModalOpen(false);
+        } catch (err) {
+            console.error("Error deleting word:", err);
+            addLog('Error al eliminar palabra', 'error');
+        }
+    };
+
+    const handleOpenMeaningEditor = (word) => {
+        setEditingWord(word);
+        setIsMeaningModalOpen(true);
+    };
+
+    const handleSaveMeaning = async (updatedData) => {
+        if (!activeLangId) return;
+        try {
+            if (updatedData.isNew) {
+                await api.post(`/conlang/${activeLangId}/palabra`, updatedData);
+            } else {
+                await api.put(`/conlang/${activeLangId}/palabra/${editingWord.id}`, updatedData);
+            }
+            loadLexicon(activeLangId);
+            addLog('Cambios sincronizados', 'success');
+            setIsMeaningModalOpen(false);
+            setEditingWord(null);
+        } catch (err) {
+            console.error("Error saving meaning:", err);
+            addLog('Error al sincronizar cambios', 'error');
+        }
+    };
+
+    // Filter Lexicon based on searchTerm
+    const filteredLexicon = lexicon.filter(item => {
+        const search = searchTerm.toLowerCase();
+        const lema = (item.lema || '').toLowerCase();
+        const def = (item.traduccionEspanol || item.definicion || '').toLowerCase();
+        return lema.includes(search) || def.includes(search);
+    });
     const handleDrawEnd = (phase, data) => {
         // Handle drawing logic updates to layers state
         if (phase === 'START') {
@@ -128,51 +372,74 @@ const LinguisticsHub = ({ onOpenEditor }) => {
             const newShape = {
                 id: crypto.randomUUID(),
                 type: tool,
-                points: [data.pos.x, data.pos.y], // For lines
-                x: data.pos.x, y: data.pos.y, // For shapes
                 stroke: color,
                 strokeWidth: strokeWidth,
                 opacity: opacity,
-                lineCap: 'round',
+                lineCap: lineCap,
                 lineJoin: 'round',
-                // specific props based on tool...
+                x: (tool === 'brush' || tool === 'line') ? 0 : data.pos.x,
+                y: (tool === 'brush' || tool === 'line') ? 0 : data.pos.y,
             };
 
             if (tool === 'brush') {
                 newShape.type = 'line';
-                newShape.points = [data.pos.x, data.pos.y];
+                newShape.points = [data.pos.x, data.pos.y, data.pos.x, data.pos.y];
+                if (strokeStyle === 'points') newShape.dash = [2, 10];
+                if (strokeStyle === 'quadratic') newShape.tension = 0.8;
+            } else if (tool === 'line') {
+                newShape.type = 'line';
+                newShape.points = [data.pos.x, data.pos.y, data.pos.x, data.pos.y];
+                if (strokeStyle === 'points') newShape.dash = [2, 10];
+                if (strokeStyle === 'quadratic') newShape.tension = 0.8;
             } else if (tool === 'rect') {
-                newShape.width = 0; newShape.height = 0;
+                newShape.width = 0;
+                newShape.height = 0;
+                if (strokeStyle === 'points') newShape.dash = [5, 5];
+            } else if (tool === 'circle') {
+                newShape.radius = 0;
+                if (strokeStyle === 'points') newShape.dash = [5, 5];
             }
 
-            setLayers(prev => prev.map(l => {
-                if (l.id === activeLayerId) {
-                    return { ...l, shapes: [...l.shapes, newShape] };
-                }
-                return l;
-            }));
-            setSelectedShapeId(newShape.id); // Auto select? maybe not for brush
+            setLayers(prev => {
+                const newLayers = prev.map(l => {
+                    if (l.id === activeLayerId) {
+                        return { ...l, shapes: [...l.shapes, newShape] };
+                    }
+                    return l;
+                });
+                pushToHistory(newLayers);
+                return newLayers;
+            });
+            setSelectedShapeId(newShape.id);
         } else if (phase === 'MOVE') {
             // Update last shape in active layer
             setLayers(prev => prev.map(l => {
                 if (l.id === activeLayerId) {
                     const shapes = [...l.shapes];
-                    const lastShape = shapes[shapes.length - 1];
+                    const lastShape = { ...shapes[shapes.length - 1] };
                     if (!lastShape) return l;
 
                     if (tool === 'brush') {
-                        lastShape.points = lastShape.points.concat([data.pos.x, data.pos.y]);
+                        lastShape.points = [...lastShape.points, data.pos.x, data.pos.y];
+                    } else if (tool === 'line') {
+                        lastShape.points = [lastShape.points[0], lastShape.points[1], data.pos.x, data.pos.y];
                     } else if (tool === 'rect') {
                         lastShape.width = data.pos.x - lastShape.x;
                         lastShape.height = data.pos.y - lastShape.y;
+                    } else if (tool === 'circle') {
+                        const dx = data.pos.x - lastShape.x;
+                        const dy = data.pos.y - lastShape.y;
+                        lastShape.radius = Math.sqrt(dx * dx + dy * dy);
                     }
-                    // Handle other tools...
 
                     shapes[shapes.length - 1] = lastShape;
                     return { ...l, shapes };
                 }
                 return l;
             }));
+        } else if (phase === 'END') {
+            // Finalize history on draw end
+            pushToHistory(layers);
         }
     };
 
@@ -243,6 +510,19 @@ const LinguisticsHub = ({ onOpenEditor }) => {
         } catch (err) {
             console.error("Error loading lexicon:", err);
         }
+    };
+
+    // Unified word creation handler
+    const handleCreateNewWord = async () => {
+        if (!activeLangId) return;
+        setEditingWord({
+            id: 'temp-' + Date.now(),
+            lema: '',
+            definicion: '',
+            categoriaGramatical: 'Noun',
+            isNew: true
+        });
+        setIsMeaningModalOpen(true);
     };
 
     const handleNewWord = async () => {
@@ -410,11 +690,25 @@ const LinguisticsHub = ({ onOpenEditor }) => {
             foundryGlyphs.forEach(g => {
                 if (!g.svgPathData || !g.unicodeCode) return;
                 const unicode = parseInt(g.unicodeCode.replace('U+', ''), 16);
+                const path = new opentype.Path();
+                const commands = g.svgPathData.match(/[a-df-z][^a-df-z]*/gi);
+                if (commands) {
+                    commands.forEach(cmdStr => {
+                        const type = cmdStr[0].toUpperCase();
+                        const args = cmdStr.slice(1).trim().split(/[\s,]+/).map(parseFloat);
+                        if (type === 'M') path.moveTo(args[0], args[1]);
+                        else if (type === 'L') path.lineTo(args[0], args[1]);
+                        else if (type === 'C') path.curveTo(args[0], args[1], args[2], args[3], args[4], args[5]);
+                        else if (type === 'Q') path.quadraticCurveTo(args[0], args[1], args[2], args[3]);
+                        else if (type === 'Z') path.close();
+                    });
+                }
+
                 const glyph = new opentype.Glyph({
                     name: `glyph_${g.unicodeCode}`,
                     unicode: unicode,
                     advanceWidth: 800,
-                    path: opentype.parsePathData(g.svgPathData)
+                    path: path
                 });
                 font.glyphs.push(glyph);
             });
@@ -459,138 +753,56 @@ const LinguisticsHub = ({ onOpenEditor }) => {
                     {/* Header Info Hidden on User Request */}
                 </div>
 
-                {/* Center Tabs Switcher */}
-                {hubMode === 'linguistics' && (
-                    <div className="flex bg-white/5 p-1 rounded-xl border border-white/5">
-                        <button
-                            onClick={() => setCenterView('lexicon')}
-                            className={`px-6 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${centerView === 'lexicon' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
-                        >
-                            {t('linguistics.lexicon')}
-                        </button>
-                        <button
-                            onClick={() => setCenterView('translator')}
-                            className={`px-6 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${centerView === 'translator' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
-                        >
-                            {t('linguistics.translator')}
-                        </button>
+                {/* Unified Navigation Switcher */}
+                {!editorMode && (
+                    <div className="flex bg-white/5 p-1 rounded-xl border border-white/5 backdrop-blur-md">
+                        {[
+                            { id: 'lexicon', label: t('linguistics.lexicon') },
+                            { id: 'translator', label: t('linguistics.translator') },
+                            { id: 'biblia', label: 'BIBLIA' }
+                        ].map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setCenterView(tab.id)}
+                                className={`px-6 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${centerView === tab.id ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
                     </div>
                 )}
 
-                {hubMode === 'biblia' && (
-                    <div className="flex-1 flex items-center justify-between">
-                        <div className="flex items-center gap-4 animate-in slide-in-from-left duration-700">
-                            <div className="p-3 rounded-2xl bg-[#00E5FF]/10 text-[#00E5FF] border border-[#00E5FF]/20 shadow-[0_0_20px_rgba(0,229,255,0.1)]">
-                                <span className="material-symbols-outlined text-2xl">menu_book</span>
-                            </div>
-                            <div>
-                                <h1 className="text-xl font-black uppercase tracking-[0.3em] text-white">Biblia Léxica</h1>
-                                <p className="text-[9px] font-bold text-[#00E5FF]/50 uppercase tracking-widest flex items-center gap-2">
-                                    <span className="size-1 bg-[#00E5FF] rounded-full animate-pulse"></span>
-                                    Sincronización Automática Activa
-                                </p>
-                            </div>
-                        </div>
+                {/* Editor Actions - Replace Switcher when editing */}
+                {editorMode && (
+                    <div className="flex items-center gap-3 bg-white/5 p-1 rounded-xl border border-white/5">
+                        <button
+                            onClick={handleCloseEditor}
+                            className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-red-400 hover:bg-red-400/10 transition-all border border-transparent hover:border-red-400/20"
+                        >
+                            <span className="material-symbols-outlined text-sm">close</span>
+                            Descartar
+                        </button>
+                        <div className="w-px h-4 bg-white/10 mx-1"></div>
+                        <button
+                            onClick={async () => {
+                                await handleSaveCurrentGlyph();
+                                handleCloseEditor();
+                            }}
+                            className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-primary text-white shadow-lg hover:shadow-primary/20 transition-all"
+                        >
+                            <span className="material-symbols-outlined text-sm">check</span>
+                            Aplicar y Guardar
+                        </button>
                     </div>
                 )}
             </div>
 
-            <main className="flex-1 overflow-y-auto no-scrollbar p-8 lg:p-12">
-                {hubMode === 'linguistics' ? (
-                    <div className="max-w-6xl mx-auto w-full">
-                        {centerView === 'lexicon' ? (
-                            <section className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                <div className="flex justify-between items-center px-4">
-                                    <div className="flex flex-col">
-                                        <h3 className="text-3xl font-black text-white tracking-tight italic">{t('linguistics.lexicon')}</h3>
-                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{stats.words} Palabras Mapeadas</p>
-                                    </div>
-                                    <Button variant="primary" size="md" onClick={handleCreateNewGlyph} icon="draw">Nuevo Glifo</Button>
-                                </div>
-
-                                <GlassPanel className="p-0 border-white/5 bg-surface-dark/40 overflow-hidden shadow-2xl rounded-[2.5rem]">
-                                    <div className="p-6 border-b border-white/5 flex items-center gap-4 bg-black/20">
-                                        <div className="flex-1 relative">
-                                            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary/60 text-lg">search</span>
-                                            <input
-                                                type="text"
-                                                placeholder={t('linguistics.search_lexicon')}
-                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-xs font-bold text-white focus:ring-1 focus:ring-primary/30 outline-none transition-all placeholder-slate-600"
-                                            />
-                                        </div>
-                                        <button className="size-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-500 hover:text-white transition-all hover:bg-white/10"><span className="material-symbols-outlined text-xl">tune</span></button>
-                                    </div>
-
-                                    <div className="p-8 space-y-2 max-h-[70vh] overflow-y-auto no-scrollbar custom-scrollbar">
-                                        {lexicon.map(item => (
-                                            <LexiconItem
-                                                key={item.id}
-                                                word={item.lema || item.palabraOriginal}
-                                                type={item.categoriaGramatical}
-                                                gender={item.genero}
-                                                def={item.definicion || item.traduccionEspanol}
-                                                onEditSymbol={() => onOpenEditor(item)}
-                                            />
-                                        ))}
-                                        {lexicon.length === 0 && (
-                                            <div className="py-20 flex flex-col items-center justify-center text-slate-600 opacity-20">
-                                                <span className="material-symbols-outlined text-8xl mb-4">menu_book</span>
-                                                <p className="text-[10px] uppercase tracking-[0.5em] font-black">Flujo de Datos Vacío</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </GlassPanel>
-                            </section>
-                        ) : (
-                            <section className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                <div className="flex items-center gap-4 px-4">
-                                    <span className="material-symbols-outlined text-primary text-4xl">sync_alt</span>
-                                    <h3 className="text-3xl font-black text-white tracking-tight italic">{t('linguistics.translator')}</h3>
-                                </div>
-
-                                <GlassPanel className="p-12 border-primary/20 bg-primary/5 rounded-[3rem] space-y-10 shadow-2xl shadow-primary/5">
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                                        <div className="space-y-6">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.4em] text-primary opacity-60">Entrada de Origen</label>
-                                            <textarea
-                                                value={sourceText}
-                                                onChange={(e) => handleTranslate(e.target.value)}
-                                                placeholder={t('linguistics.source_text')}
-                                                className="w-full h-48 bg-black/40 border border-white/10 rounded-[2.5rem] p-8 text-lg font-bold text-white focus:border-primary/50 outline-none transition-all placeholder-slate-800 resize-none"
-                                            />
-                                        </div>
-                                        <div className="space-y-6">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.4em] text-primary opacity-60">Salida Visual</label>
-                                            <div className="h-48 rounded-[2.5rem] bg-black/60 border border-white/5 flex items-center justify-center relative overflow-hidden group shadow-inner">
-                                                <span className="text-7xl font-serif text-white opacity-40 group-hover:opacity-100 transition-all duration-1000 whitespace-pre drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]">
-                                                    {renderOutput || 'α β δ γ'}
-                                                </span>
-                                                <div className="absolute bottom-4 right-8 flex gap-4 text-[8px] font-black uppercase tracking-widest text-slate-700">
-                                                    <span>Paso_Vector</span>
-                                                    <span>Motor_V4</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </GlassPanel>
-                            </section>
-                        )}
-                    </div>
-                ) : editorMode ? (
+            <main className="flex-1 overflow-y-auto no-scrollbar p-8 lg:p-12 relative flex flex-col">
+                {editorMode ? (
                     /* KONVA EDITOR VIEW */
                     <div className="flex-1 flex flex-col h-full relative">
-                        <div className="absolute top-4 left-4 z-10">
-                            <Button
-                                onClick={handleCloseEditor}
-                                variant="glass"
-                                className="flex items-center gap-2 px-4 py-2 bg-black/60 backdrop-blur-md border border-white/10 hover:border-white/30 text-white rounded-full text-xs font-black uppercase tracking-widest"
-                            >
-                                <span className="material-symbols-outlined text-sm">arrow_back</span>
-                                Volver
-                            </Button>
-                        </div>
 
-                        <GlyphEditorCanvas
+                        <UniversalCanvas
                             stageRef={stageRef}
                             layers={layers}
                             selectedShapeId={selectedShapeId}
@@ -604,6 +816,87 @@ const LinguisticsHub = ({ onOpenEditor }) => {
 
                         {/* Floating Toolbar (Left) */}
                         {/* Floating Toolbar MOVED to Right Panel */}
+                    </div>
+                ) : centerView === 'lexicon' ? (
+                    <div className="max-w-6xl mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <section className="space-y-8">
+                            <div className="flex justify-between items-center px-4">
+                                <div className="flex flex-col">
+                                    <h3 className="text-3xl font-black text-white tracking-tight italic">{t('linguistics.lexicon')}</h3>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{stats.words} Palabras Mapeadas</p>
+                                </div>
+                                <Button variant="primary" size="md" onClick={handleCreateNewGlyph} icon="draw">Nuevo Glifo</Button>
+                            </div>
+
+                            <GlassPanel className="p-0 border-white/5 bg-surface-dark/40 overflow-hidden shadow-2xl rounded-[2.5rem]">
+                                <div className="p-6 border-b border-white/5 flex items-center gap-4 bg-black/20">
+                                    <div className="flex-1 relative">
+                                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary/60 text-lg">search</span>
+                                        <input
+                                            type="text"
+                                            placeholder={t('linguistics.search_lexicon')}
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-xs font-bold text-white focus:ring-1 focus:ring-primary/30 outline-none transition-all placeholder-slate-600"
+                                        />
+                                    </div>
+                                    <button className="size-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-500 hover:text-white transition-all hover:bg-white/10"><span className="material-symbols-outlined text-xl">tune</span></button>
+                                </div>
+
+                                <div className="p-8 space-y-2 max-h-[70vh] overflow-y-auto no-scrollbar custom-scrollbar">
+                                    {filteredLexicon.map(item => (
+                                        <LexiconItem
+                                            key={item.id}
+                                            word={item.lema || item.palabraOriginal}
+                                            type={item.categoriaGramatical}
+                                            gender={item.genero}
+                                            def={item.definicion || item.traduccionEspanol}
+                                            onEdit={() => handleOpenMeaningEditor(item)}
+                                            onDelete={() => handleDeleteWord(item.id)}
+                                        />
+                                    ))}
+                                    {filteredLexicon.length === 0 && (
+                                        <div className="py-20 flex flex-col items-center justify-center text-slate-600 opacity-20">
+                                            <span className="material-symbols-outlined text-8xl mb-4">menu_book</span>
+                                            <p className="text-[10px] uppercase tracking-[0.5em] font-black">
+                                                {searchTerm ? 'No se encontraron resultados' : 'Flujo de Datos Vacío'}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </GlassPanel>
+                        </section>
+                    </div>
+                ) : centerView === 'translator' ? (
+                    <div className="max-w-6xl mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <section className="space-y-8">
+                            <div className="flex items-center gap-4 px-4">
+                                <span className="material-symbols-outlined text-primary text-4xl">sync_alt</span>
+                                <h3 className="text-3xl font-black text-white tracking-tight italic">{t('linguistics.translator')}</h3>
+                            </div>
+
+                            <GlassPanel className="p-12 border-primary/20 bg-primary/5 rounded-[3rem] shadow-2xl shadow-primary/5">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                                    <div className="space-y-6">
+                                        <label className="text-[10px] font-black uppercase tracking-[0.4em] text-primary opacity-60">Entrada de Origen</label>
+                                        <textarea
+                                            value={sourceText}
+                                            onChange={(e) => handleTranslate(e.target.value)}
+                                            placeholder={t('linguistics.source_text')}
+                                            className="w-full h-48 bg-black/40 border border-white/10 rounded-[2.5rem] p-8 text-lg font-bold text-white focus:border-primary/50 outline-none transition-all placeholder-slate-800 resize-none"
+                                        />
+                                    </div>
+                                    <div className="space-y-6">
+                                        <label className="text-[10px] font-black uppercase tracking-[0.4em] text-primary opacity-60">Salida Visual</label>
+                                        <div className="h-48 rounded-[2.5rem] bg-black/60 border border-white/5 flex items-center justify-center relative overflow-hidden group shadow-inner">
+                                            <span className="text-7xl font-serif text-white opacity-40 group-hover:opacity-100 transition-all duration-1000 whitespace-pre drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]">
+                                                {renderOutput || 'α β δ γ'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </GlassPanel>
+                        </section>
                     </div>
                 ) : (
                     /* Biblia Léxica View */
@@ -738,201 +1031,184 @@ const LinguisticsHub = ({ onOpenEditor }) => {
                                 </div>
                             </section>
                         </div>
-                    </section >
+                    </section>
                 )}
-            </main >
+            </main>
 
-            {
-                createPortal(
-                    <div className="h-full flex flex-col bg-background relative overflow-hidden" >
-                        <div className="flex border-b border-white/5 bg-surface-dark/50 p-2 gap-1">
-                            {['NOTES', 'MANAGEMENT', 'BIBLIA'].map(tab => (
-                                <button
-                                    key={tab}
-                                    onClick={() => {
-                                        setSidebarTab(tab);
-                                        if (tab === 'BIBLIA') setHubMode('biblia');
-                                        else setHubMode('linguistics');
-                                    }}
-                                    className={`flex-1 py-2 text-[9px] font-black uppercase tracking-widest transition-all rounded-lg ${sidebarTab === tab ? 'bg-primary text-white shadow-lg' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
-                                >
-                                    {tab === 'NOTES' ? 'NOTAS' : tab === 'MANAGEMENT' ? 'HERRAMIENTAS' : 'BIBLIA'}
-                                </button>
-                            ))}
-                        </div>
+            {createPortal(
+                <div className="h-full flex flex-col bg-background relative overflow-hidden" >
+                    {editorMode ? (
+                        <UniversalCanvasProperties
+                            tool={tool}
+                            setTool={setTool}
+                            strokeWidth={strokeWidth}
+                            setStrokeWidth={setStrokeWidth}
+                            color={color}
+                            setColor={setColor}
+                            opacity={opacity}
+                            setOpacity={setOpacity}
+                            lineCap={lineCap}
+                            setLineCap={setLineCap}
+                            strokeStyle={strokeStyle}
+                            setStrokeStyle={setStrokeStyle}
+                            layers={layers}
+                            activeLayerId={activeLayerId}
+                            setActiveLayerId={setActiveLayerId}
+                            onToggleLayerVisibility={(id) => setLayers(prev => prev.map(l => l.id === id ? { ...l, visible: !l.visible } : l))}
+                            onToggleLayerLock={(id) => setLayers(prev => prev.map(l => l.id === id ? { ...l, locked: !l.locked } : l))}
+                            onAddLayer={() => {
+                                const newId = crypto.randomUUID();
+                                setLayers(prev => [{ id: newId, name: `Capa ${prev.length + 1}`, visible: true, locked: false, shapes: [] }, ...prev]);
+                                setActiveLayerId(newId);
+                            }}
+                            onDeleteLayer={(id) => {
+                                if (layers.length === 1) return; // Prevent deleting last layer
+                                setLayers(prev => {
+                                    const filtered = prev.filter(l => l.id !== id);
+                                    if (activeLayerId === id) setActiveLayerId(filtered[0].id);
+                                    return filtered;
+                                });
+                            }}
+                            activeShape={selectedShapeId && !Array.isArray(selectedShapeId) ? layers.flatMap(l => l.shapes).find(s => s.id === selectedShapeId) : null}
+                            onUndo={undo}
+                            onRedo={redo}
+                            onClear={() => {
+                                setLayers(prev => prev.map(l => l.id === activeLayerId ? { ...l, shapes: [] } : l));
+                                addLog('Capa limpiada', 'info');
+                            }}
+                        />
+                    ) : (
+                        <>
+                            <div className="flex border-b border-white/5 bg-surface-dark/50 p-2 gap-1">
+                                {['NOTES', 'MANAGEMENT'].map(tab => (
+                                    <button
+                                        key={tab}
+                                        onClick={() => setSidebarTab(tab)}
+                                        className={`flex-1 py-2 text-[9px] font-black uppercase tracking-widest transition-all rounded-lg ${sidebarTab === tab ? 'bg-primary text-white shadow-lg' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
+                                    >
+                                        {tab === 'NOTES' ? 'NOTAS' : 'HERRAMIENTAS'}
+                                    </button>
+                                ))}
+                            </div>
 
-                        <div className="flex-1 overflow-y-auto no-scrollbar custom-scrollbar p-0">
-                            {sidebarTab === 'NOTES' && (
-                                <div className="h-full">
-                                    <GlobalNotes projectName={projectParam} />
-                                </div>
-                            )}
+                            <div className="flex-1 overflow-y-auto no-scrollbar custom-scrollbar p-0">
+                                {sidebarTab === 'NOTES' && (
+                                    <div className="h-full">
+                                        <GlobalNotes projectName={projectParam} />
+                                    </div>
+                                )}
 
-                            {sidebarTab === 'MANAGEMENT' && (
-                                <div className="p-4 space-y-8 pb-24 animate-in fade-in slide-in-from-right-4 duration-500">
-                                    <section className="space-y-4">
-                                        <div className="flex justify-between items-center px-1">
-                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-text-muted">Sistemas de Escritura</h4>
-                                            <span className="material-symbols-outlined text-text-muted text-sm">history_edu</span>
-                                        </div>
-                                        <div className="space-y-2">
-                                            {Object.values(WRITING_SYSTEM_TYPES).map(sys => (
-                                                <button
-                                                    key={sys.id}
-                                                    onClick={() => setWritingSystem(sys.id)}
-                                                    className={`w-full p-3 rounded-xl border text-left transition-all group ${writingSystem === sys.id ? 'bg-primary/10 border-primary/40' : 'bg-surface-dark border-white/5 hover:border-white/10'}`}
-                                                >
-                                                    <div className="flex justify-between items-center mb-1">
-                                                        <span className={`text-[10px] font-black uppercase tracking-widest group-hover:text-primary transition-colors ${writingSystem === sys.id ? 'text-primary' : 'text-text-muted'}`}>{sys.name}</span>
-                                                        {writingSystem === sys.id && <div className="size-1.5 rounded-full bg-primary animate-pulse"></div>}
-                                                    </div>
-                                                    <p className="text-[9px] text-slate-500 leading-tight">{sys.desc}</p>
+                                {sidebarTab === 'MANAGEMENT' && (
+                                    <div className="p-4 space-y-8 pb-24 animate-in fade-in slide-in-from-right-4 duration-500">
+                                        <section className="space-y-4">
+                                            <div className="flex justify-between items-center px-1">
+                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-text-muted">Sistemas de Escritura</h4>
+                                                <span className="material-symbols-outlined text-text-muted text-sm">history_edu</span>
+                                            </div>
+                                            <div className="space-y-2">
+                                                {Object.values(WRITING_SYSTEM_TYPES).map(sys => (
+                                                    <button
+                                                        key={sys.id}
+                                                        onClick={() => setWritingSystem(sys.id)}
+                                                        className={`w-full p-3 rounded-xl border text-left transition-all group ${writingSystem === sys.id ? 'bg-primary/10 border-primary/40' : 'bg-surface-dark border-white/5 hover:border-white/10'}`}
+                                                    >
+                                                        <div className="flex justify-between items-center mb-1">
+                                                            <span className={`text-[10px] font-black uppercase tracking-widest group-hover:text-primary transition-colors ${writingSystem === sys.id ? 'text-primary' : 'text-text-muted'}`}>{sys.name}</span>
+                                                            {writingSystem === sys.id && <div className="size-1.5 rounded-full bg-primary animate-pulse"></div>}
+                                                        </div>
+                                                        <p className="text-[9px] text-slate-500 leading-tight">{sys.desc}</p>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </section>
+
+                                        <section className="space-y-4">
+                                            <div className="flex justify-between items-center">
+                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-text-muted">{t('linguistics.writing_system')}</h4>
+                                                <button onClick={handleCreateNewGlyph} className="text-primary hover:text-white transition-colors" title="Crear Nuevo Glifo">
+                                                    <span className="material-symbols-outlined text-lg">add_circle</span>
                                                 </button>
-                                            ))}
-                                        </div>
-                                    </section>
-
-                                    <section className="space-y-4">
-                                        <div className="flex justify-between items-center">
-                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-text-muted">{t('linguistics.writing_system')}</h4>
-                                            <button onClick={handleCreateNewGlyph} className="text-primary hover:text-white transition-colors" title="Crear Nuevo Glifo">
-                                                <span className="material-symbols-outlined text-lg">add_circle</span>
-                                            </button>
-                                        </div>
-                                        <div className="p-4 bg-surface-dark border border-white/5 rounded-2xl">
-                                            <div className="grid grid-cols-4 gap-2">
-                                                {foundryGlyphs.slice(0, 12).map(g => (
-                                                    <div
-                                                        key={g.id}
-                                                        onClick={() => onOpenEditor(g)}
-                                                        className="aspect-square rounded-lg bg-black/40 border border-white/5 flex items-center justify-center text-xl font-serif text-primary hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer"
-                                                        title={g.lema}
-                                                    >
-                                                        <span>{g.lema}</span>
-                                                    </div>
-                                                ))}
-                                                {foundryGlyphs.length === 0 && (
-                                                    <div className="col-span-4 py-8 flex items-center justify-center opacity-20">
-                                                        <span className="text-[8px] font-black uppercase font-mono">Sin Glifos</span>
-                                                    </div>
-                                                )}
                                             </div>
-                                            <div className="mt-3 text-center">
-                                                <button onClick={() => setCenterView('lexicon')} className="text-[9px] font-bold text-primary hover:underline uppercase tracking-wide">Ver todos ({foundryGlyphs.length})</button>
-                                            </div>
-                                        </div>
-                                    </section>
-
-                                    <section className="space-y-4">
-                                        <div className="flex justify-between items-center">
-                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-text-muted">{t('linguistics.grammar')}</h4>
-                                            <button onClick={handleAddRule} className="text-primary hover:text-white transition-colors">
-                                                <span className="material-symbols-outlined text-lg">add_circle</span>
-                                            </button>
-                                        </div>
-                                        <div className="space-y-2">
-                                            {rules.map(rule => (
-                                                <div key={rule.id} className="p-3 bg-surface-dark border border-white/5 rounded-xl hover:border-primary/30 transition-all cursor-pointer group">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <div className={`size-1.5 rounded-full ${rule.status === 'complete' ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
-                                                        <span className="text-[10px] font-bold text-white group-hover:text-primary transition-colors">{rule.titulo}</span>
-                                                    </div>
-                                                    <p className="text-[9px] text-slate-500 leading-tight line-clamp-2">{rule.descripcion}</p>
+                                            <div className="p-4 bg-surface-dark border border-white/5 rounded-2xl">
+                                                <div className="grid grid-cols-4 gap-2">
+                                                    {foundryGlyphs.slice(0, 12).map(g => (
+                                                        <div
+                                                            key={g.id}
+                                                            onClick={() => handleOpenEditor(g)}
+                                                            className="aspect-square rounded-lg bg-black/40 border border-white/5 flex items-center justify-center text-xl font-serif text-primary hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer"
+                                                            title={g.lema}
+                                                        >
+                                                            <span>{g.lema}</span>
+                                                        </div>
+                                                    ))}
+                                                    {foundryGlyphs.length === 0 && (
+                                                        <div className="col-span-4 py-8 flex items-center justify-center opacity-20">
+                                                            <span className="text-[8px] font-black uppercase font-mono">Sin Glifos</span>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            ))}
-                                            {rules.length === 0 && <p className="text-[9px] text-slate-600 italic px-2">No hay reglas definidas.</p>}
-                                        </div>
-                                    </section>
-                                </div>
-                            )}
-
-                            {sidebarTab === 'BIBLIA' && (
-                                <div className="p-6 space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-                                    <div className="space-y-1 text-primary">
-                                        <h4 className="text-[10px] font-black uppercase tracking-[0.3em]">Configuración</h4>
-                                        <p className="text-[9px] opacity-60 font-bold">Parámetros de Fuente</p>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <GlassPanel className="p-4 border-primary/20 bg-primary/5 space-y-4 rounded-xl">
-                                            <div className="space-y-2">
-                                                <label className="text-[8px] font-black uppercase tracking-widest text-primary/70 block">Nombre de Fuente</label>
-                                                <input
-                                                    type="text"
-                                                    value={fontName}
-                                                    onChange={(e) => setFontName(e.target.value)}
-                                                    className="w-full bg-black/40 border border-primary/30 px-3 py-2 text-[10px] font-black text-primary outline-none tracking-widest uppercase rounded-lg focus:ring-1 focus:ring-primary/50"
-                                                />
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <label className="text-[8px] font-black uppercase tracking-widest text-primary/70 block">Autor</label>
-                                                <input
-                                                    type="text"
-                                                    value={fontAuthor}
-                                                    onChange={(e) => setFontAuthor(e.target.value)}
-                                                    placeholder="ARCHITECT_ID"
-                                                    className="w-full bg-black/40 border border-primary/30 px-3 py-2 text-[10px] font-black text-primary outline-none tracking-widest uppercase rounded-lg"
-                                                />
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <label className="text-[8px] font-black uppercase tracking-widest text-primary/70 block">Formato</label>
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    <button
-                                                        onClick={() => { setFontFormat('TTF'); addLog('Formato cambiado a TTF'); }}
-                                                        className={`py-2 border text-[9px] font-black tracking-widest transition-all rounded-lg ${fontFormat === 'TTF' ? 'border-primary bg-primary/10 text-primary shadow-sm' : 'border-primary/20 text-primary/40 hover:border-primary/40'}`}
-                                                    >
-                                                        .TTF
-                                                    </button>
-                                                    <button
-                                                        onClick={() => { setFontFormat('OTF'); addLog('Formato cambiado a OTF'); }}
-                                                        className={`py-2 border text-[9px] font-black tracking-widest transition-all rounded-lg ${fontFormat === 'OTF' ? 'border-primary bg-primary/10 text-primary shadow-sm' : 'border-primary/20 text-primary/40 hover:border-primary/40'}`}
-                                                    >
-                                                        .OTF
-                                                    </button>
+                                                <div className="mt-3 text-center">
+                                                    <button onClick={() => setCenterView('lexicon')} className="text-[9px] font-bold text-primary hover:underline uppercase tracking-wide">Ver todos ({foundryGlyphs.length})</button>
                                                 </div>
                                             </div>
+                                        </section>
 
-                                            <div className="space-y-2 pt-2 border-t border-primary/10">
-                                                <Toggle label="Ligaduras" active={fontLigatures} onToggle={() => { setFontLigatures(!fontLigatures); addLog(`Ligaduras ${!fontLigatures ? 'Activadas' : 'Desactivadas'}`); }} />
-                                                <Toggle label="Interletraje" active={fontKerning} onToggle={() => { setFontKerning(!fontKerning); addLog(`Interletraje ${!fontKerning ? 'Activado' : 'Desactivado'}`); }} />
+                                        <section className="space-y-4">
+                                            <div className="flex justify-between items-center">
+                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-text-muted">{t('linguistics.grammar')}</h4>
+                                                <button onClick={handleAddRule} className="text-primary hover:text-white transition-colors">
+                                                    <span className="material-symbols-outlined text-lg">add_circle</span>
+                                                </button>
                                             </div>
-
-                                            <button
-                                                onClick={handleExportFont}
-                                                className="w-full py-3 bg-primary text-white font-black uppercase text-[9px] tracking-widest rounded-lg flex items-center justify-center gap-2 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 transition-all mt-4"
-                                            >
-                                                <span className="material-symbols-outlined text-sm">download</span>
-                                                Exportar Recursos
-                                            </button>
-                                        </GlassPanel>
-
-                                        <div className="p-4 rounded-xl border border-white/5 bg-black/20 space-y-3 font-mono text-[7px]">
-                                            <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-widest text-text-muted font-sans">
-                                                <span>Registro</span>
-                                                <span className="size-1.5 bg-primary rounded-full animate-pulse"></span>
-                                            </div>
-                                            <div className="space-y-1 opacity-60">
-                                                {logs.map((log, idx) => (
-                                                    <p key={idx} className={log.type === 'success' ? 'text-emerald-400' : 'text-primary'}>
-                                                        [{new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}] {log.msg}
-                                                    </p>
+                                            <div className="space-y-2">
+                                                {rules.map(rule => (
+                                                    <div key={rule.id} className="p-3 bg-surface-dark border border-white/5 rounded-xl hover:border-primary/30 transition-all cursor-pointer group">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <div className={`size-1.5 rounded-full ${rule.status === 'complete' ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
+                                                            <span className="text-[10px] font-bold text-white group-hover:text-primary transition-colors">{rule.titulo}</span>
+                                                        </div>
+                                                        <p className="text-[9px] text-slate-500 leading-tight line-clamp-2">{rule.descripcion}</p>
+                                                    </div>
                                                 ))}
+                                                {rules.length === 0 && <p className="text-[9px] text-slate-600 italic px-2">No hay reglas definidas.</p>}
                                             </div>
-                                        </div>
+                                        </section>
                                     </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>,
-                    document.getElementById('architect-right-panel-portal')
-                )}
-        </div >
+                                )}
+                            </div>
+                        </>
+                    )}
+                </div>,
+                document.getElementById('architect-right-panel-portal')
+            )}
+
+            {/* Modals */}
+            <ConfirmModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={confirmDeleteWord}
+                title="Eliminar Palabra"
+                message="¿Estás seguro de que quieres eliminar esta palabra? Esta acción no se puede deshacer."
+                confirmText="Eliminar"
+                cancelText="Cancelar"
+            />
+
+            {isMeaningModalOpen && (
+                <MeaningEditorModal
+                    word={editingWord}
+                    onClose={() => setIsMeaningModalOpen(false)}
+                    onSave={handleSaveMeaning}
+                    onEditSymbol={(word) => {
+                        setIsMeaningModalOpen(false);
+                        handleOpenEditor(word);
+                    }}
+                />
+            )}
+        </div>
     );
 };
 
-const LexiconItem = ({ word, type, gender, def, onEditSymbol }) => (
+const LexiconItem = ({ word, type, gender, def, onEdit, onDelete }) => (
     <div className="p-4 rounded-2xl border border-transparent hover:bg-white/5 hover:border-white/5 transition-all group cursor-pointer relative">
         <div className="flex items-center gap-3 mb-1">
             <h4 className="text-xl font-manrope font-black text-white group-hover:text-primary transition-colors">{word}</h4>
@@ -941,16 +1217,22 @@ const LexiconItem = ({ word, type, gender, def, onEditSymbol }) => (
                 {gender && <span className="text-[9px] font-bold text-slate-700 uppercase">({gender})</span>}
             </div>
         </div>
-        <p className="text-sm text-slate-400 leading-relaxed font-manrope">{def}</p>
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-2">
+        <p className="text-sm text-slate-400 leading-relaxed font-manrope line-clamp-2 pr-16">{def}</p>
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1">
             <button
-                onClick={(e) => { e.stopPropagation(); onEditSymbol?.(); }}
-                className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-primary hover:text-white"
-                title="Edit Symbol"
+                onClick={(e) => { e.stopPropagation(); onEdit?.(); }}
+                className="opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-white/5 hover:bg-white/10 rounded-xl text-primary hover:text-white"
+                title="Editar Significado"
             >
-                <span className="material-symbols-outlined">draw</span>
+                <span className="material-symbols-outlined text-lg">edit</span>
             </button>
-            <button className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-slate-600 hover:text-white"><span className="material-symbols-outlined">edit_note</span></button>
+            <button
+                onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
+                className="opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-white/5 hover:bg-red-400/20 rounded-xl text-slate-600 hover:text-red-400"
+                title="Eliminar Palabra"
+            >
+                <span className="material-symbols-outlined text-lg">delete</span>
+            </button>
         </div>
     </div>
 );
@@ -996,5 +1278,98 @@ const RuleCard = ({ title, status, statusColor, desc, tags }) => (
         </div>
     </GlassPanel>
 );
+
+// --- SUB-COMPONENTS ---
+
+const MeaningEditorModal = ({ word, onClose, onSave, onEditSymbol }) => {
+    const [data, setData] = useState({
+        lema: word?.lema || '',
+        definicion: word?.definicion || word?.traduccionEspanol || '',
+        categoriaGramatical: word?.categoriaGramatical || 'Noun',
+        notas: word?.notas || '',
+        isNew: word?.isNew
+    });
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="w-full max-w-lg bg-[#0A0A0F] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-500">
+                <div className="p-8 border-b border-white/5 bg-white/[0.02] flex justify-between items-center">
+                    <div className="flex flex-col">
+                        <h2 className="text-xl font-black text-white italic tracking-tight">Editar Significado</h2>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Atributos del Lema</p>
+                    </div>
+                    <button onClick={onClose} className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-500 hover:text-white transition-all">
+                        <span className="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+
+                <div className="p-8 space-y-6">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-600 ml-4">Palabra / Lema</label>
+                        <input
+                            type="text"
+                            value={data.lema}
+                            onChange={e => setData(prev => ({ ...prev, lema: e.target.value }))}
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm font-bold focus:border-primary/40 outline-none transition-all"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-600 ml-4">Categoría</label>
+                            <select
+                                value={data.categoriaGramatical}
+                                onChange={e => setData(prev => ({ ...prev, categoriaGramatical: e.target.value }))}
+                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-xs font-bold focus:border-primary/40 outline-none transition-all appearance-none"
+                            >
+                                <option value="Noun">Sustantivo</option>
+                                <option value="Verb">Verbo</option>
+                                <option value="Adj">Adjetivo</option>
+                                <option value="Adv">Adverbio</option>
+                                <option value="Conj">Conjunción</option>
+                                <option value="GLYPH">Glifo / Símbolo</option>
+                                <option value="GLYFO">Glifo / Símbolo (Alt)</option>
+                                <option value="GLIFO">Glifo / Símbolo (ES)</option>
+                            </select>
+                        </div>
+                        <div className="flex items-end pb-1">
+                            <button
+                                onClick={() => onEditSymbol(word)}
+                                className="w-full h-[52px] rounded-2xl border border-primary/20 bg-primary/5 hover:bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                            >
+                                <span className="material-symbols-outlined text-sm">draw</span>
+                                Editar Símbolo
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-600 ml-4">Definición / Significado</label>
+                        <textarea
+                            value={data.definicion}
+                            onChange={e => setData(prev => ({ ...prev, definicion: e.target.value }))}
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm font-bold focus:border-primary/40 outline-none transition-all h-24 resize-none"
+                        />
+                    </div>
+                </div>
+
+                <div className="p-8 bg-white/[0.02] border-t border-white/5 flex gap-4">
+                    <button
+                        onClick={onClose}
+                        className="flex-1 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-all"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        onClick={() => onSave(data)}
+                        className="flex-1 py-4 rounded-2xl bg-primary text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 transition-all hover:scale-105"
+                    >
+                        Guardar Cambios
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export default LinguisticsHub;

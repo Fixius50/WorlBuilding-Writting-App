@@ -1,8 +1,8 @@
 import { ReactRenderer } from '@tiptap/react'
 import tippy from 'tippy.js'
 
-import MentionList from './MentionList'
-import api from '../../../js/services/api' // Fixed path
+import MentionList from '../jsx/components/editor/MentionList'
+import api from './services/api' // Path relative to /js/
 
 export default {
     items: async ({ query }) => {

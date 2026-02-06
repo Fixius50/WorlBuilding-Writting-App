@@ -1,46 +1,18 @@
-# Roadmap y Estado del Proyecto (03)
+# Roadmap Vivo
 
-Registro vivo de tareas, hitos completados y deuda técnica.
+## Estado Actual
 
-## 🔴 Prioridad Inmediata (Next Steps)
+- **Fase**: Consolidación de Herramientas de Worldbuilding.
+- **Hito Reciente**: Unificación del motor de dibujo (`UniversalCanvas`) y eliminación de código legado.
 
-1. **Refinamiento Editor de Mapas**:
-    * [x] **Persistencia**: Verificar que las capas complejas se guardan correctamente en `json_attributes`. (Verificado por Test `MapPersistenceTest`)
+## Próximos Pasos (Prioridad Alta)
 
----
+- [ ] **Validación de UniversalCanvas**: Confirmar que todas las herramientas (pincel, líneas, formas) funcionan en el nuevo componente.
+- [ ] **Integración de Capas**: Asegurar que la gestión de capas en el panel de propiedades afecte al lienzo correctamente.
+- [ ] **Persistencia**: Verificar que los glifos creados se guarden y carguen correctamente desde el backend.
 
-## 🟢 Hitos Completados (Histórico)
+## Backlog Técnico
 
-### Febrero 2026 - Sprint de Calidad
-
-* [x] **Map Editor Fix**: Corregido bug de selección/deselección. El fondo ahora actúa como zona neutra.
-* [x] **UI Check**: Verificado `ProjectView.jsx` para error `t is not defined`. No reproducible en código actual.
-* [x] **Doc Refactor**: Separación de estrategia en documentos técnicos, de diseño y roadmap (`00` a `04`).
-* [x] **Linguistics Hub & Rune Foundry v2.0**: Implementada automatización total de glifos, motor de fuentes TTF y almacenamiento binario.
-
-### Febrero 2026 - Análisis de Arquitectura
-
-* [x] **Core Upgrade**: Confirmado Spring Boot 4.0.2.
-* [x] **Graph Engine**: Implementado `GeneralGraphView.jsx` con Cytoscape.js.
-* [x] **Metadata Real**: `ProjectDiscoveryService` lee títulos e imágenes reales de los archivos SQLite (Adios Mocks).
-* [x] **Map Editor Base**: Implementado con Konva y almacenamiento Backend.
-
-### Enero 2026 - Estabilidad
-
-* [x] **LazyInitializationFix**: Solucionado error de carga perezosa con hidratación profunda en `WorldBibleService`.
-* [x] **Navegación Robusta**: Redirección correcta tras guardar entidades nuevas.
-* [x] **Backup V2**: Sistema de exportación ZIP limpio (solo `.db`).
-
----
-
-## Plan Maestro de Migración (Legacy References)
-
-### Deuda Técnica Resuelta
-
-* **Flyway**: Implementado orquestador manual para Multi-Tenant SQLite.
-* **JSON Attributes**: Columna añadida a `EntidadGenerica` para flexibilidad futura sin migraciones SQL constantes.
-
-### Futuras Expansiones (Icebox)
-
-* **Electron Desktop App**: Empaquetar todo en un ejecutable único.
-* **Sincronización Cloud**: Adaptador para PostgreSQL/Supabase.
+- [ ] Refactorizar `MapEditor` para usar `UniversalCanvas` (a futuro).
+- [ ] Implementar sistema de "Snapping" o guías en el lienzo.
+- [ ] Mejorar el rendimiento del renderizado con muchos objetos en Konva.

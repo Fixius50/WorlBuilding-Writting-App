@@ -3,7 +3,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import Mention from '@tiptap/extension-mention'
 import React, { useEffect } from 'react'
-import suggestion from './suggestion' // We will create this next
+import suggestion from '../../../js/suggestion'
 
 const ZenEditor = ({ content, onUpdate, editable = true, paperMode = false }) => {
   // Load local settings for typography

@@ -71,7 +71,31 @@ public class ConlangController {
         if (data.containsKey("svgPathData")) {
             p.setSvgPathData(data.get("svgPathData"));
         }
+        if (data.containsKey("rawEditorData")) {
+            p.setRawEditorData(data.get("rawEditorData"));
+        }
         return palabraRepository.save(p);
+    }
+
+    @PutMapping("/{id}/palabra/{palabraId}")
+    public Palabra actualizarPalabra(@PathVariable Long id, @PathVariable Long palabraId,
+            @RequestBody Palabra palabra) {
+        Palabra p = palabraRepository.findById(palabraId).orElseThrow();
+        p.setLema(palabra.getLema());
+        p.setDefinicion(palabra.getDefinicion());
+        p.setCategoriaGramatical(palabra.getCategoriaGramatical());
+        p.setNotas(palabra.getNotas());
+        if (palabra.getSvgPathData() != null)
+            p.setSvgPathData(palabra.getSvgPathData());
+        if (palabra.getRawEditorData() != null)
+            p.setRawEditorData(palabra.getRawEditorData());
+        return palabraRepository.save(p);
+    }
+
+    @DeleteMapping("/{id}/palabra/{palabraId}")
+    public ResponseEntity<?> eliminarPalabra(@PathVariable Long id, @PathVariable Long palabraId) {
+        palabraRepository.deleteById(palabraId);
+        return ResponseEntity.ok(Map.of("success", true));
     }
 
     // --- Grammar Rules ---

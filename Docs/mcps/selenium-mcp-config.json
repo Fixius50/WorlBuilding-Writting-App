@@ -1,0 +1,52 @@
+{
+    "mcpServers": {
+        "selenium": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-selenium"
+            ],
+            "env": {
+                "SELENIUM_BROWSER": "chrome",
+                "SELENIUM_HEADLESS": "false"
+            },
+            "description": "Selenium MCP for traditional browser automation",
+            "capabilities": [
+                "navigate",
+                "findElement",
+                "click",
+                "sendKeys",
+                "screenshot",
+                "executeScript"
+            ],
+            "e2eTestFlows": [
+                {
+                    "name": "Complete Lexicon Workflow",
+                    "steps": [
+                        "Login/Select workspace",
+                        "Navigate to Linguistics",
+                        "Create new conlang",
+                        "Add word to lexicon",
+                        "Open glyph editor",
+                        "Draw and save glyph",
+                        "Verify word appears with glyph",
+                        "Edit word definition",
+                        "Delete word",
+                        "Verify deletion"
+                    ]
+                },
+                {
+                    "name": "Backend Restart Flow",
+                    "steps": [
+                        "Navigate to workspace selector",
+                        "Click 'Restart Backend' button",
+                        "Wait for modal to appear",
+                        "Verify progress bar updates",
+                        "Wait for completion message",
+                        "Verify backend is responsive"
+                    ]
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,48 @@
+{
+    "mcpServers": {
+        "github": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-github"
+            ],
+            "env": {
+                "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+            },
+            "description": "GitHub MCP for repository management and issue tracking",
+            "capabilities": [
+                "create_issue",
+                "create_pull_request",
+                "list_issues",
+                "get_file_contents",
+                "push_files",
+                "search_repositories"
+            ],
+            "automationScenarios": [
+                {
+                    "name": "Auto-create bug reports",
+                    "trigger": "Test failure detected",
+                    "action": "Create GitHub issue with test logs and stack trace"
+                },
+                {
+                    "name": "Track test coverage",
+                    "trigger": "After test run",
+                    "action": "Update README with test coverage badge"
+                }
+            ],
+            "repository": {
+                "owner": "YOUR_GITHUB_USERNAME",
+                "repo": "WorldbuildingApp",
+                "branch": "main"
+            }
+        }
+    },
+    "setup": {
+        "instructions": [
+            "1. Create a GitHub Personal Access Token at https://github.com/settings/tokens",
+            "2. Grant permissions: repo, workflow, write:packages",
+            "3. Set environment variable: GITHUB_TOKEN=your_token_here",
+            "4. Or create .env file in project root with GITHUB_TOKEN"
+        ]
+    }
+}

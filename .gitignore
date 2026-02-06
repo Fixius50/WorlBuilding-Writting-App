@@ -51,3 +51,9 @@ data/*
 Docs/Referencias_visuales/
 .github
 src/main/resources/data/*.db
+
+### Logs ###
+Docs/logs/
+*.log
+*.txt
+restart.flag
