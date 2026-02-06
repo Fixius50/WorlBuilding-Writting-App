@@ -132,6 +132,7 @@ const GeneralGraphView = () => {
             name: 'cose',
             animate: true,
             padding: 50,
+            fit: true,
             nodeOverlap: 20,
             componentSpacing: 100,
         });

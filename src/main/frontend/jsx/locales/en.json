@@ -64,7 +64,10 @@
         "placeholder_title": "The Chronicles of the Void...",
         "create_and_open": "Create and Open",
         "expansion": "Library Expansion",
-        "delete_confirm": "Are you sure you want to delete this archivador? All its pages will be lost."
+        "delete_confirm": "Are you sure you want to delete this archivador? All its pages will be lost.",
+        "chapter": "Chapter",
+        "page": "Page",
+        "of": "of"
     },
     "atlas": {
         "grid_system": "Grid System",

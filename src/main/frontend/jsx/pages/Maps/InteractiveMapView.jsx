@@ -19,7 +19,10 @@ const InteractiveMapView = ({ map }) => {
         try { legacyData = JSON.parse(map.descripcion); } catch (e) { }
     }
 
-    const mapImage = mapAttributes.bgImage || legacyData.bgImage || map?.iconUrl || null;
+    let mapImage = mapAttributes.bgImage || legacyData.bgImage || map?.iconUrl || null;
+    if (mapImage && (mapImage.includes('duckdns') || mapImage.includes('nopreview'))) {
+        mapImage = null;
+    }
 
     // Get markers from attributes
     const markers = mapAttributes.markers || [];

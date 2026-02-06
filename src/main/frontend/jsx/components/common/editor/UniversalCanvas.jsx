@@ -25,8 +25,17 @@ const UniversalCanvas = ({
         if (tool === 'select') {
             const clickedOnEmpty = e.target === stage;
             if (clickedOnEmpty) {
+                // Clicked on background: Clear selection and start box select
                 onSelectShape(null);
                 setSelectionRect({ x1: pos.x, y1: pos.y, x2: pos.x, y2: pos.y });
+            } else {
+                // Clicked on a shape: Select it directy
+                // This replaces the individual onClick handlers to avoid conflict
+                const clickedShape = e.target;
+                if (clickedShape.name() === 'shape') {
+                    // If shift is pressed could handle multi-select here, but for now simple select
+                    onSelectShape(clickedShape.id());
+                }
             }
             return;
         }
@@ -160,6 +169,7 @@ const UniversalCanvas = ({
                                                 {...commonProps}
                                                 lineCap={shape.lineCap || 'round'}
                                                 lineJoin={shape.lineJoin || 'round'}
+                                                tension={shape.tension || 0}
                                             />
                                         )}
                                         {shape.type === 'path' && (

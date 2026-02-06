@@ -33,8 +33,11 @@ const MapSelectionModal = ({ maps, onSelect, onCreateNew, onClose }) => {
 
                         {/* Existing Maps */}
                         {maps.map(map => {
-                            // Get map preview image
-                            const previewImage = map.attributes?.snapshotUrl || map.attributes?.bgImage || map.iconUrl;
+                            // Get map preview image (Sanitize DuckDNS or broken placeholders)
+                            let previewImage = map.attributes?.snapshotUrl || map.attributes?.bgImage || map.iconUrl;
+                            if (previewImage && (previewImage.includes('duckdns') || previewImage.includes('nopreview'))) {
+                                previewImage = null;
+                            }
 
                             return (
                                 <div
@@ -42,7 +45,7 @@ const MapSelectionModal = ({ maps, onSelect, onCreateNew, onClose }) => {
                                     onClick={() => onSelect(map)}
                                     className="group p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/50 hover:bg-white/10 transition-all cursor-pointer space-y-3"
                                 >
-                                    <div className="aspect-video rounded-xl bg-surface-light border border-white/5 flex items-center justify-center overflow-hidden">
+                                    <div className={`aspect-video rounded-xl border border-white/5 flex items-center justify-center overflow-hidden relative ${!previewImage ? 'bg-gradient-to-br from-slate-800 to-black' : 'bg-surface-light'}`}>
                                         {previewImage ? (
                                             <img
                                                 src={previewImage}
@@ -50,7 +53,10 @@ const MapSelectionModal = ({ maps, onSelect, onCreateNew, onClose }) => {
                                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                             />
                                         ) : (
-                                            <span className="material-symbols-outlined text-4xl opacity-20 group-hover:opacity-40 transition-opacity">image</span>
+                                            <>
+                                                <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+                                                <span className="material-symbols-outlined text-4xl opacity-20 group-hover:opacity-40 transition-opacity text-primary">map</span>
+                                            </>
                                         )}
                                     </div>
                                     <div>

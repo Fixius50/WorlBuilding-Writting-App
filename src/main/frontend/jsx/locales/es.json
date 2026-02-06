@@ -64,7 +64,10 @@
         "placeholder_title": "Las Crónicas del Vacío...",
         "create_and_open": "Crear y Abrir",
         "expansion": "Expansión de la Biblioteca",
-        "delete_confirm": "¿Seguro que quieres borrar este archivador? Se perderán todas sus hojas."
+        "delete_confirm": "¿Seguro que quieres borrar este archivador? Se perderán todas sus hojas.",
+        "chapter": "Capítulo",
+        "page": "Página",
+        "of": "de"
     },
     "atlas": {
         "grid_system": "Sistema de Rejilla",

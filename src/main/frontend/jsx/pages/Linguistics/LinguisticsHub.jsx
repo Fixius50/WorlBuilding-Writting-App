@@ -24,6 +24,7 @@ const LinguisticsHub = ({ onOpenEditor }) => {
     const [activeLangId, setActiveLangId] = useState(null);
     const [sourceText, setSourceText] = useState('');
     const [renderOutput, setRenderOutput] = useState('');
+    const [isMounted, setIsMounted] = useState(false);
 
     // New UI States
     // Unified Navigation State
@@ -99,7 +100,9 @@ const LinguisticsHub = ({ onOpenEditor }) => {
     const [future, setFuture] = useState([]);
 
     const pushToHistory = (newLayers) => {
-        setPast(prev => [...prev.slice(-19), layers]); // Keep last 20
+        // Fix: Deep copy to prevent reference mutation in history
+        const snapshot = JSON.parse(JSON.stringify(newLayers));
+        setPast(prev => [...prev.slice(-19), snapshot]); // Keep last 20
         setFuture([]);
     };
 
@@ -134,6 +137,7 @@ const LinguisticsHub = ({ onOpenEditor }) => {
         setRightPanelMode('LINGUISTICS');
         setRightPanelTitle('Lingüística');
         setRightOpen(true);
+        setIsMounted(true);
 
         return () => {
             setRightPanelMode('NOTES');
@@ -170,6 +174,37 @@ const LinguisticsHub = ({ onOpenEditor }) => {
             return newLayers;
         });
     }, [strokeStyle]);
+
+    // --- PROPERTY PROPAGATION LISTENERS ---
+    // Update selected shapes when properties change
+    useEffect(() => {
+        if (!selectedShapeId || (Array.isArray(selectedShapeId) && selectedShapeId.length === 0)) return;
+
+        setLayers(prev => {
+            const newLayers = prev.map(layer => ({
+                ...layer,
+                shapes: layer.shapes.map(shape => {
+                    const isSelected = Array.isArray(selectedShapeId)
+                        ? selectedShapeId.includes(shape.id)
+                        : shape.id === selectedShapeId;
+
+                    if (isSelected) {
+                        return {
+                            ...shape,
+                            stroke: color,
+                            strokeWidth: strokeWidth,
+                            opacity: opacity,
+                            lineCap: lineCap
+                        };
+                    }
+                    return shape;
+                })
+            }));
+            // We don't push to history here to avoid spamming undo stack on slider drag
+            // Optional: Debounce history push or push only on mouse up of slider
+            return newLayers;
+        });
+    }, [color, strokeWidth, opacity, lineCap]);
 
     // --- EDITOR HANDLERS ---
     const handleOpenEditor = (glyph) => {
@@ -231,6 +266,11 @@ const LinguisticsHub = ({ onOpenEditor }) => {
             return;
         }
 
+        // --- SVG GENERATION UPDATE ---
+        // Helper to append shapes to SVG path
+        let svgPath = "";
+
+        // BBox calculation code follows...
         let minX = Infinity, minY = Infinity, maxY = -Infinity, maxX = -Infinity;
         const computeBBox = (shape) => {
             const sx = shape.x || 0;
@@ -271,15 +311,35 @@ const LinguisticsHub = ({ onOpenEditor }) => {
             }))
         }));
 
-        let svgPath = "";
+        // Generate SVG Path for all shapes (Lines, Rects, Circles)
         allShapes.forEach(s => {
+            const ox = (s.x || 0) + offsetX;
+            const oy = (s.y || 0) + offsetY;
+
             if (s.type === 'line' && s.points && s.points.length >= 4) {
-                const ox = (s.x || 0) + offsetX;
-                const oy = (s.y || 0) + offsetY;
+                if (s.globalCompositeOperation === 'destination-out') return; // Skip eraser strokes in SVG
                 svgPath += `M ${s.points[0] + ox} ${s.points[1] + oy} `;
                 for (let i = 2; i < s.points.length; i += 2) {
                     svgPath += `L ${s.points[i] + ox} ${s.points[i + 1] + oy} `;
                 }
+            } else if (s.type === 'rect') {
+                const w = s.width || 0;
+                const h = s.height || 0;
+                // M x y L x+w y L x+w y+h L x y+h Z
+                svgPath += `M ${ox} ${oy} L ${ox + w} ${oy} L ${ox + w} ${oy + h} L ${ox} ${oy + h} Z `;
+            } else if (s.type === 'circle') {
+                const r = s.radius || 0;
+                // Circle using two arcs
+                // M cx cy-r A r r 0 1 0 cx cy+r A r r 0 1 0 cx cy-r
+                // Note: opentype.js might prefer Cubic Beziers, but let's try Arcs first. 
+                // If fails, we might need a polyline approximation or Bezier conversion.
+                // Simple approximation: 4 cubic beziers.
+                const k = 0.5522847498 * r;
+                svgPath += `M ${ox} ${oy - r} 
+                             C ${ox + k} ${oy - r} ${ox + r} ${oy - k} ${ox + r} ${oy} 
+                             C ${ox + r} ${oy + k} ${ox + k} ${oy + r} ${ox} ${oy + r} 
+                             C ${ox - k} ${oy + r} ${ox - r} ${oy + k} ${ox - r} ${oy} 
+                             C ${ox - r} ${oy - k} ${ox - k} ${oy - r} ${ox} ${oy - r} Z `;
             }
         });
 
@@ -368,6 +428,13 @@ const LinguisticsHub = ({ onOpenEditor }) => {
     const handleDrawEnd = (phase, data) => {
         // Handle drawing logic updates to layers state
         if (phase === 'START') {
+            // LAYER LOCK CHECK:
+            const activeLayer = layers.find(l => l.id === activeLayerId);
+            if (!activeLayer || activeLayer.locked || !activeLayer.visible) {
+                addLog('Capa bloqueada u oculta', 'warning');
+                return;
+            }
+
             // Create new shape in active layer
             const newShape = {
                 id: crypto.randomUUID(),
@@ -377,15 +444,19 @@ const LinguisticsHub = ({ onOpenEditor }) => {
                 opacity: opacity,
                 lineCap: lineCap,
                 lineJoin: 'round',
-                x: (tool === 'brush' || tool === 'line') ? 0 : data.pos.x,
-                y: (tool === 'brush' || tool === 'line') ? 0 : data.pos.y,
+                x: (tool === 'brush' || tool === 'eraser' || tool === 'line') ? 0 : data.pos.x,
+                y: (tool === 'brush' || tool === 'eraser' || tool === 'line') ? 0 : data.pos.y,
             };
 
-            if (tool === 'brush') {
+            if (tool === 'brush' || tool === 'eraser') {
                 newShape.type = 'line';
                 newShape.points = [data.pos.x, data.pos.y, data.pos.x, data.pos.y];
-                if (strokeStyle === 'points') newShape.dash = [2, 10];
-                if (strokeStyle === 'quadratic') newShape.tension = 0.8;
+                if (tool === 'eraser') {
+                    newShape.globalCompositeOperation = 'destination-out';
+                    newShape.strokeWidth = strokeWidth * 2; // Eraser slightly bigger
+                }
+                if (strokeStyle === 'points' && tool !== 'eraser') newShape.dash = [2, 10];
+                if (strokeStyle === 'quadratic' && tool !== 'eraser') newShape.tension = 0.8;
             } else if (tool === 'line') {
                 newShape.type = 'line';
                 newShape.points = [data.pos.x, data.pos.y, data.pos.x, data.pos.y];
@@ -419,7 +490,7 @@ const LinguisticsHub = ({ onOpenEditor }) => {
                     const lastShape = { ...shapes[shapes.length - 1] };
                     if (!lastShape) return l;
 
-                    if (tool === 'brush') {
+                    if (tool === 'brush' || tool === 'eraser') {
                         lastShape.points = [...lastShape.points, data.pos.x, data.pos.y];
                     } else if (tool === 'line') {
                         lastShape.points = [lastShape.points[0], lastShape.points[1], data.pos.x, data.pos.y];
@@ -932,7 +1003,8 @@ const LinguisticsHub = ({ onOpenEditor }) => {
                                         <GlyphSlot
                                             key={g.id || i}
                                             symbol={g.lema}
-                                            keyLabel={g.lema.toUpperCase()}
+                                            svgPath={g.svgPathData}
+                                            keyLabel={g.lema.length === 1 && g.lema.match(/[a-z]/i) ? g.lema.toUpperCase() : ''}
                                             active={false}
                                             onClick={() => handleOpenEditor(g)}
                                         />
@@ -1179,7 +1251,7 @@ const LinguisticsHub = ({ onOpenEditor }) => {
                         </>
                     )}
                 </div>,
-                document.getElementById('architect-right-panel-portal')
+                isMounted && document.getElementById('architect-right-panel-portal') ? document.getElementById('architect-right-panel-portal') : document.body
             )}
 
             {/* Modals */}
@@ -1237,12 +1309,27 @@ const LexiconItem = ({ word, type, gender, def, onEdit, onDelete }) => (
     </div>
 );
 
-const GlyphSlot = ({ symbol, keyLabel, active, onClick }) => (
+const GlyphSlot = ({ symbol, svgPath, keyLabel, active, onClick }) => (
     <div
         onClick={onClick}
-        className={`aspect-square rounded-2xl border transition-all cursor-pointer flex items-center justify-center relative group ${active ? 'bg-[#00E5FF]/20 border-[#00E5FF] shadow-[0_0_20px_rgba(0,229,255,0.3)]' : 'bg-black/40 border-[#00E5FF]/10 hover:border-[#00E5FF]/40'}`}
+        className={`aspect-square rounded-2xl border transition-all cursor-pointer flex items-center justify-center relative group overflow-hidden ${active ? 'bg-[#00E5FF]/20 border-[#00E5FF] shadow-[0_0_20px_rgba(0,229,255,0.3)]' : 'bg-black/40 border-[#00E5FF]/10 hover:border-[#00E5FF]/40'}`}
     >
-        <span className={`text-4xl font-serif ${active || symbol ? 'text-[#00E5FF]' : 'opacity-20 group-hover:opacity-60 text-white'}`}>{symbol || '?'}</span>
+        {svgPath ? (
+            <svg viewBox="0 0 1200 800" className="w-[80%] h-[80%] opacity-80 group-hover:opacity-100 transition-opacity">
+                <path
+                    d={svgPath}
+                    fill="none"
+                    stroke={active ? "#00E5FF" : "white"}
+                    strokeWidth="15"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="group-hover:stroke-[#00E5FF] transition-colors"
+                />
+            </svg>
+        ) : (
+            <span className={`text-4xl font-serif ${active || symbol ? 'text-[#00E5FF]' : 'opacity-20 group-hover:opacity-60 text-white'}`}>{symbol || '?'}</span>
+        )}
+
         {keyLabel && (
             <span className={`absolute top-2 right-3 text-[8px] font-black uppercase ${active ? 'text-[#00E5FF]/80' : 'opacity-20'}`}>{keyLabel}</span>
         )}
