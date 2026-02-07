@@ -123,7 +123,7 @@ const GlobalRightPanel = ({
                     {contextContent ? (
                         contextContent
                     ) : (
-                        <div id="global-right-panel-portal" className="h-full flex flex-col relative">
+                        <div id="global-right-panel-portal" className="h-full flex flex-col relative overflow-y-auto custom-scrollbar">
                             {/* Portal Content will be injected here. If empty, we can show placeholder IF we could detect it.
                                For now, we assume if activeTab is CONTEXT and contextContent is null, the Portal is being used.
                                We can keep the placeholder logic inside the portal injector or just leave empty. 

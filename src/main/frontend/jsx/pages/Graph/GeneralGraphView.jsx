@@ -4,6 +4,7 @@ import cytoscape from 'cytoscape';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import api from '../../../js/services/api';
+import RelationshipManager from '../../components/relationships/RelationshipManager';
 import Avatar from '../../components/common/Avatar';
 import Button from '../../components/common/Button';
 
@@ -191,11 +192,14 @@ const GeneralGraphView = () => {
         }
     };
 
+
+
     const runLayout = () => {
         if (!cyRef.current) return;
         const layout = cyRef.current.layout({
             name: 'cose',
             animate: true,
+            animationDuration: 500,
             padding: 50,
             fit: true,
             nodeOverlap: 20,
@@ -205,6 +209,13 @@ const GeneralGraphView = () => {
     };
 
     useEffect(() => {
+        // Listen for relationship updates from the manager
+        const handleRelUpdate = () => {
+            console.log("Graph: Relationship update detected, reloading...");
+            loadData();
+        };
+        window.addEventListener('relationships-update', handleRelUpdate);
+
         if (cyRef.current) {
             runLayout();
 
@@ -230,6 +241,10 @@ const GeneralGraphView = () => {
                 setIsEditing(false);
             });
         }
+
+        return () => {
+            window.removeEventListener('relationships-update', handleRelUpdate);
+        };
     }, [elements]);
 
     const handleSearch = (query, filter = activeFilter) => {
@@ -273,7 +288,7 @@ const GeneralGraphView = () => {
 
     const renderInspector = () => {
         return (
-            <div className="p-6 flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-500 space-y-8">
+            <div className="p-6 flex flex-col min-h-full animate-in fade-in slide-in-from-right-4 duration-500 space-y-8">
                 {/* Global Controls & Search */}
                 <div className="space-y-4">
                     <div className="flex items-center gap-3">
@@ -381,6 +396,12 @@ const GeneralGraphView = () => {
                         </div>
 
                         {/* Relationships Section - Always visible when node selected */}
+                        {isEditing && (
+                            <div className="pt-4 border-t border-white/5 animate-in fade-in slide-in-from-bottom-4">
+                                <RelationshipManager entityId={selectedNode.id} entityType={selectedNode.category || 'GenericEntity'} />
+                            </div>
+                        )}
+
                         {!isEditing && (
                             <div className="space-y-4">
                                 <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-600 flex items-center gap-2">

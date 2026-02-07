@@ -35,6 +35,7 @@ const RelationshipManager = ({ entityId, entityType }) => {
 
     useEffect(() => {
         if (entityId) {
+            console.log(`[RelationshipManager] Loading for ID: ${entityId} Type: ${entityType}`);
             loadRelationships();
         }
     }, [entityId, entityType]);
@@ -50,10 +51,35 @@ const RelationshipManager = ({ entityId, entityType }) => {
         try {
             // In a real app we would filter on backend, but for Alpha we filter client-side
             const allRels = await api.get('/bd/relacion');
-            const relevant = allRels.filter(r =>
-                (r.nodoOrigenId === parseInt(entityId) && (r.tipoOrigen === entityType || r.tipoOrigen === 'GenericEntity')) ||
-                (r.nodoDestinoId === parseInt(entityId) && (r.tipoDestino === entityType || r.tipoDestino === 'GenericEntity'))
-            );
+            console.log(`[RelationshipManager] Total relationships in DB: ${allRels.length}`);
+
+            const relevant = allRels.filter(r => {
+                const sourceMatch = r.nodoOrigenId === parseInt(entityId);
+                const targetMatch = r.nodoDestinoId === parseInt(entityId);
+
+                // Helper to normalize types for comparison
+                const normalizeType = (t) => {
+                    if (!t) return '';
+                    const lower = t.toLowerCase();
+                    if (lower === 'generic' || lower === 'genericentity') return 'generic';
+                    return lower;
+                };
+
+                const currentType = normalizeType(entityType);
+                const rSourceType = normalizeType(r.tipoOrigen);
+                const rTargetType = normalizeType(r.tipoDestino);
+
+                // Debug matching
+                if (sourceMatch || targetMatch) {
+                    console.log(`[RelationshipManager] Potential match:`, r);
+                    console.log(`   SourceMatch: ${sourceMatch} (Type: ${rSourceType} vs ${currentType})`);
+                    console.log(`   TargetMatch: ${targetMatch} (Type: ${rTargetType} vs ${currentType})`);
+                }
+
+                return (sourceMatch && (rSourceType === currentType || rSourceType === 'generic')) ||
+                    (targetMatch && (rTargetType === currentType || rTargetType === 'generic'));
+            });
+            console.log(`[RelationshipManager] Relevant relationships found: ${relevant.length}`);
 
             // Enrich with details (fetch names)
             const enriched = await Promise.all(relevant.map(async r => {
