@@ -4,7 +4,7 @@
 $appName = "ChronosAtlas"
 $mainJar = "ChronosAtlas.jar"
 $inputDir = "target"
-$outputDir = "dist"
+$outputDir = "dist_v2"
 
 Write-Host "--- Iniciando empaquetado de $appName ---" -ForegroundColor Cyan
 
@@ -36,6 +36,18 @@ Write-Host "Generando imagen de aplicación en $outputDir..." -ForegroundColor Y
     --description "Grimorio Digital para Escritores"
 
 if ($LASTEXITCODE -eq 0) {
+    Write-Host "--- Copiando documentación (Docs/) ---" -ForegroundColor Yellow
+    $docsSrc = "Docs"
+    $docsDest = "$outputDir/$appName/Docs"
+    
+    if (Test-Path $docsSrc) {
+        Copy-Item -Recurse -Force $docsSrc $docsDest
+        Write-Host "Docs copiados a $docsDest" -ForegroundColor Gray
+    }
+    else {
+        Write-Error "No se encontró la carpeta Docs!"
+    }
+
     Write-Host "--- Empaquetado completado con éxito! ---" -ForegroundColor Green
     Write-Host "El ejecutable se encuentra en: $outputDir/$appName/$appName.exe" -ForegroundColor Gray
 }
