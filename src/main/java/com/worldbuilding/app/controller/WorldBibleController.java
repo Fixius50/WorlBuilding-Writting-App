@@ -37,6 +37,8 @@ public class WorldBibleController {
             return null;
         }
 
+        logger.debug(">>> [Controller] Getting project for session attribute: {}", nombreProyecto);
+
         String currentContext = com.worldbuilding.app.config.TenantContext.getCurrentTenant();
         if (!nombreProyecto.equals(currentContext)) {
             com.worldbuilding.app.config.TenantContext.setCurrentTenant(nombreProyecto);
@@ -133,8 +135,11 @@ public class WorldBibleController {
     public ResponseEntity<?> createFolder(@RequestBody Map<String, Object> payload, HttpSession session) {
         Cuaderno proyecto = getProyectoActual(session);
         if (proyecto == null) {
+            logger.error(">>> [createFolder] Failed: No active project in session.");
             return ResponseEntity.status(401).body(Map.of("error", "No active project"));
         }
+        logger.info(">>> [createFolder] Creating folder '{}' in project '{}'", payload.get("nombre"),
+                proyecto.getTitulo());
 
         try {
             String nombre = (String) payload.get("nombre");

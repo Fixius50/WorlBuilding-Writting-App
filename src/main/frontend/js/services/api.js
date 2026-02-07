@@ -17,6 +17,11 @@ const api = {
         });
 
         if (!response.ok) {
+            if (response.status === 401) {
+                console.warn("Session expired or unauthorized. Redirecting to project selection.");
+                window.location.href = '/'; // Force redirect to Project Selection
+                return null;
+            }
             const errorData = await response.json().catch(() => ({}));
             throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
         }

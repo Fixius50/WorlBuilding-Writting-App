@@ -4,7 +4,7 @@
 $appName = "ChronosAtlas"
 $mainJar = "ChronosAtlas.jar"
 $inputDir = "target"
-$outputDir = "dist_v2"
+$outputDir = "dist"
 
 Write-Host "--- Iniciando empaquetado de $appName ---" -ForegroundColor Cyan
 

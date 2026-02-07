@@ -33,23 +33,6 @@ public class WorldbuildingApplication {
     }
 
     public static void main(String[] args) {
-        int port = findAvailablePort(8080);
-        System.setProperty("server.port", String.valueOf(port));
         SpringApplication.run(WorldbuildingApplication.class, args);
-    }
-
-    private static int findAvailablePort(int startPort) {
-        int port = startPort;
-        while (port < startPort + 100) {
-            try (ServerSocket s = new ServerSocket(port)) {
-                // If we get here, port is available
-                System.out.println(">>> Port " + s.getLocalPort() + " is available.");
-                return port;
-            } catch (Exception e) {
-                System.out.println(">>> Port " + port + " is occupied, trying next...");
-                port++;
-            }
-        }
-        return startPort; // Fallback to original if 100 ports are taken
     }
 }

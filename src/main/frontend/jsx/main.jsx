@@ -4,6 +4,14 @@ import App from './App.jsx'
 import '../css/index.css'
 import '../css/mentions.css' // ADDED
 
+// --- HEARTBEAT SYSTEM ---
+// Send a heartbeat every 2 seconds. The server will die if it doesn't hear from us in 5s.
+setInterval(() => {
+    fetch('/api/system/heartbeat', { method: 'POST' }).catch(() => {
+        // Ignore failures (if server is down, we don't care)
+    });
+}, 2000);
+
 const reportError = (source, message, stack, componentStack = '') => {
     fetch('/api/logs/error', {
         method: 'POST',
