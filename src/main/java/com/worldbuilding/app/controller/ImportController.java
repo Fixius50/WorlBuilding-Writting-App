@@ -15,7 +15,8 @@ import java.util.Map;
 @RequestMapping("/api/import")
 public class ImportController {
 
-    private static final String DATA_DIR = "src/main/resources/db/data/";
+    @org.springframework.beans.factory.annotation.Value("${sqlite.data.path}")
+    private String dataPath;
 
     @Autowired
     private DatabaseMigration databaseMigration;
@@ -33,7 +34,7 @@ public class ImportController {
 
         try {
             // 1. Ensure data directory exists
-            Path dataPath = Paths.get(DATA_DIR);
+            Path dataPath = Paths.get(this.dataPath);
             if (!Files.exists(dataPath)) {
                 Files.createDirectories(dataPath);
             }

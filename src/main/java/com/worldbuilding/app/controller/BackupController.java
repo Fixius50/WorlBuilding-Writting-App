@@ -18,7 +18,8 @@ import java.util.zip.ZipOutputStream;
 @RequestMapping("/api/backup")
 public class BackupController {
 
-    private static final String DATA_DIR = "src/main/resources/db/data/";
+    @org.springframework.beans.factory.annotation.Value("${sqlite.data.path}")
+    private String dataPath;
 
     @GetMapping("/download")
     public ResponseEntity<Resource> downloadBackup(
@@ -30,7 +31,7 @@ public class BackupController {
                 ZipOutputStream zos = new ZipOutputStream(fos)) {
 
             // 1. Backup filtered/all databases in the data directory
-            Path dataPath = Paths.get(DATA_DIR);
+            Path dataPath = Paths.get(this.dataPath);
             if (Files.exists(dataPath) && Files.isDirectory(dataPath)) {
                 File[] dbFiles = dataPath.toFile().listFiles((dir, name) -> name.endsWith(".db"));
                 if (dbFiles != null) {

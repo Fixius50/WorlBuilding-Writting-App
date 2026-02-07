@@ -31,7 +31,6 @@ Write-Host "Generando imagen de aplicación en $outputDir..." -ForegroundColor Y
     --name $appName `
     --input $inputDir `
     --main-jar $mainJar `
-    --main-class org.springframework.boot.loader.launch.JarLauncher `
     --vendor "Roberto Monedero" `
     --description "Grimorio Digital para Escritores"
 
@@ -47,6 +46,17 @@ if ($LASTEXITCODE -eq 0) {
     else {
         Write-Error "No se encontró la carpeta Docs!"
     }
+
+    Write-Host "--- Creando carpetas de datos vacías ---" -ForegroundColor Yellow
+    $dataDest = "$outputDir/$appName/data"
+    $migrationDest = "$outputDir/$appName/migration"
+    $backupsDest = "$outputDir/$appName/backups"
+    
+    New-Item -ItemType Directory -Force -Path $dataDest | Out-Null
+    New-Item -ItemType Directory -Force -Path $migrationDest | Out-Null
+    New-Item -ItemType Directory -Force -Path $backupsDest | Out-Null
+    
+    Write-Host "Carpetas creadas: data, migration, backups" -ForegroundColor Gray
 
     Write-Host "--- Empaquetado completado con éxito! ---" -ForegroundColor Green
     Write-Host "El ejecutable se encuentra en: $outputDir/$appName/$appName.exe" -ForegroundColor Gray

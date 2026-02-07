@@ -23,17 +23,11 @@ public class ProjectDiscoveryService {
     @Autowired
     private DatabaseMigration databaseMigration;
 
+    @org.springframework.beans.factory.annotation.Value("${sqlite.data.path}")
+    private String dataPath;
+
     private Path getDataDirectory() {
-        String rootDir = System.getProperty("user.dir");
-        Path basePath = Paths.get(rootDir);
-
-        if (!Files.exists(basePath.resolve("src"))) {
-            if (Files.exists(basePath.resolve("WorldbuildingApp").resolve("src"))) {
-                basePath = basePath.resolve("WorldbuildingApp");
-            }
-        }
-
-        return basePath.resolve("src").resolve("main").resolve("resources").resolve("db").resolve("data");
+        return Paths.get(dataPath);
     }
 
     public List<String> listProjects() {

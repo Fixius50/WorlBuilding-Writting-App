@@ -38,19 +38,9 @@ public class MultiTenantDataSource implements DataSource {
     }
 
     private String resolveDataPath(String fileName) {
-        String rootDir = System.getProperty("user.dir");
-        java.nio.file.Path basePath = java.nio.file.Paths.get(rootDir);
-
-        // Check if we are in parent dir or project dir
-        if (!java.nio.file.Files.exists(basePath.resolve("src"))) {
-            if (java.nio.file.Files.exists(basePath.resolve("WorldbuildingApp").resolve("src"))) {
-                basePath = basePath.resolve("WorldbuildingApp");
-            }
-        }
-
-        return basePath.resolve("src").resolve("main").resolve("resources").resolve("db").resolve("data")
-                .resolve(fileName)
-                .toString();
+        // Use the same system property set in WorldbuildingApplication.main()
+        String dataPath = System.getProperty("sqlite.data.path", "./data");
+        return java.nio.file.Paths.get(dataPath).resolve(fileName).toString();
     }
 
     private DataSource determineDataSource() {

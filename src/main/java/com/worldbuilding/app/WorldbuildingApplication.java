@@ -33,6 +33,23 @@ public class WorldbuildingApplication {
     }
 
     public static void main(String[] args) {
+        // Dynamic Data Directory Logic
+        String devPath = "./src/main/resources/db/data";
+        String prodPath = "./data";
+        String selectedPath;
+
+        java.io.File devDir = new java.io.File(devPath);
+        if (devDir.exists() && devDir.isDirectory()) {
+            selectedPath = devPath;
+            System.out.println(">>> ENVIRONMENT: DEV (Using " + selectedPath + ")");
+        } else {
+            selectedPath = prodPath;
+            new java.io.File(prodPath).mkdirs(); // Ensure prod data dir exists
+            System.out.println(">>> ENVIRONMENT: PROD (Using " + selectedPath + ")");
+        }
+
+        System.setProperty("sqlite.data.path", selectedPath);
+
         SpringApplication.run(WorldbuildingApplication.class, args);
     }
 }

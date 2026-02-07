@@ -39,21 +39,24 @@ public class SystemController {
 
     }
 
-    private static long lastHeartbeat = System.currentTimeMillis();
-    private static boolean heartbeatStarted = false;
+    private static long lastHeartbeat = 0;
+    private static boolean heartbeatReceived = false;
+    private static final long STARTUP_TIME = System.currentTimeMillis();
 
     // Config: Shutdown if no heartbeat for 5 seconds
     private static final long TIMEOUT_MS = 5000;
     // Config: Initial grace period of 60 seconds (allow user to open browser)
     private static final long INITIAL_GRACE_PERIOD_MS = 60000;
 
+    @jakarta.annotation.PostConstruct
+    public void init() {
+        startHeartbeatMonitor();
+    }
+
     @PostMapping("/heartbeat")
     public ResponseEntity<?> heartbeat() {
         lastHeartbeat = System.currentTimeMillis();
-        if (!heartbeatStarted) {
-            startHeartbeatMonitor();
-            heartbeatStarted = true;
-        }
+        heartbeatReceived = true;
         return ResponseEntity.ok().build();
     }
 
@@ -61,15 +64,24 @@ public class SystemController {
         Thread monitorParams = new Thread(() -> {
             System.out.println(">>> Heartbeat monitor started. Timeout: " + TIMEOUT_MS + "ms");
             try {
-                // Initial grace period
-                Thread.sleep(INITIAL_GRACE_PERIOD_MS);
-
                 while (true) {
                     long now = System.currentTimeMillis();
-                    if (now - lastHeartbeat > TIMEOUT_MS) {
-                        System.out.println(
-                                ">>> No heartbeat received for " + (now - lastHeartbeat) + "ms. Shutting down.");
-                        System.exit(0);
+                    long uptime = now - STARTUP_TIME;
+
+                    if (heartbeatReceived) {
+                        // If we have received at least one heartbeat, strict timeout applies
+                        if (now - lastHeartbeat > TIMEOUT_MS) {
+                            System.out.println(">>> Connection lost (last heartbeat " + (now - lastHeartbeat)
+                                    + "ms ago). Shutting down.");
+                            System.exit(0);
+                        }
+                    } else {
+                        // If no heartbeat yet, respect grace period
+                        if (uptime > INITIAL_GRACE_PERIOD_MS) {
+                            System.out.println(">>> No client connected within grace period (" + INITIAL_GRACE_PERIOD_MS
+                                    + "ms). Shutting down.");
+                            System.exit(0);
+                        }
                     }
                     Thread.sleep(1000); // Check every second
                 }

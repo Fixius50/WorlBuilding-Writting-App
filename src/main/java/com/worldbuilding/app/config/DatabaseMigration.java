@@ -13,7 +13,8 @@ import java.io.File;
 @Component
 public class DatabaseMigration {
 
-    private static final String DATA_DIR = "./src/main/resources/db/data/";
+    @org.springframework.beans.factory.annotation.Value("${sqlite.data.path}")
+    private String dataPath;
 
     @PostConstruct
     public void runMigrations() {
@@ -30,9 +31,9 @@ public class DatabaseMigration {
         System.setProperty("org.sqlite.tmpdir", sqliteTmpDir.getAbsolutePath());
         System.out.println(">>> SQLite Temporary Directory set to: " + sqliteTmpDir.getAbsolutePath());
 
-        File dataDir = new File(DATA_DIR);
+        File dataDir = new File(dataPath);
         if (!dataDir.exists() || !dataDir.isDirectory()) {
-            System.out.println("Data directory not found: " + DATA_DIR);
+            System.out.println("Data directory not found: " + dataPath);
             return;
         }
 
@@ -64,7 +65,7 @@ public class DatabaseMigration {
 
             Flyway flyway = Flyway.configure()
                     .dataSource(jdbcUrl, "", "")
-                    .locations("filesystem:src/main/resources/db/migration")
+                    .locations("classpath:db/migration")
                     .ignoreMigrationPatterns("*:missing") // Ignore missing files (Flyway 10+)
                     .baselineOnMigrate(true)
                     .load();
