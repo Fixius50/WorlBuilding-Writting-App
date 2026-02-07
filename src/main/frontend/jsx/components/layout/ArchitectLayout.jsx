@@ -59,6 +59,8 @@ const ArchitectLayout = () => {
     // Right Panel Context Content (Injected by pages)
     const [globalPanelContent, setGlobalPanelContent] = useState(null);
     const [rightPanelTab, setRightPanelTab] = useState('NOTEBOOKS');
+    const [rightPanelTitle, setRightPanelTitle] = useState(null);
+    const [rightPanelMode, setRightPanelMode] = useState('DEFAULT');
 
     // Map Settings State (Global) - KEEPING FOR BACKWARDS COMPATIBILITY IF NEEDED
     const [mapSettings, setMapSettings] = useState({
@@ -143,6 +145,8 @@ const ArchitectLayout = () => {
     //         setLeftOpen(false);
     //     }
     // }, [isBibleContext]);
+
+    const toggleRightPanel = () => setRightOpen(prev => !prev);
 
     const loadProject = async (identifier) => {
         try {
@@ -253,8 +257,17 @@ const ArchitectLayout = () => {
                         // New Global Panel Context
                         setRightPanelContent,
                         setRightOpen,
+                        toggleRightPanel,
                         rightPanelTab,
                         setRightPanelTab,
+                        setRightPanelTitle,
+                        setRightPanelMode,
+
+                        // Search & Filter Context (Bible)
+                        folderSearchTerm,
+                        setFolderSearchTerm,
+                        folderFilterType,
+                        setFolderFilterType,
 
                         // Legacy Context (Keep only what's needed for other pages to not crash)
                         projectId,
@@ -270,30 +283,15 @@ const ArchitectLayout = () => {
                 <GlobalRightPanel
                     isOpen={rightOpen}
                     onClose={() => setRightOpen(false)}
+                    onToggle={toggleRightPanel} // Pass toggle function
                     contextContent={globalPanelContent}
                     projectId={projectId}
                     activeTab={rightPanelTab}
                     setActiveTab={setRightPanelTab}
+                    title={rightPanelTitle}
                 />
             </main>
 
-            {/* --- RIGHT PANEL TRIGGERS --- */}
-            <aside
-                className="flex-none bg-surface-dark border-l border-glass-border transition-all duration-500 relative flex flex-col z-30 w-20 shrink-0"
-            >
-                <div className="flex-1 flex flex-col items-center gap-4 py-4 w-full">
-                    <button
-                        onClick={() => setRightOpen(prev => !prev)}
-                        className={`size-12 rounded-xl flex items-center justify-center transition-all ${rightOpen ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'}`}
-                        title="Panel Global"
-                    >
-                        <span className="material-symbols-outlined text-xl">side_navigation</span>
-                    </button>
-
-                    {/* Placeholder for future shortcuts */}
-                    {/* <div className="h-px w-8 bg-white/10 my-2"></div> */}
-                </div>
-            </aside>
             {/* Edit Modal */}
             {
                 editingTemplate && (

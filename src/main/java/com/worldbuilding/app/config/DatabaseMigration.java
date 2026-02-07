@@ -84,7 +84,7 @@ public class DatabaseMigration {
                 java.sql.Statement stmt = conn.createStatement()) {
 
             patchTable(stmt, "hoja", new String[] { "deleted", "deleted_date", "numero_pagina" });
-            patchTable(stmt, "nota_rapida", new String[] { "deleted", "deleted_date" });
+            patchTable(stmt, "nota_rapida", new String[] { "deleted", "deleted_date", "linea", "categoria" });
             patchTable(stmt, "relacion", new String[] { "deleted", "deleted_date" });
             patchTable(stmt, "conlang", new String[] { "font_binary" });
             patchTable(stmt, "palabra", new String[] { "unicode_code" });

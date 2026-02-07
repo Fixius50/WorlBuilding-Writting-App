@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { useOutletContext, useParams, useNavigate } from 'react-router-dom';
 import api from '../../../js/services/api';
 import ZenEditor from '../../components/editor/ZenEditor';
+import ConfirmModal from '../../components/common/ConfirmModal';
 
 const WritingView = () => {
     const { notebookId } = useParams();
@@ -19,6 +20,8 @@ const WritingView = () => {
     const [currentPageIndex, setCurrentPageIndex] = useState(0);
     const [saving, setSaving] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [pageToDelete, setPageToDelete] = useState(null);
     const saveTimeout = useRef(null);
     const pagesRef = useRef(pages);
     const indexRef = useRef(currentPageIndex);
@@ -148,44 +151,70 @@ const WritingView = () => {
         }
     };
 
-    const handlePageSelect = (index) => {
+    const handlePageSelect = async (index) => {
+        // Save current page before switching
+        if (saveTimeout.current) {
+            clearTimeout(saveTimeout.current);
+        }
+        const currentPage = pages[currentPageIndex];
+        if (currentPage) {
+            try {
+                await api.put(`/escritura/hoja/${currentPage.id}`, { contenido: currentPage.contenido });
+            } catch (err) {
+                console.error("Error saving before page switch:", err);
+            }
+        }
         setCurrentPageIndex(index);
     };
 
-    const deletePage = async (e, id, index) => {
+    const deletePage = (e, id, index) => {
         e.stopPropagation();
         if (pages.length <= 1) {
-            alert(t('writing.one_page_error'));
+            setPageToDelete({ id, index, error: 'one_page' });
+            setDeleteModalOpen(true);
             return;
         }
-        if (!window.confirm(t('writing.delete_page_confirm'))) return;
+        setPageToDelete({ id, index });
+        setDeleteModalOpen(true);
+    };
+
+    const confirmDeletePage = async () => {
+        if (!pageToDelete) return;
+        const { id, index } = pageToDelete;
 
         try {
             await api.delete(`/escritura/hoja/${id}`);
             const newPages = pages.filter(p => p.id !== id);
-            setPages(newPages);
+
+            // Adjust current index BEFORE setting pages to avoid OOB
+            let nextIndex = currentPageIndex;
             if (currentPageIndex === index) {
-                setCurrentPageIndex(Math.max(0, index - 1));
+                nextIndex = Math.max(0, index - 1);
             } else if (currentPageIndex > index) {
-                setCurrentPageIndex(currentPageIndex - 1);
+                nextIndex = currentPageIndex - 1;
             }
+
+            setPages(newPages);
+            setCurrentPageIndex(nextIndex);
         } catch (err) {
             console.error("Error deleting page:", err);
+        } finally {
+            setDeleteModalOpen(false);
+            setPageToDelete(null);
         }
     };
 
     const renderRightPanel = () => (
         <div className="flex flex-col h-full bg-surface-dark/95">
-            {/* Dynamic Header for Right Panel (Back & Save Status) */}
-            <div className="p-4 border-b border-white/5 flex items-center justify-between bg-black/40">
-                <button
-                    onClick={() => navigate(`/${useParams().username}/${useParams().projectName}/writing`)}
-                    className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
-                >
-                    <span className="material-symbols-outlined text-sm">arrow_back</span>
-                    <span className="text-[10px] font-black uppercase tracking-widest">{t('nav.writing')}</span>
-                </button>
-                <div className={`w-2 h-2 rounded-full ${saving ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500/50'}`} title={saving ? t('common.saving') : t('common.saved')}></div>
+            {/* Clean Header (Minimalist) */}
+            <div className="p-4 border-b border-white/5 flex items-center justify-center bg-black/60 relative">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Chronicle Hub</h3>
+                {/* Save status is now subtle, no green dots */}
+                {saving && (
+                    <div className="absolute right-4 animate-pulse">
+                        <span className="material-symbols-outlined text-xs text-amber-500">sync</span>
+                    </div>
+                )}
             </div>
 
             {/* Tabs */}
@@ -248,12 +277,33 @@ const WritingView = () => {
                 ) : (
                     <div className="p-6 space-y-8 animate-in fade-in slide-in-from-right-4">
                         <div className="space-y-4">
-                            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-sm">format_size</span> {t('writing.typography')}
+                            <h3 className="text-xs font-black uppercase text-primary mb-4 tracking-widest">
+                                {t('writing.format')}
                             </h3>
-                            <div className="grid grid-cols-1 gap-2">
-                                <p className="text-[9px] text-slate-600 uppercase font-bold italic">{t('writing.typography_desc')}</p>
-                                {/* We could add more specific format toggles here that trigger editor commands */}
+                            <div className="space-y-3">
+                                <p className="text-[9px] text-slate-500 uppercase font-bold mb-3">Atajos de Teclado</p>
+                                <div className="space-y-2 text-[11px] text-slate-400">
+                                    <div className="flex justify-between items-center p-2 bg-black/20 rounded">
+                                        <span>Negrita</span>
+                                        <kbd className="px-2 py-1 bg-slate-800 rounded text-[9px] font-mono">Ctrl+B</kbd>
+                                    </div>
+                                    <div className="flex justify-between items-center p-2 bg-black/20 rounded">
+                                        <span>Cursiva</span>
+                                        <kbd className="px-2 py-1 bg-slate-800 rounded text-[9px] font-mono">Ctrl+I</kbd>
+                                    </div>
+                                    <div className="flex justify-between items-center p-2 bg-black/20 rounded">
+                                        <span>Mencionar entidad</span>
+                                        <kbd className="px-2 py-1 bg-slate-800 rounded text-[9px] font-mono">@</kbd>
+                                    </div>
+                                    <div className="flex justify-between items-center p-2 bg-black/20 rounded">
+                                        <span>Deshacer</span>
+                                        <kbd className="px-2 py-1 bg-slate-800 rounded text-[9px] font-mono">Ctrl+Z</kbd>
+                                    </div>
+                                    <div className="flex justify-between items-center p-2 bg-black/20 rounded">
+                                        <span>Rehacer</span>
+                                        <kbd className="px-2 py-1 bg-slate-800 rounded text-[9px] font-mono">Ctrl+Y</kbd>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -273,34 +323,32 @@ const WritingView = () => {
     }
 
     return (
-        <div className="flex-1 flex w-full h-full bg-background-dark relative overflow-hidden font-sans">
+        <><div className="flex-1 flex w-full h-full bg-black relative overflow-hidden font-sans">
             {portalRef && createPortal(renderRightPanel(), portalRef)}
 
             <div className="flex-1 flex flex-col relative z-10 overflow-hidden">
-                <main className="flex-1 overflow-y-auto custom-scrollbar flex justify-center bg-transparent relative no-scrollbar">
+                <main className="flex-1 overflow-y-auto custom-scrollbar flex justify-center bg-black relative no-scrollbar">
                     {currentPage && (
                         <div className="w-full min-h-full flex flex-col animate-in slide-in-from-bottom-8 duration-700">
-                            {/* Paper Container - Fully expanded */}
-                            <div className="flex-1 bg-white overflow-hidden flex flex-col transition-all duration-500 group">
+                            {/* Paper Container - Dark grayish tone */}
+                            <div className="flex-1 bg-slate-900 overflow-hidden flex flex-col transition-all duration-500 group">
                                 {/* Clean header for title */}
-                                <div className="h-24 flex items-end px-16 pb-4 border-b border-slate-50">
+                                <div className="h-32 flex items-end px-20 pb-8 border-b border-slate-700/50">
                                     <input
                                         type="text"
-                                        className="w-full bg-transparent text-4xl font-serif font-black text-slate-800 placeholder:text-slate-100 border-none outline-none"
+                                        className="w-full bg-transparent text-5xl font-serif font-black text-slate-100 placeholder:text-slate-600 border-none outline-none focus:ring-0"
                                         defaultValue={`${t('writing.chapter')} ${currentPageIndex + 1}`}
-                                        placeholder={t('writing.title_placeholder')}
-                                    />
+                                        placeholder={t('writing.title_placeholder')} />
                                 </div>
 
-                                <div className="flex-1 px-16 py-12 text-slate-900">
+                                <div className="flex-1 px-20 py-20 text-slate-100 mx-auto max-w-5xl w-full">
                                     <ZenEditor
                                         content={currentPage.contenido}
                                         onUpdate={handleContentChange}
-                                        paperMode={true}
-                                    />
+                                        paperMode={true} />
                                 </div>
 
-                                <footer className="h-16 border-t border-slate-100 flex items-center justify-between px-16 text-[10px] font-mono text-slate-400 select-none">
+                                <footer className="h-16 border-t border-slate-700 flex items-center justify-between px-16 text-[10px] font-mono text-slate-500 select-none">
                                     <span>{t('writing.page').toUpperCase()} {currentPageIndex + 1} {t('writing.of')} {pages.length}</span>
                                     <span className="opacity-0 group-hover:opacity-100 transition-opacity uppercase font-black tracking-widest">
                                         {notebook?.titulo || t('common.no_results')}
@@ -312,7 +360,23 @@ const WritingView = () => {
                 </main>
             </div>
         </div>
+            <ConfirmModal
+                isOpen={deleteModalOpen}
+                onClose={() => {
+                    setDeleteModalOpen(false);
+                    setPageToDelete(null);
+                }}
+                onConfirm={pageToDelete?.error === 'one_page' ? () => {
+                    setDeleteModalOpen(false);
+                    setPageToDelete(null);
+                } : confirmDeletePage}
+                title={pageToDelete?.error === 'one_page' ? t('common.error') : t('writing.delete_page')}
+                message={pageToDelete?.error === 'one_page' ? t('writing.one_page_error') : t('writing.delete_page_confirm')}
+                confirmText={pageToDelete?.error === 'one_page' ? t('common.ok') : t('common.confirm_delete')}
+                isDestructive={pageToDelete?.error !== 'one_page'} />
+        </>
     );
 };
 
 export default WritingView;
+

@@ -32,7 +32,7 @@ const getEntityRoute = (username, projectName, entity, folderSlug) => {
     return `/${username}/${projectName}/bible/folder/${parent}/entity/${slug}`;
 };
 
-const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDeleteEntity, onCreateTemplate, onMoveEntity, onCreateEntity, onConfirmCreate, className }) => {
+const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDeleteEntity, onCreateTemplate, onMoveEntity, onDuplicateEntity, onCreateEntity, onConfirmCreate, searchTerm, filterType, className }) => {
     const { username, projectName } = useParams();
     const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
@@ -44,6 +44,18 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
     const [renamingEntityId, setRenamingEntityId] = useState(null); // For entities
 
     useEffect(() => { setItemName(folder.nombre); }, [folder.nombre]);
+
+    // Auto-expand on search
+    useEffect(() => {
+        if (searchTerm && !isOpen) {
+            // Check if any entity matches in current content
+            const hasMatch = content.entities.some(e =>
+                e.nombre.toLowerCase().includes(searchTerm.toLowerCase()) &&
+                (filterType === 'ALL' || e.tipoEspecial === filterType)
+            );
+            if (hasMatch) setIsOpen(true);
+        }
+    }, [searchTerm, content.entities]);
 
     useEffect(() => {
         const handleUpdate = (e) => {
@@ -274,17 +286,10 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
                                 setRenamingEntityId(contextMenu.id);
                                 closeContextMenu();
                             }}><span className="material-symbols-outlined text-sm">edit</span> Rename</button>
-                            <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2 cursor-pointer" onClick={async () => {
-                                try {
-                                    await api.entityService.toggleFavorite(contextMenu.id);
-                                    window.dispatchEvent(new CustomEvent('favorites-update'));
-                                    // Also reload folder content to update the icon state
-                                    window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: folder.id } }));
-                                } catch (e) { console.error(e); }
+                            <button className="px-4 py-2 hover:bg-white/5 text-left flex items-center gap-2 cursor-pointer" onClick={() => {
+                                onDuplicateEntity(contextMenu.id, folder.id);
                                 closeContextMenu();
-                            }}>
-                                <span className="material-symbols-outlined text-sm text-yellow-500">star</span> Toggle Favorite
-                            </button>
+                            }}><span className="material-symbols-outlined text-sm">content_copy</span> Duplicar</button>
                             <button className="px-4 py-2 hover:bg-red-500/10 text-red-400 text-left flex items-center gap-2" onClick={() => { onDeleteEntity(contextMenu.id, folder.id); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">delete</span> Delete Entity</button>
                         </>
                     )}
@@ -303,39 +308,45 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
                             onDeleteFolder={onDeleteFolder}
                             onDeleteEntity={onDeleteEntity}
                             onCreateTemplate={onCreateTemplate}
-                            onMoveEntity={onMoveEntity}
+                            onDuplicateEntity={onDuplicateEntity}
                             onCreateEntity={onCreateEntity}
                             onConfirmCreate={onConfirmCreate}
+                            searchTerm={searchTerm}
+                            filterType={filterType}
                         />
                     ))}
 
-                    {/* Render Entities */}
-                    {content.entities.map(ent => (
-                        (ent.isNew || ent.id === renamingEntityId) ?
-                            <InputItem
-                                key={ent.id}
-                                item={ent}
-                                type="entity"
-                            // Reset state on finish (handled by onConfirmCreate re-render usually, but better to force close on blur/enter inside InputItem or wrapper)
-                            // Actually InputItem handles onConfirmCreate. We need to clear renamingEntityId when done.
-                            // We can wrap onConfirmCreate?
-                            /> :
-                            <Link
-                                key={ent.id}
-                                to={getEntityRoute(username, projectName, ent, folder.slug || folder.id)}
-                                onContextMenu={(e) => handleContextMenu(e, 'entity', ent.id, ent.nombre)}
-                                className={`flex items-center gap-3 px-3 py-2 rounded-xl text-[11px] font-medium text-text-muted hover:text-white hover:bg-primary/10 transition-all group cursor-grab active:cursor-grabbing ${ent.pending ? 'opacity-50 pointer-events-none' : ''}`}
-                                draggable={!ent.pending}
-                                onDragStart={(e) => {
-                                    e.dataTransfer.setData('entityId', ent.id);
-                                    e.dataTransfer.setData('sourceFolderId', folder.id);
-                                }}
-                            >
-                                <span className={`material-symbols-outlined text-sm opacity-70 group-hover:text-primary transition-colors`}>{getIconForType(ent.tipoEspecial)}</span>
-                                <span className="truncate flex-1">{ent.nombre}</span>
-                                {ent.favorite && <span className="material-symbols-outlined text-[10px] text-yellow-500" title="Favorito">star</span>}
-                            </Link>
-                    ))}
+                    {/* Render Entities (Filtered) */}
+                    {content.entities
+                        .filter(ent => {
+                            if (!searchTerm) return true;
+                            const matchesSearch = ent.nombre.toLowerCase().includes(searchTerm.toLowerCase());
+                            const matchesType = filterType === 'ALL' || ent.tipoEspecial === filterType;
+                            return matchesSearch && matchesType;
+                        })
+                        .map(ent => (
+                            (ent.isNew || ent.id === renamingEntityId) ?
+                                <InputItem
+                                    key={ent.id}
+                                    item={ent}
+                                    type="entity"
+                                /> :
+                                <Link
+                                    key={ent.id}
+                                    to={getEntityRoute(username, projectName, ent, folder.slug || folder.id)}
+                                    onContextMenu={(e) => handleContextMenu(e, 'entity', ent.id, ent.nombre)}
+                                    className={`flex items-center gap-3 px-3 py-2 rounded-xl text-[11px] font-medium text-text-muted hover:text-white hover:bg-primary/10 transition-all group cursor-grab active:cursor-grabbing ${ent.pending ? 'opacity-50 pointer-events-none' : ''}`}
+                                    draggable={!ent.pending}
+                                    onDragStart={(e) => {
+                                        e.dataTransfer.setData('entityId', ent.id);
+                                        e.dataTransfer.setData('sourceFolderId', folder.id);
+                                    }}
+                                >
+                                    <span className={`material-symbols-outlined text-sm opacity-70 group-hover:text-primary transition-colors`}>{getIconForType(ent.tipoEspecial)}</span>
+                                    <span className="truncate flex-1">{ent.nombre}</span>
+                                    {ent.favorite && <span className="material-symbols-outlined text-[10px] text-yellow-500" title="Favorito">star</span>}
+                                </Link>
+                        ))}
                     {loaded && content.folders.length === 0 && content.entities.length === 0 && (
                         <div className="px-3 py-2 text-[10px] text-text-muted/30 uppercase font-black italic tracking-tighter">Empty Sector</div>
                     )}

@@ -31,7 +31,7 @@ const LinguisticsHub = ({ onOpenEditor }) => {
 
     // New UI States
     // Unified Navigation State
-    const [centerView, setCenterView] = useState('lexicon'); // 'lexicon', 'translator', 'biblia'
+    const [centerView, setCenterView] = useState('lexicon'); // 'lexicon', 'translator', 'diccionario'
     const [searchTerm, setSearchTerm] = useState('');
     const [sidebarTab, setSidebarTab] = useState('MANAGEMENT'); // 'NOTES', 'MANAGEMENT'
     const [isMeaningModalOpen, setIsMeaningModalOpen] = useState(false);
@@ -50,7 +50,7 @@ const LinguisticsHub = ({ onOpenEditor }) => {
     const [fontKerning, setFontKerning] = useState(true);
     const [logs, setLogs] = useState([
         { msg: 'Inicializando Búfer de Glifos...', type: 'info' },
-        { msg: 'Sincronización de Biblia Activa', type: 'success' }
+        { msg: 'Sincronización de Diccionario Activa', type: 'success' }
     ]);
 
     // Writing System Rules (Investigated)
@@ -838,13 +838,13 @@ const LinguisticsHub = ({ onOpenEditor }) => {
                     {/* Header Info Hidden on User Request */}
                 </div>
 
-                {/* Unified Navigation Switcher */}
+                {/* Unified Navigation Switcher - Centered absolutely */}
                 {!editorMode && (
-                    <div className="flex bg-white/5 p-1 rounded-xl border border-white/5 backdrop-blur-md">
+                    <div className="absolute left-1/2 -translate-x-1/2 flex bg-white/5 p-1 rounded-xl border border-white/5 backdrop-blur-md">
                         {[
                             { id: 'lexicon', label: t('linguistics.lexicon') },
                             { id: 'translator', label: t('linguistics.translator') },
-                            { id: 'biblia', label: 'BIBLIA' }
+                            { id: 'diccionario', label: 'DICCIONARIO' }
                         ].map(tab => (
                             <button
                                 key={tab.id}
@@ -984,7 +984,7 @@ const LinguisticsHub = ({ onOpenEditor }) => {
                         </section>
                     </div>
                 ) : (
-                    /* Biblia Léxica View */
+                    /* Diccionario Léxico View */
                     <section className="max-w-7xl mx-auto w-full animate-in fade-in slide-in-from-bottom-8 duration-1000 flex flex-col gap-12">
                         <div className="flex justify-between items-center px-4">
                             <div className="flex flex-col">

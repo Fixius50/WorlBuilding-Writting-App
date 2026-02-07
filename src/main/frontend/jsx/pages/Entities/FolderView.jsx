@@ -12,44 +12,48 @@ const FolderView = () => {
     const {
         handleCreateEntity,
         handleDeleteEntity,
-        handleDeleteFolder, // Added handle
+        handleDeleteFolder,
         handleCreateSimpleFolder,
         folderSearchTerm,
         folderFilterType
-    } = useOutletContext(); // Get handlers from Global Layout
+    } = useOutletContext(); // Get handlers and GLOBAL FILTERS from Global Layout
 
     // Local state for data
     const [entities, setEntities] = useState([]);
-    const [subfolders, setSubfolders] = useState([]); // New state
     const [folder, setFolder] = useState(null);
     const [path, setPath] = useState([]);
     const [loading, setLoading] = useState(true);
     const [creationMenuOpen, setCreationMenuOpen] = useState(false);
 
-    // Filter Logic using Global Context
-    const filteredEntities = entities.filter(ent => {
-        const matchesSearch = ent.nombre.toLowerCase().includes(folderSearchTerm || '');
-        const matchesType = folderFilterType === 'ALL' ||
-            (folderFilterType === 'MAP' && ent.tipoEspecial === 'map') ||
-            (folderFilterType === 'TIMELINE' && ent.tipoEspecial === 'timeline') ||
-            (folderFilterType === 'ENTITY' && (!ent.tipoEspecial || ent.tipoEspecial === 'entidadindividual'));
-        return matchesSearch && matchesType;
-    });
-
-    const filteredSubfolders = subfolders.filter(sub => {
-        const matchesSearch = sub.nombre.toLowerCase().includes(folderSearchTerm || '');
-        return matchesSearch && folderFilterType === 'ALL';
-    });
+    // Unified Filter Logic
+    const filteredContent = {
+        folders: (folder?.subfolders || []).filter(sub => {
+            const matchesSearch = sub.nombre.toLowerCase().includes((folderSearchTerm || '').toLowerCase());
+            const matchesType = folderFilterType === 'ALL' ||
+                (folderFilterType === 'MAP' && sub.tipoEspecial === 'map') ||
+                (folderFilterType === 'TIMELINE' && sub.tipoEspecial === 'timeline');
+            return matchesSearch && matchesType;
+        }),
+        entities: entities.filter(ent => {
+            const matchesSearch = ent.nombre.toLowerCase().includes((folderSearchTerm || '').toLowerCase());
+            const matchesType = folderFilterType === 'ALL' ||
+                (folderFilterType === 'ENTITY' && (!ent.tipoEspecial || ent.tipoEspecial === 'entidadindividual')) ||
+                (folderFilterType === 'individual' && ent.tipoEspecial === 'individual' || ent.tipoEspecial === 'entidadindividual') ||
+                (folderFilterType === 'location' && ent.tipoEspecial === 'location' || ent.tipoEspecial === 'zona') ||
+                (folderFilterType === 'culture' && ent.tipoEspecial === 'culture' || ent.tipoEspecial === 'entidadcolectiva') ||
+                (folderFilterType === 'MAP' && ent.tipoEspecial === 'map') ||
+                (folderFilterType === 'TIMELINE' && ent.tipoEspecial === 'timeline');
+            return matchesSearch && matchesType;
+        })
+    };
 
     useEffect(() => {
         const handleUpdate = (e) => {
-            const { folderId, removeId, type, item, expand } = e.detail || {};
+            const { folderId, removeId, type, item } = e.detail || {};
             // If we are in the affected folder
             if (folderId === (folder?.id || folderSlug)) {
                 if (removeId) {
-                    if (type === 'folder') {
-                        setSubfolders(prev => prev.filter(f => f.id !== removeId));
-                    } else {
+                    if (type === 'entity') {
                         setEntities(prev => prev.filter(ent => ent.id !== removeId));
                     }
                 } else if (item && item.slug && item.slug !== folderSlug) {
@@ -71,20 +75,26 @@ const FolderView = () => {
     const loadFolderContent = async () => {
         setLoading(true);
         try {
-            const [ents, subs, info] = await Promise.all([
+            const [ents, info] = await Promise.all([
                 api.get(`/world-bible/folders/${folderSlug}/entities`),
-                api.get(`/world-bible/folders/${folderSlug}/subfolders`),
                 api.get(`/world-bible/folders/${folderSlug}`)
             ]);
-            setEntities(ents);
-            setSubfolders(subs || []);
+            setEntities(ents || []);
+
             // Handle new response format { folder: ..., path: ... }
             if (info.folder) {
-                setFolder(info.folder);
+                // Ensure subfolders are part of the folder object for easier access
+                setFolder({
+                    ...info.folder,
+                    subfolders: info.subfolders || []
+                });
                 setPath(info.path || []);
             } else {
                 // Fallback for old/root?
-                setFolder(info || { name: 'Folder' });
+                setFolder({
+                    ...(info || { nombre: 'Folder' }),
+                    subfolders: info.subfolders || []
+                });
                 setPath([]);
             }
         } catch (err) {
@@ -163,7 +173,7 @@ const FolderView = () => {
                             <h3 className="text-xs font-bold text-white/40 uppercase tracking-widest mb-4">Estadísticas</h3>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <div className="text-2xl font-black text-white">{entities.length + subfolders.length}</div>
+                                    <div className="text-2xl font-black text-white">{entities.length}</div>
                                     <div className="text-[10px] text-white/40 uppercase">Elementos</div>
                                 </div>
                             </div>
@@ -175,23 +185,14 @@ const FolderView = () => {
                     </div>
                     <div className="lg:col-span-2">
                         <h3 className="text-xs font-bold text-white/40 uppercase tracking-widest mb-4">Contenido Interno</h3>
-                        {entities.length === 0 && subfolders.length === 0 && (
+                        {entities.length === 0 && (
                             <div className="p-12 border border-dashed border-white/10 rounded-2xl text-center">
                                 <span className="material-symbols-outlined text-4xl text-white/20 mb-2">folder_open</span>
                                 <p className="text-white/30 text-sm">Este sector está vacío.</p>
                             </div>
                         )}
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            {filteredSubfolders.map(sub => (
-                                <BibleCard
-                                    key={sub.id}
-                                    item={sub}
-                                    type="folder"
-                                    linkTo={`/${username}/${projectName}/bible/folder/${sub.slug || sub.id}`}
-                                    onDelete={() => handleDeleteFolder(sub.id, folder?.id || folderSlug)}
-                                />
-                            ))}
-                            {filteredEntities.map(entity => (
+                            {filteredContent.entities.map(entity => (
                                 <BibleCard
                                     key={entity.id}
                                     item={entity}
@@ -269,13 +270,14 @@ const FolderView = () => {
             {/* Specialized Views based on Folder Type */}
             {folder?.tipo === 'TIMELINE' ? (
                 <SpecializedTimeline
-                    entities={filteredEntities}
+                    entities={filteredContent.entities}
                     folderId={folderSlug}
                     onAddEvent={() => navigate(`/${username}/${projectName}/bible/folder/${folderSlug}/entity/new/evento`)}
                 />
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                    {filteredSubfolders.map(sub => (
+                    {/* Render Subfolders (Maps, Timelines, nested folders) */}
+                    {filteredContent.folders.map(sub => (
                         <BibleCard
                             key={sub.id}
                             item={sub}
@@ -284,7 +286,9 @@ const FolderView = () => {
                             onDelete={() => handleDeleteFolder(sub.id, folder?.id || folderSlug)}
                         />
                     ))}
-                    {filteredEntities.map(entity => {
+
+                    {/* Render Entities */}
+                    {filteredContent.entities.map(entity => {
                         const typePart = (entity.tipoEspecial === 'map' || entity.tipoEspecial === 'timeline') ? entity.tipoEspecial : 'entity';
                         return (
                             <BibleCard
@@ -298,7 +302,7 @@ const FolderView = () => {
                     })}
                 </div>
             )}
-            {entities.length === 0 && subfolders.length === 0 && (
+            {entities.length === 0 && (
                 <div className="p-20 text-center border-2 border-dashed border-glass-border rounded-[3rem] opacity-30 mt-8">
                     <p className="text-text-muted font-bold uppercase tracking-widest">Empty Folder</p>
                 </div>

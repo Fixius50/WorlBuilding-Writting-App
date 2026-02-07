@@ -39,7 +39,7 @@ const ZenEditor = ({ content, onUpdate, editable = true, paperMode = false }) =>
     },
     editorProps: {
       attributes: {
-        class: `prose ${paperMode ? 'prose-slate' : 'prose-invert'} max-w-none focus:outline-none min-h-[300px] p-8 ${paperMode ? 'text-slate-900' : 'text-foreground/90'} leading-relaxed text-lg transition-all`,
+        class: `prose ${paperMode ? 'prose-invert' : 'prose-invert'} max-w-none focus:outline-none min-h-[300px] p-8 ${paperMode ? 'text-slate-100' : 'text-foreground/90'} leading-relaxed text-lg transition-all`,
         style: `font-family: "${settings.font}", serif; font-size: ${settings.fontSize}px;`,
       },
     },

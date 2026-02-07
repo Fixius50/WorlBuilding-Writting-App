@@ -9,7 +9,7 @@ import LeafletMapView from '../../components/maps/LeafletMapView';
 const InteractiveMapView = ({ map }) => {
     const { t } = useLanguage();
     const [selectedMarker, setSelectedMarker] = useState(null);
-    const { setRightPanelContent, setRightOpen } = useOutletContext();
+    const { setRightPanelContent, setRightOpen, setRightPanelTitle } = useOutletContext();
     const mapName = map?.nombre || t('maps.explorer');
 
     // Resolve Map Image: attributes.bgImage -> attributes.snapshotUrl -> iconUrl -> fallback
@@ -35,9 +35,17 @@ const InteractiveMapView = ({ map }) => {
 
     // Push content to global panel whenever selectedMarker changes
     useEffect(() => {
+        setRightPanelTab('CONTEXT'); // Ensure we are in Context tab
+        setRightPanelTitle(
+            <div className="flex flex-col">
+                <span className="text-[10px] text-primary font-black uppercase tracking-widest leading-none mb-1">Explorador de Atlas</span>
+                <span className="text-white font-serif font-black text-lg truncate">{mapName}</span>
+            </div>
+        );
+
         if (selectedMarker) {
             setRightPanelContent(
-                <div className="flex flex-col h-full gap-8 p-6 animate-in slide-in-from-right-4 duration-300">
+                <div className="flex flex-col h-full gap-8 p-6 animate-in slide-in-from-right-4 duration-300 custom-scrollbar overflow-y-auto">
                     <header className="space-y-6">
                         <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-white/10 shadow-xl group">
                             <img src="https://images.unsplash.com/photo-1533154683836-84ea7a0bc310?auto=format&fit=crop&w=500&q=80" alt="Detail" className="w-full h-full object-cover grayscale-[0.4] group-hover:grayscale-0 transition-all duration-700" />
@@ -50,20 +58,33 @@ const InteractiveMapView = ({ map }) => {
                             </div>
                         </div>
                         <div>
-                            <h2 className="text-3xl font-black text-white leading-none mb-2">{selectedMarker.label || 'Ubicación Desconocida'}</h2>
-                            <p className="text-slate-500 font-medium text-sm leading-relaxed">{selectedMarker.description || 'Sin descripción disponible.'}</p>
+                            <h2 className="text-2xl font-black text-white leading-tight mb-2">{selectedMarker.label || 'Ubicación Desconocida'}</h2>
+                            <p className="text-slate-500 font-medium text-xs leading-relaxed">{selectedMarker.description || 'Sin descripción disponible.'}</p>
                         </div>
                     </header>
-                    {/* More details here... */}
-                    <div className="space-y-8 flex-1 overflow-y-auto no-scrollbar">
+
+                    <div className="space-y-8">
                         <section className="space-y-4">
                             <div className="flex justify-between items-center px-1">
                                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{t('maps.inhabitants')}</h3>
-                                <button className="text-[10px] font-bold text-primary hover:underline transition-all">{t('maps.view_all')}</button>
                             </div>
-                            {/* Placeholder inhabitants */}
                             <div className="space-y-3">
                                 <InhabitantRow name="Personaje A" role="Rol A" />
+                            </div>
+                        </section>
+
+                        {/* Integrated Global Tools even when marker selected */}
+                        <section className="space-y-4 pt-6 border-t border-white/5">
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Herramientas</h3>
+                            <div className="grid grid-cols-1 gap-2">
+                                <button className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 text-[10px] font-black uppercase text-slate-400 hover:text-white hover:bg-white/10 transition-all">
+                                    <span className="material-symbols-outlined text-sm text-primary">layers</span>
+                                    Gestionar Multicapas
+                                </button>
+                                <button className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 text-[10px] font-black uppercase text-slate-400 hover:text-white hover:bg-white/10 transition-all">
+                                    <span className="material-symbols-outlined text-sm text-primary">settings_ethernet</span>
+                                    Relaciones N:M
+                                </button>
                             </div>
                         </section>
                     </div>
@@ -72,10 +93,34 @@ const InteractiveMapView = ({ map }) => {
             setRightOpen(true);
         } else {
             setRightPanelContent(
-                <div className="p-6 text-slate-500 text-center flex flex-col items-center justify-center h-full">
-                    <span className="material-symbols-outlined text-6xl mb-4 opacity-20">map</span>
-                    <h3 className="text-white font-bold mb-2 text-xl">{mapName}</h3>
-                    <p className="text-sm max-w-[200px]">Selecciona un marcador en el mapa para ver sus detalles aquí.</p>
+                <div className="p-6 text-slate-500 text-center flex flex-col items-center justify-center h-full animate-in fade-in duration-500">
+                    <div className="size-20 rounded-full bg-primary/5 flex items-center justify-center mb-6 border border-primary/10">
+                        <span className="material-symbols-outlined text-4xl text-primary opacity-40">explore</span>
+                    </div>
+                    <h3 className="text-white font-serif font-black mb-2 text-xl">{mapName}</h3>
+                    <p className="text-xs max-w-[200px] leading-relaxed opacity-60">Navega por el mapa e interactúa con los puntos de interés para ver detalles específicos.</p>
+
+                    <div className="mt-12 w-full space-y-4 border-t border-white/5 pt-8">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 text-left px-2 mb-4">Herramientas Globales</h3>
+                        <button className="w-full p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center gap-4 hover:bg-white/[0.05] hover:border-primary/20 transition-all group">
+                            <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform shadow-lg shadow-primary/5">
+                                <span className="material-symbols-outlined">layers</span>
+                            </div>
+                            <div className="text-left">
+                                <span className="block text-[10px] font-black uppercase tracking-widest text-white mb-0.5">Gestionar Multicapas</span>
+                                <span className="block text-[9px] text-slate-500 font-medium normal-case tracking-normal">Control de elevación y estratos</span>
+                            </div>
+                        </button>
+                        <button className="w-full p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center gap-4 hover:bg-white/[0.05] hover:border-primary/20 transition-all group">
+                            <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform shadow-lg shadow-primary/5">
+                                <span className="material-symbols-outlined">settings_ethernet</span>
+                            </div>
+                            <div className="text-left">
+                                <span className="block text-[10px] font-black uppercase tracking-widest text-white mb-0.5">Relaciones N:M</span>
+                                <span className="block text-[9px] text-slate-500 font-medium normal-case tracking-normal">Conectar territorios y zonas</span>
+                            </div>
+                        </button>
+                    </div>
                 </div>
             );
         }
@@ -85,6 +130,7 @@ const InteractiveMapView = ({ map }) => {
     useEffect(() => {
         return () => {
             setRightPanelContent(null);
+            setRightPanelTitle(null);
             setRightOpen(false);
         };
     }, []);
@@ -96,8 +142,8 @@ const InteractiveMapView = ({ map }) => {
 
     return (
         <div className="flex-1 flex overflow-hidden bg-background-dark font-sans text-slate-300 relative">
-            {/* Map Canvas */}
-            <main className="flex-1 overflow-hidden relative group">
+            {/* Map Canvas - Added relative z-0 to avoid overlapping panel */}
+            <main className="flex-1 overflow-hidden relative group z-0">
                 <div className="absolute inset-4 rounded-[2.5rem] overflow-hidden border border-white/5 shadow-2xl bg-surface-dark">
                     {/* Interactive Leaflet Map */}
                     {mapImage ? (
@@ -119,26 +165,7 @@ const InteractiveMapView = ({ map }) => {
                     )}
                 </div>
 
-                {/* Floating Map Title */}
-                <div className="absolute top-8 left-8 z-[1000]">
-                    <GlassPanel className="px-6 py-3 border-white/10">
-                        <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-3">
-                            <span className="material-symbols-outlined text-primary">public</span>
-                            {mapName}
-                        </h1>
-                    </GlassPanel>
-                </div>
-
-                {/* Quick Actions */}
-                <div className="absolute top-8 right-8 z-[1000] flex gap-3">
-                    <button
-                        onClick={() => setRightOpen(prev => !prev)}
-                        className="size-12 rounded-xl bg-surface-dark/90 backdrop-blur-xl border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-primary/50 transition-all shadow-lg"
-                        title="Toggle Panel"
-                    >
-                        <span className="material-symbols-outlined">side_navigation</span>
-                    </button>
-                </div>
+                {/* Floating Map Title & Actions - REMOVED per user request, moved to panel */}
             </main>
         </div>
     );

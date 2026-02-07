@@ -2,17 +2,35 @@
 
 ## Estado Actual
 
-- **Fase**: Consolidación de Herramientas de Worldbuilding.
-- **Hito Reciente**: Unificación del motor de dibujo (`UniversalCanvas`) y eliminación de código legado.
+El proyecto se encuentra en la **Fase 2 (Creador)**, con el núcleo de la Worldbuilding App funcional y en proceso de pulido estético y funcional de las herramientas especializadas (Atlas, Timeline, Grafos).
+
+## Tareas por Módulo
+
+### Biblia y Entidades
+
+- [x] Corrección de crash ‘isCreating’ en la Biblia
+- [x] Robustecimiento de `EntityBuilderSidebar.jsx`
+- [x] Soporte para duplicación de entidades/mapas con `carpetaId`
+
+### Atlas (Cartografía)
+
+- [x] Migración del panel de detalles al Portal Global (`CONTEXT`)
+- [x] Implementación de 'Herramientas Globales' en panel derecho (Multicapa, N:M)
+- [x] Sincronización de apertura de panel al seleccionar mapas
+
+### Cronología (Timeline)
+
+- [x] Sincronización de eventos al cambiar de línea temporal (Multiverso)
+- [x] Limpieza de estado de eventos al deseleccionar
+- [x] Unificación de pestaña a `CONTEXT`
+
+### Grafo de Relaciones
+
+- [x] Implementación de **Edición In-Situ** (Inputs directos en el panel)
+- [x] Truncamiento de valores largos y base64 (Elipsis a 100 caracteres)
+- [x] Corrección de redireccionamiento (Mantenimiento en la vista de Grafo)
 
 ## Próximos Pasos (Prioridad Alta)
 
-- [ ] **Validación de UniversalCanvas**: Confirmar que todas las herramientas (pincel, líneas, formas) funcionan en el nuevo componente.
-- [ ] **Integración de Capas**: Asegurar que la gestión de capas en el panel de propiedades afecte al lienzo correctamente.
-- [ ] **Persistencia**: Verificar que los glifos creados se guarden y carguen correctamente desde el backend.
-
-## Backlog Técnico
-
-- [ ] Refactorizar `MapEditor` para usar `UniversalCanvas` (a futuro).
-- [ ] Implementar sistema de "Snapping" o guías en el lienzo.
-- [ ] Mejorar el rendimiento del renderizado con muchos objetos en Konva.
+- [ ] Implementar la funcionalidad real de los botones 'Multicapa' y 'N:M' vinculados al motor de Leaflet.
+- [ ] Refactorizar el renderizado de etiquetas en el Grafo para mayor legibilidad.

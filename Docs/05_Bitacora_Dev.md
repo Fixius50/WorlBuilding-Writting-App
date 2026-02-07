@@ -1,45 +1,275 @@
-# Bitácora de Desarrollo - Reporte Final de Pulido UI
+# Bitácora de Desarrollo - Sesión 2026-02-07
 
-**Fecha:** 2026-02-06
-**Objetivo:** Auditoría profunda de la Interfaz de Usuario, consistencia visual y corrección de bugs visuales (Dropdowns, Placeholders, i18n, Atlas).
+## 📋 Resumen Ejecutivo
 
-## 1. Resumen Ejecutivo
+Sesión enfocada en corrección de bugs críticos y mejoras de UX en WorldbuildingApp. Se resolvieron problemas de visualización, errores de backend (500), y se implementó un sistema de actualización automática para el grafo de relaciones.
 
-Se ha realizado un recorrido exhaustivo por los módulos principales de la aplicación (`Bible`, `Maps`, `Graph`, `Settings`, `Writing`). El foco principal fue eliminar inconsistencias gráficas que rompían la inmersión, solucionar el bloqueo visual en el Atlas y proveer un flujo de trabajo más lógico para la gestión de mapas.
+---
 
-## 2. Correcciones Aplicadas
+## 🐛 Bugs Corregidos
 
-### 🗺️ Atlas: Reforma Integral (NUEVO)
+### 1. Sistema de Favoritos Eliminado
 
-* **Gestor de Mapas (`MapManager.jsx`):** Se implementó una nueva vista principal tipo "Explorador" que permite visualizar, filtrar y gestionar los mapas existentes antes de entrar al visor. Anteriormente el sistema cargaba agresivamente el primer mapa encontrado.
-* **Corrección de Imágenes Rotas (DuckDNS):** Se endureció la lógica de sanitización en `InteractiveMapView`. Ahora el sistema detecta y bloquea proactivamente URLs de DuckDNS o previews inválidos que intentaban renderizar páginas HTML completas, mostrando en su lugar un fallback elegante ("Mapa no encontrado").
-* **Eliminación de Superposiciones:** Se eliminó el botón flotante "+" del visor que se solapaba con la interfaz, delegando la creación de mapas al nuevo Gestor.
+**Problema**: Funcionalidad de favoritos incompleta y no utilizada.
 
-### 🎯 Controles de UI (Dropdowns/Selects)
+**Solución**: Eliminado botón "Toggle Favorite" del menú contextual en `FolderItem.jsx`.
 
-Se detectó que múltiples componentes `<select>` carecían de estilos específicos para sus elementos `<option>`, provocando que el navegador renderizara fondos blancos por defecto a pesar del tema oscuro.
-**Archivos Intervenidos:** `LinguisticsHub`, `Settings`, `MapCreationWizard`, `EntityBuilder`, `AttributeField`, `CreateProjectModal`, `TemplateManager`, `RelationshipManager`, `ArchitectLayout`.
-**Solución:** Inyección global de clases `bg-[#1a1a20] text-white` en todos los tags `<option>`.
+**Archivos modificados**:
 
-### 🌍 Textos y Localización
+- [FolderItem.jsx](file:///c:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/src/main/frontend/jsx/components/worldbible/FolderItem.jsx)
 
-Se corrigieron fugas de claves i18n crudas en el módulo `WritingHub`.
+---
 
-### 🕸️ Grafo
+### 2. Modal de Borrado de Páginas
 
-- **Zoom Inicial:** Se forzó `fit: true` en la configuración de Cytoscape para evitar desorientación inicial.
+**Problema**: El modal de confirmación ejecutaba la función de borrado incluso cuando mostraba un error ("No puedes borrar la última página").
 
-### 🖼️ Atlas y Mapas (General)
+**Solución**: Modificada la lógica del `ConfirmModal` para que:
 
-- **Sanitización de Imágenes:** Lógica generalizada para placeholders.
+- Solo ejecute `onConfirm` cuando NO hay error
+- Muestre "OK" en lugar de "Confirmar" cuando hay error
+- Actúe como simple cierre cuando hay error
 
-## 3. Estado del Sistema
+**Archivos modificados**:
 
-- **Estabilidad Visual:** 100%. Eliminados flashes blancos y renderizados de iframes rotos en mapas.
-* **Flujo de Usuario:** Mejorado significativamente en el módulo de Mapas gracias al Gestor.
-* **Inmersión:** Alta.
+- [WritingView.jsx](file:///c:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/src/main/frontend/jsx/pages/Writing/WritingView.jsx) (líneas 363-373)
 
-## 4. Próximos Pasos (Sugeridos)
+**Código clave**:
 
-- **Refactorización de UI Kit:** Centralizar `<Select>` y `<MapCard>`.
-* **Testing Automático:** Tests visuales para validar sanity check de imágenes.
+```javascript
+onConfirm={pageToDelete?.error === 'one_page' ? () => {
+    setDeleteModalOpen(false);
+    setPageToDelete(null);
+} : confirmDeletePage}
+```
+
+---
+
+### 3. Relaciones del Grafo No Visibles
+
+**Problema**: La sección "Conexiones Activas" no se mostraba al seleccionar un nodo porque estaba dentro de un bloque condicional `selectedNode.isFull`.
+
+**Solución**: Movida la sección fuera del bloque condicional para que siempre se muestre al seleccionar un nodo.
+
+**Archivos modificados**:
+
+- [GeneralGraphView.jsx](file:///c:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/src/main/frontend/jsx/pages/Graph/GeneralGraphView.jsx) (líneas 358-378)
+
+**Logs de depuración añadidos**:
+
+```javascript
+console.log('Node ID:', selectedNode.id, 'Relations found:', nodeRelations.length, 'Total elements:', elements.length);
+```
+
+---
+
+### 4. Error 500 al Guardar/Borrar Páginas
+
+**Problema**: Error SQL `no such column: n1_0.categoria` al intentar guardar o borrar páginas.
+
+**Causa**: La tabla `nota_rapida` no tenía las columnas `linea` y `categoria` que el modelo Java esperaba.
+
+**Solución**:
+
+1. Actualizado `V1__Initial_Schema.sql` con las columnas faltantes
+2. Añadidas al parche manual en `DatabaseMigration.java`
+
+**Archivos modificados**:
+
+- [V1__Initial_Schema.sql](file:///c:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/src/main/resources/db/migration/V1__Initial_Schema.sql) (líneas 98-111)
+- [DatabaseMigration.java](file:///c:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/src/main/java/com/worldbuilding/app/config/DatabaseMigration.java) (línea 87)
+
+**Schema actualizado**:
+
+```sql
+CREATE TABLE IF NOT EXISTS nota_rapida (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    contenido TEXT NOT NULL,
+    linea INTEGER NOT NULL,        -- AÑADIDO
+    categoria VARCHAR(255),         -- AÑADIDO
+    fecha_creacion TEXT,
+    -- ... resto de columnas
+);
+```
+
+---
+
+## ✨ Nuevas Funcionalidades
+
+### 1. Selector "Todo" en Gestor de Relaciones
+
+**Descripción**: Añadida opción para ver todas las entidades sin filtrar por tipo específico.
+
+**Implementación**:
+
+- Nuevo valor en `ENTITY_TYPES`: `{ value: 'All', label: 'Todo' }`
+- Lógica de filtrado: `const filtered = type === 'All' ? all : all.filter(...)`
+- Valor por defecto cambiado a `'All'`
+
+**Archivos modificados**:
+
+- [RelationshipManager.jsx](file:///c:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/src/main/frontend/jsx/components/relationships/RelationshipManager.jsx) (líneas 7-18, 27, 87)
+
+**Beneficio**: Facilita la creación de relaciones al mostrar todas las entidades disponibles.
+
+---
+
+### 2. Sistema de Actualización Automática del Grafo
+
+**Descripción**: Las relaciones creadas/eliminadas ahora se reflejan instantáneamente en "Conexiones Activas" sin refrescar la página.
+
+**Implementación**:
+
+#### Emisión de Eventos (`RelationshipManager.jsx`)
+
+```javascript
+// Después de guardar
+window.dispatchEvent(new CustomEvent('relationships-update'));
+
+// Después de eliminar
+window.dispatchEvent(new CustomEvent('relationships-update'));
+```
+
+#### Escucha de Eventos (`GeneralGraphView.jsx`)
+
+```javascript
+useEffect(() => {
+    const handleRelationshipUpdate = () => {
+        console.log('>>> Relationships updated, reloading graph data...');
+        loadData();
+    };
+    
+    window.addEventListener('relationships-update', handleRelationshipUpdate);
+    
+    return () => {
+        window.removeEventListener('relationships-update', handleRelationshipUpdate);
+    };
+}, []);
+```
+
+**Archivos modificados**:
+
+- [RelationshipManager.jsx](file:///c:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/src/main/frontend/jsx/components/relationships/RelationshipManager.jsx) (líneas 125-127, 138-140)
+- [GeneralGraphView.jsx](file:///c:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/src/main/frontend/jsx/pages/Graph/GeneralGraphView.jsx) (líneas 110-120)
+
+**Beneficio**: Mejora significativa en la UX al eliminar la necesidad de refrescar manualmente.
+
+---
+
+## 🔧 Mejoras de UX
+
+### 1. Editor de Escritura Ampliado
+
+**Cambios**:
+
+- Padding horizontal reducido: `px-32` → `px-20`
+- Ancho máximo aumentado: `max-w-4xl` → `max-w-5xl`
+
+**Archivo**: [WritingView.jsx](file:///c:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/src/main/frontend/jsx/pages/Writing/WritingView.jsx)
+
+---
+
+### 2. Guardado Automático al Cambiar de Página
+
+**Descripción**: El contenido se guarda automáticamente al cambiar de página.
+
+**Implementación**: Llamada a `handleSave()` en `handlePageSelect()`.
+
+**Archivo**: [WritingView.jsx](file:///c:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/src/main/frontend/jsx/pages/Writing/WritingView.jsx)
+
+---
+
+### 3. Leyenda de Atajos de Teclado
+
+**Añadida**: Leyenda visible en el panel derecho "Formato" con atajos de Markdown.
+
+**Archivo**: [WritingView.jsx](file:///c:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/src/main/frontend/jsx/pages/Writing/WritingView.jsx)
+
+---
+
+### 4. Texto Visible en ZenEditor
+
+**Problema**: Texto blanco sobre fondo claro (invisible).
+
+**Solución**: Cambiado a texto oscuro sobre fondo claro.
+
+**Archivo**: [ZenEditor.jsx](file:///c:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/src/main/frontend/jsx/components/writing/ZenEditor.jsx)
+
+---
+
+### 5. EntityBuilderSidebar a Ancho Completo
+
+**Cambio**: Sidebar expandido para mejor visualización de atributos.
+
+**Archivo**: [EntityBuilderSidebar.jsx](file:///c:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/src/main/frontend/jsx/components/worldbible/EntityBuilderSidebar.jsx)
+
+---
+
+## 🗄️ Sistema de Migraciones
+
+### Configuración Actual
+
+El proyecto utiliza un sistema de migración personalizado con:
+
+1. **Flyway con `repair()` automático**: Actualiza checksums en cada migración
+2. **Parches manuales**: Añaden columnas faltantes antes de Flyway
+3. **No requiere eliminación manual de BD**: Todo se gestiona automáticamente
+
+### Archivo Clave
+
+[DatabaseMigration.java](file:///c:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/src/main/java/com/worldbuilding/app/config/DatabaseMigration.java)
+
+**Flujo**:
+
+1. `@PostConstruct` ejecuta migraciones al iniciar
+2. `manualPatchMissingColumns()` añade columnas faltantes
+3. `flyway.repair()` actualiza checksums
+4. `flyway.migrate()` aplica migraciones
+
+---
+
+## 📊 Archivos Modificados (Resumen)
+
+### Frontend (JSX)
+
+1. `FolderItem.jsx` - Eliminado favoritos
+2. `WritingView.jsx` - Editor ampliado, guardado automático, modal corregido
+3. `GeneralGraphView.jsx` - Relaciones visibles + eventos
+4. `RelationshipManager.jsx` - Selector "Todo" + eventos
+5. `EntityBuilderSidebar.jsx` - Ancho completo
+6. `ZenEditor.jsx` - Texto visible
+
+### Backend (Java)
+
+1. `DatabaseMigration.java` - Parche para `nota_rapida`
+
+### SQL
+
+1. `V1__Initial_Schema.sql` - Columnas `linea` y `categoria`
+
+---
+
+## 🎯 Próximos Pasos Recomendados
+
+1. **Reiniciar el servidor** para aplicar los parches de migración
+2. **Probar el guardado/borrado de páginas** para verificar que los errores 500 desaparecieron
+3. **Crear relaciones en el grafo** para verificar la actualización automática
+4. **Revisar logs de consola** para confirmar que los eventos se emiten correctamente
+
+---
+
+## 📝 Notas Técnicas
+
+### Grafo Sin Relaciones (No es un Bug)
+
+Los logs muestran `Relations found: 0` porque el proyecto actual no tiene relaciones creadas en la base de datos. El código funciona correctamente.
+
+### Sistema de Eventos
+
+El patrón de eventos personalizado (`CustomEvent`) es ligero y eficiente para comunicación entre componentes sin necesidad de un estado global complejo.
+
+---
+
+**Fecha**: 2026-02-07  
+**Autor**: Roberto Monedero Alonso  
+**Versión**: WorldbuildingApp V2

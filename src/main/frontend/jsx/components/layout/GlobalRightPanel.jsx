@@ -7,13 +7,14 @@ import GlassPanel from '../common/GlassPanel';
 const GlobalRightPanel = ({
     isOpen,
     onClose,
-    contextContent, // Content injected by active page (Map details, Graph controls, etc)
+    onToggle,       // Added prop for toggling from the tab button
+    contextContent,
     projectId,
-    activeTab,      // Controlled by ArchitectLayout
-    setActiveTab    // Controlled by ArchitectLayout
+    activeTab,
+    setActiveTab,
+    title           // Added title prop
 }) => {
     const { t } = useLanguage();
-    // const [activeTab, setActiveTab] = useState(contextContent ? 'CONTEXT' : 'NOTEBOOKS'); // REMOVED LOCAL STATE
 
     // Auto-switch to context if new context content arrives
     React.useEffect(() => {
@@ -29,7 +30,28 @@ const GlobalRightPanel = ({
                 ${isOpen ? 'w-96 translate-x-0' : 'w-96 translate-x-full'}
             `}
         >
-            {/* Toggle Handle (visible when closed) - Can be added if needed, currently controlled by Layout */}
+            {/* --- TAB TOGGLE BUTTON (CENTRADO VERTICAL) --- */}
+            <button
+                onClick={onToggle}
+                className={`
+                    absolute top-1/2 -translate-y-1/2 -left-10 w-10 h-24 
+                    bg-surface-dark border border-glass-border border-r-0
+                    rounded-l-2xl flex flex-col items-center justify-center gap-1
+                    transition-all duration-300 group
+                    hover:bg-primary/10 hover:border-primary/30
+                    ${isOpen ? 'text-primary shadow-[-4px_0_15px_-5px_rgba(var(--primary-rgb),0.3)]' : 'text-slate-500'}
+                `}
+                title={isOpen ? "Cerrar Panel" : "Abrir Panel"}
+            >
+                <div className={`w-1 h-3 rounded-full bg-current opacity-20 transition-all duration-500 ${isOpen ? 'h-6 opacity-40' : ''}`}></div>
+                <span className={`material-symbols-outlined text-lg transition-transform duration-500 ${isOpen ? 'rotate-180' : ''}`}>
+                    side_navigation
+                </span>
+                <div className={`w-1 h-3 rounded-full bg-current opacity-20 transition-all duration-500 ${isOpen ? 'h-6 opacity-40' : ''}`}></div>
+
+                {/* Micro-glow effect */}
+                <div className={`absolute inset-0 rounded-l-2xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity`}></div>
+            </button>
 
             {/* Header Tabs */}
             <div className="flex items-center border-b border-glass-border bg-white/[0.02]">
@@ -46,14 +68,19 @@ const GlobalRightPanel = ({
                     className={`flex-1 py-4 flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest transition-colors relative ${activeTab === 'NOTEBOOKS' ? 'text-primary' : 'text-slate-500 hover:text-white'}`}
                 >
                     <span className="material-symbols-outlined text-sm">book</span>
-                    Cuadernos
+                    Apuntes
                     {activeTab === 'NOTEBOOKS' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>}
                 </button>
-                {/* Close Button */}
-                <button onClick={onClose} className="p-4 text-slate-500 hover:text-white transition-colors border-l border-white/5">
-                    <span className="material-symbols-outlined text-sm">close_fullscreen</span>
-                </button>
             </div>
+
+            {/* Optional Title Section */}
+            {title && (
+                <div className="px-6 py-3 border-b border-glass-border bg-white/[0.01]">
+                    <div className="text-sm font-bold text-white tracking-tight">
+                        {title}
+                    </div>
+                </div>
+            )}
 
             {/* Content Area */}
             <div className="flex-1 overflow-hidden relative bg-black/20">

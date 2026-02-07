@@ -18,10 +18,12 @@ const WorldBibleLayout = () => {
 
     const [folders, setFolders] = useState([]);
     const [favorites, setFavorites] = useState([]);
-    const [creationMenuOpen, setCreationMenuOpen] = useState(false);
+    const [createMenuOpen, setCreateMenuOpen] = useState(false);
 
     const [creationModalOpen, setCreationModalOpen] = useState(false);
     const [targetParent, setTargetParent] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterType, setFilterType] = useState('ALL');
 
     // Deletion Modal State
     const [confirmOpen, setConfirmOpen] = useState(false);
@@ -137,7 +139,34 @@ const WorldBibleLayout = () => {
         }
     };
 
-    // --- Entity Handlers (Keep inline or basic for now, or expand) ---
+    const handleMoveEntity = async (entityId, targetFolderId, sourceFolderId) => {
+        try {
+            await api.put(`/world-bible/entities/${entityId}`, { carpetaId: targetFolderId });
+            window.dispatchEvent(new CustomEvent('folder-update', {
+                detail: { folderId: sourceFolderId, removeId: entityId, type: 'entity' }
+            }));
+            window.dispatchEvent(new CustomEvent('folder-update', {
+                detail: { folderId: targetFolderId, type: 'move-in', entityId }
+            }));
+        } catch (err) { console.error("Move failed:", err); }
+    };
+
+    const handleDuplicateEntity = async (entityId, folderId) => {
+        try {
+            const entity = await api.get(`/world-bible/entities/${entityId}`);
+            const duplicated = await api.post('/world-bible/entities', {
+                ...entity,
+                id: undefined,
+                nombre: `${entity.nombre} (Copia)`,
+                carpetaId: folderId
+            });
+            window.dispatchEvent(new CustomEvent('folder-update', {
+                detail: { folderId: folderId, type: 'entity', item: duplicated }
+            }));
+        } catch (err) { console.error("Duplicate failed:", err); }
+    };
+
+    // --- Entity Handlers ---
     // For now keeping 'handleCreateEntity' logic simplified or separate.
 
     // We retain the old 'handleCreateEntity' for consistency with FolderItem props, 
@@ -277,8 +306,62 @@ const WorldBibleLayout = () => {
                         <input
                             type="text"
                             placeholder={t('bible.search_entity')}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full bg-surface-light/50 border border-glass-border rounded-xl py-2 pl-9 pr-3 text-xs focus:border-primary/50 outline-none transition-all text-white placeholder:text-text-muted/50"
                         />
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        {/* Simplified Select Filter */}
+                        <div className="relative">
+                            <select
+                                value={filterType}
+                                onChange={(e) => setFilterType(e.target.value)}
+                                className="appearance-none bg-surface-dark border border-glass-border rounded-xl px-4 py-2 pr-10 text-xs font-bold text-white transition-all hover:bg-white/5 focus:border-primary outline-none inline-flex items-center"
+                            >
+                                <option value="ALL">🔍 TODO</option>
+                                <option value="individual">👤 PERSONAJES</option>
+                                <option value="location">📍 LUGARES</option>
+                                <option value="culture">🤝 CULTURAS</option>
+                                <option value="map">🗺️ MAPAS</option>
+                                <option value="timeline">⏳ TIMELINES</option>
+                            </select>
+                            <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted pointer-events-none">expand_more</span>
+                        </div>
+
+                        <button
+                            onClick={() => setCreateMenuOpen(!createMenuOpen)}
+                            className="p-2 aspect-square bg-primary hover:bg-primary-light text-white rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center"
+                        >
+                            <span className="material-symbols-outlined text-sm">add</span>
+                        </button>
+
+                        {createMenuOpen && (
+                            <div className="absolute top-full right-0 mt-2 w-48 bg-surface-dark border border-glass-border rounded-xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                                <button
+                                    onClick={() => { handleOpenCreateModal('FOLDER'); setCreateMenuOpen(false); }}
+                                    className="w-full px-4 py-2 hover:bg-white/5 text-left text-xs font-bold text-white/70 hover:text-white flex items-center gap-3"
+                                >
+                                    <span className="material-symbols-outlined text-sm text-primary">create_new_folder</span>
+                                    Nueva Carpeta
+                                </button>
+                                <button
+                                    onClick={() => { handleCreateSimpleFolder(null, 'MAP'); setCreateMenuOpen(false); }}
+                                    className="w-full px-4 py-2 hover:bg-white/5 text-left text-xs font-bold text-white/70 hover:text-white flex items-center gap-3"
+                                >
+                                    <span className="material-symbols-outlined text-sm text-red-400">map</span>
+                                    Mapa
+                                </button>
+                                <button
+                                    onClick={() => { handleCreateSimpleFolder(null, 'TIMELINE'); setCreateMenuOpen(false); }}
+                                    className="w-full px-4 py-2 hover:bg-white/5 text-left text-xs font-bold text-white/70 hover:text-white flex items-center gap-3"
+                                >
+                                    <span className="material-symbols-outlined text-sm text-cyan-400">timeline</span>
+                                    Timeline
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                 </div>
@@ -338,9 +421,12 @@ const WorldBibleLayout = () => {
                                 onDeleteFolder={handleDeleteFolder}
                                 onDeleteEntity={handleDeleteFolder}
                                 onCreateTemplate={() => { }}
-                                onMoveEntity={(e, f, s) => console.log('move', e, f, s)}
+                                onMoveEntity={handleMoveEntity}
+                                onDuplicateEntity={handleDuplicateEntity}
                                 onCreateEntity={handleCreateEntity}
                                 onConfirmCreate={handleConfirmCreate}
+                                searchTerm={searchTerm}
+                                filterType={filterType}
                             />
                         ))
                     )}

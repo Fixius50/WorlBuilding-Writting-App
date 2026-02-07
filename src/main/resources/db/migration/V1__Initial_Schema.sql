@@ -97,7 +97,9 @@ CREATE TABLE IF NOT EXISTS hoja (
 
 CREATE TABLE IF NOT EXISTS nota_rapida (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    contenido TEXT,
+    contenido TEXT NOT NULL,
+    linea INTEGER NOT NULL,
+    categoria VARCHAR(255),
     fecha_creacion TEXT,
     hoja_id INTEGER,
     proyecto_id INTEGER,

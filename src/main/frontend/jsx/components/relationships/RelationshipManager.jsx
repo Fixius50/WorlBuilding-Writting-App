@@ -5,6 +5,7 @@ import Button from '../../components/common/Button';
 // Mapping of internal types to user-friendly labels and endpoints
 // Mapping of internal types to user-friendly labels (Matches 'Categoria' in EntidadGenerica)
 const ENTITY_TYPES = [
+    { value: 'All', label: 'Todo' },
     { value: 'Individual', label: 'Personaje' },
     { value: 'Group', label: 'Grupo/Facción' },
     { value: 'Location', label: 'Lugar' },
@@ -24,8 +25,9 @@ const RelationshipManager = ({ entityId, entityType }) => {
     const [isAdding, setIsAdding] = useState(false);
 
     // Form State
-    const [targetType, setTargetType] = useState('Individual');
+    const [targetType, setTargetType] = useState('All');
     const [targetItems, setTargetItems] = useState([]);
+    const [targetSearch, setTargetSearch] = useState(''); // ADDED
     const [selectedTargetId, setSelectedTargetId] = useState('');
     const [relType, setRelType] = useState('');
     const [description, setDescription] = useState('');
@@ -80,10 +82,10 @@ const RelationshipManager = ({ entityId, entityType }) => {
             const all = await api.get('/world-bible/entities');
 
             // Filter by category OR type
-            // If type is "All" (not implemented yet) return all
+            // If type is "All" return all entities
             // Match against 'categoria' (e.g. Individual) or 'tipoEspecial' (e.g. map)
 
-            const filtered = all.filter(e => {
+            const filtered = type === 'All' ? all : all.filter(e => {
                 // Determine category of entity
                 const cat = e.categoria || 'Generic';
                 // loose match because case might differ
@@ -120,6 +122,9 @@ const RelationshipManager = ({ entityId, entityType }) => {
             setIsAdding(false);
             resetForm();
             loadRelationships();
+
+            // Emit event to notify graph to reload
+            window.dispatchEvent(new CustomEvent('relationships-update'));
         } catch (error) {
             console.error("Failed to save relationship", error);
             alert("Error saving relationship");
@@ -131,13 +136,17 @@ const RelationshipManager = ({ entityId, entityType }) => {
         try {
             await api.delete(`/bd/relacion/${id}`);
             loadRelationships();
+
+            // Emit event to notify graph to reload
+            window.dispatchEvent(new CustomEvent('relationships-update'));
         } catch (error) {
             console.error("Failed to delete", error);
         }
     }
 
     const resetForm = () => {
-        setTargetType('Individual');
+        setTargetType('All');
+        setTargetSearch('');
         setSelectedTargetId('');
         setRelType('');
         setDescription('');
@@ -154,30 +163,63 @@ const RelationshipManager = ({ entityId, entityType }) => {
 
             {isAdding && (
                 <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-4 animate-in fade-in slide-in-from-top-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1">
                             <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Target Type</label>
                             <select
                                 className="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-sm text-white outline-none focus:border-primary"
                                 value={targetType}
-                                onChange={e => setTargetType(e.target.value)}
+                                onChange={e => {
+                                    setTargetType(e.target.value);
+                                    setTargetSearch('');
+                                    setSelectedTargetId('');
+                                }}
                             >
                                 {ENTITY_TYPES.map(t => <option key={t.value} value={t.value} className="bg-[#1a1a20] text-white">{t.label}</option>)}
                             </select>
                         </div>
                         <div className="space-y-1">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Target Entity</label>
-                            <select
-                                className="w-full bg-black/40 border border-white/10 rounded-xl p-2 text-sm text-white outline-none focus:border-primary"
-                                value={selectedTargetId}
-                                onChange={e => setSelectedTargetId(e.target.value)}
-                                disabled={fetchingTargets}
-                            >
-                                <option value="" className="bg-[#1a1a20] text-white">Select Target...</option>
-                                {targetItems.map(item => (
-                                    <option key={item.id} value={item.id} className="bg-[#1a1a20] text-white">{item.nombre}</option>
-                                ))}
-                            </select>
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Search & Select Target</label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    className="w-full bg-black/40 border border-white/10 rounded-xl p-2 pl-8 text-sm text-white outline-none focus:border-primary"
+                                    placeholder="Type to search..."
+                                    value={targetSearch}
+                                    onChange={e => setTargetSearch(e.target.value)}
+                                />
+                                <span className="material-symbols-outlined absolute left-2 top-2 text-slate-500 text-sm">search</span>
+
+                                {targetSearch && !selectedTargetId && (
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-surface-dark border border-white/10 rounded-xl shadow-2xl z-50 max-h-40 overflow-y-auto custom-scrollbar">
+                                        {targetItems.filter(item => item.nombre.toLowerCase().includes(targetSearch.toLowerCase())).length === 0 ? (
+                                            <div className="p-3 text-[10px] text-slate-500 text-center italic">No results found</div>
+                                        ) : (
+                                            targetItems.filter(item => item.nombre.toLowerCase().includes(targetSearch.toLowerCase())).map(item => (
+                                                <div
+                                                    key={item.id}
+                                                    onClick={() => {
+                                                        setSelectedTargetId(item.id);
+                                                        setTargetSearch(item.nombre);
+                                                    }}
+                                                    className="p-2 hover:bg-primary/20 cursor-pointer text-xs text-slate-200 border-b border-white/5 last:border-0"
+                                                >
+                                                    {item.nombre}
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                )}
+
+                                {selectedTargetId && (
+                                    <button
+                                        onClick={() => { setSelectedTargetId(''); setTargetSearch(''); }}
+                                        className="absolute right-2 top-2 text-slate-500 hover:text-white"
+                                    >
+                                        <span className="material-symbols-outlined text-sm">close</span>
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
 

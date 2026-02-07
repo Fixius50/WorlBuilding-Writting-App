@@ -10,7 +10,7 @@ import Button from '../../components/common/Button';
 const TimelineView = () => {
     const { t } = useLanguage();
     // Context from ArchitectLayout
-    const { setRightPanelTab, setRightOpen } = useOutletContext(); // Removed legacy props
+    const { setRightPanelTab, setRightOpen, setRightPanelTitle, setRightPanelMode } = useOutletContext(); // Added title/mode controllers
 
     const [timelines, setTimelines] = useState([]);
     const [selectedTimelineId, setSelectedTimelineId] = useState(null);
@@ -28,9 +28,13 @@ const TimelineView = () => {
     const [editingTimeline, setEditingTimeline] = useState(null);
 
     // New State for Right Panel
-    const [activeTab, setActiveTab] = useState('eventos'); // 'eventos' | 'anexos'
-    const [linkedTimelines, setLinkedTimelines] = useState([]);
-    const [availableTimelines, setAvailableTimelines] = useState([]);
+    const [selectedEventId, setSelectedEventId] = useState(null);
+    const [eventAnexos, setEventAnexos] = useState([]);
+    const [entitySearch, setEntitySearch] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [activeTab, setActiveTab] = useState('eventos'); // 'eventos' | 'anexos' | 'universo'
+
+    const selectedEvent = events.find(e => e.id === selectedEventId);
 
     // Portal Target Node
     const [portalTarget, setPortalTarget] = useState(null);
@@ -166,6 +170,15 @@ const TimelineView = () => {
         }
     };
 
+    // Load events when timeline selection changes
+    useEffect(() => {
+        if (selectedTimelineId) {
+            loadEvents(selectedTimelineId);
+        } else {
+            setEvents([]);
+        }
+    }, [selectedTimelineId]);
+
     // ... (Existing Event Logic remains mostly same, just context changed) ...
 
 
@@ -212,6 +225,7 @@ const TimelineView = () => {
 
     const startEditEvent = (event) => {
         setEditingEvent(event);
+        setSelectedEventId(event.id); // Also select it
         setNewEvent({
             nombre: event.nombre,
             descripcion: event.descripcion,
@@ -220,6 +234,64 @@ const TimelineView = () => {
         });
         setActiveTab('eventos');
         setRightOpen(true);
+        loadEventAnexos(event.id);
+    };
+
+    const loadEventAnexos = async (eventId) => {
+        try {
+            const allRels = await api.get('/bd/relacion');
+            const relevant = allRels.filter(r =>
+                (r.idOrigen === eventId && r.tipoOrigen === 'evento') ||
+                (r.idDestino === eventId && r.tipoDestino === 'evento')
+            );
+
+            // Fetch entity details for each related ID
+            const entities = await api.get('/world-bible/entities');
+            const linked = relevant.map(r => {
+                const otherId = r.idOrigen === eventId ? r.idDestino : r.idOrigen;
+                const ent = entities.find(e => e.id === otherId);
+                return ent ? { ...ent, relId: r.id } : null;
+            }).filter(Boolean);
+
+            setEventAnexos(linked);
+        } catch (e) { console.error(e); }
+    };
+
+    const handleSearchEntities = async (val) => {
+        setEntitySearch(val);
+        if (val.length < 2) { setSearchResults([]); return; }
+        try {
+            const all = await api.get('/world-bible/entities');
+            const filtered = all.filter(e =>
+                e.nombre.toLowerCase().includes(val.toLowerCase()) &&
+                e.tipoEspecial !== 'map' && e.tipoEspecial !== 'timeline'
+            ).slice(0, 5);
+            setSearchResults(filtered);
+        } catch (e) { console.error(e); }
+    };
+
+    const handleAttachEntity = async (entity) => {
+        if (!selectedEventId) return;
+        try {
+            await api.put('/bd/insertar', {
+                tipoEntidad: 'relacion',
+                tipoOrigen: 'evento',
+                idOrigen: selectedEventId,
+                tipoDestino: 'entidad',
+                idDestino: entity.id,
+                descripcion: 'Anexo de evento'
+            });
+            setEntitySearch('');
+            setSearchResults([]);
+            loadEventAnexos(selectedEventId);
+        } catch (e) { console.error(e); }
+    };
+
+    const handleRemoveAnexo = async (relId) => {
+        try {
+            await api.delete(`/bd/relacion/${relId}`);
+            loadEventAnexos(selectedEventId);
+        } catch (e) { console.error(e); }
     };
 
     const handleCreateTimeline = async () => {
@@ -468,41 +540,57 @@ const TimelineView = () => {
 
                 {activeTab === 'anexos' && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-                        {/* ... existing anexos content (implicit) ... */}
-                        <div className="bg-black/20 rounded-xl p-4 border border-white/5">
-                            <h3 className="text-xs font-black uppercase text-primary mb-4">{t('timeline.linked_timelines')}</h3>
-                            <p className="text-xs text-slate-500 mb-4">{t('timeline.annexed_desc')}</p>
-
-                            <div className="space-y-2 mb-6">
-                                {linkedTimelines.map(lt => (
-                                    <div key={lt.id} className="flex items-center justify-between p-2 bg-white/5 rounded-lg border border-white/5">
-                                        <div className="flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-xs text-slate-400">timeline</span>
-                                            <span className="text-xs font-bold text-slate-300">{lt.nombre}</span>
-                                        </div>
-                                        <button onClick={() => handleUnlinkTimeline(lt.id)} className="text-slate-500 hover:text-red-500">
-                                            <span className="material-symbols-outlined text-sm">link_off</span>
-                                        </button>
+                        {!selectedEventId ? (
+                            <div className="p-10 text-center opacity-30 italic text-xs">
+                                Selecciona un evento para ver sus anexos.
+                            </div>
+                        ) : (
+                            <div className="space-y-6">
+                                <div className="bg-black/20 rounded-xl p-4 border border-white/5">
+                                    <h3 className="text-xs font-black uppercase text-primary mb-4">Anexar Entidades</h3>
+                                    <div className="relative mb-4">
+                                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</span>
+                                        <input
+                                            className="w-full bg-background-dark border border-white/10 rounded-lg pl-9 pr-4 py-2 text-xs text-white outline-none focus:border-primary"
+                                            placeholder="Buscar personaje, lugar..."
+                                            value={entitySearch}
+                                            onChange={e => handleSearchEntities(e.target.value)}
+                                        />
+                                        {searchResults.length > 0 && (
+                                            <div className="absolute top-full left-0 right-0 mt-1 bg-surface-dark border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
+                                                {searchResults.map(res => (
+                                                    <button
+                                                        key={res.id}
+                                                        onClick={() => handleAttachEntity(res)}
+                                                        className="w-full px-4 py-2 hover:bg-primary/20 text-left text-[10px] font-bold text-white/70 hover:text-white flex items-center justify-between"
+                                                    >
+                                                        <span>{res.nombre}</span>
+                                                        <span className="text-[8px] opacity-40 uppercase">{res.categoria}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
-                                ))}
-                                {linkedTimelines.length === 0 && <span className="text-xs text-slate-600 italic">{t('timeline.no_linked')}</span>}
-                            </div>
 
-                            <h4 className="text-[10px] font-bold uppercase text-slate-400 mb-2">{t('timeline.available_to_link')}</h4>
-                            <div className="space-y-1">
-                                {availableTimelines.map(at => (
-                                    <button
-                                        key={at.id}
-                                        onClick={() => handleLinkTimeline(at.id)}
-                                        className="w-full flex items-center gap-2 p-2 hover:bg-white/5 rounded-lg text-left transition-colors group"
-                                    >
-                                        <span className="material-symbols-outlined text-xs text-green-500/50 group-hover:text-green-500">add_link</span>
-                                        <span className="text-xs text-slate-400 group-hover:text-white">{at.nombre}</span>
-                                    </button>
-                                ))}
-                                {availableTimelines.length === 0 && <span className="text-xs text-slate-600 italic">{t('timeline.no_available')}</span>}
+                                    <div className="space-y-2">
+                                        {eventAnexos.map(anexo => (
+                                            <div key={anexo.id} className="flex items-center justify-between p-2 bg-white/5 rounded-lg border border-white/5 group">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="material-symbols-outlined text-xs text-primary/50">link</span>
+                                                    <span className="text-xs font-bold text-slate-300">{anexo.nombre}</span>
+                                                </div>
+                                                <button onClick={() => handleRemoveAnexo(anexo.relId)} className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-500 transition-opacity">
+                                                    <span className="material-symbols-outlined text-sm">link_off</span>
+                                                </button>
+                                            </div>
+                                        ))}
+                                        {eventAnexos.length === 0 && (
+                                            <p className="text-[10px] text-slate-600 italic">No hay entidades anexadas a este evento.</p>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 )}
 
@@ -639,8 +727,6 @@ const TimelineView = () => {
             {/* CENTER: Main Visualization */}
             <main className="flex-1 relative flex flex-col h-full overflow-hidden bg-background-dark">
                 {/* Header */}
-
-                {/* Header */}
                 <div className="h-16 border-b border-white/5 bg-background-dark/80 backdrop-blur flex items-center px-8 z-10 shrink-0">
                     <div>
                         {(() => {
@@ -674,7 +760,7 @@ const TimelineView = () => {
                                     className="absolute top-6 -left-[41px] size-4 rounded-full bg-white/20 border-4 border-background-dark group-hover:bg-primary transition-colors cursor-pointer"
                                     onClick={() => startEditEvent(event)}
                                 ></div>
-                                <div className="ml-4 bg-surface-dark/50 border border-white/5 p-5 rounded-2xl hover:border-primary/30 transition-all hover:bg-surface-dark group-hover:translate-x-1 duration-300 relative group/card">
+                                <div className={`ml-4 bg-surface-dark/50 border border-white/5 p-5 rounded-2xl hover:border-primary/30 transition-all hover:bg-surface-dark group-hover:translate-x-1 duration-300 relative group/card ${selectedEventId === event.id ? 'ring-2 ring-primary border-primary/50 bg-primary/5' : ''}`}>
                                     <div className="absolute top-3 right-3 opacity-0 group-hover/card:opacity-100 transition-opacity flex gap-1 bg-black/50 rounded-lg backdrop-blur-sm border border-white/5 p-1">
                                         <button onClick={() => startEditEvent(event)} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Edit">
                                             <span className="material-symbols-outlined text-sm">edit</span>
@@ -683,8 +769,8 @@ const TimelineView = () => {
                                             <span className="material-symbols-outlined text-sm">delete</span>
                                         </button>
                                     </div>
-                                    <div className="flex justify-between items-start">
-                                        <div>
+                                    <div className="flex justify-between items-start" onClick={() => startEditEvent(event)}>
+                                        <div className="cursor-pointer">
                                             <div className="flex flex-col mb-1">
                                                 <h3 className="text-lg font-bold text-white">{event.nombre}</h3>
                                                 <span className="text-xs font-mono font-bold text-primary opacity-80">

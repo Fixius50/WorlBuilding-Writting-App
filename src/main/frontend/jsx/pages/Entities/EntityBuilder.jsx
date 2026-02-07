@@ -47,6 +47,7 @@ const EntityBuilder = ({ mode }) => {
     // UI State
     const [activeEntityTab, setActiveEntityTab] = useState('identity'); // LOCAL STATE FOR TABS
     const [showImageModal, setShowImageModal] = useState(false);
+    const [zoomImage, setZoomImage] = useState(null); // For image preview modal
 
     // Portal Target
     const [portalTarget, setPortalTarget] = useState(null);
@@ -175,6 +176,42 @@ const EntityBuilder = ({ mode }) => {
     };
 
     // --- HANDLERS ---
+    const handleImageUpload = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+
+        files.forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const base64 = event.target.result;
+                const currentImages = entity.attributes?.images || [];
+                setEntity(prev => ({
+                    ...prev,
+                    attributes: {
+                        ...prev.attributes,
+                        images: [...currentImages, base64]
+                    }
+                }));
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Reset input to allow selecting the same files again
+        e.target.value = null;
+    };
+
+    const removeImage = (index) => {
+        const currentImages = [...(entity.attributes?.images || [])];
+        currentImages.splice(index, 1);
+        setEntity(prev => ({
+            ...prev,
+            attributes: {
+                ...prev.attributes,
+                images: currentImages
+            }
+        }));
+    };
+
     const handleCoreChange = (key, val) => {
         setEntity(prev => ({ ...prev, [key]: val }));
     };
@@ -207,26 +244,16 @@ const EntityBuilder = ({ mode }) => {
         setEntity(prev => ({ ...prev, [field]: value }));
 
         // 2. Persist to Backend if not new
-        if (!isNew) {
+        if (!isCreation) { // Changed from !isNew to !isCreation
             try {
                 const updatedEntity = { ...entity, [field]: value };
-                await api.put(`/world-bible/entities/${entityId}`, updatedEntity);
+                // Assuming entity.id is available for existing entities
+                await api.put(`/world-bible/entities/${entity.id}`, updatedEntity);
                 console.log(`Auto-saved ${field}`);
             } catch (err) {
                 console.error(`Failed to auto-save ${field}`, err);
                 // Optionally revert state here on failure
             }
-        }
-    };
-
-    const handleImageUpload = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                handleAutoSave('iconUrl', reader.result);
-            };
-            reader.readAsDataURL(file);
         }
     };
 
@@ -429,6 +456,7 @@ const EntityBuilder = ({ mode }) => {
                 {portalTarget && createPortal(
                     <EntityBuilderSidebar
                         templates={availableTemplatesLocal}
+                        currentFields={fields}
                         onAddTemplate={(tpl) => {
                             setFields(prev => [...prev, {
                                 id: `temp-${tpl.id}-${Date.now()}`,
@@ -461,187 +489,109 @@ const EntityBuilder = ({ mode }) => {
                 <div className="p-8 pb-32 max-w-5xl mx-auto w-full">
 
                     {activeEntityTab === 'identity' && (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            {/* Identity Card */}
-                            <GlassPanel className={`p-6 space-y-6 ${entity.tipoEspecial === 'map' ? 'lg:col-span-2' : ''}`}>
-                                <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2 mb-6">
-                                    <span className="material-symbols-outlined text-sm">badge</span> Identity
-                                </h3>
-
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">Full Name</label>
-                                        <input
-                                            value={entity.nombre}
-                                            onChange={e => handleCoreChange('nombre', e.target.value)}
-                                            className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-sm text-white focus:border-primary/50 outline-none transition-colors"
-                                            placeholder="E.g. King Alaric"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">Entity Type / Category</label>
-                                        <select
-                                            value={entity.categoria || 'Individual'}
-                                            onChange={e => handleCoreChange('categoria', e.target.value)}
-                                            className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-sm text-white focus:border-primary/50 outline-none transition-colors appearance-none"
-                                        >
-                                            <option className="bg-[#1a1a20] text-white" value="Individual">Individual (Character/Person)</option>
-                                            <option className="bg-[#1a1a20] text-white" value="Group">Group / Faction</option>
-                                            <option className="bg-[#1a1a20] text-white" value="Location">Location</option>
-                                            <option className="bg-[#1a1a20] text-white" value="Event">Event</option>
-                                            <option className="bg-[#1a1a20] text-white" value="Object">Object / Item</option>
-                                            <option className="bg-[#1a1a20] text-white" value="Concept">Concept / Magic</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">Tags (comma separated)</label>
-                                        <input
-                                            value={entity.tags}
-                                            onChange={e => handleCoreChange('tags', e.target.value)}
-                                            className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-sm text-slate-300 focus:border-primary/50 outline-none transition-colors"
-                                            placeholder="Warrior, Leader, Human..."
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">Icon / Portrait</label>
-                                        <div className="flex items-center gap-4">
-                                            <Avatar url={entity.iconUrl} name={entity.nombre} size="lg" className="rounded-xl" />
-                                            <label className="cursor-pointer px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 text-xs font-bold text-slate-300 transition-colors">
-                                                Upload Image
-                                                <input type="file" accept="image/*" className="hidden" onChange={handleIconUpload} />
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                            {/* Panel 1: IDENTITY */}
+                            <div className="space-y-6">
+                                <GlassPanel title="IDENTITY" icon="fingerprint">
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="text-xs font-black uppercase text-primary mb-3 block tracking-wider flex items-center gap-2">
+                                                <span className="material-symbols-outlined text-base">badge</span>
+                                                Nombre Principal
                                             </label>
-                                            {entity.iconUrl && (
-                                                <button onClick={() => handleCoreChange('iconUrl', '')} className="p-2 hover:text-red-400 transition-colors">
-                                                    <span className="material-symbols-outlined text-sm">delete</span>
+                                            <input
+                                                type="text"
+                                                className="w-full bg-gradient-to-br from-indigo-950/90 to-purple-950/90 border-2 border-indigo-500/50 rounded-2xl p-5 text-2xl font-black text-white focus:border-indigo-400 focus:from-indigo-950 focus:to-purple-950 outline-none transition-all placeholder:text-slate-500 shadow-lg shadow-indigo-900/20"
+                                                placeholder="Entiende el nombre..."
+                                                value={entity.nombre}
+                                                onChange={(e) => setEntity({ ...entity, nombre: e.target.value })}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-black uppercase text-purple-400 mb-3 block tracking-wider flex items-center gap-2">
+                                                <span className="material-symbols-outlined text-base">category</span>
+                                                Categoría / Tags
+                                            </label>
+                                            <select
+                                                className="w-full bg-gradient-to-r from-purple-950/90 to-indigo-950/90 border-2 border-purple-500/50 rounded-xl px-4 py-3 text-sm text-white font-bold focus:border-purple-400 focus:from-purple-950 focus:to-indigo-950 outline-none transition-all cursor-pointer shadow-md"
+                                                value={entity.categoria}
+                                                onChange={(e) => setEntity({ ...entity, categoria: e.target.value })}
+                                            >
+                                                <option value="Individual" className="bg-slate-900">👤 Individual</option>
+                                                <option value="Lugar" className="bg-slate-900">📍 Lugar</option>
+                                                <option value="Organización" className="bg-slate-900">🏛️ Organización</option>
+                                                <option value="Objeto" className="bg-slate-900">⚔️ Objeto</option>
+                                                <option value="Concepto" className="bg-slate-900">💡 Concepto</option>
+                                                <option value="Evento" className="bg-slate-900">⚡ Evento</option>
+                                                <option value="Criatura" className="bg-slate-900">🐉 Criatura</option>
+                                                <option value="Facción" className="bg-slate-900">⚔️ Facción</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-black uppercase text-slate-400 mb-3 block tracking-wider flex items-center gap-2">
+                                                <span className="material-symbols-outlined text-base">description</span>
+                                                Resumen Breve
+                                            </label>
+                                            <textarea
+                                                className="w-full bg-slate-950/90 border-2 border-slate-600/60 rounded-xl p-5 text-sm text-slate-100 leading-relaxed min-h-[120px] outline-none focus:border-slate-500 focus:bg-slate-950 transition-all resize-none custom-scrollbar shadow-inner"
+                                                placeholder="Describe brevemente quién o qué es..."
+                                                value={entity.descripcion}
+                                                onChange={(e) => setEntity({ ...entity, descripcion: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                </GlassPanel>
+
+                                {/* Panel 3: DESCRIPTION (Appearance) */}
+                                <GlassPanel title="APARIENCIA FÍSICA" icon="accessibility_new">
+                                    <textarea
+                                        className="w-full bg-slate-950/90 border-2 border-slate-600/60 rounded-xl p-6 text-sm text-slate-100 leading-relaxed min-h-[280px] outline-none focus:border-slate-500 focus:bg-slate-950 transition-all resize-none custom-scrollbar shadow-inner"
+                                        placeholder="Detalles de su aspecto físico, vestimenta, rasgos distintivos..."
+                                        value={entity.attributes?.appearance || ''}
+                                        onChange={(e) => setEntity({
+                                            ...entity,
+                                            attributes: { ...entity.attributes, appearance: e.target.value }
+                                        })}
+                                    />
+                                </GlassPanel>
+                            </div>
+
+                            <div className="space-y-6">
+                                {/* Panel 2: GALLERY */}
+                                <GlassPanel title="GALLERY" icon="photo_library">
+                                    <div className="grid grid-cols-3 gap-3">
+                                        {entity.attributes?.images?.map((img, i) => (
+                                            <div key={i} className="aspect-square rounded-xl bg-black/40 border border-white/5 overflow-hidden relative group cursor-pointer" onClick={() => setZoomImage(img)}>
+                                                <img src={img} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" alt="Gallery" />
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); removeImage(i); }}
+                                                    className="absolute top-1 right-1 size-6 bg-red-500 text-white rounded-lg flex items-center justify-center translate-y-[-120%] group-hover:translate-y-0 transition-transform shadow-lg"
+                                                >
+                                                    <span className="material-symbols-outlined text-xs">close</span>
                                                 </button>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* JSON Attributes Editor (HIDDEN - INTERNAL USE ONLY) */}
-                                    {/* 
-                                    <div>
-                                        <label className="text-[10px] uppercase font-bold text-indigo-400 mb-1 flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-xs">data_object</span>
-                                            Extended Attributes (JSON)
+                                            </div>
+                                        ))}
+                                        <label className="aspect-square rounded-xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-2 hover:bg-white/5 hover:border-primary/50 transition-all cursor-pointer group">
+                                            <span className="material-symbols-outlined text-text-muted group-hover:text-primary transition-colors">add_photo_alternate</span>
+                                            <span className="text-[8px] font-black uppercase text-text-muted group-hover:text-primary">Upload Photos</span>
+                                            <input type="file" multiple className="hidden" onChange={handleImageUpload} accept="image/*" />
                                         </label>
-                                        <textarea
-                                            value={JSON.stringify(entity.attributes || {}, null, 2)}
-                                            readOnly
-                                            className="w-full h-32 bg-black/50 border border-indigo-500/30 rounded-xl p-3 text-xs text-indigo-100 font-mono focus:border-indigo-500 outline-none transition-colors opacity-50 cursor-not-allowed"
-                                        />
                                     </div>
-                                    */}
-                                </div>
-                            </GlassPanel>
+                                </GlassPanel>
 
-                            {/* Appearance (Hidden for Maps) */}
-                            {entity.tipoEspecial !== 'map' && (
-                                <GlassPanel className="p-6 space-y-6">
-                                    <div className="flex justify-between items-center mb-6">
-                                        <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-sm">palette</span> Appearance
-                                        </h3>
-                                        <div className="flex gap-2">
-                                            <label className="cursor-pointer text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-white transition-colors flex items-center gap-1">
-                                                <span className="material-symbols-outlined text-sm">add_photo_alternate</span>
-                                                Insert Image
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    className="hidden"
-                                                    onChange={(e) => {
-                                                        const file = e.target.files[0];
-                                                        if (file) {
-                                                            const reader = new FileReader();
-                                                            reader.onloadend = () => {
-                                                                const markdown = `\n\n![${file.name}](${reader.result})\n`;
-                                                                handleCoreChange('apariencia', (entity.apariencia || '') + markdown);
-                                                            };
-                                                            reader.readAsDataURL(file);
-                                                        }
-                                                    }}
-                                                />
-                                            </label>
-                                        </div>
-                                    </div>
+                                {/* Panel 4: NOTES */}
+                                <GlassPanel title="NOTES" icon="sticky_note_2">
                                     <textarea
-                                        value={entity.apariencia}
-                                        onChange={e => handleCoreChange('apariencia', e.target.value)}
-                                        className="w-full h-80 bg-black/30 border border-white/10 rounded-xl p-4 text-sm text-slate-300 leading-relaxed focus:border-primary/50 outline-none transition-colors custom-scrollbar font-mono"
-                                        placeholder="Describe their physical appearance, clothing, distinct marks... (Markdown Supported)"
+                                        className="w-full bg-amber-950/90 border-2 border-amber-700/60 rounded-xl p-5 text-sm text-amber-100 leading-relaxed min-h-[200px] outline-none focus:border-amber-600 focus:bg-amber-950 transition-all resize-none custom-scrollbar shadow-inner"
+                                        placeholder="Apuntes rápidos, secretos o ideas sueltas..."
+                                        value={entity.attributes?.notes || ''}
+                                        onChange={(e) => setEntity({
+                                            ...entity,
+                                            attributes: { ...entity.attributes, notes: e.target.value }
+                                        })}
                                     />
                                 </GlassPanel>
-                            )}
-
-
-                            {entity.tipoEspecial === 'map' && (
-                                <GlassPanel className="p-6 lg:col-span-2 space-y-6">
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2 mb-6">
-                                        <span className="material-symbols-outlined text-sm">map</span> Cartography
-                                    </h3>
-                                    <div
-                                        onClick={() => {
-                                            setShowImageModal(true);
-                                        }}
-                                        className="w-full aspect-[21/9] bg-black/30 border border-white/10 rounded-xl overflow-hidden cursor-pointer group relative"
-                                    >
-                                        {(() => {
-                                            // Priority: 1. attributes.snapshotUrl, 2. attributes.bgImage, 3. iconUrl
-                                            let preview = entity.attributes?.snapshotUrl || entity.attributes?.bgImage || entity.iconUrl;
-
-                                            // Legacy Fallback
-                                            if (!preview) {
-                                                try {
-                                                    const json = JSON.parse(entity.descripcion || '{}');
-                                                    if (json.snapshotUrl) preview = json.snapshotUrl;
-                                                } catch (e) { }
-                                            }
-
-                                            if (preview) {
-                                                return (
-                                                    <>
-                                                        <img src={preview} alt="Map Preview" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                            <span className="material-symbols-outlined text-white text-3xl">zoom_in</span>
-                                                        </div>
-                                                    </>
-                                                );
-                                            } else {
-                                                return (
-                                                    <div className="w-full h-full flex items-center justify-center text-slate-500 text-xs italic">
-                                                        No map preview available
-                                                    </div>
-                                                );
-                                            }
-                                        })()}
-                                    </div>
-                                    <div className="flex justify-end">
-                                        <Button
-                                            variant="secondary"
-                                            size="sm"
-                                            icon="edit"
-                                            onClick={() => window.open(`/${username}/${projectName}/map-editor/edit/${entity.id}`, '_self')}
-                                        >
-                                            Open Editor
-                                        </Button>
-                                    </div>
-                                </GlassPanel>
-                            )}
-
-                            {entity.tipoEspecial !== 'map' && (
-                                <GlassPanel className="p-6 lg:col-span-2">
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2 mb-6">
-                                        <span className="material-symbols-outlined text-sm">sticky_note_2</span> Quick Notes
-                                    </h3>
-                                    <textarea
-                                        className="w-full h-40 bg-black/30 border border-white/10 rounded-xl p-4 text-sm text-slate-300 leading-relaxed resize-none focus:border-primary/50 outline-none transition-colors custom-scrollbar font-mono placeholder:text-slate-600"
-                                        placeholder="Quick notes about this entity..."
-                                        value={entity.notas || ''}
-                                        onChange={e => handleCoreChange('notas', e.target.value)}
-                                    />
-                                </GlassPanel>
-                            )}
+                            </div>
                         </div>
                     )}
 
@@ -655,7 +605,7 @@ const EntityBuilder = ({ mode }) => {
                                     <span className="text-[10px] text-slate-500 bg-white/5 px-2 py-1 rounded">Markdown Supported</span>
                                 </div>
                                 <textarea
-                                    className="flex-1 w-full bg-transparent border-none outline-none text-slate-300 leading-relaxed resize-none focus:ring-0 placeholder:text-slate-600 custom-scrollbar text-base min-h-[300px]"
+                                    className="flex-1 w-full bg-slate-950/90 border-2 border-slate-600/60 rounded-xl p-6 text-slate-100 leading-relaxed resize-none focus:border-slate-500 focus:bg-slate-950 outline-none placeholder:text-slate-600 custom-scrollbar text-base min-h-[320px] shadow-inner"
                                     placeholder="Write the origin story..."
                                     value={entity.descripcion || ''}
                                     onChange={e => handleCoreChange('descripcion', e.target.value)}
@@ -765,6 +715,26 @@ const EntityBuilder = ({ mode }) => {
                                 src={entity.iconUrl}
                                 alt={entity.nombre}
                                 className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl border border-white/10"
+                                onClick={(e) => e.stopPropagation()}
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {/* Gallery Image Zoom Modal */}
+                {zoomImage && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setZoomImage(null)}>
+                        <div className="relative max-w-[95vw] max-h-[95vh] p-4">
+                            <button
+                                onClick={() => setZoomImage(null)}
+                                className="absolute -top-14 right-0 p-3 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all"
+                            >
+                                <span className="material-symbols-outlined text-3xl">close</span>
+                            </button>
+                            <img
+                                src={zoomImage}
+                                alt="Gallery Preview"
+                                className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl border-2 border-white/20"
                                 onClick={(e) => e.stopPropagation()}
                             />
                         </div>
