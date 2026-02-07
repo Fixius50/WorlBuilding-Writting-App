@@ -85,6 +85,12 @@ const ArchitectLayout = () => {
     const [folderFilterType, setFolderFilterType] = useState('ALL');
     const isBibleContext = location.pathname.includes('/bible');
 
+    // GLOBAL Bible Explorer State - now loaded here instead of WorldBibleLayout
+    const [folders, setFolders] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterType, setFilterType] = useState('ALL');
+    const [bibleExplorerState, setBibleExplorerState] = useState(null); // Kept for compatibility
+
     // Writing Context Logic
     const isWritingContext = location.pathname.includes('/writing');
     const [activeWritingTab, setActiveWritingTab] = useState('index'); // 'index', 'notes'
@@ -101,6 +107,12 @@ const ArchitectLayout = () => {
 
     // Confirm Modal State
     const [confirmTemplateDelete, setConfirmTemplateDelete] = useState(null); // ID of template to delete
+
+    // GLOBAL Explorer Modal States
+    const [creationModalOpen, setCreationModalOpen] = useState(false);
+    const [targetParent, setTargetParent] = useState(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [deletionTarget, setDeletionTarget] = useState(null); // { id, parentId, type, folderId }
 
     const handleDeleteTemplate = (e, id) => {
         e.stopPropagation();
@@ -127,6 +139,22 @@ const ArchitectLayout = () => {
 
     const baseUrl = `/${username}/${projectName}`;
 
+    // Load folders globally (for explorer)
+    useEffect(() => {
+        if (projectName) {
+            loadFolders();
+        }
+    }, [projectName]);
+
+    const loadFolders = async () => {
+        try {
+            const rootFolders = await api.get('/world-bible/folders');
+            setFolders(rootFolders);
+        } catch (err) {
+            console.error("Error loading folders:", err);
+        }
+    };
+
     useEffect(() => {
         if (projectName) {
             loadProject(projectName);
@@ -146,7 +174,169 @@ const ArchitectLayout = () => {
     //     }
     // }, [isBibleContext]);
 
+    // Clear global panel content when route changes to prevent timeline/content persistence
+    useEffect(() => {
+        console.log('[ArchitectLayout] Route changed, clearing panel content');
+        setGlobalPanelContent(null);
+        setRightPanelTab('CONTEXT'); // Always reset to CONTEXT on route change
+    }, [location.pathname]);
+
+    // Clear bible explorer state when leaving bible route to prevent stale handlers
+    // NOTE: This is now less critical since folders are loaded globally
+    useEffect(() => {
+        if (!isBibleContext) {
+            setBibleExplorerState(null);
+        }
+    }, [isBibleContext]);
+
     const toggleRightPanel = () => setRightOpen(prev => !prev);
+
+    // ========== GLOBAL EXPLORER CRUD HANDLERS ==========
+    const handleCreateSimpleFolder = async (parentFolder = null, type = 'FOLDER') => {
+        try {
+            const parentId = parentFolder ? (typeof parentFolder === 'object' ? parentFolder.id : parentFolder) : null;
+            const newFolder = await api.post('/world-bible/folders', {
+                nombre: type === 'TIMELINE' ? 'Nueva Timeline' : 'Nueva Carpeta',
+                padreId: parentId,
+                tipo: type
+            });
+
+            if (parentId === null) {
+                // RELOAD folders to ensure data integrity
+                await loadFolders();
+                window.dispatchEvent(new CustomEvent('folder-update', {
+                    detail: { folderId: null }
+                }));
+            } else {
+                window.dispatchEvent(new CustomEvent('folder-update', {
+                    detail: {
+                        folderId: parentId,
+                        optimisticType: 'folder',
+                        item: newFolder,
+                        expand: true
+                    }
+                }));
+            }
+        } catch (err) {
+            console.error("Error creating simple folder:", err);
+        }
+    };
+
+    const handleRenameFolder = async (folderId, newName) => {
+        try {
+            await api.put(`/world-bible/folders/${folderId}`, { nombre: newName });
+            setFolders(prev => prev.map(f => f.id === folderId ? { ...f, nombre: newName } : f));
+        } catch (err) { throw err; }
+    };
+
+    const handleDeleteFolder = (folderId, parentId = null) => {
+        setDeletionTarget({ id: folderId, parentId, type: 'folder' });
+        setConfirmOpen(true);
+    };
+
+    const handleDeleteEntity = (entityId, folderId) => {
+        setDeletionTarget({ id: entityId, folderId, type: 'entity' });
+        setConfirmOpen(true);
+    };
+
+    const confirmDeletion = async () => {
+        if (!deletionTarget) return;
+        const { id, parentId, type, folderId } = deletionTarget;
+
+        try {
+            if (type === 'folder') {
+                await api.delete(`/world-bible/folders/${id}`);
+                if (parentId === null) {
+                    setFolders(prev => prev.filter(f => f.id !== id));
+                }
+                window.dispatchEvent(new CustomEvent('folder-update', {
+                    detail: { folderId: parentId, removeId: id, type: 'folder' }
+                }));
+            } else if (type === 'entity') {
+                await api.delete(`/world-bible/entities/${id}`);
+                window.dispatchEvent(new CustomEvent('folder-update', {
+                    detail: { folderId: folderId, removeId: id, type: 'entity' }
+                }));
+            }
+        } catch (err) {
+            console.error("Deletion failed:", err);
+            alert("Error trying to delete item.");
+        } finally {
+            setDeletionTarget(null);
+        }
+    };
+
+    const handleMoveEntity = async (entityId, targetFolderId, sourceFolderId) => {
+        try {
+            await api.put(`/world-bible/entities/${entityId}`, { carpetaId: targetFolderId });
+            window.dispatchEvent(new CustomEvent('folder-update', {
+                detail: { folderId: sourceFolderId, removeId: entityId, type: 'entity' }
+            }));
+            window.dispatchEvent(new CustomEvent('folder-update', {
+                detail: { folderId: targetFolderId, type: 'move-in', entityId }
+            }));
+        } catch (err) { console.error("Move failed:", err); }
+    };
+
+    const handleDuplicateEntity = async (entityId, folderId) => {
+        try {
+            const entity = await api.get(`/world-bible/entities/${entityId}`);
+            const duplicated = await api.post('/world-bible/entities', {
+                ...entity,
+                id: undefined,
+                nombre: `${entity.nombre} (Copia)`,
+                carpetaId: folderId
+            });
+            window.dispatchEvent(new CustomEvent('folder-update', {
+                detail: { folderId: folderId, type: 'entity', item: duplicated }
+            }));
+        } catch (err) { console.error("Duplicate failed:", err); }
+    };
+
+    const handleCreateEntity = async (folderId, specialType = 'entidadindividual') => {
+        const targetSlug = typeof folderId === 'object' ? (folderId.slug || folderId.id) : folderId;
+        navigate(`${baseUrl}/bible/folder/${targetSlug}/entity/new/${specialType}`);
+    };
+
+    const handleConfirmCreate = async (tempId, name, type, parentId, specialType) => {
+        try {
+            if (type === 'folder') {
+                if (typeof tempId === 'number' && !tempId.toString().startsWith('temp')) {
+                    await api.put(`/world-bible/folders/${tempId}`, { nombre: name });
+                    window.dispatchEvent(new CustomEvent('folder-update', {
+                        detail: {
+                            folderId: parentId,
+                            confirmedType: 'folder',
+                            oldId: tempId,
+                            item: { id: tempId, nombre: name, parentId, tipo: specialType, uiKey: Date.now() }
+                        }
+                    }));
+                    if (!parentId) {
+                        setFolders(prev => prev.map(f => f.id === tempId ? { ...f, nombre: name } : f));
+                    }
+                }
+            } else if (type === 'entity') {
+                if (typeof tempId === 'string' && tempId.startsWith('new-')) {
+                    const newEntity = await api.post('/world-bible/entities', {
+                        nombre: name,
+                        carpetaId: parentId,
+                        tipoEspecial: specialType || 'entidadindividual'
+                    });
+                    window.dispatchEvent(new CustomEvent('folder-update', {
+                        detail: {
+                            folderId: parentId,
+                            confirmedType: 'entity',
+                            oldId: tempId,
+                            item: newEntity
+                        }
+                    }));
+                }
+            }
+        } catch (err) {
+            console.error("Confirm create failed:", err);
+        }
+    };
+    // ========== END GLOBAL EXPLORER CRUD HANDLERS ==========
 
     const loadProject = async (identifier) => {
         try {
@@ -269,6 +459,9 @@ const ArchitectLayout = () => {
                         folderFilterType,
                         setFolderFilterType,
 
+                        // Bible Explorer State Callback
+                        setBibleExplorerState,
+
                         // Legacy Context (Keep only what's needed for other pages to not crash)
                         projectId,
                         mapSettings, setMapSettings,
@@ -289,6 +482,21 @@ const ArchitectLayout = () => {
                     activeTab={rightPanelTab}
                     setActiveTab={setRightPanelTab}
                     title={rightPanelTitle}
+                    onClearContext={() => setGlobalPanelContent(null)} // Clear timeline/context
+                    // Bible Explorer Props - NOW FULLY GLOBAL
+                    folders={folders}
+                    searchTerm={searchTerm}
+                    setSearchTerm={setSearchTerm}
+                    filterType={filterType}
+                    setFilterType={setFilterType}
+                    // GLOBAL Handlers - work on ALL pages
+                    handleCreateSimpleFolder={handleCreateSimpleFolder}
+                    handleRenameFolder={handleRenameFolder}
+                    handleDeleteFolder={handleDeleteFolder}
+                    handleMoveEntity={handleMoveEntity}
+                    handleDuplicateEntity={handleDuplicateEntity}
+                    handleCreateEntity={handleCreateEntity}
+                    handleConfirmCreate={handleConfirmCreate}
                 />
             </main>
 

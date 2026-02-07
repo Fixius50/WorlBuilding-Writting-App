@@ -17,8 +17,8 @@ const WorldBibleLayout = () => {
     const { t } = useLanguage();
 
     const [folders, setFolders] = useState([]);
-    const [favorites, setFavorites] = useState([]);
-    const [createMenuOpen, setCreateMenuOpen] = useState(false);
+
+
 
     const [creationModalOpen, setCreationModalOpen] = useState(false);
     const [targetParent, setTargetParent] = useState(null);
@@ -33,12 +33,28 @@ const WorldBibleLayout = () => {
 
     useEffect(() => {
         loadFolders();
-        loadFavorites();
 
-        const handleFavUpdate = () => loadFavorites();
-        window.addEventListener('favorites-update', handleFavUpdate);
-        return () => window.removeEventListener('favorites-update', handleFavUpdate);
     }, [projectName]);
+
+    // Notify parent layout about explorer state
+    useEffect(() => {
+        if (architectContext?.setBibleExplorerState) {
+            architectContext.setBibleExplorerState({
+                folders,
+                searchTerm,
+                setSearchTerm,
+                filterType,
+                setFilterType,
+                handleCreateSimpleFolder,
+                handleRenameFolder,
+                handleDeleteFolder,
+                handleMoveEntity,
+                handleDuplicateEntity,
+                handleCreateEntity,
+                handleConfirmCreate
+            });
+        }
+    }, [folders, searchTerm, filterType]); // Update when these change
 
     const loadFolders = async () => {
         try {
@@ -47,12 +63,7 @@ const WorldBibleLayout = () => {
         } catch (err) { console.error("Error loading folders:", err); }
     };
 
-    const loadFavorites = async () => {
-        try {
-            const favs = await api.get('/world-bible/favorites');
-            setFavorites(favs);
-        } catch (err) { console.error("Error loading favorites:", err); }
-    };
+
 
     // --- Modal Handlers ---
 
@@ -297,152 +308,24 @@ const WorldBibleLayout = () => {
 
     return (
         <div className="flex h-full w-full bg-background-dark max-w-[1920px] mx-auto">
-            {/* LEFT PANEL: EXPLORER */}
-            <aside className="w-80 flex-none flex flex-col border-r border-glass-border bg-surface-dark/50 z-10">
-                {/* Search Header */}
-                <div className="p-4 border-b border-glass-border">
-                    <div className="relative group mb-3">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm group-focus-within:text-primary transition-colors">search</span>
-                        <input
-                            type="text"
-                            placeholder={t('bible.search_entity')}
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-surface-light/50 border border-glass-border rounded-xl py-2 pl-9 pr-3 text-xs focus:border-primary/50 outline-none transition-all text-white placeholder:text-text-muted/50"
-                        />
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        {/* Simplified Select Filter */}
-                        <div className="relative">
-                            <select
-                                value={filterType}
-                                onChange={(e) => setFilterType(e.target.value)}
-                                className="appearance-none bg-surface-dark border border-glass-border rounded-xl px-4 py-2 pr-10 text-xs font-bold text-white transition-all hover:bg-white/5 focus:border-primary outline-none inline-flex items-center"
-                            >
-                                <option value="ALL">🔍 TODO</option>
-                                <option value="individual">👤 PERSONAJES</option>
-                                <option value="location">📍 LUGARES</option>
-                                <option value="culture">🤝 CULTURAS</option>
-                                <option value="map">🗺️ MAPAS</option>
-                                <option value="timeline">⏳ TIMELINES</option>
-                            </select>
-                            <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted pointer-events-none">expand_more</span>
-                        </div>
-
-                        <button
-                            onClick={() => setCreateMenuOpen(!createMenuOpen)}
-                            className="p-2 aspect-square bg-primary hover:bg-primary-light text-white rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center"
-                        >
-                            <span className="material-symbols-outlined text-sm">add</span>
-                        </button>
-
-                        {createMenuOpen && (
-                            <div className="absolute top-full right-0 mt-2 w-48 bg-surface-dark border border-glass-border rounded-xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2">
-                                <button
-                                    onClick={() => { handleOpenCreateModal('FOLDER'); setCreateMenuOpen(false); }}
-                                    className="w-full px-4 py-2 hover:bg-white/5 text-left text-xs font-bold text-white/70 hover:text-white flex items-center gap-3"
-                                >
-                                    <span className="material-symbols-outlined text-sm text-primary">create_new_folder</span>
-                                    Nueva Carpeta
-                                </button>
-                                <button
-                                    onClick={() => { handleCreateSimpleFolder(null, 'MAP'); setCreateMenuOpen(false); }}
-                                    className="w-full px-4 py-2 hover:bg-white/5 text-left text-xs font-bold text-white/70 hover:text-white flex items-center gap-3"
-                                >
-                                    <span className="material-symbols-outlined text-sm text-red-400">map</span>
-                                    Mapa
-                                </button>
-                                <button
-                                    onClick={() => { handleCreateSimpleFolder(null, 'TIMELINE'); setCreateMenuOpen(false); }}
-                                    className="w-full px-4 py-2 hover:bg-white/5 text-left text-xs font-bold text-white/70 hover:text-white flex items-center gap-3"
-                                >
-                                    <span className="material-symbols-outlined text-sm text-cyan-400">timeline</span>
-                                    Timeline
-                                </button>
-                            </div>
-                        )}
-                    </div>
-
-                </div>
-
-                {/* Favorites Section */}
-                <div className="px-2 pt-2">
-                    <div className="flex items-center justify-between px-2 mb-1">
-                        <h2 className="text-[10px] font-black uppercase tracking-widest text-text-muted">{t('bible.favorites')}</h2>
-                    </div>
-                    {favorites.length > 0 ? (
-                        <div className="space-y-0.5">
-                            {favorites.map(fav => (
-                                <div key={fav.id}
-                                    onClick={() => navigate(`${baseUrl}/folder/${fav.carpeta.slug || fav.carpeta.id}/entity/${fav.slug || fav.id}`)}
-                                    className="flex items-center gap-3 px-3 py-1.5 rounded-lg text-[11px] font-medium text-text-muted hover:text-white hover:bg-white/5 cursor-pointer transition-all group"
-                                >
-                                    <span className="material-symbols-outlined text-sm text-yellow-500/70 group-hover:text-yellow-400">star</span>
-                                    <span className="truncate">{fav.nombre}</span>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="px-4 py-2 text-[10px] text-text-muted/30 italic">{t('bible.no_favorites')}</div>
-                    )}
-                    <div className="h-px bg-glass-border my-2 opacity-50"></div>
-                </div>
-
-                <div className="p-4 border-b border-glass-border pt-0">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-[10px] font-black uppercase tracking-widest text-text-muted">{t('bible.explorer')}</h2>
-                        <div className="relative">
-                            <button
-                                className="transition-colors hover:text-white text-primary"
-                                onClick={() => handleCreateSimpleFolder(null)}
-                                title={t('bible.new_folder')}
-                            >
-                                <span className="material-symbols-outlined text-sm">create_new_folder</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Tree Content */}
-                <div className="flex-1 overflow-y-auto no-scrollbar p-2 space-y-0.5">
-                    {folders.length === 0 ? (
-                        <div className="p-8 text-center opacity-30">
-                            <span className="material-symbols-outlined text-3xl mb-2">folder_off</span>
-                            <p className="text-[10px] uppercase font-bold">{t('bible.empty_archive')}</p>
-                        </div>
-                    ) : (
-                        folders.map(folder => (
-                            <FolderItem
-                                key={folder.uiKey || folder.id}
-                                folder={folder}
-                                onCreateSubfolder={() => { }} // Flat hierarchy: no subfolders from sidebar
-                                onRename={handleRenameFolder}
-                                onDeleteFolder={handleDeleteFolder}
-                                onDeleteEntity={handleDeleteFolder}
-                                onCreateTemplate={() => { }}
-                                onMoveEntity={handleMoveEntity}
-                                onDuplicateEntity={handleDuplicateEntity}
-                                onCreateEntity={handleCreateEntity}
-                                onConfirmCreate={handleConfirmCreate}
-                                searchTerm={searchTerm}
-                                filterType={filterType}
-                            />
-                        ))
-                    )}
-                </div>
-            </aside>
-
-            {/* RIGHT PANEL: CONTENT OUTLET */}
+            {/* MAIN CONTENT - FULL WIDTH */}
             <main className="flex-1 overflow-hidden relative bg-gradient-to-br from-background-dark to-surface-dark/20">
                 <Outlet context={{
                     ...architectContext,
                     folders, // Shared State
+                    searchTerm,
+                    setSearchTerm,
+                    filterType,
+                    setFilterType,
                     handleCreateEntity,
                     handleOpenCreateModal,
                     handleDeleteFolder,
+                    handleRenameFolder,
                     handleDeleteEntity,
-                    handleCreateSimpleFolder
+                    handleMoveEntity,
+                    handleDuplicateEntity,
+                    handleCreateSimpleFolder,
+                    handleConfirmCreate
                 }} />
             </main>
 

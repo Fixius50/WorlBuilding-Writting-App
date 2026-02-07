@@ -121,17 +121,25 @@ const GeneralGraphView = () => {
         };
     }, []);
 
-    // Find portal target
+    // Find portal target and force CONTEXT tab
     useEffect(() => {
+        // Force CONTEXT tab so portal content is visible
+        if (setRightPanelTab) setRightPanelTab('CONTEXT');
+
         const checkPortal = setInterval(() => {
             const el = document.getElementById('global-right-panel-portal'); // UPDATED ID
             if (el) {
+                console.log('[GeneralGraphView] Portal found, clearing before use');
+                el.innerHTML = ''; // Clear any residual content
                 setPortalRef(el);
                 clearInterval(checkPortal);
             }
         }, 100);
         return () => {
             clearInterval(checkPortal);
+            console.log('[GeneralGraphView] Cleanup: clearing portal');
+            const el = document.getElementById('global-right-panel-portal');
+            if (el) el.innerHTML = '';
             if (setRightPanelTab) setRightPanelTab('NOTEBOOKS');
         };
     }, []);
@@ -162,7 +170,18 @@ const GeneralGraphView = () => {
         try {
             const graphData = await api.get('/world-bible/graph');
             if (graphData && graphData.nodes) {
-                setElements([...graphData.nodes, ...graphData.edges]);
+                // Normalize data to ensure proper group assignment
+                const normalizedNodes = graphData.nodes.map(node => ({
+                    ...node,
+                    group: 'nodes' // Ensure nodes have group property
+                }));
+                const normalizedEdges = graphData.edges.map(edge => ({
+                    ...edge,
+                    group: 'edges' // Ensure edges have group property
+                }));
+
+                console.log('Loaded graph:', normalizedNodes.length, 'nodes,', normalizedEdges.length, 'edges');
+                setElements([...normalizedNodes, ...normalizedEdges]);
             }
         } catch (err) {
             console.error("Failed to load graph data", err);
@@ -369,11 +388,12 @@ const GeneralGraphView = () => {
                                 </h4>
                                 <div className="space-y-2">
                                     {(() => {
-                                        const nodeRelations = elements.filter(e => e.group === 'edges' && (e.data.source === selectedNode.id || e.data.target === selectedNode.id));
-                                        console.log('Node ID:', selectedNode.id, 'Relations found:', nodeRelations.length, 'Total elements:', elements.length);
-                                        return nodeRelations.slice(0, 5).map(edge => {
-                                            const otherId = edge.data.source === selectedNode.id ? edge.data.target : edge.data.source;
-                                            const otherNode = elements.find(n => n.data.id === otherId);
+                                        // Convert selectedNode.id to string to match edge source/target types
+                                        const nodeIdStr = String(selectedNode.id);
+                                        const nodeRelations = elements.filter(e => e.group === 'edges' && (e.data.source === nodeIdStr || e.data.target === nodeIdStr));
+                                        const renderedRelations = nodeRelations.slice(0, 5).map(edge => {
+                                            const otherId = edge.data.source === nodeIdStr ? edge.data.target : edge.data.source;
+                                            const otherNode = elements.find(n => String(n.data.id) === String(otherId));
                                             return (
                                                 <div key={edge.data.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 group/rel">
                                                     <div className="flex items-center gap-2">
@@ -386,8 +406,9 @@ const GeneralGraphView = () => {
                                                 </div>
                                             );
                                         });
+                                        return renderedRelations;
                                     })()}
-                                    {elements.filter(e => e.group === 'edges' && (e.data.source === selectedNode.id || e.data.target === selectedNode.id)).length === 0 && (
+                                    {elements.filter(e => e.group === 'edges' && (String(e.data.source) === String(selectedNode.id) || String(e.data.target) === String(selectedNode.id))).length === 0 && (
                                         <p className="text-xs text-slate-500 italic text-center py-4">No hay conexiones activas</p>
                                     )}
                                 </div>

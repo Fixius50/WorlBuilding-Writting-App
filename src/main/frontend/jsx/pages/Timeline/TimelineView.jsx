@@ -109,7 +109,18 @@ const TimelineView = () => {
         }, 50);
 
         return () => {
+            console.log('[TimelineView] Cleanup: unmounting, clearing portal');
             clearInterval(interval);
+            // Clean up portal content manually
+            const temp = document.getElementById('global-right-panel-portal');
+            if (temp) {
+                console.log('[TimelineView] Portal found, clearing innerHTML');
+                temp.innerHTML = ''; // Clear any residual content
+            } else {
+                console.log('[TimelineView] Portal NOT found');
+            }
+            // CRITICAL: Clear the panel title to prevent persistence across pages
+            if (setRightPanelTitle) setRightPanelTitle(null);
             // On Unmount, reset to default notes
             if (setRightPanelTab) setRightPanelTab('NOTEBOOKS');
         };

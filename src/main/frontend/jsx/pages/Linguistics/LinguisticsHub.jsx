@@ -148,6 +148,8 @@ const LinguisticsHub = ({ onOpenEditor }) => {
         const interval = setInterval(() => {
             const el = document.getElementById('global-right-panel-portal');
             if (el) {
+                console.log('[LinguisticsHub] Portal found, clearing before use');
+                el.innerHTML = ''; // Clear any residual content from other components
                 setPortalTarget(el);
                 clearInterval(interval);
             }
@@ -155,6 +157,9 @@ const LinguisticsHub = ({ onOpenEditor }) => {
 
         return () => {
             clearInterval(interval);
+            console.log('[LinguisticsHub] Cleanup: clearing portal');
+            const el = document.getElementById('global-right-panel-portal');
+            if (el) el.innerHTML = '';
             if (setRightPanelTab) setRightPanelTab('NOTEBOOKS');
         };
     }, []);
