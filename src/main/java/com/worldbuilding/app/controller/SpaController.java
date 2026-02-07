@@ -24,14 +24,9 @@ public class SpaController implements ErrorController {
         // return 404 (default behavior)
         if (path != null) {
             String lower = path.toLowerCase();
-            if (lower.startsWith("/api/") || lower.contains(".")) {
+            if (lower.startsWith("/api/") || lower.startsWith("/manual/") || lower.contains(".")) {
                 // Let Spring boot default error handler return 404/500 JSON or page
-                // We forward to a non-existent mapping to trigger default behavior or just
-                // return error view name
-                // Actually returning null or letting it bubble usually works, but explicit
-                // forward avoids loops.
-                // NOTE: simpler approach: just return index.html for everything that ISN'T
-                // api/extension
+                return "error";
             }
         }
 

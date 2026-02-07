@@ -36,6 +36,11 @@ export default defineConfig({
                     });
                 },
             },
+            '/manual': {
+                target: 'http://localhost:8080',
+                changeOrigin: true,
+                secure: false,
+            },
             // Explicitly proxy some other known root-level paths if they exist entirely on backend (fallback)
             // But usually /api capture is enough if code uses it.
         }

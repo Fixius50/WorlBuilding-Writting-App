@@ -14,6 +14,13 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(projectSessionInterceptor).addPathPatterns("/api/**");
-        // System.out.println(">>> [WebMvcConfig] Interceptor DISABLED for debugging.");
+    }
+
+    @Override
+    public void addResourceHandlers(
+            org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry registry) {
+        // Expose Docs folder at /manual
+        registry.addResourceHandler("/manual/**")
+                .addResourceLocations("file:./Docs/");
     }
 }

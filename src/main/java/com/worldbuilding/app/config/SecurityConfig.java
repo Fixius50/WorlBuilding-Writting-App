@@ -17,6 +17,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // Disable CSRF for simplicity in this local-first app
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/manual/**").permitAll() // Explicitly allow static docs
                         .anyRequest().permitAll() // Allow all requests (we handle auth via session manually in
                                                   // controllers for now)
                 );

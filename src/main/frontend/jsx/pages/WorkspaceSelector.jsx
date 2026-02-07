@@ -131,6 +131,18 @@ const WorkspaceSelector = () => {
                             <span className="hidden sm:inline">Backup Global</span>
                         </button>
 
+                        {/* USER GUIDE BUTTON */}
+                        <a
+                            href="/manual/Guia_Usuario.html"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-5 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 rounded-2xl transition-all text-xs font-bold text-indigo-400 hover:text-indigo-300 group no-underline"
+                            title="Abrir Manual de Usuario"
+                        >
+                            <span className="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">menu_book</span>
+                            <span className="hidden sm:inline">Guía de Usuario</span>
+                        </a>
+
 
 
                         {/* SEARCH INPUT */}
