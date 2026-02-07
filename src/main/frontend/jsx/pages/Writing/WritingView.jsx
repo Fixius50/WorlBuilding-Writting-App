@@ -126,19 +126,64 @@ const WritingView = () => {
         if (saveTimeout.current) clearTimeout(saveTimeout.current);
         saveTimeout.current = setTimeout(() => {
             savePage(updatedPages[currentPageIndex]);
-        }, 800); // Reduced from 1500 to 800ms for responsiveness
+        }, 800);
+    };
+
+    const handleTitleChange = (newTitle) => {
+        if (!pages[currentPageIndex]) return;
+
+        const updatedPages = [...pages];
+        updatedPages[currentPageIndex] = {
+            ...updatedPages[currentPageIndex],
+            titulo: newTitle
+        };
+        setPages(updatedPages);
+
+        if (saveTimeout.current) clearTimeout(saveTimeout.current);
+        saveTimeout.current = setTimeout(() => {
+            savePage(updatedPages[currentPageIndex]);
+        }, 800);
     };
 
     const savePage = async (page) => {
         if (isMounted.current) setSaving(true);
         try {
-            await api.put(`/escritura/hoja/${page.id}`, { contenido: page.contenido });
+            await api.put(`/escritura/hoja/${page.id}`, {
+                contenido: page.contenido,
+                titulo: page.titulo
+            });
         } catch (err) {
             console.error("Error saving page:", err);
         } finally {
             if (isMounted.current) setSaving(false);
         }
     };
+
+    // Safety check for browser close/refresh
+    useEffect(() => {
+        const handleBeforeUnload = (e) => {
+            if (saveTimeout.current) {
+                e.preventDefault();
+                e.returnValue = ''; // Trigger browser confirmation dialog
+
+                // Try to save via keepalive
+                const currentPage = pages[currentPageIndex];
+                if (currentPage) {
+                    api.request(`/escritura/hoja/${currentPage.id}`, {
+                        method: 'PUT',
+                        body: JSON.stringify({
+                            contenido: currentPage.contenido,
+                            titulo: currentPage.titulo
+                        }),
+                        keepalive: true
+                    }).catch(console.error);
+                }
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [pages, currentPageIndex]); // Dependencies needed for closure access
 
     const handleCreatePage = async () => {
         if (!notebook) return;
@@ -337,8 +382,9 @@ const WritingView = () => {
                                     <input
                                         type="text"
                                         className="w-full bg-transparent text-5xl font-serif font-black text-slate-100 placeholder:text-slate-600 border-none outline-none focus:ring-0"
-                                        defaultValue={`${t('writing.chapter')} ${currentPageIndex + 1}`}
-                                        placeholder={t('writing.title_placeholder')} />
+                                        value={currentPage.titulo || ''}
+                                        onChange={(e) => handleTitleChange(e.target.value)}
+                                        placeholder={`${t('writing.chapter')} ${currentPageIndex + 1}`} />
                                 </div>
 
                                 <div className="flex-1 px-20 py-20 text-slate-100 mx-auto max-w-5xl w-full">

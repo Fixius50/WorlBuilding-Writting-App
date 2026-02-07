@@ -16,9 +16,7 @@ const WorkspaceSelector = () => {
     // CRUD State
     const [projectToDelete, setProjectToDelete] = useState(null);
     const [projectToEdit, setProjectToEdit] = useState(null);
-    const [isRestartModalOpen, setIsRestartModalOpen] = useState(false);
-    const [restartProgress, setRestartProgress] = useState(0);
-    const [restartStatus, setRestartStatus] = useState('idle'); // idle, restarting, checking, complete, error
+
 
     useEffect(() => {
         loadWorkspaces();
@@ -91,52 +89,7 @@ const WorkspaceSelector = () => {
         window.location.href = '/api/backup/download';
     };
 
-    const handleRestartBackend = async () => {
-        setIsRestartModalOpen(true);
-        setRestartStatus('restarting');
-        setRestartProgress(10);
 
-        try {
-            // Trigger restart
-            await workspaceService.restartBackend();
-            setRestartProgress(30);
-
-            // Wait for server to go down
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            setRestartProgress(50);
-            setRestartStatus('checking');
-
-            // Poll for server to come back up
-            let attempts = 0;
-            const maxAttempts = 30;
-            const checkHealth = async () => {
-                try {
-                    await workspaceService.healthCheck();
-                    setRestartProgress(100);
-                    setRestartStatus('complete');
-                    setTimeout(() => {
-                        setIsRestartModalOpen(false);
-                        setRestartStatus('idle');
-                        setRestartProgress(0);
-                        loadWorkspaces();
-                    }, 1500);
-                } catch (err) {
-                    attempts++;
-                    if (attempts >= maxAttempts) {
-                        setRestartStatus('error');
-                        setRestartProgress(0);
-                    } else {
-                        setRestartProgress(50 + (attempts / maxAttempts) * 50);
-                        setTimeout(checkHealth, 1000);
-                    }
-                }
-            };
-            checkHealth();
-        } catch (err) {
-            setRestartStatus('error');
-            setRestartProgress(0);
-        }
-    };
 
     const filteredWorkspaces = workspaces.filter(w =>
         (w.title || w.filename || '').toLowerCase().includes(searchTerm.toLowerCase())
@@ -178,15 +131,7 @@ const WorkspaceSelector = () => {
                             <span className="hidden sm:inline">Backup Global</span>
                         </button>
 
-                        {/* RESTART BACKEND BUTTON */}
-                        <button
-                            onClick={handleRestartBackend}
-                            className="flex items-center gap-2 px-5 py-3 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 rounded-2xl transition-all text-xs font-bold text-orange-400 hover:text-orange-300 group"
-                            title="Reiniciar servidor backend (útil tras migraciones)"
-                        >
-                            <span className="material-symbols-outlined text-lg group-hover:rotate-180 transition-transform duration-500">refresh</span>
-                            <span className="hidden sm:inline">Reiniciar Backend</span>
-                        </button>
+
 
                         {/* SEARCH INPUT */}
                         <div className="relative group min-w-[300px]">
@@ -330,90 +275,7 @@ const WorkspaceSelector = () => {
                 isDestructive={true}
             />
 
-            {/* RESTART MODAL */}
-            {isRestartModalOpen && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="w-full max-w-md bg-[#0A0A0F] border border-orange-500/20 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-orange-500/10 animate-in zoom-in-95 duration-500">
-                        <div className="p-8 border-b border-white/5 bg-gradient-to-r from-orange-500/10 to-transparent">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-full bg-orange-500/20 border border-orange-500/30 flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-2xl text-orange-400 animate-spin">refresh</span>
-                                </div>
-                                <div>
-                                    <h2 className="text-xl font-black text-white">Reiniciando Backend</h2>
-                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-                                        {restartStatus === 'restarting' && 'Deteniendo servidor...'}
-                                        {restartStatus === 'checking' && 'Esperando reconexión...'}
-                                        {restartStatus === 'complete' && '¡Reinicio completado!'}
-                                        {restartStatus === 'error' && 'Error en el reinicio'}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div className="p-8 space-y-6">
-                            {/* Progress Bar */}
-                            <div className="space-y-2">
-                                <div className="flex justify-between text-xs">
-                                    <span className="text-slate-500 font-bold">Progreso</span>
-                                    <span className="text-orange-400 font-black">{Math.round(restartProgress)}%</span>
-                                </div>
-                                <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full bg-gradient-to-r from-orange-500 to-orange-400 transition-all duration-500 ease-out"
-                                        style={{ width: `${restartProgress}%` }}
-                                    ></div>
-                                </div>
-                            </div>
-
-                            {/* Status Messages */}
-                            <div className="space-y-2 text-xs text-slate-400">
-                                <div className="flex items-center gap-2">
-                                    <div className={`w-2 h-2 rounded-full ${restartProgress >= 30 ? 'bg-green-500' : 'bg-slate-700'}`}></div>
-                                    <span>Señal de reinicio enviada</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className={`w-2 h-2 rounded-full ${restartProgress >= 50 ? 'bg-green-500' : 'bg-slate-700'}`}></div>
-                                    <span>Servidor detenido</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className={`w-2 h-2 rounded-full ${restartProgress >= 100 ? 'bg-green-500' : restartProgress > 50 ? 'bg-orange-500 animate-pulse' : 'bg-slate-700'}`}></div>
-                                    <span>Servidor iniciado y listo</span>
-                                </div>
-                            </div>
-
-                            {restartStatus === 'error' && (
-                                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-xs text-red-400">
-                                    <p className="font-bold">Error: El servidor no respondió después de 30 segundos.</p>
-                                    <p className="mt-2 text-red-300/70">Por favor, reinicia manualmente desde la terminal.</p>
-                                </div>
-                            )}
-                        </div>
-
-                        {restartStatus === 'complete' && (
-                            <div className="p-6 bg-green-500/10 border-t border-green-500/20 flex items-center justify-center gap-2 text-green-400 text-sm font-bold">
-                                <span className="material-symbols-outlined">check_circle</span>
-                                <span>Backend reiniciado correctamente</span>
-                            </div>
-                        )}
-
-                        {restartStatus === 'error' && (
-                            <div className="p-6 border-t border-white/5 flex justify-end">
-                                <button
-                                    onClick={() => {
-                                        setIsRestartModalOpen(false);
-                                        setRestartStatus('idle');
-                                        setRestartProgress(0);
-                                    }}
-                                    className="px-6 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-white text-xs font-bold transition-all"
-                                >
-                                    Cerrar
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

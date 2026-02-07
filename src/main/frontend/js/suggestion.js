@@ -7,20 +7,22 @@ import api from './services/api' // Path relative to /js/
 export default {
     items: async ({ query }) => {
         try {
-            // Mock API call or Real API call. 
-            // We need an endpoint that searches entities.
-            // Assuming api.get('/world-bible/entities') returns all, we filter client side for now or search endpoint
-            // Ideally: api.get(`/world-bible/search?q=${query}`)
+            // Fetch all entities (Architecture unificada)
+            const response = await api.get('/world-bible/entities');
 
-            // Using the existing endpoint pattern from previous code logic
-            const response = await api.get('/world-bible/entities')
             return response
-                .filter(item => item.nombre.toLowerCase().startsWith(query.toLowerCase()))
-                .slice(0, 5)
-                .map(item => ({ id: item.id, label: item.nombre }))
+                .filter(item => item.nombre.toLowerCase().includes(query.toLowerCase()))
+                .slice(0, 10) // Increase limit
+                .map(item => ({
+                    id: item.id,
+                    label: item.nombre,
+                    type: item.categoria || 'Generic',
+                    subtype: item.tipoEspecial || null,
+                    description: item.descripcion // For hover card
+                }));
         } catch (err) {
-            console.error(err)
-            return []
+            console.error(err);
+            return [];
         }
     },
 

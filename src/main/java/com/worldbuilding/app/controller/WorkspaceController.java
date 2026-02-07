@@ -16,9 +16,10 @@ public class WorkspaceController {
     @Autowired
     private ProjectDiscoveryService projectDiscoveryService;
 
-    @GetMapping
     public List<com.worldbuilding.app.dto.ProjectMetadataDTO> listWorkspaces() {
-        return projectDiscoveryService.listProjectsFull();
+        return projectDiscoveryService.listProjectsFull().stream()
+                .filter(p -> !p.getFilename().equalsIgnoreCase("worldbuilding"))
+                .collect(java.util.stream.Collectors.toList());
     }
 
     @PostMapping

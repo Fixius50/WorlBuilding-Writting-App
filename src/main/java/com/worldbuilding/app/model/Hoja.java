@@ -21,6 +21,9 @@ public class Hoja {
     @Column(name = "numero_pagina", nullable = false)
     private Integer numeroPagina;
 
+    @Column(name = "titulo")
+    private String titulo;
+
     @Column(columnDefinition = "CLOB")
     private String contenido;
 
@@ -59,6 +62,14 @@ public class Hoja {
 
     public void setNumeroPagina(Integer numeroPagina) {
         this.numeroPagina = numeroPagina;
+    }
+
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
     }
 
     public String getContenido() {

@@ -81,6 +81,7 @@ public class EscrituraController {
                 Map<String, Object> map = new java.util.HashMap<>();
                 map.put("id", h.getId());
                 map.put("numeroPagina", h.getNumeroPagina());
+                map.put("titulo", h.getTitulo());
                 map.put("contenido", h.getContenido());
                 map.put("fechaModificacion", h.getFechaModificacion());
                 try {
@@ -141,6 +142,9 @@ public class EscrituraController {
             return ResponseEntity.status(404).body(Map.of("error", "Hoja no encontrada"));
 
         h.setContenido(body.get("contenido"));
+        if (body.containsKey("titulo")) {
+            h.setTitulo(body.get("titulo"));
+        }
         h.setFechaModificacion(LocalDateTime.now());
 
         return ResponseEntity.ok(hojaRepository.save(h));

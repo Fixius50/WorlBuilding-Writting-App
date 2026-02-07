@@ -1,0 +1,95 @@
+/* Mention Styles */
+.mention {
+    border-radius: 0.375rem;
+    /* rounded-md */
+    padding-left: 0.375rem;
+    /* px-1.5 */
+    padding-right: 0.375rem;
+    padding-top: 0.125rem;
+    /* py-0.5 */
+    padding-bottom: 0.125rem;
+    font-weight: 500;
+    /* font-medium */
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+    cursor: help;
+    border-width: 1px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    /* gap-1 */
+    text-decoration: none;
+    /* no-underline */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.mention:hover {
+    opacity: 0.8;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    /* shadow-md */
+}
+
+/* Specific Types */
+.mention-individual,
+.mention[data-type="individual"] {
+    background-color: rgba(99, 102, 241, 0.1);
+    /* bg-indigo-500/10 */
+    color: #818cf8;
+    /* text-indigo-400 */
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+.mention-location,
+.mention[data-type="location"] {
+    background-color: rgba(16, 185, 129, 0.1);
+    /* bg-emerald-500/10 */
+    color: #34d399;
+    /* text-emerald-400 */
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.mention-group,
+.mention[data-type="group"] {
+    background-color: rgba(168, 85, 247, 0.1);
+    /* bg-purple-500/10 */
+    color: #c084fc;
+    /* text-purple-400 */
+    border-color: rgba(168, 85, 247, 0.2);
+}
+
+.mention-timeline,
+.mention[data-type="timeline"] {
+    background-color: rgba(249, 115, 22, 0.1);
+    /* bg-orange-500/10 */
+    color: #fb923c;
+    /* text-orange-400 */
+    border-color: rgba(249, 115, 22, 0.2);
+}
+
+.mention-event,
+.mention[data-type="event"] {
+    background-color: rgba(239, 68, 68, 0.1);
+    /* bg-red-500/10 */
+    color: #f87171;
+    /* text-red-400 */
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.mention-item,
+.mention[data-type="item"] {
+    background-color: rgba(245, 158, 11, 0.1);
+    /* bg-amber-500/10 */
+    color: #fbbf24;
+    /* text-amber-400 */
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+/* Default */
+.mention-generic {
+    background-color: rgba(100, 116, 139, 0.1);
+    /* bg-slate-500/10 */
+    color: #94a3b8;
+    /* text-slate-400 */
+    border-color: rgba(100, 116, 139, 0.2);
+}

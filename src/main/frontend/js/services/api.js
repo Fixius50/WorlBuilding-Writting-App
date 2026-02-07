@@ -78,8 +78,6 @@ export const workspaceService = {
     delete: (name) => api.delete('/workspaces/' + name),
     update: (name, data) => api.put('/workspaces/' + name, data),
     select: (projectName) => api.post('/workspaces/select', { projectName }),
-    restartBackend: () => api.post('/system/restart', {}),
-    healthCheck: () => api.get('/system/health'),
 };
 
 export const entityService = {

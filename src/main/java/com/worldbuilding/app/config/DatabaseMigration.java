@@ -83,7 +83,7 @@ public class DatabaseMigration {
         try (java.sql.Connection conn = java.sql.DriverManager.getConnection(jdbcUrl);
                 java.sql.Statement stmt = conn.createStatement()) {
 
-            patchTable(stmt, "hoja", new String[] { "deleted", "deleted_date", "numero_pagina" });
+            patchTable(stmt, "hoja", new String[] { "deleted", "deleted_date", "numero_pagina", "titulo" });
             patchTable(stmt, "nota_rapida", new String[] { "deleted", "deleted_date", "linea", "categoria" });
             patchTable(stmt, "relacion", new String[] { "deleted", "deleted_date" });
             patchTable(stmt, "conlang", new String[] { "font_binary" });
