@@ -21,10 +21,13 @@ public class WorldbuildingApplication {
             System.out.println(">>> App ready on port " + port + ". Launching browser...");
             System.setProperty("java.awt.headless", "false");
             try {
-                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                String os = System.getProperty("os.name").toLowerCase();
+                if (os.contains("win")) {
+                    new ProcessBuilder("cmd", "/c", "start", url).start();
+                } else if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
                     Desktop.getDesktop().browse(new URI(url));
                 } else {
-                    new ProcessBuilder("rundll32", "url.dll,FileProtocolHandler", url).start();
+                    System.err.println("!!! No supported way to launch browser found.");
                 }
             } catch (Exception e) {
                 System.err.println("!!! Failed to launch browser: " + e.getMessage());
@@ -35,7 +38,7 @@ public class WorldbuildingApplication {
     public static void main(String[] args) {
         // Dynamic Data Directory Logic
         String devPath = "./src/main/resources/db/data";
-        String prodPath = "./data";
+        String prodPath = "./db/data"; // Updated to match distribution structure
         String selectedPath;
 
         java.io.File devDir = new java.io.File(devPath);
@@ -44,7 +47,8 @@ public class WorldbuildingApplication {
             System.out.println(">>> ENVIRONMENT: DEV (Using " + selectedPath + ")");
         } else {
             selectedPath = prodPath;
-            new java.io.File(prodPath).mkdirs(); // Ensure prod data dir exists
+            // Ensure db/data directories exist
+            new java.io.File(prodPath).mkdirs();
             System.out.println(">>> ENVIRONMENT: PROD (Using " + selectedPath + ")");
         }
 
