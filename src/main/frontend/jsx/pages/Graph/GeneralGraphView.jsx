@@ -107,9 +107,14 @@ const GeneralGraphView = () => {
         cyRef.current.layout({
             name: 'cose',
             animate: true,
-            padding: 150,
-            componentSpacing: 350, // More space for windows
-            nodeOverlap: 200
+            padding: 100,
+            nodeRepulsion: (node) => 8000000, // Massive repulsion for large cards
+            idealEdgeLength: (edge) => 400, // Longer edges to allow space
+            edgeElasticity: (edge) => 100,
+            nodeOverlap: 2, // Minimal overlap allowed
+            componentSpacing: 600,
+            refresh: 20,
+            numIter: 1500 // More iterations for better convergence
         }).run();
     };
 
@@ -119,12 +124,17 @@ const GeneralGraphView = () => {
         const cy = cyRef.current;
         setZoom(cy.zoom());
 
+        // We can track the active node (the one being dragged or hovered)
+        const activeNode = cy.nodes(':active, :selected, :grabbed').first();
+        const activeId = activeNode.length > 0 ? activeNode.id() : null;
+
         cy.nodes().forEach(node => {
             const pos = node.renderedPosition();
             newPositions[node.id()] = {
                 x: pos.x,
                 y: pos.y,
-                isPinned: node.hasClass('pinned') || node.locked()
+                isPinned: node.hasClass('pinned') || node.locked(),
+                isActive: node.id() === activeId
             };
         });
         setNodePositions(newPositions);
@@ -136,22 +146,96 @@ const GeneralGraphView = () => {
         const cy = cyRef.current;
 
         const timer = setTimeout(syncPositions, 200);
-        cy.on('pan zoom drag position', syncPositions);
+        cy.on('pan zoom drag position layoutstop layoutready box', () => {
+            // Throttled sync to avoid UI lag during heavy movement
+            requestAnimationFrame(syncPositions);
+        });
 
-        // Native Cursor Management via Cytoscape
-        cy.on('mouseover', 'node', () => { document.body.style.cursor = 'grab'; });
+        // Native Cursor Management via Cytoscape (Universal)
+        cy.on('mouseover', 'node', () => {
+            // Only show grab if the node IS grabbable (not locked or handled by logic)
+            document.body.style.cursor = 'grab';
+        });
         cy.on('mouseout', 'node', () => { document.body.style.cursor = 'default'; });
-        cy.on('mousedown', 'node', () => { document.body.style.cursor = 'grabbing'; });
-        cy.on('mouseup', () => { document.body.style.cursor = 'default'; });
+        cy.on('grab', 'node', () => { document.body.style.cursor = 'grabbing'; });
+        cy.on('free', 'node', () => { document.body.style.cursor = 'grab'; });
 
-        // Auto-lock node on drag end
+        // Surgical collision resolution on drag end
         cy.on('dragfree', 'node', (evt) => {
-            evt.target.addClass('pinned');
-            syncPositions();
+            const node = evt.target;
+            node.addClass('pinned');
+
+            const W = 260;
+            const H = 400;
+            let currentPos = node.position();
+            const others = cy.nodes().not(node);
+
+            let resolved = false;
+            let iterations = 0;
+            const maxIterations = 5;
+
+            while (!resolved && iterations < maxIterations) {
+                let collision = null;
+                for (let i = 0; i < others.length; i++) {
+                    const other = others[i];
+                    const oPos = other.position();
+                    const dx = Math.abs(currentPos.x - oPos.x);
+                    const dy = Math.abs(currentPos.y - oPos.y);
+
+                    if (dx < W && dy < H) {
+                        collision = oPos;
+                        break;
+                    }
+                }
+
+                if (collision) {
+                    const diffX = currentPos.x - collision.x;
+                    const diffY = currentPos.y - collision.y;
+                    const overlapX = W - Math.abs(diffX);
+                    const overlapY = H - Math.abs(diffY);
+
+                    if (overlapX < overlapY) {
+                        currentPos.x += (diffX >= 0 ? overlapX + 20 : -(overlapX + 20));
+                    } else {
+                        currentPos.y += (diffY >= 0 ? overlapY + 20 : -(overlapY + 20));
+                    }
+                    iterations++;
+                } else {
+                    resolved = true;
+                }
+            }
+
+            const persistPosition = async (n, pos) => {
+                try {
+                    await api.put('/world-bible/graph/positions', [{
+                        id: n.id(),
+                        category: n.data('category'),
+                        x: pos.x,
+                        y: pos.y
+                    }]);
+                } catch (err) {
+                    console.error("Failed to persist node position:", err);
+                }
+            };
+
+            if (iterations > 0) {
+                node.animate({
+                    position: currentPos,
+                    duration: 400,
+                    easing: 'ease-out-quint',
+                    complete: () => {
+                        syncPositions();
+                        persistPosition(node, currentPos);
+                    }
+                });
+            } else {
+                syncPositions();
+                persistPosition(node, currentPos);
+            }
         });
 
         return () => {
-            cy.off('pan zoom drag position dragfree mouseover mouseout mousedown mouseup', syncPositions);
+            cy.off('pan zoom drag position layoutstop layoutready dragfree mouseover mouseout grab free', syncPositions);
             document.body.style.cursor = 'default';
         };
     }, [elements, syncPositions]);
@@ -173,8 +257,8 @@ const GeneralGraphView = () => {
                                 left: pos.x,
                                 top: pos.y,
                                 transform: `translate(-50%, -50%) scale(${zoom})`,
-                                zIndex: pos.isPinned ? 55 : 50,
-                                opacity: loading ? 0 : 1
+                                zIndex: pos.isActive ? 100 : 50, // Raise active card, keep others at 50
+                                opacity: 1
                             }}
                         >
                             <InGraphNodeWindow

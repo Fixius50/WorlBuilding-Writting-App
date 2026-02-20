@@ -24,7 +24,8 @@ const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned
             }
         };
 
-        if (!node.isFull) {
+        // If it's a stub (not isFull) or we don't have details yet, fetch.
+        if (!node.isFull || node.isStub) {
             fetchDetails();
         }
     }, [node?.id]);
@@ -33,33 +34,29 @@ const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned
 
     const data = details || node; // Use fetched details if available
 
-    const categoryColor = isPinned ? 'border-primary' :
-        node.category === 'Individual' ? 'border-indigo-500/50' :
-            node.category === 'Location' ? 'border-emerald-500/50' :
-                'border-purple-500/50';
+    const categoryColor = node.category === 'Individual' ? 'border-indigo-500/50' :
+        node.category === 'Location' ? 'border-emerald-500/50' :
+            'border-purple-500/50';
 
     return (
-        <GlassPanel className={`w-[260px] flex flex-col shadow-2xl border-t-4 ${categoryColor} pointer-events-none overflow-hidden transition-all duration-300`}>
+        <div className={`w-[260px] flex flex-col shadow-2xl border-t-4 ${categoryColor} bg-slate-900 border border-white/10 pointer-events-none overflow-hidden transition-all duration-300`}>
             {/* Header - Transparent to clicks for drag passthrough */}
-            <div className={`p-3 border-b border-white/5 flex items-center justify-between pointer-events-none text-drag-handle glass-panel-header select-none ${isPinned ? 'bg-primary/10' : 'bg-white/[0.03]'}`}>
+            <div className={`p-3 border-b border-white/5 flex items-center justify-between pointer-events-none text-drag-handle bg-slate-800/50 select-none`}>
                 <div className="flex items-center gap-2 overflow-hidden pointer-events-none">
-                    <span className={`material-symbols-outlined text-[14px] ${isPinned ? 'text-primary' : 'text-slate-400'}`}>
-                        {isPinned ? 'keep' : (node.category === 'Individual' ? 'person' : node.category === 'Location' ? 'location_on' : 'groups')}
+                    <span className={`material-symbols-outlined text-[14px] ${categoryColor.replace('border-', 'text-')}`}>
+                        {node.category === 'Individual' ? 'person' : node.category === 'Location' ? 'location_on' : 'groups'}
                     </span>
-                    <h3 className="text-[10px] font-serif font-black text-white truncate uppercase tracking-tight">{node.label || node.nombre}</h3>
+                    <h3 className={`text-[10px] font-serif font-black truncate uppercase tracking-tight text-white`}>{node.label || node.nombre}</h3>
                 </div>
                 <div className="flex gap-1">
-                    <button onClick={onLock} className={`p-1 rounded-md transition-colors pointer-events-auto ${isPinned ? 'text-primary bg-primary/20' : 'text-slate-500 hover:bg-white/10'}`} title={isPinned ? "Desanclar" : "Fijar posición"}>
-                        <span className="material-symbols-outlined text-xs">{isPinned ? 'lock' : 'lock_open'}</span>
-                    </button>
-                    <button onClick={onCenter} className="p-1 hover:bg-white/10 rounded-md text-slate-400 transition-colors pointer-events-auto">
+                    <button onClick={onCenter} className="p-1 hover:bg-white/10 rounded-md text-slate-400 transition-colors pointer-events-auto" title="Centrar Arcano">
                         <span className="material-symbols-outlined text-xs">center_focus_strong</span>
                     </button>
                 </div>
             </div>
 
             {/* Navigation Tabs - Interactive */}
-            <div className="flex bg-black/40 text-[8px] font-black uppercase tracking-widest border-b border-white/5 pointer-events-auto">
+            <div className="flex bg-slate-950 text-[8px] font-black uppercase tracking-widest border-b border-white/5 pointer-events-auto">
                 {['ESENCIA', 'RELACIONES', 'CRÓNICA'].map(tab => (
                     <button
                         key={tab}
@@ -72,7 +69,7 @@ const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned
             </div>
 
             {/* Content Area - Narrower and Taller */}
-            <div className="p-4 min-h-[300px] max-h-[400px] overflow-y-auto custom-scrollbar bg-black/10 pointer-events-auto">
+            <div className="p-4 min-h-[300px] max-h-[400px] overflow-y-auto custom-scrollbar bg-slate-900 pointer-events-auto">
                 {loading && !details ? (
                     <div className="flex flex-col items-center justify-center h-40 opacity-20">
                         <div className="size-4 border-2 border-primary border-t-transparent animate-spin rounded-full mb-2"></div>
@@ -91,12 +88,30 @@ const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned
 
                                 {data.attributes && Object.entries(data.attributes).length > 0 && (
                                     <div className="grid grid-cols-1 gap-1.5 pt-2">
-                                        {Object.entries(data.attributes).map(([key, value]) => (
-                                            <div key={key} className="flex justify-between items-center p-2 rounded bg-white/[0.02] border border-white/5">
-                                                <span className="text-[8px] font-bold text-slate-500 uppercase">{key.replace(/_/g, ' ')}</span>
-                                                <span className="text-[10px] text-slate-300 truncate ml-4 font-medium">{String(value)}</span>
-                                            </div>
-                                        ))}
+                                        {Object.entries(data.attributes)
+                                            .filter(([key, value]) => {
+                                                const k = key.toLowerCase();
+                                                // Filter out technical metadata
+                                                return !k.includes('id') &&
+                                                    !k.includes('url') &&
+                                                    !k.includes('image') &&
+                                                    !k.includes('layers') &&
+                                                    !k.includes('snapshot') &&
+                                                    !k.includes('file') &&
+                                                    typeof value !== 'object'; // Extra safety for non-lore technical objects
+                                            })
+                                            .map(([key, value]) => {
+                                                const displayValue = String(value);
+
+                                                return (
+                                                    <div key={key} className="flex justify-between items-center p-2 rounded bg-white/[0.02] border border-white/5">
+                                                        <span className="text-[8px] font-bold text-slate-500 uppercase">{key.replace(/_/g, ' ')}</span>
+                                                        <span className="text-[10px] text-slate-300 truncate ml-4 font-medium" title={displayValue}>
+                                                            {displayValue}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })}
                                     </div>
                                 )}
                             </div>
@@ -147,8 +162,8 @@ const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned
                     Abrir en Archivador
                 </button>
             </div>
-        </GlassPanel>
+        </div>
     );
 };
 
-export default InGraphNodeWindow;
+export default React.memo(InGraphNodeWindow);
