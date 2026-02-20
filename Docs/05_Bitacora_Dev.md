@@ -304,3 +304,20 @@ El patrón de eventos personalizado (`CustomEvent`) es ligero y eficiente para c
 **Fecha**: 2026-02-07  
 **Autor**: Roberto Monedero Alonso  
 **Versión**: WorldbuildingApp V2
+
+---
+
+**Fecha**: 2026-02-20  
+**Autor**: Antigravity (IA)  
+**Versión**: Chronos Atlas V2.1 (Maintenance Build)  
+
+### Notas de la Intervención
+
+Hoy se ha realizado un saneamiento profundo del sistema tras detectar inconsistencias críticas en el flujo de datos del Grafo y regresiones de i18n en el módulo de Escritura.
+
+1. **Saneamiento de BBDD (Flyway V3)**: Se ha restaurado la integridad de la base de datos creando la tabla `nodo`, cuya ausencia provocaba el fallo estructural de la API de Grafo. Se han incluido tablas preventivas para los modelos `Zona`, `Interaccion`, `Construccion`, `Efectos` y `EntidadColectiva`.
+2. **Refinamiento de UX de Grafos**: Se ha implementado un sistema de "Zoom y Ajuste" inteligente que centra el grafo automáticamente al cargar, sin destruir las posiciones personalizadas de los nodos guardadas por el usuario.
+3. **Localización y Terminología**: Se ha completado la traducción al español de `WritingHub.jsx` y se ha consolidado el término "Archivador" en la UI.
+4. **Política Local-First**: Se han desvinculado los CDNs externos en el módulo de Atlas, implementando assets locales para los iconos de Leaflet.
+
+**Estado**: Estable y Sincronizado.

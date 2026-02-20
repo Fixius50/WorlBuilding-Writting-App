@@ -67,7 +67,12 @@
         "delete_confirm": "¿Seguro que quieres borrar este archivador? Se perderán todas sus hojas.",
         "chapter": "Capítulo",
         "page": "Página",
-        "of": "de"
+        "of": "de",
+        "new_archivador_title": "Nuevo Archivador",
+        "library_expansion": "Expansión de la Biblioteca",
+        "book_title_label": "Título del Libro",
+        "create_and_open_btn": "Crear y Abrir",
+        "cancel_btn": "Cancelar"
     },
     "atlas": {
         "grid_system": "Sistema de Rejilla",

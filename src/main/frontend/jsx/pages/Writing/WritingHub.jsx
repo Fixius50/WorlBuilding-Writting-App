@@ -128,18 +128,18 @@ const WritingHub = () => {
                                 <span className="material-symbols-outlined">create_new_folder</span>
                             </div>
                             <div>
-                                <h2 className="text-2xl font-serif font-bold text-white">New Archivador</h2>
-                                <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest">Library Expansion</p>
+                                <h2 className="text-2xl font-serif font-bold text-white">{t('writing.new_archivador_title')}</h2>
+                                <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest">{t('writing.library_expansion')}</p>
                             </div>
                         </div>
 
                         <form onSubmit={handleCreateNotebook} className="space-y-6">
                             <div className="space-y-2">
-                                <label className="text-[10px] uppercase font-black text-slate-500 tracking-[0.2em] ml-2">Book Title</label>
+                                <label className="text-[10px] uppercase font-black text-slate-500 tracking-[0.2em] ml-2">{t('writing.book_title_label')}</label>
                                 <input
                                     autoFocus
                                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-slate-700"
-                                    placeholder="The Chronicles of Void..."
+                                    placeholder={t('writing.placeholder_title')}
                                     value={newTitle}
                                     onChange={e => setNewTitle(e.target.value)}
                                     required
@@ -152,13 +152,13 @@ const WritingHub = () => {
                                     onClick={() => setIsCreating(false)}
                                     className="flex-1 py-4 text-slate-400 hover:text-white font-black uppercase text-[10px] tracking-widest transition-colors"
                                 >
-                                    Cancel
+                                    {t('writing.cancel_btn')}
                                 </button>
                                 <button
                                     type="submit"
                                     className="flex-[2] py-4 bg-primary hover:bg-primary-dark text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
                                 >
-                                    Create and Open
+                                    {t('writing.create_and_open_btn')}
                                 </button>
                             </div>
                         </form>

@@ -7,9 +7,9 @@ import '../../../css/leaflet-custom.css';
 // Fix for default marker icons in Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+    iconRetinaUrl: '/assets/leaflet/images/marker-icon-2x.png',
+    iconUrl: '/assets/leaflet/images/marker-icon.png',
+    shadowUrl: '/assets/leaflet/images/marker-shadow.png',
 });
 
 /**
@@ -180,11 +180,11 @@ const LeafletMapView = ({ mapImage, markers = [], layers = [], connections = [],
                             <Polyline
                                 key={`conn-${idx}`}
                                 positions={[sourcePos, targetPos]}
-                                pathOptions={{ 
-                                    color: conn.color || '#6366f1', 
+                                pathOptions={{
+                                    color: conn.color || '#6366f1',
                                     weight: conn.weight || 3,
                                     opacity: 0.8,
-                                    dashArray: conn.dashed ? '10, 10' : null 
+                                    dashArray: conn.dashed ? '10, 10' : null
                                 }}
                             >
                                 {conn.label && (
