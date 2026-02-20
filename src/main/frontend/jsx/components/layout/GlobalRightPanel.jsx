@@ -76,7 +76,7 @@ const GlobalRightPanel = ({
             <div className="flex items-center border-b border-glass-border bg-white/[0.02]">
                 <button
                     onClick={() => setActiveTab('CONTEXT')}
-                    className={`flex-1 py-4 flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest transition-colors relative ${activeTab === 'CONTEXT' ? 'text-primary' : 'text-slate-500 hover:text-white'}`}
+                    className={`flex-1 py-4 flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest transition-colors relative ${activeTab === 'CONTEXT' ? 'text-primary' : 'text-slate-500 hover:text-primary'}`}
                 >
                     <span className="material-symbols-outlined text-sm">view_sidebar</span>
                     Contexto
@@ -87,7 +87,7 @@ const GlobalRightPanel = ({
                         if (onClearContext) onClearContext(); // Clear timeline/context content
                         setActiveTab('NOTEBOOKS');
                     }}
-                    className={`flex-1 py-4 flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest transition-colors relative ${activeTab === 'NOTEBOOKS' ? 'text-primary' : 'text-slate-500 hover:text-white'}`}
+                    className={`flex-1 py-4 flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest transition-colors relative ${activeTab === 'NOTEBOOKS' ? 'text-primary' : 'text-slate-500 hover:text-primary'}`}
                 >
                     <span className="material-symbols-outlined text-sm">book</span>
                     Apuntes
@@ -98,7 +98,7 @@ const GlobalRightPanel = ({
                         if (onClearContext) onClearContext(); // Clear timeline/context content
                         setActiveTab('EXPLORER');
                     }}
-                    className={`flex-1 py-4 flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest transition-colors relative ${activeTab === 'EXPLORER' ? 'text-primary' : 'text-slate-500 hover:text-white'}`}
+                    className={`flex-1 py-4 flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest transition-colors relative ${activeTab === 'EXPLORER' ? 'text-primary' : 'text-slate-500 hover:text-primary'}`}
                 >
                     <span className="material-symbols-outlined text-sm">folder_open</span>
                     Explorador

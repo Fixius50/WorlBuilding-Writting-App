@@ -228,7 +228,7 @@ const RelationshipManager = ({ entityId, entityType }) => {
                                                         setSelectedTargetId(item.id);
                                                         setTargetSearch(item.nombre);
                                                     }}
-                                                    className="p-2 hover:bg-primary/20 cursor-pointer text-xs text-slate-200 border-b border-white/5 last:border-0"
+                                                    className="p-2 hover:bg-primary/10 hover:text-primary cursor-pointer text-xs text-slate-300 border-b border-white/5 last:border-0"
                                                 >
                                                     {item.nombre}
                                                 </div>
@@ -240,7 +240,7 @@ const RelationshipManager = ({ entityId, entityType }) => {
                                 {selectedTargetId && (
                                     <button
                                         onClick={() => { setSelectedTargetId(''); setTargetSearch(''); }}
-                                        className="absolute right-2 top-2 text-slate-500 hover:text-white"
+                                        className="absolute right-2 top-2 text-slate-500 hover:text-primary transition-colors"
                                     >
                                         <span className="material-symbols-outlined text-sm">close</span>
                                     </button>

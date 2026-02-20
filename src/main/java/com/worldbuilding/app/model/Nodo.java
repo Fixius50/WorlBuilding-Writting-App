@@ -19,6 +19,12 @@ public class Nodo {
     @Column(name = "caracteristica_relacional")
     private String caracteristicaRelacional;
 
+    @Column(name = "pos_x")
+    private Double posX;
+
+    @Column(name = "pos_y")
+    private Double posY;
+
     // Getters y Setters
     public Long getId() {
         return id;
@@ -50,5 +56,21 @@ public class Nodo {
 
     public void setCaracteristicaRelacional(String caracteristicaRelacional) {
         this.caracteristicaRelacional = caracteristicaRelacional;
+    }
+
+    public Double getPosX() {
+        return posX;
+    }
+
+    public void setPosX(Double posX) {
+        this.posX = posX;
+    }
+
+    public Double getPosY() {
+        return posY;
+    }
+
+    public void setPosY(Double posY) {
+        this.posY = posY;
     }
 }

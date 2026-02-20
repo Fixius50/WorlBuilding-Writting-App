@@ -18,6 +18,7 @@ export default defineConfig({
         // Ensure we bind to all interfaces if needed, though localhost is fine
         host: 'localhost',
         port: 3000,
+        open: true, // Force open browser on port 3000
         proxy: {
             // General capture for API requests
             '/api': {
@@ -26,7 +27,10 @@ export default defineConfig({
                 secure: false,
                 configure: (proxy, _options) => {
                     proxy.on('error', (err, _req, _res) => {
-                        console.log('proxy error', err);
+                        // Suppress excessive error logging when backend is starting up
+                        if (err.code !== 'ECONNREFUSED') {
+                            console.log('proxy error', err);
+                        }
                     });
                     proxy.on('proxyReq', (proxyReq, req, _res) => {
                         console.log('Sending Request to the Target:', req.method, req.url);

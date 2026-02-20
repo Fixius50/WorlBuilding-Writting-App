@@ -31,6 +31,13 @@ public class ProjectSessionInterceptor implements HandlerInterceptor {
             jakarta.servlet.http.HttpSession session = request.getSession(true);
             String projectName = (String) session.getAttribute("proyectoActivo");
 
+            // NEW: Support header-based context activation for iframes (avoiding cookie
+            // issues)
+            String headerProject = request.getHeader("X-Project-ID");
+            if (headerProject != null && !headerProject.trim().isEmpty()) {
+                projectName = headerProject;
+            }
+
             if (projectName != null) {
                 TenantContext.setCurrentTenant(projectName);
             } else {

@@ -43,7 +43,17 @@ Este documento detalla las decisiones arquitectónicas y el stack tecnológico d
 
 * **Arquitectura**: 1 Proyecto = 1 Archivo SQLite.
 * **Descubrimiento**: `ProjectDiscoveryService` lee metadatos reales (Título, Imagen) conectándose efímeramente a cada DB, sin mantener pool de conexiones abierto.
-* **Contexto**: `TenantContext` filtra las queries de JPA par apuntar al archivo correcto en tiempo real.
+* **Contexto**: `TenantContext` filtra las queries de JPA para apuntar al archivo correcto en tiempo real.
+* **Soporte Iframe/Omnicanal**: El sistema sincroniza el proyecto activo mediante:
+  1. **Sesión HTTP**: Método estándar para navegación directa.
+  2. **Header `X-Project-ID`**: Prioritario para peticiones API desde iframes o drawers laterales donde las cookies de sesión pueden ser inconsistentes.
+  3. **Activación Proactiva**: El frontend dispara una petición de validación al cargar componentes críticos (ej. Grafo) para asegurar la sincronización del `TenantContext`.
+
+## 4. Gestión de Puertos y Arranque
+
+* **Frontend (Puerto 3000)**: Servidor de desarrollo Vite. Puerta de entrada principal.
+* **Backend (Puerto 8080)**: API REST Spring Boot. Se ejecuta en segundo plano.
+* **Regla de Oro**: El navegador solo debe abrirse automáticamente en el puerto 3000 (`vite.config.js -> open: true`). El backend no debe disparar eventos de apertura de navegador.
 
 ## 3. Filosofía de Desarrollo
 

@@ -69,7 +69,7 @@ const NotebookManager = ({ projectId }) => {
                 <div className="flex items-center gap-2 p-3 border-b border-white/5 bg-white/[0.02]">
                     <button
                         onClick={() => setActiveNotebook(null)}
-                        className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+                        className="p-1.5 rounded-lg hover:bg-primary/10 text-slate-400 hover:text-primary transition-colors"
                     >
                         <span className="material-symbols-outlined text-sm">arrow_back</span>
                     </button>
@@ -139,12 +139,12 @@ const NotebookManager = ({ projectId }) => {
                                         onClick={(e) => e.stopPropagation()}
                                     />
                                 ) : (
-                                    <h4 className="text-xs font-bold text-white truncate pr-6">{nb.title}</h4>
+                                    <h4 className="text-xs font-bold text-white truncate pr-6 group-hover:text-primary transition-colors">{nb.title}</h4>
                                 )}
 
                                 <button
                                     onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(nb.id); }}
-                                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 hover:text-red-400 text-slate-500 transition-all bg-surface-dark rounded-md"
+                                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 hover:text-red-400 text-slate-500 transition-all bg-surface-dark rounded-md shadow-lg shadow-black/40"
                                 >
                                     <span className="material-symbols-outlined text-[14px]">delete</span>
                                 </button>

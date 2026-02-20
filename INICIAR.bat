@@ -28,7 +28,7 @@ REM Crear script de auto-restart para backend
 echo [2/3] Preparando Backend con Auto-Restart...
 echo @echo off > backend_runner.bat
 echo :START >> backend_runner.bat
-echo call mvnw.cmd clean spring-boot:run >> backend_runner.bat
+echo call mvnw.cmd spring-boot:run >> backend_runner.bat
 echo if exist restart.flag ( >> backend_runner.bat
 echo     del restart.flag >> backend_runner.bat
 echo     timeout /t 2 /nobreak ^>nul >> backend_runner.bat
@@ -41,8 +41,8 @@ echo [OK] Backend iniciando en segundo plano...
 echo.
 
 REM Esperar a que el backend arranque
-echo [3/3] Esperando a que el backend inicie (15 segundos)...
-timeout /t 15 /nobreak >nul
+echo [3/3] Esperando a que el backend inicie (25 segundos)...
+timeout /t 25 /nobreak >nul
 
 REM Iniciar Frontend
 echo.

@@ -124,7 +124,7 @@ const EntityBuilderSidebar = ({ templates, onAddTemplate, currentFields = [] }) 
                             className="bg-[#1a1a20] hover:bg-white/5 border border-white/5 hover:border-white/20 rounded-lg p-3 cursor-grab active:cursor-grabbing transition-all group"
                         >
                             <div className="flex items-center justify-between mb-1">
-                                <span className="text-xs font-bold text-slate-200 group-hover:text-white">{tpl.label}</span>
+                                <span className="text-xs font-bold text-slate-200 group-hover:text-primary">{tpl.label}</span>
                                 <span className="material-symbols-outlined text-slate-600 text-xs">drag_pan</span>
                             </div>
                             <div className="flex items-center gap-2">

@@ -20,6 +20,15 @@ const graphStylesheet = [
             'font-size': '12px',
             'text-valign': 'bottom',
             'text-margin-y': 8,
+            'text-wrap': 'wrap',
+            'text-max-width': '120px',
+            'text-background-opacity': 1,
+            'text-background-color': '#0f172a',
+            'text-background-padding': '4px',
+            'text-background-shape': 'roundrectangle',
+            'text-border-color': '#334155',
+            'text-border-width': 1,
+            'text-border-opacity': 1,
             'width': 40,
             'height': 40,
             'border-width': 2,
@@ -169,24 +178,38 @@ const GeneralGraphView = () => {
     const loadData = async () => {
         setLoading(true);
         try {
+            // FORCE PROJECT ACTIVATION (Ensure backend session has "proyectoActivo")
+            // This is critical when loading via iframe/standalone to avoid TenantContext mismatches.
+            if (projectName) {
+                console.log(`[GeneralGraphView] Activating project context: ${projectName}`);
+                await api.get(`/proyectos/${projectName}`);
+            }
+
             const graphData = await api.get('/world-bible/graph');
-            if (graphData && graphData.nodes) {
+            console.log('[GeneralGraphView] Raw graph data received:', graphData);
+
+            if (graphData && (graphData.nodes || graphData.data?.nodes)) {
+                const nodes = graphData.nodes || graphData.data.nodes;
+                const edges = graphData.edges || graphData.data.edges || [];
+
                 // Normalize data to ensure proper group assignment
-                const normalizedNodes = graphData.nodes.map(node => ({
+                const normalizedNodes = nodes.map(node => ({
                     ...node,
                     group: 'nodes' // Ensure nodes have group property
                 }));
-                const normalizedEdges = graphData.edges.map(edge => ({
+                const normalizedEdges = edges.map(edge => ({
                     ...edge,
                     group: 'edges' // Ensure edges have group property
                 }));
 
-                console.log('Loaded graph:', normalizedNodes.length, 'nodes,', normalizedEdges.length, 'edges');
+                console.log(`[GeneralGraphView] Renderizado: ${normalizedNodes.length} nodos, ${normalizedEdges.length} aristas`);
                 setElements([...normalizedNodes, ...normalizedEdges]);
+            } else {
+                console.warn('[GeneralGraphView] Grafo recibido vacío o mal estructurado');
             }
         } catch (err) {
             console.error("Failed to load graph data", err);
-            navigate('/');
+            // navigate('/'); // REMOVED: Don't redirect within iframe as it's confusing
         } finally {
             setLoading(false);
         }
@@ -208,6 +231,24 @@ const GeneralGraphView = () => {
         layout.run();
     };
 
+    const savePositions = useCallback(async () => {
+        if (!cyRef.current) return;
+        const nodes = cyRef.current.nodes();
+        const positions = nodes.map(n => ({
+            id: n.data('id'),
+            category: n.data('category'),
+            x: n.position().x,
+            y: n.position().y
+        }));
+
+        try {
+            await api.put('/world-bible/graph/positions', positions);
+            console.log("Positions saved successfully");
+        } catch (err) {
+            console.error("Failed to save positions", err);
+        }
+    }, []);
+
     useEffect(() => {
         // Listen for relationship updates from the manager
         const handleRelUpdate = () => {
@@ -217,7 +258,11 @@ const GeneralGraphView = () => {
         window.addEventListener('relationships-update', handleRelUpdate);
 
         if (cyRef.current) {
-            runLayout();
+            // Check if any node HAS no position (new nodes or first time)
+            const hasDraftNodes = elements.some(el => el.group === 'nodes' && !el.position);
+            if (hasDraftNodes) {
+                runLayout();
+            }
 
             // Listen for selection
             cyRef.current.on('select', 'node', async (evt) => {
@@ -240,12 +285,17 @@ const GeneralGraphView = () => {
                 setSelectedNode(null);
                 setIsEditing(false);
             });
+
+            // --- SAVE ON DRAG ---
+            cyRef.current.on('dragfree', 'node', () => {
+                savePositions();
+            });
         }
 
         return () => {
             window.removeEventListener('relationships-update', handleRelUpdate);
         };
-    }, [elements]);
+    }, [elements, savePositions]);
 
     const handleSearch = (query, filter = activeFilter) => {
         if (!cyRef.current) return;

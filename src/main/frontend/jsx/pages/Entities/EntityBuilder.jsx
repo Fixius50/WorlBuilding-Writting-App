@@ -426,7 +426,7 @@ const EntityBuilder = ({ mode }) => {
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => navigate(`/${username}/${projectName}/bible/folder/${folderSlug}`)}
-                            className="px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 text-xs font-bold uppercase tracking-widest transition-all"
+                            className="px-4 py-2 rounded-xl text-slate-400 hover:text-primary hover:bg-primary/5 text-xs font-bold uppercase tracking-widest transition-all"
                         >
                             Cancelar
                         </button>
@@ -477,7 +477,7 @@ const EntityBuilder = ({ mode }) => {
                             onClick={() => setActiveEntityTab(tab)}
                             className={`py-4 text-[10px] font-black uppercase tracking-widest border-b-2 transition-colors ${activeEntityTab === tab
                                 ? 'border-primary text-primary'
-                                : 'border-transparent text-slate-500 hover:text-white'
+                                : 'border-transparent text-slate-500 hover:text-primary'
                                 }`}
                         >
                             {tab}

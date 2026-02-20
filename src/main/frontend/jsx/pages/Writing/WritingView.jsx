@@ -368,39 +368,39 @@ const WritingView = () => {
     }
 
     return (
-        <><div className="flex-1 flex w-full h-full bg-black relative overflow-hidden font-sans">
+        <><div className="flex-1 flex w-full h-full bg-[#111] relative overflow-hidden font-sans text-slate-200">
             {portalRef && createPortal(renderRightPanel(), portalRef)}
 
             <div className="flex-1 flex flex-col relative z-10 overflow-hidden">
-                <main className="flex-1 overflow-y-auto custom-scrollbar flex justify-center bg-black relative no-scrollbar">
+                <main className="flex-1 flex flex-col relative no-scrollbar">
                     {currentPage && (
-                        <div className="w-full min-h-full flex flex-col animate-in slide-in-from-bottom-8 duration-700">
-                            {/* Paper Container - Dark grayish tone */}
-                            <div className="flex-1 bg-slate-900 overflow-hidden flex flex-col transition-all duration-500 group">
-                                {/* Clean header for title */}
-                                <div className="h-32 flex items-end px-20 pb-8 border-b border-slate-700/50">
+                        <div className="flex-1 flex flex-col overflow-hidden animate-in slide-in-from-bottom-8 duration-700">
+                            {/* IDE Tabs Header */}
+                            <div className="h-10 flex items-end px-2 bg-[#0d1117] border-b border-[#1e1e1e] select-none shrink-0">
+                                <div className="flex items-center h-9 px-4 border-t-[3px] border-[#007acc] bg-[#1e1e1e] text-slate-200 text-sm gap-2 min-w-[200px] max-w-[300px]">
+                                    <span className="material-symbols-outlined text-[14px] text-blue-400">history_edu</span>
                                     <input
                                         type="text"
-                                        className="w-full bg-transparent text-5xl font-serif font-black text-slate-100 placeholder:text-slate-600 border-none outline-none focus:ring-0"
+                                        className="w-full bg-transparent font-sans text-sm text-slate-200 placeholder:text-slate-600 border-none outline-none focus:ring-0 p-0 truncate"
                                         value={currentPage.titulo || ''}
                                         onChange={(e) => handleTitleChange(e.target.value)}
                                         placeholder={`${t('writing.chapter')} ${currentPageIndex + 1}`} />
-                                </div>
 
-                                <div className="flex-1 px-20 py-20 text-slate-100 mx-auto max-w-5xl w-full">
+                                    {/* Small save indicator in tab */}
+                                    <span className={`material-symbols-outlined text-[14px] transition-opacity ml-2 ${saving ? 'opacity-100 text-blue-400 animate-spin' : 'opacity-0'}`}>sync</span>
+                                </div>
+                            </div>
+
+                            {/* IDE Editor Container */}
+                            <div className="flex-1 bg-[#1e1e1e] overflow-y-auto custom-scrollbar flex justify-center">
+                                <div className="w-full max-w-4xl px-8 py-12">
                                     <ZenEditor
                                         content={currentPage.contenido}
                                         onUpdate={handleContentChange}
                                         paperMode={true} />
                                 </div>
-
-                                <footer className="h-16 border-t border-slate-700 flex items-center justify-between px-16 text-[10px] font-mono text-slate-500 select-none">
-                                    <span>{t('writing.page').toUpperCase()} {currentPageIndex + 1} {t('writing.of')} {pages.length}</span>
-                                    <span className="opacity-0 group-hover:opacity-100 transition-opacity uppercase font-black tracking-widest">
-                                        {notebook?.titulo || t('common.no_results')}
-                                    </span>
-                                </footer>
                             </div>
+
                         </div>
                     )}
                 </main>

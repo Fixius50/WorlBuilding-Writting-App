@@ -32,15 +32,24 @@ public class WorldBibleController {
     private Cuaderno getProyectoActual(HttpSession session) {
         String nombreProyecto = (String) session.getAttribute("proyectoActivo");
 
+        // SOPORTE PARA IFRAMES: Si no hay sesión, intentar recuperar del TenantContext
+        // (set by Header)
         if (nombreProyecto == null) {
-            logger.warn(">>> [Controller] No project in session.");
+            nombreProyecto = com.worldbuilding.app.config.TenantContext.getCurrentTenant();
+            if (nombreProyecto != null) {
+                logger.debug(">>> [Controller] Using project from TenantContext (Header): {}", nombreProyecto);
+            }
+        }
+
+        if (nombreProyecto == null) {
+            logger.warn(">>> [Controller] No project found in session or TenantContext.");
             return null;
         }
 
-        logger.debug(">>> [Controller] Getting project for session attribute: {}", nombreProyecto);
+        logger.debug(">>> [Controller] Project context active: {}", nombreProyecto);
 
-        String currentContext = com.worldbuilding.app.config.TenantContext.getCurrentTenant();
-        if (!nombreProyecto.equals(currentContext)) {
+        // Asegurar que el TenantContext esté sincronizado
+        if (!nombreProyecto.equals(com.worldbuilding.app.config.TenantContext.getCurrentTenant())) {
             com.worldbuilding.app.config.TenantContext.setCurrentTenant(nombreProyecto);
         }
 
@@ -72,6 +81,16 @@ public class WorldBibleController {
         } catch (Exception e) {
             return ResponseEntity.status(500)
                     .body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Unknown error"));
+        }
+    }
+
+    @PutMapping("/graph/positions")
+    public ResponseEntity<?> saveGraphPositions(@RequestBody List<WorldBibleService.NodePositionDTO> positions) {
+        try {
+            worldBibleService.saveNodePositions(positions);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
     }
 

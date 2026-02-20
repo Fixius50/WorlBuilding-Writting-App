@@ -30,6 +30,9 @@ public class WorldBibleService {
     @Autowired
     private RelacionRepository relacionRepository;
 
+    @Autowired
+    private NodoRepository nodoRepository;
+
     // --- CARPETAS ---
 
     public List<Carpeta> getRootFolders(Cuaderno proyecto) {
@@ -509,38 +512,50 @@ public class WorldBibleService {
         List<Map<String, Object>> nodes = new ArrayList<>();
         List<Map<String, Object>> edges = new ArrayList<>();
 
+        // Fetch all nodes to get their positions
+        List<Nodo> savedNodes = nodoRepository.findAll();
+        Map<String, Nodo> nodeMap = new HashMap<>();
+        for (Nodo n : savedNodes) {
+            String key = n.getTipoEntidad() + ":" + n.getEntidadId();
+            nodeMap.put(key, n);
+        }
+
         for (EntidadGenerica e : entities) {
-            // 1. Create Node
+            // 1. Create Node Data
             Map<String, Object> nodeData = new HashMap<>();
             nodeData.put("id", e.getId().toString());
             nodeData.put("label", e.getNombre());
             nodeData.put("category", e.getCategoria() != null ? e.getCategoria() : "Generic");
             nodeData.put("type", e.getTipoEspecial());
-            // Add visual clues
+
             if (e.getIconUrl() != null && !e.getIconUrl().isEmpty()) {
                 nodeData.put("icon", e.getIconUrl());
             }
 
+            // --- POSITIONS ---
+            // Look for existing node metadata (coordinates)
+            String key = e.getCategoria() + ":" + e.getId();
+            Nodo savedNode = nodeMap.get(key);
+
             Map<String, Object> nodeWrapper = new HashMap<>();
             nodeWrapper.put("data", nodeData);
+
+            if (savedNode != null && savedNode.getPosX() != null && savedNode.getPosY() != null) {
+                Map<String, Double> position = new HashMap<>();
+                position.put("x", savedNode.getPosX());
+                position.put("y", savedNode.getPosY());
+                nodeWrapper.put("position", position);
+            }
+
             nodes.add(nodeWrapper);
 
-            // 2. Create Edges from AtributoValor (Legacy/Current)
-            // Need to hydrate values? They are lazy.
-            // Using logic similar to hydrateEntity but inside loop
+            // 2. Edges (existing logic)
             org.hibernate.Hibernate.initialize(e.getValores());
             if (e.getValores() != null) {
                 for (AtributoValor val : e.getValores()) {
                     org.hibernate.Hibernate.initialize(val.getPlantilla());
                     if ("entity_link".equals(val.getPlantilla().getTipo()) && val.getValor() != null) {
                         try {
-                            // Verify target exists (optional, but good for integrity)
-                            // Assuming val.getValor() is the ID
-                            // We construct the edge blindly for performance, client will filter if node
-                            // missing?
-                            // Better: check if target ID is in 'entities' list? O(N) lookup.
-                            // For thousands, map is better.
-
                             Map<String, Object> edgeData = new HashMap<>();
                             edgeData.put("source", e.getId().toString());
                             edgeData.put("target", val.getValor());
@@ -550,34 +565,22 @@ public class WorldBibleService {
                             edgeWrapper.put("data", edgeData);
                             edges.add(edgeWrapper);
                         } catch (Exception ex) {
-                            // Ignore malformed links
                         }
                     }
                 }
             }
-
-            // 3. Create Edges from JSON Attributes (Future/Hybrid)
-            if (e.getAttributes() != null) {
-                // Logic: Look for keys ending in "_link" or specific metadata?
-                // For now, let's assume if we decide to store links in JSON, we will define a
-                // schema.
-                // Placeholder for now.
-            }
         }
 
-        // Fetch new relationships
+        // New relationships logic
         List<Long> entityIds = entities.stream().map(EntidadGenerica::getId).toList();
         if (!entityIds.isEmpty()) {
             List<Relacion> rels = relacionRepository.findByNodoOrigenIdInOrNodoDestinoIdIn(entityIds, entityIds);
             for (Relacion r : rels) {
                 Map<String, Object> edgeData = new HashMap<>();
-                // Verify types if needed, but usually IDs are unique enough for now
-                // Ideally we check implicit type. Relacion stores it.
-                // Construct ID based on stored data
                 edgeData.put("source", r.getNodoOrigenId().toString());
                 edgeData.put("target", r.getNodoDestinoId().toString());
                 edgeData.put("label", r.getTipoRelacion());
-                edgeData.put("id", "rel-" + r.getId()); // Unique ID for edge
+                edgeData.put("id", "rel-" + r.getId());
 
                 Map<String, Object> edgeWrapper = new HashMap<>();
                 edgeWrapper.put("data", edgeData);
@@ -586,6 +589,74 @@ public class WorldBibleService {
         }
 
         return Map.of("nodes", nodes, "edges", edges);
+    }
+
+    @Transactional
+    public void saveNodePositions(List<NodePositionDTO> positions) {
+        for (NodePositionDTO pos : positions) {
+            // Find or create Nodo for this entity
+            // Note: GeneralGraphView currently uses id as EntidadId, but we might need
+            // category
+            // The frontend sends { id: "123", x: 10, y: 20, category: "Individual" }
+            Long entityId = Long.parseLong(pos.getId());
+            String category = pos.getCategory();
+
+            Optional<Nodo> existing = nodoRepository.findAll().stream()
+                    .filter(n -> n.getEntidadId().equals(entityId) && n.getTipoEntidad().equals(category))
+                    .findFirst();
+
+            Nodo n;
+            if (existing.isPresent()) {
+                n = existing.get();
+            } else {
+                n = new Nodo();
+                n.setEntidadId(entityId);
+                n.setTipoEntidad(category);
+            }
+
+            n.setPosX(pos.getX());
+            n.setPosY(pos.getY());
+            nodoRepository.save(n);
+        }
+    }
+
+    public static class NodePositionDTO {
+        private String id;
+        private String category;
+        private Double x;
+        private Double y;
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getCategory() {
+            return category;
+        }
+
+        public void setCategory(String category) {
+            this.category = category;
+        }
+
+        public Double getX() {
+            return x;
+        }
+
+        public void setX(Double x) {
+            this.x = x;
+        }
+
+        public Double getY() {
+            return y;
+        }
+
+        public void setY(Double y) {
+            this.y = y;
+        }
     }
 
     private String generateUniqueSlug(String name, String type) {

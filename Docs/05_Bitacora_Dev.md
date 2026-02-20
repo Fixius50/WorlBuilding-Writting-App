@@ -1,3 +1,34 @@
+# Bitácora de Desarrollo - Sesión 2026-02-20
+
+## 📋 Resumen Ejecutivo
+
+Sesión crítica de estabilización del entorno de desarrollo y resolución de problemas de conectividad en componentes embebidos (Grafo Global). Se optimizó el flujo de arranque para evitar conflictos de puerto y se robusteció el sistema multi-tenant para soportar accesos desde iframes.
+
+---
+
+## 🐛 Bugs Corregidos
+
+### 1. Conflicto de Puertos en el Arranque
+
+**Problema**: El backend abría automáticamente una pestaña en el puerto 8080, mientras que el frontend abría el 3000, causando confusión. Además, el script `INICIAR.bat` lanzaba el frontend demasiado rápido provocando errores `ECONNREFUSED`.
+
+**Solución**:
+
+- Eliminado `launchBrowser` de `WorldbuildingApplication.java`.
+- Actualizado `INICIAR.bat` con 25 segundos de espera y eliminado el `clean` innecesario en ejecuciones diarias.
+- Configurado Vite para ser el único encargado de abrir el navegador.
+
+### 2. Grafo Vacío en Iframe/Drawer
+
+**Problema**: El `WorldBibleController` ignoraba el contexto del proyecto cuando se pedía desde el drawer inferior (iframe), devolviendo 401 o una estructura vacía debido a la falta de cookies de sesión.
+
+**Solución**:
+
+- **Backend**: El controlador ahora prioriza el `TenantContext` (alimentado por el header `X-Project-ID`) si no existe sesión activa.
+- **Frontend**: Inyección automática del header en todas las peticiones de `api.js` y normalización de la respuesta en `GeneralGraphView.jsx`.
+
+---
+
 # Bitácora de Desarrollo - Sesión 2026-02-07
 
 ## 📋 Resumen Ejecutivo

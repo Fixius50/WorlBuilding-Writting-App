@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { MapContainer, ImageOverlay, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, ImageOverlay, Marker, Popup, useMap, LayersControl, Polyline, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import '../../../css/leaflet-custom.css';
@@ -63,7 +63,7 @@ const FitBounds = ({ bounds }) => {
  * Renders an interactive map using React Leaflet with custom image overlay
  * and markers for worldbuilding purposes
  */
-const LeafletMapView = ({ mapImage, markers = [], onMarkerClick, imageWidth = 1920, imageHeight = 1080 }) => {
+const LeafletMapView = ({ mapImage, markers = [], layers = [], connections = [], onMarkerClick, onMapClick, imageWidth = 1920, imageHeight = 1080 }) => {
     // Calculate bounds for the custom coordinate system
     // Using CRS.Simple for non-geographical maps
     const bounds = useMemo(() => {
@@ -78,7 +78,7 @@ const LeafletMapView = ({ mapImage, markers = [], onMarkerClick, imageWidth = 19
     const displayMarkers = markers.length > 0 ? markers : [];
 
     return (
-        <div className="w-full h-full relative">
+        <div className="w-full h-full relative" style={{ cursor: onMapClick ? 'crosshair' : 'default' }}>
             <MapContainer
                 center={center}
                 zoom={0}
@@ -89,14 +89,40 @@ const LeafletMapView = ({ mapImage, markers = [], onMarkerClick, imageWidth = 19
                 zoomControl={true}
                 attributionControl={false}
             >
-                {/* Image Overlay - The custom map image */}
-                {mapImage && (
-                    <ImageOverlay
-                        url={mapImage}
-                        bounds={bounds}
-                        opacity={1}
-                    />
-                )}
+                {/* Layers Control: Base Map and Overlays */}
+                <LayersControl position="topright">
+                    {/* Base Image Overlay - The custom map image */}
+                    {mapImage && (
+                        <LayersControl.BaseLayer checked name="Superficie / Base">
+                            <ImageOverlay
+                                url={mapImage}
+                                bounds={bounds}
+                                opacity={1}
+                                interactive={!!onMapClick}
+                                eventHandlers={{
+                                    click: (e) => onMapClick && onMapClick(e.latlng)
+                                }}
+                            />
+                        </LayersControl.BaseLayer>
+                    )}
+
+                    {/* Additional User-Defined Layers (Subterranean, Ruin maps etc.) */}
+                    {layers.map((layer, idx) => (
+                        layer.url && !layer.url.toLowerCase().includes('duckdns') && !layer.url.toLowerCase().includes('nopreview') && (
+                            <LayersControl.Overlay key={idx} checked={layer.defaultVisible} name={layer.name || `Capa ${idx + 1}`}>
+                                <ImageOverlay
+                                    url={layer.url}
+                                    bounds={bounds}
+                                    opacity={layer.opacity || 1}
+                                    interactive={!!onMapClick}
+                                    eventHandlers={{
+                                        click: (e) => onMapClick && onMapClick(e.latlng)
+                                    }}
+                                />
+                            </LayersControl.Overlay>
+                        )
+                    ))}
+                </LayersControl>
 
                 {/* Fit bounds after mount */}
                 <FitBounds bounds={bounds} />
@@ -132,13 +158,44 @@ const LeafletMapView = ({ mapImage, markers = [], onMarkerClick, imageWidth = 19
                                             className="text-primary hover:underline text-sm inline-flex items-center gap-1"
                                         >
                                             <span className="material-symbols-outlined text-sm">open_in_new</span>
-                                            View Details
+                                            Ver Detalles
                                         </a>
                                     )}
                                 </div>
                             </Popup>
                         </Marker>
                     );
+                })}
+
+                {/* Render Relationships N:M (Polylines) */}
+                {connections.map((conn, idx) => {
+                    const sourceMarker = displayMarkers.find(m => m.id === conn.sourceId);
+                    const targetMarker = displayMarkers.find(m => m.id === conn.targetId);
+
+                    if (sourceMarker && targetMarker) {
+                        const sourcePos = sourceMarker.position || [imageHeight / 2, imageWidth / 2];
+                        const targetPos = targetMarker.position || [imageHeight / 2, imageWidth / 2];
+
+                        return (
+                            <Polyline
+                                key={`conn-${idx}`}
+                                positions={[sourcePos, targetPos]}
+                                pathOptions={{ 
+                                    color: conn.color || '#6366f1', 
+                                    weight: conn.weight || 3,
+                                    opacity: 0.8,
+                                    dashArray: conn.dashed ? '10, 10' : null 
+                                }}
+                            >
+                                {conn.label && (
+                                    <Tooltip sticky className="bg-surface-dark border-white/10 text-slate-200">
+                                        {conn.label}
+                                    </Tooltip>
+                                )}
+                            </Polyline>
+                        );
+                    }
+                    return null;
                 })}
             </MapContainer>
 

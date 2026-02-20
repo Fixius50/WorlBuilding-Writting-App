@@ -223,7 +223,7 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
     return (
         <div className={`space-y-1 select-none ${className || ''}`}>
             <div
-                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-text-muted hover:text-white hover:bg-white/5 cursor-pointer transition-all group relative"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-text-muted hover:text-primary hover:bg-primary/5 cursor-pointer transition-all group relative"
                 onClick={navigateToFolder}
                 onContextMenu={(e) => handleContextMenu(e, 'folder', folder.id, folder.nombre)}
                 onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
@@ -335,7 +335,7 @@ const FolderItem = ({ folder, onCreateSubfolder, onRename, onDeleteFolder, onDel
                                     key={ent.id}
                                     to={getEntityRoute(username, projectName, ent, folder.slug || folder.id)}
                                     onContextMenu={(e) => handleContextMenu(e, 'entity', ent.id, ent.nombre)}
-                                    className={`flex items-center gap-3 px-3 py-2 rounded-xl text-[11px] font-medium text-text-muted hover:text-white hover:bg-primary/10 transition-all group cursor-grab active:cursor-grabbing ${ent.pending ? 'opacity-50 pointer-events-none' : ''}`}
+                                    className={`flex items-center gap-3 px-3 py-2 rounded-xl text-[11px] font-medium text-text-muted hover:text-blue-400 hover:bg-blue-400/5 transition-all group cursor-grab active:cursor-grabbing ${ent.pending ? 'opacity-50 pointer-events-none' : ''}`}
                                     draggable={!ent.pending}
                                     onDragStart={(e) => {
                                         e.dataTransfer.setData('entityId', ent.id);

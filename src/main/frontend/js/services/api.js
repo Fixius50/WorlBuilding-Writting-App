@@ -5,8 +5,21 @@ const api = {
         const url = `${BASE_URL}${endpoint}`;
         const isFormData = options.body instanceof FormData;
 
+        // NEW: Automatically inject project ID from URL if present to support iframe context
+        let projectIdHeader = {};
+        const pathParts = window.location.pathname.split('/');
+        // URL Pattern: /username/projectName/...
+        if (pathParts.length >= 3) {
+            const projectName = pathParts[2];
+            // Basic validation to avoid injecting obvious non-project slugs
+            if (projectName && projectName !== 'settings' && projectName !== 'workspaces') {
+                projectIdHeader['X-Project-ID'] = projectName;
+            }
+        }
+
         const headers = {
             ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+            ...projectIdHeader,
             ...options.headers,
         };
 
