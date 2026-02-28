@@ -1,51 +1,29 @@
-# Documento de Diseño y UX: Chronos Atlas (02)
+# GUÍA DE DISEÑO UI/UX - DARK GLASSMORPHISM
 
-Descripción del sistema de diseño visual y funcional **"Arcane Void"** para WorldbuildingApp.
+El objetivo es una interfaz que se sienta como una herramienta de un arquitecto cósmico: elegante, profunda y técnica.
 
-## 1. Concepto Visual: Arcane Void
+## PALETA DE COLORES (DARK THEME)
 
-El diseño busca un equilibrio entre la claridad de un IDE moderno (VS Code) y la mística de un antiguo estudio de alquimia o grimorio mágico.
+*   **Fondo:** `#0f172a` (Slate 900).
+*   **Paneles:** Transparencia `rgba(30, 41, 59, 0.7)` con desenfoque `blur(12px)`.
+*   **Bordes:** `1px solid rgba(255, 255, 255, 0.1)`.
+*   **Primario:** `#3b82f6` (Blue 500) para acciones principales.
+*   **Acento:** `#8b5cf6` (Violet 500) para elementos mágicos/especiales.
+*   **Texto:** `#f8fafc` (Slate 50) para títulos, `#94a3b8` (Slate 400) para descripciones.
 
-### Paleta de Colores
+## TIPOGRAFÍA
 
-* **Void Dark**: `#09090b` (Fondo principal, profundidad infinita).
-* **Glass Border**: `rgba(255, 255, 255, 0.05)` (Bordes sutiles).
-* **Accent Indigo**: `#6366f1` (Acción Primaria, Magia).
-* **Accent Emerald**: `#10b981` (Confirmación, Vida, Naturaleza).
-* **Parchment White**: `#fafafa` (Texto principal de lectura).
+*   **Títulos:** 'Outfit' o 'Inter' (Sans-serif moderna).
+*   **Cuerpo:** 'Inter'.
+*   **Lectura de "Biblia":** Fuentes Serif para sensación de documento antiguo (ej. 'Lora' o 'Merriweather').
 
-### Tipografía
+## COMPONENTES ESTÁNDAR
 
-* **Interfaz**: `Outfit` / `Inter` (Sans-serif, limpia, legible a tamaños pequeños).
-* **Narrativa**: `Cormorant Garamond` / `Playfair Display` (Serif, para bloques de texto de lore).
+1.  **The Architect Box:** El contenedor principal con bordes redondeados (16px) y sombra difusa.
+2.  **Interacciones:** 
+    *   Hover: Aumento de brillo en el borde.
+    *   Click: Sutil escala descendente (0.98).
+    *   Transiciones: 0.3s ease-in-out para todo cambio de estado visual.
 
-## 2. Componentes de UI (Layout "Next")
-
-### A. Estructura de 3 Paneles
-
-El layout principal se divide para maximizar el contexto sin cambiar de pantalla:
-
-1. **Panel Izquierdo (Biblia)**: Árbol de navegación jerárquico. Carpetas y Entidades.
-2. **Panel Central (Lienzo)**: Área de trabajo principal (Editor de texto, Mapa, Grafo).
-3. **Panel Derecho (Inspector)**: Propiedades, atributos y herramientas contextuales.
-
-### B. Navigation Dock
-
-Barra flotante inferior con efecto *Glassmorphism*. Contiene los accesos rápidos a módulos globales (Timeline, Mapa Mundial, Ajustes) sin invadir el espacio vertical.
-
-## 3. Características Funcionales
-
-### Entity Builder (Constructor de Fichas)
-
-* **Drag & Drop**: Los usuarios construyen la estructura de sus fichas arrastrando "Cajas de Atributos" (Texto, Imagen, Stats).
-* **Herencia**: Las carpetas definen la plantilla por defecto para las entidades nuevas en su interior.
-
-### Editor de Mapas (Integrado)
-
-* **Panel Derecho**: Control de capas, rejilla y propiedades del objeto seleccionado.
-* **Lienzo Infinito**: Navegación (Pan/Zoom) fluida con Konva.js.
-
-### Sistema de Gráficos (Network)
-
-* Visualización de relaciones entre entidades como nodos físicos.
-* Filtros visuales por categoría (Individuo, Lugar, Grupo).
+## ICONOGRAFÍA
+Uso de **Google Material Symbols** (Rounded) con peso ligero (Light/300).

@@ -1,36 +1,25 @@
-# Roadmap Vivo
+# ROADMAP VIVO DEL PROYECTO
 
-## Estado Actual
+## FASE 1: CIMIENTOS (Completada ✅)
+- [x] Configuración inicial Spring Boot + React.
+- [x] Sistema de autenticación de usuario único (Local).
+- [x] Gestión de Proyectos y Universos.
+- [x] Creación básica de Entidades.
 
-El proyecto se encuentra en la **Fase 2 (Creador)**, con el núcleo de la Worldbuilding App funcional y en proceso de pulido estético y funcional de las herramientas especializadas (Atlas, Timeline, Grafos).
+## FASE 2: EL ARQUITECTO (En Progreso 🚧)
+- [x] **World Bible:** Buscador global y Wiki interna.
+- [x] **Relaciones:** Visualización de grafos entre entidades.
+- [x] **Líneas Temporales:** Motor de eventos con soporte para eras y **visualización horizontal avanzada**.
+- [/] **Especialización:** 
+    - [x] Conlangs (Motor fonético básico).
+    - [ ] Mapas (Visor Leaflet integrado).
 
-## Tareas por Módulo
+## FASE 3: PULIDO Y EMPAQUETADO
+- [ ] Refactorización de estilos globales.
+- [ ] Optimización de rendimiento en grafos grandes.
+- [ ] Exportación final a `.EXE`.
 
-### Biblia y Entidades
-
-- [x] Corrección de crash ‘isCreating’ en la Biblia
-- [x] Robustecimiento de `EntityBuilderSidebar.jsx`
-- [x] Soporte para duplicación de entidades/mapas con `carpetaId`
-
-### Atlas (Cartografía)
-
-- [x] Migración del panel de detalles al Portal Global (`CONTEXT`)
-- [x] Implementación de 'Herramientas Globales' en panel derecho (Multicapa, N:M)
-- [x] Sincronización de apertura de panel al seleccionar mapas
-
-### Cronología (Timeline)
-
-- [x] Sincronización de eventos al cambiar de línea temporal (Multiverso)
-- [x] Limpieza de estado de eventos al deseleccionar
-- [x] Unificación de pestaña a `CONTEXT`
-
-### Grafo de Relaciones
-
-- [x] Implementación de **Edición In-Situ** (Inputs directos en el panel)
-- [x] Truncamiento de valores largos y base64 (Elipsis a 100 caracteres)
-- [x] Corrección de redireccionamiento (Mantenimiento en la vista de Grafo)
-
-## Próximos Pasos (Prioridad Alta)
-
-- [ ] Implementar la funcionalidad real de los botones 'Multicapa' y 'N:M' vinculados al motor de Leaflet.
-- [ ] Refactorizar el renderizado de etiquetas en el Grafo para mayor legibilidad.
+## IDEAS FUTURAS
+*   Generador de nombres procedural por cultura.
+*   Integración de IA local para resúmenes de historia.
+*   Modo "Presentación" para mostrar el mundo a lectores.

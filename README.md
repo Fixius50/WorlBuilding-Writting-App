@@ -48,9 +48,11 @@ Ver `Docs/mcps/scripts/README.md` para más opciones de testing.
 
 ## 📚 Documentación
 
-- **MCPs de Testing:** `Docs/mcps/README.md`
-- **Scripts:** `Docs/scripts/README.md`
-- **Logs:** `Docs/logs/`
+- **Estructura Core:** `Docs/00_Reglas_Maestras.md` a `04_Arquitectura_Workspaces.md`.
+- **Bitácora Maestra:** `Docs/05_Bitacora_Maestra.md` (Historial consolidado).
+- **Linguistic Engine:** `Docs/06_Arquitectura_Linguistica.md`.
+- **Technical Skills:** `Docs/skills/` (Guías de Arquitecto, Experto y Master).
+- **Testing & Scripts:** `Docs/mcps/` y `Docs/scripts/`.
 
 ## 🔧 Desarrollo
 

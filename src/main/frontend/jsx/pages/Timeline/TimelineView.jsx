@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useOutletContext } from 'react-router-dom';
 import { createPortal } from 'react-dom';
@@ -6,6 +6,8 @@ import api from '../../../js/services/api';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import GlassPanel from '../../components/common/GlassPanel';
 import Button from '../../components/common/Button';
+import TimelineEventCard from '../../components/Timeline/TimelineEventCard';
+import '../../../css/TimelineView.css';
 
 const TimelineView = () => {
     const { t } = useLanguage();
@@ -40,6 +42,19 @@ const TimelineView = () => {
     const [portalTarget, setPortalTarget] = useState(null);
 
     const initialized = React.useRef(false);
+    const timelineRef = useRef(null);
+
+    const scrollLeft = () => {
+        if (timelineRef.current) {
+            timelineRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+        }
+    };
+
+    const scrollRight = () => {
+        if (timelineRef.current) {
+            timelineRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+        }
+    };
 
     // Load Linked Timelines
     const loadLinkedTimelines = async (currentId) => {
@@ -756,46 +771,62 @@ const TimelineView = () => {
                     </div>
                 </div>
 
-                {/* Timeline Graph */}
-                <div className="flex-1 overflow-y-auto p-8 relative custom-scrollbar z-10">
-                    <div className="max-w-2xl mx-auto relative pl-8 border-l-2 border-white/10 space-y-8 pb-32">
-                        {events.length === 0 && (
-                            <div className="text-center text-slate-600 italic py-20">
-                                {t('timeline.no_events')}
-                            </div>
-                        )}
+                {/* Timeline Graph - Interactive Horizontal Version */}
+                <div className="flex-1 relative z-10 overflow-hidden flex flex-col justify-center">
+                    {events.length === 0 ? (
+                        <div className="text-center text-slate-600 italic py-20">
+                            {t('timeline.no_events')}
+                        </div>
+                    ) : (
+                        <div className="visual-timeline-wrapper animate-in fade-in duration-700">
+                            <button className="scroll-btn left" onClick={scrollLeft}>
+                                <span className="material-symbols-outlined">chevron_left</span>
+                            </button>
 
-                        {events.map((event, index) => (
-                            <div key={event.id} className="relative group animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: `${index * 50}ms` }}>
-                                <div
-                                    className="absolute top-6 -left-[41px] size-4 rounded-full bg-white/20 border-4 border-background-dark group-hover:bg-primary transition-colors cursor-pointer"
-                                    onClick={() => startEditEvent(event)}
-                                ></div>
-                                <div className={`ml-4 bg-surface-dark/50 border border-white/5 p-5 rounded-2xl hover:border-primary/30 transition-all hover:bg-surface-dark group-hover:translate-x-1 duration-300 relative group/card ${selectedEventId === event.id ? 'ring-2 ring-primary border-primary/50 bg-primary/5' : ''}`}>
-                                    <div className="absolute top-3 right-3 opacity-0 group-hover/card:opacity-100 transition-opacity flex gap-1 bg-black/50 rounded-lg backdrop-blur-sm border border-white/5 p-1">
-                                        <button onClick={() => startEditEvent(event)} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded transition-colors" title="Edit">
-                                            <span className="material-symbols-outlined text-sm">edit</span>
-                                        </button>
-                                        <button onClick={(e) => handleDeleteEvent(event.id, e)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Delete">
-                                            <span className="material-symbols-outlined text-sm">delete</span>
-                                        </button>
-                                    </div>
-                                    <div className="flex justify-between items-start" onClick={() => startEditEvent(event)}>
-                                        <div className="cursor-pointer">
-                                            <div className="flex flex-col mb-1">
-                                                <h3 className="text-lg font-bold text-white">{event.nombre}</h3>
-                                                <span className="text-xs font-mono font-bold text-primary opacity-80">
-                                                    {event.fechaTexto}
-                                                </span>
-                                            </div>
-                                            <p className="text-sm text-slate-400 leading-relaxed">{event.descripcion}</p>
+                            <div className="visual-timeline-container custom-scrollbar" ref={timelineRef}>
+                                <div className="timeline-axis"></div>
+                                <div className="events-track">
+                                    {events.map((event, index) => (
+                                        <div
+                                            key={event.id}
+                                            className={`event-wrapper ${index % 2 === 0 ? 'top' : 'bottom'} animate-in zoom-in-50 duration-500`}
+                                            style={{ animationDelay: `${index * 100}ms` }}
+                                        >
+                                            <TimelineEventCard
+                                                event={{
+                                                    title: event.nombre,
+                                                    date: event.fechaTexto, // Usamos el texto de fecha
+                                                    description: event.descripcion,
+                                                    type: 'GENERAL' // Por ahora genérico, se puede ampliar
+                                                }}
+                                                onClick={() => startEditEvent(event)}
+                                            />
                                         </div>
-                                    </div>
+                                    ))}
                                 </div>
+                            </div>
+
+                            <button className="scroll-btn right" onClick={scrollRight}>
+                                <span className="material-symbols-outlined">chevron_right</span>
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                {/* Optional: Summary list at bottom if many events */}
+                {events.length > 5 && (
+                    <div className="h-24 border-t border-white/5 bg-background-dark/30 backdrop-blur-sm px-8 flex items-center gap-4 overflow-x-auto custom-scrollbar z-20">
+                        {events.map(event => (
+                            <div
+                                key={event.id}
+                                onClick={() => startEditEvent(event)}
+                                className={`shrink-0 px-3 py-1.5 rounded-lg border text-[10px] font-bold cursor-pointer transition-all ${selectedEventId === event.id ? 'bg-primary/20 border-primary text-white' : 'bg-white/5 border-white/5 text-slate-500 hover:text-slate-300'}`}
+                            >
+                                {event.nombre}
                             </div>
                         ))}
                     </div>
-                </div>
+                )}
             </main>
             {/* Confirmation Modal */}
             <ConfirmationModal
