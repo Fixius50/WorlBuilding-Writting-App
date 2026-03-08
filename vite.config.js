@@ -1,10 +1,24 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import electron from 'vite-plugin-electron/simple'
 import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    plugins: [react()],
+    plugins: [
+        react(),
+        electron({
+            main: {
+                entry: path.resolve(__dirname, 'electron/main.ts'),
+                vite: { build: { outDir: path.resolve(__dirname, 'dist-electron') } }
+            },
+            preload: {
+                input: path.resolve(__dirname, 'electron/preload.ts'),
+                vite: { build: { outDir: path.resolve(__dirname, 'dist-electron') } }
+            },
+            renderer: {},
+        }),
+    ],
     base: '/', // Absolute path for deep linking support
     root: path.resolve(__dirname, 'src/main/frontend'),
     build: {
@@ -15,39 +29,9 @@ export default defineConfig({
         },
     },
     server: {
-        // Ensure we bind to all interfaces if needed, though localhost is fine
         host: 'localhost',
         port: 3000,
         open: true, // Force open browser on port 3000
-        proxy: {
-            // General capture for API requests
-            '/api': {
-                target: 'http://localhost:8080',
-                changeOrigin: true,
-                secure: false,
-                configure: (proxy, _options) => {
-                    proxy.on('error', (err, _req, _res) => {
-                        // Suppress excessive error logging when backend is starting up
-                        if (err.code !== 'ECONNREFUSED') {
-                            console.log('proxy error', err);
-                        }
-                    });
-                    proxy.on('proxyReq', (proxyReq, req, _res) => {
-                        console.log('Sending Request to the Target:', req.method, req.url);
-                    });
-                    proxy.on('proxyRes', (proxyRes, req, _res) => {
-                        console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
-                    });
-                },
-            },
-            '/manual': {
-                target: 'http://localhost:8080',
-                changeOrigin: true,
-                secure: false,
-            },
-            // Explicitly proxy some other known root-level paths if they exist entirely on backend (fallback)
-            // But usually /api capture is enough if code uses it.
-        }
     },
     resolve: {
         alias: {

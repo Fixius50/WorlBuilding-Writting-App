@@ -1,55 +1,49 @@
 # Guía de Empaquetado y Distribución - Chronos Atlas
 
-Este documento explica cómo generar el ejecutable final (.exe) y el archivo comprimido (.zip) para distribuir la aplicación.
+Este documento explica cómo generar el ejecutable final (`.exe`) para distribuir la aplicación nativa de Windows mediante **Electron Builder**.
 
 ## 1. Requisitos Previos
 
 - **Windows 10/11**
-- **Java JDK 21+** instalado (o `jpackage` en el PATH).
-- **Node.js** (para compilar el frontend).
+- **Node.js** v20+
 
-## 2. Generar el Paquete
+## 2. Generar el Paquete (Build)
 
-Hemos automatizado todo el proceso en un único script de PowerShell.
+Hemos transicionado de Java a un entorno puramente JavaScript/TypeScript nativo de escritorio.
+El proceso de construcción y empaquetado se realiza a través de NPM.
 
-### Pasos:
+### Pasos
 
-1. Abrir una terminal (PowerShell o CMD) en la raíz del proyecto.
-2. Ejecutar el siguiente comando:
+1. Abrir una terminal en la raíz del proyecto (`/WorldbuildingApp`).
+2. Generar los archivos estáticos de Vite y TypeScript ejecutando:
 
    ```powershell
-   .\scripts\package_exe.ps1
+   npm run build
    ```
 
-### ¿Qué hace este script?
+3. *(Futuro)* Usar la herramienta de empaquetado final:
 
-El script realiza las siguientes tareas automáticamente:
+   ```powershell
+   npm run dist
+   ```
 
-1.  **Compila Frontend**: Ejecuta `npm run build` para generar los archivos estáticos de React.
-2.  **Compila Backend**: Ejecuta Maven (`mvn clean package`) para crear el JAR de Spring Boot.
-3.  **Limpia**: Borra la carpeta `dist` anterior para evitar residuos.
-4.  **Empaqueta con jpackage**:
-    - Genera un ejecutable nativo (`ChronosAtlas.exe`).
-    - Incluye un JRE embebido (para que el usuario final no necesite instalar Java).
-    - Configura el ejecutable para correr en segundo plano (sin consola).
-5.  **Copia Recursos**: Asegura que la base de datos (`db/data`) y migraciones estén presentes.
-6.  **Crea Tools de Debug**: Genera `debug.bat` para facilitar la solución de problemas.
-7.  **Comprime**: Crea el archivo `ChronosAtlas.zip` final.
+### ¿Qué ocurre bajo el capó?
+
+1. **Vite Build**: Empaqueta tu UI de React y comprime tu CSS/JS.
+2. **Electron TS**: Compila tu backend Node (`main.ts` y controladores de SQLite) a `.js`.
+3. **Electron Builder**:
+    - Genera un archivo asilado `.exe` (Installer o Portable).
+    - Incrusta el motor Chromium y Node.js de forma indetectable.
+    - Anexa tu base local `.sqlite` predeterminada.
 
 ## 3. Resultado Final
 
-Al finalizar, encontrarás:
+Al finalizar, la carpeta `dist` alojará:
 
-- **Archivo**: `ChronosAtlas.zip` en la raíz del proyecto.
-- **Carpeta**: `dist/ChronosAtlas` (versión descomprimida).
+- **Ejecutable**: `Chronos Atlas Setup.exe` (Instalador estándar).
+- O una carpeta `win-unpacked` si se define para empaquetado portable.
 
 ## 4. Distribución
 
-Simplemente envía el archivo `ChronosAtlas.zip`.
-
-**Instrucciones para el usuario final:**
-1. Descomprimir el ZIP.
-2. Abrir la carpeta `ChronosAtlas`.
-3. Doble clic en `ChronosAtlas.exe`.
-   - La aplicación abrirá automáticamente el navegador en `http://localhost:3000`.
-   - Si no abre, usar `debug.bat` para ver errores.
+Simplemente entrega el archivo `.exe`.
+El usuario ya no necesitará instalar Java ni abrir una consola CMD. Al hacer doble clic sobre el ejecutable transiluminado, se abrirá la interfaz gráfica `Chronos Atlas` de forma 100% nativa.
