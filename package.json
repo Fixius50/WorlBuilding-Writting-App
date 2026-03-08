@@ -1,10 +1,12 @@
 {
   "name": "react-app",
   "version": "0.0.0",
-  "main": "dist-electron/main.js",
+  "main": "index.js",
   "scripts": {
     "start": "electron .",
-    "dev": "vite --force",
+    "dev": "vite",
+    "electron:build": "esbuild electron/main.ts electron/preload.ts --bundle --platform=node --format=cjs --external:electron --outdir=dist-electron",
+    "electron:dev": "npm run electron:build && npm run start",
     "build": "vite build",
     "preview": "vite preview"
   },
@@ -41,17 +43,19 @@
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.3.5",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
     "@vitejs/plugin-react": "^5.1.2",
     "autoprefixer": "^10.4.18",
     "better-sqlite3": "^12.6.2",
-    "electron": "^40.8.0",
-    "electron-builder": "^26.8.1",
+    "esbuild": "^0.27.3",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
-    "vite": "^7.3.1",
-    "vite-plugin-electron": "^0.29.0",
-    "vite-plugin-electron-renderer": "^0.14.6"
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
   }
 }

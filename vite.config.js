@@ -7,17 +7,6 @@ import path from 'path'
 export default defineConfig({
     plugins: [
         react(),
-        electron({
-            main: {
-                entry: path.resolve(__dirname, 'electron/main.ts'),
-                vite: { build: { outDir: path.resolve(__dirname, 'dist-electron') } }
-            },
-            preload: {
-                input: path.resolve(__dirname, 'electron/preload.ts'),
-                vite: { build: { outDir: path.resolve(__dirname, 'dist-electron') } }
-            },
-            renderer: {},
-        }),
     ],
     base: '/', // Absolute path for deep linking support
     root: path.resolve(__dirname, 'src/main/frontend'),
