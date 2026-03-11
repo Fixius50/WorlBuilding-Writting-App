@@ -6,10 +6,14 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
 
 ### MARZO 2026
 
+- **2026-03-11: Migración a Motor Rust y Base de Datos Integrada**
+  - **SQLite Embebido:** Conexión nativa a base de datos SQLite gestionada desde Rust (`rusqlite`) con mecanismo de Fallback Anti-Crash.
+  - **IPC Serverless:** Enlace bidireccional puro entre React UI y Rust a través de `tauri_commands` dejando obsoleto el uso de un servidor HTTP local en desarrollo.
+
 - **2026-03-08: Transición Definitiva a Desktop Nativo (Adiós Java)**
   - **Reestructuración Frontend:** Feature-Sliced Design implementado, consolidando modularidad en React/Vite.
   - **Cambio de Ecosistema:** Se abandona la arquitectura pesada de Servidor (Java Spring Boot) por su incompatibilidad conceptual con apps Desktop.
-  - **Integración Electron:** Adopción de Electron + TypeScript Puro. La aplicación ahora corre sobre un Main Process interno ultra-rápido controlando un motor SQLite (`better-sqlite3`).
+  - **Integración Tauri:** Transición final de prototipos hacia Tauri + Rust puro.
 
 - **2026-03-01: Visualización Avanzada y Swarm Intelligence**
   - **Línea Temporal:** Refactorización de `TimelineView.jsx` para integrar el eje horizontal interactivo con estética Dark Glassmorphism.

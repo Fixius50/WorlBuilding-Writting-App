@@ -4,6 +4,7 @@ import { workspaceService } from '../services/api';
 import CreateWorkspaceModal from "../features/Dashboard/components/CreateWorkspaceModal";
 import EditWorkspaceModal from "../features/Dashboard/components/EditWorkspaceModal";
 import ConfirmModal from "../components/common/ConfirmModal";
+import { invoke } from '@tauri-apps/api/core';
 
 const WorkspaceSelector = () => {
     const navigate = useNavigate();

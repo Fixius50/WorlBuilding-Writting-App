@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import electron from 'vite-plugin-electron/simple'
 import path from 'path'
 
 // https://vitejs.dev/config/
@@ -18,10 +17,12 @@ export default defineConfig({
         },
     },
     server: {
-        host: 'localhost',
+        host: process.env.TAURI_DEV_HOST || false,
         port: 3000,
-        open: true, // Force open browser on port 3000
+        strictPort: true,
+        open: false, 
     },
+    envPrefix: ['VITE_', 'TAURI_ENV_'],
     resolve: {
         alias: {
             '@': path.resolve(__dirname, 'src/main/frontend/src'),

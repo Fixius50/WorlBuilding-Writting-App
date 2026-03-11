@@ -90,12 +90,17 @@ export const projectService = {
     close: () => api.post('/proyectos/cerrar', {}),
 };
 
+import { invoke } from '@tauri-apps/api/core';
+
 export const workspaceService = {
-    list: () => api.get('/workspaces'),
-    create: (name, title, genre, imageUrl) => api.post('/workspaces', { name, title, genre, imageUrl }),
-    delete: (name) => api.delete('/workspaces/' + name),
-    update: (name, data) => api.put('/workspaces/' + name, data),
-    select: (projectName) => api.post('/workspaces/select', { projectName }),
+    list: () => invoke('get_proyectos'),
+    create: (name, title, genre, imageUrl) => 
+        invoke('create_proyecto', { name, title, tag: genre, imageUrl: imageUrl || '' })
+            .then(res => ({ success: true, data: res }))
+            .catch(err => { throw new Error(err) }),
+    delete: (name) => api.delete('/workspaces/' + name), // TODO: Migrate to Rust
+    update: (name, data) => api.put('/workspaces/' + name, data), // TODO: Migrate to Rust
+    select: (projectName) => Promise.resolve({ success: true, redirect: `/${projectName}/${projectName}` }),
 };
 
 export const entityService = {
