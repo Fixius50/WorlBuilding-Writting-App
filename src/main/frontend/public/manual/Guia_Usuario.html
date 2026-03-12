@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Maestro - Chronos Atlas</title>
+    <style>
+        :root {
+            --bg-color: #09090b;
+            --surface-color: #111114;
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --primary: #6366f1;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --text-main: #fafafa;
+            --text-muted: #94a3b8;
+            --sidebar-width: 16rem;
+        }
+
+        * {
+            box-sizing: border-box;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) transparent;
+        }
+
+        body {
+            font-family: 'Inter', 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            line-height: 1.6;
+        }
+
+        /* Lateral Sidebar */
+        nav {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--surface-color);
+            border-right: 1px solid var(--glass-border);
+            position: fixed;
+            padding: 2rem 1rem;
+            overflow-y: auto;
+        }
+
+        nav h2 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+            color: var(--text-muted);
+            margin: 2rem 0 1rem 0;
+        }
+
+        nav a {
+            display: block;
+            color: var(--text-main);
+            text-decoration: none;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            margin-bottom: 0.25rem;
+        }
+
+        nav a:hover {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+
+        /* Main Content */
+        main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 4rem 10%;
+            max-width: 80rem;
+        }
+
+        section {
+            margin-bottom: 6rem;
+            scroll-margin-top: 4rem;
+        }
+
+        header {
+            margin-bottom: 4rem;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            margin: 0;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.05rem;
+        }
+
+        h2 {
+            font-size: 2rem;
+            color: var(--primary);
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 0.5rem;
+            margin-top: 4rem;
+        }
+
+        h3 {
+            color: var(--accent);
+            font-size: 1.25rem;
+            margin-top: 2rem;
+        }
+
+        p,
+        li {
+            font-size: 1.1rem;
+            color: var(--text-main);
+            opacity: 0.9;
+        }
+
+        .highlight-box {
+            background: rgba(99, 102, 241, 0.05);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .card {
+            background: var(--surface-color);
+            border: 1px solid var(--glass-border);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-0.25rem);
+            border-color: var(--primary);
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            color: var(--accent);
+        }
+
+        .btn-contact {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                width: 0;
+                display: none;
+            }
+
+            main {
+                margin-left: 0;
+                padding: 2rem 5%;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <div style="font-weight: 900; font-size: 1.2rem; color: var(--primary); margin-bottom: 2rem;">CHRONOS ATLAS
+        </div>
+
+        <h2>Fundamentos</h2>
+        <a href="#vision">Visión y Reglas</a>
+        <a href="#interface">Interfaz Arcane</a>
+
+        <h2>Lore & Mundos</h2>
+        <a href="#bible">La Biblia de Mundo</a>
+        <a href="#entity-builder">Constructor de Fichas</a>
+        <a href="#graph">Grafo de Relaciones</a>
+
+        <h2>Narrativa</h2>
+        <a href="#writing">Editor Zen</a>
+        <a href="#timeline">Línea del Tiempo</a>
+
+        <h2>Sistemas</h2>
+        <a href="#linguistics">Hub Lingüístico</a>
+        <a href="#maps">Cartografía Mágica</a>
+
+        <h2>Soporte</h2>
+        <a href="#feedback">Feedback y Contacto</a>
+    </nav>
+
+    <main>
+        <header>
+            <h1>Guía de Usuario: Chronos Atlas</h1>
+            <p style="font-size: 1.2rem; color: var(--text-muted);">El grimorio digital definitivo para arquitectos de
+                universos.</p>
+        </header>
+
+        <section id="vision">
+            <h2>� Visión y Filosofía</h2>
+            <p>Chronos Atlas no es solo un gestor de archivos; es un sistema de <strong>integridad narrativa</strong>.
+                Se rige por las <em>Reglas Maestras</em>:</p>
+            <div class="highlight-box">
+                <ul>
+                    <li><strong>Aislamiento de Universos (Tenancy):</strong> Cada cuaderno es un mundo independiente con
+                        su propia base de datos física.</li>
+                    <li><strong>Jerarquía Plana:</strong> Organizamos el lore en categorías claras para evitar que
+                        pierdas tus ideas en subcarpetas infinitas.</li>
+                    <li><strong>Sin Auto-Clonación:</strong> Si algo falla, el sistema te avisa. La transparencia es la
+                        clave para una escritura profesional.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="interface">
+            <h2>🖥️ Arquitectura de Interfaz: Arcane Void</h2>
+            <p>Diseñada para minimizar la fricción mental, la interfaz se divide en tres pilares:</p>
+            <div class="grid">
+                <div class="card">
+                    <h3>1. Panel Izquierdo (Mente)</h3>
+                    <p>Navegación jerárquica. Aquí "vives" el árbol de tu mundo: Capítulos, Personajes, Lugares y
+                        Ajustes.</p>
+                </div>
+                <div class="card">
+                    <h3>2. Panel Central (Cuerpo)</h3>
+                    <p>El lienzo dinámico. Ya sea escribiendo, dibujando mapas o conectando nodos, este es tu espacio de
+                        ejecución.</p>
+                </div>
+                <div class="card">
+                    <h3>3. Panel Derecho (Espíritu)</h3>
+                    <p>Contexto puro. Si estás escribiendo, aquí verás tus notas. Si visualizas un personaje, aquí verás
+                        sus atributos técnicos.</p>
+                </div>
+            </div>
+            <p style="margin-top: 2rem;"><strong>Navigation Dock:</strong> La barra inferior flotante te permite saltar
+                entre los grandes módulos (Mapa Mundial, Línea Temporal, Grafos) sin perder tu posición.</p>
+        </section>
+
+        <section id="bible">
+            <h2>🗃️ La Biblia de Mundo</h2>
+            <p>Es la base de datos estructurada de tu universo. Todo lo que no es prosa, es Biblia.</p>
+            <h3>Tipos de Entidad</h3>
+            <p>El sistema incluye plantillas optimizadas para:</p>
+            <ul>
+                <li><strong>Personajes:</strong> Fichas detalladas con biografía, motivaciones y relaciones.</li>
+                <li><strong>Lugares:</strong> Desde aldeas hasta galaxias, integrables con el sistema de mapas.</li>
+                <li><strong>Culturas:</strong> Tradiciones, leyes y estructuras sociales.</li>
+                <li><strong>Jerarquías Cósmicas:</strong> Para dioses, panteones o sistemas de poder.</li>
+                <li><strong>Grillas de Territorio:</strong> Gestión política y estratégica del suelo.</li>
+            </ul>
+        </section>
+
+        <section id="entity-builder">
+            <h2>🛠️ Entity Builder: Constructor de Fichas</h2>
+            <p>No te limitamos a formularios fijos. El constructor te permite diseñar la ficha perfecta para tus
+                necesidades:</p>
+            <div class="highlight-box">
+                <p><strong>Herencia por Carpeta:</strong> Si creas una plantilla en una carpeta llamada "Dungeons",
+                    todas las entidades nuevas creadas allí heredarán automáticamente esa estructura de atributos.</p>
+            </div>
+            <ul>
+                <li><strong>Drag & Drop:</strong> Arrastra campos de texto, selectores, imágenes o contadores de stats.
+                </li>
+                <li><strong>Atributos Especializados:</strong> Campos de tipo "Relación" que permiten conectar una
+                    entidad con otra (ej. Padre, Enemigo, Aliado).</li>
+            </ul>
+        </section>
+
+        <section id="writing">
+            <h2>✍️ Escritura y Editor Zen</h2>
+            <p>Basado en tecnología TipTap, el editor está diseñado para la prosa inmersiva.</p>
+            <h3>Funciones Clave:</h3>
+            <ul>
+                <li><strong>Menciones Inteligentes:</strong> Escribe <code>@</code> para citar cualquier elemento de tu
+                    Biblia. Al pasar el cursor, aparecerá una "Mini-Ficha" con los datos clave sin salir del texto.</li>
+                <li><strong>Persistencia Mejorada:</strong> El sistema guarda cada pocos segundos y asegura la
+                    sincronización antes de cerrar la pestaña.</li>
+                <li><strong>Modo Zen:</strong> La interfaz se desvanece para que solo quedes tú y tu historia.</li>
+            </ul>
+        </section>
+
+        <section id="timeline">
+            <h2>⏳ Líneas del Tiempo</h2>
+            <p>Visualiza la historia de forma cronológica. El Timeline permite:</p>
+            <ul>
+                <li><strong>Eventos Multinivel:</strong> Desde eras geológicas hasta segundos críticos.</li>
+                <li><strong>Vinculación:</strong> Asocia personajes y lugares a eventos específicos para ver quién
+                    estuvo dónde y cuándo.</li>
+                <li><strong>Vistas:</strong> Alterna entre visualización vertical (lectura) y horizontal (panorámica).
+                </li>
+            </ul>
+        </section>
+
+        <section id="linguistics">
+            <h2>🔤 Hub Lingüístico (Conlangs)</h2>
+            <p>Chronos Atlas incluye un motor de creación de lenguajes único llamado <strong>Rune Foundry</strong>.</p>
+            <div class="grid">
+                <div class="card">
+                    <h3>Léxico</h3>
+                    <p>Gestiona el vocabulario, la gramática y la etimología de tus lenguas inventadas.</p>
+                </div>
+                <div class="card">
+                    <h3>Rune Foundry</h3>
+                    <p>Dibuja tus propios glifos vectoriales (SVG) y asígnalos a sonidos o letras.</p>
+                </div>
+                <div class="card">
+                    <h3>Compilador TTF</h3>
+                    <p>Con un clic, el sistema genera una fuente <code>.ttf</code> real a partir de tus dibujos,
+                        permitiéndote escribir con tu lengua en cualquier parte del sistema operativo.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="maps">
+            <h2>🗺️ Cartografía Mágica</h2>
+            <p>Sube tus mapas y conviértelos en atlas interactivos.</p>
+            <ul>
+                <li><strong>Marcadores Inteligentes:</strong> Coloca iconos en el mapa que estén vinculados a páginas de
+                    la Biblia.</li>
+                <li><strong>Navegación Fluida:</strong> Zoom y desplazamiento sin lag, incluso en mapas 4K.</li>
+                <li><strong>Capas:</strong> (Próximamente) Superpón fronteras políticas sobre mapas geográficos.</li>
+            </ul>
+        </section>
+
+        <section id="graph">
+            <h2>�️ Grafo de Relaciones</h2>
+            <p>¿Demasiados personajes? El Grafo de Conocimiento visualiza las conexiones como una red neuronal.</p>
+            <ul>
+                <li><strong>Nodos Físicos:</strong> Los elementos se atraen o repelen según su relevancia.</li>
+                <li><strong>Filtros por Tipo:</strong> Visualiza solo la red de espionaje o solo las rutas comerciales
+                    entre ciudades.</li>
+            </ul>
+        </section>
+
+        <section id="feedback">
+            <h2>📬 Feedback y Reportes</h2>
+            <p>Si encuentras una grieta en el Atlas o tienes una idea para expandirlo, por favor contáctanos:</p>
+            <div class="card" style="text-align: center;">
+                <p><strong>Roberto Monedero Alonso</strong></p>
+                <a href="mailto:robertomonederoalonso0@gmail.com?subject=Feedback%20Chronos%20Atlas&body=Hola%20Roberto,%0A%0AFeedback/Bug:%0A(Describe%20aquí)%0A%0APuedes%20adjuntar%20archivos%20de%20log%20o%20capturas%20si%20es%20necesario."
+                    class="btn-contact">Enviar Reporte</a>
+            </div>
+        </section>
+
+        <div class="footer">
+            <p>© 2026 Chronos Atlas - Desarrollado por Roberto Monedero | Sistema de Documentación Proactiva</p>
+        </div>
+    </main>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+
+</body>
+
+</html>

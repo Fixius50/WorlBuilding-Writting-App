@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useParams, useNavigate, useLocation, NavLink, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import api from '../../services/api';
+import { invoke } from '../../services/invoke.js';
 import TemplateManager from '../../features/Settings/components/TemplateManager';
 import GlobalRightPanel from './GlobalRightPanel';
 import ConfirmationModal from '../common/ConfirmationModal';
@@ -166,10 +167,11 @@ const ArchitectLayout = () => {
 
     const loadFolders = async () => {
         try {
-            const rootFolders = await api.get('/world-bible/folders');
+            const rootFolders = await invoke('get_carpetas', { projectId: projectName || 'local' });
             setFolders(rootFolders);
         } catch (err) {
-            console.error("Error loading folders:", err);
+            console.warn("Error loading folders (no data yet):", err);
+            setFolders([]);
         }
     };
 
@@ -213,28 +215,17 @@ const ArchitectLayout = () => {
     const handleCreateSimpleFolder = async (parentFolder = null, type = 'FOLDER') => {
         try {
             const parentId = parentFolder ? (typeof parentFolder === 'object' ? parentFolder.id : parentFolder) : null;
-            const newFolder = await api.post('/world-bible/folders', {
+            const newFolder = await invoke('create_carpeta', {
                 nombre: type === 'TIMELINE' ? 'Nueva Timeline' : 'Nueva Carpeta',
+                projectId: projectName || 'local',
                 padreId: parentId,
                 tipo: type
             });
 
-            if (parentId === null) {
-                // RELOAD folders to ensure data integrity
-                await loadFolders();
-                window.dispatchEvent(new CustomEvent('folder-update', {
-                    detail: { folderId: null }
-                }));
-            } else {
-                window.dispatchEvent(new CustomEvent('folder-update', {
-                    detail: {
-                        folderId: parentId,
-                        optimisticType: 'folder',
-                        item: newFolder,
-                        expand: true
-                    }
-                }));
-            }
+            await loadFolders();
+            window.dispatchEvent(new CustomEvent('folder-update', {
+                detail: { folderId: parentId, type: 'folder', item: newFolder, expand: !!parentId }
+            }));
         } catch (err) {
             console.error("Error creating simple folder:", err);
         }
@@ -242,7 +233,7 @@ const ArchitectLayout = () => {
 
     const handleRenameFolder = async (folderId, newName) => {
         try {
-            await api.put(`/world-bible/folders/${folderId}`, { nombre: newName });
+            await invoke('update_carpeta', { id: folderId, nombre: newName });
             setFolders(prev => prev.map(f => f.id === folderId ? { ...f, nombre: newName } : f));
         } catch (err) { throw err; }
     };
@@ -263,15 +254,13 @@ const ArchitectLayout = () => {
 
         try {
             if (type === 'folder') {
-                await api.delete(`/world-bible/folders/${id}`);
-                if (parentId === null) {
-                    setFolders(prev => prev.filter(f => f.id !== id));
-                }
+                await invoke('delete_carpeta', { id });
+                setFolders(prev => prev.filter(f => f.id !== id));
                 window.dispatchEvent(new CustomEvent('folder-update', {
                     detail: { folderId: parentId, removeId: id, type: 'folder' }
                 }));
             } else if (type === 'entity') {
-                await api.delete(`/world-bible/entities/${id}`);
+                await invoke('delete_entidad', { id });
                 window.dispatchEvent(new CustomEvent('folder-update', {
                     detail: { folderId: folderId, removeId: id, type: 'entity' }
                 }));
@@ -285,30 +274,15 @@ const ArchitectLayout = () => {
     };
 
     const handleMoveEntity = async (entityId, targetFolderId, sourceFolderId) => {
-        try {
-            await api.put(`/world-bible/entities/${entityId}`, { carpetaId: targetFolderId });
-            window.dispatchEvent(new CustomEvent('folder-update', {
-                detail: { folderId: sourceFolderId, removeId: entityId, type: 'entity' }
-            }));
-            window.dispatchEvent(new CustomEvent('folder-update', {
-                detail: { folderId: targetFolderId, type: 'move-in', entityId }
-            }));
-        } catch (err) { console.error("Move failed:", err); }
+        // TODO: Implement update entity folder in Rust (move)
+        console.warn('handleMoveEntity: pending Rust implementation');
+        window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: sourceFolderId, removeId: entityId, type: 'entity' } }));
+        window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: targetFolderId, type: 'move-in', entityId } }));
     };
 
     const handleDuplicateEntity = async (entityId, folderId) => {
-        try {
-            const entity = await api.get(`/world-bible/entities/${entityId}`);
-            const duplicated = await api.post('/world-bible/entities', {
-                ...entity,
-                id: undefined,
-                nombre: `${entity.nombre} (Copia)`,
-                carpetaId: folderId
-            });
-            window.dispatchEvent(new CustomEvent('folder-update', {
-                detail: { folderId: folderId, type: 'entity', item: duplicated }
-            }));
-        } catch (err) { console.error("Duplicate failed:", err); }
+        // TODO: Implement duplicate entity in Rust
+        console.warn('handleDuplicateEntity: pending Rust implementation');
     };
 
     const handleCreateEntity = async (folderId, specialType = 'entidadindividual') => {
@@ -358,16 +332,24 @@ const ArchitectLayout = () => {
 
     const loadProject = async (identifier) => {
         try {
-            const proj = await api.get(`/proyectos/${identifier}`);
-            if (proj) {
-                setLoadedProjectName(proj.nombreProyecto);
-                setProjectId(proj.id);
+            // Intentamos primero con invoke (Tauri nativo), con fallback al nombre de la URL
+            const isTauri = typeof window !== 'undefined' && window.__TAURI_INTERNALS__ !== undefined;
+            if (isTauri) {
+                const proj = await invoke('get_proyecto_by_name', { name: identifier });
+                if (proj) {
+                    setLoadedProjectName(proj.title || identifier);
+                    setProjectId(proj.id);
+                    return;
+                }
             }
+            // Fallback: usar el nombre de la URL directamente (modo dev Vite)
+            setLoadedProjectName(identifier);
+            setProjectId(null);
         } catch (err) {
-            console.error("Error loading project:", err);
-            // If project not found or unauthorized, redirect to selector
-            setLoadedProjectName('Error');
-            navigate('/');
+            console.warn("loadProject fallback to URL identifier:", identifier, err);
+            // NO redirigir — simplemente usar el identificador de la URL como nombre
+            setLoadedProjectName(identifier);
+            setProjectId(null);
         }
     };
 

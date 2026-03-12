@@ -33,10 +33,54 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
 
 ## 🔴 ALERTAS Y ERRORES DOCUMENTADOS
 
-- ~~**JPackage EXEs:** (Resuelto Arquitectónicamente).~~ Al descartar Java, el empaquetador será Electron Builder.
-- **IPC Handlers:** Faltan por portar los manejadores de base de datos SQLite de Java al TypeScript nuevo.
+### Estado Actual — Marzo 2026
+
+| # | Error / Alerta | Estado | Módulo |
+|---|---|---|---|
+| 1 | `SyntaxError: Unexpected token '<'` al cargar carpetas de la World Bible | 🔴 Pendiente | `ArchitectLayout → /world-bible/folders` |
+| 2 | Fetch legacy a `/world-bible/entities` en CRUD del explorador | 🔴 Pendiente | `ArchitectLayout → confirmDeletion, handleMoveEntity, etc.` |
+| 3 | Fetch legacy a `/world-bible/templates` en Settings | 🔴 Pendiente | `ArchitectLayout → handleDeleteTemplate, handleUpdateTemplate` |
+| 4 | iFrame de Grafo Global hace petición a ruta relativa vacía | 🔴 Pendiente | `ArchitectLayout → /graph` (iframe) |
+| 5 | Backup Global no funciona en entorno browser (solo Tauri nativo) | ✅ Esperado | `WorkspaceSelector → export_backup` |
+| 6 | `invoke` no disponible en Vite dev (browser) — **RESUELTO** con Polyfill | ✅ Resuelto | `main.jsx + invoke.js` |
+| 7 | Redirect POST-selección de cuaderno enviaba a URL rota `/{name}/{name}` — **RESUELTO** | ✅ Resuelto | `workspaceService.select → /local/{name}` |
+| 8 | Guard de ruta en `ArchitectLayout` redirigía en caso de error — **RESUELTO** | ✅ Resuelto | `loadProject() → sin navigate('/')` |
+
+---
+
+## 🗄️ ARQUITECTURA DE GESTIÓN DE DATOS
+
+### Estrategia Dual: Desarrollo vs. Producción
+
+```
+         DESARROLLO (Vite/Browser)        PRODUCCIÓN (Tauri/EXE)
+         ┌─────────────────────────┐      ┌────────────────────────────┐
+         │   main.jsx polyfill     │      │  @tauri-apps/api/core      │
+         │   window.__TAURI_INVOKE │      │  invoke() → Rust backend   │
+         │   → localStorage mock   │      │  → SQLite local            │
+         └─────────────────────────┘      └────────────────────────────┘
+                     │                                  │
+                     └──────────→ invoke.js ←───────────┘
+                                 (auto-detect entorno)
+```
+
+### Tablas SQLite Implementadas
+
+| Tabla | Estado | Comando Rust |
+|---|---|---|
+| `proyectos` | ✅ Completo | `get_proyectos`, `create_proyecto`, `get_proyecto_by_name`, `export_backup` |
+| `entidades` | ✅ Completo | `get_entidades`, `get_entidad_by_id`, `create_entidad`, `delete_entidad` |
+| `eventos` | ✅ Completo | `get_eventos`, `create_evento` |
+| `lenguas` | ✅ Completo | `get_lenguas`, `create_lengua` |
+| `carpetas` | 🔴 Pendiente | — |
+| `plantillas` | 🔴 Pendiente | — |
+
+---
 
 ## 🎯 PRÓXIMAS PRIORIDADES
 
-1. Integración del visor de mapas (Leaflet/Mapbox).
-2. Optimización de rendimiento para bases de datos de entidades extensas.
+1. **Alta:** Migrar `carpetas` y sistema de explorador de la World Bible a SQLite + Rust.
+2. **Alta:** Eliminar fetches legacy en `ArchitectLayout` (folders, entities CRUD, templates).
+3. **Media:** Migrar vista del Grafo Global a datos nativos.
+4. **Baja:** Optimización de rendimiento para bases de datos de entidades extensas.
+5. **Baja:** Integración del visor de mapas (Leaflet/Mapbox).

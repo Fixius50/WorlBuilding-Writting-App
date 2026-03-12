@@ -37,5 +37,73 @@ pub fn init(app: &AppHandle) -> Result<Connection, rusqlite::Error> {
         [],
     )?;
 
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS entidades (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            tipo_entidad TEXT NOT NULL,
+            project_id TEXT,
+            description TEXT,
+            image_url TEXT,
+            is_favorite BOOLEAN DEFAULT 0,
+            tags TEXT,
+            attributes TEXT,
+            created_at TEXT
+        )",
+        [],
+    )?;
+
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS eventos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            project_id TEXT,
+            line_id TEXT,
+            start_date TEXT,
+            end_date TEXT,
+            description TEXT,
+            importance INTEGER DEFAULT 1,
+            color TEXT,
+            related_entities TEXT
+        )",
+        [],
+    )?;
+
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS lenguas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            project_id TEXT,
+            description TEXT,
+            phonetics TEXT,
+            grammar TEXT
+        )",
+        [],
+    )?;
+
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS carpetas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            project_id TEXT,
+            padre_id INTEGER,
+            tipo TEXT DEFAULT 'FOLDER',
+            slug TEXT
+        )",
+        [],
+    )?;
+
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS plantillas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            project_id TEXT,
+            tipo TEXT DEFAULT 'text',
+            global INTEGER DEFAULT 0,
+            carpeta_id INTEGER
+        )",
+        [],
+    )?;
+
     Ok(conn)
 }

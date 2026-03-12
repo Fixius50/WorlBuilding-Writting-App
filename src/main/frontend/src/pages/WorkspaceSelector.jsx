@@ -86,8 +86,13 @@ const WorkspaceSelector = () => {
         }
     };
 
-    const handleDownloadBackup = () => {
-        window.location.href = '/api/backup/download';
+    const handleDownloadBackup = async () => {
+        try {
+            const path = await invoke('export_backup');
+            alert(`✅ Backup guardado exitosamente en:\n\n${path}`);
+        } catch (e) {
+            setError(e.toString());
+        }
     };
 
 

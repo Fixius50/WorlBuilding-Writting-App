@@ -80,17 +80,12 @@ const api = {
 };
 
 export const projectService = {
-    // Deprecated? No, used by ArchitectLayout. But simplified.
-    // open: (name) => api.get(`/proyectos/${name}`),
-    // getActive: () => api.get(`/proyectos/activo`),
-
-    // Legacy mapping or just direct usage
-    open: (name) => api.get(`/proyectos/${name}`),
-    getActive: () => api.get(`/proyectos/activo`),
-    close: () => api.post('/proyectos/cerrar', {}),
+    open: (name) => invoke('get_proyecto_by_name', { name }),
+    getActive: () => Promise.resolve(null),
+    close: () => Promise.resolve(true),
 };
 
-import { invoke } from '@tauri-apps/api/core';
+import { invoke } from './invoke.js';
 
 export const workspaceService = {
     list: () => invoke('get_proyectos'),
@@ -100,35 +95,45 @@ export const workspaceService = {
             .catch(err => { throw new Error(err) }),
     delete: (name) => api.delete('/workspaces/' + name), // TODO: Migrate to Rust
     update: (name, data) => api.put('/workspaces/' + name, data), // TODO: Migrate to Rust
-    select: (projectName) => Promise.resolve({ success: true, redirect: `/${projectName}/${projectName}` }),
+    select: (projectName) => Promise.resolve({ success: true, redirect: `/local/${projectName}` }),
 };
 
 export const entityService = {
-    list: (type) => api.get(`/bd/${type}`),
-    getById: (type, id) => api.get(`/bd/${type}/${id}`),
-    create: (type, data) => api.put('/bd/insertar', { ...data, tipoEntidad: type }),
-    update: (type, id, data) => api.patch('/bd/modificar', { ...data, tipoEntidad: type, id }),
-    delete: (type, id) => api.delete(`/bd/${type}/${id}`),
-    toggleFavorite: (id) => api.patch(`/world-bible/entities/${id}/favorite`),
+    list: (type) => invoke('get_entidades', { projectId: JSON.parse(localStorage.getItem('user'))?.username, tipoEntidad: type }),
+    getById: (type, id) => invoke('get_entidad_by_id', { id: parseInt(id) }),
+    create: (type, data) => invoke('create_entidad', { 
+        name: data.name, 
+        tipoEntidad: type, 
+        projectId: JSON.parse(localStorage.getItem('user'))?.username,
+        description: data.description,
+        imageUrl: data.imageUrl,
+        tags: data.tags?.join(','),
+        attributes: JSON.stringify(data.attributes || {})
+    }),
+    update: (type, id, data) => Promise.reject("Not implemented yet"), // TODO: Implement update entity rust command
+    delete: (type, id) => invoke('delete_entidad', { id: parseInt(id) }),
+    toggleFavorite: (id) => Promise.reject("Not implemented yet"), // TODO: Implement toggle
 };
 
 export const timelineService = {
-    listEvents: () => api.get('/timeline/eventos'),
-    listByLine: (lineId) => api.get(`/timeline/linea/${lineId}/eventos`),
-    createEvent: (data) => api.post('/timeline/evento', data),
+    listEvents: () => invoke('get_eventos', { projectId: JSON.parse(localStorage.getItem('user'))?.username, lineId: null }),
+    listByLine: (lineId) => invoke('get_eventos', { projectId: JSON.parse(localStorage.getItem('user'))?.username, lineId: lineId?.toString() }),
+    createEvent: (data) => invoke('create_evento', {
+        title: data.title,
+        projectId: JSON.parse(localStorage.getItem('user'))?.username,
+        lineId: data.lineId?.toString(),
+        startDate: data.startDate,
+        endDate: data.endDate,
+        description: data.description,
+        importance: data.importance || 1,
+        color: data.color,
+        relatedEntities: JSON.stringify(data.relatedEntities || [])
+    }),
 };
 
 export const conlangService = {
-    list: () => api.get('/conlang/lenguas'),
-    vectorize: (formData) => {
-        return fetch(`${BASE_URL}/conlang/vectorize`, {
-            method: 'POST',
-            body: formData,
-        }).then(res => {
-            if (!res.ok) throw new Error('Vectorization failed');
-            return res.json();
-        });
-    },
+    list: () => invoke('get_lenguas', { projectId: JSON.parse(localStorage.getItem('user'))?.username }),
+    vectorize: (formData) => Promise.reject("File loading requires Rust logic migration"), // TODO: File streaming from Rust
 };
 
 export default api;

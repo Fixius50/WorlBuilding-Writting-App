@@ -72,3 +72,45 @@ pub fn create_proyecto(
         initials: Some(init_str),
     })
 }
+
+#[tauri::command]
+pub fn get_proyecto_by_name(state: tauri::State<'_, crate::db::DbState>, name: String) -> Result<Proyecto, String> {
+    let conn = state.conn.lock().map_err(|e| e.to_string())?;
+    
+    let mut stmt = conn
+        .prepare("SELECT id, name, title, tag, image_url, last_modified, initials FROM proyectos WHERE name = ?1")
+        .map_err(|e| e.to_string())?;
+        
+    let mut iter = stmt.query_map(rusqlite::params![name], |row| {
+        Ok(Proyecto {
+            id: row.get(0)?,
+            name: row.get(1)?,
+            title: row.get(2)?,
+            tag: row.get(3)?,
+            image_url: row.get(4)?,
+            last_modified: row.get(5)?,
+            initials: row.get(6)?,
+        })
+    }).map_err(|e| e.to_string())?;
+
+    if let Some(proj) = iter.next() {
+        return proj.map_err(|e| e.to_string());
+    }
+
+    Err("Project not found".to_string())
+}
+
+#[tauri::command]
+pub fn export_backup(app: tauri::AppHandle) -> Result<String, String> {
+    use tauri::Manager;
+    let app_dir = app.path().app_local_data_dir().unwrap_or_else(|_| std::env::temp_dir().join("chronos_atlas"));
+    let db_path = app_dir.join("chronos_atlas.db");
+
+    let download_dir = app.path().download_dir().map_err(|e| e.to_string())?;
+    let backup_name = format!("chronos_atlas_backup_{}.db", chrono::Local::now().format("%Y%m%d_%H%M%S"));
+    let dest_path = download_dir.join(backup_name);
+
+    std::fs::copy(&db_path, &dest_path).map_err(|e| format!("Error copiando BD: {}", e))?;
+
+    Ok(dest_path.to_string_lossy().into_owned())
+}

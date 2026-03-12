@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "tauri dev",
+    "dev": "vite",
+    "exe": "tauri dev",
     "build": "tauri build",
     "vite:dev": "vite",
     "vite:build": "vite build",
