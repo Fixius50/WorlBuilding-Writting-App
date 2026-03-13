@@ -6,23 +6,15 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
 
 ### MARZO 2026
 
-- **2026-03-11: Migración a Motor Rust y Base de Datos Integrada**
+- **2026-03-12: Pivot Final a Local-First (SQLite WASM + TypeScript)**
+  - **Cero Backend:** Se elimina `src-tauri` y código Rust. La app es 100% frontend.
+  - **SQLocal:** Implementación de persistencia con SQLite WASM y OPFS.
+  - **Servicios Core:** Creación de `projectService`, `folderService`, `entityService` y `timelineService` en TypeScript.
+  - **UI Typing:** Migración de `App.tsx`, `WorkspaceSelector.tsx` y modales de Dashboard a TypeScript.
+
+- **2026-03-11: Migración a Motor Rust y Base de Datos Integrada (Obsoleto por Pivot Local-First)**
   - **SQLite Embebido:** Conexión nativa a base de datos SQLite gestionada desde Rust (`rusqlite`) con mecanismo de Fallback Anti-Crash.
-  - **IPC Serverless:** Enlace bidireccional puro entre React UI y Rust a través de `tauri_commands` dejando obsoleto el uso de un servidor HTTP local en desarrollo.
-
-- **2026-03-08: Transición Definitiva a Desktop Nativo (Adiós Java)**
-  - **Reestructuración Frontend:** Feature-Sliced Design implementado, consolidando modularidad en React/Vite.
-  - **Cambio de Ecosistema:** Se abandona la arquitectura pesada de Servidor (Java Spring Boot) por su incompatibilidad conceptual con apps Desktop.
-  - **Integración Tauri:** Transición final de prototipos hacia Tauri + Rust puro.
-
-- **2026-03-01: Visualización Avanzada y Swarm Intelligence**
-  - **Línea Temporal:** Refactorización de `TimelineView.jsx` para integrar el eje horizontal interactivo con estética Dark Glassmorphism.
-  - **Interfaz:** Creación de `TimelineEventCard.jsx` y centralización de estilos CSS en `src/main/frontend/css/`.
-  - **Identidad:** Generación del icono oficial 'Chronos Atlas' para el empaquetado `.exe`.
-  - **Roles de Enjambre:** Adopción de la estrategia de perfiles CEREBRO, INVESTIGADOR, ARQUITECTO y AUDITOR.
-
-- **2026-03-01: Cimientos Antiguos (Backend Obsoleto)**
-  - **Arquitectura Legacy:** Implementación inicial (descartada) de `UniversoController` y persistencia por jerarquía.
+  - **IPC Serverless:** Enlace bidireccional puro entre React UI y Rust a través de `tauri_commands`.
 
 ### FEBRERO 2026
 
@@ -33,47 +25,31 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
 
 ## 🔴 ALERTAS Y ERRORES DOCUMENTADOS
 
-### Estado Actual — Marzo 2026
+### Estado Actual — Marzo 2026 (Pivot a Local-First)
 
-| # | Error / Alerta | Estado | Módulo |
-|---|---|---|---|
-| 1 | `SyntaxError: Unexpected token '<'` al cargar carpetas de la World Bible | 🔴 Pendiente | `ArchitectLayout → /world-bible/folders` |
-| 2 | Fetch legacy a `/world-bible/entities` en CRUD del explorador | 🔴 Pendiente | `ArchitectLayout → confirmDeletion, handleMoveEntity, etc.` |
-| 3 | Fetch legacy a `/world-bible/templates` en Settings | 🔴 Pendiente | `ArchitectLayout → handleDeleteTemplate, handleUpdateTemplate` |
-| 4 | iFrame de Grafo Global hace petición a ruta relativa vacía | 🔴 Pendiente | `ArchitectLayout → /graph` (iframe) |
-| 5 | Backup Global no funciona en entorno browser (solo Tauri nativo) | ✅ Esperado | `WorkspaceSelector → export_backup` |
-| 6 | `invoke` no disponible en Vite dev (browser) — **RESUELTO** con Polyfill | ✅ Resuelto | `main.jsx + invoke.js` |
-| 7 | Redirect POST-selección de cuaderno enviaba a URL rota `/{name}/{name}` — **RESUELTO** | ✅ Resuelto | `workspaceService.select → /local/{name}` |
-| 8 | Guard de ruta en `ArchitectLayout` redirigía en caso de error — **RESUELTO** | ✅ Resuelto | `loadProject() → sin navigate('/')` |
+**NUEVO PIVOT ARQUITECTÓNICO:**
+Se ha decidido abandonar completamente el backend nativo (Rust/Tauri) y el servidor tradicional (Java/Spring). La aplicación abraza el paradigma **Local-First 100% Frontend**: todo el procesamiento, incluyendo la base de datos relacional completa, ocurre en el navegador del cliente mediante WebAssembly. Además, todo el código base migrará de JavaScript a **TypeScript**.
+
+### Stack Definitivo Consolidado
+1. **Frontend Core:** React 18, Vite, HTML/CSS puro.
+2. **Tipado:** Migración total a **TypeScript** (strict mode).
+3. **Persistencia (BBDD):** SQLite ejecutado vía WebAssembly (`sqlocal`), respaldado persistentemente por File System OPFS.
+4. **Desktop build:** Electron empaquetando los estáticos de React.
+
+### Razonamiento Estratégico
+- **Cero Backend:** Se eliminan los problemas de puertos, procesos colgados y despliegues mixtos.
+- **Rendimiento Cero-Latencia:** Las consultas complejas típicas del Worldbuilding corren directo sobre la RAM local del disco del cliente, sin viajes de red.
+- **Roles Ágiles Setup:** Se han creado skills/prompts para agentes (Investigador, Arquitecto, Auditor) en la carpeta `Docs/agents/` (formato `.md`) y un `banco.md` para contexto persistente.
 
 ---
 
-## 🗄️ ARQUITECTURA DE GESTIÓN DE DATOS
+## 🗄️ NUEVA RUTA DE MIGRACIÓN: SQLITE WASM + TYPESCRIPT
 
-### Estrategia Dual: Desarrollo vs. Producción
-
-```
-         DESARROLLO (Vite/Browser)        PRODUCCIÓN (Tauri/EXE)
-         ┌─────────────────────────┐      ┌────────────────────────────┐
-         │   main.jsx polyfill     │      │  @tauri-apps/api/core      │
-         │   window.__TAURI_INVOKE │      │  invoke() → Rust backend   │
-         │   → localStorage mock   │      │  → SQLite local            │
-         └─────────────────────────┘      └────────────────────────────┘
-                     │                                  │
-                     └──────────→ invoke.js ←───────────┘
-                                 (auto-detect entorno)
-```
-
-### Tablas SQLite Implementadas
-
-| Tabla | Estado | Comando Rust |
-|---|---|---|
-| `proyectos` | ✅ Completo | `get_proyectos`, `create_proyecto`, `get_proyecto_by_name`, `export_backup` |
-| `entidades` | ✅ Completo | `get_entidades`, `get_entidad_by_id`, `create_entidad`, `delete_entidad` |
-| `eventos` | ✅ Completo | `get_eventos`, `create_evento` |
-| `lenguas` | ✅ Completo | `get_lenguas`, `create_lengua` |
-| `carpetas` | 🔴 Pendiente | — |
-| `plantillas` | 🔴 Pendiente | — |
+### Prioridades Inmediatas
+1. **Borrado y Setup:** Eliminar `src-tauri` y código Rust. Inicializar entorno TypeScript (`tsconfig.json`, renombrado a `.tsx`).
+2. **Setup Base de Datos Cliente:** Instalar dependencias de SQLite WASM transaccional (`sqlocal`).
+3. **Esquemas:** Reescribir el file `schema.sql` (antiguo Rust) para inicializar DB en el browser.
+4. **Migración Servicios:** Reemplazar todo `invoke` y `api.get` por consultas directas SQL al worker de WASM.
 
 ---
 
