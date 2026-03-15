@@ -17,7 +17,12 @@
         "confirm_delete_btn": "Sí, borrar",
         "view_all": "Ver todos",
         "rename": "Renombrar",
-        "error_delete": "Error al eliminar el elemento"
+        "error_delete": "Error al eliminar el elemento",
+        "context": "Contexto",
+        "notes": "Notas Rápidas",
+        "explorer": "Explorador",
+        "error": "Error",
+        "ok": "Aceptar"
     },
     "nav": {
         "dashboard": "Panel de Control",
@@ -52,10 +57,10 @@
         "title": "Escritura",
         "library": "Biblioteca del Arquitecto",
         "library_desc": "Gestiona tus Archivadores y Crónicas",
-        "new_notebook": "Nuevo Archivador",
+        "new_notebook": "Nueva Nota Rápida",
         "new_page": "Nueva Hoja",
         "index": "Índice",
-        "notes": "Notas",
+        "notes": "Notas Rápidas",
         "format": "Formato",
         "empty": "Página vacía...",
         "active_notebook": "Archivador Activo",
@@ -68,11 +73,15 @@
         "chapter": "Capítulo",
         "page": "Página",
         "of": "de",
-        "new_archivador_title": "Nuevo Archivador",
-        "library_expansion": "Expansión de la Biblioteca",
-        "book_title_label": "Título del Libro",
+        "new_archivador_title": "Nueva Nota Rápida",
+        "library_expansion": "Notas Rápidas",
+        "book_title_label": "Título de la Nota",
         "create_and_open_btn": "Crear y Abrir",
-        "cancel_btn": "Cancelar"
+        "cancel_btn": "Cancelar",
+        "opening_chronicle": "Abriendo Crónica...",
+        "delete_page": "Eliminar Página",
+        "one_page_error": "No puedes eliminar todas las páginas",
+        "delete_page_confirm": "¿Seguro que quieres borrar esta página?"
     },
     "atlas": {
         "grid_system": "Sistema de Rejilla",
@@ -196,6 +205,8 @@
         "timeline_desc": "Líneas de Tiempo y Eventos Históricos",
         "linguistics_title": "Lingüística",
         "linguistics_desc": "Creación de Lenguas y Glifos",
+        "analytics_title": "Centro de Analíticas",
+        "analytics_desc": "Estadísticas de densidad, población y progresión del mundo.",
         "explore_tool": "Explorar Herramienta"
     }
 }

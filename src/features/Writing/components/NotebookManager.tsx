@@ -37,7 +37,7 @@ const NotebookManager: React.FC<NotebookManagerProps> = ({ projectId }) => {
     const createNotebook = () => {
         const newNotebook: Notebook = {
             id: Date.now().toString(),
-            titulo: 'Nuevo Cuaderno',
+            titulo: 'Nueva Nota',
             contenido: '',
             updatedAt: new Date().toISOString()
         };
@@ -85,7 +85,7 @@ const NotebookManager: React.FC<NotebookManagerProps> = ({ projectId }) => {
                         className="bg-transparent border-none outline-none font-bold text-white text-sm w-full placeholder-slate-600"
                         value={activeNotebook.titulo}
                         onChange={(e) => updateNotebook(activeNotebook.id, 'titulo', e.target.value)}
-                        placeholder="Título del Cuaderno..."
+                        placeholder="Título de la Nota..."
                     />
                 </div>
 
@@ -112,7 +112,7 @@ const NotebookManager: React.FC<NotebookManagerProps> = ({ projectId }) => {
         <div className="flex flex-col h-full bg-surface-dark/50">
             {/* Header */}
             <div className="flex items-center justify-between p-3 border-b border-white/5 bg-white/[0.02]">
-                <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">Tus Cuadernos</h3>
+                <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">Tus Notas Rápidas</h3>
                 <button
                     onClick={createNotebook}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/20 text-primary hover:bg-primary/30 transition-all text-[10px] font-bold uppercase tracking-wide border border-primary/20"
@@ -126,8 +126,8 @@ const NotebookManager: React.FC<NotebookManagerProps> = ({ projectId }) => {
             <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-2">
                 {notebooks.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-10 text-slate-600 space-y-2 opacity-60">
-                        <span className="material-symbols-outlined text-3xl">library_books</span>
-                        <p className="text-xs">No hay cuadernos</p>
+                        <span className="material-symbols-outlined text-3xl">sticky_note_2</span>
+                        <p className="text-xs">No hay notas</p>
                     </div>
                 ) : (
                     notebooks.map(nb => (
@@ -169,7 +169,7 @@ const NotebookManager: React.FC<NotebookManagerProps> = ({ projectId }) => {
                 isOpen={!!confirmDeleteId}
                 onClose={() => setConfirmDeleteId(null)}
                 onConfirm={deleteNotebook}
-                title="Eliminar Cuaderno"
+                title="Eliminar Nota"
                 message="¿Estás seguro? Esta acción no se puede deshacer."
                 confirmText="Eliminar"
                 type="danger"

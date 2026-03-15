@@ -132,8 +132,8 @@ const ProjectView: React.FC = () => {
                         />
                         <ActionCard
                             icon="analytics"
-                            title="Centro de Analíticas"
-                            desc="Estadísticas de densidad, población y progresión del mundo."
+                            title={t('project.analytics_title')}
+                            desc={t('project.analytics_desc')}
                             color="bg-cyan-600 shadow-cyan-500/20"
                             onClick={() => navigate(`${baseUrl}/dashboard`)}
                             t={t}

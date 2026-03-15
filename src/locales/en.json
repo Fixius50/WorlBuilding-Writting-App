@@ -17,7 +17,12 @@
         "confirm_delete_btn": "Yes, delete",
         "view_all": "View All",
         "rename": "Rename",
-        "error_delete": "Error deleting item"
+        "error_delete": "Error deleting item",
+        "context": "Context",
+        "notes": "Quick Notes",
+        "explorer": "Explorer",
+        "error": "Error",
+        "ok": "OK"
     },
     "nav": {
         "dashboard": "Dashboard",
@@ -52,10 +57,10 @@
         "title": "Writing",
         "library": "Architect's Library",
         "library_desc": "Manage your Archives and Chronicles",
-        "new_notebook": "New Archivador",
+        "new_notebook": "New Quick Note",
         "new_page": "New Page",
         "index": "Index",
-        "notes": "Notes",
+        "notes": "Quick Notes",
         "format": "Format",
         "empty": "Empty page...",
         "active_notebook": "Active Archivador",
@@ -67,7 +72,11 @@
         "delete_confirm": "Are you sure you want to delete this archivador? All its pages will be lost.",
         "chapter": "Chapter",
         "page": "Page",
-        "of": "of"
+        "of": "of",
+        "opening_chronicle": "Opening Chronicle...",
+        "delete_page": "Delete Page",
+        "one_page_error": "You cannot delete all pages",
+        "delete_page_confirm": "Are you sure you want to delete this page?"
     },
     "atlas": {
         "grid_system": "Grid System",
@@ -191,6 +200,8 @@
         "timeline_desc": "Timelines and Historical Events",
         "linguistics_title": "Linguistics",
         "linguistics_desc": "Conlang Creation and Glyphs",
+        "analytics_title": "Analytics Center",
+        "analytics_desc": "Statistics on world density, population, and progression.",
         "explore_tool": "Explore Tool"
     }
 }

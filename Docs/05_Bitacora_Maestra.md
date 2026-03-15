@@ -6,9 +6,10 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
 
 ### MARZO 2026
 
-- **2026-03-15: Refactorización de Navegación y Reactividad de Temas**
+- **2026-03-15: Refactorización de Navegación, Reactividad y Notas Rápidas**
+  - **Evolución de Notas:** Se ha transformado el módulo de "Cuadernos" en "Notas Rápidas" en el panel lateral derecho, optimizando el flujo de trabajo para anotaciones inmediatas.
+  - **Auditoría de Traducciones:** Identificación y corrección de claves missing (`common.notes`, `project.analytics_title`, etc.) para eliminar etiquetas internas (`algo.algo`) de la UI.
   - **Navegación Persistente:** Reubicación de "Settings" y "Logout" al pie del sidebar izquierdo para mayor accesibilidad y limpieza visual (remoción de iconos en el header).
-  - **Enrutamiento Robusto:** Corrección del acceso a `/settings` mediante rutas anidadas en `App.tsx`, permitiendo que la configuración sea Context-Aware dentro de cada proyecto.
   - **Sincronización Reactiva:** Implementación de un sistema de eventos `storage_update` para actualizar Idioma y Tema en tiempo real en toda la app sin recargar la página.
   - **Soporte de Temas Real:** Eliminación de fondos HEX hardcodeados en componentes (`bg-[#0a0a0c]`) por clases de Tailwind (`bg-background`) que respetan las variables CSS dinámicas.
 

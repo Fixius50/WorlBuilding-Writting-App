@@ -48,7 +48,7 @@ const GlobalRightPanel: React.FC<GlobalRightPanelProps> = ({
     const { t } = useLanguage();
 
     React.useEffect(() => {
-        if (contextContent && activeTab !== 'EXPLORER' && activeTab !== 'NOTEBOOKS') {
+        if (contextContent && activeTab !== 'EXPLORER' && activeTab !== 'QUICK_NOTES') {
             setActiveTab('CONTEXT');
         }
     }, [contextContent, activeTab, setActiveTab]);
@@ -94,14 +94,14 @@ const GlobalRightPanel: React.FC<GlobalRightPanelProps> = ({
                 <button
                     onClick={() => {
                         if (onClearContext) onClearContext();
-                        setActiveTab('NOTEBOOKS');
+                        setActiveTab('QUICK_NOTES');
                     }}
-                    className={`flex-1 py-4 flex flex-col items-center justify-center gap-1 text-[0.6rem] font-black uppercase tracking-widest transition-colors relative ${activeTab === 'NOTEBOOKS' ? 'text-indigo-400' : 'text-slate-500 hover:text-indigo-400'}`}
+                    className={`flex-1 py-4 flex flex-col items-center justify-center gap-1 text-[0.6rem] font-black uppercase tracking-widest transition-colors relative ${activeTab === 'QUICK_NOTES' ? 'text-indigo-400' : 'text-slate-500 hover:text-indigo-400'}`}
                     title={t('common.notes')}
                 >
-                    <span className="material-symbols-outlined text-[1.125rem]">book</span>
+                    <span className="material-symbols-outlined text-[1.125rem]">sticky_note_2</span>
                     <span className="hidden sm:inline">{t('common.notes')}</span>
-                    {activeTab === 'NOTEBOOKS' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500"></div>}
+                    {activeTab === 'QUICK_NOTES' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500"></div>}
                 </button>
                 <button
                     onClick={() => {
@@ -140,8 +140,8 @@ const GlobalRightPanel: React.FC<GlobalRightPanelProps> = ({
                     </div>
                 )}
 
-                {/* TAB: NOTEBOOKS */}
-                {activeTab === 'NOTEBOOKS' && (
+                {/* TAB: QUICK_NOTES */}
+                {activeTab === 'QUICK_NOTES' && (
                     <div className="absolute inset-0 flex flex-col animate-in fade-in duration-300">
                         <NotebookManager projectId={projectId} />
                     </div>
