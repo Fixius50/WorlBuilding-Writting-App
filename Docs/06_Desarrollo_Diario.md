@@ -1,49 +1,42 @@
-# Guía de Desarrollo Diario (Tauri + React Vite)
+# Guía de Desarrollo Diario (Electron + React Vite + SQLite WASM)
 
-Esta guía explica cómo es el flujo de trabajo diario al programar Chronos Atlas tras la migración a la arquitectura nativa "Serverless" de Tauri.
+Esta guía explica el flujo de trabajo tras el pivot a la arquitectura **Local-First** 100% JavaScript/TypeScript.
 
-## 1. Arrancar el Entorno de Desarrollo (Modo Dios)
+## 1. Arrancar el Entorno de Desarrollo
 
-Ya no hay que correr bases de datos por separado ni servidores Tomcat. Todo el stack se levanta con un solo comando desde la raíz del proyecto:
-
-```bash
-npm run tauri dev
-```
-
-Este comando levanta dos cosas en paralelo:
-1. **Frontend (Vite):** Enciende el servidor en `localhost:3000` con Hot Module Replacement (HMR).
-2. **Backend (Tauri/Rust):** Compila tu código en Rust y levanta la ventana nativa de Windows (WebView2) inyectando el frontend.
-
-La terminal se quedará bloqueada escuchando cambios. Déjala minimizada mientras programas.
-
-## 2. Modificando la Interfaz Visual (React)
-
-Todo el código de la UI vive en `src/main/frontend/src/`.
-
-**Flujo:** Escribes código (ej. cambias un botón en un archivo `.tsx`), le das a guardar (`Ctrl+S`), y la ventana del programa **se actualiza en menos de un segundo** automáticamente. No necesitas cerrar y volver a abrir la ventana de Tauri.
-
-## 3. Programando "Backend" (Rust y SQLite)
-
-La lógica dura (Bases de datos SQLite, manipulación de archivos del sistema operativo) vive en `src-tauri/src/`. No podemos acceder a SQLite directamente desde React por seguridad, así que usamos el puente nativo (IPC).
-
-Paso A (Rust): Creas un comando (una función pública) en Rust, por ejemplo, para agregar un registro a la base de datos.
-Paso B (React): Importas `invoke` desde `@tauri-apps/api/core` en el Frontend y ejecutas el comando.
-
-```typescript
-import { invoke } from "@tauri-apps/api/core";
-
-// Llamando a una función Rust desde React
-const resultado = await invoke("mi_funcion_rust", { argumento: "valor" });
-```
-
-**Hot Reload de Rust:**
-Si modificas y guardas un archivo en la carpeta `src-tauri` (Rust), la terminal detectará el cambio, recompilará el binario súper rápido (C++) y reiniciará automáticamente la ventana de Tauri.
-
-## 4. Empaquetando la App Final
-
-Cuando tu actualización esté lista para distribuirse a clientes, ejecutas:
+Ya no se utiliza Tauri ni Rust. El stack se levanta directamente con Vite y Electron:
 
 ```bash
-npm run tauri build
+npm run dev
 ```
-Rust tomará tu UI de React, la comprimirá, y generará un único instalador `.msi` o `.exe` de ~10MB en la carpeta `src-tauri/target/release/bundle/`.
+
+Este comando levanta:
+1. **Frontend (Vite):** Servidor de desarrollo con Hot Module Replacement (HMR).
+2. **Contenedor (Electron):** Abre la ventana nativa que carga el frontend de Vite.
+
+## 2. Modificando la Interfaz y Lógica (TypeScript)
+
+Todo el código vive ahora bajo `src/main/frontend/`.
+
+- **UI:** Componentes React en `src/main/frontend/features/` y `src/main/frontend/components/`.
+- **Persistencia:** Consultas directas a la base de datos vía `entityService.ts` utilizando `sqlocal` (SQLite WASM).
+- **Tipado:** Es obligatorio usar **TypeScript** en modo estricto. No crear archivos `.js` o `.jsx` nuevos; usar siempre `.ts` o `.tsx`.
+
+**Flujo:** Escribes código, guardas, y la ventana de Electron se actualiza automáticamente.
+
+## 3. Base de Datos (SQLite WASM)
+
+La base de datos reside en el navegador (WebWorker) y persiste en el sistema de archivos del usuario mediante OPFS. 
+
+- No necesitas un proceso de base de datos externo.
+- Para cambios en el esquema, se deben aplicar migraciones en los servicios correspondientes (`entityService`, `projectService`, etc.).
+
+## 4. Empaquetado de Producción
+
+Para generar el ejecutable nativo (`.exe`):
+
+```bash
+npm run build
+```
+
+Esto generará los archivos distribuibles en la carpeta `dist/` o `release/` (dependiendo de la configuración de Electron-Builder).

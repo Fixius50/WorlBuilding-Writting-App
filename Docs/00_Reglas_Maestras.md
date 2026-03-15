@@ -18,12 +18,13 @@ Este proyecto requiere un altísimo nivel de consistencia, documentación y cali
 3. **Ejecución:** Implementa paso a paso, verificando errores en cada fase.
 4. **Registro:** Actualiza la bitácora con lo realizado.
 
-## REGLAS DE CÓDIGO
+## 🛡️ ESTÁNDARES TÉCNICOS INVIOLABLES (EXTENDIDO)
 
-* Frontend: React + Vite. Usa `Common Components` para botones, modales y paneles.
-* Backend: TypeScript Nativo + Protocolos IPC sobre Main Process de Electron. Respeta patrón de Servicios.
-* Nombres de archivos en **CamelCase** para componentes y **snake_case** para utilidades/configuraciones.
-* Comentarios en español para facilitar la colaboración con el usuario.
+1. **Tipado Estricto:** Todo código nuevo DEBE ser TypeScript. Prohibido usar `any`.
+2. **Local-First:** La persistencia solo se realiza a través de `entityService` (SQLite WASM). Sin llamadas a `api.js` o APIs externas.
+3. **Cero Backend:** No se permite código Rust, Java o Python en la arquitectura de ejecución. La app es 100% Electrón Frontend.
+4. **Diseño:** Seguir el estándar "Dark Glassmorphism" definido en `02_Diseño_UI_UX.md`.
+5. **Idioma:** Código e interfaz en Español (Nombres de variables en Inglés por convención técnica).
 
 ## PRIORIDAD ACTUAL
 

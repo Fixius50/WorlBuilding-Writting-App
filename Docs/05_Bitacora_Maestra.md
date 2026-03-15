@@ -6,6 +6,12 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
 
 ### MARZO 2026
 
+- **2026-03-14: Refactorización de Módulo Lingüístico y Tipado Estricto**
+  - **LinguisticsHub:** Refactorización total para eliminar tipos `any`, corregir estados `never[]` y asegurar interfaces para `Shape`, `Layer` y `Word`.
+  - **Motor de Fuentes:** Corrección de la integración con `opentype.js` mediante declaraciones de tipos manuales (`opentype.d.ts`) e imports nombrados.
+  - **Local-First Sync:** Eliminación de dependencias de `api.js` (legacy Java) y migración total a `entityService` para persistencia local.
+  - **Exportación Local:** Implementación de generación de fuentes `.ttf` directa en el cliente sin necesidad de servidor intermedio.
+
 - **2026-03-12: Pivot Final a Local-First (SQLite WASM + TypeScript)**
   - **Cero Backend:** Se elimina `src-tauri` y código Rust. La app es 100% frontend.
   - **SQLocal:** Implementación de persistencia con SQLite WASM y OPFS.

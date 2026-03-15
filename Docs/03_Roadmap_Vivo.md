@@ -13,7 +13,7 @@
 - [x] **Relaciones:** Visualización de grafos entre entidades.
 - [x] **Líneas Temporales:** Motor de eventos con soporte para eras y **visualización horizontal avanzada**.
 - [/] **Especialización:**
-  - [x] Conlangs (Motor fonético básico).
+  - [x] Conlangs (Motor fonético, diseño de glifos y exportación .ttf).
   - [ ] Mapas (Visor Leaflet integrado).
 
 ## FASE 3: PULIDO Y EMPAQUETADO
