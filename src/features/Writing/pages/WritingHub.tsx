@@ -9,7 +9,7 @@ const WritingHub = () => {
     const { username, projectName } = useParams();
     const navigate = useNavigate();
     const { t } = useLanguage();
-    const { setRightPanelTab, setRightOpen } = useOutletContext<any>();
+    const { setRightPanelTab, setRightOpen, baseUrl } = useOutletContext<any>();
     const [notebooks, setNotebooks] = useState<Notebook[]>([]);
     const [loading, setLoading] = useState(true);
     const [isCreating, setIsCreating] = useState(false);
@@ -40,7 +40,7 @@ const WritingHub = () => {
             setNotebooks([...notebooks, nuevo]);
             setIsCreating(false);
             setNewTitle('');
-            navigate(`/${username}/${projectName}/writing/${nuevo.id}`);
+            navigate(`${baseUrl}/writing/${nuevo.id}`);
         } catch (err) {
             console.error("Error creating notebook:", err);
         }
@@ -87,7 +87,7 @@ const WritingHub = () => {
                 {notebooks.map((nb) => (
                     <div
                         key={nb.id}
-                        onClick={() => navigate(`/${username}/${projectName}/writing/${nb.id}`)}
+                        onClick={() => navigate(`${baseUrl}/writing/${nb.id}`)}
                         className="group relative h-64 bg-surface-dark border border-white/5 rounded-3xl p-6 cursor-pointer hover:border-primary/50 hover:bg-white/[0.02] transition-all hover:-translate-y-2 flex flex-col justify-between overflow-hidden shadow-2xl"
                     >
                         {/* Book Spine Decoration */}

@@ -17,6 +17,8 @@ import WorldBibleLayout from './features/WorldBible/pages/WorldBibleLayout';
 import BibleGridView from './features/WorldBible/pages/BibleGridView';
 import MapEditor from './features/Specialized/pages/MapEditor';
 import Dashboard from './features/Dashboard/pages/Dashboard';
+import WritingHub from './features/Writing/pages/WritingHub';
+import WritingView from './features/Writing/pages/WritingView';
 
 import React, { useState, useEffect } from 'react';
 import { LanguageProvider } from './context/LanguageContext';
@@ -106,6 +108,8 @@ function App() {
                                 <Route path="languages" element={<LinguisticsRouter />} />
                                 <Route path="trash" element={<TrashView />} />
                                 <Route path="graph" element={<GeneralGraphView />} />
+                                <Route path="writing" element={<WritingHub />} />
+                                <Route path="writing/:notebookId" element={<WritingView />} />
                             </Route>
                         </Route>
                     </Routes>

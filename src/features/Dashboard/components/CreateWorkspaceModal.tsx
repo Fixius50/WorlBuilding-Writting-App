@@ -120,18 +120,19 @@ const CreateWorkspaceModal: React.FC<CreateWorkspaceModalProps> = ({ isOpen, onC
                             </div>
 
                             {!isCustomGenre ? (
-                                <div className="grid grid-cols-2 gap-2">
+                                <select
+                                    name="genre"
+                                    value={formData.genre}
+                                    onChange={(e) => setFormData(p => ({ ...p, genre: e.target.value }))}
+                                    className="w-full bg-[#13141f] border border-white/10 rounded-xl px-4 py-3 text-white text-[11px] font-bold tracking-widest focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 outline-none transition-all appearance-none cursor-pointer"
+                                    style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%236366f1\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'org/19/9 12l-2 2-2-2m14 0l-2 2-2-2\' /%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\' /%3E%3C/svg%3E")', backgroundPosition: 'right 1rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.2em' }}
+                                >
                                     {GENRES.map(g => (
-                                        <button
-                                            key={g}
-                                            type="button"
-                                            onClick={() => setFormData(p => ({ ...p, genre: g }))}
-                                            className={`px-3 py-2 rounded-lg text-[10px] font-bold border transition-all ${formData.genre === g ? 'bg-indigo-500 text-white border-indigo-500 shadow-lg shadow-indigo-500/20' : 'bg-[#13141f] border-white/10 text-white/40 hover:border-white/20'}`}
-                                        >
+                                        <option key={g} value={g} className="bg-[#0a0a0c] text-white py-2">
                                             {g}
-                                        </button>
+                                        </option>
                                     ))}
-                                </div>
+                                </select>
                             ) : (
                                 <input
                                     type="text"

@@ -7,6 +7,7 @@ import { entityService } from '../../database/entityService';
 import { Carpeta, Proyecto } from '../../database/types';
 import GlobalRightPanel from './GlobalRightPanel';
 import ConfirmationModal from '../common/ConfirmationModal';
+import BottomGraphDrawer from '../../features/Graph/components/BottomGraphDrawer';
 
 interface NavItemProps {
     to: string;
@@ -54,6 +55,9 @@ const ArchitectLayout: React.FC = () => {
     const [rightPanelTitle, setRightPanelTitle] = useState<string | null>(null);
     const [rightPanelMode, setRightPanelMode] = useState<'overlay' | 'push'>('overlay');
 
+    // Bottom Graph Panel State
+    const [bottomGraphOpen, setBottomGraphOpen] = useState(false);
+
     // Bible Explorer State
     const [folders, setFolders] = useState<Carpeta[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -63,7 +67,8 @@ const ArchitectLayout: React.FC = () => {
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deletionTarget, setDeletionTarget] = useState<{ id: number; type: 'folder' | 'entity'; parentId?: number | null } | null>(null);
 
-    const baseUrl = `/${username}/${projectName}`;
+    const actualUsername = username || 'local';
+    const baseUrl = `/${actualUsername}/${projectName}`;
 
     const loadFolders = async (pId: number) => {
         const rootFolders = await folderService.getByProject(pId);
@@ -243,7 +248,8 @@ const ArchitectLayout: React.FC = () => {
                             setRightPanelTitle,
                             setRightPanelMode,
                             projectId,
-                            baseUrl
+                            baseUrl,
+                            setBottomGraphOpen
                         }} />
                     </div>
 
@@ -265,6 +271,23 @@ const ArchitectLayout: React.FC = () => {
                         handleRenameFolder={handleRenameFolder}
                         handleDeleteFolder={handleDeleteFolder}
                         handleCreateEntity={handleCreateEntity}
+                    />
+
+                    {/* Bottom Graph Trigger */}
+                    {!bottomGraphOpen && !hideSidebarParam && (
+                        <button
+                            onClick={() => setBottomGraphOpen(true)}
+                            className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 px-6 py-2 rounded-full bg-[#050508]/80 backdrop-blur-xl border border-white/10 hover:border-primary/50 hover:bg-white/5 transition-all text-slate-400 hover:text-white shadow-2xl group animate-in slide-in-from-bottom-8"
+                        >
+                            <span className="material-symbols-outlined text-[18px] group-hover:-translate-y-1 transition-transform text-primary group-hover:drop-shadow-[0_0_8px_rgba(var(--primary-rgb),0.8)]">hub</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest">Abrir Grafo</span>
+                        </button>
+                    )}
+
+                    {/* Bottom Graph Drawer */}
+                    <BottomGraphDrawer 
+                        isOpen={bottomGraphOpen} 
+                        onClose={() => setBottomGraphOpen(false)} 
                     />
                 </main>
             </div>
