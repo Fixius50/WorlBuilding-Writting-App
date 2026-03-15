@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../../services/api';
+import { useLanguage } from '../../../context/LanguageContext';
 
 const Settings = () => {
     const navigate = useNavigate();
-    const [user, setUser] = useState(null);
-    const [projects, setProjects] = useState([]);
-    const [selectedProjects, setSelectedProjects] = useState([]);
+    const { language, changeLanguage } = useLanguage();
+    const [user, setUser] = useState<any>(null);
+    const [projects, setProjects] = useState<any[]>([]);
+    const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
     const [activeTab, setActiveTab] = useState('general');
-    const [notifications, setNotifications] = useState([]);
+    const [notifications, setNotifications] = useState<any[]>([]);
 
     // Settings State
     const [settings, setSettings] = useState({
@@ -46,7 +48,7 @@ const Settings = () => {
         }
     };
 
-    const addNotification = (message, type = 'success') => {
+    const addNotification = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
         const id = Date.now();
         setNotifications(prev => [...prev, { id, message, type }]);
         setTimeout(() => {
@@ -54,7 +56,7 @@ const Settings = () => {
         }, 3000);
     };
 
-    const updateSetting = (key, value) => {
+    const updateSetting = (key: string, value: any) => {
         const newSettings = { ...settings, [key]: value };
         setSettings(newSettings);
         localStorage.setItem('app_settings', JSON.stringify(newSettings));
@@ -62,7 +64,7 @@ const Settings = () => {
         addNotification(`Ajuste actualizado: ${key}`);
     };
 
-    const toggleProjectSelection = (id) => {
+    const toggleProjectSelection = (id: string) => {
         const isSelected = selectedProjects.includes(id);
         const newSelection = isSelected
             ? selectedProjects.filter(p => p !== id)
@@ -90,10 +92,10 @@ const Settings = () => {
         document.body.removeChild(link);
     };
 
-    const fileInputRef = React.useRef(null);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-    const handleImportDatabase = async (e) => {
-        const file = e.target.files[0];
+    const handleImportDatabase = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
         if (!file) return;
 
         if (!file.name.endsWith('.db')) {
@@ -110,7 +112,7 @@ const Settings = () => {
             const response = await api.post('/import/database', formData);
             addNotification(response.message || "Universo importado con éxito");
             loadProjects(); // Refresh list
-        } catch (err) {
+        } catch (err: any) {
             console.error("Import error", err);
             const errorMessage = err.response?.data?.error || "Error al importar el archivo";
             addNotification(errorMessage, "error");
@@ -120,8 +122,8 @@ const Settings = () => {
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
-    const handleAvatarChange = (e) => {
-        const file = e.target.files[0];
+    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
         if (!file) return;
 
         // Simple size check: 1MB limit for localStorage safety
@@ -131,8 +133,8 @@ const Settings = () => {
         }
 
         const reader = new FileReader();
-        reader.onload = (ev) => {
-            const newAvatar = ev.target.result;
+        reader.onload = (ev: ProgressEvent<FileReader>) => {
+            const newAvatar = ev.target?.result as string;
             const updatedUser = { ...(user || {}), avatarUrl: newAvatar };
             setUser(updatedUser);
             try {
@@ -146,7 +148,7 @@ const Settings = () => {
         reader.readAsDataURL(file);
     };
 
-    const updateProfile = (key, value) => {
+    const updateProfile = (key: string, value: string) => {
         const updatedUser = { ...(user || {}), [key]: value };
         setUser(updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
@@ -165,7 +167,7 @@ const Settings = () => {
     ];
 
     return (
-        <div className="flex flex-col w-full h-full bg-[#050508] text-white font-sans overflow-hidden relative">
+        <div className="flex flex-col w-full h-full bg-transparent text-white font-sans overflow-hidden relative">
             <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-50">
                 <div className="absolute -top-[10%] -left-[10%] size-[40%] bg-indigo-500/10 blur-[120px] rounded-full animate-pulse"></div>
                 <div className="absolute -bottom-[10%] -right-[10%] size-[40%] bg-purple-500/5 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
@@ -183,7 +185,7 @@ const Settings = () => {
             </div>
 
             {/* TOP NAVIGATION BAR */}
-            <header className="h-20 flex-none flex items-center justify-between px-12 border-b border-white/5 bg-[#0a0a0e] z-30">
+            <header className="h-20 flex-none flex items-center justify-between px-12 border-b border-white/5 bg-background z-30">
                 <div className="flex items-center gap-8">
                     <div className="flex items-center gap-4">
                         <div className="size-10 rounded-xl bg-indigo-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
@@ -224,7 +226,7 @@ const Settings = () => {
 
                     {activeTab === 'general' && (
                         <div className="space-y-6">
-                            <section className="bg-[#0f0f13] border border-white/5 rounded-3xl p-8">
+                            <section className="bg-black/20 border border-white/5 rounded-3xl p-8">
                                 <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-indigo-400">
                                     <span className="material-symbols-outlined">person</span>
                                     Perfil de Arquitecto
@@ -257,7 +259,7 @@ const Settings = () => {
                                 </div>
                             </section>
 
-                            <section className="bg-[#0f0f13] border border-white/5 rounded-3xl p-8 space-y-6">
+                            <section className="bg-black/20 border border-white/5 rounded-3xl p-8 space-y-6">
                                 <div className="flex justify-between items-center">
                                     <h3 className="text-lg font-bold flex items-center gap-2 text-indigo-400">
                                         <span className="material-symbols-outlined">sync_lock</span>
@@ -320,7 +322,7 @@ const Settings = () => {
 
                     {activeTab === 'appearance' && (
                         <div className="space-y-6">
-                            <section className="bg-[#0f0f13] border border-white/5 rounded-3xl p-8">
+                            <section className="bg-black/20 border border-white/5 rounded-3xl p-8">
                                 <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-indigo-400">
                                     <span className="material-symbols-outlined">palette</span>
                                     Estética del Sistema
@@ -341,7 +343,7 @@ const Settings = () => {
                                 </div>
                             </section>
 
-                            <section className="bg-[#0f0f13] border border-white/5 rounded-3xl p-8">
+                            <section className="bg-black/20 border border-white/5 rounded-3xl p-8">
                                 <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-indigo-400">
                                     <span className="material-symbols-outlined">text_fields</span>
                                     Tipografía y Lectura
@@ -353,14 +355,14 @@ const Settings = () => {
                                             <select
                                                 value={settings.font}
                                                 onChange={(e) => updateSetting('font', e.target.value)}
-                                                className="w-full bg-[#0f0f13] border border-white/10 rounded-xl px-5 py-3.5 text-sm text-white appearance-none outline-none focus:border-indigo-500 transition-all"
+                                                className="w-full bg-black/20 border border-white/10 rounded-xl px-5 py-3.5 text-sm text-white appearance-none outline-none focus:border-indigo-500 transition-all"
                                                 style={{ fontFamily: settings.font }}
                                             >
-                                                <option value="Lexend" className="bg-[#0f0f13] text-white">Lexend (UI Moderna)</option>
-                                                <option value="Outfit" className="bg-[#0f0f13] text-white">Outfit (Sleek)</option>
-                                                <option value="Cormorant Garamond" className="bg-[#0f0f13] text-white">Cormorant (Legendaria)</option>
-                                                <option value="Playfair Display" className="bg-[#0f0f13] text-white">Playfair (Elegante)</option>
-                                                <option value="JetBrains Mono" className="bg-[#0f0f13] text-white">JetBrains Mono (Codex)</option>
+                                                <option value="Lexend" className="bg-black/20 text-white">Lexend (UI Moderna)</option>
+                                                <option value="Outfit" className="bg-black/20 text-white">Outfit (Sleek)</option>
+                                                <option value="Cormorant Garamond" className="bg-black/20 text-white">Cormorant (Legendaria)</option>
+                                                <option value="Playfair Display" className="bg-black/20 text-white">Playfair (Elegante)</option>
+                                                <option value="JetBrains Mono" className="bg-black/20 text-white">JetBrains Mono (Codex)</option>
                                             </select>
                                             <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">expand_more</span>
                                         </div>
@@ -386,15 +388,15 @@ const Settings = () => {
                                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Preferencia de Idioma / Language</label>
                                     <div className="flex gap-4">
                                         <button
-                                            onClick={() => updateSetting('language', 'es')}
-                                            className={`flex-1 py-4 rounded-2xl border transition-all flex items-center justify-center gap-3 font-bold text-xs ${settings.language === 'es' || !settings.language ? 'border-primary bg-primary/10 text-white shadow-lg' : 'border-white/5 bg-black/20 text-slate-400'}`}
+                                            onClick={() => changeLanguage('es')}
+                                            className={`flex-1 py-4 rounded-2xl border transition-all flex items-center justify-center gap-3 font-bold text-xs ${language === 'es' || !language ? 'border-primary bg-primary/10 text-white shadow-lg' : 'border-white/5 bg-black/20 text-slate-400'}`}
                                         >
                                             <span className="text-xl">🇪🇸</span>
                                             Castellano
                                         </button>
                                         <button
-                                            onClick={() => updateSetting('language', 'en')}
-                                            className={`flex-1 py-4 rounded-2xl border transition-all flex items-center justify-center gap-3 font-bold text-xs ${settings.language === 'en' ? 'border-primary bg-primary/10 text-white shadow-lg' : 'border-white/5 bg-black/20 text-slate-400'}`}
+                                            onClick={() => changeLanguage('en')}
+                                            className={`flex-1 py-4 rounded-2xl border transition-all flex items-center justify-center gap-3 font-bold text-xs ${language === 'en' ? 'border-primary bg-primary/10 text-white shadow-lg' : 'border-white/5 bg-black/20 text-slate-400'}`}
                                         >
                                             <span className="text-xl">🇺🇸</span>
                                             English

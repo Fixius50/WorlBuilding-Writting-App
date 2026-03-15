@@ -14,7 +14,7 @@ interface ActionCardProps {
 const ActionCard: React.FC<ActionCardProps> = ({ icon, title, desc, color, onClick, t }) => (
     <div
         onClick={onClick}
-        className="group relative p-8 rounded-[32px] bg-[#0a0a0c] border border-white/5 hover:border-white/10 transition-all cursor-pointer flex flex-col h-full gap-6 hover:shadow-2xl hover:shadow-black/40"
+        className="group relative p-8 rounded-[32px] bg-background border border-white/5 hover:border-white/10 transition-all cursor-pointer flex flex-col h-full gap-6 hover:shadow-2xl hover:shadow-black/40"
     >
         <div className={`size-14 rounded-2xl ${color} flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-all duration-500`}>
             <span className="material-symbols-outlined text-3xl">{icon}</span>
@@ -52,9 +52,9 @@ const ProjectView: React.FC = () => {
     }, []);
 
     return (
-        <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#0a0a0c]">
+        <div className="flex-1 flex flex-col h-screen overflow-hidden bg-background">
             {/* Header */}
-            <div className="h-20 border-b border-white/5 flex items-center justify-between px-12 bg-[#0a0a0c]/20 backdrop-blur-xl shrink-0">
+            <div className="h-20 border-b border-white/5 flex items-center justify-between px-12 bg-background/20 backdrop-blur-xl shrink-0">
                 <div className="flex items-center gap-4">
                     <div className="size-10 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400 shadow-lg shadow-indigo-500/10">
                         <span className="material-symbols-outlined">auto_stories</span>
@@ -62,18 +62,6 @@ const ProjectView: React.FC = () => {
                     <div>
                         <h1 className="text-xl font-black text-white tracking-tight uppercase">{projectName}</h1>
                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('project.dashboard_desc')}</p>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                    <div className="flex -space-x-2">
-                        <div className="size-8 rounded-full border-2 border-[#0a0a0c] bg-indigo-500 overflow-hidden flex items-center justify-center text-[10px] font-black text-white shadow-lg">
-                            {user?.avatarUrl ? (
-                                <img src={user.avatarUrl} alt="Me" className="w-full h-full object-cover" />
-                            ) : (
-                                <span>{(user?.displayName || username)?.substring(0, 2).toUpperCase()}</span>
-                            )}
-                        </div>
                     </div>
                 </div>
             </div>

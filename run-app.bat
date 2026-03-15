@@ -5,6 +5,9 @@ echo ==========================================
 echo   Limpia y Arranca: Frontend + Backend
 echo ==========================================
 
+:: Asegurar que el directorio de trabajo es el del script
+cd /d "%~dp0"
+
 :: 1. Limpieza de procesos previos
 echo [1/4] Limpiando procesos antiguos...
 taskkill /F /IM java.exe /T 2>nul
@@ -40,7 +43,8 @@ if errorlevel 1 (
 
 :launch_backend
 echo [3/4] Lanzando Backend en puerto 8080...
-start "Worldbuilding-Backend" cmd /k "cd server-aux && java --enable-preview -jar target\aux-server-1.0.0.jar"
+set "JAVA_OPTS=--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED"
+start "Worldbuilding-Backend" cmd /k "cd server-aux && java %JAVA_OPTS% --enable-preview -jar target\aux-server-1.0.0.jar"
 
 :: 4. Arrancar Frontend
 echo [4/4] Lanzando Frontend (Vite)...

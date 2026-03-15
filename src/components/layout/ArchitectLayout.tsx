@@ -22,16 +22,16 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, collapsed, end }) =>
         to={to}
         end={end}
         className={({ isActive }) => `
-            flex items-center gap-3 px-3 py-2 border-l-[3px] transition-all duration-200 group
+            flex items-center gap-3 px-3 py-2 border-l-[0.2rem] transition-all duration-200 group
             ${isActive
-                ? 'border-[#007acc] text-white bg-[#2b2b2b]'
+                ? 'border-[#007acc] text-white bg-primary/20'
                 : 'border-transparent text-slate-400 hover:text-primary hover:bg-primary/5'}
             ${collapsed ? 'justify-center px-0' : ''}
         `}
         title={collapsed ? label : ''}
     >
-        <span className="material-symbols-outlined text-[19px] transition-transform group-hover:scale-110">{icon}</span>
-        {!collapsed && <span className="text-[12.5px] font-sans tracking-wide font-medium">{label}</span>}
+        <span className="material-symbols-outlined text-[1.2rem] transition-transform group-hover:scale-110">{icon}</span>
+        {!collapsed && <span className="text-[0.8rem] font-sans tracking-wide font-medium">{label}</span>}
     </NavLink>
 );
 
@@ -170,7 +170,7 @@ const ArchitectLayout: React.FC = () => {
     // Minimal layout for iframe/hideSidebar
     if (hideSidebarParam) {
         return (
-            <div className="h-screen w-screen bg-[#0a0a0c]">
+            <div className="h-screen w-screen bg-background">
                 <Outlet context={{
                     setRightOpen,
                     setRightPanelTab,
@@ -182,12 +182,12 @@ const ArchitectLayout: React.FC = () => {
     }
 
     return (
-        <div className="flex flex-col h-screen w-full overflow-hidden bg-[#1e1e1e] text-slate-300 font-sans selection:bg-primary/30">
+        <div className="flex flex-col h-screen w-full overflow-hidden bg-background text-foreground font-sans selection:bg-primary/30">
             <div className="flex flex-1 overflow-hidden">
                 {/* Sidebar */}
                 <aside
                     className={`
-                        fixed top-0 left-0 h-full bg-[#0a0a0c] border-r border-white/5 shadow-2xl z-40 transition-all duration-500 ease-in-out flex flex-col
+                        fixed top-0 left-0 h-full bg-background border-r border-white/5 shadow-2xl z-40 transition-all duration-500 ease-in-out flex flex-col
                         ${leftOpen ? 'w-64 translate-x-0' : 'w-64 -translate-x-full'}
                     `}
                 >
@@ -197,7 +197,7 @@ const ArchitectLayout: React.FC = () => {
                                 <div className="size-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 shadow-inner">
                                     <span className="material-symbols-outlined text-sm">auto_stories</span>
                                 </div>
-                                <h2 className="text-sm font-black uppercase tracking-widest text-white truncate max-w-[150px]">
+                                <h2 className="text-sm font-black uppercase tracking-widest text-white truncate max-w-[10rem]">
                                     {loadedProject?.nombre || projectName}
                                 </h2>
                             </div>
@@ -212,9 +212,13 @@ const ArchitectLayout: React.FC = () => {
                                 <NavItem to={`${baseUrl}/languages`} icon="translate" label={t('nav.languages')} collapsed={false} />
                                 <div className="h-px bg-white/5 my-2 mx-2 opacity-50"></div>
                                 <NavItem to={`${baseUrl}/writing`} icon="edit_note" label={t('nav.writing')} collapsed={false} />
-                                <div className="h-px bg-white/5 my-2 mx-2 opacity-10"></div>
-                                <NavItem to="/" icon="logout" label={t('nav.logout')} collapsed={false} />
                             </div>
+                        </div>
+
+                        {/* Sidebar Footer (Settings & Logout) */}
+                        <div className="p-3 border-t border-white/5 bg-background mt-auto">
+                            <NavItem to={`${baseUrl}/settings`} icon="settings" label={t('nav.settings')} collapsed={false} />
+                            <NavItem to="/" icon="logout" label={t('nav.logout')} collapsed={false} />
                         </div>
                     </div>
 
@@ -222,7 +226,7 @@ const ArchitectLayout: React.FC = () => {
                         onClick={() => setLeftOpen(!leftOpen)}
                         className={`
                             absolute top-1/2 -translate-y-1/2 -right-10 w-10 h-24 
-                            bg-[#0a0a0c] border border-white/5 border-l-0
+                            bg-background border border-white/5 border-l-0
                             rounded-r-2xl flex flex-col items-center justify-center gap-1
                             transition-all duration-300 group
                             hover:bg-indigo-500/10 hover:border-indigo-500/30
@@ -236,10 +240,9 @@ const ArchitectLayout: React.FC = () => {
                         <div className={`w-1 h-3 rounded-full bg-current opacity-20 transition-all duration-500 ${leftOpen ? 'h-6 opacity-40' : ''}`}></div>
                     </button>
                 </aside>
-
                 {/* Main Content */}
-                <main className="flex-1 flex flex-col min-w-0 bg-[#0a0a0c] relative">
-                    <div className="flex-1 flex flex-col min-w-0 bg-[#0a0a0c] relative overflow-hidden">
+                <main className="flex-1 flex flex-col min-w-0 bg-background relative">
+                    <div className="flex-1 flex flex-col min-w-0 bg-background relative overflow-hidden">
                         <Outlet context={{
                             setRightOpen,
                             toggleRightPanel,
@@ -277,10 +280,10 @@ const ArchitectLayout: React.FC = () => {
                     {!bottomGraphOpen && !hideSidebarParam && (
                         <button
                             onClick={() => setBottomGraphOpen(true)}
-                            className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 px-6 py-2 rounded-full bg-[#050508]/80 backdrop-blur-xl border border-white/10 hover:border-primary/50 hover:bg-white/5 transition-all text-slate-400 hover:text-white shadow-2xl group animate-in slide-in-from-bottom-8"
+                            className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 px-6 py-2 rounded-full bg-background/80 backdrop-blur-xl border border-white/10 hover:border-primary/50 hover:bg-white/5 transition-all text-slate-400 hover:text-white shadow-2xl group animate-in slide-in-from-bottom-8"
                         >
-                            <span className="material-symbols-outlined text-[18px] group-hover:-translate-y-1 transition-transform text-primary group-hover:drop-shadow-[0_0_8px_rgba(var(--primary-rgb),0.8)]">hub</span>
-                            <span className="text-[10px] font-black uppercase tracking-widest">Abrir Grafo</span>
+                            <span className="material-symbols-outlined text-[1.125rem] group-hover:-translate-y-1 transition-transform text-primary group-hover:drop-shadow-[0_0_0.5rem_rgba(var(--primary-rgb),0.8)]">hub</span>
+                            <span className="text-[0.65rem] font-black uppercase tracking-widest">Abrir Grafo</span>
                         </button>
                     )}
 

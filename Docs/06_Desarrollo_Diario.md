@@ -16,13 +16,20 @@ Este comando levanta:
 
 ## 2. Modificando la Interfaz y Lógica (TypeScript)
 
-Todo el código vive ahora bajo `src/main/frontend/`.
+Todo el código vive ahora bajo `src/`.
 
-- **UI:** Componentes React en `src/main/frontend/features/` y `src/main/frontend/components/`.
+- **UI:** Componentes React en `src/features/` y `src/components/`.
 - **Persistencia:** Consultas directas a la base de datos vía `entityService.ts` utilizando `sqlocal` (SQLite WASM).
 - **Tipado:** Es obligatorio usar **TypeScript** en modo estricto. No crear archivos `.js` o `.jsx` nuevos; usar siempre `.ts` o `.tsx`.
 
-**Flujo:** Escribes código, guardas, y la ventana de Electron se actualiza automáticamente.
+### Reactividad de Temas e Idioma
+Para asegurar que los cambios de configuración se reflejen en toda la app sin recargar:
+1. Utilizar el hook `useLanguage` para textos.
+2. Si se modifica un ajuste global fuera de un contexto, disparar el evento:
+   ```typescript
+   window.dispatchEvent(new Event('storage_update'));
+   ```
+3. En componentes Layout, usar clases de Tailwind basadas en variables (ej. `bg-background`, `text-foreground`, `bg-primary/20`) en lugar de colores fijos.
 
 ## 3. Base de Datos (SQLite WASM)
 
@@ -39,4 +46,4 @@ Para generar el ejecutable nativo (`.exe`):
 npm run build
 ```
 
-Esto generará los archivos distribuibles en la carpeta `dist/` o `release/` (dependiendo de la configuración de Electron-Builder).
+Esto generará los archivos distribuibles en la carpeta `dist/` o `release/`.

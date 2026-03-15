@@ -54,14 +54,16 @@ function App() {
             if (updatedSettings) {
                 try {
                     const settings = JSON.parse(updatedSettings);
-                    if (settings.theme) setTheme(settings.theme);
-                } catch(e) {}
+                    if (settings.theme) {
+                        setTheme(prev => settings.theme !== prev ? settings.theme : prev);
+                    }
+                } catch (e) { }
             }
             const updatedUser = localStorage.getItem('user');
             if (updatedUser && updatedUser !== 'undefined') {
                 try {
                     setUser(JSON.parse(updatedUser));
-                } catch(e) {}
+                } catch (e) { }
             }
         };
 
@@ -89,6 +91,7 @@ function App() {
                             {/* El :username ahora es irrelevante en Local-First, pero lo mantenemos para no romper rutas */}
                             <Route path="/local/:projectName" element={<ArchitectLayout />}>
                                 <Route index element={<ProjectView />} />
+                                <Route path="settings" element={<Settings />} />
                                 <Route path="dashboard" element={<Dashboard />} />
                                 <Route path="entities/:type/:entityId" element={<EntityRouter />} />
 

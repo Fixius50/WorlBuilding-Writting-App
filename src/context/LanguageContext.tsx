@@ -51,7 +51,26 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             } catch (e) { }
         }
         localStorage.setItem('app_settings', JSON.stringify({ ...settings, language: newLang }));
+        // Disparar evento para que otros componentes (y App.tsx) se enteren
+        window.dispatchEvent(new Event('storage_update'));
     };
+
+    useEffect(() => {
+        const handleSync = () => {
+            const savedSettings = localStorage.getItem('app_settings');
+            if (savedSettings) {
+                try {
+                    const settings = JSON.parse(savedSettings);
+                    if (settings.language && settings.language !== language) {
+                        setLanguage(settings.language);
+                    }
+                } catch (e) { }
+            }
+        };
+
+        window.addEventListener('storage_update', handleSync);
+        return () => window.removeEventListener('storage_update', handleSync);
+    }, [language]);
 
     return (
         <LanguageContext.Provider value={{ language, t, changeLanguage }}>

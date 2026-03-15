@@ -56,7 +56,7 @@ const GlobalRightPanel: React.FC<GlobalRightPanelProps> = ({
     return (
         <aside
             className={`
-                fixed top-0 right-0 h-full bg-[#0a0a0c] border-l border-white/5 shadow-2xl z-40 transition-all duration-500 ease-in-out flex flex-col
+                fixed top-0 right-0 h-full bg-background border-l border-white/5 shadow-2xl z-40 transition-all duration-500 ease-in-out flex flex-col
                 ${isOpen ? 'w-96 translate-x-0' : 'w-96 translate-x-full'}
             `}
         >
@@ -65,7 +65,7 @@ const GlobalRightPanel: React.FC<GlobalRightPanelProps> = ({
                 onClick={onToggle}
                 className={`
                     absolute top-1/2 -translate-y-1/2 -left-10 w-10 h-24 
-                    bg-[#0a0a0c] border border-white/5 border-r-0
+                    bg-background border border-white/5 border-r-0
                     rounded-l-2xl flex flex-col items-center justify-center gap-1
                     transition-all duration-300 group
                     hover:bg-indigo-500/10 hover:border-indigo-500/30
@@ -84,10 +84,11 @@ const GlobalRightPanel: React.FC<GlobalRightPanelProps> = ({
             <div className="flex items-center border-b border-white/5 bg-white/[0.02]">
                 <button
                     onClick={() => setActiveTab('CONTEXT')}
-                    className={`flex-1 py-4 flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest transition-colors relative ${activeTab === 'CONTEXT' ? 'text-indigo-400' : 'text-slate-500 hover:text-indigo-400'}`}
+                    className={`flex-1 py-4 flex flex-col items-center justify-center gap-1 text-[0.6rem] font-black uppercase tracking-widest transition-colors relative ${activeTab === 'CONTEXT' ? 'text-indigo-400' : 'text-slate-500 hover:text-indigo-400'}`}
+                    title={t('common.context')}
                 >
-                    <span className="material-symbols-outlined text-sm">view_sidebar</span>
-                    {t('common.context') || 'Contexto'}
+                    <span className="material-symbols-outlined text-[1.125rem]">view_sidebar</span>
+                    <span className="hidden sm:inline">{t('common.context')}</span>
                     {activeTab === 'CONTEXT' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500"></div>}
                 </button>
                 <button
@@ -95,10 +96,11 @@ const GlobalRightPanel: React.FC<GlobalRightPanelProps> = ({
                         if (onClearContext) onClearContext();
                         setActiveTab('NOTEBOOKS');
                     }}
-                    className={`flex-1 py-4 flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest transition-colors relative ${activeTab === 'NOTEBOOKS' ? 'text-indigo-400' : 'text-slate-500 hover:text-indigo-400'}`}
+                    className={`flex-1 py-4 flex flex-col items-center justify-center gap-1 text-[0.6rem] font-black uppercase tracking-widest transition-colors relative ${activeTab === 'NOTEBOOKS' ? 'text-indigo-400' : 'text-slate-500 hover:text-indigo-400'}`}
+                    title={t('common.notes')}
                 >
-                    <span className="material-symbols-outlined text-sm">book</span>
-                    {t('common.notes') || 'Apuntes'}
+                    <span className="material-symbols-outlined text-[1.125rem]">book</span>
+                    <span className="hidden sm:inline">{t('common.notes')}</span>
                     {activeTab === 'NOTEBOOKS' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500"></div>}
                 </button>
                 <button
@@ -106,10 +108,11 @@ const GlobalRightPanel: React.FC<GlobalRightPanelProps> = ({
                         if (onClearContext) onClearContext();
                         setActiveTab('EXPLORER');
                     }}
-                    className={`flex-1 py-4 flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest transition-colors relative ${activeTab === 'EXPLORER' ? 'text-indigo-400' : 'text-slate-500 hover:text-indigo-400'}`}
+                    className={`flex-1 py-4 flex flex-col items-center justify-center gap-1 text-[0.6rem] font-black uppercase tracking-widest transition-colors relative ${activeTab === 'EXPLORER' ? 'text-indigo-400' : 'text-slate-500 hover:text-indigo-400'}`}
+                    title={t('common.explorer')}
                 >
-                    <span className="material-symbols-outlined text-sm">folder_open</span>
-                    {t('common.explorer') || 'Explorador'}
+                    <span className="material-symbols-outlined text-[1.125rem]">folder_open</span>
+                    <span className="hidden sm:inline">{t('common.explorer')}</span>
                     {activeTab === 'EXPLORER' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500"></div>}
                 </button>
             </div>
@@ -126,23 +129,28 @@ const GlobalRightPanel: React.FC<GlobalRightPanelProps> = ({
             {/* Content Area */}
             <div className="flex-1 overflow-hidden relative bg-black/20">
                 {/* TAB: CONTEXT */}
-                <div className={`absolute inset-0 transition-opacity duration-300 flex flex-col ${activeTab === 'CONTEXT' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
-                    {contextContent ? (
-                        contextContent
-                    ) : (
-                        <div id="global-right-panel-portal" className="h-full flex flex-col relative overflow-y-auto custom-scrollbar">
-                        </div>
-                    )}
-                </div>
+                {activeTab === 'CONTEXT' && (
+                    <div className="absolute inset-0 flex flex-col animate-in fade-in duration-300">
+                        {contextContent ? (
+                            contextContent
+                        ) : (
+                            <div id="global-right-panel-portal" className="h-full flex flex-col relative overflow-y-auto custom-scrollbar">
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* TAB: NOTEBOOKS */}
-                <div className={`absolute inset-0 transition-opacity duration-300 flex flex-col ${activeTab === 'NOTEBOOKS' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
-                    <NotebookManager projectId={projectId} />
-                </div>
+                {activeTab === 'NOTEBOOKS' && (
+                    <div className="absolute inset-0 flex flex-col animate-in fade-in duration-300">
+                        <NotebookManager projectId={projectId} />
+                    </div>
+                )}
 
                 {/* TAB: EXPLORER */}
-                <div className={`absolute inset-0 transition-opacity duration-300 flex flex-col ${activeTab === 'EXPLORER' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
-                    <div className="p-4 border-b border-white/5">
+                {activeTab === 'EXPLORER' && (
+                    <div className="absolute inset-0 flex flex-col animate-in fade-in duration-300">
+                        <div className="p-4 border-b border-white/5">
                         <div className="relative group mb-3">
                             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm group-focus-within:text-indigo-400 transition-colors">search</span>
                             <input
@@ -159,7 +167,7 @@ const GlobalRightPanel: React.FC<GlobalRightPanelProps> = ({
                                 <select
                                     value={filterType}
                                     onChange={(e) => setFilterType(e.target.value)}
-                                    className="appearance-none bg-[#0a0a0c] border border-white/5 rounded-xl px-4 py-2 pr-10 text-xs font-bold text-white transition-all hover:bg-white/5 focus:border-indigo-500 outline-none w-full"
+                                    className="appearance-none bg-background border border-white/5 rounded-xl px-4 py-2 pr-10 text-xs font-bold text-white transition-all hover:bg-white/5 focus:border-indigo-500 outline-none w-full"
                                 >
                                     <option value="ALL">🔍 TODO</option>
                                     <option value="individual">👤 PERSONAJES</option>
@@ -214,7 +222,8 @@ const GlobalRightPanel: React.FC<GlobalRightPanelProps> = ({
                             ))
                         )}
                     </div>
-                </div>
+                    </div>
+                )}
             </div>
         </aside>
     );

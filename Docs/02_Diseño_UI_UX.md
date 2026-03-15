@@ -2,28 +2,34 @@
 
 El objetivo es una interfaz que se sienta como una herramienta de un arquitecto cósmico: elegante, profunda y técnica.
 
-## PALETA DE COLORES (DARK THEME)
+## PALETA DE COLORES (SISTEMA DINÁMICO)
 
-*   **Fondo:** `#0f172a` (Slate 900).
-*   **Paneles:** Transparencia `rgba(30, 41, 59, 0.7)` con desenfoque `blur(12px)`.
-*   **Bordes:** `1px solid rgba(255, 255, 255, 0.1)`.
-*   **Primario:** `#3b82f6` (Blue 500) para acciones principales.
-*   **Acento:** `#8b5cf6` (Violet 500) para elementos mágicos/especiales.
-*   **Texto:** `#f8fafc` (Slate 50) para títulos, `#94a3b8` (Slate 400) para descripciones.
+A partir de Marzo 2026, el sistema utiliza **Temas Dinámicos** basados en variables CSS (`:root`) y clases de Tailwind especializadas. **No utilizar colores HEX hardcoded** (`bg-[#...]`) en nuevos componentes.
+
+*   **Variables Core:**
+    *   `--background`: Color base del tema (ej. `240 10% 2%` para Deep Space).
+    *   `--primary`: Color de acento para acciones (ej. `243 75% 59%`).
+    *   `--foreground`: Color de texto principal.
+*   **Temas Disponibles:**
+    *   **Deep Space:** Oscuro profundo con acentos índigo.
+    *   **Nebula:** Tonos violetas y púrpuras suaves.
+    *   **High Contrast:** Blanco y negro puro para máxima legibilidad.
 
 ## TIPOGRAFÍA
 
-*   **Títulos:** 'Outfit' o 'Inter' (Sans-serif moderna).
-*   **Cuerpo:** 'Inter'.
-*   **Lectura de "Biblia":** Fuentes Serif para sensación de documento antiguo (ej. 'Lora' o 'Merriweather').
+El sistema permite la selección dinámica de fuentes en Ajustes:
+*   **UI Moderna:** 'Lexend' o 'Outfit' (Sans-serif).
+*   **Legendaria:** 'Cormorant Garamond' (Serif) para la Biblia.
+*   **Codex:** 'JetBrains Mono' para datos técnicos.
 
-## COMPONENTES ESTÁNDAR
+## NAVEGACIÓN Y ESTRUCTURA (THE ARCHITECT LAYOUT)
 
-1.  **The Architect Box:** El contenedor principal con bordes redondeados (16px) y sombra difusa.
-2.  **Interacciones:** 
-    *   Hover: Aumento de brillo en el borde.
-    *   Click: Sutil escala descendente (0.98).
-    *   Transiciones: 0.3s ease-in-out para todo cambio de estado visual.
+1.  **Sidebar Izquierdo (Control de Misión):**
+    *   **Superior:** Navegación entre módulos (Dashboard, Biblia, Atlas, Cronología).
+    *   **Inferior (Footer):** Acceso rápido a **Settings** y **Logout**. El diseño se ha simplificado eliminando iconos redundantes del header.
+2.  **The Architect Box:** Contenedores con `bg-background` y bordes sutiles.
+3.  **Interactividad Reactiva:** 
+    *   Los cambios de Idioma y Tema se aplican al instante mediante el bus de eventos del sistema sin recargar la página.
 
 ## ICONOGRAFÍA
 Uso de **Google Material Symbols** (Rounded) con peso ligero (Light/300).

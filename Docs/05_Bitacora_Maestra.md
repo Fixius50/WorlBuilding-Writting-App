@@ -6,6 +6,12 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
 
 ### MARZO 2026
 
+- **2026-03-15: Refactorización de Navegación y Reactividad de Temas**
+  - **Navegación Persistente:** Reubicación de "Settings" y "Logout" al pie del sidebar izquierdo para mayor accesibilidad y limpieza visual (remoción de iconos en el header).
+  - **Enrutamiento Robusto:** Corrección del acceso a `/settings` mediante rutas anidadas en `App.tsx`, permitiendo que la configuración sea Context-Aware dentro de cada proyecto.
+  - **Sincronización Reactiva:** Implementación de un sistema de eventos `storage_update` para actualizar Idioma y Tema en tiempo real en toda la app sin recargar la página.
+  - **Soporte de Temas Real:** Eliminación de fondos HEX hardcodeados en componentes (`bg-[#0a0a0c]`) por clases de Tailwind (`bg-background`) que respetan las variables CSS dinámicas.
+
 - **2026-03-14: Refactorización de Módulo Lingüístico y Tipado Estricto**
   - **LinguisticsHub:** Refactorización total para eliminar tipos `any`, corregir estados `never[]` y asegurar interfaces para `Shape`, `Layer` y `Word`.
   - **Motor de Fuentes:** Corrección de la integración con `opentype.js` mediante declaraciones de tipos manuales (`opentype.d.ts`) e imports nombrados.
@@ -37,12 +43,14 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
 Se ha decidido abandonar completamente el backend nativo (Rust/Tauri) y el servidor tradicional (Java/Spring). La aplicación abraza el paradigma **Local-First 100% Frontend**: todo el procesamiento, incluyendo la base de datos relacional completa, ocurre en el navegador del cliente mediante WebAssembly. Además, todo el código base migrará de JavaScript a **TypeScript**.
 
 ### Stack Definitivo Consolidado
+
 1. **Frontend Core:** React 18, Vite, HTML/CSS puro.
 2. **Tipado:** Migración total a **TypeScript** (strict mode).
 3. **Persistencia (BBDD):** SQLite ejecutado vía WebAssembly (`sqlocal`), respaldado persistentemente por File System OPFS.
 4. **Desktop build:** Electron empaquetando los estáticos de React.
 
 ### Razonamiento Estratégico
+
 - **Cero Backend:** Se eliminan los problemas de puertos, procesos colgados y despliegues mixtos.
 - **Rendimiento Cero-Latencia:** Las consultas complejas típicas del Worldbuilding corren directo sobre la RAM local del disco del cliente, sin viajes de red.
 - **Roles Ágiles Setup:** Se han creado skills/prompts para agentes (Investigador, Arquitecto, Auditor) en la carpeta `Docs/agents/` (formato `.md`) y un `banco.md` para contexto persistente.
@@ -52,6 +60,7 @@ Se ha decidido abandonar completamente el backend nativo (Rust/Tauri) y el servi
 ## 🗄️ NUEVA RUTA DE MIGRACIÓN: SQLITE WASM + TYPESCRIPT
 
 ### Prioridades Inmediatas
+
 1. **Borrado y Setup:** Eliminar `src-tauri` y código Rust. Inicializar entorno TypeScript (`tsconfig.json`, renombrado a `.tsx`).
 2. **Setup Base de Datos Cliente:** Instalar dependencias de SQLite WASM transaccional (`sqlocal`).
 3. **Esquemas:** Reescribir el file `schema.sql` (antiguo Rust) para inicializar DB en el browser.
