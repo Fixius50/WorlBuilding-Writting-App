@@ -1,22 +1,19 @@
 # ESTRATEGIA TÉCNICA Y STACK
 
-Este documento define las decisiones arquitectónicas clave del proyecto tras la transición a una arquitectura de Escritorio Nativo (Desktop App).
+Este documento define las decisiones arquitectónicas clave del proyecto tras la consolidación de la arquitectura Local-First.
 
-## STACK TECNOLÓGICO ACTUAL (MIGRADO A ELECTRON)
+## STACK TECNOLÓGICO ACTUAL
 
-* **Contenedor / Empaquetado:** **Electron.js**
-  * Generación de ejecutables nativos (`.exe`) para Windows sin requerir Java ni JRE.
-  * Arquitectura "Main Process" en Node.js puro para manejo del hardware local.
-* **Frontend (UI):** React 18+ con Vite (Feature-Sliced Design).
+* **Frontend (UI y Lógica Core):** React 19+ con Vite.
   * Estado: Context API + Zustand (Manejador de Estado Global ligero).
   * Routing: React Router Dom.
-  * Estilos: Glassmorphism y utilidades a medida (CSS Modules / Tailwind parcial).
-* **Backend (Lógica Local):** TypeScript Nativo.
-  * Corre en el Main Process de Electron simulando una arquitectura de Servicios Inyectables.
-  * Comunicación: Eventos asíncronos limpios mediante el canal IPC (`ipcMain` / `ipcRenderer`).
-* **Persistencia:** Base de Datos Embebida (SQLite vía `better-sqlite3`).
-  * Almacenamiento absoluto de datos en local. No hay peticiones web a servidores externos.
-  * Búsqueda: Motor FTS5 integrado en SQLite para consultas Full-Text instantáneas.
+  * Estilos: Glassmorphism y utilidades Tailwind CSS.
+* **Persistencia (BBDD Local-First):** SQLite WASM (`sqlocal`) sobre OPFS (Origin Private File System).
+  * Almacenamiento absoluto de datos en el navegador del cliente. Cero latencia de red.
+  * Búsqueda: Consultas ultra-rápidas mediante Web Workers procesando SQLite.
+* **Servidor Auxiliar:** Java 21 + Spring WebMVC (Jetty Embebido).
+  * Un micro-servidor localizado en `server-aux`.
+  * Responsabilidad: Funciones de interacción nativa (gestión del navegador, endpoints del sistema, scripts) que escapan al sandbox de React. Funciona estrictamente como un helper, no como monolito.
 
 ## ARQUITECTURA DE DATOS
 
@@ -25,4 +22,4 @@ Este documento define las decisiones arquitectónicas clave del proyecto tras la
 
 ## HISTORIAL DE TRANSICIÓN
 
-Inicialmente concebido como un monolito en `Java 21 + Spring Boot 3`. La plataforma demostró problemas de consumo excesivo de memoria RAM (>500MB) para un cliente local y complejidades en la distribución del `.exe` (JPackage). El proyecto pivota y aprueba unívocamente el uso del stack **TypeScript/Electron** como solución hiperveloz, offline, y con un diseño de componentes puro.
+Inicialmente concebido como un monolito pesado. El proyecto pivota y aprueba unívocamente el uso del stack **React + sqlocal (WASM)** en el frontend puro como solución hiperveloz y offline, manteniendo un **Backend Auxiliar Ligero (Java/Spring)** únicamente para rutinas locales de sistema imperativas.

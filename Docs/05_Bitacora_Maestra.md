@@ -48,12 +48,11 @@ Se ha decidido abandonar completamente el backend nativo (Rust/Tauri) y el servi
 1. **Frontend Core:** React 18, Vite, HTML/CSS puro.
 2. **Tipado:** Migración total a **TypeScript** (strict mode).
 3. **Persistencia (BBDD):** SQLite ejecutado vía WebAssembly (`sqlocal`), respaldado persistentemente por File System OPFS.
-4. **Desktop build:** Electron empaquetando los estáticos de React.
+4. **Backend Auxiliar:** Servidor nativo ligero (Java 21 + Spring WebMVC) alojado en `server-aux/` para tareas exclusivas de manejo de SO terminales y automatizaciones puente del navegador.
 
 ### Razonamiento Estratégico
 
-- **Cero Backend:** Se eliminan los problemas de puertos, procesos colgados y despliegues mixtos.
-- **Rendimiento Cero-Latencia:** Las consultas complejas típicas del Worldbuilding corren directo sobre la RAM local del disco del cliente, sin viajes de red.
+- **Cero Monolito, Pura Velocidad:** Se eliminan los problemas del monolito de base de datos lejana. Las consultas complejas típicas del Worldbuilding corren directo sobre la tecnología SQLite WASM del propio navegador del usuario, logrando cero latencia de red.
 - **Roles Ágiles Setup:** Se han creado skills/prompts para agentes (Investigador, Arquitecto, Auditor) en la carpeta `Docs/agents/` (formato `.md`) y un `banco.md` para contexto persistente.
 
 ---

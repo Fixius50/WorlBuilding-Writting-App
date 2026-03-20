@@ -7,20 +7,55 @@
 
 /* Global Theme Variables - Outside layers for high priority */
 :root {
+  /* Light Theme Base */
+  --background: 0 0% 100%;
+  --foreground: 240 10% 4%;
+  --primary: 243 75% 59%;
+  --primary-foreground: 0 0% 98%;
+  --radius: 0px;
+}
+
+/* 
+  --- Configuración de Bordes y Sombras Monolíticas --- 
+  El asterisco (*) fuerza que el var(--foreground) se lea del 
+  tema aplicado en el momento, y no se congele en el :root (claro).
+*/
+* {
+  /* Borde principal exterior (Tarjetas, Paneles, Modales) */
+  --panel-border: hsl(var(--foreground) / 0.4);
+  /* Borde interior sutil (Separadores de secciones) */
+  --divider-border: hsl(var(--foreground) / 0.1);
+  /* Borde interior oscuro (Paneles hundidos) */
+  --sunken-border: hsl(var(--foreground) / 0.2);
+  /* Sombra interna (Paneles hundidos) */
+  --sunken-shadow: hsl(var(--foreground) / 0.1);
+}
+
+.dark, .theme-dark {
+  /* Dark Theme Base */
   --background: 240 10% 4%;
   --foreground: 0 0% 98%;
   --primary: 243 75% 59%;
   --primary-foreground: 210 40% 98%;
-  --radius: 12px;
+}
+
+.theme-light {
+  /* Explicit Light Theme */
+  --background: 0 0% 98%;
+  --foreground: 240 10% 4%;
+  --primary: 243 75% 59%;
+  --primary-foreground: 0 0% 98%;
 }
 
 .theme-deep_space {
   --background: 240 10% 2%;
+  --foreground: 0 0% 95%;
   --primary: 243 75% 59%;
 }
 
 .theme-nebula {
   --background: 260 40% 5%;
+  --foreground: 260 10% 95%;
   --primary: 260 80% 65%;
 }
 
@@ -72,21 +107,8 @@
 }
 
 .zen-editor-container {
-  background-image:
-    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.05) 0px, transparent 50%);
   position: relative;
   overflow: hidden;
-}
-
-.zen-editor-container::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0.03;
-  pointer-events: none;
-  background-image: url("https://www.transparenttextures.com/patterns/asfalt-dark.png");
-  z-index: 10;
 }
 
 @layer base {
@@ -96,13 +118,6 @@
 
   body {
     @apply bg-background text-foreground font-display selection:bg-primary selection:text-white antialiased overflow-hidden transition-colors duration-500;
-  }
-
-  /* Immersive Background Grain / Pattern */
-  body::before {
-    content: "";
-    @apply fixed inset-0 pointer-events-none opacity-[0.03] z-[100];
-    background-image: url("https://www.transparenttextures.com/patterns/asfalt-dark.png");
   }
 
   h1,
@@ -116,8 +131,17 @@
 }
 
 @layer utilities {
-  .glass-panel {
-    @apply bg-background/60 backdrop-blur-xl border border-white/5;
+  /* Technical Zen Utilities */
+  .monolithic-panel {
+    @apply bg-background border transition-colors duration-300;
+    @apply border-foreground/40;
+  }
+
+  .sunken-panel {
+    /* Relieve negativo calculado en base al foreground */
+    @apply bg-background border transition-colors duration-300;
+    box-shadow: inset 0 2px 10px hsl(var(--foreground) / 0.1);
+    @apply border-foreground/20;
   }
 
   .text-shadow {

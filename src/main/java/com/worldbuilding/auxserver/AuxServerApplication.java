@@ -17,7 +17,7 @@ public class AuxServerApplication {
 
     public static void main(String[] args) throws Exception {
         int port = 8080;
-        System.out.println("--- Starting WorldbuildingAuxServer (Spring v4 + Java 24) on port " + port + " ---");
+        System.out.println("--- Starting WorldbuildingAuxServer (Spring v4 + Java 21) on port " + port + " ---");
 
         Server server = new Server(port);
 

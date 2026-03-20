@@ -64,17 +64,17 @@ Ver `Docs/mcps/scripts/README.md` para más opciones de testing.
 
 ### Estructura del Proyecto
 
-```
+```text
 WorldbuildingApp/
-├── src/main/
-│   ├── java/          # Backend (Spring Boot)
-│   ├── frontend/      # Frontend (React + Vite)
-│   └── resources/     # Recursos y configuración
-├── Docs/
-│   ├── mcps/          # Scripts de testing MCP
-│   ├── scripts/       # Scripts de utilidad
-│   └── logs/          # Logs del servidor
-└── INICIAR.bat        # Script principal de inicio
+├── src/               # Frontend y Backend Fusionados
+│   ├── main/          # Backend (Spring Boot Java)
+│   ├── assets/        # Frontend (Tailwind/CSS)
+│   ├── components/    # Frontend (React UI)
+│   ├── features/      # Frontend (Lógica y Vistas)
+│   └── database/      # Frontend (Client IndexedDB)
+├── scripts/           # Scripts NodeJS de Refactorización y Utils
+├── Docs/              # Documentación de Arquitectura y Logs
+└── pom.xml            # Configuración Raíz de Maven
 ```
 
 ## 📝 Notas

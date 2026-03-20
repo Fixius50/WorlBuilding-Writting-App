@@ -16,7 +16,7 @@ echo OK.
 
 :: 2. Preparar el Backend
 echo [2/4] Verificando Backend...
-set "JAR_PATH=server-aux\target\aux-server-1.0.0.jar"
+set "JAR_PATH=target\aux-server-1.0.0.jar"
 
 if exist "%JAR_PATH%" (
     echo [OK] Backend ya compilado. Saltando a ejecucion...
@@ -44,7 +44,7 @@ if errorlevel 1 (
 :launch_backend
 echo [3/4] Lanzando Backend en puerto 8080...
 set "JAVA_OPTS=--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED"
-start "Worldbuilding-Backend" cmd /k "cd server-aux && java %JAVA_OPTS% --enable-preview -jar target\aux-server-1.0.0.jar"
+start "Worldbuilding-Backend" cmd /k "java %JAVA_OPTS% --enable-preview -jar target\aux-server-1.0.0.jar"
 
 :: 4. Arrancar Frontend
 echo [4/4] Lanzando Frontend (Vite)...

@@ -7,74 +7,74 @@ import { initializeDatabase } from './database/db'
 
 // Global Handlers (Opcional: Migrar a un logger local en el futuro)
 const reportError = (source: string, message: string, stack?: string, componentStack?: string) => {
-    console.error(`[${source}] ${message}`, { stack, componentStack });
+ console.error(`[${source}] ${message}`, { stack, componentStack });
 };
 
 window.onerror = (message, source, lineno, colno, error) => {
-    reportError('Global Window Error', typeof message === 'string' ? message : 'Unknown error', error ? error.stack : `${source}:${lineno}:${colno}`);
+ reportError('Global Window Error', typeof message === 'string' ? message : 'Unknown error', error ? error.stack : `${source}:${lineno}:${colno}`);
 };
 
 window.onunhandledrejection = (event) => {
-    reportError('Unhandled Promise Rejection', event.reason ? event.reason.message : 'Unknown reason', event.reason ? event.reason.stack : '');
+ reportError('Unhandled Promise Rejection', event.reason ? event.reason.message : 'Unknown reason', event.reason ? event.reason.stack : '');
 };
 
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: any, errorInfo: any }> {
-    constructor(props: { children: React.ReactNode }) {
-        super(props);
-        this.state = { hasError: false, error: null, errorInfo: null };
-    }
+ constructor(props: { children: React.ReactNode }) {
+ super(props);
+ this.state = { hasError: false, error: null, errorInfo: null };
+ }
 
-    static getDerivedStateFromError(error: any) {
-        return { hasError: true };
-    }
+ static getDerivedStateFromError(error: any) {
+ return { hasError: true };
+ }
 
-    componentDidCatch(error: any, errorInfo: any) {
-        this.setState({ error: error, errorInfo: errorInfo });
-        console.error("Uncaught Error:", error, errorInfo);
-        reportError('React ErrorBoundary', error.message, error.stack, errorInfo.componentStack);
-    }
+ componentDidCatch(error: any, errorInfo: any) {
+ this.setState({ error: error, errorInfo: errorInfo });
+ console.error("Uncaught Error:", error, errorInfo);
+ reportError('React ErrorBoundary', error.message, error.stack, errorInfo.componentStack);
+ }
 
-    render() {
-        if (this.state.hasError) {
-            return (
-                <div style={{ padding: 20, background: '#222', color: 'red', height: '100vh' }}>
-                    <h1>Something went wrong.</h1>
-                    <details style={{ whiteSpace: 'pre-wrap' }}>
-                        {this.state.error && this.state.error.toString()}
-                        <br />
-                        {this.state.errorInfo && this.state.errorInfo.componentStack}
-                    </details>
-                </div>
-            );
-        }
-        return this.props.children;
-    }
+ render() {
+ if (this.state.hasError) {
+ return (
+ <div style={{ padding: 20, background: '#222', color: 'red', height: '100vh' }}>
+ <h1>Something went wrong.</h1>
+ <details style={{ whiteSpace: 'pre-wrap' }}>
+ {this.state.error && this.state.error.toString()}
+ <br />
+ {this.state.errorInfo && this.state.errorInfo.componentStack}
+ </details>
+ </div>
+ );
+ }
+ return this.props.children;
+ }
 }
 
 const rootElement = document.getElementById('root');
 
 if (rootElement) {
-    const root = ReactDOM.createRoot(rootElement);
-    
-    // Inicializar base de datos antes de renderizar
-    initializeDatabase()
-        .then(() => {
-            root.render(
-                <React.StrictMode>
-                    <ErrorBoundary>
-                        <App />
-                    </ErrorBoundary>
-                </React.StrictMode>
-            );
-        })
-        .catch(err => {
-            root.render(
-                <div style={{ padding: 20, color: 'white', background: '#300', height: '100vh' }}>
-                    <h1>Error fatal al inicializar la base de datos</h1>
-                    <p>{err.message}</p>
-                </div>
-            );
-        });
+ const root = ReactDOM.createRoot(rootElement);
+ 
+ // Inicializar base de datos antes de renderizar
+ initializeDatabase()
+ .then(() => {
+ root.render(
+ <React.StrictMode>
+ <ErrorBoundary>
+ <App />
+ </ErrorBoundary>
+ </React.StrictMode>
+ );
+ })
+ .catch(err => {
+ root.render(
+ <div style={{ padding: 20, color: 'white', background: '#300', height: '100vh' }}>
+ <h1>Error fatal al inicializar la base de datos</h1>
+ <p>{err.message}</p>
+ </div>
+ );
+ });
 } else {
-    console.error("React root element not found (looked for #root)");
+ console.error("React root element not found (looked for #root)");
 }

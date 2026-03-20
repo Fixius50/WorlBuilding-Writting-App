@@ -7,45 +7,45 @@ import CosmicHierarchyView from './CosmicHierarchyView';
 import TerritoryGridView from './TerritoryGridView';
 
 const EntityRouter = () => {
-    const { type, entityId } = useParams();
+ const { type, entityId } = useParams();
 
-    const renderView = () => {
-        const lowerType = type?.toLowerCase();
+ const renderView = () => {
+ const lowerType = type?.toLowerCase();
 
-        switch (lowerType) {
-            case 'character':
-            case 'entidadindividual':
-                return <CharacterView id={entityId} />;
-            case 'location':
-            case 'zona':
-                return <LocationView id={entityId} />;
-            case 'culture':
-            case 'entidadcolectiva':
-                return <CollectiveView id={entityId} />;
-            case 'universe':
-            case 'galaxy':
-            case 'system':
-                return <CosmicHierarchyView id={entityId} type={lowerType} />;
-            case 'planet':
-                return <TerritoryGridView id={entityId} />;
-            case 'construccion':
-                return <LocationView id={entityId} />; // Reusing LocationView for now
-            case 'efectos':
-                return <div className="p-8 text-white">Effect/Spell View for ID: {entityId}</div>;
-            case 'interaccion':
-                return <div className="p-8 text-white">Interaction/Event View for ID: {entityId}</div>;
-            case 'magic':
-                return <div className="p-8 text-white">Magic System View for ID: {id}</div>;
-            default:
-                return <div className="p-8 text-white">Unknown Entity Type: {type}</div>;
-        }
-    };
+ switch (lowerType) {
+ case 'character':
+ case 'entidadindividual':
+ return <CharacterView id={entityId} />;
+ case 'location':
+ case 'zona':
+ return <LocationView id={entityId} />;
+ case 'culture':
+ case 'entidadcolectiva':
+ return <CollectiveView id={entityId} />;
+ case 'universe':
+ case 'galaxy':
+ case 'system':
+ return <CosmicHierarchyView id={entityId} type={lowerType} />;
+ case 'planet':
+ return <TerritoryGridView id={entityId} />;
+ case 'construccion':
+ return <LocationView id={entityId} />; // Reusing LocationView for now
+ case 'efectos':
+ return <div className="p-8 text-foreground">Effect/Spell View for ID: {entityId}</div>;
+ case 'interaccion':
+ return <div className="p-8 text-foreground">Interaction/Event View for ID: {entityId}</div>;
+ case 'magic':
+ return <div className="p-8 text-foreground">Magic System View for ID: {id}</div>;
+ default:
+ return <div className="p-8 text-foreground">Unknown Entity Type: {type}</div>;
+ }
+ };
 
-    return (
-        <div className="flex-1 bg-background-dark overflow-hidden">
-            {renderView()}
-        </div>
-    );
+ return (
+ <div className="flex-1 bg-background overflow-hidden">
+ {renderView()}
+ </div>
+ );
 };
 
 export default EntityRouter;
