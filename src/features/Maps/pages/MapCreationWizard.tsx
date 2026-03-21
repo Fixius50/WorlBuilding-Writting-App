@@ -31,7 +31,7 @@ const MapCreationWizard = ({ onCancel, onCreate }) => {
  <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto no-scrollbar relative animate-in zoom-in-95 duration-500">
  <GlassPanel className="p-0 border-foreground/40 shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden">
  {/* Header */}
- <header className="p-8 border-b border-foreground/10 flex justify-between items-center bg-white/[0.02]">
+ <header className="p-8 border-b border-foreground/10 flex justify-center gap-12 text-center items-center bg-white/[0.02]">
  <div className="flex items-center gap-4">
  <div className="size-12 rounded-none bg-primary/20 text-primary flex items-center justify-center">
  <span className="material-symbols-outlined text-2xl">add_location_alt</span>

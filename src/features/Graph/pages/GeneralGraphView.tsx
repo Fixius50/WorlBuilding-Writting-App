@@ -60,23 +60,23 @@ const GeneralGraphView = () => {
  }
  }));
 
- // Create edges from relationships
- const newEdges: Edge[] = allRels.map(rel => ({
- id: `e-${rel.id}`,
- source: rel.origen_id.toString(),
- target: rel.destino_id.toString(),
- label: rel.tipo,
- animated: true,
- style: { stroke: '#00E5FF', strokeWidth: 2 },
- labelStyle: { fill: '#94a3b8', fontWeight: 700, fontSize: 10 },
- markerEnd: {
- type: MarkerType.ArrowClosed,
- color: '#00E5FF',
- },
- }));
+  // Create edges from relationships
+  const newEdges: Edge[] = allRels.map(rel => ({
+  id: `e-${rel.id}`,
+  source: rel.origen_id.toString(),
+  target: rel.destino_id.toString(),
+  label: rel.tipo,
+  animated: false,
+  style: { stroke: '#00E5FF', strokeWidth: 2 },
+  labelStyle: { fill: '#94a3b8', fontWeight: 700, fontSize: 10 },
+  markerEnd: {
+  type: MarkerType.ArrowClosed,
+  color: '#00E5FF',
+  },
+  }));
 
- setNodes(newNodes);
- setEdges(newEdges);
+  setNodes(newNodes);
+  setEdges(newEdges);
  } catch (error) {
  console.error('Error loading graph:', error);
  } finally {
@@ -108,16 +108,26 @@ const GeneralGraphView = () => {
 
  return (
  <div className="w-full h-full bg-[#050508] relative">
- <ReactFlow
- nodes={nodes}
- edges={edges}
- onNodesChange={onNodesChange}
- onEdgesChange={onEdgesChange}
- onConnect={onConnect}
- nodeTypes={nodeTypes}
- fitView
- colorMode="dark"
- >
+  <ReactFlow
+  nodes={nodes}
+  edges={edges}
+  onNodesChange={onNodesChange}
+  onEdgesChange={onEdgesChange}
+  onConnect={onConnect}
+  nodeTypes={nodeTypes}
+  fitView
+  colorMode="dark"
+  defaultEdgeOptions={{ animated: false }}
+  style={{ width: '100%', height: '100%' }}
+  >
+    <style>{`
+      .react-flow__node {
+        transition: none !important;
+      }
+      .react-flow__edge-path {
+        transition: none !important;
+      }
+    `}</style>
  <Background color="#1e293b" gap={20} />
  <Controls />
  <MiniMap 

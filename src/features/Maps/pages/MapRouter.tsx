@@ -87,7 +87,7 @@ const MapRouter = () => {
  }
 
  // In local-first, we store the file path or base64 if it's small, 
- // but for Electron we should probably move it to a specific folder.
+ 
  // For now, let's just use a placeholder or local URL if available.
  let bgImage = source === 'upload' ? 'placeholder-map.png' : ''; 
 

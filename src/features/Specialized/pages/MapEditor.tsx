@@ -109,7 +109,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
  return (
  <div className="flex flex-col h-screen w-full bg-[#050507] text-foreground overflow-hidden">
  {/* Header / Toolbar */}
- <header className="h-16 border-b border-foreground/10 bg-background/40 flex items-center justify-between px-6 z-10">
+ <header className="h-16 border-b border-foreground/10 bg-background/40 flex items-center justify-center gap-12 text-center px-6 z-10">
  <div className="flex items-center gap-4">
  <button 
  onClick={() => onBack ? onBack() : navigate(-1)}

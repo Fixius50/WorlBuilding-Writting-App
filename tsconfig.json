@@ -22,6 +22,5 @@
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts"],
-  "exclude": ["src/electron"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

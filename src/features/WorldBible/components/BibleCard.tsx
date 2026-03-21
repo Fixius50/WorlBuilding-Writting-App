@@ -3,11 +3,12 @@ import { Link } from 'react-router-dom';
 import { Entidad, Carpeta } from '../../../database/types';
 
 interface BibleCardProps {
- item: Entidad | Carpeta;
- type: 'entity' | 'folder';
- linkTo: string;
- onContextMenu?: (e: React.MouseEvent) => void;
- onDelete: (item: any) => void;
+  item: Entidad | Carpeta;
+  type: 'entity' | 'folder';
+  linkTo: string;
+  onContextMenu?: (e: React.MouseEvent) => void;
+  onDelete: (item: any) => void;
+  onRename?: (item: any) => void;
 }
 
 const getIconForType = (type?: string) => {
@@ -29,7 +30,7 @@ const getIconForType = (type?: string) => {
  }
 };
 
-const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu, onDelete }) => {
+const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu, onDelete, onRename }) => {
  const isFolder = type === 'folder';
  const anyItem = item as any;
 
@@ -77,18 +78,30 @@ const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu
  </p>
  </div>
 
- {/* Hover Indicator / Actions */}
- <div className="absolute top-4 right-4 z-20 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
- {onDelete && (
- <button
- onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(item); }}
- className="p-1.5 rounded-none bg-red-500/10 hover:bg-red-500 text-destructive hover:text-foreground transition-all border border-red-500/20 shadow-lg shadow-red-500/5 group/del "
- >
- <span className="material-symbols-outlined text-sm">delete</span>
- </button>
- )}
- <span className="material-symbols-outlined text-indigo-400 text-sm transform group-hover:translate-x-1 transition-transform drop-shadow-md">arrow_forward</span>
- </div>
+  {/* Hover Indicator / Actions */}
+  <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+    {onRename && (
+      <button
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRename(item); }}
+        className="p-1.5 rounded-none bg-indigo-500/10 hover:bg-indigo-500 text-indigo-400 hover:text-foreground transition-all border border-indigo-500/20 shadow-lg shadow-indigo-500/5"
+        title="Rename"
+      >
+        <span className="material-symbols-outlined text-sm">edit</span>
+      </button>
+    )}
+    {onDelete && (
+      <button
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(item); }}
+        className="p-1.5 rounded-none bg-red-500/10 hover:bg-red-500 text-destructive hover:text-foreground transition-all border border-red-500/20 shadow-lg shadow-red-500/5 group/del "
+        title="Delete"
+      >
+        <span className="material-symbols-outlined text-sm">delete</span>
+      </button>
+    )}
+    <div className="ml-1 flex items-center justify-center size-7 bg-foreground/5 border border-foreground/10 text-indigo-400">
+      <span className="material-symbols-outlined text-sm transform group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+    </div>
+  </div>
  </Link>
  );
 };

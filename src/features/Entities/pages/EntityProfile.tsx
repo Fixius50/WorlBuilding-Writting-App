@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useOutletContext } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import api from '../../../services/api';
 import GlassPanel from '../../../components/common/GlassPanel';
 import Avatar from '../../../components/common/Avatar';
@@ -7,9 +8,29 @@ import Button from '../../../components/common/Button';
 
  const EntityProfile = () => {
   const { username, projectName, folderSlug, entitySlug } = useParams();
+  const { setRightOpen, setRightPanelTab } = useOutletContext<any>();
   const [entity, setEntity] = useState<any>(null);
  const [activeTab, setActiveTab] = useState('overview');
  const [loading, setLoading] = useState(true);
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setRightOpen(true);
+    setRightPanelTab('CONTEXT');
+
+    const interval = setInterval(() => {
+      const el = document.getElementById('global-right-panel-portal');
+      if (el) {
+        setPortalTarget(el);
+        clearInterval(interval);
+      }
+    }, 100);
+
+    return () => {
+      clearInterval(interval);
+      setRightPanelTab('NOTEBOOKS');
+    };
+  }, []);
 
  useEffect(() => {
  loadEntity();
@@ -216,55 +237,51 @@ import Button from '../../../components/common/Button';
  )}
 
  </div>
-
- {/* --- RIGHT SIDEBAR --- */}
- <div className="space-y-8">
- {/* Metadata Card */}
- <GlassPanel className="p-6 space-y-6">
- <div className="flex items-center justify-between">
- <h3 className="text-xs font-black uppercase tracking-widest text-foreground/60">Quick Details</h3>
- <button className="text-foreground/60 hover:text-foreground transition-colors">
- <span className="material-symbols-outlined text-sm">settings</span>
- </button>
  </div>
 
- <div className="space-y-4">
- <div className="flex justify-between py-2 border-b border-foreground/10">
- <span className="text-xs text-foreground/60">ID</span>
- <span className="text-xs font-mono text-foreground/50">{entity.id}</span>
- </div>
- <div className="flex justify-between py-2 border-b border-foreground/10">
- <span className="text-xs text-foreground/60">Folder</span>
- <Link to={`/${username || 'local'}/${projectName}/bible/folder/${folderSlug}`} className="text-xs font-bold text-primary hover:underline">
- {entity.carpeta?.nombre}
- </Link>
- </div>
- <div className="flex justify-between py-2 border-b border-foreground/10">
- <span className="text-xs text-foreground/60">Last Edited</span>
- <span className="text-xs text-foreground">Just now</span>
- </div>
- </div>
- </GlassPanel>
+  {portalTarget && createPortal(
+    <div className="p-6 space-y-8 animate-in fade-in duration-500">
+      {/* Metadata Card */}
+      <div>
+        <h3 className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-4">Quick Details</h3>
+        <div className="space-y-3">
+          <div className="flex justify-between py-2 border-b border-foreground/5">
+            <span className="text-[10px] text-foreground/40 uppercase font-bold">ID</span>
+            <span className="text-[10px] font-mono text-foreground/30">{entity.id}</span>
+          </div>
+          <div className="flex justify-between py-2 border-b border-foreground/5">
+            <span className="text-[10px] text-foreground/40 uppercase font-bold">Sector</span>
+            <Link to={`/${username || 'local'}/${projectName}/bible/folder/${folderSlug}`} className="text-[10px] font-bold text-indigo-400 hover:underline truncate max-w-[120px]">
+              {entity.carpeta?.nombre}
+            </Link>
+          </div>
+          <div className="flex justify-between py-2 border-b border-foreground/5">
+            <span className="text-[10px] text-foreground/40 uppercase font-bold">Last Edited</span>
+            <span className="text-[10px] text-foreground/60">Just now</span>
+          </div>
+        </div>
+      </div>
 
- {/* Linked Entities */}
- {relationships.length > 0 && (
- <GlassPanel className="p-6">
- <h3 className="text-xs font-black uppercase tracking-widest text-foreground/60 mb-4">Linked Beings</h3>
- <div className="space-y-3">
-  {relationships.map((rel: any, i: number) => (
-  <div key={i} className="flex items-center gap-3 p-2 hover:bg-foreground/5 rounded-none transition-colors cursor-pointer">
-  <div className="size-8 rounded-full bg-foreground/10 flex items-center justify-center text-xs font-bold">L</div>
-  <div className="flex-1 min-w-0">
- <div className="text-xs font-bold text-foreground truncate">{rel.name}</div>
- <div className="text-[10px] text-foreground/60">{rel.role}</div>
- </div>
- </div>
- ))}
- </div>
- </GlassPanel>
- )}
- </div>
- </div>
+      {/* Linked Entities */}
+      {relationships.length > 0 && (
+        <div className="pt-6 border-t border-foreground/10">
+          <h3 className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-4">Linked Beings</h3>
+          <div className="space-y-2">
+            {relationships.map((rel: any, i: number) => (
+              <div key={i} className="flex items-center gap-3 p-3 bg-foreground/5 border border-foreground/5 hover:border-indigo-500/30 rounded-none transition-colors cursor-pointer group">
+                <div className="size-8 rounded-none bg-indigo-500/10 flex items-center justify-center text-[10px] font-black text-indigo-400 group-hover:bg-indigo-500/20">L</div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[11px] font-bold text-foreground truncate">{rel.name}</div>
+                  <div className="text-[9px] text-foreground/40 uppercase tracking-tighter">{rel.role}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>,
+    portalTarget
+  )}
  </div>
  );
 };

@@ -203,7 +203,14 @@ const FolderItem: React.FC<FolderItemProps> = ({
  <div className="px-4 py-2 border-b border-foreground/10 font-bold text-foreground/60 truncate">{contextMenu.name}</div>
  {contextMenu.type === 'folder' ? (
  <>
- <button className="px-4 py-2 hover:bg-foreground/5 text-left flex items-center gap-2" onClick={() => { onCreateEntity(folder.id, 'entidadindividual'); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">person</span> Add Character</button>
+ <button className="px-4 py-2 hover:bg-indigo-500/10 text-indigo-400 text-left flex items-center gap-2" onClick={() => { onCreateSubfolder(folder.id); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">create_new_folder</span> Add Subfolder</button>
+ <div className="h-px bg-foreground/5 my-1" />
+ <button className="px-4 py-2 hover:bg-foreground/5 text-left flex items-center gap-2" onClick={() => { onCreateEntity(folder.id, 'entidadindividual'); closeContextMenu(); }}><span className="material-symbols-outlined text-sm mt-0.5">person</span> Add Character</button>
+ <button className="px-4 py-2 hover:bg-foreground/5 text-left flex items-center gap-2" onClick={() => { onCreateEntity(folder.id, 'entidadcolectiva'); closeContextMenu(); }}><span className="material-symbols-outlined text-sm mt-0.5">groups</span> Add Culture/Faction</button>
+ <button className="px-4 py-2 hover:bg-foreground/5 text-left flex items-center gap-2" onClick={() => { onCreateEntity(folder.id, 'zona'); closeContextMenu(); }}><span className="material-symbols-outlined text-sm mt-0.5">location_on</span> Add Location</button>
+ <button className="px-4 py-2 hover:bg-foreground/5 text-left flex items-center gap-2" onClick={() => { onCreateEntity(folder.id, 'objeto'); closeContextMenu(); }}><span className="material-symbols-outlined text-sm mt-0.5">inventory_2</span> Add Item</button>
+ <button className="px-4 py-2 hover:bg-foreground/5 text-left flex items-center gap-2" onClick={() => { onCreateEntity(folder.id, 'texto'); closeContextMenu(); }}><span className="material-symbols-outlined text-sm mt-0.5">history_edu</span> Add Text/Doc</button>
+ <button className="px-4 py-2 hover:bg-foreground/5 text-left flex items-center gap-2" onClick={() => { onCreateEntity(folder.id, 'hechizo'); closeContextMenu(); }}><span className="material-symbols-outlined text-sm mt-0.5">auto_fix_high</span> Add Spell</button>
  <div className="h-px bg-foreground/5 my-1" />
  <button className="px-4 py-2 hover:bg-foreground/5 text-left flex items-center gap-2" onClick={() => { setIsEditing(true); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">edit</span> Rename Folder</button>
  <button className="px-4 py-2 hover:bg-red-500/10 text-red-400 text-left flex items-center gap-2" onClick={() => { onDeleteFolder(folder.id, folder.padre_id); closeContextMenu(); }}><span className="material-symbols-outlined text-sm">delete</span> Delete Folder</button>

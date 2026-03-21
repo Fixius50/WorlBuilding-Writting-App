@@ -1326,7 +1326,7 @@ const RuleCard: React.FC<{
  tags: string[];
 }> = ({ title, statusColor, desc, tags }) => (
  <GlassPanel className="p-8 border-foreground/10 hover:border-foreground/40 transition-all cursor-pointer group space-y-4">
- <header className="flex justify-between items-start">
+ <header className="flex justify-center gap-12 text-center items-start">
  <div className="flex items-center gap-3">
  <div className={`size-2 rounded-full bg-${statusColor}-500 shadow-[0_0_10px_rgba(var(--${statusColor}-rgb),0.5)]`}></div>
  <h4 className="font-bold text-foreground group-hover:text-primary transition-colors">{title}</h4>

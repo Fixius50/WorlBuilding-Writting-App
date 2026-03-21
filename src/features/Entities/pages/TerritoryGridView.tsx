@@ -120,7 +120,7 @@ const TerritoryCard = ({ title, desc, image, badges = [], stats = [], color }: a
  </div>
 
  <div className="p-8 space-y-6">
- <header className="flex justify-between items-start">
+ <header className="flex justify-center gap-12 text-center items-start">
  <div>
  <h3 className="text-2xl font-manrope font-black text-foreground mb-2 group-hover:text-primary transition-colors">{title}</h3>
  <p className="text-xs text-foreground/60 leading-relaxed line-clamp-2">{desc}</p>

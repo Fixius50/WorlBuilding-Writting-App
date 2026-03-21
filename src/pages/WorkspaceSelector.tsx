@@ -6,6 +6,7 @@ import { entityService } from '../database/entityService';
 import { Proyecto } from '../database/types';
 import CreateWorkspaceModal from "../features/Dashboard/components/CreateWorkspaceModal";
 import EditWorkspaceModal from "../features/Dashboard/components/EditWorkspaceModal";
+import { sqlocal } from '../database/db';
 import ConfirmModal from "../components/common/ConfirmModal";
 
 const WorkspaceSelector: React.FC = () => {
@@ -58,31 +59,7 @@ const WorkspaceSelector: React.FC = () => {
     }
   };
 
-  const handleCreateDemoProject = async () => {
-    try {
-      setLoading(true);
-      const demoName = `demo-${Date.now()}`;
-      const res = await projectService.create(demoName, "Cuaderno de Pruebas", "Test", "");
-      if (res) {
-        const f1 = await folderService.create("Personajes", res.id, null, 'FOLDER');
-        const f2 = await folderService.create("Lugares", res.id, null, 'FOLDER');
 
-        await entityService.create({ nombre: "Kaelen", tipo: "CHARACTER", descripcion: "Guerrero exiliado", contenido_json: "", project_id: res.id, carpeta_id: f1.id });
-        await entityService.create({ nombre: "Elara", tipo: "CHARACTER", descripcion: "Maga de la corte", contenido_json: "", project_id: res.id, carpeta_id: f1.id });
-        await entityService.create({ nombre: "Zorvath", tipo: "CHARACTER", descripcion: "Villano sombrío", contenido_json: "", project_id: res.id, carpeta_id: f1.id });
-
-        await entityService.create({ nombre: "Valoria", tipo: "LOCATION", descripcion: "Ciudad capital", contenido_json: "", project_id: res.id, carpeta_id: f2.id });
-        await entityService.create({ nombre: "Bosque Sussurante", tipo: "LOCATION", descripcion: "Bosque mágico", contenido_json: "", project_id: res.id, carpeta_id: f2.id });
-        await entityService.create({ nombre: "Monte del Destino", tipo: "LOCATION", descripcion: "Volcán antiguo", contenido_json: "", project_id: res.id, carpeta_id: f2.id });
-
-        await handleSelect(res.nombre);
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Error al poblar demo");
-      setLoading(false);
-    }
-  };
 
   const handleDeleteConfirm = async () => {
     if (projectToDelete === null) return;
@@ -109,8 +86,25 @@ const WorkspaceSelector: React.FC = () => {
     }
   };
 
+
+
   const handleDownloadBackup = async () => {
-    alert('Copia de seguridad local estará disponible en la versión Electron.');
+    try {
+      setLoading(true);
+      const file = await sqlocal.getDatabaseFile();
+      const url = URL.createObjectURL(file);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `worldbuilding_backup_${Date.now()}.sqlite3`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setLoading(false);
+    } catch (err) {
+      setError("Error al generar copia de seguridad local");
+      setLoading(false);
+    }
   };
 
   const filteredWorkspaces = workspaces.filter(w =>
@@ -121,7 +115,7 @@ const WorkspaceSelector: React.FC = () => {
     <div className="h-screen w-full bg-background text-foreground flex flex-col items-center font-sans selection:bg-indigo-500/30 overflow-hidden">
       <div className="w-full max-w-6xl flex-1 flex flex-col overflow-y-auto custom-scrollbar p-8">
 
-        <header className="w-full mt-24 mb-12 flex flex-col lg:flex-row lg:items-end justify-between gap-8 flex-shrink-0">
+        <header className="w-full mt-24 mb-12 flex flex-col lg:flex-row lg:items-end justify-center gap-12 text-center gap-8 flex-shrink-0">
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <h1 className="text-6xl font-black tracking-tighter leading-none">
@@ -196,18 +190,7 @@ const WorkspaceSelector: React.FC = () => {
                 </div>
               </div>
 
-              <div
-                onClick={handleCreateDemoProject}
-                className="group relative h-[380px] monolithic-panel border-dashed border-2 overflow-hidden flex flex-col items-center justify-center gap-6 transition-all cursor-pointer animate-in fade-in duration-700 w-full md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] bg-indigo-500/5 hover:bg-indigo-500/10 border-indigo-500/20 hover:border-indigo-500/50"
-              >
-                <div className="w-20 h-20 bg-background border-[0.5px] border-indigo-500/30 rounded-none flex items-center justify-center text-4xl text-indigo-400 group-hover:scale-110 group-hover:text-indigo-300 transition-all rounded-full shadow-[0_0_15px_rgba(99,102,241,0.2)]">
-                  <span className="material-symbols-outlined text-4xl">science</span>
-                </div>
-                <div className="text-center">
-                  <h3 className="text-xl font-black tracking-tight text-indigo-400 group-hover:text-indigo-300 transition-colors">Poblar Demo</h3>
-                  <p className="text-[10px] font-bold text-indigo-400/60 uppercase tracking-widest mt-2 group-hover:text-indigo-400">2 CARPETAS + 6 ENTIDADES</p>
-                </div>
-              </div>
+
 
               {filteredWorkspaces.map(workspace => {
                 const displayImg = workspace.image_url || 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800';

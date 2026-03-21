@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useOutletContext } from 'react-router-dom';
+import { createPortal } from 'react-dom';
+import { useLanguage } from '../../../context/LanguageContext';
 import { folderService } from '../../../database/folderService';
 import { entityService } from '../../../database/entityService';
 import BibleCard from '../../WorldBible/components/BibleCard';
@@ -8,12 +10,17 @@ import { getHierarchyType, HIERARCHY_TYPES } from '../../../utils/constants/hier
 import { Carpeta, Entidad } from '../../../database/types';
 
 interface OutletContext {
- handleCreateEntity: (folderId: number | string, specialType?: string) => void;
- handleDeleteEntity: (id: number, folderId: number | string) => void;
- handleDeleteFolder: (id: number, parentId?: number | null) => void;
- handleCreateSimpleFolder: (parentId?: number | null, type?: string) => void;
- folderSearchTerm: string;
- folderFilterType: string;
+  handleCreateEntity: (type: string) => void;
+  handleDeleteEntity: (id: number, folderId: number) => void;
+  handleDeleteFolder: (id: number) => void;
+  handleCreateSimpleFolder: (padreId: number, tipo: any) => void;
+  folderSearchTerm: string;
+  folderFilterType: string;
+  projectId: number;
+  projectName: string;
+  folders: Carpeta[];
+  setRightOpen: (open: boolean) => void;
+  setRightPanelTab: (tab: string) => void;
 }
 
 const FolderView: React.FC = () => {
@@ -25,14 +32,35 @@ const FolderView: React.FC = () => {
  handleDeleteFolder,
  handleCreateSimpleFolder,
  folderSearchTerm,
- folderFilterType
+ folderFilterType,
+ projectId,
+ folders,
+ setRightOpen,
+ setRightPanelTab
  } = useOutletContext<OutletContext>();
 
  const [entities, setEntities] = useState<Entidad[]>([]);
  const [folder, setFolder] = useState<Carpeta | null>(null);
  const [path, setPath] = useState<Carpeta[]>([]);
  const [loading, setLoading] = useState(true);
- const [creationMenuOpen, setCreationMenuOpen] = useState(false);
+  const [creationMenuOpen, setCreationMenuOpen] = useState(false);
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+
+
+  useEffect(() => {
+    // Open right panel and set to context when entering a folder
+    setRightOpen(true);
+    setRightPanelTab('CONTEXT');
+
+    const interval = setInterval(() => {
+      const el = document.getElementById('global-right-panel-portal');
+      if (el) {
+        setPortalTarget(el);
+        clearInterval(interval);
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, [setRightOpen, setRightPanelTab]);
 
  // Unified Filter Logic
  const filteredContent = {
@@ -68,35 +96,53 @@ const FolderView: React.FC = () => {
 
  useEffect(() => {
  loadFolderContent();
- }, [folderSlug]);
+ }, [folderSlug, folders]);
 
- const loadFolderContent = async () => {
- if (!folderSlug) return;
- setLoading(true);
- try {
- // In our current local-first, folderSlug IS the ID (as a string)
- const fId = Number(folderSlug);
- const [fInfo, ents] = await Promise.all([
- folderService.getById(fId),
- entityService.getByFolder(fId)
- ]);
+  const loadFolderContent = async () => {
+    if (!folderSlug) return;
+    setLoading(true);
+    try {
+      let fInfo: Carpeta | undefined;
+      const isId = !isNaN(Number(folderSlug));
+      
+      if (isId) {
+        fInfo = folders.find(f => f.id === Number(folderSlug));
+        if (!fInfo) fInfo = await folderService.getById(Number(folderSlug)); // fallback
+      } else {
+        fInfo = folders.find(f => f.slug === folderSlug);
+      }
 
- if (fInfo) {
- setFolder(fInfo);
- setEntities(ents);
- const breadcrumbs = await folderService.getPath(fId);
- setPath(breadcrumbs);
- } else {
- setFolder(null);
- }
- } catch (err) {
- console.error("Error loading folder content:", err);
- setFolder(null);
- setPath([]);
- } finally {
- setLoading(false);
- }
- };
+      if (fInfo) {
+        setFolder(fInfo);
+        const ents = await entityService.getByFolder(fInfo.id);
+        setEntities(ents);
+        const breadcrumbs = await folderService.getPath(fInfo.id);
+        setPath(breadcrumbs);
+      } else {
+        setFolder(null);
+      }
+    } catch (err) {
+      console.error("Error loading folder content:", err);
+      setFolder(null);
+      setPath([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRenameEntity = async (entity: Entidad) => {
+    const newName = prompt('Renombrar registro:', entity.nombre);
+    if (newName && newName !== entity.nombre) {
+      try {
+        await entityService.update(entity.id, { nombre: newName });
+        loadFolderContent();
+        const event = new CustomEvent('folder-update', { detail: { folderId: folder?.id } });
+        window.dispatchEvent(event);
+      } catch (err) {
+        console.error("Rename failed", err);
+      }
+    }
+  };
 
  if (loading) return (
  <div className="flex-1 flex flex-col items-center justify-center p-20 animate-pulse">
@@ -176,15 +222,16 @@ const FolderView: React.FC = () => {
  </div>
  )}
  <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
- {filteredContent.entities.map(entity => (
- <BibleCard
- key={entity.id}
- item={entity}
- type="entity"
- linkTo={`/local/${projectName}/bible/folder/${folder.id}/entity/${entity.id}`}
- onDelete={() => handleDeleteEntity(entity.id, folder.id)}
- />
- ))}
+  {filteredContent.entities.map(entity => (
+    <BibleCard
+      key={entity.id}
+      item={entity}
+      type="entity"
+      linkTo={`/local/${projectName}/bible/folder/${folder.id}/entity/${entity.id}`}
+      onDelete={() => handleDeleteEntity(entity.id, folder.id)}
+      onRename={() => handleRenameEntity(entity)}
+    />
+  ))}
  </div>
  </div>
  </div>
@@ -194,7 +241,7 @@ const FolderView: React.FC = () => {
 
  return (
  <div className="flex-1 p-8 max-w-[1600px] mx-auto w-full h-full overflow-y-auto custom-scrollbar">
- <header className="mb-10 flex items-end justify-between">
+ <header className="mb-10 flex items-end justify-center gap-12 text-center">
  <div>
  <div className="flex items-center gap-2 mb-4">
  <Breadcrumbs path={path} currentFolder={folder} />
@@ -211,48 +258,60 @@ const FolderView: React.FC = () => {
  </div>
  </div>
  </div>
+  {portalTarget && createPortal(
+    <div className="p-6 space-y-8 animate-in fade-in duration-500">
+      <div>
+        <h3 className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-4">Acciones del Sector</h3>
+        <div className="grid grid-cols-1 gap-2">
+          <button onClick={() => navigate(`/local/${projectName}/bible/folder/${folder.id}/entity/new/entidadindividual`)} className="w-full px-4 py-3 bg-foreground/5 hover:bg-indigo-500/10 text-left text-[11px] font-bold flex items-center gap-3 text-foreground/60 hover:text-indigo-400 transition-all border border-foreground/5 hover:border-indigo-500/30">
+            <span className="material-symbols-outlined text-lg text-indigo-500/50">person_add</span> Crear Entidad
+          </button>
+          
+          <button onClick={() => navigate(`/local/${projectName}/maps/new?folderId=${folder.id}`)} className="w-full px-4 py-3 bg-foreground/5 hover:bg-cyan-500/10 text-left text-[11px] font-bold flex items-center gap-3 text-foreground/60 hover:text-cyan-400 transition-all border border-foreground/5 hover:border-cyan-500/30">
+            <span className="material-symbols-outlined text-lg text-cyan-500/50">map</span> Crear Mapa
+          </button>
+          
+          <button onClick={() => handleCreateSimpleFolder(folder.id, 'TIMELINE')} className="w-full px-4 py-3 bg-foreground/5 hover:bg-orange-500/10 text-left text-[11px] font-bold flex items-center gap-3 text-foreground/60 hover:text-orange-400 transition-all border border-foreground/5 hover:border-orange-500/30">
+            <span className="material-symbols-outlined text-lg text-orange-500/50">history</span> Crear Línea de Tiempo
+          </button>
 
- <div className="flex items-center gap-3 relative">
- <button
- onClick={() => setCreationMenuOpen(!creationMenuOpen)}
- className="h-12 px-8 rounded-none bg-indigo-500 hover:bg-indigo-400 transition-all flex items-center gap-3 text-xs font-black uppercase tracking-widest text-foreground shadow-xl shadow-indigo-500/20 border border-indigo-400/20"
- >
- <span className="material-symbols-outlined text-sm">add</span>
- <span>Añadir Registro</span>
- </button>
+          <div className="h-px bg-foreground/5 my-2" />
+          
+          <button onClick={() => handleDeleteFolder(folder.id)} className="w-full px-4 py-3 bg-foreground/5 hover:bg-rose-500/10 text-left text-[11px] font-bold flex items-center gap-3 text-foreground/60 hover:text-rose-400 transition-all border border-foreground/5 hover:border-rose-500/30">
+            <span className="material-symbols-outlined text-lg text-rose-500/50">delete</span> Eliminar Carpeta
+          </button>
+        </div>
+      </div>
 
- {creationMenuOpen && (
- <div className="absolute top-full right-0 mt-3 w-64 monolithic-panel rounded-none shadow-2xl py-3 z-50 overflow-hidden ">
- <div className="px-4 py-2 text-[10px] font-black text-foreground/60 uppercase tracking-widest border-b border-foreground/10 mb-2">Categorías</div>
- <button onClick={() => navigate(`/local/${projectName}/bible/folder/${folder.id}/entity/new/entidadindividual`)} className="w-full px-5 py-3 hover:bg-indigo-500/10 text-left text-xs font-bold flex items-center gap-4 text-foreground/60 hover:text-indigo-400 transition-all">
- <span className="material-symbols-outlined text-lg text-indigo-500/50">person</span> Personaje
- </button>
- <button onClick={() => navigate(`/local/${projectName}/bible/folder/${folder.id}/entity/new/entidadcolectiva`)} className="w-full px-5 py-3 hover:bg-sky-500/10 text-left text-xs font-bold flex items-center gap-4 text-foreground/60 hover:text-sky-400 transition-all">
- <span className="material-symbols-outlined text-lg text-sky-500/50">groups</span> Cultura / Grupo
- </button>
- <button onClick={() => navigate(`/local/${projectName}/bible/folder/${folder.id}/entity/new/zona`)} className="w-full px-5 py-3 hover:bg-emerald-500/10 text-left text-xs font-bold flex items-center gap-4 text-foreground/60 hover:text-emerald-400 transition-all">
- <span className="material-symbols-outlined text-lg text-emerald-500/50">location_on</span> Lugar / Geografía
- </button>
- <div className="h-px bg-foreground/5 my-2" />
- <button onClick={() => handleCreateSimpleFolder(folder.id, 'TIMELINE')} className="w-full px-5 py-3 hover:bg-orange-500/10 text-left text-xs font-bold flex items-center gap-4 text-foreground/60 hover:text-orange-400 transition-all">
- <span className="material-symbols-outlined text-lg text-orange-500/50">history</span> Nueva Timeline
- </button>
- </div>
- )}
- </div>
+      <div className="pt-6 border-t border-foreground/10">
+        <h3 className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-4">Métricas del Sector</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="p-4 bg-foreground/5 border border-foreground/10 flex flex-col items-center">
+            <div className="text-xl font-black text-foreground">{entities.length}</div>
+            <div className="text-[8px] text-foreground/40 uppercase font-black tracking-widest">Entidades</div>
+          </div>
+          <div className="p-4 bg-foreground/5 border border-foreground/10 flex flex-col items-center opacity-40">
+            <div className="text-xl font-black text-foreground">0</div>
+            <div className="text-[8px] text-foreground/40 uppercase font-black tracking-widest">Enlaces</div>
+          </div>
+        </div>
+      </div>
+    </div>,
+    portalTarget
+  )}
  </header>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
- {/* Entities */}
- {filteredContent.entities.map(entity => (
- <BibleCard
- key={entity.id}
- item={entity}
- type="entity"
- linkTo={`/local/${projectName}/bible/folder/${folder.id}/entity/${entity.id}`}
- onDelete={() => handleDeleteEntity(entity.id, folder.id)}
- />
- ))}
+  {filteredContent.entities.map(entity => (
+    <BibleCard
+      key={entity.id}
+      item={entity}
+      type="entity"
+      linkTo={`/local/${projectName}/bible/folder/${folder.id}/entity/${entity.id}`}
+      onDelete={() => handleDeleteEntity(entity.id, folder.id)}
+      onRename={() => handleRenameEntity(entity)}
+    />
+  ))}
  </div>
 
  {entities.length === 0 && (

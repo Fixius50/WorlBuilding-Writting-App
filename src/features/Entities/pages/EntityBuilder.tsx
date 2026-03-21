@@ -12,454 +12,435 @@ import Avatar from '../../../components/common/Avatar';
 import EntityBuilderSidebar from '../components/EntityBuilderSidebar';
 
 interface LayoutContext {
- setRightOpen: (open: boolean) => void;
- setRightPanelTab: (tab: string) => void;
- setAddAttributeHandler: (handler: (templateId: number) => void) => void;
- setAvailableTemplates: (templates: Plantilla[]) => void;
+  setRightOpen: (open: boolean) => void;
+  setRightPanelTab: (tab: string) => void;
+  setAddAttributeHandler: (handler: (templateId: number) => void) => void;
+  setAvailableTemplates: (templates: Plantilla[]) => void;
 }
 
 interface EntityBuilderProps {
- mode: 'creation' | 'edit';
+  mode: 'creation' | 'edit';
 }
 
 const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
- const { username, projectName, entitySlug, folderSlug, type } = useParams();
- const navigate = useNavigate();
- const isCreation = mode === 'creation';
+  const { username, projectName, entitySlug, folderSlug, type } = useParams();
+  const navigate = useNavigate();
+  const isCreation = mode === 'creation';
 
- const {
- setRightOpen,
- setRightPanelTab,
- setAddAttributeHandler
- } = useOutletContext<LayoutContext>();
+  const {
+    setRightOpen,
+    setRightPanelTab,
+    setAddAttributeHandler,
+    setAvailableTemplates
+  } = useOutletContext<LayoutContext>();
 
- // Core Data State
- const [entity, setEntity] = useState<Partial<Entidad>>({
- nombre: '',
- tipo: type || 'PERSONAJE',
- descripcion: '',
- contenido_json: JSON.stringify({
- color: '#6366f1',
- tags: '',
- iconUrl: null,
- categoria: 'Individual',
- images: [],
- appearance: '',
- notes: ''
- }),
- project_id: 1, // Placeholder, should be resolved from context
- carpeta_id: folderSlug ? Number(folderSlug) : null
- });
+  // Core Data State
+  const [entity, setEntity] = useState<Partial<Entidad>>({
+    nombre: '',
+    tipo: type || 'PERSONAJE',
+    descripcion: '',
+    contenido_json: JSON.stringify({
+      color: '#6366f1',
+      tags: '',
+      iconUrl: null,
+      categoria: 'Individual',
+      appearance: '',
+      notes: '',
+      images: []
+    }),
+    project_id: 1, 
+    carpeta_id: folderSlug ? Number(folderSlug) : null
+  });
 
- const [fields, setFields] = useState<any[]>([]);
- const [loading, setLoading] = useState(true);
- const [saving, setSaving] = useState(false);
- const [removedFieldIds, setRemovedFieldIds] = useState<number[]>([]);
- const [availableTemplates, setAvailableTemplatesLocal] = useState<Plantilla[]>([]);
- const [activeEntityTab, setActiveEntityTab] = useState('identity');
- const [zoomImage, setZoomImage] = useState<string | null>(null);
- const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+  const [fields, setFields] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [removedFieldIds, setRemovedFieldIds] = useState<number[]>([]);
+  const [availableTemplates, setAvailableTemplatesLocal] = useState<Plantilla[]>([]);
+  const [activeEntityTab, setActiveEntityTab] = useState('identity');
+  const [zoomImage, setZoomImage] = useState<string | null>(null);
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
 
- // Parse contenido_json safely
- const getExtra = () => {
- try {
- return JSON.parse(entity.contenido_json || '{}');
- } catch (e) {
- return {};
- }
- };
+  // Parse contenido_json safely
+  const getExtra = () => {
+    try {
+      return JSON.parse(entity.contenido_json || '{}');
+    } catch (e) {
+      return {};
+    }
+  };
 
- const updateExtra = (updates: any) => {
- const current = getExtra();
- setEntity(prev => ({
- ...prev,
- contenido_json: JSON.stringify({ ...current, ...updates })
- }));
- };
+  const updateExtra = (updates: any) => {
+    const current = getExtra();
+    setEntity(prev => ({
+      ...prev,
+      contenido_json: JSON.stringify({ ...current, ...updates })
+    }));
+  };
 
- // --- INITIALIZATION ---
- useEffect(() => {
- setRightOpen(true);
- setRightPanelTab('CONTEXT');
+  // --- INITIALIZATION ---
+  useEffect(() => {
+    setRightOpen(true);
+    setRightPanelTab('CONTEXT');
 
- const interval = setInterval(() => {
- const el = document.getElementById('global-right-panel-portal');
- if (el) {
- setPortalTarget(el);
- clearInterval(interval);
- }
- }, 100);
+    const interval = setInterval(() => {
+      const el = document.getElementById('global-right-panel-portal');
+      if (el) {
+        setPortalTarget(el);
+        clearInterval(interval);
+      }
+    }, 100);
 
- return () => {
- clearInterval(interval);
- setRightPanelTab('NOTEBOOKS');
- };
- }, []);
+    return () => {
+      clearInterval(interval);
+      setRightPanelTab('NOTEBOOKS');
+    };
+  }, []);
 
- useEffect(() => {
- const init = async () => {
- setLoading(true);
- try {
- // Load templates for the project
- const templates = await templateService.getAll(); // Filter by project in future
- setAvailableTemplatesLocal(templates);
+  useEffect(() => {
+    const init = async () => {
+      setLoading(true);
+      try {
+        const templates = await templateService.getAll();
+        setAvailableTemplatesLocal(templates);
+        setAvailableTemplates(templates);
 
- if (isCreation) {
- setEntity(prev => ({
- ...prev,
- nombre: `Nuevo ${type === 'map' ? 'Mapa' : type === 'timeline' ? 'Cronograma' : 'Ente'}`,
- }));
- } else if (entitySlug) {
- const data = await entityService.getWithValues(Number(entitySlug));
- if (data) {
- setEntity(data);
- if (data.valores) {
- setFields(data.valores.map(v => ({
- id: v.id,
- attribute: v.plantilla,
- value: v.valor,
- isTemp: false
- })));
- }
- }
- }
- } catch (err) {
- console.error("Initialization error", err);
- } finally {
- setLoading(false);
- }
- };
- init();
- }, [entitySlug, isCreation, type]);
+        setAddAttributeHandler((templateId: number) => {
+          const tpl = templates.find(t => t.id === templateId);
+          if (tpl) {
+            setFields(prev => [...prev, {
+              id: `temp-${tpl.id}-${Date.now()}`,
+              attribute: tpl,
+              value: tpl.valor_defecto || '',
+              isTemp: true
+            }]);
+          }
+        });
 
- // Define Handler for adding attributes from Sidebar (via layout context if needed, or local)
- useEffect(() => {
- setAddAttributeHandler((templateId: number) => {
- const tpl = availableTemplates.find(t => t.id === templateId);
- if (tpl) {
- setFields(prev => [...prev, {
- id: `temp-${tpl.id}-${Date.now()}`,
- attribute: tpl,
- value: tpl.valor_defecto || '',
- isTemp: true
- }]);
- }
- });
- }, [availableTemplates]);
+        if (!isCreation && entitySlug) {
+          const data = await entityService.getById(Number(entitySlug));
+          if (data) {
+            setEntity(data);
+            const vals = await entityService.getValues(data.id);
+            setFields(vals.map(v => ({
+              id: v.id,
+              attribute: templates.find(t => t.id === v.plantilla_id),
+              value: v.valor,
+              isTemp: false
+            })));
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    init();
+  }, [entitySlug, isCreation]);
 
- // --- HANDLERS ---
- const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
- const files = Array.from(e.target.files || []);
- if (files.length === 0) return;
+  // --- HANDLERS ---
+  const handleSave = async (redirect = true) => {
+    setSaving(true);
+    try {
+      let savedEntity: Entidad;
+      if (isCreation) {
+        savedEntity = await entityService.create(entity as any);
+      } else {
+        savedEntity = await entityService.update(entity.id!, entity);
+      }
 
- files.forEach(file => {
- const reader = new FileReader();
- reader.onload = (event) => {
- const base64 = event.target?.result as string;
- const currentImages = getExtra().images || [];
- updateExtra({ images: [...currentImages, base64] });
- };
- reader.readAsDataURL(file);
- });
- e.target.value = '';
- };
+      for (const f of fields) {
+        if (f.isTemp) {
+          await entityService.addValue(savedEntity.id, f.attribute.id, f.value);
+        } else {
+          await entityService.updateValue(f.id, f.value);
+        }
+      }
 
- const removeImage = (index: number) => {
- const currentImages = [...(getExtra().images || [])];
- currentImages.splice(index, 1);
- updateExtra({ images: currentImages });
- };
+      for (const rid of removedFieldIds) {
+        await entityService.deleteValue(rid);
+      }
 
- const handleIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
- const file = e.target.files?.[0];
- if (file) {
- const reader = new FileReader();
- reader.onloadend = () => {
- updateExtra({ iconUrl: reader.result as string });
- };
- reader.readAsDataURL(file);
- }
- };
+      if (redirect) navigate(-1);
+      else {
+        setRemovedFieldIds([]);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  };
 
- const handleFieldChange = (id: any, newValue: string) => {
- setFields(prev => prev.map(f => f.id === id ? { ...f, value: newValue } : f));
- };
+  const handleFieldChange = (fieldId: any, value: string) => {
+    setFields(prev => prev.map(f => f.id === fieldId ? { ...f, value } : f));
+  };
 
- const handleRemoveField = (id: any) => {
- if (typeof id === 'number') {
- setRemovedFieldIds(prev => [...prev, id]);
- }
- setFields(prev => prev.filter(f => f.id !== id));
- };
+  const handleRemoveField = (fieldId: any) => {
+    const field = fields.find(f => f.id === fieldId);
+    if (!field.isTemp) {
+      setRemovedFieldIds(prev => [...prev, field.id]);
+    }
+    setFields(prev => prev.filter(f => f.id !== fieldId));
+  };
 
- const handleSave = async (shouldRedirect = true) => {
- setSaving(true);
- try {
- let currentEntity: Entidad;
- if (isCreation) {
- currentEntity = await entityService.create(entity as Omit<Entidad, 'id' | 'fecha_creacion'>);
- } else {
- currentEntity = await entityService.update(entity.id!, entity);
- }
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const current = getExtra();
+        const imgs = [...(current.images || []), reader.result];
+        updateExtra({ images: imgs });
+      };
+      reader.readAsDataURL(file);
+    });
+  };
 
- // Save attributes (relational values)
- for (const field of fields) {
- const plantillaId = field.attribute?.id || (field.plantilla_id);
- if (plantillaId) {
- await entityService.saveValue(currentEntity.id, plantillaId, field.value);
- }
- }
+  const removeImage = (index: number) => {
+    const current = getExtra();
+    const imgs = (current.images || []).filter((_: any, i: number) => i !== index);
+    updateExtra({ images: imgs });
+  };
 
- // Remove deleted fields
- for (const id of removedFieldIds) {
- await entityService.deleteValue(id);
- }
- setRemovedFieldIds([]);
+  if (loading) return (
+    <div className="flex items-center justify-center h-full bg-background animate-pulse">
+      <div className="text-[0.75rem] font-black uppercase tracking-[0.2em] text-primary">
+        Iniciando Constructor Local...
+      </div>
+    </div>
+  );
 
- setSaving(false);
- if (shouldRedirect) {
- navigate(`/${username}/${projectName}/bible/folder/${folderSlug || currentEntity.carpeta_id || 'root'}`);
- } else if (isCreation) {
- navigate(`/${username}/${projectName}/bible/folder/${folderSlug}/entity/${currentEntity.id}`, { replace: true });
- }
- } catch (err) {
- console.error("Save error", err);
- setSaving(false);
- }
- };
+  const extras = getExtra();
 
- if (loading) return <div className="p-20 text-center animate-pulse text-indigo-400 font-black uppercase tracking-widest">Iniciando Constructor Local...</div>;
+  return (
+    <div className="flex-1 flex flex-col h-full bg-background overflow-hidden relative">
+      <div className="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
+        {/* ENCABEZADO DE ENTIDAD - PREMIUM GLASS */}
+        <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-foreground/10 px-[1.5rem] lg:px-[3rem] py-[1rem] flex flex-col items-center gap-0">
+          
+          {/* Fila 1: Logo + Nombre (Más espaciosa) */}
+          <div className="flex items-center gap-[1.25rem] py-[2rem] w-full justify-center">
+            <Avatar 
+              url={extras.iconUrl}
+              name={entity.nombre || 'Nuevo Ente'} 
+              size="md" 
+              className="ring-1 ring-primary/20 ring-offset-4 ring-offset-background shadow-xl" 
+            />
+            <h2 className="text-[1.5rem] font-black text-foreground tracking-[-0.02em] uppercase">
+              {entity.nombre || 'Nuevo Ente'}
+            </h2>
+          </div>
 
- const extras = getExtra();
+          {/* Fila 2: Controles de Acción (Más compacta) */}
+          <div className="flex items-center justify-center gap-[2rem] w-full py-[0.75rem] border-t border-foreground/5 bg-foreground/[0.01]">
+            <button 
+              onClick={() => navigate(-1)} 
+              className="flex items-center gap-2 px-[1rem] py-[0.4rem] text-[0.625rem] font-black uppercase tracking-[0.2em] text-foreground/40 hover:text-primary transition-all group"
+            >
+              <span className="material-symbols-outlined text-[0.875rem]">arrow_back</span>
+              Volver
+            </button>
 
- return (
- <div className="flex h-full w-full bg-[#0a0a0c] overflow-hidden">
- <div className="flex-1 flex flex-col min-w-0 overflow-y-auto custom-scrollbar relative">
- 
- {/* Header Actions */}
- <div className="border-b border-foreground/10 p-6 flex justify-between items-center bg-[#0a0a0c]/80 sticky top-0 z-30">
- <div className="flex items-center gap-4">
- <Avatar url={extras.iconUrl} name={entity.nombre} className="size-12 rounded-none border border-foreground/40 shadow-lg" />
- <div>
- <h1 className="text-xl font-black text-foreground leading-tight tracking-tight">{entity.nombre || 'Sin Nombre'}</h1>
- <span className="text-[10px] uppercase font-black tracking-widest text-indigo-500">
- {isCreation ? 'Nueva Entidad OPFS' : 'Sincronizado Localmente'}
- </span>
- </div>
- </div>
+            <button 
+              onClick={() => handleSave(true)} 
+              disabled={saving}
+              className={`flex items-center gap-[0.5rem] px-[2rem] py-[0.6rem] rounded-none font-black text-[0.625rem] uppercase tracking-[0.2em] transition-all shadow-lg ${saving ? 'bg-primary/20 text-primary cursor-wait' : 'bg-primary hover:bg-primary/90 text-white hover:scale-105 active:scale-95 shadow-primary/20'}`}
+             >
+               <span className="material-symbols-outlined text-[1rem]">save</span>
+               {saving ? 'Guardando...' : 'Guardar Cambios'}
+             </button>
+          </div>
+        </div>
 
- <div className="flex items-center gap-3">
- <button
- onClick={() => navigate(-1)}
- className="px-4 py-2 rounded-none text-foreground/60 hover:text-foreground hover:bg-foreground/5 text-[10px] font-black uppercase tracking-widest transition-all"
- >
- Volver
- </button>
- <div className="flex bg-foreground/5 rounded-none p-1 gap-1 border border-foreground/10 ">
- <button
- onClick={() => handleSave(true)}
- disabled={saving}
- className="h-10 px-6 rounded-none bg-indigo-500 hover:bg-indigo-400 text-foreground text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 disabled:opacity-50 shadow-lg shadow-indigo-500/20"
- >
- {saving ? <span className="material-symbols-outlined animate-spin text-sm">refresh</span> : <span className="material-symbols-outlined text-sm">save_as</span>}
- Guardar
- </button>
- <div className="w-px bg-foreground/10 my-1 mx-1"></div>
- <button
- onClick={() => handleSave(false)}
- disabled={saving}
- className="h-10 px-4 rounded-none bg-transparent hover:bg-foreground/10 text-indigo-400 transition-all flex items-center justify-center disabled:opacity-50"
- title="Guardar y Seguir"
- >
- <span className="material-symbols-outlined text-sm">history_edu</span>
- </button>
- </div>
- </div>
- </div>
+        {/* Sidebar Portal */}
+        {portalTarget && createPortal(
+          <EntityBuilderSidebar
+            templates={availableTemplates}
+            currentFields={fields}
+            onAddTemplate={(tpl) => {
+              setFields(prev => [...prev, {
+                id: `temp-${tpl.id}-${Date.now()}`,
+                attribute: tpl,
+                value: tpl.valor_defecto || '',
+                isTemp: true
+              }]);
+            }}
+          />,
+          portalTarget
+        )}
 
- {/* Sidebar Portal */}
- {portalTarget && createPortal(
- <EntityBuilderSidebar
- templates={availableTemplates}
- currentFields={fields}
- onAddTemplate={(tpl) => {
- setFields(prev => [...prev, {
- id: `temp-${tpl.id}-${Date.now()}`,
- attribute: tpl,
- value: tpl.valor_defecto || '',
- isTemp: true
- }]);
- }}
- />,
- portalTarget
- )}
+        {/* NAVEGACIÓN DE PESTAÑAS */}
+        <div className="px-[1.5rem] lg:px-[3rem] border-b border-foreground/5 bg-background/40 sticky top-[9.875rem] z-30 backdrop-blur-md">
+          <div className="flex items-center justify-center gap-[3rem]">
+            {['identity', 'narrative', 'attributes'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveEntityTab(tab)}
+                className={`py-[1.25rem] text-[0.625rem] font-black uppercase tracking-[0.2em] border-b-2 transition-all ${activeEntityTab === tab
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-foreground/60 hover:text-primary'
+                }`}
+              >
+                {tab === 'identity' ? 'Identidad' : tab === 'narrative' ? 'Narrativa' : 'Atributos'}
+              </button>
+            ))}
+          </div>
+        </div>
 
- {/* Navigation Tabs */}
- <div className="flex border-b border-foreground/10 px-12 gap-8 bg-[#0a0a0c]/80 sticky top-[89px] z-20">
- {['identity', 'narrative', 'attributes'].map(tab => (
- <button
- key={tab}
- onClick={() => setActiveEntityTab(tab)}
- className={`py-5 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all ${activeEntityTab === tab
- ? 'border-indigo-500 text-indigo-400'
- : 'border-transparent text-foreground/60 hover:text-indigo-400'
- }`}
- >
- {tab}
- </button>
- ))}
- </div>
+        {/* Main Content Area - WITH PROPER SIDE MARGINS */}
+        <div className="p-[1.5rem] lg:p-[3rem] pb-[8rem] max-w-[80rem] mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
+          
+          {activeEntityTab === 'identity' && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-[2.5rem]">
+              <div className="space-y-[2rem]">
+                <GlassPanel title="NÚCLEO DE IDENTIDAD" icon="fingerprint">
+                  <div className="space-y-[1.5rem]">
+                    <div>
+                      <label className="text-[0.625rem] font-bold uppercase text-primary mb-[0.75rem] block tracking-[0.15em] opacity-70">
+                        Nombre de la Entidad
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full bg-foreground/[0.03] border-2 border-foreground/10 rounded-none p-[1.5rem] text-[1.5rem] font-black text-foreground focus:border-primary outline-none transition-all placeholder:text-foreground/30 shadow-inner sunken-panel"
+                        placeholder="Ej: El Rey de Cenizas"
+                        value={entity.nombre}
+                        onChange={(e) => setEntity({ ...entity, nombre: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[0.625rem] font-bold uppercase text-foreground/60 mb-[0.75rem] block tracking-[0.15em] opacity-70">
+                        Categoría de Sistema
+                      </label>
+                      <select
+                        className="w-full bg-foreground/[0.03] border-2 border-foreground/10 rounded-none px-[1rem] py-[1rem] text-[0.75rem] text-foreground font-black uppercase tracking-[0.15em] outline-none focus:border-primary transition-all cursor-pointer sunken-panel"
+                        value={extras.categoria}
+                        onChange={(e) => updateExtra({ categoria: e.target.value })}
+                      >
+                        <option value="Individual">👤 Personaje</option>
+                        <option value="Lugar">📍 Ubicación</option>
+                        <option value="Objeto">⚔️ Artefacto</option>
+                        <option value="Concepto">💡 Filosofía/Religión</option>
+                        <option value="Criatura">🐉 Especie/Bestia</option>
+                      </select>
+                    </div>
+                  </div>
+                </GlassPanel>
 
- {/* Main Content Area */}
- <div className="p-12 pb-32 max-w-6xl mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
- 
- {activeEntityTab === 'identity' && (
- <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
- <div className="space-y-8">
- <GlassPanel title="NÚCLEO DE IDENTIDAD" icon="fingerprint">
- <div className="space-y-6">
- <div>
- <label className="text-[10px] font-bold uppercase text-indigo-400 mb-3 block tracking-widest opacity-70">
- Nombre de la Entidad
- </label>
- <input
- type="text"
- className="w-full bg-[#0d0d12] border-2 border-foreground/10 rounded-none p-6 text-2xl font-black text-foreground focus:border-indigo-500 outline-none transition-all placeholder:text-foreground/60 shadow-inner"
- placeholder="Ej: El Rey de Cenizas"
- value={entity.nombre}
- onChange={(e) => setEntity({ ...entity, nombre: e.target.value })}
- />
- </div>
- <div>
- <label className="text-[10px] font-bold uppercase text-foreground/60 mb-3 block tracking-widest opacity-70">
- Categoría de Sistema
- </label>
- <select
- className="w-full bg-[#0d0d12] border-2 border-foreground/10 rounded-none px-4 py-4 text-xs text-foreground font-black uppercase tracking-widest outline-none focus:border-indigo-500 transition-all cursor-pointer"
- value={extras.categoria}
- onChange={(e) => updateExtra({ categoria: e.target.value })}
- >
- <option value="Individual">👤 Personaje</option>
- <option value="Lugar">📍 Ubicación</option>
- <option value="Objeto">⚔️ Artefacto</option>
- <option value="Concepto">💡 Filosofía/Religión</option>
- <option value="Criatura">🐉 Especie/Bestia</option>
- </select>
- </div>
- </div>
- </GlassPanel>
+                <GlassPanel title="APARIENCIA Y RASGOS" icon="auto_awesome">
+                  <textarea
+                    className="w-full bg-foreground/[0.03] border-2 border-foreground/10 rounded-none p-[1.5rem] text-[0.875rem] text-foreground leading-relaxed min-h-[18.75rem] outline-none focus:border-primary transition-all resize-none custom-scrollbar sunken-panel"
+                    placeholder="Describe visualmente esta entidad..."
+                    value={extras.appearance}
+                    onChange={(e) => updateExtra({ appearance: e.target.value })}
+                  />
+                </GlassPanel>
+              </div>
 
- <GlassPanel title="APARIENCIA Y RASGOS" icon="auto_awesome">
- <textarea
- className="w-full bg-[#0d0d12] border-2 border-foreground/10 rounded-none p-6 text-sm text-foreground/60 leading-relaxed min-h-[300px] outline-none focus:border-indigo-500 transition-all resize-none custom-scrollbar"
- placeholder="Describe visualmente esta entidad..."
- value={extras.appearance}
- onChange={(e) => updateExtra({ appearance: e.target.value })}
- />
- </GlassPanel>
- </div>
+              <div className="space-y-[2rem]">
+                <GlassPanel title="ARCHIVOS VISUALES" icon="photo_library">
+                  <div className="grid grid-cols-3 gap-[1rem]">
+                    {extras.images?.map((img: string, i: number) => (
+                      <div key={i} className="aspect-square rounded-none monolithic-panel overflow-hidden relative group cursor-zoom-in" onClick={() => setZoomImage(img)}>
+                        <img src={img} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" alt="Gallery" />
+                        <button
+                          onClick={(e) => { e.stopPropagation(); removeImage(i); }}
+                          className="absolute top-[0.5rem] right-[0.5rem] size-[1.75rem] bg-red-500/80 text-white rounded-none flex items-center justify-center translate-y-[-150%] group-hover:translate-y-0 transition-transform shadow-xl"
+                        >
+                          <span className="material-symbols-outlined text-[0.75rem]">close</span>
+                        </button>
+                      </div>
+                    ))}
+                    <label className="aspect-square rounded-none border-2 border-dashed border-foreground/10 flex flex-col items-center justify-center gap-[0.75rem] hover:bg-foreground/5 hover:border-primary/30 transition-all cursor-pointer group sunken-panel">
+                      <span className="material-symbols-outlined text-primary/50 group-hover:text-primary group-hover:scale-110 transition-all text-[1.5rem]">add_a_photo</span>
+                      <span className="text-[0.5rem] font-black uppercase text-foreground/60 group-hover:text-primary tracking-[0.15em] text-center px-[1rem]">Upload Fragment</span>
+                      <input type="file" multiple className="hidden" onChange={handleImageUpload} accept="image/*" />
+                    </label>
+                  </div>
+                </GlassPanel>
 
- <div className="space-y-8">
- <GlassPanel title="ARCHIVOS VISUALES" icon="photo_library">
- <div className="grid grid-cols-3 gap-4">
- {extras.images?.map((img: string, i: number) => (
- <div key={i} className="aspect-square rounded-none monolithic-panel overflow-hidden relative group cursor-zoom-in" onClick={() => setZoomImage(img)}>
- <img src={img} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" alt="Gallery" />
- <button
- onClick={(e) => { e.stopPropagation(); removeImage(i); }}
- className="absolute top-2 right-2 size-7 bg-red-500/80 text-foreground rounded-none flex items-center justify-center translate-y-[-150%] group-hover:translate-y-0 transition-transform shadow-xl"
- >
- <span className="material-symbols-outlined text-xs">close</span>
- </button>
- </div>
- ))}
- <label className="aspect-square rounded-none border-2 border-dashed border-foreground/10 flex flex-col items-center justify-center gap-3 hover:bg-foreground/5 hover:border-indigo-500/30 transition-all cursor-pointer group">
- <span className="material-symbols-outlined text-indigo-500/50 group-hover:text-indigo-400 group-hover:scale-110 transition-all">add_a_photo</span>
- <span className="text-[8px] font-black uppercase text-foreground/60 group-hover:text-indigo-400 tracking-widest text-center px-4">Upload Fragment</span>
- <input type="file" multiple className="hidden" onChange={handleImageUpload} accept="image/*" />
- </label>
- </div>
- </GlassPanel>
+                <GlassPanel title="NOTAS DE DESARROLLADOR" icon="edit_note">
+                  <textarea
+                    className="w-full bg-foreground/[0.03] border-2 border-foreground/10 rounded-none p-[1.5rem] text-[0.875rem] text-foreground/60 italic leading-relaxed min-h-[13.75rem] outline-none focus:border-primary transition-all resize-none custom-scrollbar sunken-panel"
+                    placeholder="Secretos, ideas de desarrollo, conexiones ocultas..."
+                    value={extras.notes}
+                    onChange={(e) => updateExtra({ notes: e.target.value })}
+                  />
+                </GlassPanel>
+              </div>
+            </div>
+          )}
 
- <GlassPanel title="NOTAS DE DESARROLLADOR" icon="edit_note">
- <textarea
- className="w-full bg-[#0d0d12] border-2 border-foreground/10 rounded-none p-6 text-sm text-foreground/60 italic leading-relaxed min-h-[220px] outline-none focus:border-indigo-500 transition-all resize-none custom-scrollbar"
- placeholder="Secretos, ideas de desarrollo, conexiones ocultas..."
- value={extras.notes}
- onChange={(e) => updateExtra({ notes: e.target.value })}
- />
- </GlassPanel>
- </div>
- </div>
- )}
+          {activeEntityTab === 'narrative' && (
+            <div className="space-y-[2.5rem]">
+              <GlassPanel className="min-h-[50vh] p-[2rem] flex flex-col border-primary/10">
+                <div className="flex items-center justify-between mb-[2rem]">
+                  <h3 className="text-[0.625rem] font-bold uppercase tracking-[0.15em] text-primary flex items-center gap-[0.75rem]">
+                    <span className="material-symbols-outlined text-[1rem]">history_edu</span> Biografía Narrativa
+                  </h3>
+                  <div className="flex items-center gap-[0.5rem] opacity-30">
+                    <span className="material-symbols-outlined text-[0.75rem]">markdown</span>
+                    <span className="text-[0.5625rem] font-bold tracking-[0.1em]">TEXT READY</span>
+                  </div>
+                </div>
+                <textarea
+                  className="flex-1 w-full bg-foreground/[0.03] border-2 border-foreground/10 rounded-none p-[2rem] text-foreground text-[1.125rem] leading-relaxed resize-none focus:border-primary outline-none placeholder:text-foreground/30 custom-scrollbar shadow-inner sunken-panel"
+                  placeholder="Escribe la historia, leyendas y mitos corporativos..."
+                  value={entity.descripcion || ''}
+                  onChange={e => setEntity({ ...entity, descripcion: e.target.value })}
+                />
+              </GlassPanel>
+            </div>
+          )}
 
- {activeEntityTab === 'narrative' && (
- <div className="space-y-10">
- <GlassPanel className="min-h-[50vh] p-8 flex flex-col border-indigo-500/10">
- <div className="flex items-center justify-between mb-8">
- <h3 className="text-[10px] font-bold uppercase tracking-widest text-indigo-400 flex items-center gap-3">
- <span className="material-symbols-outlined text-base">history_edu</span> Biografía Narrativa
- </h3>
- <div className="flex items-center gap-2 opacity-30">
- <span className="material-symbols-outlined text-xs">markdown</span>
- <span className="text-[9px] font-bold">TEXT READY</span>
- </div>
- </div>
- <textarea
- className="flex-1 w-full bg-[#0d0d12] border-2 border-foreground/10 rounded-none p-8 text-foreground/60 text-lg leading-relaxed resize-none focus:border-indigo-500 outline-none placeholder:text-foreground/60 custom-scrollbar shadow-inner"
- placeholder="Escribe la historia, leyendas y mitos corporativos..."
- value={entity.descripcion || ''}
- onChange={e => setEntity({ ...entity, descripcion: e.target.value })}
- />
- </GlassPanel>
- </div>
- )}
+          {activeEntityTab === 'attributes' && (
+            <div className="space-y-[2rem] min-h-[60vh]">
+              <div className="flex items-center justify-between border-b border-foreground/10 pb-[1.5rem]">
+                <h3 className="text-[0.625rem] font-black uppercase tracking-[0.15em] text-primary flex items-center gap-[0.75rem]">
+                  <span className="material-symbols-outlined text-[1rem]">layers</span> Atributos Modulares
+                </h3>
+                <p className="text-[0.5625rem] text-foreground/60 font-bold uppercase tracking-[0.1em]">
+                  Arrastre elementos desde el panel lateral
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-[2rem]">
+                {fields.length === 0 && (
+                  <div className="col-span-full py-[8rem] border-2 border-dashed border-foreground/10 rounded-none flex flex-col items-center justify-center text-foreground/60 bg-foreground/[0.01]">
+                    <span className="material-symbols-outlined text-[3rem] mb-[1.5rem] opacity-20">inventory_2</span>
+                    <p className="text-[0.75rem] font-black uppercase tracking-[0.15em] opacity-40">Área de Atributos Vacía</p>
+                  </div>
+                )}
+                {fields.map((field) => (
+                  <div key={field.id} className="animate-in fade-in duration-500">
+                    <AttributeField
+                      attribute={field.attribute}
+                      value={field.value}
+                      onChange={(val) => handleFieldChange(field.id, val)}
+                      onRemove={() => handleRemoveField(field.id)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
- {activeEntityTab === 'attributes' && (
- <div className="space-y-8 min-h-[60vh]">
- <div className="flex items-center justify-between border-b border-foreground/10 pb-6">
- <h3 className="text-[10px] font-black uppercase tracking-widest text-indigo-400 flex items-center gap-3">
- <span className="material-symbols-outlined text-base">layers</span> Atributos Modulares
- </h3>
- <p className="text-[9px] text-foreground/60 font-bold uppercase tracking-wider">
- Arrastre elementos desde el panel lateral
- </p>
- </div>
- 
- <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
- {fields.length === 0 && (
- <div className="col-span-full py-32 border-2 border-dashed border-foreground/10 rounded-none flex flex-col items-center justify-center text-foreground/60 bg-white/[0.01]">
- <span className="material-symbols-outlined text-5xl mb-6 opacity-20">inventory_2</span>
- <p className="text-xs font-black uppercase tracking-widest opacity-40">Área de Atributos Vacía</p>
- </div>
- )}
- {fields.map((field) => (
- <div key={field.id} className="animate-in fade-in duration-500">
- <AttributeField
- attribute={field.attribute}
- value={field.value}
- onChange={(val) => handleFieldChange(field.id, val)}
- onRemove={() => handleRemoveField(field.id)}
- />
- </div>
- ))}
- </div>
- </div>
- )}
- </div>
-
- {/* Overlays */}
- {zoomImage && (
- <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 animate-in fade-in duration-300" onClick={() => setZoomImage(null)}>
- <button className="absolute top-10 right-10 text-foreground/40 hover:text-foreground transition-colors" onClick={() => setZoomImage(null)}>
- <span className="material-symbols-outlined text-5xl">close</span>
- </button>
- <img src={zoomImage} className="max-w-[90vw] max-h-[85vh] object-contain rounded-none shadow-2xl border-4 border-foreground/10" alt="Zoom" />
- </div>
- )}
- </div>
- </div>
- );
+        {/* Overlays */}
+        {zoomImage && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 animate-in fade-in duration-300" onClick={() => setZoomImage(null)}>
+            <button className="absolute top-[2.5rem] right-[2.5rem] text-foreground/40 hover:text-foreground transition-colors" onClick={() => setZoomImage(null)}>
+              <span className="material-symbols-outlined text-[3rem]">close</span>
+            </button>
+            <img src={zoomImage} className="max-w-[90vw] max-h-[85vh] object-contain rounded-none shadow-2xl border-4 border-foreground/10" alt="Zoom" />
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default EntityBuilder;

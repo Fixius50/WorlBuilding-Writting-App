@@ -58,6 +58,28 @@ const ArchitectLayout: React.FC = () => {
   // Bottom Graph Panel State
   const [bottomGraphOpen, setBottomGraphOpen] = useState(false);
 
+  // General Settings State
+  const [panelMode, setPanelMode] = useState<'classic' | 'binder' | 'floating'>('classic');
+
+  // Attribute Management State (for EntityBuilder communication)
+  const [addAttributeHandler, setAddAttributeHandler] = useState<((templateId: number) => void) | null>(null);
+  const [availableTemplates, setAvailableTemplates] = useState<any[]>([]);
+
+  useEffect(() => {
+    const handleSync = () => {
+      const savedSettings = localStorage.getItem('app_settings');
+      if (savedSettings) {
+        try {
+          const settings = JSON.parse(savedSettings);
+          if (settings.panelMode) setPanelMode(settings.panelMode as any);
+        } catch(e) {}
+      }
+    };
+    handleSync();
+    window.addEventListener('storage_update', handleSync);
+    return () => window.removeEventListener('storage_update', handleSync);
+  }, []);
+
   // Bible Explorer State
   const [folders, setFolders] = useState<Carpeta[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -173,22 +195,22 @@ const ArchitectLayout: React.FC = () => {
           setRightOpen,
           setRightPanelTab,
           projectId,
-          baseUrl
+          baseUrl,
+          panelMode
         }} />
       </div>
     );
   }
 
+  const sidebarClasses = panelMode === 'floating'
+    ? `fixed top-[2vh] left-[2vw] h-[96vh] rounded-none border border-foreground/10 shadow-2xl z-50 transition-all duration-300 flex flex-col monolithic-panel ${leftOpen ? 'w-64 opacity-100 translate-y-0' : 'w-64 opacity-0 -translate-y-4 pointer-events-none'}`
+    : `fixed top-0 left-0 h-full monolithic-panel border-y-0 border-l-0 shadow-2xl z-40 ${panelMode === 'binder' ? '' : 'transition-all duration-500'} flex flex-col rounded-none ${leftOpen ? (panelMode === 'binder' && rightOpen ? 'w-0 -translate-x-full' : 'w-64 translate-x-0') : 'w-64 -translate-x-full'}`;
+
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden bg-background text-foreground font-sans selection:bg-primary/30">
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        <aside
-          className={`
-            fixed top-0 left-0 h-full monolithic-panel border-y-0 border-l-0 shadow-2xl z-40 transition-all duration-500 ease-in-out flex flex-col rounded-none
-            ${leftOpen ? 'w-64 translate-x-0' : 'w-64 -translate-x-full'}
-          `}
-        >
+        <aside className={sidebarClasses}>
           <div className="w-full h-full flex flex-col overflow-hidden">
             <div className="h-16 flex items-center justify-center border-b relative bg-foreground/[0.02]" >
               <div className="flex items-center gap-2">
@@ -219,9 +241,18 @@ const ArchitectLayout: React.FC = () => {
             </div>
           </div>
 
-          {/* STANDARDIZED LEFT COLLAPSE BUTTON - SHARP EDGES */}
+          {/* STANDARDIZED LEFT COLLAPSE BUTTON - FOR CLASSIC & BINDER MODES */}
+          {(panelMode === 'classic' || panelMode === 'binder') && (
           <button
-            onClick={() => setLeftOpen(!leftOpen)}
+            onClick={() => {
+              if (panelMode === 'binder' && !leftOpen) {
+                // Si está cerrado en binder, abrimos por defecto la navegación
+                setLeftOpen(true);
+                setRightOpen(false);
+              } else {
+                setLeftOpen(!leftOpen);
+              }
+            }}
             className={`
               absolute top-1/2 -translate-y-1/2 -right-10 w-10 h-24 
               bg-background border border-foreground/10 border-l-0
@@ -231,7 +262,8 @@ const ArchitectLayout: React.FC = () => {
               ${leftOpen ? 'text-indigo-500 shadow-[4px_0_15px_-5px_rgba(99,102,241,0.3)] border-l-transparent' : 'text-foreground/60'}
             `}
             style={{
-              borderLeftColor: leftOpen ? 'transparent' : undefined
+              borderLeftColor: leftOpen ? 'transparent' : undefined,
+              right: panelMode === 'binder' && rightOpen ? '-40px' : '-40px' // Se mantiene a la derecha del panel activo
             }}
             title={leftOpen ? t('common.close_panel') : t('common.open_panel')}
           >
@@ -241,7 +273,68 @@ const ArchitectLayout: React.FC = () => {
             </span>
             <div className={`w-1 h-3 bg-current opacity-20 transition-all duration-500 ${leftOpen ? 'h-6 opacity-40' : ''}`}></div>
           </button>
+          )}
         </aside>
+
+        {/* BINDER MODE TABS */}
+        {panelMode === 'binder' && leftOpen && (
+          <div className={`fixed top-32 z-[60] flex flex-col gap-2 ${rightOpen ? 'left-96' : 'left-64'}`}>
+            <button
+              onClick={() => {
+                if (leftOpen && !rightOpen) {
+                  setLeftOpen(false);
+                } else {
+                  setLeftOpen(true);
+                  setRightOpen(false);
+                }
+              }}
+              className={`w-10 py-5 bg-background border border-foreground/10 border-l-0 rounded-r-md flex justify-center text-foreground/60 hover:text-indigo-400 group relative ${leftOpen && !rightOpen ? 'bg-indigo-500/10 text-indigo-500 border-indigo-500/50 shadow-[4px_0_15px_-5px_rgba(99,102,241,0.3)] border-l-transparent' : ''}`}
+              title="Navegación"
+            >
+              <div className="absolute inset-y-0 left-0 w-1 bg-current opacity-20"></div>
+              <span className="material-symbols-outlined text-xl">map</span>
+            </button>
+            <button
+              onClick={() => {
+                if (leftOpen && rightOpen) {
+                  setLeftOpen(false);
+                  setRightOpen(false);
+                } else {
+                  setLeftOpen(true);
+                  setRightOpen(true);
+                }
+              }}
+              className={`w-10 py-5 bg-background border border-foreground/10 border-l-0 rounded-r-md flex justify-center text-foreground/60 hover:text-indigo-400 group relative ${leftOpen && rightOpen ? 'bg-indigo-500/10 text-indigo-500 border-indigo-500/50 shadow-[4px_0_15px_-5px_rgba(99,102,241,0.3)] border-l-transparent' : ''}`}
+              title="Archivos / Propiedades"
+            >
+              <div className="absolute inset-y-0 left-0 w-1 bg-current opacity-20"></div>
+              <span className="material-symbols-outlined text-xl">folder_special</span>
+            </button>
+          </div>
+        )}
+
+        {/* FLOATING MODE TOGGLES (2vw / 2vh) */}
+        {panelMode === 'floating' && (
+          <div className="contents">
+            <button
+              id="floating-left-toggle"
+              onClick={() => setLeftOpen(!leftOpen)}
+              className={`fixed top-[2vh] left-[2vw] z-[70] size-12 rounded-none bg-background border transition-all flex items-center justify-center shadow-2xl ${leftOpen ? 'border-indigo-500 text-indigo-400 bg-indigo-500/10' : 'border-foreground/10 text-foreground/60 hover:text-foreground hover:border-foreground/30'}`}
+              title="Menú Navegación"
+            >
+              <span className="material-symbols-outlined">{leftOpen ? 'close' : 'menu'}</span>
+            </button>
+
+            <button
+              id="floating-right-toggle"
+              onClick={toggleRightPanel}
+              className={`fixed top-[2vh] right-[2vw] z-[70] size-12 rounded-none bg-background border transition-all flex items-center justify-center shadow-2xl ${rightOpen ? 'border-indigo-500 text-indigo-400 bg-indigo-500/10' : 'border-foreground/10 text-foreground/60 hover:text-foreground hover:border-foreground/30'}`}
+              title="Panel de Propiedades"
+            >
+              <span className="material-symbols-outlined">{rightOpen ? 'close' : 'folder_special'}</span>
+            </button>
+          </div>
+        )}
 
         {/* Main Content */}
         <main className="flex-1 flex flex-col min-w-0 bg-background relative">
@@ -256,14 +349,23 @@ const ArchitectLayout: React.FC = () => {
               setRightPanelContent: setGlobalPanelContent,
               projectId,
               baseUrl,
-              setBottomGraphOpen
+              setBottomGraphOpen,
+              panelMode,
+              setAddAttributeHandler,
+              setAvailableTemplates
             }} />
           </div>
 
           <GlobalRightPanel
-            isOpen={rightOpen}
+            isOpen={panelMode === 'binder' && !leftOpen ? false : rightOpen}
             onClose={() => setRightOpen(false)}
-            onToggle={toggleRightPanel}
+            onToggle={() => {
+              if (panelMode === 'binder') {
+                setLeftOpen(!leftOpen);
+              } else {
+                toggleRightPanel();
+              }
+            }}
             contextContent={globalPanelContent}
             folders={folders}
             searchTerm={searchTerm}
@@ -278,6 +380,9 @@ const ArchitectLayout: React.FC = () => {
             handleRenameFolder={handleRenameFolder}
             handleDeleteFolder={handleDeleteFolder}
             handleCreateEntity={handleCreateEntity}
+            panelMode={panelMode}
+            addAttributeHandler={addAttributeHandler}
+            availableTemplates={availableTemplates}
           />
 
           {!bottomGraphOpen && !hideSidebarParam && (

@@ -1,7 +1,8 @@
 import { SQLocal } from 'sqlocal';
 
 // Instancia de la base de datos local
-export const { sql } = new SQLocal('worldbuilding_app.sqlite3');
+export const sqlocal = new SQLocal('worldbuilding_app.sqlite3');
+export const { sql } = sqlocal;
 
 /**
  * Inicializa el esquema de la base de datos si no existe.

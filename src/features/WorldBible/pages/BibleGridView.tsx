@@ -64,7 +64,7 @@ const BibleGridView = () => {
 
  return (
  <div className="flex-1 p-8 max-w-[1600px] mx-auto w-full h-full overflow-y-auto">
- <header className="mb-8 flex items-end justify-between">
+ <header className="mb-8 flex items-end justify-center gap-12 text-center">
  <div>
  <div className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-primary italic mb-2">
  <span className="material-symbols-outlined text-sm">auto_stories</span>

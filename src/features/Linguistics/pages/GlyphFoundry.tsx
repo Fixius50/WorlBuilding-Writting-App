@@ -6,7 +6,7 @@ const GlyphFoundry = () => {
     return (
         <div className="flex-1 flex flex-col h-full bg-background text-foreground font-serif overflow-hidden">
             {/* Zen Header */}
-            <header className="h-20 border-b border-foreground/10 flex items-center justify-between px-10 monolithic-panel hover:bg-background/80 transition-colors">
+            <header className="h-20 border-b border-foreground/10 flex items-center justify-center gap-12 text-center px-10 monolithic-panel hover:bg-background/80 transition-colors">
                 <div className="flex items-center gap-10">
                     <div className="flex flex-col">
                         <span className="text-xs uppercase tracking-widest font-bold opacity-60 font-sans">Módulo Lingüístico</span>

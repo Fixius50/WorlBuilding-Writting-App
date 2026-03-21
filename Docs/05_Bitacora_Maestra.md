@@ -6,6 +6,12 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
 
 ### MARZO 2026
 
+- **2026-03-21: Refactorización Estética y Técnica del Entity Builder**
+  - **Identidad Visual:** Migración completa a variables CSS (`var(--primary)`, `var(--background)`) y unidades `rem`, garantizando adaptabilidad temática total (Temas Claro/Oscuro).
+  - **Rediseño del Header:** Implementación de un encabezado minimalista en dos niveles: 1) Fila superior con Avatar y Nombre (estilo compacto horizontal) y 2) Fila inferior con controles de acción (Volver/Guardar) centrados.
+  - **Lógica de Atributos:** Corrección de la persistencia de atributos mediante la implementación de `getValues` en `entityService.ts` y sincronización de métodos de guardado/actualización.
+  - **Panel de Contexto:** Refactorización de `GlobalRightPanel.tsx` y `EntityBuilderSidebar.tsx` para eliminar fondos estáticos y asegurar transparencia reactiva al tema global.
+
 - **2026-03-15: Refactorización de Navegación, Reactividad y Notas Rápidas**
   - **Evolución de Notas:** Se ha transformado el módulo de "Cuadernos" en "Notas Rápidas" en el panel lateral derecho, optimizando el flujo de trabajo para anotaciones inmediatas.
   - **Auditoría de Traducciones:** Identificación y corrección de claves missing (`common.notes`, `project.analytics_title`, etc.) para eliminar etiquetas internas (`algo.algo`) de la UI.

@@ -11,7 +11,7 @@ const CharacterEditor = () => {
  return (
  <div className="flex-1 flex flex-col h-full animate-in fade-in duration-500">
  {/* Control Bar */}
- <header className="h-16 flex items-center justify-between px-8 border-b border-foreground/10 monolithic-panel/50">
+ <header className="h-16 flex items-center justify-center gap-12 text-center px-8 border-b border-foreground/10 monolithic-panel/50">
  <div className="flex items-center gap-4">
  <span className="material-symbols-outlined text-foreground/60">person</span>
  <span className="text-xs font-black uppercase tracking-widest text-foreground/60">Editing Character</span>

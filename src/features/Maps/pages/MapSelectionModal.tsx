@@ -6,7 +6,7 @@ const MapSelectionModal = ({ maps, onSelect, onCreateNew, onClose }) => {
  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 animate-in fade-in duration-300">
  <div className="w-full max-w-3xl animate-in zoom-in-95 duration-500">
  <GlassPanel className="overflow-hidden border-foreground/40 shadow-2xl">
- <header className="p-6 border-b border-foreground/10 flex justify-between items-center bg-white/[0.02]">
+ <header className="p-6 border-b border-foreground/10 flex justify-center gap-12 text-center items-center bg-white/[0.02]">
  <div className="flex items-center gap-3">
  <span className="material-symbols-outlined text-primary">map</span>
  <h2 className="text-xl font-manrope font-black text-foreground">Cartografía del Proyecto</h2>

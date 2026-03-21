@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { sqlocal } from '../../../database/db';
 import api from '../../../services/api';
 import { useLanguage } from '../../../context/LanguageContext';
 
@@ -16,7 +17,8 @@ const Settings = () => {
   const [settings, setSettings] = useState({
     theme: 'deep_space',
     font: 'Outfit',
-    fontSize: 16
+    fontSize: 16,
+    panelMode: 'classic' // 'classic', 'binder', 'floating'
   });
 
   useEffect(() => {
@@ -75,21 +77,23 @@ const Settings = () => {
     addNotification(isSelected ? "Universo desmarcado de sincronización" : "Universo incluido en sincronización");
   };
 
-  const handleDownloadBackup = () => {
-    addNotification("Iniciando descarga de backup...", "info");
-    const link = document.createElement('a');
-
-    // Build URL with selected projects
-    const baseUrl = '/api/backup/download';
-    const params = selectedProjects.length > 0
-      ? `?projects=${selectedProjects.join(',')}`
-      : '';
-
-    link.href = baseUrl + params;
-    link.setAttribute('download', `worldbuilding_backup_${Date.now()}.zip`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownloadBackup = async () => {
+    addNotification("Generando copia de la base de datos local...", "info");
+    try {
+      const file = await sqlocal.getDatabaseFile();
+      const url = URL.createObjectURL(file);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `worldbuilding_backup_${Date.now()}.sqlite3`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      addNotification("Copia de seguridad local descargada", "success");
+    } catch (err) {
+      console.error("Backup error", err);
+      addNotification("Error al generar copia de seguridad", "error");
+    }
   };
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -98,24 +102,20 @@ const Settings = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.name.endsWith('.db')) {
-      addNotification("Solo se permiten archivos .db", "error");
+    if (!file.name.endsWith('.db') && !file.name.endsWith('.sqlite3') && !file.name.endsWith('.sqlite')) {
+      addNotification("Solo se permiten bases de datos SQLite (.db, .sqlite3)", "error");
       return;
     }
 
-    const formData = new FormData();
-    formData.append('file', file);
-
-    addNotification("Importando universo...", "info");
+    addNotification("Sobrescribiendo la base de datos local OPFS...", "info");
 
     try {
-      const response = await api.post('/import/database', formData);
-      addNotification(response.message || "Universo importado con éxito");
-      loadProjects(); // Refresh list
+      await sqlocal.overwriteDatabaseFile(file);
+      addNotification("Universo importado con éxito. Por favor recarga la página.", "success");
+      setTimeout(() => window.location.reload(), 1500);
     } catch (err: any) {
       console.error("Import error", err);
-      const errorMessage = err.response?.data?.error || "Error al importar el archivo";
-      addNotification(errorMessage, "error");
+      addNotification("Error al sobreescribir la base de datos local", "error");
     }
 
     // Clear input
@@ -187,7 +187,7 @@ const Settings = () => {
       </div>
 
       {/* TOP NAVIGATION BAR */}
-      <header className="h-20 flex-none flex items-center justify-between px-12 border-b border-foreground/10 bg-background z-30">
+      <header className="h-20 flex-none flex items-center justify-center gap-12 text-center px-12 border-b border-foreground/10 bg-background z-30">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-4">
             <div className="size-10 rounded-none bg-indigo-500 flex items-center justify-center text-foreground shadow-lg shadow-indigo-500/20">
@@ -272,7 +272,7 @@ const Settings = () => {
                       type="file"
                       ref={fileInputRef}
                       onChange={handleImportDatabase}
-                      accept=".db"
+                      accept=".db,.sqlite,.sqlite3"
                       className="hidden"
                     />
                     <button
@@ -372,6 +372,56 @@ const Settings = () => {
                       </div>
                     );
                   })}
+                </div>
+              </section>
+
+              <section className="monolithic-panel rounded-none p-8">
+                <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-indigo-400">
+                  <span className="material-symbols-outlined">view_sidebar</span>
+                  Arquitectura de Paneles
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {['classic', 'binder', 'floating'].map((mode) => (
+                    <div 
+                      key={mode}
+                      onClick={() => updateSetting('panelMode', mode)}
+                      className={`relative flex flex-col gap-3 p-4 rounded-none border cursor-pointer transition-all ${settings.panelMode === mode ? 'border-primary bg-primary/5 ring-1 ring-primary/30' : 'sunken-panel hover:border-foreground/40'}`}
+                    >
+                      <div className="h-20 bg-background/50 border border-foreground/10 flex items-center justify-center p-2 gap-2">
+                        {mode === 'classic' && (
+                          <div className="w-full h-full flex gap-1">
+                            <div className="w-1/4 h-full bg-foreground/20"></div>
+                            <div className="flex-1 h-full bg-foreground/10"></div>
+                            <div className="w-1/4 h-full bg-foreground/20"></div>
+                          </div>
+                        )}
+                        {mode === 'binder' && (
+                          <div className="w-full h-full flex gap-1">
+                            <div className="w-1/3 h-full bg-foreground/20 flex flex-col gap-1">
+                               <div className="h-2 w-full flex gap-1"><div className="flex-1 bg-foreground/40"></div><div className="flex-1 bg-foreground/20"></div></div>
+                               <div className="flex-1 w-full bg-foreground/10"></div>
+                            </div>
+                            <div className="flex-1 h-full bg-foreground/5"></div>
+                          </div>
+                        )}
+                        {mode === 'floating' && (
+                          <div className="w-full h-full bg-foreground/5 relative flex justify-between p-1">
+                            <div className="w-4 h-4 rounded-full bg-foreground/30"></div>
+                            <div className="w-1/2 h-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-foreground/20 shadow-xl opacity-80 backdrop-blur-sm border border-foreground/30"></div>
+                            <div className="w-4 h-4 rounded-full bg-foreground/30"></div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-1 items-center mt-2">
+                        <span className="text-sm font-black tracking-widest uppercase text-foreground">
+                          {mode === 'classic' ? 'Clásico' : mode === 'binder' ? 'Archivador' : 'Flotante'}
+                        </span>
+                        <span className="text-[9px] font-bold text-foreground/40 uppercase tracking-widest text-center">
+                          {mode === 'classic' ? 'Paneles Acoplados' : mode === 'binder' ? 'Pestañas Izquierdas' : 'Modales Superiores'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </section>
 

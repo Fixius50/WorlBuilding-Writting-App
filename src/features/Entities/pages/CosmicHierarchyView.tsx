@@ -88,7 +88,7 @@ const CosmicHierarchyView = ({ id, type }: any) => {
  {/* Right Column: Internal Content List */}
  <div className="lg:col-span-2">
  <GlassPanel className="h-full border-foreground/10 monolithic-panel/40 overflow-hidden flex flex-col shadow-2xl">
- <header className="p-8 border-b border-foreground/10 flex justify-between items-center">
+ <header className="p-8 border-b border-foreground/10 flex justify-center gap-12 text-center items-center">
  <div className="flex items-center gap-4">
  <div className="size-10 rounded-none bg-primary/20 text-primary flex items-center justify-center">
  <span className="material-symbols-outlined">hub</span>

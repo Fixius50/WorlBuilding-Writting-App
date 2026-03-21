@@ -47,7 +47,7 @@ const NotebookGrid: React.FC<NotebookGridProps> = ({ notebooks, loading, onSelec
  return (
  <div className="p-8 w-full h-full overflow-y-auto">
  <div className="max-w-7xl mx-auto">
- <header className="flex justify-between items-center mb-12">
+ <header className="flex justify-center gap-12 text-center items-center mb-12">
  <div>
  <h1 className="text-4xl font-serif text-foreground/60 mb-2">Your Notebooks</h1>
  <p className="text-foreground/60 font-mono text-sm">Select a chronicle to begin writing</p>

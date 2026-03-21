@@ -67,7 +67,7 @@ const WritingHub = () => {
 
  return (
  <div className="flex-1 flex flex-col bg-background overflow-y-auto no-scrollbar p-12">
- <header className="mb-12 flex justify-between items-end">
+ <header className="mb-12 flex justify-center gap-12 text-center items-end">
  <div>
  <h1 className="text-4xl font-serif font-bold text-foreground mb-2">{t('writing.library')}</h1>
  <p className="text-foreground/60 uppercase text-[10px] font-black tracking-[0.2em]">{t('writing.library_desc')}</p>

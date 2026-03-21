@@ -665,7 +665,7 @@ const TimelineView = () => {
 
  {/* LEFT SIDEBAR: Multiverse Selector */}
  <aside className="w-64 monolithic-panel border-r border-foreground/10 flex flex-col p-4 z-20 shrink-0">
- <header className="flex justify-between items-center mb-6">
+ <header className="flex justify-center gap-12 text-center items-center mb-6">
  <h2 className="text-xs font-black uppercase tracking-widest text-primary">{t('timeline.multiverse')}</h2>
  <button onClick={() => { setRightPanelMode('CUSTOM'); setActiveTab('universo'); setSelectedUniverseId(null); setNewUniverse({ nombre: '', descripcion: '' }); setRightOpen(true); }} className="text-foreground/60 hover:text-foreground" title="New Universe">
  <span className="material-symbols-outlined">add_circle</span>

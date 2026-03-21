@@ -180,7 +180,7 @@ const RelationshipManager = ({ entityId, entityType }) => {
 
  return (
  <div className="p-6 space-y-6">
- <header className="flex justify-between items-center">
+ <header className="flex justify-center gap-12 text-center items-center">
  <h3 className="text-lg font-bold text-foreground uppercase tracking-widest">Relationships</h3>
  <Button variant="secondary" icon="add_link" onClick={() => setIsAdding(!isAdding)}>
  {isAdding ? 'Cancel' : 'Connect'}

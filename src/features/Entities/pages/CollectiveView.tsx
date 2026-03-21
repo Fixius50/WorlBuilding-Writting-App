@@ -48,7 +48,7 @@ const CollectiveView = ({ id }) => {
  return (
  <div className="flex h-full overflow-y-auto custom-scrollbar p-8 flex-col gap-8">
  {/* Header */}
- <header className="flex justify-between items-end">
+ <header className="flex justify-center gap-12 text-center items-end">
  <div>
  <div className="flex items-center gap-3 mb-2">
  <span className="text-xs font-bold text-indigo-400 bg-indigo-400/10 px-2 py-0.5 rounded border border-indigo-400/20">COLLECTIVE</span>

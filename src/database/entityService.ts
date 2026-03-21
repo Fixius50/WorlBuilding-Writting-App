@@ -1,5 +1,5 @@
 import { sql } from './db';
-import { Entidad, Valor } from './types';
+import { Entidad, Valor, Plantilla } from './types';
 
 export const entityService = {
  async getAllByProject(projectId: number): Promise<Entidad[]> {
@@ -53,16 +53,53 @@ export const entityService = {
  return result[0];
  },
 
- async saveValue(entidadId: number, plantillaId: number, valor: string): Promise<void> {
- // Upsert logic for values
- const existing = await sql`SELECT id FROM valores WHERE entidad_id = ${entidadId} AND plantilla_id = ${plantillaId}`;
- 
- if (existing.length > 0) {
- await sql`UPDATE valores SET valor = ${valor}, updated_at = CURRENT_TIMESTAMP WHERE id = ${existing[0].id}`;
- } else {
- await sql`INSERT INTO valores (entidad_id, plantilla_id, valor) VALUES (${entidadId}, ${plantillaId}, ${valor})`;
- }
- },
+  async getValues(entidadId: number): Promise<(Valor & { attribute: Plantilla })[]> {
+    const results = await sql<any>`
+      SELECT v.*, 
+             p.id as p_id, p.nombre as p_nombre, p.tipo as p_tipo, 
+             p.valor_defecto as p_valor_defecto, p.metadata as p_metadata,
+             p.es_obligatorio as p_es_obligatorio, p.project_id as p_project_id,
+             p.created_at as p_created_at
+      FROM valores v
+      JOIN plantillas p ON v.plantilla_id = p.id
+      WHERE v.entidad_id = ${entidadId}
+    `;
+    
+    return results.map(r => ({
+      id: r.id,
+      entidad_id: r.entidad_id,
+      plantilla_id: r.plantilla_id,
+      valor: r.valor,
+      updated_at: r.updated_at || new Date().toISOString(),
+      attribute: {
+        id: r.p_id,
+        nombre: r.p_nombre,
+        tipo: r.p_tipo,
+        valor_defecto: r.p_valor_defecto,
+        metadata: r.p_metadata,
+        es_obligatorio: r.p_es_obligatorio,
+        project_id: r.p_project_id,
+        created_at: r.p_created_at
+      }
+    }));
+  },
+
+  async addValue(entidadId: number, plantillaId: number, valor: string): Promise<void> {
+    await sql`INSERT INTO valores (entidad_id, plantilla_id, valor) VALUES (${entidadId}, ${plantillaId}, ${valor})`;
+  },
+
+  async updateValue(valorId: number, valor: string): Promise<void> {
+    await sql`UPDATE valores SET valor = ${valor}, updated_at = CURRENT_TIMESTAMP WHERE id = ${valorId}`;
+  },
+
+  async saveValue(entidadId: number, plantillaId: number, valor: string): Promise<void> {
+    const existing = await sql`SELECT id FROM valores WHERE entidad_id = ${entidadId} AND plantilla_id = ${plantillaId}`;
+    if (existing.length > 0) {
+      await this.updateValue(existing[0].id, valor);
+    } else {
+      await this.addValue(entidadId, plantillaId, valor);
+    }
+  },
 
  async deleteValue(valorId: number): Promise<void> {
  await sql`DELETE FROM valores WHERE id = ${valorId}`;

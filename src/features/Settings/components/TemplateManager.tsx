@@ -76,7 +76,7 @@ const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
  return (
  <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
  <GlassPanel className={`${compact ? 'p-4 bg-transparent border-none shadow-none' : 'p-8 space-y-8'}`}>
- <header className={`flex ${compact ? 'flex-col gap-4' : 'justify-between items-center'}`}>
+ <header className={`flex ${compact ? 'flex-col gap-4' : 'justify-center gap-12 text-center items-center'}`}>
  <div>
  <h3 className={`${compact ? 'text-sm' : 'text-xl'} font-bold text-foreground`}>Atributos Globales</h3>
  <p className="text-xs text-foreground/60 mt-1">Define atributos disponibles para todas las entidades.</p>
