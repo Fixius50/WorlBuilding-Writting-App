@@ -40,7 +40,7 @@ interface DeletionTarget {
 const WorldBibleLayout = () => {
  const { username, projectName } = useParams();
  const navigate = useNavigate();
- const outletContext = useOutletContext<ArchitectContext>() || {};
+ const outletContext = (useOutletContext<ArchitectContext>() || {}) as ArchitectContext;
  const {
  handleCreateEntity: propHandleCreateEntity,
  ...architectContext

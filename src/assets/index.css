@@ -53,16 +53,22 @@
   --primary: 243 75% 59%;
 }
 
+.theme-deep_space_light {
+  --background: 240 10% 96%;
+  --foreground: 240 10% 8%;
+  --primary: 243 75% 59%;
+}
+
 .theme-nebula {
   --background: 260 40% 5%;
   --foreground: 260 10% 95%;
   --primary: 260 80% 65%;
 }
 
-.theme-high_contrast {
-  --background: 0 0% 0%;
-  --foreground: 0 0% 100%;
-  --primary: 0 0% 100%;
+.theme-nebula_light {
+  --background: 260 20% 96%;
+  --foreground: 260 10% 8%;
+  --primary: 260 80% 65%;
 }
 
 /* Zen Editor Migrated Styles */

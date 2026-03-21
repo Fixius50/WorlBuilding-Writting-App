@@ -4,7 +4,7 @@ import Button from '../../../components/common/Button';
 import api from '../../../services/api';
 
 const CollectiveView = ({ id }) => {
- const [collective, setCollective] = useState(null);
+ const [collective, setCollective] = useState<any>(null);
  const [loading, setLoading] = useState(true);
  const [isEditing, setIsEditing] = useState(false);
 

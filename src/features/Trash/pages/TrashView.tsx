@@ -5,9 +5,9 @@ import api from '../../../services/api';
 export default function TrashView() {
  const { id: projectId } = useParams();
  const navigate = useNavigate();
- const [items, setItems] = useState([]);
+ const [items, setItems] = useState<any[]>([]);
  const [loading, setLoading] = useState(true);
- const [error, setError] = useState(null);
+ const [error, setError] = useState<any>(null);
 
  useEffect(() => {
  loadItems();

@@ -6,7 +6,7 @@ import api from '../../../services/api';
 
 const LinguisticsRouter = () => {
  const [view, setView] = useState('hub'); // 'hub', 'foundry', 'editor'
- const [selectedWord, setSelectedWord] = useState(null);
+ const [selectedWord, setSelectedWord] = useState<any>(null);
 
  const handleOpenEditor = (word) => {
  setSelectedWord(word);

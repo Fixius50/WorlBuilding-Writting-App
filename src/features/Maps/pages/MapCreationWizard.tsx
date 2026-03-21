@@ -6,7 +6,7 @@ const MapCreationWizard = ({ onCancel, onCreate }) => {
  const [step, setStep] = useState(1);
  const [mapType, setMapType] = useState('regional');
  const [canvasSource, setCanvasSource] = useState('upload');
- const [uploadedFile, setUploadedFile] = useState(null);
+ const [uploadedFile, setUploadedFile] = useState<any>(null);
  const [mapName, setMapName] = useState('');
  const fileInputRef = React.useRef(null);
 

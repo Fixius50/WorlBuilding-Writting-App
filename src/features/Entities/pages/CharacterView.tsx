@@ -9,7 +9,7 @@ const CharacterView = ({ id }) => {
  const { id: projectId } = useParams();
  const navigate = useNavigate();
  const [activeTab, setActiveTab] = useState('overview');
- const [character, setCharacter] = useState(null);
+ const [character, setCharacter] = useState<any>(null);
  const [loading, setLoading] = useState(true);
  const [isEditing, setIsEditing] = useState(false);
 

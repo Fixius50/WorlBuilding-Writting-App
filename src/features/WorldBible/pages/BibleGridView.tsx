@@ -108,7 +108,7 @@ const BibleGridView = () => {
  key={folder.id}
  item={folder}
  type="folder"
- linkTo={`/${username}/${projectName}/bible/folder/${folder.slug || folder.id}`}
+ linkTo={`/${username || 'local'}/${projectName}/bible/folder/${folder.slug || folder.id}`}
  onDelete={() => handleDeleteFolder(folder.id)}
  onContextMenu={(e) => handleContextMenu(e, folder)}
  />

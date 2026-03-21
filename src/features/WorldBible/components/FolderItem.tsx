@@ -26,7 +26,8 @@ const getIconForType = (type?: string) => {
 
 const getEntityRoute = (username: string, projectName: string, entity: Entidad, folderId: number) => {
  const id = entity.id;
- return `/${username}/${projectName}/bible/folder/${folderId}/entity/${id}`;
+ const actualUsername = username || 'local';
+ return `/${actualUsername}/${projectName}/bible/folder/${folderId}/entity/${id}`;
 };
 
 interface FolderUpdateEvent extends CustomEvent {
@@ -124,7 +125,7 @@ const FolderItem: React.FC<FolderItemProps> = ({
  return () => window.removeEventListener('folder-update', handleUpdate);
  }, [folder.id]);
 
- const navigateToFolder = () => navigate(`/${username}/${projectName}/bible/folder/${folder.id}`);
+ const navigateToFolder = () => navigate(`/${username || 'local'}/${projectName}/bible/folder/${folder.id}`);
 
  const handleContextMenu = (e: React.MouseEvent, type: 'folder' | 'entity', id: number, name: string) => {
  e.preventDefault();

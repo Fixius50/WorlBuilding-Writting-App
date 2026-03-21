@@ -7,7 +7,7 @@ import Button from '../../../components/common/Button';
  * Right panel component for adding and editing markers on maps
  */
 const MapMarkerEditor = ({ markers = [], onAddMarker, onUpdateMarker, onDeleteMarker, onClose }) => {
- const [selectedMarker, setSelectedMarker] = useState(null);
+ const [selectedMarker, setSelectedMarker] = useState<any>(null);
  const [isAdding, setIsAdding] = useState(false);
  const [searchTerm, setSearchTerm] = useState('');
 

@@ -78,7 +78,7 @@ const CreateNodeModal = ({ isOpen, onClose, onCreate, parentFolder }) => {
  <div className="space-y-3">
  <label className="block text-[10px] font-black text-foreground/30 uppercase mb-1">Tipo de Jerarquía</label>
  <div className="grid grid-cols-2 gap-2">
- {TYPES.concat([{ id: 'FOLDER', label: 'Carpeta', icon: 'folder', color: 'text-foreground/50' }]).map(type => (
+ {(TYPES as any[]).concat([{ id: 'FOLDER', label: 'Carpeta', icon: 'folder', color: 'text-foreground/50' }]).map(type => (
  <div
  key={type.id || 'FOLDER'}
  onClick={() => setFormData({ ...formData, tipo: type.id })}

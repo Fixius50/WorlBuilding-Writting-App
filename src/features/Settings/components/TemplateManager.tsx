@@ -4,15 +4,15 @@ import GlassPanel from '../../../components/common/GlassPanel';
 import Button from '../../../components/common/Button';
 import ConfirmationModal from '../../../components/common/ConfirmationModal';
 
-const TemplateManager = ({ compact = false }) => {
+const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
  // We only need the Root Folder ID to attach the global templates to (Database requirement)
  // But logically they are global.
- const [rootFolderId, setRootFolderId] = useState(null);
- const [templates, setTemplates] = useState([]);
+ const [rootFolderId, setRootFolderId] = useState<number | null>(null);
+ const [templates, setTemplates] = useState<any[]>([]);
  const [loading, setLoading] = useState(false);
 
  // Modal State for Deletion
- const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+ const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
  useEffect(() => {
  initialize();
@@ -44,7 +44,7 @@ const TemplateManager = ({ compact = false }) => {
  }
  };
 
- const handleCreateTemplate = async (newField) => {
+ const handleCreateTemplate = async (newField: any) => {
  if (!rootFolderId) return;
  try {
  // Create in Root Folder but mark as Global
@@ -135,7 +135,7 @@ const TemplateManager = ({ compact = false }) => {
  );
 };
 
-const NewFieldForm = ({ onAdd }) => {
+const NewFieldForm = ({ onAdd }: { onAdd: any }) => {
  const [label, setLabel] = useState('');
  const [type, setType] = useState('text');
  const [required, setRequired] = useState(false);
@@ -144,8 +144,8 @@ const NewFieldForm = ({ onAdd }) => {
  const [options, setOptions] = useState(['']);
 
  const handleAddOption = () => setOptions([...options, '']);
- const handleRemoveOption = (idx) => setOptions(options.filter((_, i) => i !== idx));
- const handleOptionChange = (idx, val) => {
+ const handleRemoveOption = (idx: number) => setOptions(options.filter((_, i) => i !== idx));
+ const handleOptionChange = (idx: number, val: string) => {
  const newOpts = [...options];
  newOpts[idx] = val;
  setOptions(newOpts);

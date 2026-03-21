@@ -20,13 +20,13 @@ const ENTITY_TYPES = [
 
 const RelationshipManager = ({ entityId, entityType }) => {
  console.log(">>> RELATIONSHIP MANAGER V2 LOADED");
- const [relationships, setRelationships] = useState([]);
+ const [relationships, setRelationships] = useState<any[]>([]);
  const [loading, setLoading] = useState(false);
  const [isAdding, setIsAdding] = useState(false);
 
  // Form State
  const [targetType, setTargetType] = useState('All');
- const [targetItems, setTargetItems] = useState([]);
+ const [targetItems, setTargetItems] = useState<any[]>([]);
  const [targetSearch, setTargetSearch] = useState(''); // ADDED
  const [selectedTargetId, setSelectedTargetId] = useState('');
  const [relType, setRelType] = useState('');

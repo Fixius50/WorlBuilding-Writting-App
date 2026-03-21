@@ -5,9 +5,9 @@ import GlassPanel from '../../../components/common/GlassPanel';
 import Avatar from '../../../components/common/Avatar';
 import Button from '../../../components/common/Button';
 
-const EntityProfile = () => {
- const { username, projectName, folderSlug, entitySlug } = useParams();
- const [entity, setEntity] = useState(null);
+ const EntityProfile = () => {
+  const { username, projectName, folderSlug, entitySlug } = useParams();
+  const [entity, setEntity] = useState<any>(null);
  const [activeTab, setActiveTab] = useState('overview');
  const [loading, setLoading] = useState(true);
 
@@ -31,16 +31,16 @@ const EntityProfile = () => {
  if (!entity) return <div className="p-20 text-center text-red-400">Entity not found.</div>;
 
  // Derived Data
- const attributes = (entity.valores || []).map(val => ({
+ const attributes = (entity.valores || []).map((val: any) => ({
  label: val.plantilla.nombre,
  value: val.valor,
  type: val.plantilla.tipo
- })).filter(a => ['number', 'text', 'short_text'].includes(a.type));
+ })).filter((a: any) => ['number', 'text', 'short_text'].includes(a.type));
 
  // Simple Relation Mock until backend relation graph is fully wired
  const relationships = (entity.valores || [])
- .filter(v => v.plantilla.tipo === 'entity_link' && v.valor)
- .map(v => ({
+ .filter((v: any) => v.plantilla.tipo === 'entity_link' && v.valor)
+ .map((v: any) => ({
  name: "Linked Entity (ID: " + v.valor + ")",
  role: v.plantilla.nombre,
  type: "Link"
@@ -75,15 +75,15 @@ const EntityProfile = () => {
  )}
  </div>
  <div className="flex gap-2">
- {entity.tags && entity.tags.split(',').map((tag, i) => (
- <span key={i} className="text-xs font-bold text-foreground/60 bg-foreground/5 px-2 py-1 rounded-none">
- #{tag.trim()}
- </span>
+  {entity.tags && entity.tags.split(',').map((tag: string, i: number) => (
+  <span key={i} className="text-xs font-bold text-foreground/60 bg-foreground/5 px-2 py-1 rounded-none">
+  #{tag.trim()}
+  </span>
  ))}
  </div>
  </div>
 
- <Link to={`/${username}/${projectName}/bible/folder/${folderSlug}/entity/${entitySlug}/edit`}>
+ <Link to={`/${username || 'local'}/${projectName}/bible/folder/${folderSlug}/entity/${entitySlug}/edit`}>
  <Button variant="primary" icon="edit" size="sm">Edit Mode</Button>
  </Link>
  </div>
@@ -121,10 +121,10 @@ const EntityProfile = () => {
  <GlassPanel className="p-8">
  <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground/60 mb-6">Core Statistics</h3>
  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
- {attributes.map((attr, idx) => (
- <div key={idx} className="space-y-2">
- <div className="flex justify-between items-end">
- <span className="text-sm font-bold text-foreground capitalize">{attr.label}</span>
+  {attributes.map((attr: any, idx: number) => (
+  <div key={idx} className="space-y-2">
+  <div className="flex justify-between items-end">
+  <span className="text-sm font-bold text-foreground capitalize">{attr.label}</span>
  <span className="text-xs font-black text-foreground/60">{String(attr.value).substring(0, 20)}</span>
  </div>
  {/* Render bar only if numeric enough */}
@@ -165,9 +165,9 @@ const EntityProfile = () => {
  ) : (
  <div className="prose prose-invert prose-sm max-w-none text-foreground/60 leading-relaxed">
  {/* Optional: Add dropcap or styling if needed */}
- {(entity.descripcion || "No description provided.").split('\n').map((p, i) => (
- <p key={i} className="mb-4 last:mb-0">{p}</p>
- ))}
+  {(entity.descripcion || "No description provided.").split('\n').map((p: string, i: number) => (
+  <p key={i} className="mb-4 last:mb-0">{p}</p>
+  ))}
  </div>
  )}
  </section>
@@ -180,10 +180,10 @@ const EntityProfile = () => {
  </h4>
 
  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
- {relationships.map((rel, i) => (
- <div key={i} className="group flex items-center gap-3 p-3 bg-foreground/5 rounded-none border border-foreground/10 hover:border-primary/30 hover:bg-foreground/10 transition-all cursor-pointer">
- <div className="size-10 rounded-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center text-sm font-bold text-foreground group-hover:scale-110 transition-transform shadow-inner border border-foreground/40">
- {rel.name.charAt(0)}
+  {relationships.map((rel: any, i: number) => (
+  <div key={i} className="group flex items-center gap-3 p-3 bg-foreground/5 rounded-none border border-foreground/10 hover:border-primary/30 hover:bg-foreground/10 transition-all cursor-pointer">
+  <div className="size-10 rounded-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center text-sm font-bold text-foreground group-hover:scale-110 transition-transform shadow-inner border border-foreground/40">
+  {String(rel.name || '').charAt(0)}
  </div>
  <div className="flex-1 min-w-0">
  <div className="text-sm font-bold text-foreground group-hover:text-primary transition-colors truncate">{rel.name}</div>
@@ -235,7 +235,7 @@ const EntityProfile = () => {
  </div>
  <div className="flex justify-between py-2 border-b border-foreground/10">
  <span className="text-xs text-foreground/60">Folder</span>
- <Link to={`/${username}/${projectName}/bible/folder/${folderSlug}`} className="text-xs font-bold text-primary hover:underline">
+ <Link to={`/${username || 'local'}/${projectName}/bible/folder/${folderSlug}`} className="text-xs font-bold text-primary hover:underline">
  {entity.carpeta?.nombre}
  </Link>
  </div>
@@ -251,10 +251,10 @@ const EntityProfile = () => {
  <GlassPanel className="p-6">
  <h3 className="text-xs font-black uppercase tracking-widest text-foreground/60 mb-4">Linked Beings</h3>
  <div className="space-y-3">
- {relationships.map((rel, i) => (
- <div key={i} className="flex items-center gap-3 p-2 hover:bg-foreground/5 rounded-none transition-colors cursor-pointer">
- <div className="size-8 rounded-full bg-foreground/10 flex items-center justify-center text-xs font-bold">L</div>
- <div className="flex-1 min-w-0">
+  {relationships.map((rel: any, i: number) => (
+  <div key={i} className="flex items-center gap-3 p-2 hover:bg-foreground/5 rounded-none transition-colors cursor-pointer">
+  <div className="size-8 rounded-full bg-foreground/10 flex items-center justify-center text-xs font-bold">L</div>
+  <div className="flex-1 min-w-0">
  <div className="text-xs font-bold text-foreground truncate">{rel.name}</div>
  <div className="text-[10px] text-foreground/60">{rel.role}</div>
  </div>

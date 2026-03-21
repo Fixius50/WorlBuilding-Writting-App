@@ -3,7 +3,7 @@ import GlassPanel from '../../../components/common/GlassPanel';
 import Avatar from '../../../components/common/Avatar';
 import Button from '../../../components/common/Button';
 
-const CosmicHierarchyView = () => {
+const CosmicHierarchyView = ({ id, type }: any) => {
  return (
  <div className="flex-1 flex overflow-hidden bg-background font-sans text-foreground/60">
  {/* Main Content Area */}
@@ -126,14 +126,14 @@ const CosmicHierarchyView = () => {
  );
 };
 
-const Tag = ({ label, color, icon }) => (
+const Tag = ({ label, color, icon }: any) => (
  <div className={`px-4 py-1.5 rounded-none bg-${color}-500/10 text-${color}-400 border border-${color}-500/20 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest shadow-lg`}>
  <span className="material-symbols-outlined text-[14px]">{icon}</span>
  {label}
  </div>
 );
 
-const Attribute = ({ label, value, unit, icon }) => (
+const Attribute = ({ label, value, unit, icon }: any) => (
  <div className="space-y-2">
  <p className="text-[9px] font-black uppercase tracking-widest text-foreground/60 ml-1">{label}</p>
  <div className="w-full monolithic-panel rounded-none px-5 py-3.5 flex items-center justify-between group hover:border-foreground/40 transition-all">
@@ -146,7 +146,7 @@ const Attribute = ({ label, value, unit, icon }) => (
  </div>
 );
 
-const PlanetRow = ({ name, type, stats, icon, active }) => (
+const PlanetRow = ({ name, type, stats, icon, active }: any) => (
  <div className={`group flex items-center gap-6 p-4 rounded-none transition-all cursor-pointer ${active ? 'bg-primary/10 border border-primary/20 shadow-xl' : 'hover:bg-foreground/5 border border-transparent'}`}>
  <span className="material-symbols-outlined text-foreground/60 group-hover:text-foreground/60">drag_indicator</span>
  <div className={`size-12 rounded-none flex items-center justify-center ${active ? 'bg-primary text-foreground shadow-lg shadow-primary/30' : 'monolithic-panel border border-foreground/10 text-foreground/60'}`}>

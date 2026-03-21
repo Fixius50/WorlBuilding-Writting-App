@@ -35,7 +35,7 @@ const EntityRouter = () => {
  case 'interaccion':
  return <div className="p-8 text-foreground">Interaction/Event View for ID: {entityId}</div>;
  case 'magic':
- return <div className="p-8 text-foreground">Magic System View for ID: {id}</div>;
+ return <div className="p-8 text-foreground">Magic System View for ID: {entityId}</div>;
  default:
  return <div className="p-8 text-foreground">Unknown Entity Type: {type}</div>;
  }

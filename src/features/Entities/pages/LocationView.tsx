@@ -4,7 +4,7 @@ import Button from '../../../components/common/Button';
 import api from '../../../services/api';
 
 const LocationView = ({ id }) => {
- const [location, setLocation] = useState(null);
+ const [location, setLocation] = useState<any>(null);
  const [loading, setLoading] = useState(true);
  const [isEditing, setIsEditing] = useState(false);
 
