@@ -6,11 +6,14 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
 
 ### MARZO 2026
 
-- **2026-03-21: Refactorización Estética y Técnica del Entity Builder**
-  - **Identidad Visual:** Migración completa a variables CSS (`var(--primary)`, `var(--background)`) y unidades `rem`, garantizando adaptabilidad temática total (Temas Claro/Oscuro).
-  - **Rediseño del Header:** Implementación de un encabezado minimalista en dos niveles: 1) Fila superior con Avatar y Nombre (estilo compacto horizontal) y 2) Fila inferior con controles de acción (Volver/Guardar) centrados.
-  - **Lógica de Atributos:** Corrección de la persistencia de atributos mediante la implementación de `getValues` en `entityService.ts` y sincronización de métodos de guardado/actualización.
-  - **Panel de Contexto:** Refactorización de `GlobalRightPanel.tsx` y `EntityBuilderSidebar.tsx` para eliminar fondos estáticos y asegurar transparencia reactiva al tema global.
+- **2026-03-22: Sistema de Atributos Globales y UX de Arrastre**
+  - **Biblioteca Global:** Implementación de persistencia con `project_id: 0`, permitiendo la reutilización de módulos en toda la aplicación.
+  - **Edición en Caliente:** Integración de un sistema de edición en línea (Lápiz) en el sidebar para modificar nombre y tipo de atributos instantáneamente.
+  - **UX Premium:** Refactorización del elemento drag-ghost (minimalista) y sustitución de diálogos `window.confirm` por `ConfirmModal` personalizado.
+  - **Sincronización SQLite:** Optimización del flujo de guardado en `EntityBuilder.tsx` para asegurar que los IDs de base de datos se sincronicen con la UI tras el primer guardado sin recargar.
+  - **Limpieza de Huérfanos:** Implementación de borrado físico de atributos en base de datos para evitar reapariciones de campos eliminados.
+
+- **2026-03-21: Refactorización Estética del Entity Builder**
 
 - **2026-03-15: Refactorización de Navegación, Reactividad y Notas Rápidas**
   - **Evolución de Notas:** Se ha transformado el módulo de "Cuadernos" en "Notas Rápidas" en el panel lateral derecho, optimizando el flujo de trabajo para anotaciones inmediatas.

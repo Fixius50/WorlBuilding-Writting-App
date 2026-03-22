@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { sqlocal } from '../../../database/db';
 import api from '../../../services/api';
 import { useLanguage } from '../../../context/LanguageContext';
+import { syncService } from '../../../services/syncService';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -78,21 +79,17 @@ const Settings = () => {
   };
 
   const handleDownloadBackup = async () => {
-    addNotification("Generando copia de la base de datos local...", "info");
+    addNotification("Sincronizando con el servidor local...", "info");
     try {
-      const file = await sqlocal.getDatabaseFile();
-      const url = URL.createObjectURL(file);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `worldbuilding_backup_${Date.now()}.sqlite3`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      addNotification("Copia de seguridad local descargada", "success");
+      const res = await syncService.exportToDisk('worldbuilding_master');
+      if (res.success) {
+        addNotification("Copia de seguridad guardada en el servidor", "success");
+      } else {
+        addNotification(res.message, "error");
+      }
     } catch (err) {
       console.error("Backup error", err);
-      addNotification("Error al generar copia de seguridad", "error");
+      addNotification("Error en la sincronización con el servidor", "error");
     }
   };
 
@@ -126,7 +123,6 @@ const Settings = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Simple size check: 1MB limit for localStorage safety
     if (file.size > 1024 * 1024) {
       addNotification("Imagen demasiado grande (máx 1MB)", "error");
       return;
@@ -160,25 +156,23 @@ const Settings = () => {
     { id: 'appearance', label: 'Apariencia y Editor', icon: 'palette' }
   ];
 
-  /* 
-     SOLO DOS TEMAS BASE PERMITIDOS 
-  */
   const themes = [
     { id: 'deep_space', label: 'Deep Space', color: '#0f172a' },
-    { id: 'nebula', label: 'Nebula', color: '#312e81' }
+    { id: 'nebula', label: 'Nebula', color: '#7c3aed' } // Changed to a more vibrant purple
   ];
 
   return (
     <div className="flex flex-col w-full h-full bg-transparent text-foreground font-sans overflow-hidden relative">
       <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-50">
-        <div className="absolute -top-[10%] -left-[10%] size-[40%] bg-indigo-500/10 blur-[120px] rounded-full animate-pulse"></div>
-        <div className="absolute -bottom-[10%] -right-[10%] size-[40%] bg-purple-500/5 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute -top-[10%] -left-[10%] size-[40%] bg-primary/10 blur-[120px] rounded-full animate-pulse"></div>
+        <div className="absolute -bottom-[10%] -right-[10%] size-[40%] bg-primary/5 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
       </div>
+      
       {/* TOAST NOTIFICATIONS */}
       <div className="fixed top-24 right-8 z-[100] flex flex-col gap-3">
         {notifications.map(n => (
           <div key={n.id} className="flex items-center gap-3 px-6 py-4 monolithic-panel border border-foreground/40 rounded-none shadow-2xl animate-slide-in-right">
-            <span className={`material-symbols-outlined ${n.type === 'success' ? 'text-green-400' : 'text-indigo-400'}`}>
+            <span className={`material-symbols-outlined ${n.type === 'success' ? 'text-emerald-400' : 'text-primary'}`}>
               {n.type === 'success' ? 'check_circle' : 'info'}
             </span>
             <span className="text-sm font-bold">{n.message}</span>
@@ -190,7 +184,7 @@ const Settings = () => {
       <header className="h-20 flex-none flex items-center justify-center gap-12 text-center px-12 border-b border-foreground/10 bg-background z-30">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-4">
-            <div className="size-10 rounded-none bg-indigo-500 flex items-center justify-center text-foreground shadow-lg shadow-indigo-500/20">
+            <div className="size-10 rounded-none flex items-center justify-center text-foreground shadow-lg" style={{ backgroundColor: 'hsl(var(--primary) / 0.8)', boxShadow: '0 8px 20px -4px hsla(var(--primary), 0.3)' }}>
               <span className="material-symbols-outlined text-2xl">settings</span>
             </div>
             <h1 className="text-xl font-bold tracking-tight hidden sm:block">Ajustes</h1>
@@ -202,7 +196,7 @@ const Settings = () => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-none text-xs font-bold transition-all ${activeTab === tab.id
-                  ? 'bg-indigo-500 text-foreground shadow-lg shadow-indigo-500/20'
+                  ? 'bg-primary text-foreground shadow-lg shadow-primary/20'
                   : 'text-foreground/60 hover:text-foreground hover:bg-foreground/5'
                   }`}
               >
@@ -229,21 +223,21 @@ const Settings = () => {
           {activeTab === 'general' && (
             <div className="space-y-6">
               <section className="monolithic-panel rounded-none p-8">
-                <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-indigo-400">
+                <h3 className="text-lg font-bold mb-6 flex items-center gap-2" style={{ color: 'hsl(var(--primary))' }}>
                   <span className="material-symbols-outlined">person</span>
                   Perfil de Arquitecto
                 </h3>
                 <div className="flex items-center gap-6 p-6 bg-foreground/5 rounded-none border border-foreground/10 group relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
                   <div className="relative">
-                    <div className="size-20 rounded-full bg-indigo-500 flex items-center justify-center text-foreground text-3xl font-black shadow-2xl border-4 border-foreground/40 overflow-hidden">
+                    <div className="size-20 rounded-full bg-primary flex items-center justify-center text-foreground text-3xl font-black shadow-2xl border-4 border-foreground/40 overflow-hidden">
                       {user?.avatarUrl ? (
                         <img src={user.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
                       ) : (
                         user?.displayName?.substring(0, 2).toUpperCase() || user?.username?.substring(0, 2).toUpperCase() || 'AR'
                       )}
                     </div>
-                    <label className="absolute -bottom-1 -right-1 size-8 bg-indigo-500 rounded-full flex items-center justify-center text-foreground cursor-pointer hover:scale-110 transition-all border-4 border-background shadow-lg">
+                    <label className="absolute -bottom-1 -right-1 size-8 bg-primary rounded-full flex items-center justify-center text-foreground cursor-pointer hover:scale-110 transition-all border-4 border-background shadow-lg">
                       <span className="material-symbols-outlined text-sm">photo_camera</span>
                       <input type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
                     </label>
@@ -256,14 +250,14 @@ const Settings = () => {
                       placeholder={user?.username || "Tu nombre de arquitecto..."}
                       className="bg-transparent border-none text-2xl font-black text-foreground outline-none focus:ring-0 w-full p-0 placeholder-foreground/20"
                     />
-                    <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Architect Rank • Local Session</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'hsl(var(--primary))' }}>Architect Rank • Local Session</p>
                   </div>
                 </div>
               </section>
 
               <section className="monolithic-panel rounded-none p-8 space-y-6">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-bold flex items-center gap-2 text-indigo-400">
+                  <h3 className="text-lg font-bold flex items-center gap-2 text-primary">
                     <span className="material-symbols-outlined">sync_lock</span>
                     Sincronización y Respaldo
                   </h3>
@@ -277,17 +271,18 @@ const Settings = () => {
                     />
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex items-center gap-2 px-6 py-3 border border-foreground/10 bg-foreground/5 hover:bg-foreground/10 text-foreground rounded-none text-xs font-black uppercase tracking-widest transition-all"
+                      className="flex items-center gap-2 px-5 py-2.5 monolithic-panel hover:bg-foreground/5 text-foreground/60 hover:text-foreground rounded-none text-[10px] font-black uppercase tracking-widest transition-all"
                     >
-                      <span className="material-symbols-outlined text-sm">upload_file</span>
-                      Importar Universo
+                      <span className="material-symbols-outlined text-base">upload_file</span>
+                      Importar
                     </button>
                     <button
                       onClick={handleDownloadBackup}
-                      className="flex items-center gap-2 px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-foreground rounded-none text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-500/30"
+                      className="flex items-center gap-2 px-5 py-2.5 monolithic-panel hover:bg-primary/10 text-primary rounded-none text-[10px] font-black uppercase tracking-widest transition-all shadow-sm"
+                      style={{ borderColor: 'hsl(var(--primary) / 0.3)' }}
                     >
-                      <span className="material-symbols-outlined text-sm">cloud_download</span>
-                      Descargar Backup ZIP
+                      <span className="material-symbols-outlined text-base">cloud_sync</span>
+                      Sincronizar Nube
                     </button>
                   </div>
                 </div>
@@ -300,7 +295,7 @@ const Settings = () => {
                         key={project.filename}
                         onClick={() => toggleProjectSelection(project.filename)}
                         className={`flex items-center gap-3 p-4 rounded-none border transition-all text-left ${selectedProjects.includes(project.filename)
-                          ? 'border-indigo-500 bg-indigo-500/10 text-foreground'
+                          ? 'border-primary bg-primary/10 text-foreground'
                           : 'sunken-panel text-foreground/60 hover:border-foreground/40'
                           }`}
                       >
@@ -312,7 +307,7 @@ const Settings = () => {
                         </div>
                       </button>
                     )) : (
-                      <div className="col-span-2 p-8 border border-dashed border-foreground/10 rounded-none text-center text-foreground/60 text-xs italic text-glass-muted">
+                      <div className="col-span-2 p-8 border border-dashed border-foreground/10 rounded-none text-center text-foreground/60 text-xs italic">
                         No hay universos detectados...
                       </div>
                     )}
@@ -325,19 +320,17 @@ const Settings = () => {
           {activeTab === 'appearance' && (
             <div className="space-y-6">
               <section className="monolithic-panel rounded-none p-8">
-                <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-indigo-400">
+                <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-primary">
                   <span className="material-symbols-outlined">palette</span>
                   Estética del Sistema
                 </h3>
                 <div className="grid grid-cols-2 gap-6">
                   {themes.map(theme => {
-                    // Calculamos si la variante base está seleccionada (deep_space o deep_space_light)
                     const isSelected = settings.theme.startsWith(theme.id);
                     const isLight = settings.theme.endsWith('_light');
 
                     return (
                       <div key={theme.id} className={`relative flex flex-col gap-3 p-4 rounded-none border transition-all ${isSelected ? 'border-primary bg-primary/5 ring-1 ring-primary/30' : 'sunken-panel hover:border-foreground/40'}`}>
-                        {/* Area clickeable principal (Theme Thumbnail) */}
                         <div className="h-24 rounded-none flex items-center justify-center overflow-hidden border border-foreground/10" style={{ backgroundColor: theme.color }}>
                           <div className="size-10 rounded-full bg-white/10 border-2 border-white/20 shadow-xl backdrop-blur-sm"></div>
                         </div>
@@ -347,12 +340,11 @@ const Settings = () => {
                           <span className="text-[9px] font-bold text-foreground/40 uppercase tracking-widest">{isSelected ? 'ESTILO ACTIVO' : 'DISPONIBLE'}</span>
                         </div>
 
-                        {/* Theme Switcher Claro/Oscuro */}
                         <div className="flex items-center mt-3 border border-foreground/20 rounded-none overflow-hidden">
                           <button
                             onClick={() => updateSetting('theme', theme.id)}
                             className={`flex-1 py-1.5 flex items-center justify-center gap-1 text-[9px] font-black uppercase tracking-widest transition-all
-                              ${isSelected && !isLight ? 'bg-indigo-500 text-white shadow-inner' : 'bg-transparent text-foreground/50 hover:bg-foreground/5'}
+                              ${isSelected && !isLight ? 'bg-primary text-white shadow-inner' : 'bg-transparent text-foreground/50 hover:bg-foreground/5'}
                             `}
                           >
                             <span className="material-symbols-outlined text-[11px]">dark_mode</span>
@@ -376,7 +368,7 @@ const Settings = () => {
               </section>
 
               <section className="monolithic-panel rounded-none p-8">
-                <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-indigo-400">
+                <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-primary">
                   <span className="material-symbols-outlined">view_sidebar</span>
                   Arquitectura de Paneles
                 </h3>
@@ -426,7 +418,7 @@ const Settings = () => {
               </section>
 
               <section className="monolithic-panel rounded-none p-8">
-                <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-indigo-400">
+                <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-primary">
                   <span className="material-symbols-outlined">text_fields</span>
                   Tipografía y Lectura
                 </h3>
@@ -437,7 +429,7 @@ const Settings = () => {
                       <select
                         value={settings.font}
                         onChange={(e) => updateSetting('font', e.target.value)}
-                        className="w-full sunken-panel border-foreground/40 rounded-none px-5 py-3.5 text-sm text-foreground appearance-none outline-none focus:border-indigo-500 transition-all cursor-pointer"
+                        className="w-full sunken-panel border-foreground/40 rounded-none px-5 py-3.5 text-sm text-foreground appearance-none outline-none focus:border-primary transition-all cursor-pointer"
                         style={{ fontFamily: settings.font }}
                       >
                         <option value="Lexend" className="text-foreground">Lexend (UI Moderna)</option>
@@ -452,7 +444,7 @@ const Settings = () => {
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <label className="text-[10px] font-black uppercase tracking-widest text-foreground/60">Tamaño del Texto</label>
-                      <span className="text-xs font-bold text-indigo-400">{settings.fontSize}px</span>
+                      <span className="text-xs font-bold text-primary">{settings.fontSize}px</span>
                     </div>
                     <div className="flex items-center gap-4 py-3">
                       <input
@@ -460,7 +452,7 @@ const Settings = () => {
                         min="12" max="24"
                         value={settings.fontSize}
                         onChange={(e) => updateSetting('fontSize', parseInt(e.target.value))}
-                        className="flex-1 accent-indigo-500 h-1 bg-foreground/10 rounded-full appearance-none cursor-pointer"
+                        className="flex-1 accent-primary h-1 bg-foreground/10 rounded-full appearance-none cursor-pointer"
                       />
                     </div>
                   </div>

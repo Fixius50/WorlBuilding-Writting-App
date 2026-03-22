@@ -7,10 +7,10 @@
 
 /* Global Theme Variables - Outside layers for high priority */
 :root {
-  /* Light Theme Base */
+  /* Light Theme Base - Soft Emerald Green */
   --background: 0 0% 100%;
-  --foreground: 240 10% 4%;
-  --primary: 243 75% 59%;
+  --foreground: 240 10% 3.9%;
+  --primary: 142 70% 45%; 
   --primary-foreground: 0 0% 98%;
   --radius: 0px;
 }
@@ -40,35 +40,35 @@
 }
 
 .theme-light {
-  /* Explicit Light Theme */
-  --background: 0 0% 98%;
-  --foreground: 240 10% 4%;
-  --primary: 243 75% 59%;
+  /* Explicit Light Theme - Fresh Green */
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+  --primary: 142 70% 45%;
   --primary-foreground: 0 0% 98%;
 }
 
 .theme-deep_space {
   --background: 240 10% 2%;
   --foreground: 0 0% 95%;
-  --primary: 243 75% 59%;
+  --primary: 243 75% 59%; /* Classic Deep Space Blue for Dark */
 }
 
 .theme-deep_space_light {
-  --background: 240 10% 96%;
-  --foreground: 240 10% 8%;
-  --primary: 243 75% 59%;
+  --background: 0 0% 100%;
+  --foreground: 240 10% 10%;
+  --primary: 142 70% 45%; /* Fresh Green for Light */
 }
 
 .theme-nebula {
   --background: 260 40% 5%;
-  --foreground: 260 10% 95%;
-  --primary: 260 80% 65%;
+  --foreground: 0 0% 95%;
+  --primary: 270 100% 80%; /* Bright Lilac for Nebula Dark */
 }
 
 .theme-nebula_light {
-  --background: 260 20% 96%;
-  --foreground: 260 10% 8%;
-  --primary: 260 80% 65%;
+  --background: 260 20% 99%;
+  --foreground: 260 10% 15%;
+  --primary: 270 90% 60%; /* Vibrant Purple for Nebula Light */
 }
 
 /* Zen Editor Migrated Styles */

@@ -145,30 +145,7 @@ const GlobalRightPanel: React.FC<GlobalRightPanelProps> = ({
             contextContent
           ) : (
             <div id="global-right-panel-portal" className="h-full flex flex-col relative overflow-y-auto no-scrollbar p-[1.5rem] bg-background">
-              {availableTemplates.length > 0 && (
-                <div className="space-y-[1.5rem] animate-in fade-in slide-in-from-right-4 duration-500">
-                  <div>
-                    <h3 className="text-[0.625rem] font-black text-foreground/40 uppercase tracking-[0.2em] mb-[1rem]">Atributos Disponibles</h3>
-                    <div className="grid grid-cols-1 gap-[0.5rem]">
-                      {availableTemplates.map((template) => (
-                        <button
-                          key={template.id}
-                          onClick={() => addAttributeHandler && addAttributeHandler(template.id)}
-                          className="w-full px-[1rem] py-[0.75rem] bg-foreground/[0.03] hover:bg-primary/10 text-left text-[0.6875rem] font-bold flex items-center justify-between group transition-all border border-foreground/5 hover:border-primary/30"
-                        >
-                          <div className="flex items-center gap-[0.75rem] text-foreground/60 group-hover:text-primary">
-                            <span className="material-symbols-outlined text-[1.125rem] text-primary/50">add_circle</span>
-                            {template.nombre}
-                          </div>
-                          <span className="text-[0.5625rem] px-[0.375rem] py-[0.125rem] rounded-none bg-foreground/10 text-foreground/40 group-hover:bg-primary/20 group-hover:text-primary uppercase font-black border border-transparent group-hover:border-primary/20">
-                            {template.tipo}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
+              {/* Portal Target - Content injected from features */}
             </div>
           )}
         </div>

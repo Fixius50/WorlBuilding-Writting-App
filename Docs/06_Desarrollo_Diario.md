@@ -47,3 +47,9 @@ npm run build
 ```
 
 Esto generará los archivos distribuibles en la carpeta `dist/` o `release/`.
+## 5. Entity Builder y Atributos Globales
+
+Para garantizar la reutilización de datos entre diferentes proyectos y entidades:
+- **Atributos Globales:** Al crear una plantilla en el sidebar, usar `project_id: 0`. Esto la hace visible para cualquier proyecto (`getByProject(id) OR project_id = 0`).
+- **Sincronización de Guardado:** Al guardar una entidad nueva, el estado local `isCreation` debe pasar a `false` inmediatamente para permitir ediciones posteriores sin recargar.
+- **Borrado Físico:** Es crítico llamar a `deleteValue` al eliminar atributos de una entidad para evitar datos huérfanos en SQLite.

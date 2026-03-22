@@ -14,6 +14,7 @@
 - [x] **Líneas Temporales:** Motor de eventos con soporte para eras y **visualización horizontal avanzada**.
 - [/] **Especialización:**
   - [x] Conlangs (Motor fonético, diseño de glifos y exportación .ttf).
+  - [x] **Entity Builder:** Sistema de atributos globales, drag & drop y persistencia SQLite.
   - [ ] Mapas (Visor Leaflet integrado).
 
 ## FASE 3: PULIDO Y EMPAQUETADO

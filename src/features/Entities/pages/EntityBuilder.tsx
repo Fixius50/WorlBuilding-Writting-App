@@ -25,7 +25,7 @@ interface EntityBuilderProps {
 const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
   const { username, projectName, entitySlug, folderSlug, type } = useParams();
   const navigate = useNavigate();
-  const isCreation = mode === 'creation';
+  const [isCreation, setIsCreation] = useState(mode === 'creation');
 
   const {
     setRightOpen,
@@ -60,6 +60,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
   const [activeEntityTab, setActiveEntityTab] = useState('identity');
   const [zoomImage, setZoomImage] = useState<string | null>(null);
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
 
   // Parse contenido_json safely
   const getExtra = () => {
@@ -101,7 +102,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
     const init = async () => {
       setLoading(true);
       try {
-        const templates = await templateService.getAll();
+        const templates = await templateService.getByProject(1); // project_id 1 + global (0)
         setAvailableTemplatesLocal(templates);
         setAvailableTemplates(templates);
 
@@ -139,6 +140,16 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
     init();
   }, [entitySlug, isCreation]);
 
+  const refreshTemplates = async () => {
+    try {
+      const templates = await templateService.getByProject(1);
+      setAvailableTemplatesLocal(templates);
+      setAvailableTemplates(templates);
+    } catch (err) {
+      console.error('Error refreshing templates:', err);
+    }
+  };
+
   // --- HANDLERS ---
   const handleSave = async (redirect = true) => {
     setSaving(true);
@@ -150,7 +161,9 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
         savedEntity = await entityService.update(entity.id!, entity);
       }
 
-      for (const f of fields) {
+      const updatedFields = [...fields];
+      for (let i = 0; i < updatedFields.length; i++) {
+        const f = updatedFields[i];
         if (f.isTemp) {
           await entityService.addValue(savedEntity.id, f.attribute.id, f.value);
         } else {
@@ -158,13 +171,22 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
         }
       }
 
+      // NEW: Actually DELETE removed fields from DB
       for (const rid of removedFieldIds) {
-        await entityService.deleteValue(rid);
+        if (typeof rid === 'number') {
+          await entityService.deleteValue(rid);
+        }
       }
 
-      if (redirect) navigate(-1);
-      else {
+      if (redirect) {
+        navigate(-1);
+      } else {
+        setEntity(savedEntity);
+        setIsCreation(false);
         setRemovedFieldIds([]);
+        // Force a re-fetch of values to get real IDs from DB
+        const freshValues = await entityService.getValues(savedEntity.id);
+        setFields(freshValues.map(v => ({ ...v, isTemp: false })));
       }
     } catch (err) {
       console.error(err);
@@ -204,6 +226,37 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
     const current = getExtra();
     const imgs = (current.images || []).filter((_: any, i: number) => i !== index);
     updateExtra({ images: imgs });
+  };
+
+  const handleDragOverArea = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    setIsDraggingOver(true);
+  };
+
+  const handleDragLeaveArea = () => {
+    setIsDraggingOver(false);
+  };
+
+  const handleDropArea = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingOver(false);
+    try {
+      const data = e.dataTransfer.getData('application/worldbuilder/attribute') || 
+                   e.dataTransfer.getData('text/plain');
+      if (data) {
+        const tpl = JSON.parse(data) as Plantilla;
+        setFields(prev => [...prev, {
+          id: `temp-${tpl.id}-${Date.now()}`,
+          attribute: tpl,
+          value: tpl.valor_defecto || '',
+          isTemp: true
+        }]);
+      }
+    } catch (err) {
+      console.error('Error dropping attribute:', err);
+    }
   };
 
   if (loading) return (
@@ -259,9 +312,11 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
         {/* Sidebar Portal */}
         {portalTarget && createPortal(
           <EntityBuilderSidebar
+            key={`sidebar-${availableTemplates.length}-${activeEntityTab}`}
             templates={availableTemplates}
             currentFields={fields}
             onAddTemplate={(tpl) => {
+              // Now only called when specifically requested (e.g. from a future 'Add' button within edit)
               setFields(prev => [...prev, {
                 id: `temp-${tpl.id}-${Date.now()}`,
                 attribute: tpl,
@@ -269,6 +324,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                 isTemp: true
               }]);
             }}
+            onRefresh={refreshTemplates}
           />,
           portalTarget
         )}
@@ -397,7 +453,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
           )}
 
           {activeEntityTab === 'attributes' && (
-            <div className="space-y-[2rem] min-h-[60vh]">
+            <div className="space-y-[2rem] min-h-[60vh] relative">
               <div className="flex items-center justify-between border-b border-foreground/10 pb-[1.5rem]">
                 <h3 className="text-[0.625rem] font-black uppercase tracking-[0.15em] text-primary flex items-center gap-[0.75rem]">
                   <span className="material-symbols-outlined text-[1rem]">layers</span> Atributos Modulares
@@ -407,11 +463,23 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                 </p>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-[2rem]">
-                {fields.length === 0 && (
+              <div 
+                className={`grid grid-cols-1 md:grid-cols-2 gap-[2rem] p-[1rem] transition-all border-2 border-transparent ${isDraggingOver ? 'bg-primary/5 border-dashed border-primary ring-4 ring-primary/10 scale-[1.01]' : ''}`}
+                onDragOver={handleDragOverArea}
+                onDragLeave={handleDragLeaveArea}
+                onDrop={handleDropArea}
+              >
+                {fields.length === 0 && !isDraggingOver && (
                   <div className="col-span-full py-[8rem] border-2 border-dashed border-foreground/10 rounded-none flex flex-col items-center justify-center text-foreground/60 bg-foreground/[0.01]">
                     <span className="material-symbols-outlined text-[3rem] mb-[1.5rem] opacity-20">inventory_2</span>
                     <p className="text-[0.75rem] font-black uppercase tracking-[0.15em] opacity-40">Área de Atributos Vacía</p>
+                    <p className="text-[0.625rem] font-bold uppercase tracking-[0.1em] mt-2 opacity-30">Arrastra aquí tus módulos</p>
+                  </div>
+                )}
+                {isDraggingOver && fields.length === 0 && (
+                  <div className="col-span-full py-[8rem] flex flex-col items-center justify-center text-primary animate-pulse">
+                    <span className="material-symbols-outlined text-[4rem] mb-4">add_circle</span>
+                    <p className="text-[0.875rem] font-black uppercase tracking-[0.2em]">Soltar para añadir módulo</p>
                   </div>
                 )}
                 {fields.map((field) => (

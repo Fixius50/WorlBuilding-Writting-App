@@ -8,6 +8,7 @@ import CreateWorkspaceModal from "../features/Dashboard/components/CreateWorkspa
 import EditWorkspaceModal from "../features/Dashboard/components/EditWorkspaceModal";
 import { sqlocal } from '../database/db';
 import ConfirmModal from "../components/common/ConfirmModal";
+import { syncService } from '../services/syncService';
 
 const WorkspaceSelector: React.FC = () => {
   const navigate = useNavigate();
@@ -88,21 +89,38 @@ const WorkspaceSelector: React.FC = () => {
 
 
 
-  const handleDownloadBackup = async () => {
+  const handleExport = async () => {
     try {
       setLoading(true);
-      const file = await sqlocal.getDatabaseFile();
-      const url = URL.createObjectURL(file);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `worldbuilding_backup_${Date.now()}.sqlite3`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      setLoading(false);
+      const res = await syncService.exportToDisk('worldbuilding_master');
+      if (res.success) {
+        alert("Copia de seguridad guardada con éxito en el servidor local.");
+      } else {
+        setError(res.message);
+      }
     } catch (err) {
-      setError("Error al generar copia de seguridad local");
+      setError("Fallo en la sincronización.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImport = async () => {
+    const confirmImport = window.confirm("¿Seguró? Esto sobrescribirá todos tus datos actuales con la versión del servidor.");
+    if (!confirmImport) return;
+
+    try {
+      setLoading(true);
+      const res = await syncService.importFromDisk('worldbuilding_master');
+      if (res.success) {
+        alert("Datos restaurados con éxito.");
+        window.location.reload();
+      } else {
+        setError(res.message);
+      }
+    } catch (err) {
+      setError("Error al importar datos.");
+    } finally {
       setLoading(false);
     }
   };
@@ -136,24 +154,33 @@ const WorkspaceSelector: React.FC = () => {
             </button>
 
             <button
-              onClick={handleDownloadBackup}
-              className="flex items-center gap-2 px-5 py-3 monolithic-panel hover:bg-foreground/5 rounded-none transition-all text-xs font-bold text-foreground/60 hover:text-foreground group"
-              title="Descargar copia de seguridad"
-            >
-              <span className="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">cloud_download</span>
-              <span className="hidden sm:inline">Backup Local</span>
+               onClick={handleExport}
+               className="flex items-center gap-2 px-5 py-3 monolithic-panel hover:bg-primary/5 rounded-none transition-all text-xs font-bold text-primary group"
+               title="Exportar base de datos al servidor"
+             >
+               <span className="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">cloud_upload</span>
+               <span className="hidden sm:inline">Exportar</span>
             </button>
 
-            <a
-              href="/manual/Guia_Usuario.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-5 py-3 monolithic-panel hover:bg-primary/10 rounded-none transition-all text-xs font-bold text-primary hover:text-primary/80 group no-underline"
-              title="Abrir Manual de Usuario"
+            <button
+              onClick={handleImport}
+              className="flex items-center gap-2 px-5 py-3 monolithic-panel hover:bg-foreground/5 rounded-none transition-all text-xs font-bold text-foreground/60 group"
+              title="Importar base de datos desde el servidor"
             >
-              <span className="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">menu_book</span>
-              <span className="hidden sm:inline">Guía de Usuario</span>
-            </a>
+              <span className="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">cloud_download</span>
+              <span className="hidden sm:inline">Importar</span>
+            </button>
+
+             <a
+               href="/manual/Guia_Usuario.html"
+               target="_blank"
+               rel="noopener noreferrer"
+               className="flex items-center gap-2 px-5 py-3 monolithic-panel hover:bg-primary/10 rounded-none transition-all text-xs font-bold text-primary hover:text-primary/80 group no-underline"
+               title="Abrir Manual de Usuario"
+             >
+               <span className="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">menu_book</span>
+               <span className="hidden sm:inline">Guía de Usuario</span>
+             </a>
 
             <div className="relative group min-w-[300px]">
               <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-foreground/20 text-xl group-focus-within:text-primary transition-colors pointer-events-none">search</span>
