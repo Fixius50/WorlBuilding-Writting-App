@@ -15,8 +15,8 @@ interface OutletContext {
   handleDeleteEntity: (id: number, folderId: number) => void;
   handleDeleteFolder: (id: number) => void;
   handleCreateSimpleFolder: (padreId: number, tipo: any) => void;
-  folderSearchTerm: string;
-  folderFilterType: string;
+  searchTerm: string;
+  filterType: string;
   projectId: number;
   projectName: string;
   folders: Carpeta[];
@@ -27,18 +27,18 @@ interface OutletContext {
 const FolderView: React.FC = () => {
  const { username, projectName, folderSlug } = useParams<{ username: string; projectName: string; folderSlug: string }>();
  const navigate = useNavigate();
- const {
- handleCreateEntity,
- handleDeleteEntity,
- handleDeleteFolder,
- handleCreateSimpleFolder,
- folderSearchTerm,
- folderFilterType,
- projectId,
- folders,
- setRightOpen,
- setRightPanelTab
- } = useOutletContext<OutletContext>();
+  const {
+    handleCreateEntity,
+    handleDeleteEntity,
+    handleDeleteFolder,
+    handleCreateSimpleFolder,
+    searchTerm: folderSearchTerm,
+    filterType: folderFilterType,
+    projectId,
+    folders,
+    setRightOpen,
+    setRightPanelTab
+  } = useOutletContext<OutletContext>();
 
  const [entities, setEntities] = useState<Entidad[]>([]);
   const [subfolders, setSubfolders] = useState<Carpeta[]>([]);
@@ -69,28 +69,45 @@ const FolderView: React.FC = () => {
   }, [setRightOpen, setRightPanelTab]);
 
  // Unified Filter Logic
-  const filteredContent = {
-    folders: subfolders.filter(f => {
-      const searchTerm = (folderSearchTerm || '').toLowerCase();
-      return f.nombre.toLowerCase().includes(searchTerm);
-    }),
- entities: entities.filter(ent => {
- const searchTerm = (folderSearchTerm || '').toLowerCase();
- const matchesSearch = ent.nombre.toLowerCase().includes(searchTerm) || 
- (ent.descripcion || '').toLowerCase().includes(searchTerm);
- 
- if (folderFilterType === 'ALL') return matchesSearch;
- 
- // Map types from folderFilterType to entity types if needed
- const matchesType = folderFilterType === 'ALL' ||
- (folderFilterType === 'individual' && (ent.tipo === 'individual' || ent.tipo === 'entidadindividual' || ent.tipo === 'PERSONAJE')) ||
- (folderFilterType === 'location' && (ent.tipo === 'location' || ent.tipo === 'zona' || ent.tipo === 'LUGAR')) ||
- (folderFilterType === 'culture' && (ent.tipo === 'culture' || ent.tipo === 'entidadcolectiva' || ent.tipo === 'CULTURA')) ||
- (folderFilterType === ent.tipo);
- 
- return matchesSearch && matchesType;
- })
- };
+  // Unified Filter Logic with useMemo and safety checks
+  const filteredContent = React.useMemo(() => {
+    const searchTermLower = (folderSearchTerm || '').toLowerCase();
+    const filterTypeLower = (folderFilterType || 'ALL').toLowerCase();
+
+    return {
+      folders: subfolders.filter(f => {
+        if (f.borrado === 1) return false;
+        const name = (f.nombre || '').toLowerCase();
+        return name.includes(searchTermLower);
+      }),
+      entities: entities.filter(ent => {
+        // Excluir borrados
+        if (ent.borrado === 1) return false;
+
+        const name = (ent.nombre || '').toLowerCase();
+        const desc = (ent.descripcion || '').toLowerCase();
+        const type = (ent.tipo || '').toLowerCase();
+
+        const matchesSearch = name.includes(searchTermLower) || desc.includes(searchTermLower);
+        
+        if (filterTypeLower === 'all') return matchesSearch;
+
+        // Mapeo flexible de tipos (case insensitive)
+        const isIndividual = filterTypeLower === 'individual' && 
+          (type === 'individual' || type === 'entidadindividual' || type === 'personaje');
+        
+        const isLocation = filterTypeLower === 'location' && 
+          (type === 'location' || type === 'zona' || type === 'lugar');
+        
+        const isCulture = filterTypeLower === 'culture' && 
+          (type === 'culture' || type === 'entidadcolectiva' || type === 'cultura');
+
+        const matchesType = isIndividual || isLocation || isCulture || type === filterTypeLower;
+
+        return matchesSearch && matchesType;
+      })
+    };
+  }, [entities, subfolders, folderSearchTerm, folderFilterType]);
 
  useEffect(() => {
  const handleUpdate = (e: any) => {

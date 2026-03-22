@@ -398,13 +398,17 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                       <select
                         className="w-full bg-foreground/[0.03] border-2 border-foreground/10 rounded-none px-[1rem] py-[1rem] text-[0.75rem] text-foreground font-black uppercase tracking-[0.15em] outline-none focus:border-primary transition-all cursor-pointer sunken-panel"
                         value={extras.categoria}
-                        onChange={(e) => updateExtra({ categoria: e.target.value })}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          updateExtra({ categoria: val });
+                          setEntity(prev => ({ ...prev, tipo: val }));
+                        }}
                       >
-                        <option value="Individual">👤 Personaje</option>
-                        <option value="Lugar">📍 Ubicación</option>
-                        <option value="Objeto">⚔️ Artefacto</option>
-                        <option value="Concepto">💡 Filosofía/Religión</option>
-                        <option value="Criatura">🐉 Especie/Bestia</option>
+                        <option value="PERSONAJE">👤 Personaje</option>
+                        <option value="LUGAR">📍 Ubicación</option>
+                        <option value="OBJETO">⚔️ Artefacto</option>
+                        <option value="CONCEPTO">💡 Filosofía/Religión</option>
+                        <option value="CRIATURA">🐉 Especie/Bestia</option>
                       </select>
                     </div>
                   </div>
