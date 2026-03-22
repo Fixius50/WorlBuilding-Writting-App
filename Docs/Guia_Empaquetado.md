@@ -1,40 +1,35 @@
-# Guía de Empaquetado y Distribución - Chronos Atlas
+Este documento explica la estrategia de distribución para el stack híbrido **Vite (Frontend)** + **Spring Boot (Helper)**.
 
-Este documento explica cómo generar el ejecutable final (`.exe`) para distribuir la aplicación nativa de Windows mediante **Electron Builder**.
+## 1. Naturaleza del Paquete
 
-## 1. Requisitos Previos
+La aplicación **World Bible** no es un ejecutable monolítico simple, sino una **Web App de Escritorio Local-First** que consta de:
 
-- **Windows 10/11**
-- **Node.js** v20+
+1.  **Vite App (UI):** Accedida vía navegador o WebView local.
+2.  **Servidor Auxiliar (Java):** Un binario `.jar` que corre en segundo plano para gestionar archivos del sistema.
 
-## 2. Generar el Paquete (Build)
+## 2. Proceso de "Build"
 
-Hemos transicionado de Java a un entorno puramente JavaScript/TypeScript nativo de escritorio.
-El proceso de construcción y empaquetado se realiza a través de NPM.
+### Frontend (React + Vite)
+```powershell
+npm run build
+```
+Esto genera la carpeta `dist/` optimizada.
 
-### Pasos
+### Backend Auxiliar (Java/Maven)
+```powershell
+mvn clean package
+```
+Esto genera `server-aux/target/server-aux.jar`.
 
-1. Abrir una terminal en la raíz del proyecto (`/WorldbuildingApp`).
-2. Generar los archivos estáticos de Vite y TypeScript ejecutando:
+## 3. Estrategia de Lanzamiento (Run-App)
 
-   ```powershell
-   npm run build
-   ```
+Actualmente, la distribución se realiza mediante el script `run-app.bat` que orquesta ambos servicios:
 
-3. *(Futuro)* Usar la herramienta de empaquetado final:
+1. Levanta el servidor Java en un puerto local.
+2. Lanza el servidor de desarrollo/producción de Vite.
+3. Abre el navegador predeterminado en la dirección local.
 
-   ```powershell
-   npm run dist
-   ```
-
-### ¿Qué ocurre bajo el capó?
-
-1. **Vite Build**: Empaqueta tu UI de React y comprime tu CSS/JS.
-2. **Electron TS**: Compila tu backend Node (`main.ts` y controladores de SQLite) a `.js`.
-3. **Electron Builder**:
-    - Genera un archivo asilado `.exe` (Installer o Portable).
-    - Incrusta el motor Chromium y Node.js de forma indetectable.
-    - Anexa tu base local `.sqlite` predeterminada.
+*(Futuro)* Se implementará un empaquetador jPackage/Electron para encapsular ambos procesos en un único `.exe` instalable.
 
 ## 3. Resultado Final
 
@@ -42,6 +37,10 @@ Al finalizar, la carpeta `dist` alojará:
 
 - **Ejecutable**: `Chronos Atlas Setup.exe` (Instalador estándar).
 - O una carpeta `win-unpacked` si se define para empaquetado portable.
+
+## 4.- **Local-First (SQLocal):** Los datos se almacenan en la tabla `entidades` de SQLite local a través de `entityService`. Cero latencia de red.
+- **Estructura JSON:** Las propiedades visuales de los glifos (`svgPathData`, `layers`) se encapsulan en el campo `contenido_json` de la entidad tipo `Word`.
+- **Exportación:** Capacidad de descargar la fuente compilada (`.ttf`) directamente desde el navegador o usar el **Servidor Auxiliar** para salvarla en el disco duro físico del usuario.
 
 ## 4. Distribución
 

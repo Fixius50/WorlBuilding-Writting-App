@@ -32,6 +32,7 @@ export async function initializeDatabase() {
  padre_id INTEGER,
  tipo TEXT NOT NULL DEFAULT 'FOLDER',
  slug TEXT NOT NULL,
+ borrado INTEGER DEFAULT 0,
  FOREIGN KEY (project_id) REFERENCES proyectos(id) ON DELETE CASCADE,
  FOREIGN KEY (padre_id) REFERENCES carpetas(id) ON DELETE CASCADE
  )
@@ -48,6 +49,7 @@ export async function initializeDatabase() {
  project_id INTEGER NOT NULL,
  carpeta_id INTEGER,
  fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+ borrado INTEGER DEFAULT 0,
  FOREIGN KEY (project_id) REFERENCES proyectos(id) ON DELETE CASCADE,
  FOREIGN KEY (carpeta_id) REFERENCES carpetas(id) ON DELETE SET NULL
  )
@@ -109,6 +111,30 @@ export async function initializeDatabase() {
  FOREIGN KEY (project_id) REFERENCES proyectos(id) ON DELETE CASCADE
  )
  `;
+
+  // Tabla de Cuadernos (Estructura de Escritura)
+  await sql`
+  CREATE TABLE IF NOT EXISTS cuadernos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  titulo TEXT NOT NULL,
+  project_id INTEGER NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (project_id) REFERENCES proyectos(id) ON DELETE CASCADE
+  )
+  `;
+
+  // Tabla de Hojas (Contenido de Escritura)
+  await sql`
+  CREATE TABLE IF NOT EXISTS hojas (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  titulo TEXT,
+  contenido TEXT,
+  cuaderno_id INTEGER NOT NULL,
+  orden INTEGER DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (cuaderno_id) REFERENCES cuadernos(id) ON DELETE CASCADE
+  )
+  `;
 
  console.log('Database initialized successfully');
  } catch (error) {

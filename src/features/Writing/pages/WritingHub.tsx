@@ -1,30 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../../context/LanguageContext';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
-import api from '../../../services/api';
-import Button from '../../../components/common/Button';
-import { Notebook } from '../../../types/writing';
+import { notebookService, Cuaderno } from '../../../database/notebookService';
 
 const WritingHub = () => {
  const { username, projectName } = useParams();
  const navigate = useNavigate();
  const { t } = useLanguage();
- const { setRightPanelTab, setRightOpen, baseUrl } = useOutletContext<any>();
- const [notebooks, setNotebooks] = useState<Notebook[]>([]);
+ const { setRightPanelTab, setRightOpen, baseUrl, projectId } = useOutletContext<any>();
+ const [notebooks, setNotebooks] = useState<Cuaderno[]>([]);
  const [loading, setLoading] = useState(true);
  const [isCreating, setIsCreating] = useState(false);
  const [newTitle, setNewTitle] = useState('');
 
  useEffect(() => {
  if (setRightPanelTab) setRightPanelTab('NOTEBOOKS');
- // setRightOpen(false); // Let user decide or default
- loadNotebooks();
- }, [setRightPanelTab]);
+ if (projectId) loadNotebooks();
+ }, [setRightPanelTab, projectId]);
 
  const loadNotebooks = async () => {
  try {
  setLoading(true);
- const data = await api.get('/escritura/cuadernos');
+ const data = await notebookService.getAllByProject(projectId || 1);
  setNotebooks(data || []);
  } catch (err) {
  console.error("Error loading notebooks:", err);
@@ -36,8 +33,8 @@ const WritingHub = () => {
  const handleCreateNotebook = async (e: React.FormEvent) => {
  e.preventDefault();
  try {
- const nuevo = await api.post('/escritura/cuaderno', { titulo: newTitle || t('writing.new_notebook') });
- setNotebooks([...notebooks, nuevo]);
+ const nuevo = await notebookService.create(projectId || 1, newTitle || t('writing.new_notebook'));
+ setNotebooks([nuevo, ...notebooks]);
  setIsCreating(false);
  setNewTitle('');
  navigate(`${baseUrl}/writing/${nuevo.id}`);
@@ -46,11 +43,11 @@ const WritingHub = () => {
  }
  };
 
- const handleDelete = async (e: React.MouseEvent, id: string | number) => {
+ const handleDelete = async (e: React.MouseEvent, id: number) => {
  e.stopPropagation();
  if (!window.confirm(t('writing.delete_confirm'))) return;
  try {
- await api.delete(`/escritura/cuaderno/${id}`);
+ await notebookService.delete(id);
  setNotebooks(notebooks.filter(n => n.id !== id));
  } catch (err) {
  console.error("Error deleting notebook:", err);

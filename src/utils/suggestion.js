@@ -2,24 +2,29 @@ import { ReactRenderer } from '@tiptap/react'
 import tippy from 'tippy.js'
 
 import MentionList from '../features/Editor/components/MentionList'
-import api from '../services/api' // Path relative to /js/
+import { entityService } from '../database/entityService'
 
 export default {
     items: async ({ query }) => {
         try {
-            // Fetch all entities (Architecture unificada)
-            const response = await api.get('/world-bible/entities');
+            // Fetch all entities locally (Unified Architecture)
+            // Using project_id 1 as default for search if not provided in context
+            // In a better version we would get current project from editor props
+            const response = await entityService.getAllByProject(1); 
 
             return response
                 .filter(item => item.nombre.toLowerCase().includes(query.toLowerCase()))
-                .slice(0, 10) // Increase limit
-                .map(item => ({
-                    id: item.id,
-                    label: item.nombre,
-                    type: item.categoria || 'Generic',
-                    subtype: item.tipoEspecial || null,
-                    description: item.descripcion // For hover card
-                }));
+                .slice(0, 10) 
+                .map(item => {
+                    const extra = item.contenido_json ? JSON.parse(item.contenido_json) : {};
+                    return {
+                        id: item.id,
+                        label: item.nombre,
+                        type: item.tipo || 'Generic',
+                        subtype: extra.tipoEspecial || null,
+                        description: item.descripcion || extra.definicion 
+                    };
+                });
         } catch (err) {
             console.error(err);
             return [];

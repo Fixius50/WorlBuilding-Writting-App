@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import GraphView from '../pages/GraphView'; // Import the graph component to render
+import GraphView from '../pages/GeneralGraphView'; // Import the graph component to render
 
 interface BottomGraphDrawerProps {
   isOpen: boolean;

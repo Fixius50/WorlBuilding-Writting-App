@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../../context/LanguageContext';
 import { useOutletContext, Link, useParams, useNavigate } from 'react-router-dom';
-import api from '../../../services/api';
 import BibleCard from '../components/BibleCard';
 
 import { Carpeta } from '../../../database/types';

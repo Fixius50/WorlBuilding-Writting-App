@@ -18,6 +18,7 @@ export interface Carpeta {
  padre_id: number | null;
  tipo: FolderType;
  slug: string;
+ borrado?: number;
  // Virtual field
  itemCount?: number;
 }
@@ -31,6 +32,7 @@ export interface Entidad {
  project_id: number;
  carpeta_id: number | null;
  fecha_creacion: string;
+ borrado?: number;
  // Virtual fields populated by service
  valores?: Valor[];
 }
@@ -79,4 +81,13 @@ export interface Evento {
  fecha_simulada: string | null;
  project_id: number;
  timeline_id: number | null;
+}
+export interface Relacion {
+ id: number;
+ origen_id: number;
+ destino_id: number;
+ tipo: string;
+ descripcion: string | null;
+ project_id: number;
+ created_at: string;
 }

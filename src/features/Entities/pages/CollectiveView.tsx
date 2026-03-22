@@ -1,9 +1,11 @@
+import { entityService } from '../../../database/entityService';
+import { Entidad } from '../../../database/types';
 import { useState, useEffect } from 'react';
 import GlassPanel from '../../../components/common/GlassPanel';
 import Button from '../../../components/common/Button';
-import api from '../../../services/api';
 
 const CollectiveView = ({ id }) => {
+ const [entity, setEntity] = useState<Entidad | null>(null); // Added entity state
  const [collective, setCollective] = useState<any>(null);
  const [loading, setLoading] = useState(true);
  const [isEditing, setIsEditing] = useState(false);
@@ -15,8 +17,18 @@ const CollectiveView = ({ id }) => {
  const loadCollective = async () => {
  setLoading(true);
  try {
- const data = await api.get(`/bd/entidadcolectiva/${id}`);
- setCollective(data);
+ const data = await entityService.getById(Number(id)); // Changed to entityService
+ if (data) {
+ setEntity(data); // Set entity state
+ const extra = typeof data.contenido_json === 'string'
+ ? JSON.parse(data.contenido_json)
+ : (data.contenido_json || {});
+
+ setCollective({
+ ...data,
+ ...extra
+ });
+ }
  } catch (err) {
  console.error("Error loading collective:", err);
  } finally {
@@ -25,10 +37,15 @@ const CollectiveView = ({ id }) => {
  };
 
  const handleSave = async () => {
+    if (!entity) return; // Added check for entity
  try {
- await api.patch('/bd/modificar', {
- ...collective,
- tipoEntidad: 'entidadcolectiva'
+      const { nombre, tipo, descripcion, ...extra } = collective; // Destructure collective for update
+
+ await entityService.update(entity.id, { // Changed to entityService.update
+        nombre,
+        tipo,
+        descripcion,
+        contenido_json: JSON.stringify(extra) // Stringify extra fields
  });
  setIsEditing(false);
  // alert("Changes saved!"); // Removed

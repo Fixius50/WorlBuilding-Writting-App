@@ -105,7 +105,11 @@ export const entityService = {
  await sql`DELETE FROM valores WHERE id = ${valorId}`;
  },
 
- async delete(id: number): Promise<void> {
- await sql`DELETE FROM entidades WHERE id = ${id}`;
- }
+  async delete(id: number): Promise<void> {
+    await sql`DELETE FROM entidades WHERE id = ${id}`;
+  },
+
+  async move(id: number, targetCarpetaId: number | null): Promise<void> {
+    await sql`UPDATE entidades SET carpeta_id = ${targetCarpetaId} WHERE id = ${id}`;
+  }
 };

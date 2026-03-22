@@ -6,6 +6,13 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
 
 ### MARZO 2026
 
+- **2026-03-22: Gran Saneamiento Local-First y Eliminación de Legado**
+  - **Cero Red:** Eliminación total de dependencias de `api.js` y el servicio `Axios` heredado. La app ya no requiere conexión a red para funcionar.
+  - **Saneamiento Global:** Refactorización de más de 10 componentes críticos (Settings, Trash, Relationships, Linguistics) para usar exclusivamente el worker de SQLite WASM.
+  - **Papelera Local:** Implementación de un sistema de borrado lógico (columna `borrado`) para carpetas y entidades, gestionado por `trashService.ts`.
+  - **Sync-Bridge:** Rediseño del `syncService` para usar `fetch` nativo como puente con el Servidor Auxiliar Java encargado de Backups/Imports de base de datos física.
+  - **Estabilidad:** Resolución de errores de compilación de Vite relacionados con módulos no encontrados.
+
 - **2026-03-22: Sistema de Atributos Globales y UX de Arrastre**
   - **Biblioteca Global:** Implementación de persistencia con `project_id: 0`, permitiendo la reutilización de módulos en toda la aplicación.
   - **Edición en Caliente:** Integración de un sistema de edición en línea (Lápiz) en el sidebar para modificar nombre y tipo de atributos instantáneamente.

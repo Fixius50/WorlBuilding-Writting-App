@@ -9,6 +9,7 @@ interface BibleCardProps {
   onContextMenu?: (e: React.MouseEvent) => void;
   onDelete: (item: any) => void;
   onRename?: (item: any) => void;
+  onMove?: (item: any) => void;
 }
 
 const getIconForType = (type?: string) => {
@@ -30,7 +31,7 @@ const getIconForType = (type?: string) => {
  }
 };
 
-const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu, onDelete, onRename }) => {
+const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu, onDelete, onRename, onMove }) => {
  const isFolder = type === 'folder';
  const anyItem = item as any;
 
@@ -87,6 +88,15 @@ const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu
         title="Rename"
       >
         <span className="material-symbols-outlined text-sm">edit</span>
+      </button>
+    )}
+    {onMove && (
+      <button
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onMove(item); }}
+        className="p-1.5 rounded-none bg-indigo-500/10 hover:bg-indigo-500 text-indigo-400 hover:text-foreground transition-all border border-indigo-500/20 shadow-lg shadow-indigo-500/5"
+        title="Move"
+      >
+        <span className="material-symbols-outlined text-sm">drive_file_move</span>
       </button>
     )}
     {onDelete && (

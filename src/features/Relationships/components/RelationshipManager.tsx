@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../../services/api';
+import { entityService } from '../../../database/entityService';
+import { relationshipService } from '../../../database/relationshipService';
+import { Entidad, Relacion } from '../../../database/types';
 import Button from '../../../components/common/Button';
 
 // Mapping of internal types to user-friendly labels and endpoints
@@ -26,9 +28,9 @@ const RelationshipManager = ({ entityId, entityType }) => {
 
  // Form State
  const [targetType, setTargetType] = useState('All');
- const [targetItems, setTargetItems] = useState<any[]>([]);
+ const [targetItems, setTargetItems] = useState<Entidad[]>([]);
  const [targetSearch, setTargetSearch] = useState(''); // ADDED
- const [selectedTargetId, setSelectedTargetId] = useState('');
+ const [selectedTargetId, setSelectedTargetId] = useState<number | null>(null);
  const [relType, setRelType] = useState('');
  const [description, setDescription] = useState('');
  const [fetchingTargets, setFetchingTargets] = useState(false);
@@ -49,51 +51,20 @@ const RelationshipManager = ({ entityId, entityType }) => {
  const loadRelationships = async () => {
  setLoading(true);
  try {
- // In a real app we would filter on backend, but for Alpha we filter client-side
- const allRels = await api.get('/bd/relacion');
- console.log(`[RelationshipManager] Total relationships in DB: ${allRels.length}`);
-
- const relevant = allRels.filter(r => {
- const sourceMatch = r.nodoOrigenId === parseInt(entityId);
- const targetMatch = r.nodoDestinoId === parseInt(entityId);
-
- // Helper to normalize types for comparison
- const normalizeType = (t) => {
- if (!t) return '';
- const lower = t.toLowerCase();
- if (lower === 'generic' || lower === 'genericentity') return 'generic';
- return lower;
- };
-
- const currentType = normalizeType(entityType);
- const rSourceType = normalizeType(r.tipoOrigen);
- const rTargetType = normalizeType(r.tipoDestino);
-
- // Debug matching
- if (sourceMatch || targetMatch) {
- console.log(`[RelationshipManager] Potential match:`, r);
- console.log(` SourceMatch: ${sourceMatch} (Type: ${rSourceType} vs ${currentType})`);
- console.log(` TargetMatch: ${targetMatch} (Type: ${rTargetType} vs ${currentType})`);
- }
-
- return (sourceMatch && (rSourceType === currentType || rSourceType === 'generic')) ||
- (targetMatch && (rTargetType === currentType || rTargetType === 'generic'));
- });
+ const relevant = await relationshipService.getByEntity(Number(entityId));
  console.log(`[RelationshipManager] Relevant relationships found: ${relevant.length}`);
 
  // Enrich with details (fetch names)
  const enriched = await Promise.all(relevant.map(async r => {
- const isOutgoing = r.nodoOrigenId === parseInt(entityId);
- const otherId = isOutgoing ? r.nodoDestinoId : r.nodoOrigenId;
- // const otherType = isOutgoing ? r.tipoDestino : r.tipoOrigen;
+ const isOutgoing = r.origen_id === Number(entityId);
+ const otherId = isOutgoing ? r.destino_id : r.origen_id;
 
- // Unified fetch: Everything is an Entity now
- const otherEntity = await api.get(`/world-bible/entities/${otherId}`);
- if (!otherEntity) throw new Error(`Entity ${otherId} not found`);
- return { ...r, otherName: otherEntity.nombre, otherType: otherEntity.categoria || 'Entity', isOutgoing };
+ const otherEntity = await entityService.getById(otherId);
+ if (!otherEntity) return null;
+ return { ...r, otherName: otherEntity.nombre, otherType: otherEntity.tipo || 'Entity', isOutgoing };
  }));
 
- setRelationships(enriched);
+ setRelationships(enriched.filter(Boolean));
  } catch (error) {
  console.error("Failed to load relationships", error);
  } finally {
@@ -101,22 +72,18 @@ const RelationshipManager = ({ entityId, entityType }) => {
  }
  };
 
- const fetchTargets = async (type) => {
+ const fetchTargets = async (type: string) => {
  setFetchingTargets(true);
  try {
- // Fetch ALL entities and filter logic client-side
- const all = await api.get('/world-bible/entities');
-
- // Filter by category OR type
- // If type is "All" return all entities
- // Match against 'categoria' (e.g. Individual) or 'tipoEspecial' (e.g. map)
+ // Assuming we have projectId somewhere, or we can get all. 
+ // For now, let's assume we can get all entities from the DB (global search)
+ // In a real scenario, we'd filter by projectId. 
+ // We'll try to get the current project from somewhere or just use 1 for now if not available.
+ const all = await entityService.getAllByProject(1); // Placeholder
 
  const filtered = type === 'All' ? all : all.filter(e => {
- // Determine category of entity
- const cat = e.categoria || 'Generic';
- // loose match because case might differ
- return cat.toLowerCase() === type.toLowerCase() ||
- (e.tipoEspecial && e.tipoEspecial.toLowerCase() === type.toLowerCase());
+ const cat = e.tipo || 'Generic';
+ return cat.toLowerCase() === type.toLowerCase();
  });
 
  setTargetItems(filtered || []);
@@ -132,19 +99,13 @@ const RelationshipManager = ({ entityId, entityType }) => {
  if (!selectedTargetId || !relType) return;
 
  try {
- const payload = {
- nodoOrigenId: parseInt(entityId),
- tipoOrigen: entityType,
- nodoDestinoId: parseInt(selectedTargetId),
- tipoDestino: 'GenericEntity', // Uniform type for lookups
- tipoRelacion: relType,
+ await relationshipService.create({
+ origen_id: Number(entityId),
+ destino_id: selectedTargetId,
+ tipo: relType,
  descripcion: description,
- // Metadata to store real category if needed
- metadata: JSON.stringify({ originalCategory: targetType }),
- tipoEntidad: 'relacion' // For BDController switch
- };
-
- await api.put('/bd/insertar', payload);
+ project_id: 1 // Placeholder
+ });
  setIsAdding(false);
  resetForm();
  loadRelationships();
@@ -157,10 +118,10 @@ const RelationshipManager = ({ entityId, entityType }) => {
  }
  };
 
- const handleDelete = async (id) => {
+ const handleDelete = async (id: number) => {
  if (!confirm("Are you sure?")) return;
  try {
- await api.delete(`/bd/relacion/${id}`);
+ await relationshipService.delete(id);
  loadRelationships();
 
  // Emit event to notify graph to reload
@@ -173,7 +134,7 @@ const RelationshipManager = ({ entityId, entityType }) => {
  const resetForm = () => {
  setTargetType('All');
  setTargetSearch('');
- setSelectedTargetId('');
+ setSelectedTargetId(null);
  setRelType('');
  setDescription('');
  };
@@ -198,7 +159,7 @@ const RelationshipManager = ({ entityId, entityType }) => {
  onChange={e => {
  setTargetType(e.target.value);
  setTargetSearch('');
- setSelectedTargetId('');
+ setSelectedTargetId(null);
  }}
  >
  {ENTITY_TYPES.map(t => <option key={t.value} value={t.value} className="bg-[#1a1a20] text-foreground">{t.label}</option>)}
@@ -239,7 +200,7 @@ const RelationshipManager = ({ entityId, entityType }) => {
 
  {selectedTargetId && (
  <button
- onClick={() => { setSelectedTargetId(''); setTargetSearch(''); }}
+ onClick={() => { setSelectedTargetId(null); setTargetSearch(''); }}
  className="absolute right-2 top-2 text-foreground/60 hover:text-primary transition-colors"
  >
  <span className="material-symbols-outlined text-sm">close</span>

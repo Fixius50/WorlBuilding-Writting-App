@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api from '../../../services/api';
+import { trashService } from '../../../database/trashService';
 
 export default function TrashView() {
  const { id: projectId } = useParams();
@@ -10,13 +10,15 @@ export default function TrashView() {
  const [error, setError] = useState<any>(null);
 
  useEffect(() => {
+ if (projectId) {
  loadItems();
+ }
  }, [projectId]);
 
  const loadItems = async () => {
  try {
  setLoading(true);
- const data = await api.get('/api/papelera/items');
+ const data = await trashService.getItems(Number(projectId));
  setItems(data);
  setError(null);
  } catch (err) {
@@ -29,11 +31,10 @@ export default function TrashView() {
 
  const handleRestore = async (tipo, itemId) => {
  try {
- await api.post(`/api/papelera/restaurar/${tipo}/${itemId}`);
+ await trashService.restore(tipo, itemId);
  loadItems(); // Reload list
  } catch (err) {
  console.error("Restoration failed", err);
- // alert("Failed to restore item."); // Removed
  }
  };
 
@@ -42,11 +43,10 @@ export default function TrashView() {
  return;
  }
  try {
- await api.delete(`/api/papelera/eliminar/${tipo}/${itemId}`);
+ await trashService.permanentlyDelete(tipo, itemId);
  loadItems(); // Reload list
  } catch (err) {
  console.error("Deletion failed", err);
- // alert("Failed to delete item."); // Removed
  }
  };
 
@@ -56,7 +56,7 @@ export default function TrashView() {
  <div className="flex flex-col h-full bg-[#09090b] text-foreground p-8 overflow-y-auto">
  <h1 className="text-3xl font-light mb-2 text-foreground/90">Trash Bin</h1>
  <p className="text-foreground/50 mb-8 font-light text-sm">
- Items are automatically deleted after 30 days.
+ Items are automatically deleted after 30 days. (Local storage persistence)
  </p>
 
  {error && (
@@ -83,25 +83,25 @@ export default function TrashView() {
  </thead>
  <tbody className="divide-y divide-white/5">
  {items.map((item) => (
- <tr key={`${item.tipo}-${item.id}`} className="hover:bg-foreground/5 transition-colors">
+ <tr key={`${item.item_tipo}-${item.id}`} className="hover:bg-foreground/5 transition-colors">
  <td className="p-4 text-foreground/80 font-medium">
  {item.nombre || "Untitled"}
  </td>
  <td className="p-4 text-foreground/50 text-sm">
- {item.tipo}
+ {item.item_tipo}
  </td>
  <td className="p-4 text-foreground/50 text-sm font-mono">
- {item.deleted_date ? new Date(item.deleted_date).toLocaleDateString() : '-'}
+ {item.deleted_date ? new Date(item.deleted_date).toLocaleDateString() : 'N/A'}
  </td>
  <td className="p-4 text-right space-x-2">
  <button
- onClick={() => handleRestore(item.tipo, item.id)}
+ onClick={() => handleRestore(item.item_tipo, item.id)}
  className="px-3 py-1.5 text-xs bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 rounded-none transition-colors border border-emerald-500/20"
  >
  RESTORE
  </button>
  <button
- onClick={() => handleDelete(item.tipo, item.id)}
+ onClick={() => handleDelete(item.item_tipo, item.id)}
  className="px-3 py-1.5 text-xs bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-none transition-colors border border-red-500/20"
  >
  DELETE

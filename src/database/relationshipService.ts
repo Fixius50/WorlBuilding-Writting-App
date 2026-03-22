@@ -14,6 +14,15 @@ export const relationshipService = {
  return await sql<Relacion>`SELECT * FROM relaciones WHERE project_id = ${projectId}`;
  },
 
+ async getByEntity(entityId: number): Promise<Relacion[]> {
+    return await sql<Relacion>`
+      SELECT r.*, e.nombre as nombreDestino, e.tipo as tipoEntidadDestino 
+      FROM relaciones r
+      LEFT JOIN entidades e ON r.destino_id = e.id
+      WHERE r.origen_id = ${entityId} OR r.destino_id = ${entityId}
+    `;
+  },
+
  async create(rel: Omit<Relacion, 'id'>): Promise<Relacion> {
  const results = await sql<Relacion>`
  INSERT INTO relaciones (origen_id, destino_id, tipo, descripcion, project_id)

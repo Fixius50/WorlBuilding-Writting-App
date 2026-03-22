@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { sqlocal } from '../../../database/db';
-import api from '../../../services/api';
+import { projectService } from '../../../database/projectService';
 import { useLanguage } from '../../../context/LanguageContext';
 import { syncService } from '../../../services/syncService';
 
@@ -44,7 +44,7 @@ const Settings = () => {
 
   const loadProjects = async () => {
     try {
-      const data = await api.get('/workspaces');
+      const data = await projectService.list();
       if (data) setProjects(data);
     } catch (err) {
       console.error("Error loading projects for sync", err);

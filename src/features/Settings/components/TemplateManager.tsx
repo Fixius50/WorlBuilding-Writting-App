@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../../services/api';
+import { folderService } from '../../../database/folderService';
+import { templateService } from '../../../database/templateService';
+import { Plantilla } from '../../../database/types';
 import GlassPanel from '../../../components/common/GlassPanel';
-import Button from '../../../components/common/Button';
 import ConfirmationModal from '../../../components/common/ConfirmationModal';
 
 const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
  // We only need the Root Folder ID to attach the global templates to (Database requirement)
  // But logically they are global.
  const [rootFolderId, setRootFolderId] = useState<number | null>(null);
- const [templates, setTemplates] = useState<any[]>([]);
+ const [templates, setTemplates] = useState<Plantilla[]>([]);
  const [loading, setLoading] = useState(false);
 
  // Modal State for Deletion
@@ -20,8 +21,8 @@ const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
 
  const initialize = async () => {
  try {
- // 1. Get Root Folder for attachment
- const folders = await api.get('/world-bible/folders');
+ // 1. Get Root Folder for attachment (using project 1 as default for now)
+ const folders = await folderService.getByProject(1);
  if (folders.length > 0) {
  setRootFolderId(folders[0].id);
  }
@@ -35,7 +36,8 @@ const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
  const loadGlobalTemplates = async () => {
  setLoading(true);
  try {
- const data = await api.get('/world-bible/templates/global');
+ // Using 0 as convention for global project_id in templateService
+ const data = await templateService.getByProject(0);
  setTemplates(data);
  } catch (err) {
  console.error("Error loading templates:", err);
@@ -45,15 +47,15 @@ const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
  };
 
  const handleCreateTemplate = async (newField: any) => {
- if (!rootFolderId) return;
  try {
- // Create in Root Folder but mark as Global
- await api.post(`/world-bible/folders/${rootFolderId}/templates`, {
+ // Create as Global (project_id = 0)
+ await templateService.create({
  nombre: newField.label,
  tipo: newField.type,
- required: newField.required,
+ valor_defecto: null,
  metadata: newField.metadata ? JSON.stringify(newField.metadata) : null,
- global: true
+ es_obligatorio: newField.required,
+ project_id: 0
  });
  loadGlobalTemplates();
  } catch (err) {
@@ -64,7 +66,7 @@ const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
  const confirmDeleteAction = async () => {
  if (!confirmDeleteId) return;
  try {
- await api.delete(`/world-bible/templates/${confirmDeleteId}`);
+ await templateService.delete(confirmDeleteId);
  setTemplates(prev => prev.filter(t => t.id !== confirmDeleteId));
  } catch (err) {
  console.error("Error deleting template:", err);
@@ -95,7 +97,7 @@ const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
  draggable
  onDragStart={(e) => {
  e.dataTransfer.setData('application/reactflow/type', 'attribute');
- e.dataTransfer.setData('templateId', tpl.id);
+ e.dataTransfer.setData('templateId', String(tpl.id));
  e.dataTransfer.setData('templateData', JSON.stringify(tpl));
  e.dataTransfer.effectAllowed = 'copy';
  }}
@@ -103,7 +105,7 @@ const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
  <span className="text-[10px] font-black text-foreground/60 w-6 group-hover:text-primary transition-colors">0{idx + 1}</span>
  <div className="flex-1 pointer-events-none">
  <div className="text-sm font-bold text-foreground">{tpl.nombre}</div>
- <div className="text-[10px] text-foreground/60 uppercase tracking-widest">{tpl.tipo} {tpl.esObligatorio && '• Required'}</div>
+ <div className="text-[10px] text-foreground/60 uppercase tracking-widest">{tpl.tipo} {tpl.es_obligatorio && '• Required'}</div>
  {tpl.metadata && <div className="text-[10px] text-foreground/60 font-mono mt-1 truncate">{tpl.metadata}</div>}
  </div>
  <button

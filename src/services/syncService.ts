@@ -1,4 +1,3 @@
-import api from './api';
 import { sqlocal } from '../database/db';
 
 /**
@@ -18,8 +17,17 @@ export const syncService = {
       const formData = new FormData();
       formData.append('file', dbFile, `${projectName}.sqlite`);
 
-      const response = await api.post(`/db/upload/${projectName}`, formData);
-      return { success: true, message: typeof response === 'string' ? response : 'Backup completado en disco.' };
+      const response = await fetch(`/api/db/upload/${projectName}`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.statusText}`);
+      }
+
+      const message = await response.text();
+      return { success: true, message: message || 'Backup completado en disco.' };
     } catch (error) {
       console.error('Error exportando a disco:', error);
       return { success: false, message: error instanceof Error ? error.message : 'Error desconocido' };
@@ -58,7 +66,9 @@ export const syncService = {
    */
   async listAvailableBackups(): Promise<string[]> {
     try {
-      return await api.get('/db/list');
+      const response = await fetch('/api/db/list');
+      if (!response.ok) return [];
+      return await response.json();
     } catch (error) {
       console.error('Error listando backups:', error);
       return [];

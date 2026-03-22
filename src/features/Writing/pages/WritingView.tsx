@@ -2,27 +2,25 @@ import { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../../../context/LanguageContext';
 import { createPortal } from 'react-dom';
 import { useOutletContext, useParams, useNavigate } from 'react-router-dom';
-import api from '../../../services/api';
+import { notebookService, Cuaderno, Hoja } from '../../../database/notebookService';
 import ZenEditor from '../../Editor/components/ZenEditor';
 import ConfirmModal from '../../../components/common/ConfirmModal';
-import { Notebook, NotebookPage } from '../../../types/writing';
 
 const WritingView = () => {
  const { notebookId } = useParams();
  const navigate = useNavigate();
 
  // --- Context from ArchitectLayout ---
- // --- Context from ArchitectLayout ---
  const { setRightPanelTab, setRightOpen } = useOutletContext<any>();
  const { t } = useLanguage();
 
- const [notebook, setNotebook] = useState<Notebook | null>(null);
- const [pages, setPages] = useState<NotebookPage[]>([]);
+ const [notebook, setNotebook] = useState<Cuaderno | null>(null);
+ const [pages, setPages] = useState<Hoja[]>([]);
  const [currentPageIndex, setCurrentPageIndex] = useState(0);
  const [saving, setSaving] = useState(false);
  const [loading, setLoading] = useState(true);
  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
- const [pageToDelete, setPageToDelete] = useState<{ id: string | number; index: number; error?: string } | null>(null);
+ const [pageToDelete, setPageToDelete] = useState<{ id: number; index: number; error?: string } | null>(null);
  const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
  const pagesRef = useRef(pages);
  const indexRef = useRef(currentPageIndex);
@@ -41,7 +39,7 @@ const WritingView = () => {
  if (setRightPanelTab) setRightPanelTab('CONTEXT');
  setRightOpen(true);
  if (notebookId) {
- loadNotebookAndPages(notebookId);
+ loadNotebookAndPages(Number(notebookId));
  }
  }, [notebookId, setRightPanelTab]);
 
@@ -61,51 +59,39 @@ const WritingView = () => {
  }, [setRightPanelTab]);
 
  // Cleanup & Save on Unmount
- // Cleanup & Save on Unmount
  useEffect(() => {
  isMounted.current = true;
 
- const handleBeforeUnload = (e: BeforeUnloadEvent) => {
- if (saveTimeout.current) {
- e.preventDefault();
- e.returnValue = '';
- }
- };
- window.addEventListener('beforeunload', handleBeforeUnload);
-
  return () => {
  isMounted.current = false;
- window.removeEventListener('beforeunload', handleBeforeUnload);
 
  // Force save on unmount if pending
  if (saveTimeout.current) {
  clearTimeout(saveTimeout.current);
  const currentPage = pagesRef.current[indexRef.current];
  if (currentPage) {
- console.log("Saving on unmount (keepalive):", currentPage.id);
- // Use api.request directly to pass keepalive: true
- api.request(`/escritura/hoja/${currentPage.id}`, {
- method: 'PUT',
- body: JSON.stringify({ contenido: currentPage.contenido }),
- keepalive: true
+ console.log("Saving on unmount (local):", currentPage.id);
+ notebookService.updatePage(currentPage.id, { 
+   contenido: currentPage.contenido || '',
+   titulo: currentPage.titulo || '' 
  }).catch(err => console.error("Error preventing data loss:", err));
  }
  }
  };
  }, []);
 
- const loadNotebookAndPages = async (id: string | number) => {
+ const loadNotebookAndPages = async (id: number) => {
  try {
  setLoading(true);
- const nb = await api.get(`/escritura/cuaderno/${id}`);
+ const nb = await notebookService.getById(id);
  setNotebook(nb);
 
- const pgs = await api.get(`/escritura/cuaderno/${id}/hojas`);
+ const pgs = await notebookService.getPagesByNotebook(id);
  if (pgs && pgs.length > 0) {
  setPages(pgs);
  setCurrentPageIndex(0);
  } else {
- const newPage = await api.post(`/escritura/cuaderno/${id}/hoja`, {});
+ const newPage = await notebookService.createPage(id);
  setPages([newPage]);
  setCurrentPageIndex(0);
  }
@@ -146,12 +132,12 @@ const WritingView = () => {
  }, 800);
  };
 
- const savePage = async (page: NotebookPage) => {
+ const savePage = async (page: Hoja) => {
  if (isMounted.current) setSaving(true);
  try {
- await api.put(`/escritura/hoja/${page.id}`, {
- contenido: page.contenido,
- titulo: page.titulo
+ await notebookService.updatePage(page.id, {
+ contenido: page.contenido || '',
+ titulo: page.titulo || ''
  });
  } catch (err) {
  console.error("Error saving page:", err);
@@ -160,36 +146,10 @@ const WritingView = () => {
  }
  };
 
- // Safety check for browser close/refresh
- useEffect(() => {
- const handleBeforeUnload = (e: BeforeUnloadEvent) => {
- if (saveTimeout.current) {
- e.preventDefault();
- e.returnValue = ''; // Trigger browser confirmation dialog
-
- // Try to save via keepalive
- const currentPage = pages[currentPageIndex];
- if (currentPage) {
- api.request(`/escritura/hoja/${currentPage.id}`, {
- method: 'PUT',
- body: JSON.stringify({
- contenido: currentPage.contenido,
- titulo: currentPage.titulo
- }),
- keepalive: true
- }).catch(console.error);
- }
- }
- };
-
- window.addEventListener('beforeunload', handleBeforeUnload);
- return () => window.removeEventListener('beforeunload', handleBeforeUnload);
- }, [pages, currentPageIndex]); // Dependencies needed for closure access
-
  const handleCreatePage = async () => {
  if (!notebook) return;
  try {
- const newPage = await api.post(`/escritura/cuaderno/${notebook.id}/hoja`, {});
+ const newPage = await notebookService.createPage(notebook.id);
  setPages([...pages, newPage]);
  setCurrentPageIndex(pages.length);
  } catch (err) {
@@ -201,19 +161,13 @@ const WritingView = () => {
  // Save current page before switching
  if (saveTimeout.current) {
  clearTimeout(saveTimeout.current);
- }
- const currentPage = pages[currentPageIndex];
- if (currentPage) {
- try {
- await api.put(`/escritura/hoja/${currentPage.id}`, { contenido: currentPage.contenido });
- } catch (err) {
- console.error("Error saving before page switch:", err);
- }
+ const cp = pages[currentPageIndex];
+ if (cp) await savePage(cp);
  }
  setCurrentPageIndex(index);
  };
 
- const deletePage = (e: React.MouseEvent, id: string | number, index: number) => {
+ const deletePage = (e: React.MouseEvent, id: number, index: number) => {
  e.stopPropagation();
  if (pages.length <= 1) {
  setPageToDelete({ id, index, error: 'one_page' });
@@ -229,7 +183,7 @@ const WritingView = () => {
  const { id, index } = pageToDelete;
 
  try {
- await api.delete(`/escritura/hoja/${id}`);
+ await notebookService.deletePage(id);
  const newPages = pages.filter(p => p.id !== id);
 
  // Adjust current index BEFORE setting pages to avoid OOB

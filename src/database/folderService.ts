@@ -56,5 +56,9 @@ export const folderService = {
  async getById(id: number): Promise<Carpeta | null> {
  const result = await sql<Carpeta>`SELECT * FROM carpetas WHERE id = ${id} LIMIT 1`;
  return result[0] || null;
+ },
+
+ async move(id: number, targetPadreId: number | null): Promise<void> {
+ await sql`UPDATE carpetas SET padre_id = ${targetPadreId} WHERE id = ${id}`;
  }
 };

@@ -1,46 +1,62 @@
 import { useState, useEffect } from 'react';
 import GlassPanel from '../../../components/common/GlassPanel';
 import Button from '../../../components/common/Button';
-import api from '../../../services/api';
+import { entityService } from '../../../database/entityService';
+import { Entidad } from '../../../database/types';
 
 const LocationView = ({ id }) => {
- const [location, setLocation] = useState<any>(null);
- const [loading, setLoading] = useState(true);
- const [isEditing, setIsEditing] = useState(false);
+  const [entity, setEntity] = useState<Entidad | null>(null);
+  const [location, setLocation] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
 
- useEffect(() => {
- loadLocation();
- }, [id]);
+  useEffect(() => {
+    loadLocation();
+  }, [id]);
 
- const loadLocation = async () => {
- setLoading(true);
- try {
- const data = await api.get(`/bd/zona/${id}`);
- setLocation(data);
- } catch (err) {
- console.error("Error loading location:", err);
- } finally {
- setLoading(false);
- }
- };
+  const loadLocation = async () => {
+    setLoading(true);
+    try {
+      const data = await entityService.getById(Number(id));
+      if (data) {
+        setEntity(data);
+        const extra = typeof data.contenido_json === 'string'
+          ? JSON.parse(data.contenido_json)
+          : (data.contenido_json || {});
 
- const handleSave = async () => {
- try {
- await api.patch('/bd/modificar', {
- ...location,
- tipoEntidad: 'zona'
- });
- setIsEditing(false);
- // alert("Changes saved!"); // Removed
- } catch (err) {
- console.error("Error saving:", err);
- // alert("Error saving: " + err.message); // Removed
- }
- };
+        // Merge top level and extra for the view
+        setLocation({
+          ...data,
+          ...extra
+        });
+      }
+    } catch (err) {
+      console.error("Error loading location:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
- const handleChange = (field, value) => {
- setLocation(prev => ({ ...prev, [field]: value }));
- };
+  const handleSave = async () => {
+    if (!entity) return;
+    try {
+      const { nombre, tipo, descripcion, ...extra } = location;
+
+      await entityService.update(entity.id, {
+        nombre,
+        tipo,
+        descripcion,
+        contenido_json: JSON.stringify(extra)
+      });
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Error saving:", err);
+    }
+  };
+
+  const handleChange = (field, value) => {
+    setLocation(prev => ({ ...prev, [field]: value }));
+  };
 
  if (loading) return <div className="p-20 text-center text-foreground/60 animate-pulse">Scanning terrain...</div>;
  if (!location) return <div className="p-20 text-center text-destructive">Location not found in the maps.</div>;

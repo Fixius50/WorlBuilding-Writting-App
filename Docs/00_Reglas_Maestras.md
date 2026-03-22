@@ -21,8 +21,8 @@ Este proyecto requiere un altísimo nivel de consistencia, documentación y cali
 ## 🛡️ ESTÁNDARES TÉCNICOS INVIOLABLES (EXTENDIDO)
 
 1. **Tipado Estricto:** Todo código nuevo DEBE ser TypeScript. Prohibido usar `any`.
-2. **Local-First:** La persistencia solo se realiza a través de `entityService` (SQLite WASM). Sin llamadas a `api.js` o APIs externas.
-3. **Cero Backend:** No se permite código Rust, Java o Python en la arquitectura de ejecución. La app es 100% Electrón Frontend.
+2. **Local-First:** La persistencia se realiza exclusivamente a través de los servicios de base de datos (`entityService`, `notebookService`, etc.) usando SQLite WASM. No se permiten llamadas a `api.js` o APIs de red para datos de usuario.
+3. **Arquitectura:** La app es 100% Vite Frontend (Web-centric). Se permite el uso de un **Servidor Auxiliar (Java/Spring)** exclusivamente para tareas de sistema (backups, importación de archivos, automatización) que el navegador no puede realizar por seguridad.
 4. **Diseño:** Seguir el estándar "Dark Glassmorphism" definido en `02_Diseño_UI_UX.md`.
 5. **Idioma:** Código e interfaz en Español (Nombres de variables en Inglés por convención técnica).
 

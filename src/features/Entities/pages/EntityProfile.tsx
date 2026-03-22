@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useOutletContext } from 'react-router-dom';
 import { createPortal } from 'react-dom';
-import api from '../../../services/api';
+import { entityService } from '../../../database/entityService';
+import { Entidad } from '../../../database/types';
 import GlassPanel from '../../../components/common/GlassPanel';
 import Avatar from '../../../components/common/Avatar';
 import Button from '../../../components/common/Button';
@@ -37,16 +38,33 @@ import Button from '../../../components/common/Button';
  }, [entitySlug]);
 
  const loadEntity = async () => {
- setLoading(true);
- try {
- const data = await api.get(`/world-bible/entities/${entitySlug}`);
- setEntity(data);
- } catch (err) {
- console.error("Failed to load entity", err);
- } finally {
- setLoading(false);
- }
- };
+    if (!entitySlug) return;
+    setLoading(true);
+    try {
+      const data = await entityService.getById(Number(entitySlug));
+      if (data) {
+        const extra = typeof data.contenido_json === 'string'
+          ? JSON.parse(data.contenido_json)
+          : (data.contenido_json || {});
+        
+        // Fetch values for attributes
+        const vals = await entityService.getValues(data.id);
+        
+        setEntity({
+          ...data,
+          ...extra,
+          valores: vals.map(v => ({
+            valor: v.valor,
+            plantilla: { nombre: 'Atributo', tipo: 'text' } // Simplified for now as templates are hard to map without join
+          }))
+        });
+      }
+    } catch (err) {
+      console.error("Failed to load entity", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
  if (loading) return <div className="p-20 text-center animate-pulse text-foreground/50">Accessing Archives...</div>;
  if (!entity) return <div className="p-20 text-center text-red-400">Entity not found.</div>;

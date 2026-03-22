@@ -6,6 +6,7 @@ import { folderService } from '../../../database/folderService';
 import { entityService } from '../../../database/entityService';
 import BibleCard from '../../WorldBible/components/BibleCard';
 import Breadcrumbs from '../../../components/common/Breadcrumbs';
+import MoveModal from '../../../components/common/MoveModal';
 import { getHierarchyType, HIERARCHY_TYPES } from '../../../utils/constants/hierarchy_types';
 import { Carpeta, Entidad } from '../../../database/types';
 
@@ -40,11 +41,16 @@ const FolderView: React.FC = () => {
  } = useOutletContext<OutletContext>();
 
  const [entities, setEntities] = useState<Entidad[]>([]);
+  const [subfolders, setSubfolders] = useState<Carpeta[]>([]);
  const [folder, setFolder] = useState<Carpeta | null>(null);
  const [path, setPath] = useState<Carpeta[]>([]);
  const [loading, setLoading] = useState(true);
   const [creationMenuOpen, setCreationMenuOpen] = useState(false);
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+  
+  // Move Modal State
+  const [moveModalOpen, setMoveModalOpen] = useState(false);
+  const [itemToMove, setItemToMove] = useState<{ item: any; type: 'entity' | 'folder' } | null>(null);
 
 
   useEffect(() => {
@@ -63,7 +69,11 @@ const FolderView: React.FC = () => {
   }, [setRightOpen, setRightPanelTab]);
 
  // Unified Filter Logic
- const filteredContent = {
+  const filteredContent = {
+    folders: subfolders.filter(f => {
+      const searchTerm = (folderSearchTerm || '').toLowerCase();
+      return f.nombre.toLowerCase().includes(searchTerm);
+    }),
  entities: entities.filter(ent => {
  const searchTerm = (folderSearchTerm || '').toLowerCase();
  const matchesSearch = ent.nombre.toLowerCase().includes(searchTerm) || 
@@ -114,8 +124,12 @@ const FolderView: React.FC = () => {
 
       if (fInfo) {
         setFolder(fInfo);
-        const ents = await entityService.getByFolder(fInfo.id);
+        const [ents, subs] = await Promise.all([
+          entityService.getByFolder(fInfo.id),
+          folderService.getSubfolders(fInfo.id)
+        ]);
         setEntities(ents);
+        setSubfolders(subs);
         const breadcrumbs = await folderService.getPath(fInfo.id);
         setPath(breadcrumbs);
       } else {
@@ -136,11 +150,26 @@ const FolderView: React.FC = () => {
       try {
         await entityService.update(entity.id, { nombre: newName });
         loadFolderContent();
-        const event = new CustomEvent('folder-update', { detail: { folderId: folder?.id } });
-        window.dispatchEvent(event);
+        window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: folder?.id } }));
       } catch (err) {
         console.error("Rename failed", err);
       }
+    }
+  };
+
+  const handleMoveItem = async (targetFolderId: number | null) => {
+    if (!itemToMove) return;
+    try {
+      if (itemToMove.type === 'entity') {
+        await entityService.move(itemToMove.item.id, targetFolderId);
+      } else {
+        await folderService.move(itemToMove.item.id, targetFolderId);
+      }
+      loadFolderContent();
+      window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: folder?.id } }));
+      setMoveModalOpen(false);
+    } catch (err) {
+      console.error("Move failed", err);
     }
   };
 
@@ -221,18 +250,31 @@ const FolderView: React.FC = () => {
  <p className="text-foreground/60 text-xs font-bold uppercase tracking-widest">Sin registros en este sector</p>
  </div>
  )}
- <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-  {filteredContent.entities.map(entity => (
-    <BibleCard
-      key={entity.id}
-      item={entity}
-      type="entity"
-      linkTo={`/local/${projectName}/bible/folder/${folder.id}/entity/${entity.id}`}
-      onDelete={() => handleDeleteEntity(entity.id, folder.id)}
-      onRename={() => handleRenameEntity(entity)}
-    />
-  ))}
- </div>
+  <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+    {filteredContent.folders.map(sub => (
+      <BibleCard
+        key={`f-${sub.id}`}
+        item={sub}
+        type="folder"
+        linkTo={`/local/${projectName}/bible/folder/${sub.id}`}
+        onDelete={() => handleDeleteFolder(sub.id)}
+        onRename={() => {
+          const newName = prompt('Renombrar carpeta:', sub.nombre);
+          if (newName) navigate(`/local/${projectName}/bible/folder/${sub.id}`); // This is a placeholder for actual renaming
+        }}
+      />
+    ))}
+    {filteredContent.entities.map(entity => (
+      <BibleCard
+        key={`e-${entity.id}`}
+        item={entity}
+        type="entity"
+        linkTo={`/local/${projectName}/bible/folder/${folder.id}/entity/${entity.id}`}
+        onDelete={() => handleDeleteEntity(entity.id, folder.id)}
+        onRename={() => handleRenameEntity(entity)}
+      />
+    ))}
+  </div>
  </div>
  </div>
  </div>
@@ -267,7 +309,7 @@ const FolderView: React.FC = () => {
             <span className="material-symbols-outlined text-lg text-indigo-500/50">person_add</span> Crear Entidad
           </button>
           
-          <button onClick={() => navigate(`/local/${projectName}/maps/new?folderId=${folder.id}`)} className="w-full px-4 py-3 bg-foreground/5 hover:bg-cyan-500/10 text-left text-[11px] font-bold flex items-center gap-3 text-foreground/60 hover:text-cyan-400 transition-all border border-foreground/5 hover:border-cyan-500/30">
+          <button onClick={() => navigate(`/local/${projectName}/map-editor/create/${folder.id}`)} className="w-full px-4 py-3 bg-foreground/5 hover:bg-cyan-500/10 text-left text-[11px] font-bold flex items-center gap-3 text-foreground/60 hover:text-cyan-400 transition-all border border-foreground/5 hover:border-cyan-500/30">
             <span className="material-symbols-outlined text-lg text-cyan-500/50">map</span> Crear Mapa
           </button>
           
@@ -302,17 +344,47 @@ const FolderView: React.FC = () => {
  </header>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-  {filteredContent.entities.map(entity => (
-    <BibleCard
-      key={entity.id}
-      item={entity}
-      type="entity"
-      linkTo={`/local/${projectName}/bible/folder/${folder.id}/entity/${entity.id}`}
-      onDelete={() => handleDeleteEntity(entity.id, folder.id)}
-      onRename={() => handleRenameEntity(entity)}
-    />
-  ))}
- </div>
+    {filteredContent.folders.map(sub => (
+      <BibleCard
+        key={`f-${sub.id}`}
+        item={sub}
+        type="folder"
+        linkTo={`/local/${projectName}/bible/folder/${sub.id}`}
+        onDelete={() => handleDeleteFolder(sub.id)}
+        onRename={() => {
+          const newName = prompt('Renombrar carpeta:', sub.nombre);
+          if (newName && newName !== sub.nombre) {
+            folderService.update(sub.id, newName).then(() => {
+              loadFolderContent();
+              window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: folder?.id } }));
+            });
+          }
+        }}
+        onMove={() => { setItemToMove({ item: sub, type: 'folder' }); setMoveModalOpen(true); }}
+      />
+    ))}
+    {filteredContent.entities.map(entity => (
+      <BibleCard
+        key={`e-${entity.id}`}
+        item={entity}
+        type="entity"
+        linkTo={`/local/${projectName}/bible/folder/${folder.id}/entity/${entity.id}`}
+        onDelete={() => handleDeleteEntity(entity.id, folder.id)}
+        onRename={() => handleRenameEntity(entity)}
+        onMove={() => { setItemToMove({ item: entity, type: 'entity' }); setMoveModalOpen(true); }}
+      />
+    ))}
+  </div>
+
+  <MoveModal
+     isOpen={moveModalOpen}
+     onClose={() => setMoveModalOpen(false)}
+     onConfirm={handleMoveItem}
+     folders={folders}
+     title={`Mover ${itemToMove?.type === 'folder' ? 'Carpeta' : 'Entidad'}`}
+     currentItemId={itemToMove?.item?.id}
+     itemType={itemToMove?.type || 'entity'}
+  />
 
  {entities.length === 0 && (
  <div className="p-20 text-center border-2 border-dashed border-foreground/10 rounded-[4rem] bg-white/[0.01]">

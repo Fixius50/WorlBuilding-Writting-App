@@ -11,9 +11,9 @@ Este documento define las decisiones arquitectónicas clave del proyecto tras la
 * **Persistencia (BBDD Local-First):** SQLite WASM (`sqlocal`) sobre OPFS (Origin Private File System).
   * Almacenamiento absoluto de datos en el navegador del cliente. Cero latencia de red.
   * Búsqueda: Consultas ultra-rápidas mediante Web Workers procesando SQLite.
-* **Servidor Auxiliar:** Java 21 + Spring WebMVC (Jetty Embebido).
-  * Un micro-servidor localizado en `server-aux`.
-  * Responsabilidad: Funciones de interacción nativa (gestión del navegador, endpoints del sistema, scripts) que escapan al sandbox de React. Funciona estrictamente como un helper, no como monolito.
+* **Servidor Auxiliar (Spring Boot Helper):** Java 21 + Spring WebMVC.
+  * Localizado en `server-aux`.
+  * Responsabilidad: Tareas de sistema "Bridge" (Puente). Principalmente **Sincronización Bulk** (exportación e importación de archivos `.sqlite` del OPFS al disco duro físico) y automatizaciones de sistema operativo. No gestiona la lógica de negocio ni el CRUD diario.
 
 ## ARQUITECTURA DE DATOS
 
@@ -22,4 +22,4 @@ Este documento define las decisiones arquitectónicas clave del proyecto tras la
 
 ## HISTORIAL DE TRANSICIÓN
 
-Inicialmente concebido como un monolito pesado. El proyecto pivota y aprueba unívocamente el uso del stack **React + sqlocal (WASM)** en el frontend puro como solución hiperveloz y offline, manteniendo un **Backend Auxiliar Ligero (Java/Spring)** únicamente para rutinas locales de sistema imperativas.
+Inicialmente concebido como un monolito pesado o una app distribuida. El proyecto ha **completado con éxito** la transición a **Local-First (Vite + SQLocal)**. El **Backend Auxiliar (Java)** se mantiene exclusivamente como un facilitador de sistema para persistencia en disco (Snapshots) y utilidades de entorno.

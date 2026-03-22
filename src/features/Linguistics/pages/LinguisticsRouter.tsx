@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import LinguisticsHub from './LinguisticsHub';
 import GlyphFoundry from './GlyphFoundry';
 
-import api from '../../../services/api';
+import { entityService } from '../../../database/entityService';
 
 const LinguisticsRouter = () => {
  const [view, setView] = useState('hub'); // 'hub', 'foundry', 'editor'
@@ -10,25 +10,23 @@ const LinguisticsRouter = () => {
 
  const handleOpenEditor = (word) => {
  setSelectedWord(word);
- // setView('editor'); // Deprecated, handled internally by Hub
  console.log("Opening editor for", word);
  };
 
  const handleSaveGlyph = async (saveData) => {
  if (saveData.wordId) {
  try {
- // Find language ID first (Hub usually knows it, but Router needs to track it or we use a global approach)
- // For now, let's assume we can get it from the word itself if it was loaded
- // Actually, the endpoint I added is /api/conlang/{id}/palabra/{palabraId}/glyph
- // But the palabraId is unique globally anyway in JPA if we use a flat structure for word updates
- // Let's refine the endpoint to not need the {id} if palabraId is enough.
- // Wait, Word has a ManyToOne back to Conlang.
-
- // For simplicity, let's use a flatter endpoint or just pass 0 as conlangId if we don't need it.
- await api.patch(`/conlang/0/palabra/${saveData.wordId}/glyph`, {
- svgPathData: saveData.svgPathData
- });
- console.log("Glyph saved successfully");
+  // Use entityService to update the word's glyph data
+  const word = await entityService.getById(saveData.wordId);
+  if (word) {
+    const content = JSON.parse(word.contenido_json || '{}');
+    content.svgPathData = saveData.svgPathData;
+    await entityService.update(saveData.wordId, {
+      ...word,
+      contenido_json: JSON.stringify(content)
+    });
+    console.log("Glyph saved successfully via entityService");
+  }
  } catch (err) {
  console.error("Error saving glyph:", err);
  }

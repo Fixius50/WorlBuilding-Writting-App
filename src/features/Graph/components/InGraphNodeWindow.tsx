@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import GlassPanel from '../../../components/common/GlassPanel';
 import RelationshipManager from '../../Relationships/components/RelationshipManager';
-import api from '../../../services/api';
+import { entityService } from '../../../database/entityService';
 
 const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned }) => {
  const [activeTab, setActiveTab] = useState('ESENCIA'); // ESENCIA, RELACIONES, CRÓNICA
@@ -15,8 +15,17 @@ const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned
  const fetchDetails = async () => {
  try {
  setLoading(true);
- const response = await api.get(`/world-bible/entities/${node.id}`);
- setDetails(response);
+ const response = await entityService.getById(Number(node.id));
+ if (response && response.contenido_json) {
+    try {
+      const parsed = JSON.parse(response.contenido_json);
+      setDetails({ ...response, attributes: parsed });
+    } catch (e) {
+      setDetails(response);
+    }
+  } else {
+    setDetails(response);
+  }
  } catch (err) {
  console.error(`Error fetching details for node ${node.id}:`, err);
  } finally {

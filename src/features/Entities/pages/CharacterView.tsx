@@ -3,61 +3,80 @@ import { useNavigate, useParams } from 'react-router-dom';
 import GlassPanel from '../../../components/common/GlassPanel';
 import Avatar from '../../../components/common/Avatar';
 import Button from '../../../components/common/Button';
-import api from '../../../services/api';
+import { entityService } from '../../../database/entityService';
+import { Entidad } from '../../../database/types';
+import { relationshipService } from '../../../database/relationshipService';
 
 const CharacterView = ({ id }) => {
- const { id: projectId } = useParams();
- const navigate = useNavigate();
- const [activeTab, setActiveTab] = useState('overview');
- const [character, setCharacter] = useState<any>(null);
- const [loading, setLoading] = useState(true);
- const [isEditing, setIsEditing] = useState(false);
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('overview');
+  const [entity, setEntity] = useState<Entidad | null>(null);
+  const [character, setCharacter] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
 
- useEffect(() => {
- loadCharacter();
- }, [id]);
+  useEffect(() => {
+    loadCharacter();
+  }, [id]);
 
- const loadCharacter = async () => {
- setLoading(true);
- try {
- const data = await api.get(`/bd/entidadindividual/${id}`);
- setCharacter(data);
- } catch (err) {
- console.error("Error loading character:", err);
- } finally {
- setLoading(false);
- }
- };
+  const loadCharacter = async () => {
+    setLoading(true);
+    try {
+      const data = await entityService.getById(Number(id));
+      if (data) {
+        setEntity(data);
+        const extra = typeof data.contenido_json === 'string'
+          ? JSON.parse(data.contenido_json)
+          : (data.contenido_json || {});
+        
+        // Fetch relationships for this character
+        const relations = await relationshipService.getByEntity(data.id);
+        
+        setCharacter({
+          ...data,
+          ...extra,
+          relaciones: relations // Overriding with real relations from DB
+        });
+      }
+    } catch (err) {
+      console.error("Error loading character:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const handleSave = async () => {
+    if (!entity) return;
+    try {
+      const { nombre, tipo, descripcion, ...extra } = character;
+      // We don't save relationships back as part of entity update
+      delete extra.relaciones;
 
- const handleSave = async () => {
- try {
- await api.patch('/bd/modificar', {
- ...character,
- tipoEntidad: 'entidadindividual'
- });
- setIsEditing(false);
- // alert("Changes saved!"); // Removed
- } catch (err) {
- console.error("Error saving:", err);
- // alert("Error saving: " + err.message); // Removed
- }
- };
+      await entityService.update(entity.id, {
+        nombre,
+        tipo,
+        descripcion,
+        contenido_json: JSON.stringify(extra)
+      });
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Error saving:", err);
+    }
+  };
 
- const handleDelete = async () => {
- if (!window.confirm("Move this character to the Trash Bin?")) return;
- try {
- await api.delete(`/bd/entidadindividual/${id}`);
- navigate(`/project/${projectId}`);
- } catch (err) {
- console.error(err);
- // alert("Error deleting: " + (err.response?.data?.error || err.message)); // Removed
- }
- };
+  const handleDelete = async () => {
+    if (!window.confirm("Move this character to the Trash Bin?")) return;
+    try {
+      if (entity) await entityService.delete(entity.id);
+      navigate(-1);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
- const handleChange = (field, value) => {
- setCharacter(prev => ({ ...prev, [field]: value }));
- };
+  const handleChange = (field, value) => {
+    setCharacter(prev => ({ ...prev, [field]: value }));
+  };
 
  if (loading) return <div className="p-20 text-center text-foreground/60 animate-pulse">Summoning entity...</div>;
  if (!character) return <div className="p-20 text-center text-destructive">Character not found in the archives.</div>;

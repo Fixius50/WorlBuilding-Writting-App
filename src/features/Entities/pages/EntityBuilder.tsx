@@ -4,14 +4,15 @@ import { createPortal } from 'react-dom';
 import { entityService } from '../../../database/entityService';
 import { folderService } from '../../../database/folderService';
 import { templateService } from '../../../database/templateService';
-import { Entidad, Carpeta, Plantilla, Valor } from '../../../database/types';
-
 import AttributeField from './AttributeField';
 import GlassPanel from '../../../components/common/GlassPanel';
 import Avatar from '../../../components/common/Avatar';
 import EntityBuilderSidebar from '../components/EntityBuilderSidebar';
+import Breadcrumbs from '../../../components/common/Breadcrumbs';
+import { Entidad, Carpeta, Plantilla, Valor } from '../../../database/types';
 
 interface LayoutContext {
+  projectId: number;
   setRightOpen: (open: boolean) => void;
   setRightPanelTab: (tab: string) => void;
   setAddAttributeHandler: (handler: (templateId: number) => void) => void;
@@ -28,6 +29,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
   const [isCreation, setIsCreation] = useState(mode === 'creation');
 
   const {
+    projectId,
     setRightOpen,
     setRightPanelTab,
     setAddAttributeHandler,
@@ -48,9 +50,11 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
       notes: '',
       images: []
     }),
-    project_id: 1, 
+    project_id: projectId || 1, 
     carpeta_id: folderSlug ? Number(folderSlug) : null
   });
+
+  const [path, setPath] = useState<Carpeta[]>([]);
 
   const [fields, setFields] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,7 +106,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
     const init = async () => {
       setLoading(true);
       try {
-        const templates = await templateService.getByProject(1); // project_id 1 + global (0)
+        const templates = await templateService.getByProject(projectId || 1); 
         setAvailableTemplatesLocal(templates);
         setAvailableTemplates(templates);
 
@@ -138,11 +142,21 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
       }
     };
     init();
-  }, [entitySlug, isCreation]);
+  }, [entitySlug, isCreation, projectId]);
+
+  useEffect(() => {
+    const loadPath = async () => {
+      if (entity.carpeta_id) {
+        const p = await folderService.getPath(entity.carpeta_id);
+        setPath(p);
+      }
+    };
+    loadPath();
+  }, [entity.carpeta_id]);
 
   const refreshTemplates = async () => {
     try {
-      const templates = await templateService.getByProject(1);
+      const templates = await templateService.getByProject(projectId || 1);
       setAvailableTemplatesLocal(templates);
       setAvailableTemplates(templates);
     } catch (err) {
@@ -160,6 +174,11 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
       } else {
         savedEntity = await entityService.update(entity.id!, entity);
       }
+
+      // Notificar a otros componentes (FolderView, Sidebar, etc.)
+      window.dispatchEvent(new CustomEvent('folder-update', { 
+        detail: { folderId: savedEntity.carpeta_id } 
+      }));
 
       const updatedFields = [...fields];
       for (let i = 0; i < updatedFields.length; i++) {
@@ -275,8 +294,13 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
         {/* ENCABEZADO DE ENTIDAD - PREMIUM GLASS */}
         <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-foreground/10 px-[1.5rem] lg:px-[3rem] py-[1rem] flex flex-col items-center gap-0">
           
+          {/* Breadcrumbs Row */}
+          <div className="w-full max-w-7xl">
+            <Breadcrumbs path={path} />
+          </div>
+
           {/* Fila 1: Logo + Nombre (Más espaciosa) */}
-          <div className="flex items-center gap-[1.25rem] py-[2rem] w-full justify-center">
+          <div className="flex items-center gap-[1.25rem] py-[1rem] w-full justify-center">
             <Avatar 
               url={extras.iconUrl}
               name={entity.nombre || 'Nuevo Ente'} 
