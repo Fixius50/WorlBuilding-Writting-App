@@ -1,4 +1,4 @@
-# WorldbuildingApp V2
+# WorldbuildingApp Alpha V2
 
 Aplicación full-stack para worldbuilding con soporte para conlangs, mapas, líneas temporales y más.
 
