@@ -155,14 +155,14 @@ const WorldBibleLayout = () => {
     }
   };
 
-  const handleCreateEntity = async (folderId: number | string | { id: number | string; slug?: string }, specialType = 'entidadindividual') => {
-    const targetSlug = typeof folderId === 'object' ? (folderId.slug || folderId.id) : folderId;
-    navigate(`${baseUrl}/folder/${targetSlug}/entity/new/${specialType}`);
+  const handleCreateEntity = async (item: number | string | { id: number | string; slug?: string }, specialType = 'entidadindividual') => {
+    const targetId = typeof item === 'object' ? item.id : item;
+    navigate(`${baseUrl}/folder/${targetId}/entity/new/${specialType}`);
   };
 
   const handleRenameFolder = async (folderId: number, newName: string) => {
     try {
-      await folderService.update(folderId, newName);
+      await folderService.update(folderId, newName, projectId);
       setFolders(prev => prev.map(f => f.id === folderId ? { ...f, nombre: newName } : f));
     } catch (err) { throw err; }
   };
@@ -206,7 +206,7 @@ const WorldBibleLayout = () => {
     try {
       if (type === 'folder') {
         if (typeof tempId === 'number' && !tempId.toString().startsWith('temp')) {
-          await folderService.update(tempId, name);
+          await folderService.update(Number(tempId), name, projectId);
           window.dispatchEvent(new CustomEvent('folder-update', {
             detail: {
               folderId: parentId,

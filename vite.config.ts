@@ -19,7 +19,7 @@ export default defineConfig({
     strictPort: true,
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Embedder-Policy': 'credentialless',
     },
   },
   optimizeDeps: {
@@ -30,13 +30,6 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('react')) return 'vendor-react';
-            if (id.includes('tiptap')) return 'vendor-tiptap';
-            return 'vendor';
-          }
-        }
       }
     }
   }

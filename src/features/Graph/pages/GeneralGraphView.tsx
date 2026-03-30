@@ -13,7 +13,10 @@ import {
   MarkerType,
   Node,
   OnConnect,
-  BackgroundVariant
+  BackgroundVariant,
+  Handle,
+  Position,
+  ConnectionMode
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useOutletContext, useNavigate } from 'react-router-dom';
@@ -25,15 +28,121 @@ import Button from '../../../components/common/Button';
 import GlassPanel from '../../../components/common/GlassPanel';
 import { useLanguage } from '../../../context/LanguageContext';
 
-const GeneralGraphView = () => {
+// --- Custom Node Component ---
+const ZenNode = ({ data, selected }: { data: any, selected: boolean }) => {
+  const typeInfo = getHierarchyType(data.tipo);
+  
+  // Generar handles distribuidos para simular conexión en cualquier punto del borde
+  const renderPerimeterHandles = (type: 'source' | 'target') => {
+    const sides = [
+      { pos: Position.Top, count: 7, className: "!w-[14%] !h-[2px] !top-0 !translate-y-[-50%]" },
+      { pos: Position.Bottom, count: 7, className: "!w-[14%] !h-[2px] !bottom-0 !translate-y-[50%]" },
+      { pos: Position.Left, count: 5, className: "!h-[20%] !w-[2px] !left-0 !translate-x-[-50%]" },
+      { pos: Position.Right, count: 5, className: "!h-[20%] !w-[2px] !right-0 !translate-x-[50%]" },
+    ];
+
+    return sides.flatMap(side => 
+      Array.from({ length: side.count }).map((_, i) => {
+        const offset = (100 / side.count) * i + (50 / side.count);
+        const style = side.pos === Position.Top || side.pos === Position.Bottom 
+          ? { left: `${offset}%` } 
+          : { top: `${offset}%` };
+        
+        const id = `${type === 'source' ? 's' : 't'}-${side.pos[0]}-${i}`;
+        
+        return (
+          <Handle
+            key={id}
+            id={id}
+            type={type}
+            position={side.pos}
+            style={style}
+            className={`${side.className} !bg-transparent hover:!bg-primary !border-none !rounded-none z-30 transition-all duration-100 !min-w-0 !min-h-0`}
+          />
+        );
+      })
+    );
+  };
+
+  return (
+    <div className={`monolithic-panel group min-w-[220px] cursor-pointer transition-all duration-500 relative ${selected ? '!border-primary shadow-[0_0_30px_rgba(var(--primary),0.2)]' : 'border-foreground/20 hover:border-foreground/40'}`}
+         style={{
+           backgroundColor: 'hsl(var(--background) / 0.9)',
+           backdropFilter: 'blur(20px)',
+           borderRadius: '0px',
+           borderWidth: '1px'
+         }}>
+      
+      {/* Handles Multicanal (Perímetro Reactivo) */}
+      {renderPerimeterHandles('target')}
+      {renderPerimeterHandles('source')}
+
+      {/* Main Content Area (con padding interno para no obstruir handles) */}
+      <div className="p-4">
+        <div className="flex items-start gap-4">
+          <div className="size-9 rounded-none border border-primary/20 bg-primary/5 flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-lg text-primary">{data.icon}</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 mb-0.5">{data.tipo}</div>
+            <div className="text-sm font-bold text-foreground truncate tracking-tight">{data.label}</div>
+          </div>
+        </div>
+
+        {/* Expanded Preview (Under the node) */}
+        {selected && (
+          <div className="mt-5 pt-5 border-t border-foreground/10 animate-in fade-in slide-in-from-top-4 duration-500">
+             <div className="space-y-4">
+               {data.descripcion && (
+                 <div className="space-y-1">
+                   <h5 className="text-[9px] font-black uppercase tracking-widest text-foreground/30 italic">Sinopsis</h5>
+                   <p className="text-[11px] text-foreground/60 leading-relaxed font-serif italic line-clamp-6 text-justify">
+                     {data.descripcion}
+                   </p>
+                 </div>
+               )}
+               
+               {data.valores && data.valores.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {data.valores.map((v: any, i: number) => (
+                      <span key={i} className="text-[8px] font-black uppercase tracking-tighter bg-primary/10 text-primary/80 px-2 py-1 border border-primary/10">
+                        {v.plantilla_nombre}: {v.valor}
+                      </span>
+                    ))}
+                  </div>
+               )}
+             </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+interface GraphViewProps {
+  projectId?: number;
+  projectName?: string;
+}
+
+const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { projectId, projectName } = useOutletContext<{ projectId: number, projectName: string }>();
   
+  const outletCtx = useOutletContext<{ projectId?: number; projectName?: string } | null>();
+  const projectId: number | undefined = props.projectId ?? outletCtx?.projectId;
+  const projectName: string | undefined = props.projectName ?? outletCtx?.projectName;
+
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [loading, setLoading] = useState(true);
   const [entities, setEntities] = useState<Entidad[]>([]);
+
+  // Modal para seleccionar relaciones (múltiples vínculos)
+  const [multiRelModal, setMultiRelModal] = useState<{
+    id: string;
+    rels: Relacion[];
+    active: string[];
+  } | null>(null);
 
   const loadGraph = useCallback(async () => {
     if (!projectId) return;
@@ -44,51 +153,67 @@ const GeneralGraphView = () => {
         relationshipService.getByProject(projectId)
       ]);
 
-      setEntities(allEntities);
+      // Filtrar entidades que no tengan carpeta (evitar "fantasmas" huérfanos)
+      const filteredEntities = allEntities.filter(ent => ent.carpeta_id !== null);
+      setEntities(filteredEntities);
 
-      // Create nodes from entities
-      const newNodes: Node[] = allEntities.map((ent, idx) => {
+      // Creamos nodos con previsualización interna
+      const newNodes: Node[] = filteredEntities.map((ent, idx) => {
         const typeInfo = getHierarchyType(ent.tipo);
-        const angle = (idx / allEntities.length) * 2 * Math.PI;
-        const radius = 300 + Math.random() * 100;
+        const angle = (idx / filteredEntities.length) * 2 * Math.PI;
+        const radius = 350 + Math.random() * 50;
 
         return {
           id: ent.id.toString(),
-          data: { label: ent.nombre, tipo: ent.tipo, icon: typeInfo.icon },
+          type: 'zen',
+          data: { 
+            label: ent.nombre, 
+            tipo: ent.tipo, 
+            icon: typeInfo.icon,
+            descripcion: ent.descripcion,
+            valores: ent.valores,
+            onNavigate: () => navigate(`/local/${projectName}/bible/entity/${ent.id}`)
+          },
           position: { 
             x: Math.cos(angle) * radius + 500, 
             y: Math.sin(angle) * radius + 500 
           },
-          style: {
-            background: 'rgba(15, 15, 20, 0.8)',
-            color: '#fff',
-            border: `1px solid ${typeInfo.color.replace('text-', 'rgba(')}${typeInfo.color.includes('purple') ? '168, 85, 247, 0.3)' : '99, 102, 241, 0.3)'}`,
-            borderRadius: '0px',
-            padding: '12px',
-            fontSize: '11px',
-            fontWeight: 'bold',
-            backdropFilter: 'blur(12px)',
-            width: 160,
-            textAlign: 'left',
-            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)'
-          }
+          dragHandle: '.monolithic-panel',
         };
       });
 
-      // Create edges from relationships
-      const newEdges: Edge[] = allRels.map(rel => ({
-        id: `e-${rel.id}`,
-        source: rel.origen_id.toString(),
-        target: rel.destino_id.toString(),
-        label: rel.tipo,
-        animated: false,
-        style: { stroke: '#6366f1', strokeWidth: 1.5, opacity: 0.6 },
-        labelStyle: { fill: '#94a3b8', fontWeight: 800, fontSize: 9, textTransform: 'uppercase' as any },
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          color: '#6366f1',
-        },
-      }));
+      // Agrupamos relaciones entre los mismos pares de nodos (sin importar dirección para evitar solapamiento visual)
+      const groupMap: Map<string, Relacion[]> = new Map();
+      allRels.forEach(rel => {
+        const sortedIds = [rel.origen_id, rel.destino_id].sort((a, b) => a - b);
+        const key = sortedIds.join('-');
+        if (!groupMap.has(key)) groupMap.set(key, []);
+        groupMap.get(key)!.push(rel);
+      });
+
+      const newEdges: Edge[] = Array.from(groupMap.entries()).map(([key, rels]) => {
+        const [idA, idB] = key.split('-');
+        // Decidimos la dirección visual basada en la primera relación o simplemente A-B
+        const source = rels[0].origen_id.toString();
+        const target = rels[0].destino_id.toString();
+
+        return {
+          id: `e-${key}`,
+          source,
+          target,
+          sourceHandle: rels[0].origen_handle || undefined,
+          targetHandle: rels[0].destino_handle || undefined,
+          label: rels.length > 1 ? `${rels.length} RELACIONES` : rels[0].tipo,
+          data: { rels },
+          animated: false,
+          style: { stroke: 'hsl(var(--primary))', strokeWidth: 1.5, opacity: 0.6 },
+          labelStyle: { fill: 'hsl(var(--foreground))', fontWeight: 900, fontSize: 8, textTransform: 'uppercase' },
+          markerEnd: {
+            type: MarkerType.ArrowClosed,
+            color: 'hsl(var(--primary))',
+          },
+        };
+      });
 
       setNodes(newNodes);
       setEdges(newEdges);
@@ -97,138 +222,160 @@ const GeneralGraphView = () => {
     } finally {
       setLoading(false);
     }
-  }, [projectId]);
+  }, [projectId, navigate, projectName]);
 
   useEffect(() => {
     loadGraph();
   }, [loadGraph]);
 
-  const onConnect: OnConnect = useCallback(
-    async (params) => {
-      if (!params.source || !params.target) return;
-      
-      try {
-        const newRel = await relationshipService.create({
-          origen_id: parseInt(params.source),
-          destino_id: parseInt(params.target),
-          tipo: 'Relacionado',
-          descripcion: '',
-          project_id: projectId
-        });
-
-        const edge: Edge = {
-          ...params,
-          id: `e-${newRel.id}`,
-          label: 'Relacionado',
-          style: { stroke: '#6366f1', strokeWidth: 1.5 },
-          markerEnd: { type: MarkerType.ArrowClosed, color: '#6366f1' }
-        };
-
-        setEdges((eds) => addEdge(edge, eds));
-      } catch (err) {
-        console.error("Failed to create relationship", err);
-      }
-    },
-    [projectId, setEdges]
-  );
-
-  const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
-    // Navigate to entity view
-    const ent = entities.find(e => e.id.toString() === node.id);
-    if (ent) {
-      navigate(`/local/${projectName}/bible/entity/${ent.id}`);
+  const onConnect = useCallback(async (params: Connection) => {
+    if (!params.source || !params.target) return;
+    try {
+      await relationshipService.create({
+        origen_id: parseInt(params.source),
+        destino_id: parseInt(params.target),
+        tipo: 'RELACIONADO',
+        descripcion: '',
+        project_id: projectId,
+        origen_handle: params.sourceHandle,
+        destino_handle: params.targetHandle
+      });
+      await loadGraph();
+    } catch (err) {
+      console.error("Error creating relationship:", err);
     }
-  }, [entities, navigate, projectName]);
+  }, [projectId]);
 
-  const nodeTypes = useMemo(() => ({}), []);
+  const onReconnect = useCallback(async (oldEdge: Edge, newConnection: Connection) => {
+    try {
+      const relId = parseInt(oldEdge.id.replace('e-', '').split('-')[0]); 
+      // Si el ID es compuesto por agrupación, necesitamos el ID real de la relación.
+      // Pero Note: en mi agrupación actual, uso el par de IDs de nodos.
+      // Para simplificar la reconexión, si hay múltiples relaciones agrupadas, 
+      // moveremos todas al nuevo handle o solo la primera.
+      const rels = oldEdge.data?.rels as Relacion[];
+      if (rels && rels.length > 0) {
+        for (const r of rels) {
+          await relationshipService.update(r.id, {
+            origen_id: parseInt(newConnection.source!),
+            destino_id: parseInt(newConnection.target!),
+            origen_handle: newConnection.sourceHandle,
+            destino_handle: newConnection.targetHandle
+          });
+        }
+      }
+      await loadGraph();
+    } catch (err) {
+      console.error("Error reconnecting edge:", err);
+    }
+  }, []);
+
+  const onEdgesDelete = useCallback(async (deletedEdges: Edge[]) => {
+    for (const edge of deletedEdges) {
+      const rels = edge.data?.rels as Relacion[];
+      if (rels) {
+        for (const r of rels) {
+          await relationshipService.delete(r.id);
+        }
+      }
+    }
+    await loadGraph();
+  }, []);
+
+  const onEdgeClick = useCallback((event: React.MouseEvent, edge: Edge) => {
+    if (edge.data?.rels && (edge.data.rels as Relacion[]).length > 1) {
+      setMultiRelModal({
+        id: edge.id,
+        rels: edge.data.rels as Relacion[],
+        active: (edge.data.rels as Relacion[]).map(r => r.id.toString())
+      });
+    }
+  }, []);
+
+  const nodeTypes = useMemo(() => ({ zen: ZenNode }), []);
 
   if (loading) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-[#050508] text-foreground/60">
+      <div className="w-full h-full flex flex-col items-center justify-center bg-background text-foreground/60">
         <div className="size-24 rounded-full border border-foreground/10 flex items-center justify-center mb-6 animate-pulse">
-          <span className="material-symbols-outlined text-5xl">hub</span>
+          <span className="material-symbols-outlined text-5xl text-primary/40">hub</span>
         </div>
-        <h3 className="text-xl font-bold text-foreground/50 mb-2">{t('common.loading')}...</h3>
+        <h3 className="text-xl font-black uppercase tracking-widest text-foreground/30 mb-2">{t('common.loading')}</h3>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full bg-[#050508] relative">
+    <div className="w-full h-full bg-background relative overflow-hidden">
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        onNodeClick={onNodeClick}
+        onEdgeClick={onEdgeClick}
         nodeTypes={nodeTypes}
         fitView
         colorMode="dark"
-        defaultEdgeOptions={{ animated: false }}
+        connectionMode={ConnectionMode.Loose}
         style={{ width: '100%', height: '100%' }}
       >
         <style>{`
-          .react-flow__node {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-          }
-          .react-flow__node:hover {
-            transform: scale(1.05) !important;
-            z-index: 100 !important;
-          }
           .react-flow__edge-path {
-            stroke-dasharray: 5;
-            animation: dash 10s linear infinite;
+            stroke-dasharray: 4;
+            animation: dash 15s linear infinite;
           }
           @keyframes dash {
-            from { stroke-dashoffset: 100; }
+            from { stroke-dashoffset: 200; }
             to { stroke-dashoffset: 0; }
           }
+          .react-flow__handle {
+            transition: all 0.2s ease;
+          }
         `}</style>
-        <Background color="#1e1e26" gap={25} variant={BackgroundVariant.Dots} />
-        <Controls />
-        <MiniMap 
-          nodeColor={(n) => {
-            const ent = entities.find(e => e.id.toString() === n.id);
-            const typeInfo = getHierarchyType(ent?.tipo || '');
-            return typeInfo.color.includes('purple') ? '#a855f7' : '#6366f1';
-          }}
-          maskColor="rgba(0, 0, 0, 0.7)"
-          className="monolithic-panel border border-foreground/20 rounded-none bg-black/40 backdrop-blur-md"
-        />
-        
-        <Panel position="top-right" className="p-4">
-          <GlassPanel className="p-5 flex flex-col gap-4 min-w-[240px] border-foreground/10">
-            <div className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-primary">hub</span>
-              <h3 className="text-xs font-black uppercase tracking-widest text-foreground">Red Neuronal</h3>
-            </div>
-            <div className="h-px bg-foreground/10" />
-            <p className="text-[10px] text-foreground/50 leading-relaxed">
-              Malla de interconexión activa. Arrastra desde los conectores para forjar nuevos vínculos entre {entities.length} entidades.
-            </p>
-            <div className="flex flex-col gap-2">
-              <Button variant="secondary" size="sm" icon="refresh" onClick={loadGraph} className="w-full text-[9px] font-black uppercase tracking-tighter">
-                RE-SINCRONIZAR NODO CENTRAL
-              </Button>
-            </div>
-          </GlassPanel>
-        </Panel>
 
-        <Panel position="bottom-center" className="p-4 bg-black/40 backdrop-blur-xl border border-foreground/10 px-8 py-3 mb-8 shadow-2xl">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <div className="size-2 bg-indigo-500 rounded-none shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40">Vínculos Forjados</span>
-            </div>
-            <div className="w-px h-3 bg-foreground/10"></div>
-            <p className="text-[10px] font-bold text-foreground/60 uppercase tracking-widest flex items-center gap-2">
-              <span className="size-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-              Estado: Sincronizado con SQLite
-            </p>
-          </div>
-        </Panel>
+        <Background color="rgba(255, 255, 255, 0.05)" gap={20} variant={BackgroundVariant.Lines} />
+        <Controls className="bg-background/80 border-border/50 rounded-none overflow-hidden backdrop-blur-md" />
       </ReactFlow>
+
+      {/* Relation Multi-Selector Modal */}
+      {multiRelModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+           <GlassPanel className="max-w-md w-full border-white/10 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+              <div className="p-6 border-b border-white/5 flex items-center justify-between">
+                <h4 className="text-xs font-black uppercase tracking-widest text-primary">Vínculos Múltiples</h4>
+                <button onClick={() => setMultiRelModal(null)} className="text-foreground/40 hover:text-foreground">
+                  <span className="material-symbols-outlined text-sm">close</span>
+                </button>
+              </div>
+              <div className="p-6 space-y-4">
+                 <p className="text-[10px] text-foreground/50 mb-4">Se han detectado {multiRelModal.rels.length} tipos de relación entre estos nodos. Selecciona los que deseas gestionar:</p>
+                 <div className="space-y-2">
+                    {Array.isArray(multiRelModal.rels) && multiRelModal.rels.map((rel) => (
+                      <div key={rel.id} className="flex items-center justify-between p-3 bg-white/[0.03] border border-white/5 hover:border-primary/30 transition-all">
+                        <span className="text-[11px] font-bold uppercase text-foreground/80 tracking-tighter">{rel.tipo}</span>
+                        <div className="flex items-center gap-2">
+                          <button 
+                            className="text-[9px] font-black text-foreground/40 hover:text-red-400 uppercase"
+                            onClick={async () => {
+                              await relationshipService.delete(rel.id);
+                              loadGraph();
+                              setMultiRelModal(null);
+                            }}
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                 </div>
+              </div>
+              <div className="p-4 bg-white/5 flex justify-end">
+                <Button size="sm" onClick={() => setMultiRelModal(null)} className="text-[9px] font-black uppercase tracking-widest px-8">Listo</Button>
+              </div>
+           </GlassPanel>
+        </div>
+      )}
     </div>
   );
 };

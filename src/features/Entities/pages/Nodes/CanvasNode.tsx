@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Handle, Position } from 'reactflow';
+import { Handle, Position } from '@xyflow/react';
 import AttributeField from '../AttributeField';
 
 const CanvasNode = ({ data, selected }) => {

@@ -25,7 +25,7 @@ interface OutletContext {
 }
 
 const FolderView: React.FC = () => {
- const { username, projectName, folderSlug } = useParams<{ username: string; projectName: string; folderSlug: string }>();
+ const { username, projectName, folderId } = useParams<{ username: string; projectName: string; folderId: string }>();
  const navigate = useNavigate();
   const {
     handleCreateEntity,
@@ -111,35 +111,31 @@ const FolderView: React.FC = () => {
 
  useEffect(() => {
  const handleUpdate = (e: any) => {
- const { folderId } = e.detail || {};
+ const { folderId: affectedId } = e.detail || {};
  // If we are in the affected folder
- if (folderId === folder?.id || folderId === Number(folderSlug)) {
+ if (affectedId === folder?.id || affectedId === Number(folderId)) {
  loadFolderContent();
  }
  };
  window.addEventListener('folder-update', handleUpdate);
  return () => window.removeEventListener('folder-update', handleUpdate);
- }, [folderSlug, folder?.id]);
+ }, [folderId, folder?.id]);
 
  useEffect(() => {
  loadFolderContent();
- }, [folderSlug, folders]);
+ }, [folderId, folders]);
 
   const loadFolderContent = async () => {
-    if (!folderSlug) return;
-    setLoading(true);
-    try {
-      let fInfo: Carpeta | undefined;
-      const isId = !isNaN(Number(folderSlug));
-      
-      if (isId) {
-        fInfo = folders.find(f => f.id === Number(folderSlug));
-        if (!fInfo) fInfo = await folderService.getById(Number(folderSlug)); // fallback
-      } else {
-        fInfo = folders.find(f => f.slug === folderSlug);
-      }
+  if (!folderId) return;
+  setLoading(true);
+  try {
+  let fInfo: Carpeta | undefined;
+  const id = Number(folderId);
+  
+  fInfo = folders.find(f => f.id === id);
+  if (!fInfo) fInfo = await folderService.getById(id);
 
-      if (fInfo) {
+  if (fInfo) {
         setFolder(fInfo);
         const [ents, subs] = await Promise.all([
           entityService.getByFolder(fInfo.id),
@@ -268,6 +264,21 @@ const FolderView: React.FC = () => {
  </div>
  )}
   <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+    {/* Add Entity Card (Zen Style) */}
+    <div 
+      onClick={() => navigate(`/local/${projectName}/bible/folder/${folder.id}/entity/new/entidadindividual`)}
+      className="group relative flex flex-col p-6 rounded-none monolithic-panel border border-dashed border-foreground/10 hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all duration-500 cursor-pointer items-center justify-center min-h-[180px] bg-white/[0.01]"
+    >
+      <div className="size-12 rounded-none bg-indigo-500/5 border border-indigo-500/10 flex items-center justify-center text-indigo-500/40 group-hover:text-indigo-400 group-hover:scale-110 group-hover:border-indigo-500/30 transition-all duration-500">
+        <span className="material-symbols-outlined text-2xl">add</span>
+      </div>
+      <div className="mt-4 text-center">
+        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/30 group-hover:text-foreground/80 transition-colors">
+          Nueva Entidad
+        </span>
+      </div>
+    </div>
+
     {filteredContent.folders.map(sub => (
       <BibleCard
         key={`f-${sub.id}`}
@@ -333,7 +344,7 @@ const FolderView: React.FC = () => {
           <button onClick={() => handleCreateSimpleFolder(folder.id, 'TIMELINE')} className="w-full px-4 py-3 bg-foreground/5 hover:bg-orange-500/10 text-left text-[11px] font-bold flex items-center gap-3 text-foreground/60 hover:text-orange-400 transition-all border border-foreground/5 hover:border-orange-500/30">
             <span className="material-symbols-outlined text-lg text-orange-500/50">history</span> Crear Línea de Tiempo
           </button>
-
+          
           <div className="h-px bg-foreground/5 my-2" />
           
           <button onClick={() => handleDeleteFolder(folder.id)} className="w-full px-4 py-3 bg-foreground/5 hover:bg-rose-500/10 text-left text-[11px] font-bold flex items-center gap-3 text-foreground/60 hover:text-rose-400 transition-all border border-foreground/5 hover:border-rose-500/30">
@@ -361,6 +372,21 @@ const FolderView: React.FC = () => {
  </header>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+    {/* Add Entity Card (Zen Style) */}
+    <div 
+      onClick={() => navigate(`/local/${projectName}/bible/folder/${folder.id}/entity/new/entidadindividual`)}
+      className="group relative flex flex-col p-8 rounded-none monolithic-panel border border-dashed border-foreground/10 hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all duration-500 cursor-pointer items-center justify-center min-h-[220px] bg-white/[0.01]"
+    >
+      <div className="size-16 rounded-none bg-indigo-500/5 border border-indigo-500/10 flex items-center justify-center text-indigo-500/40 group-hover:text-indigo-400 group-hover:scale-110 group-hover:border-indigo-500/30 transition-all duration-500">
+        <span className="material-symbols-outlined text-3xl">add</span>
+      </div>
+      <div className="mt-6 text-center">
+        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/30 group-hover:text-foreground/80 transition-colors">
+          Nueva Entidad
+        </span>
+      </div>
+    </div>
+
     {filteredContent.folders.map(sub => (
       <BibleCard
         key={`f-${sub.id}`}
@@ -371,7 +397,7 @@ const FolderView: React.FC = () => {
         onRename={() => {
           const newName = prompt('Renombrar carpeta:', sub.nombre);
           if (newName && newName !== sub.nombre) {
-            folderService.update(sub.id, newName).then(() => {
+            folderService.update(sub.id, newName, projectId).then(() => {
               loadFolderContent();
               window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: folder?.id } }));
             });

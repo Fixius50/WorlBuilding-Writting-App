@@ -6,6 +6,12 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
 
 ### MARZO 2026
 
+- **2026-03-30: Refinamiento Zen y Saneamiento de Datos (Integridad Local-First)**
+  - **Grafo Zen:** Rediseño del `ZenNode` con 24 handles perimetrales alineados al borde blanco, eliminando el offset azul para una estética minimalista ("Handles Multicanal").
+  - **Integridad de Datos:** Activación de `PRAGMA foreign_keys = ON` en SQLite para habilitar el borrado en cascada real.
+  - **Saneamiento de "Fantasmas":** Implementación de filtros de seguridad en el grafo para eliminar entidades huérfanas y corrección de la firma de `folderService.update` (3 argumentos) para slugs únicos por proyecto.
+  - **UX Unificada:** Integración de tarjetas dinámicas `+ Nuevo` en el grid de la Biblia, Vista de Carpetas y Writing Hub para una creación rápida sin menús contextuales.
+
 - **2026-03-22: Gran Saneamiento Local-First y Eliminación de Legado**
   - **Cero Red:** Eliminación total de dependencias de `api.js` y el servicio `Axios` heredado. La app ya no requiere conexión a red para funcionar.
   - **Saneamiento Global:** Refactorización de más de 10 componentes críticos (Settings, Trash, Relationships, Linguistics) para usar exclusivamente el worker de SQLite WASM.

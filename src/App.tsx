@@ -99,12 +99,12 @@ function App() {
  <Route path="map-editor/edit/:entityId" element={<MapEditor mode="edit" />} />
 
  <Route path="bible" element={<WorldBibleLayout />}>
- <Route index element={<BibleGridView />} />
- <Route path="folder/:folderSlug/entity/new/:type" element={<EntityBuilder mode="creation" />} />
- <Route path="folder/:folderSlug" element={<FolderView />} />
- <Route path="entity/:entitySlug" element={<EntityBuilder mode="edit" />} />
- <Route path="folder/:folderSlug/entity/:entitySlug" element={<EntityBuilder mode="edit" />} />
- </Route>
+           <Route index element={<BibleGridView />} />
+           <Route path="folder/:folderId/entity/new/:type" element={<EntityBuilder mode="creation" />} />
+           <Route path="folder/:folderId" element={<FolderView />} />
+           <Route path="entity/:entityId" element={<EntityBuilder mode="edit" />} />
+           <Route path="folder/:folderId/entity/:entityId" element={<EntityBuilder mode="edit" />} />
+         </Route>
 
  <Route path="map" element={<MapRouter />} />
  <Route path="timeline" element={<TimelineView />} />

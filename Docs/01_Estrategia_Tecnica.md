@@ -4,16 +4,18 @@ Este documento define las decisiones arquitectónicas clave del proyecto tras la
 
 ## STACK TECNOLÓGICO ACTUAL
 
-* **Frontend (UI y Lógica Core):** React 19+ con Vite.
+* **Frontend (UI y Lógica Core):** React 19.2.4 con Vite.
   * Estado: Context API + Zustand (Manejador de Estado Global ligero).
   * Routing: React Router Dom.
   * Estilos: Glassmorphism y utilidades Tailwind CSS.
+  * Compatibilidad: Optimizado para React 19 (Evitando librerías legacy como `reactflow@11` en favor de `@xyflow/react`).
 * **Persistencia (BBDD Local-First):** SQLite WASM (`sqlocal`) sobre OPFS (Origin Private File System).
   * Almacenamiento absoluto de datos en el navegador del cliente. Cero latencia de red.
-  * Búsqueda: Consultas ultra-rápidas mediante Web Workers procesando SQLite.
-* **Servidor Auxiliar (Spring Boot Helper):** Java 21 + Spring WebMVC.
-  * Localizado en `server-aux`.
-  * Responsabilidad: Tareas de sistema "Bridge" (Puente). Principalmente **Sincronización Bulk** (exportación e importación de archivos `.sqlite` del OPFS al disco duro físico) y automatizaciones de sistema operativo. No gestiona la lógica de negocio ni el CRUD diario.
+  * Aislamiento: Requiere cabeceras COOP/COEP inyectadas por el servidor auxiliar.
+* **Servidor Auxiliar (Helper):** Java 21 + Spring Web / Jetty.
+  * Localizado en `src/main/java`.
+  * Empaquetado: Servido mediante un lanzador **Node.js (compilado con `pkg`)** llamado `Chronos Atlas.exe`.
+  * Responsabilidad: Gestión de archivos del sistema, inyección de cabeceras de seguridad y servidor de archivos estáticos para la SPA.
 
 ## ARQUITECTURA DE DATOS
 

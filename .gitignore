@@ -5,6 +5,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 release/
+Release_App/
 
 ### STS ###
 .apt_generated

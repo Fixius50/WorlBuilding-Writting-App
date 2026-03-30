@@ -3,6 +3,8 @@ import { sql } from './db';
 export interface Cuaderno {
   id: number;
   titulo: string;
+  genero: string | null;
+  image_url: string | null;
   project_id: number;
   created_at: string;
 }
@@ -26,14 +28,24 @@ export const notebookService = {
     return results.length > 0 ? results[0] : null;
   },
 
-  async create(projectId: number, titulo: string): Promise<Cuaderno> {
-    await sql`INSERT INTO cuadernos (titulo, project_id) VALUES (${titulo}, ${projectId})`;
+  async create(projectId: number, titulo: string, genero: string = 'Fantasy', imageUrl: string = ''): Promise<Cuaderno> {
+    await sql`INSERT INTO cuadernos (titulo, genero, image_url, project_id) VALUES (${titulo}, ${genero}, ${imageUrl}, ${projectId})`;
     const results = await sql<Cuaderno>`SELECT * FROM cuadernos WHERE project_id = ${projectId} ORDER BY id DESC LIMIT 1`;
     return results[0];
   },
 
-  async update(id: number, titulo: string): Promise<void> {
-    await sql`UPDATE cuadernos SET titulo = ${titulo} WHERE id = ${id}`;
+  async update(id: number, updates: Partial<Pick<Cuaderno, 'titulo' | 'genero' | 'image_url'>>): Promise<void> {
+    const current = await this.getById(id);
+    if (!current) return;
+
+    await sql`
+      UPDATE cuadernos 
+      SET 
+        titulo = ${updates.titulo !== undefined ? updates.titulo : current.titulo},
+        genero = ${updates.genero !== undefined ? updates.genero : current.genero},
+        image_url = ${updates.image_url !== undefined ? updates.image_url : current.image_url}
+      WHERE id = ${id}
+    `;
   },
 
   async delete(id: number): Promise<void> {

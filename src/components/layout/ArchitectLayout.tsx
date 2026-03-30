@@ -141,7 +141,7 @@ const ArchitectLayout: React.FC = () => {
 
   const handleRenameFolder = async (folderId: number, newName: string) => {
     try {
-      await folderService.update(folderId, newName);
+      await folderService.update(folderId, newName, projectId!);
       if (projectId) await loadFolders(projectId);
     } catch (err) {
       console.error("Error renaming folder:", err);
@@ -397,7 +397,9 @@ const ArchitectLayout: React.FC = () => {
 
           <BottomGraphDrawer 
             isOpen={bottomGraphOpen} 
-            onClose={() => setBottomGraphOpen(false)} 
+            onClose={() => setBottomGraphOpen(false)}
+            projectId={projectId ?? undefined}
+            projectName={projectName}
           />
         </main>
       </div>

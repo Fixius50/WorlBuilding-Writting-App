@@ -4,6 +4,7 @@ import { sqlocal } from '../../../database/db';
 import { projectService } from '../../../database/projectService';
 import { useLanguage } from '../../../context/LanguageContext';
 import { syncService } from '../../../services/syncService';
+import ComingSoonWrapper from '../../../components/common/ComingSoonWrapper';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -276,14 +277,16 @@ const Settings = () => {
                       <span className="material-symbols-outlined text-base">upload_file</span>
                       Importar
                     </button>
-                    <button
-                      onClick={handleDownloadBackup}
-                      className="flex items-center gap-2 px-5 py-2.5 monolithic-panel hover:bg-primary/10 text-primary rounded-none text-[10px] font-black uppercase tracking-widest transition-all shadow-sm"
-                      style={{ borderColor: 'hsl(var(--primary) / 0.3)' }}
-                    >
-                      <span className="material-symbols-outlined text-base">cloud_sync</span>
-                      Sincronizar Nube
-                    </button>
+                      <ComingSoonWrapper>
+                        <button
+                          onClick={handleDownloadBackup}
+                          className="flex items-center gap-2 px-5 py-2.5 monolithic-panel hover:bg-primary/10 text-primary rounded-none text-[10px] font-black uppercase tracking-widest transition-all shadow-sm"
+                          style={{ borderColor: 'hsl(var(--primary) / 0.3)' }}
+                        >
+                          <span className="material-symbols-outlined text-base">cloud_sync</span>
+                          Sincronizar Nube
+                        </button>
+                      </ComingSoonWrapper>
                   </div>
                 </div>
 

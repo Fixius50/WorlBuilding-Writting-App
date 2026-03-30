@@ -4,9 +4,11 @@ import GraphView from '../pages/GeneralGraphView'; // Import the graph component
 interface BottomGraphDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  projectId?: number;
+  projectName?: string;
 }
 
-const BottomGraphDrawer: React.FC<BottomGraphDrawerProps> = ({ isOpen, onClose }) => {
+const BottomGraphDrawer: React.FC<BottomGraphDrawerProps> = ({ isOpen, onClose, projectId, projectName }) => {
   const [heightVH, setHeightVH] = useState(70); // Default to 70vh
   const isResizing = useRef(false);
 
@@ -81,7 +83,7 @@ const BottomGraphDrawer: React.FC<BottomGraphDrawerProps> = ({ isOpen, onClose }
 
       {/* Content Body */}
       <div className="flex-1 relative overflow-hidden bg-background sunken-panel">
-        {isOpen && <GraphView />}
+        {isOpen && <GraphView projectId={projectId} projectName={projectName} />}
       </div>
     </div>
   );

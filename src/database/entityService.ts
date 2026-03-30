@@ -106,6 +106,9 @@ export const entityService = {
  },
 
   async delete(id: number): Promise<void> {
+    // 1. Eliminar relaciones asociadas
+    await sql`DELETE FROM relaciones WHERE origen_id = ${id} OR destino_id = ${id}`;
+    // 2. Eliminar la entidad
     await sql`DELETE FROM entidades WHERE id = ${id}`;
   },
 
