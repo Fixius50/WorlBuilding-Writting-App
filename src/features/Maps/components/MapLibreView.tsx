@@ -9,91 +9,211 @@ interface MapLibreViewProps {
  markers: MapMarker[];
  layers: MapLayer[];
  connections: MapConnection[];
- onMarkerClick: (marker: MapMarker) => void;
- imageWidth: number;
- imageHeight: number;
+  onMarkerClick: (marker: MapMarker) => void;
+  onMapClick?: (lng: number, lat: number) => void;
+  imageWidth: number;
+  imageHeight: number;
 }
+
 
 const MapLibreView: React.FC<MapLibreViewProps> = ({
  mapImage,
  markers,
  layers,
- connections,
- onMarkerClick,
- imageWidth,
- imageHeight
+  connections,
+  onMarkerClick,
+  onMapClick,
+  imageWidth,
+  imageHeight
 }) => {
- const mapContainer = useRef<HTMLDivElement>(null);
- const map = useRef<maplibregl.Map | null>(null);
 
- useEffect(() => {
- if (!mapContainer.current) return;
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<maplibregl.Map | null>(null);
+  const mapMarkers = useRef<maplibregl.Marker[]>([]);
 
- // Fantasy maps are usually coordinate-less (pixels)
- // We use a simple CRS (Coordinate Reference System) or just transform pixels to lat/lng
- // For MapLibre, we can use a "neutral" style and overlays
- 
- map.current = new maplibregl.Map({
- container: mapContainer.current,
- style: {
- version: 8,
- sources: {
- 'raster-tiles': {
- type: 'raster',
- tiles: [mapImage],
- tileSize: 256,
- }
- },
- layers: [
- {
- id: 'simple-tiles',
- type: 'raster',
- source: 'raster-tiles',
- minzoom: 0,
- maxzoom: 22
- }
- ]
- },
- center: [0, 0],
- zoom: 2,
- attributionControl: false
- });
+  // 1. Initialize Map
+  useEffect(() => {
+    if (!mapContainer.current) return;
 
- map.current.addControl(new maplibregl.NavigationControl(), 'bottom-right');
+    map.current = new maplibregl.Map({
+      container: mapContainer.current,
+      style: {
+        version: 8,
+        sources: {
+          'fantasy-map': {
+            type: 'image',
+            url: mapImage,
+            coordinates: [
+              [-180, 85],   // top-left
+              [180, 85],    // top-right
+              [180, -85],   // bottom-right
+              [-180, -85]   // bottom-left
+            ]
+          }
+        },
+        layers: [
+          {
+            id: 'map-layer',
+            type: 'raster',
+            source: 'fantasy-map',
+            paint: { 'raster-fade-duration': 0 }
+          }
+        ]
+      },
+      center: [0, 0],
+      zoom: 1,
+      maxZoom: 5,
+      minZoom: 0,
+      attributionControl: false
+    });
 
- // Add Markers
- markers.forEach(marker => {
- const el = document.createElement('div');
- el.className = 'custom-marker';
- el.style.width = '24px';
- el.style.height = '24px';
- el.style.background = 'rgba(99, 102, 241, 0.2)';
- el.style.border = '2px solid #6366f1';
- el.style.borderRadius = '50%';
- el.style.cursor = 'pointer';
- el.style.boxShadow = '0 0 15px rgba(99, 102, 241, 0.5)';
- el.style.display = 'flex';
- el.style.alignItems = 'center';
- el.style.justifyContent = 'center';
+    map.current.addControl(new maplibregl.NavigationControl(), 'bottom-right');
 
- const dot = document.createElement('div');
- dot.style.width = '6px';
- dot.style.height = '6px';
- dot.style.background = '#fff';
- dot.style.borderRadius = '50%';
- el.appendChild(dot);
+    map.current.on('click', (e) => {
+      if (onMapClick) {
+        onMapClick(e.lngLat.lng, e.lngLat.lat);
+      }
+    });
 
- el.addEventListener('click', () => onMarkerClick(marker));
+    map.current.on('load', () => {
+      // Initialize sources for connections
+      if (map.current) {
+        map.current.addSource('connections-source', {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: []
+          }
+        });
 
- new maplibregl.Marker(el)
- .setLngLat([marker.lng || 0, marker.lat || 0])
- .addTo(map.current!);
- });
+        // Add layer for the lines
+        map.current.addLayer({
+          id: 'connections-layer',
+          type: 'line',
+          source: 'connections-source',
+          layout: {
+            'line-join': 'round',
+            'line-cap': 'round'
+          },
+          paint: {
+            'line-color': ['get', 'color'],
+            'line-width': ['get', 'weight'],
+            'line-opacity': 0.8,
+            'line-dasharray': ['case', ['==', ['get', 'dashed'], true], ['literal', [2, 2]], ['literal', [1]]]
+          }
+        });
+        
+        // Add layer for connection labels
+        map.current.addLayer({
+          id: 'connections-label-layer',
+          type: 'symbol',
+          source: 'connections-source',
+          layout: {
+            'text-field': ['get', 'label'],
+            'symbol-placement': 'line',
+            'text-offset': [0, -1],
+            'text-size': 10,
+            'text-letter-spacing': 0.1
+          },
+          paint: {
+            'text-color': '#ffffff',
+            'text-halo-color': '#000000',
+            'text-halo-width': 1
+          }
+        });
+      }
+    });
 
- return () => {
- map.current?.remove();
- };
- }, [mapImage]);
+    return () => {
+      map.current?.remove();
+    };
+  }, [mapImage]); // Only re-instantiate if image changes entirely
+
+  // 2. Sync Markers and Connections
+  useEffect(() => {
+    if (!map.current) return;
+
+    // Clear old markers
+    mapMarkers.current.forEach(m => m.remove());
+    mapMarkers.current = [];
+
+    // Draw new markers
+    markers.forEach(marker => {
+      const el = document.createElement('div');
+      el.className = 'custom-marker';
+      el.style.width = '24px';
+      el.style.height = '24px';
+      el.style.background = 'rgba(99, 102, 241, 0.2)';
+      el.style.border = '2px solid #6366f1';
+      el.style.borderRadius = '50%';
+      el.style.cursor = 'pointer';
+      el.style.boxShadow = '0 0 15px rgba(99, 102, 241, 0.5)';
+      el.style.display = 'flex';
+      el.style.alignItems = 'center';
+      el.style.justifyContent = 'center';
+
+      const dot = document.createElement('div');
+      dot.style.width = '6px';
+      dot.style.height = '6px';
+      dot.style.background = '#fff';
+      dot.style.borderRadius = '50%';
+      el.appendChild(dot);
+
+      // We add an event listener. Since this is React, we must ensure it doesn't get stale closures
+      el.addEventListener('click', (e) => {
+        e.stopPropagation(); // prevent map click
+        onMarkerClick(marker);
+      });
+
+      const m = new maplibregl.Marker(el)
+        .setLngLat([marker.lng || 0, marker.lat || 0])
+        .addTo(map.current!);
+      
+      mapMarkers.current.push(m);
+    });
+
+    // Update GeoJSON for Connections
+    const updateConnections = () => {
+      if (!map.current?.getSource('connections-source')) return;
+
+      const features = connections.map(conn => {
+        const source = markers.find(m => m.id === conn.sourceId);
+        const target = markers.find(m => m.id === conn.targetId);
+        if (!source || !target) return null;
+
+        const feature: GeoJSON.Feature<GeoJSON.LineString> = {
+          type: 'Feature' as const,
+          properties: {
+            color: conn.color || '#6366f1',
+            weight: conn.weight || 2,
+            dashed: conn.dashed || false,
+            label: conn.label || ''
+          },
+          geometry: {
+            type: 'LineString' as const,
+            coordinates: [
+              [source.lng || 0, source.lat || 0],
+              [target.lng || 0, target.lat || 0]
+            ]
+          }
+        };
+        return feature;
+      }).filter((f): f is GeoJSON.Feature<GeoJSON.LineString> => f !== null);
+
+      (map.current.getSource('connections-source') as maplibregl.GeoJSONSource).setData({
+        type: 'FeatureCollection',
+        features
+      });
+    };
+
+    if (map.current.loaded()) {
+      updateConnections();
+    } else {
+      map.current.on('load', updateConnections);
+    }
+
+  }, [markers, connections]);
+
 
  return (
  <div className="w-full h-full relative group">

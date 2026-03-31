@@ -4,14 +4,18 @@ import { useNavigate, useOutletContext } from 'react-router-dom';
 import { notebookService, Cuaderno } from '../../../database/notebookService';
 import GlassPanel from '../../../components/common/GlassPanel';
 
+interface WritingOutletContext {
+  projectId: number;
+  setRightPanelTab: (tab: string) => void;
+  baseUrl: string;
+}
+
 const WritingHub = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const outlet = useOutletContext<any>();
-  const { setRightPanelTab, baseUrl } = outlet || {};
-  // projectId puede llegar como string o number desde el outlet
-  const rawProjectId = outlet?.projectId;
-  const numericProjectId: number = rawProjectId ? Number(rawProjectId) : 1;
+  const outlet = useOutletContext<WritingOutletContext>();
+  const { setRightPanelTab, baseUrl, projectId } = outlet || { projectId: 1, baseUrl: '' };
+  const numericProjectId: number = projectId ? Number(projectId) : 1;
 
   const [notebooks, setNotebooks] = useState<Cuaderno[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +37,7 @@ const WritingHub = () => {
   const loadNotebooks = async () => {
     try {
       setLoading(true);
-      const pid = rawProjectId ? Number(rawProjectId) : 1;
+      const pid = projectId ? Number(projectId) : 1;
       const data = await notebookService.getAllByProject(pid);
       setNotebooks(data || []);
     } catch (err) {
@@ -72,7 +76,7 @@ const WritingHub = () => {
     
     setSaving(true);
     try {
-      const pid = rawProjectId ? Number(rawProjectId) : 1;
+      const pid = projectId ? Number(projectId) : 1;
       console.log('[WritingHub] Creating notebook - projectId:', pid, 'title:', title, 'genre:', genre);
       
       if (notebookToEdit) {
@@ -84,9 +88,10 @@ const WritingHub = () => {
         setNotebooks(prev => [nuevo, ...prev]);
       }
       closeModal();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[WritingHub] Error saving notebook:', err);
-      setSubmitError(err?.message || 'Error al guardar. Revisa la consola.');
+      const errorMessage = err instanceof Error ? err.message : 'Error al guardar. Revisa la consola.';
+      setSubmitError(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -252,7 +257,7 @@ const WritingHub = () => {
                   placeholder="Ej: Crónicas de Aethelgard"
                   value={title}
                   onChange={e => setTitle(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') handleSubmit(e as any); }}
+                  onKeyDown={e => { if (e.key === 'Enter') handleSubmit(e as unknown as React.FormEvent); }}
                 />
               </div>
 
@@ -285,7 +290,7 @@ const WritingHub = () => {
                 <button
                   type="button"
                   disabled={saving}
-                  onClick={handleSubmit as any}
+                  onClick={(e) => handleSubmit(e as unknown as React.FormEvent)}
                   className={`flex-[2] py-5 text-foreground font-black uppercase text-[10px] tracking-[0.3em] shadow-2xl shadow-primary/20 transition-all ${saving ? 'bg-primary/40 cursor-wait' : 'bg-primary hover:bg-primary/80 hover:scale-[1.02] active:scale-95'}`}
                 >
                   {saving ? 'Guardando...' : notebookToEdit ? 'Confirmar Cambios' : 'Crear Archivador'}

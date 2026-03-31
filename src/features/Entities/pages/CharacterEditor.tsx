@@ -92,7 +92,7 @@ const CharacterEditor = () => {
  );
 };
 
-const InputField = ({ label, value, onChange }: any) => (
+const InputField = ({ label, value, onChange }: { label: string; value: string; onChange?: (val: string) => void }) => (
  <div className="space-y-1.5">
  <label className="text-[8px] font-black uppercase tracking-widest text-foreground/60 ml-1">{label}</label>
  <input
@@ -104,7 +104,7 @@ const InputField = ({ label, value, onChange }: any) => (
  </div>
 );
 
-const EditorStat = ({ label, value }: any) => (
+const EditorStat = ({ label, value }: { label: string; value: number }) => (
  <div className="p-4 rounded-none monolithic-panel space-y-3">
  <div className="flex justify-between items-center">
  <span className="text-xs font-bold text-foreground/60">{label}</span>

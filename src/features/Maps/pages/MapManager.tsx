@@ -15,9 +15,14 @@ interface MapManagerProps {
  onDuplicateMap: (map: Entidad) => void;
 }
 
+interface MapManagerContext {
+  setRightPanelTab: (tab: string) => void;
+  setRightOpen?: (open: boolean) => void;
+}
+
 const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap, onDeleteMap, onDuplicateMap }) => {
  const { t } = useLanguage();
- const { setRightPanelTab, setRightOpen = () => { } } = useOutletContext<any>();
+ const { setRightPanelTab, setRightOpen = () => { } } = useOutletContext<MapManagerContext>();
  const [searchTerm, setSearchTerm] = useState('');
  const [spatialFilter, setSpatialFilter] = useState('ALL');
  const [selectedMapId, setSelectedMapId] = useState<number | null>(null);
@@ -43,7 +48,7 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  return img;
  };
 
- const handleUpdateMapAttribute = async (map: Entidad, key: string, value: any) => {
+ const handleUpdateMapAttribute = async (map: Entidad, key: string, value: unknown) => {
  try {
  const attrs = typeof map.contenido_json === 'string' ? JSON.parse(map.contenido_json) : (map.contenido_json || {});
  const updated = {

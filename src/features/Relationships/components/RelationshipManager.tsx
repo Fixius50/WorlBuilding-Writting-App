@@ -20,9 +20,16 @@ const ENTITY_TYPES = [
  { value: 'Plant', label: 'Flora' }
 ];
 
-const RelationshipManager = ({ entityId, entityType }) => {
+interface EnrichedRelationship extends Omit<Relacion, 'created_at'> {
+  created_at?: string;
+  otherName: string;
+  otherType: string;
+  isOutgoing: boolean;
+}
+
+const RelationshipManager = ({ entityId, entityType }: { entityId: number | string; entityType?: string }) => {
  console.log(">>> RELATIONSHIP MANAGER V2 LOADED");
- const [relationships, setRelationships] = useState<any[]>([]);
+ const [relationships, setRelationships] = useState<EnrichedRelationship[]>([]);
  const [loading, setLoading] = useState(false);
  const [isAdding, setIsAdding] = useState(false);
 
@@ -256,7 +263,7 @@ const RelationshipManager = ({ entityId, entityType }) => {
  <span className="text-sm font-bold text-foreground">{rel.otherName}</span>
  <span className="text-[9px] px-1.5 py-0.5 rounded bg-foreground/10 text-foreground/60 font-bold uppercase tracking-wider">{rel.otherType}</span>
  </div>
- <div className="text-primary text-xs font-black uppercase tracking-widest mb-2">{rel.tipoRelacion}</div>
+ <div className="text-primary text-xs font-black uppercase tracking-widest mb-2">{rel.tipo}</div>
  {rel.descripcion && (
  <p className="text-xs text-foreground/60 leading-relaxed bg-background/20 p-2 rounded-none border border-foreground/10">
  "{rel.descripcion}"

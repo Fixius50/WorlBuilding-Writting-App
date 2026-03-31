@@ -11,7 +11,14 @@ const WritingView = () => {
   const navigate = useNavigate();
 
   // --- Context from ArchitectLayout ---
-  const { setRightPanelTab, setRightOpen } = useOutletContext<any>();
+  interface ArchitectContext {
+    setRightPanelTab: (tab: string) => void;
+    setRightOpen: (open: boolean) => void;
+    projectName: string;
+    projectId: number | null;
+  }
+
+  const { setRightPanelTab, setRightOpen } = useOutletContext<ArchitectContext>();
   const { t } = useLanguage();
 
   const [notebook, setNotebook] = useState<Cuaderno | null>(null);

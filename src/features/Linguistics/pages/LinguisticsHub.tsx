@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useOutletContext, useParams } from 'react-router-dom';
+import Konva from 'konva';
 import { useLanguage } from '../../../context/LanguageContext';
 import { Entidad, Word } from '../../../database/types';
 import GlassPanel from '../../../components/common/GlassPanel';
@@ -11,12 +12,15 @@ import { Font as OpentypeFont, Glyph as OpentypeGlyph, Path as OpentypePath } fr
 import UniversalCanvas from '../../../components/common/editor/UniversalCanvas';
 import UniversalCanvasProperties from '../../../components/common/editor/UniversalCanvasProperties';
 import ConfirmModal from '../../../components/common/ConfirmModal';
-import LinguisticsSidebar from '../components/LinguisticsSidebar';
-import { Shape, Layer, LogEntry, WRITING_SYSTEM_TYPES } from '../../../types/linguistics';
+import LinguisticsSidebar, { GrammarRule } from '../components/LinguisticsSidebar';
+import { Shape, LayerData } from '../../../types/canvas';
+import { LogEntry, WritingSystemType, WRITING_SYSTEM_TYPES } from '../../../types/linguistics';
 
 interface OutletContext {
  setRightPanelTab: (tab: string) => void;
  setRightOpen: (open: boolean) => void;
+ setRightPanelTitle: (title: React.ReactNode) => void;
+ setRightPanelContent: (content: React.ReactNode) => void;
 }
 
 interface LinguisticsHubProps {
@@ -31,7 +35,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
  const [stats, setStats] = useState({ words: 0, rules: 0, glyphs: 0 });
  const [langName, setLangName] = useState('...');
  const [lexicon, setLexicon] = useState<Word[]>([]);
- const [rules, setRules] = useState<any[]>([]);
+ const [rules, setRules] = useState<GrammarRule[]>([]);
  const [activeLangId, setActiveLangId] = useState<number | null>(null);
  const [sourceText, setSourceText] = useState('');
  const [renderOutput, setRenderOutput] = useState('');
@@ -63,43 +67,45 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
  setLogs(prev => [...prev.slice(-4), { msg, type }]);
  };
 
- const [writingSystem, setWritingSystem] = useState(WRITING_SYSTEM_TYPES.ALPHABET.id);
+ const [writingSystem, setWritingSystem] = useState<string>(WRITING_SYSTEM_TYPES.ALPHABET.id);
  const [composerText, setComposerText] = useState('');
  const [composerGlyphs, setComposerGlyphs] = useState<Partial<Word>[]>([]);
  const [foundryGlyphs, setFoundryGlyphs] = useState<Word[]>([]);
 
  const [editorMode, setEditorMode] = useState(false);
  const [activeGlyphId, setActiveGlyphId] = useState<number | string | null>(null);
- const [layers, setLayers] = useState<Layer[]>([
- { id: 'layer1', name: 'Trazo Principal', visible: true, locked: false, shapes: [] },
- { id: 'layer2', name: 'Guías', visible: true, locked: false, shapes: [] }
- ]);
- const [activeLayerId, setActiveLayerId] = useState('layer1');
- const [selectedShapeId, setSelectedShapeId] = useState<string | string[] | null>(null);
+  const [layers, setLayers] = useState<LayerData[]>([
+    { id: 'layer1', name: 'Trazo Principal', visible: true, locked: false, shapes: [] },
+    { id: 'layer2', name: 'Guías', visible: true, locked: false, shapes: [] }
+  ]);
+  const [activeLayerId, setActiveLayerId] = useState('layer1');
+  const [selectedShapeId, setSelectedShapeId] = useState<string | string[] | null>(null);
 
- const [past, setPast] = useState<Layer[][]>([]);
- const [future, setFuture] = useState<Layer[][]>([]);
+  const [past, setPast] = useState<LayerData[][]>([]);
+  const [future, setFuture] = useState<LayerData[][]>([]);
 
- const pushToHistory = (newLayers: Layer[]) => {
- const snapshot = JSON.parse(JSON.stringify(newLayers));
- setPast(prev => [...prev.slice(-19), snapshot]);
- setFuture([]);
- };
+  const undo = () => {
+    if (past.length === 0) return;
+    const previous = past[past.length - 1];
+    const newPast = past.slice(0, past.length - 1);
+    setFuture(prev => [layers, ...prev]);
+    setPast(newPast);
+    setLayers(previous);
+  };
 
- const undo = () => {
- if (past.length === 0) return;
- const previous = past[past.length - 1];
- setPast(prev => prev.slice(0, -1));
- setFuture(prev => [layers, ...prev]);
- setLayers(previous);
- };
+  const pushToHistory = (newLayers: LayerData[]) => {
+    const snapshot = JSON.parse(JSON.stringify(newLayers));
+    setPast(prev => [...prev.slice(-19), snapshot]);
+    setFuture([]);
+  };
 
  const redo = () => {
- if (future.length === 0) return;
- const next = future[0];
- setFuture(prev => prev.slice(1));
- setPast(prev => [...prev, layers]);
- setLayers(next);
+    if (future.length === 0) return;
+    const next = future[0];
+    const newFuture = future.slice(1);
+    setPast(prev => [...prev, layers]);
+    setFuture(newFuture);
+    setLayers(next);
  };
 
  const [tool, setTool] = useState('brush');
@@ -109,7 +115,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
  const [lineCap, setLineCap] = useState('round');
  const [strokeStyle, setStrokeStyle] = useState('linear');
 
- const stageRef = React.useRef<any>(null);
+  const stageRef = React.useRef<Konva.Stage | null>(null);
 
  // Utility placeholders for missing definitions
  const setRightPanelMode = (mode: string) => {
@@ -119,17 +125,25 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
 
  const projectId = activeLangId; // Local fallback or get from context/params
 
- const loadRules = async (langId: number, allEntities: any[]) => {
- const langRules = allEntities.filter(e => 
- (e.tipo === 'Rule' || e.tipo === 'Regla') && e.carpeta_id === langId
- ).map(r => ({ ...r, ...JSON.parse(r.contenido_json) }));
- setRules(langRules);
- };
+  const loadRules = async (langId: number, allEntities: Entidad[]) => {
+    const langRules: GrammarRule[] = allEntities
+      .filter(e => (e.tipo === 'Rule' || e.tipo === 'Regla') && e.carpeta_id === langId)
+      .map(r => {
+        const data = JSON.parse(r.contenido_json || '{}');
+        return {
+          id: r.id,
+          titulo: data.titulo || r.nombre || 'Sin título',
+          descripcion: data.contenido || r.descripcion || '',
+          status: data.status || 'draft'
+        };
+      });
+    setRules(langRules);
+  };
 
- const loadLexicon = async (langId: number, allEntities: any[]) => {
+ const loadLexicon = async (langId: number, allEntities: Entidad[]) => {
  const langWords = allEntities.filter(e => 
  (e.tipo === 'Word' || e.tipo === 'Palabra') && e.carpeta_id === langId
- ).map(w => ({ ...w, ...JSON.parse(w.contenido_json) }));
+ ).map(w => ({ ...w, ...JSON.parse(w.contenido_json || '{}') }));
  setLexicon(langWords);
  setFoundryGlyphs(langWords.filter((item: Word) =>
  ['GLYPH', 'GLYFO', 'GLIFO'].includes(item.categoriaGramatical) ||
@@ -236,7 +250,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
  stroke: color,
  strokeWidth: strokeWidth,
  opacity: opacity,
- lineCap: lineCap
+ lineCap: lineCap as 'round' | 'butt' | 'square'
  };
  }
  return shape;
@@ -442,7 +456,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
  setIsMeaningModalOpen(true);
  };
 
- const handleSaveMeaning = async (updatedData: any) => {
+ const handleSaveMeaning = async (updatedData: Word & { isNew?: boolean }) => {
  if (!activeLangId || !projectId) return;
  try {
  const entityData: Omit<Entidad, 'id' | 'fecha_creacion'> = {
@@ -478,7 +492,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
  const def = (item.traduccionEspanol || item.definicion || '').toLowerCase();
  return lema.includes(search) || def.includes(search);
  });
- const handleDrawEnd = (phase: string, data: any) => {
+ const handleDrawEnd = (phase: string, data: { pos: { x: number, y: number } }) => {
  // Handle drawing logic updates to layers state
  if (phase === 'START') {
  // LAYER LOCK CHECK:
@@ -495,7 +509,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
  stroke: color,
  strokeWidth: strokeWidth,
  opacity: opacity,
- lineCap: lineCap,
+ lineCap: lineCap as 'round' | 'butt' | 'square',
  lineJoin: 'round',
  x: (tool === 'brush' || tool === 'eraser' || tool === 'line') ? 0 : data.pos.x,
  y: (tool === 'brush' || tool === 'eraser' || tool === 'line') ? 0 : data.pos.y,
@@ -537,7 +551,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
  setSelectedShapeId(newShape.id);
  } else if (phase === 'MOVE') {
  // Update last shape in active layer
- setLayers(prev => prev.map((l: Layer) => {
+    setLayers(prev => prev.map((l: LayerData) => {
  if (l.id === activeLayerId) {
  const shapes = [...l.shapes];
  if (shapes.length === 0) return l;
@@ -587,12 +601,12 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
  setRightPanelMode('LINGUISTICS');
  };
 
- const handleChangeShape = (id: string, newAttrs: any) => {
- setLayers(prev => prev.map((l: Layer) => ({
- ...l,
- shapes: l.shapes.map((s: Shape) => s.id === id ? { ...s, ...newAttrs } : s)
- })));
- };
+  const handleChangeShape = (id: string, newAttrs: Partial<Shape>) => {
+    setLayers(prev => prev.map((l: LayerData) => ({
+      ...l,
+      shapes: l.shapes.map((s: Shape) => s.id === id ? { ...s, ...newAttrs } : s)
+    })));
+  };
 
  // Unified word creation handler
  const handleCreateNewWord = async () => {
@@ -834,10 +848,11 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
 
  addLog("Fuente sincronizada con el sistema local", "success");
  alert("¡Fuente generada y descargada localmente con éxito!");
- } catch (err: any) {
+ } catch (err: unknown) {
  console.error("Error exportando fuente:", err);
  addLog("Error en compilación de fuente", "error");
- alert("Error al generar la fuente: " + err.message);
+ const errMsg = err instanceof Error ? err.message : String(err);
+ alert("Error al generar la fuente: " + errMsg);
  }
  };
 
@@ -907,18 +922,16 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
  <div className="flex-1 flex flex-col h-full relative">
 
  <UniversalCanvas
- {...({
- stageRef: stageRef,
- layers: layers,
- selectedShapeId: selectedShapeId,
- onSelectShape: setSelectedShapeId,
- onChangeShape: handleChangeShape,
- tool: tool,
- color: color,
- strokeWidth: strokeWidth,
- onDrawEnd: handleDrawEnd
- } as any)}
- />
+    stageRef={stageRef}
+    layers={layers}
+    selectedShapeId={selectedShapeId}
+    onSelectShape={setSelectedShapeId}
+    onChangeShape={handleChangeShape}
+    tool={tool}
+    color={color}
+    strokeWidth={strokeWidth}
+    onDrawEnd={handleDrawEnd}
+  />
 
  {/* Floating Toolbar (Left) */}
  {/* Floating Toolbar MOVED to Right Panel */}
@@ -1146,49 +1159,47 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
  <div className="h-full flex flex-col bg-background relative overflow-hidden" >
  {editorMode ? (
  <UniversalCanvasProperties
- tool={tool}
- setTool={setTool}
- strokeWidth={strokeWidth}
- setStrokeWidth={setStrokeWidth}
- color={color}
- setColor={setColor}
- opacity={opacity}
- setOpacity={setOpacity}
- lineCap={lineCap}
- setLineCap={setLineCap}
- strokeStyle={strokeStyle}
- setStrokeStyle={setStrokeStyle}
- layers={layers}
- activeLayerId={activeLayerId}
- setActiveLayerId={setActiveLayerId}
- onToggleLayerVisibility={(id: string) => setLayers(prev => prev.map(l => l.id === id ? { ...l, visible: !l.visible } : l))}
- onToggleLayerLock={(id: string) => setLayers(prev => prev.map(l => l.id === id ? { ...l, locked: !l.locked } : l))}
- onAddLayer={() => {
- const newId = crypto.randomUUID();
- setLayers(prev => [{ id: newId, name: `Capa ${prev.length + 1}`, visible: true, locked: false, shapes: [] }, ...prev]);
- setActiveLayerId(newId);
- }}
- onDeleteLayer={(id: string) => {
- if (layers.length === 1) return;
- setLayers(prev => {
- const filtered = prev.filter(l => l.id !== id);
- if (activeLayerId === id) setActiveLayerId(filtered[0].id);
- return filtered;
- });
- }}
- {...({
- activeShape: selectedShapeId && !Array.isArray(selectedShapeId) ? layers.flatMap(l => l.shapes).find(s => s.id === selectedShapeId) : null,
- onUndo: undo,
- onRedo: redo,
- onClear: () => {
- setLayers(prev => prev.map(l => l.id === activeLayerId ? { ...l, shapes: [] } : l));
- addLog('Capa limpiada', 'info');
- },
- onSetProperty: (prop: string, val: any) => {
- console.log(`Setting property ${prop} to ${val}`);
- }
- } as any)}
- />
+    tool={tool}
+    setTool={setTool}
+    strokeWidth={strokeWidth}
+    setStrokeWidth={setStrokeWidth}
+    color={color}
+    setColor={setColor}
+    opacity={opacity}
+    setOpacity={setOpacity}
+    lineCap={lineCap}
+    setLineCap={setLineCap}
+    strokeStyle={strokeStyle}
+    setStrokeStyle={setStrokeStyle}
+    layers={layers}
+    activeLayerId={activeLayerId}
+    setActiveLayerId={setActiveLayerId}
+    onToggleLayerVisibility={(id: string | number) => setLayers(prev => prev.map(l => l.id === id ? { ...l, visible: !l.visible } : l))}
+    onToggleLayerLock={(id: string | number) => setLayers(prev => prev.map(l => l.id === id ? { ...l, locked: !l.locked } : l))}
+    onAddLayer={() => {
+      const newId = crypto.randomUUID();
+      setLayers(prev => [{ id: newId, name: `Capa ${prev.length + 1}`, visible: true, locked: false, shapes: [] }, ...prev]);
+      setActiveLayerId(newId);
+    }}
+    onDeleteLayer={(id: string | number) => {
+      if (layers.length === 1) return;
+      setLayers(prev => {
+        const filtered = prev.filter(l => l.id !== id);
+        if (activeLayerId === id) setActiveLayerId(filtered[0].id);
+        return filtered;
+      });
+    }}
+    activeShape={selectedShapeId && !Array.isArray(selectedShapeId) ? layers.flatMap(l => l.shapes).find(s => s.id === selectedShapeId) : null}
+    onUndo={undo}
+    onRedo={redo}
+    onClear={() => {
+      setLayers(prev => prev.map(l => l.id === activeLayerId ? { ...l, shapes: [] } : l));
+      addLog('Capa limpiada', 'info');
+    }}
+    onSetProperty={(prop: string, val: unknown) => {
+      console.log(`Setting property ${prop} to ${val}`);
+    }}
+  />
  ) : (
  <LinguisticsSidebar
  stats={stats}
@@ -1345,10 +1356,10 @@ const RuleCard: React.FC<{
 // --- SUB-COMPONENTS ---
 
 const MeaningEditorModal: React.FC<{
- word: Word | null;
- onClose: () => void;
- onSave: (data: any) => void;
- onEditSymbol: (word: any) => void;
+  word: Word | null;
+  onClose: () => void;
+  onSave: (data: Word & { isNew?: boolean }) => void;
+  onEditSymbol: (word: Word) => void;
 }> = ({ word, onClose, onSave, onEditSymbol }) => {
  const [data, setData] = useState({
  lema: word?.lema || '',
@@ -1402,7 +1413,7 @@ const MeaningEditorModal: React.FC<{
  </div>
  <div className="flex items-end pb-1">
  <button
- onClick={() => onEditSymbol(word)}
+ onClick={() => word && onEditSymbol(word)}
  className="w-full h-[52px] rounded-none border border-primary/20 bg-primary/5 hover:bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
  >
  <span className="material-symbols-outlined text-sm">draw</span>
@@ -1429,7 +1440,14 @@ const MeaningEditorModal: React.FC<{
  Cancelar
  </button>
  <button
- onClick={() => onSave(data)}
+ onClick={() => {
+    if (word) {
+      onSave({ ...word, ...data });
+    } else {
+      // Handle new word case if necessary, or ensure word is never null when saving
+      console.error("No word to save");
+    }
+  }}
  className="flex-1 py-4 rounded-none bg-primary text-foreground text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 transition-all hover:scale-105"
  >
  Guardar Cambios

@@ -4,9 +4,14 @@ import { useState, useEffect } from 'react';
 import GlassPanel from '../../../components/common/GlassPanel';
 import Button from '../../../components/common/Button';
 
-const CollectiveView = ({ id }) => {
- const [entity, setEntity] = useState<Entidad | null>(null); // Added entity state
- const [collective, setCollective] = useState<any>(null);
+interface CollectiveData extends Partial<Entidad> {
+  cantidadMiembros?: string;
+  comportamiento?: string;
+}
+
+const CollectiveView = ({ id }: { id: string | number }) => {
+ const [entity, setEntity] = useState<Entidad | null>(null);
+ const [collective, setCollective] = useState<CollectiveData | null>(null);
  const [loading, setLoading] = useState(true);
  const [isEditing, setIsEditing] = useState(false);
 

@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import { HIERARCHY_TYPES } from '../../../utils/constants/hierarchy_types';
 
-const CreateNodeModal = ({ isOpen, onClose, onCreate, parentFolder }) => {
+interface CreateNodeModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onCreate: (data: any) => void;
+  parentFolder?: { id: number; nombre: string } | null;
+}
+
+const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCreate, parentFolder }) => {
  const [formData, setFormData] = useState({
  nombre: '',
  descripcion: '',
@@ -23,6 +30,8 @@ const CreateNodeModal = ({ isOpen, onClose, onCreate, parentFolder }) => {
  HIERARCHY_TYPES.SYSTEM,
  HIERARCHY_TYPES.PLANET
  ];
+
+ const ALL_TYPES = [...TYPES, { id: 'FOLDER', label: 'Carpeta', icon: 'folder', color: 'text-foreground/50' }];
 
  return (
  <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 ">
@@ -78,9 +87,9 @@ const CreateNodeModal = ({ isOpen, onClose, onCreate, parentFolder }) => {
  <div className="space-y-3">
  <label className="block text-[10px] font-black text-foreground/30 uppercase mb-1">Tipo de Jerarquía</label>
  <div className="grid grid-cols-2 gap-2">
- {(TYPES as any[]).concat([{ id: 'FOLDER', label: 'Carpeta', icon: 'folder', color: 'text-foreground/50' }]).map(type => (
+ {ALL_TYPES.map(type => (
  <div
- key={type.id || 'FOLDER'}
+ key={type.id}
  onClick={() => setFormData({ ...formData, tipo: type.id })}
  className={`flex items-center gap-3 p-3 rounded-none border cursor-pointer transition-all ${formData.tipo === type.id ? 'bg-indigo-500/10 border-indigo-500/50' : 'bg-foreground/5 border-foreground/10 hover:bg-foreground/10'}`}
  >

@@ -14,11 +14,25 @@ import '../../../assets/TimelineView.css';
 
 import { TimelineLine, UniverseExtended } from '../../../types/timeline';
 
+interface TimelineOutletContext {
+  setRightPanelTab?: (tab: string) => void;
+  setRightOpen: (open: boolean) => void;
+  setRightPanelTitle: (title: React.ReactNode) => void;
+  setRightPanelMode: (mode: 'CONTEXT' | 'CUSTOM') => void;
+  projectId: number;
+}
+
+interface Anexo {
+  id: number;
+  nombre: string;
+  tipo: string;
+  relId: number;
+}
+
 const TimelineView = () => {
  const { t } = useLanguage();
  // Context from ArchitectLayout
- const { setRightPanelTab, setRightOpen, setRightPanelTitle, setRightPanelMode } = useOutletContext<any>();
- const { projectId } = useOutletContext<{ projectId: number }>();
+ const { setRightPanelTab, setRightOpen, setRightPanelTitle, setRightPanelMode, projectId } = useOutletContext<TimelineOutletContext>();
  const { username, projectName } = useParams();
 
  const [universes, setUniverses] = useState<UniverseExtended[]>([]);
@@ -39,7 +53,7 @@ const TimelineView = () => {
 
  // New State for Right Panel
  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
- const [eventAnexos, setEventAnexos] = useState<any[]>([]);
+ const [eventAnexos, setEventAnexos] = useState<Anexo[]>([]);
  const [entitySearch, setEntitySearch] = useState('');
  const [searchResults, setSearchResults] = useState<Entidad[]>([]);
  const [activeTab, setActiveTab] = useState('eventos'); // 'eventos' | 'anexos' | 'universo'
@@ -301,9 +315,9 @@ const TimelineView = () => {
  };
 
  const handleUpdateUniverse = async () => {
- if (!selectedUniverseId) return;
+ if (!selectedUniverseId || !projectId) return;
  try {
- await folderService.update(selectedUniverseId, newUniverse.nombre);
+ await folderService.update(selectedUniverseId, newUniverse.nombre, projectId);
  setRightOpen(false);
  await loadMultiverse();
  } catch (e) {
@@ -578,15 +592,15 @@ const TimelineView = () => {
  className="w-full bg-background border border-foreground/40 rounded-none p-2 text-sm text-foreground outline-none focus:border-primary"
  placeholder="Nuevo nombre de línea"
  value={editingTimeline?.nombre || ''}
- onChange={e => setEditingTimeline(prev => prev ? { ...prev, nombre: e.target.value } : { id: selectedTimelineId, nombre: e.target.value } as any)}
+ onChange={e => setEditingTimeline(prev => prev ? { ...prev, nombre: e.target.value } : { id: selectedTimelineId!, nombre: e.target.value, project_id: projectId, padre_id: null, tipo: 'TIMELINE', slug: '' } as TimelineLine)}
  />
  </div>
  <div className="pt-2">
  <Button
  variant="primary"
  onClick={async () => {
- if (selectedTimelineId && editingTimeline?.nombre) {
- await folderService.update(selectedTimelineId, editingTimeline.nombre);
+ if (selectedTimelineId && editingTimeline?.nombre && projectId) {
+ await folderService.update(selectedTimelineId, editingTimeline.nombre, projectId);
  await loadMultiverse();
  }
  }}

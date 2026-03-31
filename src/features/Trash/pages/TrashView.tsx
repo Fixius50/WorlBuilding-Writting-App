@@ -2,12 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { trashService } from '../../../database/trashService';
 
+interface TrashItem {
+  id: number;
+  item_tipo: string;
+  nombre: string;
+  deleted_date: string;
+}
+
 export default function TrashView() {
  const { id: projectId } = useParams();
  const navigate = useNavigate();
- const [items, setItems] = useState<any[]>([]);
+ const [items, setItems] = useState<TrashItem[]>([]);
  const [loading, setLoading] = useState(true);
- const [error, setError] = useState<any>(null);
+ const [error, setError] = useState<string | null>(null);
 
  useEffect(() => {
  if (projectId) {
@@ -19,7 +26,7 @@ export default function TrashView() {
  try {
  setLoading(true);
  const data = await trashService.getItems(Number(projectId));
- setItems(data);
+ setItems(data as TrashItem[]);
  setError(null);
  } catch (err) {
  console.error("Error loading trash:", err);
@@ -29,21 +36,21 @@ export default function TrashView() {
  }
  };
 
- const handleRestore = async (tipo, itemId) => {
+ const handleRestore = async (tipo: string, itemId: number) => {
  try {
- await trashService.restore(tipo, itemId);
+ await trashService.restore(tipo as any, itemId);
  loadItems(); // Reload list
  } catch (err) {
  console.error("Restoration failed", err);
  }
  };
 
- const handleDelete = async (tipo, itemId) => {
+ const handleDelete = async (tipo: string, itemId: number) => {
  if (!window.confirm("Are you sure you want to PERMANENTLY delete this item? This cannot be undone.")) {
  return;
  }
  try {
- await trashService.permanentlyDelete(tipo, itemId);
+ await trashService.permanentlyDelete(tipo as any, itemId);
  loadItems(); // Reload list
  } catch (err) {
  console.error("Deletion failed", err);

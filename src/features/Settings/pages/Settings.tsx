@@ -5,15 +5,28 @@ import { projectService } from '../../../database/projectService';
 import { useLanguage } from '../../../context/LanguageContext';
 import { syncService } from '../../../services/syncService';
 import ComingSoonWrapper from '../../../components/common/ComingSoonWrapper';
+import { Proyecto } from '../../../database/types';
+
+interface UserData {
+  displayName?: string;
+  username?: string;
+  avatarUrl?: string;
+}
+
+interface NotificationData {
+  id: number;
+  message: string;
+  type: 'success' | 'info' | 'error';
+}
 
 const Settings = () => {
   const navigate = useNavigate();
   const { language, changeLanguage } = useLanguage();
-  const [user, setUser] = useState<any>(null);
-  const [projects, setProjects] = useState<any[]>([]);
+  const [user, setUser] = useState<UserData | null>(null);
+  const [projects, setProjects] = useState<Proyecto[]>([]);
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState('general');
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<NotificationData[]>([]);
 
   // Settings State
   const [settings, setSettings] = useState({
@@ -60,7 +73,7 @@ const Settings = () => {
     }, 3000);
   };
 
-  const updateSetting = (key: string, value: any) => {
+  const updateSetting = (key: string, value: unknown) => {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
     localStorage.setItem('app_settings', JSON.stringify(newSettings));
@@ -111,7 +124,7 @@ const Settings = () => {
       await sqlocal.overwriteDatabaseFile(file);
       addNotification("Universo importado con éxito. Por favor recarga la página.", "success");
       setTimeout(() => window.location.reload(), 1500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Import error", err);
       addNotification("Error al sobreescribir la base de datos local", "error");
     }
@@ -295,18 +308,18 @@ const Settings = () => {
                   <div className="grid grid-cols-2 gap-3">
                     {projects.length > 0 ? projects.map(project => (
                       <button
-                        key={project.filename}
-                        onClick={() => toggleProjectSelection(project.filename)}
-                        className={`flex items-center gap-3 p-4 rounded-none border transition-all text-left ${selectedProjects.includes(project.filename)
+                        key={project.nombre}
+                        onClick={() => toggleProjectSelection(project.nombre)}
+                        className={`flex items-center gap-3 p-4 rounded-none border transition-all text-left ${selectedProjects.includes(project.nombre)
                           ? 'border-primary bg-primary/10 text-foreground'
                           : 'sunken-panel text-foreground/60 hover:border-foreground/40'
                           }`}
                       >
                         <span className="material-symbols-outlined text-lg">
-                          {selectedProjects.includes(project.filename) ? 'check_circle' : 'circle'}
+                          {selectedProjects.includes(project.nombre) ? 'check_circle' : 'circle'}
                         </span>
                         <div className="truncate">
-                          <p className="text-xs font-bold truncate">{project.title}</p>
+                          <p className="text-xs font-bold truncate">{project.nombre}</p>
                         </div>
                       </button>
                     )) : (

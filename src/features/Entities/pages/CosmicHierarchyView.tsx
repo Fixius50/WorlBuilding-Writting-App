@@ -3,7 +3,12 @@ import GlassPanel from '../../../components/common/GlassPanel';
 import Avatar from '../../../components/common/Avatar';
 import Button from '../../../components/common/Button';
 
-const CosmicHierarchyView = ({ id, type }: any) => {
+interface CosmicHierarchyViewProps {
+  id?: string | number;
+  type?: string;
+}
+
+const CosmicHierarchyView: React.FC<CosmicHierarchyViewProps> = ({ id, type }) => {
  return (
  <div className="flex-1 flex overflow-hidden bg-background font-sans text-foreground/60">
  {/* Main Content Area */}
@@ -13,7 +18,7 @@ const CosmicHierarchyView = ({ id, type }: any) => {
  <span className="material-symbols-outlined text-sm">grid_view</span>
  <span>Universo Alpha</span>
  <span className="material-symbols-outlined text-sm">chevron_right</span>
- <span>Galaxia AndrÃ³meda</span>
+ <span>Galaxia Andrómeda</span>
  <span className="material-symbols-outlined text-sm">chevron_right</span>
  <span className="text-foreground">Sistema Solar</span>
  </div>
@@ -27,7 +32,7 @@ const CosmicHierarchyView = ({ id, type }: any) => {
  </div>
  <h1 className="text-6xl font-manrope font-black text-foreground tracking-tight">Sistema Solar</h1>
  <p className="text-foreground/60 text-lg leading-relaxed">
- Sistema planetario principal ubicado en el Brazo de OriÃ³n, hogar de la Ãºnica vida biolÃ³gica compleja confirmada en el sector galÃ¡ctico Alpha-9.
+ Sistema planetario principal ubicado en el Brazo de Orión, hogar de la única vida biológica compleja confirmada en el sector galáctico Alpha-9.
  </p>
  </div>
  <div className="flex gap-3">
@@ -64,11 +69,11 @@ const CosmicHierarchyView = ({ id, type }: any) => {
  </div>
 
  <div className="space-y-4">
- <Attribute label="Forma / Estructura" value="HeliosfÃ©rica EstÃ¡ndar" icon="hive" />
- <Attribute label="ComposiciÃ³n" value="HidrÃ³geno (74%), Helio (24%)" icon="experiment" />
+ <Attribute label="Forma / Estructura" value="Heliosférica Estándar" icon="hive" />
+ <Attribute label="Composición" value="Hidrógeno (74%), Helio (24%)" icon="experiment" />
  <div className="grid grid-cols-2 gap-4">
- <Attribute label="Edad (AÃ±os)" value="4.6 MM" unit="AÃ±os" />
- <Attribute label="Ciclo Orbital" value="230 MM" unit="AÃ±os" />
+ <Attribute label="Edad (Años)" value="4.6 MM" unit="Años" />
+ <Attribute label="Ciclo Orbital" value="230 MM" unit="Años" />
  </div>
  </div>
  </section>
@@ -80,7 +85,7 @@ const CosmicHierarchyView = ({ id, type }: any) => {
  </div>
  <textarea
  className="w-full h-48 monolithic-panel rounded-[2rem] p-6 text-sm text-foreground/60 placeholder:text-foreground/60 focus:border-primary/50 outline-none transition-all resize-none leading-relaxed italic shadow-inner"
- defaultValue="El sistema contiene un cinturÃ³n de asteroides inusualmente denso entre el 4Âº y 5Âº planeta. Se teoriza que es el remanente de una colisiÃ³n planetaria antigua conocida como 'El Gran Impacto' en las escrituras sagradas de los habitantes de Terra."
+ defaultValue="El sistema contiene un cinturón de asteroides inusualmente denso entre el 4º y 5º planeta. Se teoriza que es el remanente de una colisión planetaria antigua conocida como 'El Gran Impacto' en las escrituras sagradas de los habitantes de Terra."
  />
  </section>
  </div>
@@ -95,7 +100,7 @@ const CosmicHierarchyView = ({ id, type }: any) => {
  </div>
  <div>
  <h3 className="font-bold text-foreground text-lg tracking-tight">Contenido Interno (Planetas)</h3>
- <p className="text-[10px] font-medium text-foreground/60 mt-0.5">Arrastra para reordenar la jerarquÃa orbital</p>
+ <p className="text-[10px] font-medium text-foreground/60 mt-0.5">Arrastra para reordenar la jerarquía orbital</p>
  </div>
  </div>
  <div className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
@@ -105,17 +110,17 @@ const CosmicHierarchyView = ({ id, type }: any) => {
  </header>
 
  <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-3">
- <PlanetRow name="Mercurio" type="Rocoso" stats="430Â°C | 88 DÃas" icon="public" />
- <PlanetRow name="Venus" type="AtmÃ³sfera" stats="462Â°C | 225 DÃas" icon="public" />
+ <PlanetRow name="Mercurio" type="Rocoso" stats="430°C | 88 Días" icon="public" />
+ <PlanetRow name="Venus" type="Atmósfera" stats="462°C | 225 Días" icon="public" />
  <PlanetRow name="Tierra" type="Habitable" stats="8B Hab | 1 Luna" icon="public" active />
- <PlanetRow name="Marte" type="Desierto" stats="-60Â°C | 2 Lunas" icon="public" />
- <PlanetRow name="CinturÃ³n Asteroides" type="Anillo" stats=">1M Obj" icon="grain" />
+ <PlanetRow name="Marte" type="Desierto" stats="-60°C | 2 Lunas" icon="public" />
+ <PlanetRow name="Cinturón Asteroides" type="Anillo" stats=">1M Obj" icon="grain" />
  </div>
 
  <div className="p-8 bg-background/20 border-t border-foreground/10">
  <button className="w-full py-4 rounded-[1.5rem] border-2 border-dashed border-foreground/40 text-foreground/60 hover:text-foreground hover:border-primary/50 hover:bg-primary/5 transition-all flex items-center justify-center gap-3 font-black uppercase text-[10px] tracking-[0.2em]">
  <span className="material-symbols-outlined">add</span>
- AÃ±adir Nueva Entidad
+ Añadir Nueva Entidad
  </button>
  </div>
  </GlassPanel>
@@ -126,14 +131,27 @@ const CosmicHierarchyView = ({ id, type }: any) => {
  );
 };
 
-const Tag = ({ label, color, icon }: any) => (
+interface TagProps {
+  label: string;
+  color: string;
+  icon: string;
+}
+
+const Tag: React.FC<TagProps> = ({ label, color, icon }) => (
  <div className={`px-4 py-1.5 rounded-none bg-${color}-500/10 text-${color}-400 border border-${color}-500/20 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest shadow-lg`}>
  <span className="material-symbols-outlined text-[14px]">{icon}</span>
  {label}
  </div>
 );
 
-const Attribute = ({ label, value, unit, icon }: any) => (
+interface AttributeProps {
+  label: string;
+  value: string;
+  unit?: string;
+  icon?: string;
+}
+
+const Attribute: React.FC<AttributeProps> = ({ label, value, unit, icon }) => (
  <div className="space-y-2">
  <p className="text-[9px] font-black uppercase tracking-widest text-foreground/60 ml-1">{label}</p>
  <div className="w-full monolithic-panel rounded-none px-5 py-3.5 flex items-center justify-between group hover:border-foreground/40 transition-all">
@@ -146,7 +164,15 @@ const Attribute = ({ label, value, unit, icon }: any) => (
  </div>
 );
 
-const PlanetRow = ({ name, type, stats, icon, active }: any) => (
+interface PlanetRowProps {
+  name: string;
+  type: string;
+  stats: string;
+  icon: string;
+  active?: boolean;
+}
+
+const PlanetRow: React.FC<PlanetRowProps> = ({ name, type, stats, icon, active }) => (
  <div className={`group flex items-center gap-6 p-4 rounded-none transition-all cursor-pointer ${active ? 'bg-primary/10 border border-primary/20 shadow-xl' : 'hover:bg-foreground/5 border border-transparent'}`}>
  <span className="material-symbols-outlined text-foreground/60 group-hover:text-foreground/60">drag_indicator</span>
  <div className={`size-12 rounded-none flex items-center justify-center ${active ? 'bg-primary text-foreground shadow-lg shadow-primary/30' : 'monolithic-panel border border-foreground/10 text-foreground/60'}`}>

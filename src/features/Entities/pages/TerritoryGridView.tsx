@@ -3,7 +3,7 @@ import GlassPanel from '../../../components/common/GlassPanel';
 import Avatar from '../../../components/common/Avatar';
 import Button from '../../../components/common/Button';
 
-const TerritoryGridView = ({ id }: any) => {
+const TerritoryGridView = ({ id }: { id?: string | number }) => {
  return (
  <div className="flex-1 flex overflow-hidden bg-background font-sans text-foreground/60">
  {/* Main Content Area */}
@@ -95,14 +95,14 @@ const TerritoryGridView = ({ id }: any) => {
  );
 };
 
-const FilterDropdown = ({ label }: any) => (
+const FilterDropdown = ({ label }: { label: string }) => (
  <button className="flex items-center gap-2 px-3 py-1.5 rounded-none hover:bg-foreground/5 transition-all group">
  <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60 group-hover:text-foreground">{label}</span>
  <span className="material-symbols-outlined text-foreground/60 text-[14px]">expand_more</span>
  </button>
 );
 
-const TerritoryCard = ({ title, desc, image, badges = [], stats = [], color }: any) => (
+const TerritoryCard = ({ title, desc, image, badges = [], stats = [], color }: { title: string; desc: string; image: string; badges?: string[]; stats?: string[]; color: string }) => (
  <div className="group relative rounded-[2.5rem] overflow-hidden border border-foreground/10 monolithic-panel/50 hover:border-foreground/40 transition-all shadow-2xl">
  <div className="h-48 overflow-hidden relative">
  <img src={image} alt={title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-60 group-hover:opacity-100" />

@@ -1,35 +1,5 @@
 import React from 'react';
-
-interface Shape {
- id: string;
- type: string;
- stroke?: string;
- strokeWidth?: number;
- opacity?: number;
- lineCap?: string;
- lineJoin?: string;
- x?: number;
- y?: number;
- points?: number[];
- width?: number;
- height?: number;
- radius?: number;
- dash?: number[];
- tension?: number;
- globalCompositeOperation?: string;
- data?: string;
- fill?: string | null;
- scaleX?: number;
- scaleY?: number;
-}
-
-interface Layer {
- id: string;
- name: string;
- visible: boolean;
- locked: boolean;
- shapes: Shape[];
-}
+import { Shape, LayerData } from '../../../types/canvas';
 
 interface UniversalCanvasPropertiesProps {
  tool: string;
@@ -44,15 +14,15 @@ interface UniversalCanvasPropertiesProps {
  setLineCap: (cap: string) => void;
  strokeStyle: string;
  setStrokeStyle: (style: string) => void;
- layers: Layer[];
- activeLayerId: string | number;
- setActiveLayerId: (id: string | number) => void;
- onToggleLayerVisibility: (id: string | number) => void;
- onToggleLayerLock: (id: string | number) => void;
+ layers: LayerData[];
+ activeLayerId: string;
+ setActiveLayerId: (id: string) => void;
+ onToggleLayerVisibility: (id: string) => void;
+ onToggleLayerLock: (id: string) => void;
  onAddLayer: () => void;
- onDeleteLayer: (id: string | number) => void;
- activeShape: any;
- onSetProperty: (prop: string, value: any) => void;
+ onDeleteLayer: (id: string) => void;
+ activeShape: Shape | null;
+ onSetProperty: (prop: string, value: unknown) => void;
  onUndo: () => void;
  onRedo: () => void;
  onClear: () => void;

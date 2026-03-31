@@ -5,7 +5,7 @@ import { folderService } from '../../../database/folderService';
 import { entityService } from '../../../database/entityService';
 import CreateNodeModal from '../components/CreateNodeModal';
 import ConfirmationModal from '../../../components/common/ConfirmationModal';
-import { Carpeta } from '../../../database/types';
+import { Carpeta, FolderType } from '../../../database/types';
 
 export interface BibleExplorerState {
   folders: Carpeta[];
@@ -13,7 +13,7 @@ export interface BibleExplorerState {
   setSearchTerm: (term: string) => void;
   filterType: string;
   setFilterType: (type: string) => void;
-  handleCreateSimpleFolder: (parentId?: number | null, type?: any) => Promise<void>;
+  handleCreateSimpleFolder: (parentId?: number | null, type?: FolderType) => Promise<void>;
   handleRenameFolder: (folderId: number, newName: string) => Promise<void>;
   handleDeleteFolder: (folderId: number | string, parentId?: number | string | null) => void;
   handleMoveEntity: (entityId: number | string, targetFolderId: number | string, sourceFolderId: number | string) => Promise<void>;
@@ -25,7 +25,7 @@ export interface BibleExplorerState {
 interface ArchitectContext {
   projectId: number;
   setBibleExplorerState: (state: BibleExplorerState) => void;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface DeletionTarget {
@@ -97,7 +97,7 @@ const WorldBibleLayout = () => {
     setCreationModalOpen(true);
   };
 
-  const handleCreateSimpleFolder = async (parentId: number | null = null, type: any = 'FOLDER') => {
+  const handleCreateSimpleFolder = async (parentId: number | null = null, type: FolderType = 'FOLDER') => {
     if (!projectId) return;
     try {
       const newFolder = await folderService.create(
@@ -116,7 +116,7 @@ const WorldBibleLayout = () => {
     }
   };
 
-  const handleCreateSubmit = async (formData: { nombre: string; tipo: any }) => {
+  const handleCreateSubmit = async (formData: { nombre: string; tipo: FolderType }) => {
     if (!projectId) return;
     try {
       const parentId = targetParent ? targetParent.id : null;
@@ -146,11 +146,12 @@ const WorldBibleLayout = () => {
     // Basic duplication logic
     const base = await entityService.getById(Number(entityId));
     if (base) {
+      const { id, fecha_creacion, ...duplicateData } = base;
       await entityService.create({
-        ...base,
+        ...duplicateData,
         nombre: `${base.nombre} (Copia)`,
         carpeta_id: Number(folderId)
-      } as any);
+      });
       window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId } }));
     }
   };

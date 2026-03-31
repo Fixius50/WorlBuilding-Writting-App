@@ -54,7 +54,23 @@ export const entityService = {
  },
 
   async getValues(entidadId: number): Promise<(Valor & { attribute: Plantilla })[]> {
-    const results = await sql<any>`
+    interface ValueWithPlantillaRaw {
+      id: number;
+      entidad_id: number;
+      plantilla_id: number;
+      valor: string | null;
+      updated_at: string | null;
+      p_id: number;
+      p_nombre: string;
+      p_tipo: string;
+      p_valor_defecto: string | null;
+      p_metadata: string | null;
+      p_es_obligatorio: number | boolean;
+      p_project_id: number;
+      p_created_at: string;
+    }
+
+    const results = await sql<ValueWithPlantillaRaw>`
       SELECT v.*, 
              p.id as p_id, p.nombre as p_nombre, p.tipo as p_tipo, 
              p.valor_defecto as p_valor_defecto, p.metadata as p_metadata,
@@ -93,7 +109,7 @@ export const entityService = {
   },
 
   async saveValue(entidadId: number, plantillaId: number, valor: string): Promise<void> {
-    const existing = await sql`SELECT id FROM valores WHERE entidad_id = ${entidadId} AND plantilla_id = ${plantillaId}`;
+    const existing = await sql<{ id: number }>`SELECT id FROM valores WHERE entidad_id = ${entidadId} AND plantilla_id = ${plantillaId}`;
     if (existing.length > 0) {
       await this.updateValue(existing[0].id, valor);
     } else {

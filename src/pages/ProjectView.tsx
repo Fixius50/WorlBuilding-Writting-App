@@ -38,7 +38,12 @@ const ProjectView: React.FC = () => {
  const { t } = useLanguage();
 
  const baseUrl = `/${username}/${projectName}`;
- const [user, setUser] = React.useState<any>(null);
+ interface UserData {
+    displayName?: string;
+    username?: string;
+  }
+
+  const [user, setUser] = React.useState<UserData | null>(null);
 
  React.useEffect(() => {
  const storedUser = localStorage.getItem('user');

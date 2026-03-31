@@ -16,7 +16,7 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
  onRemove, 
  linkableEntities = [] 
 }) => {
- const plantilla = (attribute as any).plantilla || attribute;
+ const plantilla = 'plantilla' in attribute ? attribute.plantilla : attribute;
 
  const renderInput = () => {
  switch (plantilla.tipo) {

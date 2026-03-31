@@ -18,21 +18,22 @@ window.onunhandledrejection = (event) => {
  reportError('Unhandled Promise Rejection', event.reason ? event.reason.message : 'Unknown reason', event.reason ? event.reason.stack : '');
 };
 
-class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: any, errorInfo: any }> {
- constructor(props: { children: React.ReactNode }) {
- super(props);
- this.state = { hasError: false, error: null, errorInfo: null };
- }
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: Error | null, errorInfo: any }> {
+  constructor(props: { children: React.ReactNode }) {
+  super(props);
+  this.state = { hasError: false, error: null, errorInfo: null };
+  }
 
- static getDerivedStateFromError(error: any) {
- return { hasError: true };
- }
+  static getDerivedStateFromError(error: unknown) {
+  return { hasError: true };
+  }
 
- componentDidCatch(error: any, errorInfo: any) {
- this.setState({ error: error, errorInfo: errorInfo });
- console.error("Uncaught Error:", error, errorInfo);
- reportError('React ErrorBoundary', error.message, error.stack, errorInfo.componentStack);
- }
+  componentDidCatch(error: unknown, errorInfo: any) {
+  const err = error as Error;
+  this.setState({ error: err, errorInfo: errorInfo });
+  console.error("Uncaught Error:", err, errorInfo);
+  reportError('React ErrorBoundary', err.message, err.stack, errorInfo?.componentStack);
+  }
 
  render() {
  if (this.state.hasError) {

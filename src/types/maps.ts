@@ -31,11 +31,13 @@ export interface MapConnection {
  type?: string;
  weight?: number;
  layerId?: string;
+ color?: string;
+ dashed?: boolean;
 }
 
 export interface MapAttributes {
  layers?: MapLayer[];
  markers?: MapMarker[];
  connections?: MapConnection[];
- [key: string]: any; // Allow map-specific extra attributes
+ [key: string]: unknown; // Allow map-specific extra attributes
 }

@@ -1,13 +1,22 @@
 import React, { useState } from 'react';
 import GlassPanel from '../../../components/common/GlassPanel';
 import Button from '../../../components/common/Button';
+import { MapMarker } from '../../../types/maps';
+
+interface MapMarkerEditorProps {
+  markers: MapMarker[];
+  onAddMarker?: (type?: string) => void;
+  onDeleteMarker: (id: string) => void;
+  onSelectMarker: (marker: MapMarker) => void;
+  onClose: () => void;
+}
 
 /**
  * MapMarkerEditor Component
  * Right panel component for adding and editing markers on maps
  */
-const MapMarkerEditor = ({ markers = [], onAddMarker, onUpdateMarker, onDeleteMarker, onClose }) => {
- const [selectedMarker, setSelectedMarker] = useState<any>(null);
+const MapMarkerEditor: React.FC<MapMarkerEditorProps> = ({ markers = [], onAddMarker, onDeleteMarker, onSelectMarker, onClose }) => {
+ const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
  const [isAdding, setIsAdding] = useState(false);
  const [searchTerm, setSearchTerm] = useState('');
 
@@ -68,11 +77,11 @@ const MapMarkerEditor = ({ markers = [], onAddMarker, onUpdateMarker, onDeleteMa
  filteredMarkers.map((marker, index) => (
  <GlassPanel
  key={marker.id || index}
- className={`p-4 cursor-pointer transition-all ${selectedMarker?.id === marker.id
+ className={`p-4 cursor-pointer transition-all ${selectedMarkerId === marker.id
  ? 'border-primary bg-primary/10'
  : 'border-foreground/10 hover:border-foreground/40'
  }`}
- onClick={() => setSelectedMarker(marker)}
+ onClick={() => { setSelectedMarkerId(marker.id); onSelectMarker(marker); }}
  >
  <div className="flex items-start gap-3">
  {/* Marker Icon */}

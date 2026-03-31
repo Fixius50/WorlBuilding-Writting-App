@@ -10,7 +10,7 @@ interface EntityBuilderSidebarProps {
   onAddTemplate: (tpl: Plantilla) => void;
   onRefresh?: () => void;
   onDeleteTemplate?: (id: number) => void;
-  currentFields?: any[]; // Usually Valor[] + isTemp but typed loosely for flexibility in builder
+  currentFields?: unknown[]; 
 }
 
 const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({ 
@@ -55,12 +55,13 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
     if (!newTpl.nombre.trim()) return;
     try {
       const created = await templateService.create({
-        ...newTpl,
+        nombre: newTpl.nombre,
+        tipo: newTpl.tipo,
         project_id: 0, // Global Template
         valor_defecto: '',
         metadata: null,
         es_obligatorio: 0
-      } as any);
+      });
       
       if (onRefresh) await onRefresh();
       onAddTemplate(created);
@@ -234,7 +235,7 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
           <select
             className="w-full monolithic-panel border border-foreground/10 rounded-none px-[0.5rem] py-[0.375rem] text-[0.625rem] text-foreground/70 outline-none bg-background"
             value={editingTpl.tipo}
-            onChange={e => setEditingTpl({ ...editingTpl, tipo: e.target.value as any })}
+            onChange={e => setEditingTpl({ ...editingTpl, tipo: e.target.value })}
           >
             <option value="text">Texto Largo</option>
             <option value="short_text">Texto Corto</option>

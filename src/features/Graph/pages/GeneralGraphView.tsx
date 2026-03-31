@@ -28,8 +28,17 @@ import Button from '../../../components/common/Button';
 import GlassPanel from '../../../components/common/GlassPanel';
 import { useLanguage } from '../../../context/LanguageContext';
 
+interface ZenNodeData {
+  label?: string;
+  tipo: string;
+  icon?: string;
+  descripcion?: string;
+  valores?: Array<{ plantilla_nombre: string; valor: string }>;
+  onNavigate?: () => void;
+}
+
 // --- Custom Node Component ---
-const ZenNode = ({ data, selected }: { data: any, selected: boolean }) => {
+const ZenNode = ({ data, selected }: { data: ZenNodeData, selected: boolean }) => {
   const typeInfo = getHierarchyType(data.tipo);
   
   // Generar handles distribuidos para simular conexión en cualquier punto del borde
@@ -104,7 +113,7 @@ const ZenNode = ({ data, selected }: { data: any, selected: boolean }) => {
                
                {data.valores && data.valores.length > 0 && (
                   <div className="flex flex-wrap gap-2 pt-1">
-                    {data.valores.map((v: any, i: number) => (
+                    {data.valores.map((v: { plantilla_nombre: string; valor: string }, i: number) => (
                       <span key={i} className="text-[8px] font-black uppercase tracking-tighter bg-primary/10 text-primary/80 px-2 py-1 border border-primary/10">
                         {v.plantilla_nombre}: {v.valor}
                       </span>

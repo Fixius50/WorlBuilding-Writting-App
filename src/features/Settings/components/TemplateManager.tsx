@@ -5,6 +5,13 @@ import { Plantilla } from '../../../database/types';
 import GlassPanel from '../../../components/common/GlassPanel';
 import ConfirmationModal from '../../../components/common/ConfirmationModal';
 
+export interface TemplateField {
+  label: string;
+  type: string;
+  required: boolean;
+  metadata: any;
+}
+
 const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
  // We only need the Root Folder ID to attach the global templates to (Database requirement)
  // But logically they are global.
@@ -46,7 +53,7 @@ const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
  }
  };
 
- const handleCreateTemplate = async (newField: any) => {
+ const handleCreateTemplate = async (newField: TemplateField) => {
  try {
  // Create as Global (project_id = 0)
  await templateService.create({
@@ -137,7 +144,7 @@ const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
  );
 };
 
-const NewFieldForm = ({ onAdd }: { onAdd: any }) => {
+const NewFieldForm = ({ onAdd }: { onAdd: (field: TemplateField) => void }) => {
  const [label, setLabel] = useState('');
  const [type, setType] = useState('text');
  const [required, setRequired] = useState(false);

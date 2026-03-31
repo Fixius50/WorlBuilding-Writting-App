@@ -7,11 +7,36 @@ import { entityService } from '../../../database/entityService';
 import { Entidad } from '../../../database/types';
 import { relationshipService } from '../../../database/relationshipService';
 
-const CharacterView = ({ id }) => {
+interface CharacterExtras {
+  imagenUrl?: string;
+  estado?: string;
+  apellidos?: string;
+  origen?: string;
+  comportamiento?: string;
+  appearance?: string;
+  notes?: string;
+}
+
+interface CharacterRelationship {
+  entidadDestino?: {
+    nombre?: string;
+  };
+  tipoRelacion?: string;
+}
+
+interface CharacterData extends Entidad, CharacterExtras {
+  relaciones?: CharacterRelationship[]; 
+}
+
+interface CharacterViewProps {
+  id: string | number;
+}
+
+const CharacterView: React.FC<CharacterViewProps> = ({ id }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [entity, setEntity] = useState<Entidad | null>(null);
-  const [character, setCharacter] = useState<any>(null);
+  const [character, setCharacter] = useState<CharacterData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -35,7 +60,7 @@ const CharacterView = ({ id }) => {
         setCharacter({
           ...data,
           ...extra,
-          relaciones: relations // Overriding with real relations from DB
+          relaciones: relations
         });
       }
     } catch (err) {
@@ -46,9 +71,10 @@ const CharacterView = ({ id }) => {
   };
 
   const handleSave = async () => {
-    if (!entity) return;
+    if (!entity || !character) return;
     try {
-      const { nombre, tipo, descripcion, ...extra } = character;
+      const { nombre, tipo, descripcion, ...rest } = character;
+      const extra: Record<string, any> = { ...rest };
       // We don't save relationships back as part of entity update
       delete extra.relaciones;
 
@@ -74,8 +100,8 @@ const CharacterView = ({ id }) => {
     }
   };
 
-  const handleChange = (field, value) => {
-    setCharacter(prev => ({ ...prev, [field]: value }));
+  const handleChange = (field: keyof CharacterData, value: unknown) => {
+    setCharacter(prev => prev ? ({ ...prev, [field]: value }) : null);
   };
 
  if (loading) return <div className="p-20 text-center text-foreground/60 animate-pulse">Summoning entity...</div>;
@@ -203,7 +229,7 @@ const CharacterView = ({ id }) => {
 
  {character.relaciones && character.relaciones.length > 0 ? (
  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
- {character.relaciones.map((rel, i) => (
+ {character.relaciones.map((rel: CharacterRelationship, i: number) => (
  <div key={i} className="flex items-center gap-3 p-3 bg-foreground/5 rounded-none border border-foreground/10 hover:border-primary/30 transition-colors">
  <div className="size-8 rounded-full bg-foreground/10 flex items-center justify-center text-xs font-bold">
  {rel.entidadDestino?.nombre?.charAt(0) || '?'}

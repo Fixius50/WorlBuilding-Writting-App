@@ -14,7 +14,7 @@ interface OutletContext {
   handleCreateEntity: (type: string) => void;
   handleDeleteEntity: (id: number, folderId: number) => void;
   handleDeleteFolder: (id: number) => void;
-  handleCreateSimpleFolder: (padreId: number, tipo: any) => void;
+  handleCreateSimpleFolder: (padreId: number, tipo: unknown) => void;
   searchTerm: string;
   filterType: string;
   projectId: number;
@@ -50,7 +50,7 @@ const FolderView: React.FC = () => {
   
   // Move Modal State
   const [moveModalOpen, setMoveModalOpen] = useState(false);
-  const [itemToMove, setItemToMove] = useState<{ item: any; type: 'entity' | 'folder' } | null>(null);
+  const [itemToMove, setItemToMove] = useState<{ item: Entidad | Carpeta; type: 'entity' | 'folder' } | null>(null);
 
 
   useEffect(() => {
@@ -110,8 +110,8 @@ const FolderView: React.FC = () => {
   }, [entities, subfolders, folderSearchTerm, folderFilterType]);
 
  useEffect(() => {
- const handleUpdate = (e: any) => {
- const { folderId: affectedId } = e.detail || {};
+ const handleUpdate = (e: Event) => {
+ const { folderId: affectedId } = (e as CustomEvent).detail || {};
  // If we are in the affected folder
  if (affectedId === folder?.id || affectedId === Number(folderId)) {
  loadFolderContent();

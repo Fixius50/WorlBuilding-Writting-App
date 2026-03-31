@@ -5,7 +5,7 @@ import { entityService } from '../../../database/entityService';
 
 const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned }) => {
  const [activeTab, setActiveTab] = useState('ESENCIA'); // ESENCIA, RELACIONES, CRÓNICA
- const [details, setDetails] = useState<any>(null);
+ const [details, setDetails] = useState<unknown>(null);
  const [loading, setLoading] = useState(false);
 
  // Fetch full data if not present

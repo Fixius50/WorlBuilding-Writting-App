@@ -42,14 +42,15 @@ const MapRouter = () => {
  } catch (err) { console.error("Error loading maps", err); }
  };
 
- const handleDuplicateMap = async (map: Entidad) => {
- if (!projectId) return;
- try {
- const attrs = typeof map.contenido_json === 'string' ? JSON.parse(map.contenido_json) : (map.contenido_json || {});
- const newAttrs = {
- ...attrs,
- layers: (attrs.layers || []).map((l: any) => ({ ...l, id: crypto.randomUUID() }))
- };
+  const handleDuplicateMap = async (map: Entidad) => {
+    if (!projectId) return;
+    try {
+      const attrs = typeof map.contenido_json === 'string' ? JSON.parse(map.contenido_json) : (map.contenido_json || {});
+      const newAttrs = {
+        ...attrs,
+        layers: (attrs.layers || []).map((l: Record<string, unknown>) => ({ ...l, id: crypto.randomUUID() }))
+      };
+
 
  await entityService.create({
  nombre: `${map.nombre} (Copia)`,
@@ -75,43 +76,44 @@ const MapRouter = () => {
  } catch (err) { console.error("Error deleting map", err); }
  };
 
- const handleCreateMap = async (source: string, mapName: string, uploadedFile: File | null) => {
- if (!projectId) return;
- try {
- const folders = await folderService.getByProject(projectId);
- const defaultFolder = folders.find(f => f.nombre.toLowerCase().includes('map')) || folders[0];
+  const handleCreateMap = async (
+    mapName: string, 
+    config: { bgImage: string; mapType: string; description: string; parentId?: number }
+  ) => {
+    if (!projectId) return;
+    try {
+      const folders = await folderService.getByProject(projectId);
+      const defaultFolder = folders.find(f => f.nombre.toLowerCase().includes('map')) || folders[0];
 
- if (!defaultFolder) {
- console.error("No folders available to create map");
- return;
- }
+      if (!defaultFolder) {
+        console.error("No folders available to create map");
+        return;
+      }
 
- // In local-first, we store the file path or base64 if it's small, 
- 
- // For now, let's just use a placeholder or local URL if available.
- let bgImage = source === 'upload' ? 'placeholder-map.png' : ''; 
+      const newEntity = await entityService.create({
+        nombre: mapName || 'Nuevo Mapa',
+        project_id: projectId,
+        carpeta_id: defaultFolder.id,
+        tipo: 'Map',
+        descripcion: config.description,
+        contenido_json: JSON.stringify({
+          tipoEspecial: 'map',
+          bgImage: config.bgImage || 'placeholder-map.png',
+          mapType: config.mapType,
+          parentId: config.parentId,
+          layers: [],
+          markers: [],
+          connections: []
+        })
+      });
 
- const newEntity = await entityService.create({
- nombre: mapName,
- project_id: projectId,
- carpeta_id: defaultFolder.id,
- tipo: 'Map',
- descripcion: '',
- contenido_json: JSON.stringify({
- tipoEspecial: 'map',
- bgImage: bgImage,
- layers: [],
- markers: []
- })
- });
-
- setNewMapId(newEntity.id);
- setView('editor');
- await loadMaps();
- } catch (err) {
- console.error("Error creating map:", err);
- }
- };
+      setNewMapId(newEntity.id);
+      setView('editor');
+      await loadMaps();
+    } catch (err) {
+      console.error("Error creating map:", err);
+    }
+  };
 
  return (
  <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">

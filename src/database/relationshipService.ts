@@ -40,7 +40,7 @@ export const relationshipService = {
 
   async update(id: number, updates: Partial<Relacion>): Promise<void> {
     const fields: string[] = [];
-    const vals: any[] = [];
+    const vals: unknown[] = [];
     
     if (updates.tipo) { fields.push(`tipo = ${updates.tipo}`); }
     if (updates.descripcion !== undefined) { fields.push(`descripcion = ${updates.descripcion}`); }

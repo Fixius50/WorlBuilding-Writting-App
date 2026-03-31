@@ -4,7 +4,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { folderService } from '../../database/folderService';
 import { projectService } from '../../database/projectService';
 import { entityService } from '../../database/entityService';
-import { Carpeta, Proyecto } from '../../database/types';
+import { Carpeta, Proyecto, Plantilla, FolderType } from '../../database/types';
 import GlobalRightPanel from './GlobalRightPanel';
 import ConfirmationModal from '../common/ConfirmationModal';
 import BottomGraphDrawer from '../../features/Graph/components/BottomGraphDrawer';
@@ -63,7 +63,7 @@ const ArchitectLayout: React.FC = () => {
 
   // Attribute Management State (for EntityBuilder communication)
   const [addAttributeHandler, setAddAttributeHandler] = useState<((templateId: number) => void) | null>(null);
-  const [availableTemplates, setAvailableTemplates] = useState<any[]>([]);
+  const [availableTemplates, setAvailableTemplates] = useState<Plantilla[]>([]);
 
   useEffect(() => {
     const handleSync = () => {
@@ -71,7 +71,9 @@ const ArchitectLayout: React.FC = () => {
       if (savedSettings) {
         try {
           const settings = JSON.parse(savedSettings);
-          if (settings.panelMode) setPanelMode(settings.panelMode as any);
+          if (settings.panelMode && ['classic', 'binder', 'floating'].includes(settings.panelMode)) {
+            setPanelMode(settings.panelMode as 'classic' | 'binder' | 'floating');
+          }
         } catch(e) {}
       }
     };
@@ -128,7 +130,7 @@ const ArchitectLayout: React.FC = () => {
         type === 'TIMELINE' ? 'Nueva Timeline' : 'Nueva Carpeta',
         projectId,
         parentId,
-        type as any
+        type as FolderType
       );
       await loadFolders(projectId);
       window.dispatchEvent(new CustomEvent('folder-update', {

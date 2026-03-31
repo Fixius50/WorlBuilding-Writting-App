@@ -26,7 +26,7 @@ interface GlobalRightPanelProps {
   handleCreateEntity: (folderId: number | string, specialType?: string) => void;
   panelMode?: 'classic' | 'binder' | 'floating';
   addAttributeHandler?: ((templateId: number) => void) | null;
-  availableTemplates?: any[];
+  availableTemplates?: unknown[];
 }
 
 const GlobalRightPanel: React.FC<GlobalRightPanelProps> = ({

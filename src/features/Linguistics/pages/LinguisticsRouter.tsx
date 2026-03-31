@@ -6,7 +6,7 @@ import { entityService } from '../../../database/entityService';
 
 const LinguisticsRouter = () => {
  const [view, setView] = useState('hub'); // 'hub', 'foundry', 'editor'
- const [selectedWord, setSelectedWord] = useState<any>(null);
+ const [selectedWord, setSelectedWord] = useState<unknown>(null);
 
  const handleOpenEditor = (word) => {
  setSelectedWord(word);

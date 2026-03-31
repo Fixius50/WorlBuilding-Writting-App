@@ -4,7 +4,7 @@ import { IconProps } from '../../types/ui';
 
 interface GlassPanelProps extends IconProps {
  title?: string;
- [key: string]: any;
+ [key: string]: unknown;
 }
 
 const GlassPanel: React.FC<GlassPanelProps> = ({ children, className, title, icon, ...props }) => {

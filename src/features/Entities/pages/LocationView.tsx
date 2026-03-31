@@ -4,9 +4,15 @@ import Button from '../../../components/common/Button';
 import { entityService } from '../../../database/entityService';
 import { Entidad } from '../../../database/types';
 
-const LocationView = ({ id }) => {
+interface LocationData extends Partial<Entidad> {
+  apellidos?: string;
+  tamanno?: string;
+  desarrollo?: string;
+}
+
+const LocationView = ({ id }: { id: string | number }) => {
   const [entity, setEntity] = useState<Entidad | null>(null);
-  const [location, setLocation] = useState<any>(null);
+  const [location, setLocation] = useState<LocationData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
 

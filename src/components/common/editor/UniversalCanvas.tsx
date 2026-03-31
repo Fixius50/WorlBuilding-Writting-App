@@ -1,43 +1,19 @@
 import React, { useRef, useEffect } from 'react';
 import { Stage, Layer, Line, Rect, Circle, Transformer } from 'react-konva';
-
-interface Shape {
-  id: string;
-  type: string;
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  radius?: number;
-  points?: number[];
-  stroke?: string;
-  strokeWidth?: number;
-  opacity?: number;
-  lineCap?: 'butt' | 'round' | 'square';
-  lineJoin?: 'round' | 'bevel' | 'miter';
-  dash?: number[];
-  tension?: number;
-  globalCompositeOperation?: string;
-}
-
-interface LayerData {
-  id: string;
-  name: string;
-  visible: boolean;
-  locked: boolean;
-  shapes: Shape[];
-}
+import Konva from 'konva';
+import { KonvaEventObject } from 'konva/lib/Node';
+import { Shape, LayerData } from '../../../types/canvas';
 
 interface UniversalCanvasProps {
-  stageRef: any;
+  stageRef: React.RefObject<Konva.Stage | null>;
   layers: LayerData[];
   selectedShapeId: string | string[] | null;
   onSelectShape: (id: string | null) => void;
-  onChangeShape: (id: string, attrs: any) => void;
+  onChangeShape: (id: string, attrs: Partial<Shape>) => void;
   tool: string;
   color: string;
   strokeWidth: number;
-  onDrawEnd: (phase: string, data: any) => void;
+  onDrawEnd: (phase: 'START' | 'MOVE' | 'END', data: { pos?: { x: number, y: number } }) => void;
 }
 
 const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
@@ -50,15 +26,17 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   onDrawEnd
 }) => {
   const isDrawing = useRef(false);
-  const transformerRef = useRef<any>(null);
+  const transformerRef = useRef<Konva.Transformer>(null);
 
   useEffect(() => {
     if (tool === 'select' && transformerRef.current && selectedShapeId && !Array.isArray(selectedShapeId)) {
       const stage = stageRef.current;
+      if (!stage) return;
       const selectedNode = stage.findOne(`#${selectedShapeId}`);
       if (selectedNode) {
         transformerRef.current.nodes([selectedNode]);
-        transformerRef.current.getLayer().batchDraw();
+        const layer = transformerRef.current.getLayer();
+        if (layer) layer.batchDraw();
       } else {
         transformerRef.current.nodes([]);
       }
@@ -67,7 +45,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
     }
   }, [selectedShapeId, tool, layers]);
 
-  const handleMouseDown = (e: any) => {
+  const handleMouseDown = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     // Si la herramienta es select y el usuario clica en el escenario vacío, deseleccionamos
     if (tool === 'select') {
       const clickedOnEmpty = e.target === e.target.getStage();
@@ -79,15 +57,17 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
 
     isDrawing.current = true;
     const stage = e.target.getStage();
+    if (!stage) return;
     const pos = stage.getPointerPosition();
-    onDrawEnd('START', { pos });
+    if (pos) onDrawEnd('START', { pos });
   };
 
-  const handleMouseMove = (e: any) => {
+  const handleMouseMove = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (!isDrawing.current || tool === 'select') return;
     const stage = e.target.getStage();
+    if (!stage) return;
     const pos = stage.getPointerPosition();
-    onDrawEnd('MOVE', { pos });
+    if (pos) onDrawEnd('MOVE', { pos });
   };
 
   const handleMouseUp = () => {
@@ -96,7 +76,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
     onDrawEnd('END', {});
   };
 
-  const handleShapeClick = (e: any, shapeId: string) => {
+  const handleShapeClick = (e: KonvaEventObject<MouseEvent | TouchEvent>, shapeId: string) => {
     if (tool === 'select') {
       onSelectShape(shapeId);
       e.cancelBubble = true;
@@ -119,10 +99,10 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
         {layers.map((layer) => (
           <Layer key={layer.id} visible={layer.visible}>
             {layer.shapes.map((shape) => {
-              const shapeProps: any = {
+              const shapeProps: Record<string, unknown> = {
                 id: shape.id,
-                onClick: (e: any) => handleShapeClick(e, shape.id),
-                onTap: (e: any) => handleShapeClick(e, shape.id),
+                onClick: (e: KonvaEventObject<MouseEvent>) => handleShapeClick(e, shape.id),
+                onTap: (e: KonvaEventObject<TouchEvent>) => handleShapeClick(e, shape.id),
                 stroke: shape.stroke || '#ffffff',
                 strokeWidth: shape.strokeWidth || 4,
                 opacity: shape.opacity || 1,
@@ -132,13 +112,13 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
                 tension: shape.tension,
                 globalCompositeOperation: shape.globalCompositeOperation,
                 draggable: tool === 'select' && selectedShapeId === shape.id,
-                onDragEnd: (e: any) => {
+                onDragEnd: (e: KonvaEventObject<DragEvent>) => {
                   onChangeShape(shape.id, {
                     x: e.target.x(),
                     y: e.target.y()
                   });
                 },
-                onTransformEnd: (e: any) => {
+                onTransformEnd: (e: KonvaEventObject<Event>) => {
                   const node = e.target;
                   onChangeShape(shape.id, {
                     x: node.x(),

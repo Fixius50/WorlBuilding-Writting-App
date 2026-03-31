@@ -1,13 +1,17 @@
-# SKILL: FRONTEND ARCHITECT (GLASSMORPHISM MASTER)
+# SKILL: FRONTEND ARCHITECT (TECHNICAL ZEN MASTER)
 
-Guía avanzada para el desarrollo estético y funcional del cliente.
+Guía avanzada para el desarrollo estético y funcional del cliente (React 19 + Vite).
 
 ## 🎨 Principios de Diseño Swarm
-- **Layout:** Basado en `The Architect Box` (Contenedores 16px radius).
-- **Glassmorphism:** `backdrop-filter: blur(12px)` + `rgba(255, 255, 255, 0.1)` border.
-- **Micro-interacciones:** Escalas 0.98 al hacer clic, transiciones de 0.3s.
 
-## 🛠️ Estándares de Código
-1. **CSS Centralizado:** Todo estilo nuevo debe ir a `src/main/frontend/css/`.
-2. **Modularidad JSX:** Un componente por archivo, preferiblemente funcional.
-3. **Optimización:** Usar `useMemo` y `useCallback` en componentes costosos como Grafos o Mapas.
+- **Layout:** Basado en diseño "Monolithic" (The Architect Box). Paneles limpios y sólidos sin adornos innecesarios (Technical Zen).
+- **Cero Plástico Digital:** Prohibido el uso de `backdrop-filter: blur()` o fondos translúcidos. Uso de colores base sólidos basados en variables CSS.
+- **Micro-interacciones:** Rápidas, precisas, sin animaciones elásticas excesivas.
+- **Tipografía:** Uso de fuentes Serif para lectura larga y Mono/Sans para UI técnica.
+
+## 🛠️ Estándares de Código (TypeScript Estricto)
+
+1. **Tipado Obligatorio:** Cero uso de `any`. Si no se conoce el tipo, usar explícitamente `unknown` y validarlo (Type Guards).
+2. **Conectividad y APIs:** Se pueden mantener/usar llamadas a APIs (`api.js`, red) junto con la persistencia `sqlocal`. No es obligatorio el aislamiento absoluto.
+3. **Tailwind Dinámico:** Usar variables CSS del tema (`bg-background`). No aplicar colores HEX hardcodeados.
+4. **Optimización:** Usar `useMemo` y `useCallback` en componentes costosos como Grafos o Mapas.

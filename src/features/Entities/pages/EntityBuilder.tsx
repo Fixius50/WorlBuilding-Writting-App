@@ -19,6 +19,23 @@ interface LayoutContext {
   setAvailableTemplates: (templates: Plantilla[]) => void;
 }
 
+interface EntityField {
+  id: number | string;
+  attribute: Plantilla;
+  value: string;
+  isTemp: boolean;
+}
+
+interface EntityExtras {
+  color?: string;
+  tags?: string;
+  iconUrl?: string | null;
+  categoria?: string;
+  appearance?: string;
+  notes?: string;
+  images?: string[];
+}
+
 interface EntityBuilderProps {
   mode: 'creation' | 'edit';
 }
@@ -56,7 +73,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
 
   const [path, setPath] = useState<Carpeta[]>([]);
 
-  const [fields, setFields] = useState<any[]>([]);
+  const [fields, setFields] = useState<EntityField[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [removedFieldIds, setRemovedFieldIds] = useState<number[]>([]);
@@ -67,15 +84,15 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
   // Parse contenido_json safely
-  const getExtra = () => {
+  const getExtra = (): EntityExtras => {
     try {
-      return JSON.parse(entity.contenido_json || '{}');
+      return JSON.parse(entity.contenido_json || '{}') as EntityExtras;
     } catch (e) {
       return {};
     }
   };
 
-  const updateExtra = (updates: any) => {
+  const updateExtra = (updates: Partial<EntityExtras>) => {
     const current = getExtra();
     setEntity(prev => ({
       ...prev,
@@ -129,8 +146,8 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
             const vals = await entityService.getValues(data.id);
             setFields(vals.map(v => ({
               id: v.id,
-              attribute: templates.find(t => t.id === v.plantilla_id),
-              value: v.valor,
+              attribute: v.attribute || { id: v.plantilla_id, nombre: 'Unknown', tipo: 'text' } as Plantilla,
+              value: v.valor || '',
               isTemp: false
             })));
           }
@@ -170,7 +187,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
     try {
       let savedEntity: Entidad;
       if (isCreation) {
-        savedEntity = await entityService.create(entity as any);
+        savedEntity = await entityService.create(entity as Omit<Entidad, 'id' | 'fecha_creacion'>);
       } else {
         savedEntity = await entityService.update(entity.id!, entity);
       }
@@ -186,7 +203,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
         if (f.isTemp) {
           await entityService.addValue(savedEntity.id, f.attribute.id, f.value);
         } else {
-          await entityService.updateValue(f.id, f.value);
+          await entityService.updateValue(f.id as number, f.value);
         }
       }
 
@@ -205,7 +222,12 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
         setRemovedFieldIds([]);
         // Force a re-fetch of values to get real IDs from DB
         const freshValues = await entityService.getValues(savedEntity.id);
-        setFields(freshValues.map(v => ({ ...v, isTemp: false })));
+        setFields(freshValues.map(v => ({
+          id: v.id,
+          attribute: v.attribute,
+          value: v.valor || '',
+          isTemp: false
+        })));
       }
     } catch (err) {
       console.error(err);
@@ -214,14 +236,14 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
     }
   };
 
-  const handleFieldChange = (fieldId: any, value: string) => {
+  const handleFieldChange = (fieldId: number | string, value: string) => {
     setFields(prev => prev.map(f => f.id === fieldId ? { ...f, value } : f));
   };
 
-  const handleRemoveField = (fieldId: any) => {
+  const handleRemoveField = (fieldId: number | string) => {
     const field = fields.find(f => f.id === fieldId);
-    if (!field.isTemp) {
-      setRemovedFieldIds(prev => [...prev, field.id]);
+    if (field && !field.isTemp) {
+      setRemovedFieldIds(prev => [...prev, field.id as number]);
     }
     setFields(prev => prev.filter(f => f.id !== fieldId));
   };
@@ -234,7 +256,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
       const reader = new FileReader();
       reader.onloadend = () => {
         const current = getExtra();
-        const imgs = [...(current.images || []), reader.result];
+        const imgs = [...(current.images || []), reader.result as string];
         updateExtra({ images: imgs });
       };
       reader.readAsDataURL(file);
@@ -243,7 +265,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
 
   const removeImage = (index: number) => {
     const current = getExtra();
-    const imgs = (current.images || []).filter((_: any, i: number) => i !== index);
+    const imgs = (current.images || []).filter((_: string, i: number) => i !== index);
     updateExtra({ images: imgs });
   };
 

@@ -12,7 +12,7 @@ const Dashboard: React.FC = () => {
  const [stats, setStats] = useState({
  entityCount: 0,
  folderCount: 0,
- entitiesByType: [] as any[],
+ entitiesByType: [] as unknown[],
  recentActivity: [] as Entidad[]
  });
 

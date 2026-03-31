@@ -35,9 +35,16 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
  const [folderName, setFolderName] = useState<string>('Raíz');
  const [moveModalOpen, setMoveModalOpen] = useState(false);
  
- const { folders, projectId } = useOutletContext<any>() || {};
+  interface MapEditorContext {
+    folders: Carpeta[];
+    projectId: number;
+    setRightOpen?: (open: boolean) => void;
+    setRightPanelTab?: (tab: string) => void;
+  }
+  
+  const { folders, projectId } = useOutletContext<MapEditorContext>() || {};
 
- const stageRef = useRef<any>(null);
+  const stageRef = useRef<any>(null);
 
  useEffect(() => {
  if (entityId && mode === 'edit') {
@@ -135,30 +142,32 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
  }
  };
 
- const handleStageClick = (e: any) => {
- // Only add marker if clicking on background (not existing marker)
- if (e.target === e.target.getStage() || e.target.className === 'Image') {
- const pos = e.target.getStage().getPointerPosition();
- const newMarker: MapMarker = {
- id: `marker-${Date.now()}`,
- x: pos.x,
- y: pos.y,
- label: 'Nuevo Punto',
- description: ''
- };
- setMarkers([...markers, newMarker]);
- }
- };
+  const handleStageClick = (e: any) => {
+  // Only add marker if clicking on background (not existing marker)
+  if (e.target === e.target.getStage() || (e.target.className === 'Image')) {
+  const stage = e.target.getStage();
+  const pos = stage.getPointerPosition();
+  if (!pos) return;
+  const newMarker: MapMarker = {
+  id: `marker-${Date.now()}`,
+  x: pos.x,
+  y: pos.y,
+  label: 'Nuevo Punto',
+  description: ''
+  };
+  setMarkers([...markers, newMarker]);
+  }
+  };
 
- const handleMarkerDragEnd = (id: string, e: any) => {
- const newMarkers = markers.map(m => {
- if (m.id === id) {
- return { ...m, x: e.target.x(), y: e.target.y() };
- }
- return m;
- });
- setMarkers(newMarkers);
- };
+  const handleMarkerDragEnd = (id: string, e: any) => {
+  const newMarkers = markers.map(m => {
+  if (m.id === id) {
+  return { ...m, x: e.target.x(), y: e.target.y() };
+  }
+  return m;
+  });
+  setMarkers(newMarkers);
+  };
 
  const removeMarker = (id: string) => {
  setMarkers(markers.filter(m => m.id !== id));
