@@ -372,20 +372,48 @@ const FolderView: React.FC = () => {
  </header>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-    {/* Add Entity Card (Zen Style) */}
-    <div 
-      onClick={() => navigate(`/local/${projectName}/bible/folder/${folder.id}/entity/new/entidadindividual`)}
-      className="group relative flex flex-col p-8 rounded-none monolithic-panel border border-dashed border-foreground/10 hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all duration-500 cursor-pointer items-center justify-center min-h-[220px] bg-white/[0.01]"
-    >
-      <div className="size-16 rounded-none bg-indigo-500/5 border border-indigo-500/10 flex items-center justify-center text-indigo-500/40 group-hover:text-indigo-400 group-hover:scale-110 group-hover:border-indigo-500/30 transition-all duration-500">
-        <span className="material-symbols-outlined text-3xl">add</span>
-      </div>
-      <div className="mt-6 text-center">
-        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/30 group-hover:text-foreground/80 transition-colors">
-          Nueva Entidad
-        </span>
-      </div>
-    </div>
+     {/* Tarjeta Nueva Creación */}
+     <div className="group relative">
+       <div
+         onClick={() => setCreationMenuOpen(prev => !prev)}
+         className="group relative flex flex-col p-8 rounded-none monolithic-panel border border-dashed border-foreground/10 hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all duration-500 cursor-pointer items-center justify-center min-h-[220px] bg-white/[0.01]"
+       >
+         <div className="size-16 rounded-none bg-indigo-500/5 border border-indigo-500/10 flex items-center justify-center text-indigo-500/40 group-hover:text-indigo-400 group-hover:scale-110 group-hover:border-indigo-500/30 transition-all duration-500">
+           <span className="material-symbols-outlined text-3xl">add</span>
+         </div>
+         <div className="mt-6 text-center">
+           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/30 group-hover:text-foreground/80 transition-colors">
+             Nueva Creación
+           </span>
+         </div>
+       </div>
+       {/* Menú desplegable */}
+       {creationMenuOpen && (
+         <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border border-foreground/15 shadow-2xl overflow-hidden animate-in slide-in-from-top-2 duration-200">
+           <button
+             onClick={(e) => { e.stopPropagation(); setCreationMenuOpen(false); navigate(`/local/${projectName}/bible/folder/${folder.id}/entity/new/entidadindividual`); }}
+             className="w-full flex items-center gap-3 px-4 py-3 text-[11px] font-bold text-left hover:bg-indigo-500/10 hover:text-indigo-400 transition-colors border-b border-foreground/5"
+           >
+             <span className="material-symbols-outlined text-indigo-400/60 text-base">person_add</span>
+             Entidad
+           </button>
+           <button
+             onClick={(e) => { e.stopPropagation(); setCreationMenuOpen(false); navigate(`/local/${projectName}/map-editor/create/${folder.id}`); }}
+             className="w-full flex items-center gap-3 px-4 py-3 text-[11px] font-bold text-left hover:bg-cyan-500/10 hover:text-cyan-400 transition-colors border-b border-foreground/5"
+           >
+             <span className="material-symbols-outlined text-cyan-400/60 text-base">map</span>
+             Mapa
+           </button>
+           <button
+             onClick={(e) => { e.stopPropagation(); setCreationMenuOpen(false); handleCreateSimpleFolder(folder.id, 'TIMELINE'); }}
+             className="w-full flex items-center gap-3 px-4 py-3 text-[11px] font-bold text-left hover:bg-orange-500/10 hover:text-orange-400 transition-colors"
+           >
+             <span className="material-symbols-outlined text-orange-400/60 text-base">history</span>
+             Línea de Tiempo
+           </button>
+         </div>
+       )}
+     </div>
 
     {filteredContent.folders.map(sub => (
       <BibleCard
@@ -406,17 +434,24 @@ const FolderView: React.FC = () => {
         onMove={() => { setItemToMove({ item: sub, type: 'folder' }); setMoveModalOpen(true); }}
       />
     ))}
-    {filteredContent.entities.map(entity => (
-      <BibleCard
-        key={`e-${entity.id}`}
-        item={entity}
-        type="entity"
-        linkTo={`/local/${projectName}/bible/folder/${folder.id}/entity/${entity.id}`}
-        onDelete={() => handleDeleteEntity(entity.id, folder.id)}
-        onRename={() => handleRenameEntity(entity)}
-        onMove={() => { setItemToMove({ item: entity, type: 'entity' }); setMoveModalOpen(true); }}
-      />
-    ))}
+     {filteredContent.entities.map(entity => {
+       // Los mapas navegan al editor de mapas, no al editor de entidades
+       const isMap = entity.tipo?.toLowerCase() === 'map' || entity.tipo?.toLowerCase() === 'mapa';
+       const entityLink = isMap
+         ? `/local/${projectName}/map`  // Ir al Atlas (MapManager)
+         : `/local/${projectName}/bible/folder/${folder.id}/entity/${entity.id}`;
+       return (
+         <BibleCard
+           key={`e-${entity.id}`}
+           item={entity}
+           type="entity"
+           linkTo={entityLink}
+           onDelete={() => handleDeleteEntity(entity.id, folder.id)}
+           onRename={() => handleRenameEntity(entity)}
+           onMove={() => { setItemToMove({ item: entity, type: 'entity' }); setMoveModalOpen(true); }}
+         />
+       );
+     })}
   </div>
 
   <MoveModal
@@ -429,12 +464,6 @@ const FolderView: React.FC = () => {
      itemType={itemToMove?.type || 'entity'}
   />
 
- {entities.length === 0 && (
- <div className="p-20 text-center border-2 border-dashed border-foreground/10 rounded-[4rem] bg-white/[0.01]">
- <span className="material-symbols-outlined text-5xl text-foreground/60 mb-4">inventory_2</span>
- <p className="text-foreground/60 font-black uppercase tracking-[0.2em] text-sm">Archivo Vacío</p>
- </div>
- )}
  </div>
  );
 };

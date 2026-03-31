@@ -202,3 +202,29 @@
   height: 100vh;
   width: 100vw;
 }
+
+/* =====================================================
+   GLOBAL SELECT / OPTION — CSS Variable Fix
+   Los elementos nativos <select> y <option> NO heredan
+   variables CSS de Tailwind, así que los forzamos aquí.
+   ===================================================== */
+select {
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+  border-color: hsl(var(--foreground) / 0.2);
+}
+
+/* 
+  Nota: Estilizar 'option' es limitado en navegadores Chromium.
+  Forzamos colores para mejorar la legibilidad en temas oscuros.
+*/
+option {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+select:focus {
+  border-color: hsl(var(--primary));
+  outline: none;
+}
+

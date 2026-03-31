@@ -127,25 +127,16 @@ const MapRouter = () => {
  onCreateMap={() => setView('wizard')}
  onDuplicateMap={handleDuplicateMap}
  onDeleteMap={(map: Entidad) => setMapToDelete(map)}
+ onEditMap={(map: Entidad) => {
+ setSelectedMap(map);
+ setNewMapId(null); // no es creación, es edición
+ setView('editor');
+ }}
  />
  )}
 
  {view === 'viewer' && selectedMap && (
- <div className="flex-1 flex flex-col h-full relative">
- <div className="absolute top-4 left-4 z-[1001]">
- <button
- onClick={() => {
- setView('manager');
- window.dispatchEvent(new CustomEvent('clear-right-panel'));
- }}
- className="bg-background/60 hover:bg-background/80 text-foreground px-4 py-2 rounded-none flex items-center gap-2 border border-foreground/40 transition-all font-bold text-sm"
- >
- <span className="material-symbols-outlined text-sm">arrow_back</span>
- Volver al Atlas
- </button>
- </div>
- <InteractiveMapView map={selectedMap} />
- </div>
+  <InteractiveMapView map={selectedMap} onBack={() => { setView('manager'); window.dispatchEvent(new CustomEvent('clear-right-panel')); }} />
  )}
 
  {view === 'wizard' && (
@@ -158,19 +149,18 @@ const MapRouter = () => {
  {view === 'editor' && (
  <MapEditor
  mode={newMapId ? 'create' : 'edit'}
- entityId={newMapId?.toString()}
+ entityId={(newMapId || selectedMap?.id)?.toString()}
  onBack={() => {
  setView('manager');
  setNewMapId(null);
+ setSelectedMap(null);
  }}
  onSave={async () => {
  await loadMaps();
- if (newMapId) {
- navigate(`/local/${projectName}/entities/Map/${newMapId}`);
- } else {
+ // Volver siempre al manager — nunca al EntityRouter genérico
  setView('manager');
- }
  setNewMapId(null);
+ setSelectedMap(null);
  }}
  />
  )}

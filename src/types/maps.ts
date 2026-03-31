@@ -5,8 +5,10 @@ export interface MapLayer {
  name: string;
  visible: boolean;
  opacity: number;
- type: 'base' | 'overlay' | 'markers' | string;
- url?: string;
+ type: 'base' | 'image' | 'vector' | 'spray' | 'markers' | string;
+ url?: string; // For images
+ color?: string; // Base color for features
+ featureType?: 'line' | 'polygon' | 'point'; 
  attribution?: string;
 }
 
@@ -39,5 +41,10 @@ export interface MapAttributes {
  layers?: MapLayer[];
  markers?: MapMarker[];
  connections?: MapConnection[];
+ features?: any; // GeoJSON.FeatureCollection stored as any to avoid tight coupling in types if `@types/geojson` is not everywhere
+ mapSettings?: {
+   zoom: number;
+   center: [number, number];
+ };
  [key: string]: unknown; // Allow map-specific extra attributes
 }

@@ -112,7 +112,7 @@ const MapCreationWizard: React.FC<MapCreationWizardProps> = ({ onCancel, onCreat
     onChange={(e) => setParentId(e.target.value ? Number(e.target.value) : undefined)}
     className="w-full monolithic-panel rounded-none px-4 py-3 text-sm text-foreground focus:border-primary/50 outline-none appearance-none"
   >
-    <option value="" className="bg-[#1a1a20] text-foreground">Ninguna (Nivel Superior)</option>
+    <option value="" className="bg-foreground/5 text-foreground">Ninguna (Nivel Superior)</option>
     {/* Dynamic options would go here */}
   </select>
  <p className="text-[9px] text-foreground/60 italic mt-1 ml-1 text-primary/70">Seleccionar un padre convierte esto en sub-zona.</p>

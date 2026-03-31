@@ -13,6 +13,7 @@ interface MapManagerProps {
  onCreateMap: () => void;
  onDeleteMap: (map: Entidad) => void;
  onDuplicateMap: (map: Entidad) => void;
+ onEditMap: (map: Entidad) => void;
 }
 
 interface MapManagerContext {
@@ -20,7 +21,7 @@ interface MapManagerContext {
   setRightOpen?: (open: boolean) => void;
 }
 
-const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap, onDeleteMap, onDuplicateMap }) => {
+const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap, onDeleteMap, onDuplicateMap, onEditMap }) => {
  const { t } = useLanguage();
  const { setRightPanelTab, setRightOpen = () => { } } = useOutletContext<MapManagerContext>();
  const [searchTerm, setSearchTerm] = useState('');
@@ -39,12 +40,17 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  return matchesSearch && matchesSpatial;
  });
 
+
  const getPreview = (map: Entidad) => {
  const attrs = typeof map.contenido_json === 'string' ? JSON.parse(map.contenido_json) : (map.contenido_json || {});
  let img = attrs.snapshotUrl || attrs.bgImage;
- if (img && (img.toLowerCase().includes('duckdns') || img.toLowerCase().includes('nopreview'))) {
- return null;
- }
+ if (!img) return null;
+ const lower = img.toLowerCase();
+ // Filtramos URLs que no son válidas para previsualizar
+ if (lower.includes('duckdns') || lower.includes('nopreview') || lower.includes('placeholder')) return null;
+ // Si es un DataURL SVG (muy grande), intentar mostrar igualmente  
+ // Si es data:image/png de más de 500KB ignoramos (demasiado para thumbnail en lista)
+ if (lower.startsWith('data:image/png') && img.length > 512000) return null;
  return img;
  };
 
@@ -65,11 +71,17 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  }
  };
 
+ // Abrir panel al montar y al seleccionar un mapa
  useEffect(() => {
- if (selectedMapId) {
- setRightPanelTab('CONTEXTO');
- setRightOpen(true);
- }
+  setRightOpen(true);
+  setRightPanelTab('CONTEXT');
+ }, []);
+
+ useEffect(() => {
+  if (selectedMapId) {
+  setRightPanelTab('CONTEXT');
+  setRightOpen(true);
+  }
  }, [selectedMapId]);
 
  const renderRightPanel = () => {
@@ -81,9 +93,9 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  <div className="p-6 border-b border-foreground/10 bg-gradient-to-br from-primary/10 to-transparent">
  <div className="flex items-center justify-between mb-2">
  <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
- <span className="material-symbols-outlined text-sm">info</span> {t('atlas.map_details') || 'Detalles del Mapa'}
+ <span className="material-symbols-outlined text-sm">info</span> Detalles del Atlas
  </h3>
- <button onClick={() => setSelectedMapId(null)} className="text-foreground/60 hover:text-foreground transition-colors">
+ <button onClick={(e) => { e.stopPropagation(); setSelectedMapId(null); }} className="text-foreground/60 hover:text-foreground transition-colors">
  <span className="material-symbols-outlined text-sm">close</span>
  </button>
  </div>
@@ -122,65 +134,29 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted pointer-events-none">expand_more</span>
  </div>
  </div>
-
- <p className="text-[10px] text-foreground/60 leading-relaxed italic">
- Define la escala de este mapa para facilitar su búsqueda y organización en el Atlas.
- </p>
  </div>
  </GlassPanel>
 
- {/* Global Tools (Integrated from viewer) */}
- <div className="space-y-3">
- <h4 className="text-[10px] font-black uppercase tracking-widest text-foreground/60 px-1">Herramientas Globales</h4>
- <Button
- variant="secondary"
- className="w-full justify-start py-3 bg-white/[0.02] border-foreground/10"
- icon="layers"
- onClick={() => {
- onSelectMap(selectedMap);
- }}
- >
- Gestionar Multicapas
- </Button>
- <Button
- variant="secondary"
- className="w-full justify-start py-3 bg-white/[0.02] border-foreground/10"
- icon="alt_route"
- onClick={() => {
- onSelectMap(selectedMap);
- }}
- >
- Configurar Relaciones N:M
- </Button>
- </div>
-
- {/* Main Actions */}
- <div className="space-y-3 pt-4 border-t border-foreground/10">
- <Button
- variant="primary"
- className="w-full justify-center py-4 shadow-xl shadow-primary/20"
- icon="visibility"
- onClick={() => onSelectMap(selectedMap)}
- >
- Abrir Visionador
- </Button>
- <div className="grid grid-cols-2 gap-3">
- <button
- onClick={() => onDuplicateMap(selectedMap)}
- className="flex items-center justify-center gap-2 py-3 bg-foreground/5 hover:bg-foreground/10 rounded-none text-[10px] font-black uppercase text-foreground/60 transition-all border border-foreground/10"
- >
- <span className="material-symbols-outlined text-sm">content_copy</span>
- Duplicar
- </button>
- <button
- onClick={() => onDeleteMap(selectedMap)}
- className="flex items-center justify-center gap-2 py-3 bg-red-500/10 hover:bg-red-500/20 rounded-none text-[10px] font-black uppercase text-red-400 transition-all border border-red-500/10"
- >
- <span className="material-symbols-outlined text-sm">delete</span>
- Eliminar
- </button>
- </div>
- </div>
+  {/* Actions Area */}
+  <div className="space-y-3 pt-4 border-t border-foreground/10">
+    <h4 className="text-[10px] font-black uppercase tracking-widest text-foreground/60 px-1 font-mono">Acciones</h4>
+    <Button
+      variant="primary"
+      className="w-full justify-center py-4 shadow-xl shadow-primary/20 font-black tracking-widest uppercase transition-all hover:scale-[1.02]"
+      icon="visibility"
+      onClick={() => onSelectMap(selectedMap)}
+    >
+      Abrir Visionador
+    </Button>
+    <Button
+      variant="ghost"
+      className="w-full justify-center py-3 font-black tracking-widest uppercase"
+      icon="edit"
+      onClick={() => onEditMap(selectedMap)}
+    >
+      Editar en Editor
+    </Button>
+  </div>
  </div>
  </div>
  );
@@ -200,7 +176,7 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  {t('nav.atlas') || 'Atlas'}
  </h1>
  <p className="text-sm text-foreground/60 mt-2 max-w-xl">
- Explora los territorios cartografiados de tu mundo. Gestiona mapas regionales, calabozos y planos astrales desde este centro de comando.
+ Explora los territorios cartografiados de tu mundo. Gestiona mapas regionales y planos astrales desde este centro de comando.
  </p>
  </div>
  <div className="flex items-center gap-4 w-full md:w-auto">
@@ -237,15 +213,11 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  {/* Grid */}
  {filteredMaps.length === 0 ? (
  <div className="flex flex-col items-center justify-center p-20 border-2 border-dashed border-foreground/10 rounded-none bg-white/[0.01] animate-in zoom-in-95 duration-500">
- <div className="size-20 rounded-full bg-foreground/5 flex items-center justify-center mb-6">
- <span className="material-symbols-outlined text-4xl text-foreground/60">map</span>
- </div>
  <h3 className="text-xl font-bold text-foreground mb-2">No hay mapas visibles</h3>
- <p className="text-foreground/60 mb-6 text-center max-w-md">No se encontraron mapas con los filtros actuales.</p>
  </div>
  ) : (
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in duration-700 pt-12 pb-20">
- {filteredMaps.map((map, i) => {
+ {filteredMaps.map((map) => {
  const preview = getPreview(map);
  const attrs = typeof map.contenido_json === 'string' ? JSON.parse(map.contenido_json) : (map.contenido_json || {});
  const layersCount = attrs.layers?.length || 0;
@@ -254,7 +226,7 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  return (
  <GlassPanel
  key={map.id}
- className={`group relative overflow-hidden border-foreground/10 hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 cursor-pointer ${selectedMapId === map.id ? 'ring-2 ring-primary bg-primary/5' : ''}`}
+ className={`group relative overflow-hidden border-foreground/10 hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 cursor-pointer ${selectedMapId === map.id ? 'ring-2 ring-primary bg-primary/5 shadow-2xl shadow-primary/10' : ''}`}
  onClick={() => setSelectedMapId(map.id)}
  onDoubleClick={() => onSelectMap(map)}
  >
@@ -265,31 +237,39 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  ) : (
  <div className="w-full h-full flex items-center justify-center sunken-panel">
  <span className="material-symbols-outlined text-4xl text-foreground/10 group-hover:text-primary/50 transition-colors">public</span>
- {/* Decorative Grid */}
- <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
  </div>
  )}
 
- {/* Overlay Stats */}
- <div className="absolute top-2 right-2 flex gap-1 transform translate-y-[-150%] group-hover:translate-y-0 transition-transform duration-300">
- {onDuplicateMap && (
- <button
- onClick={(e) => { e.stopPropagation(); onDuplicateMap(map); }}
- className="p-2 bg-background/60 hover:bg-primary text-foreground rounded-none transition-colors"
- title="Duplicar Mapa"
- >
- <span className="material-symbols-outlined text-sm">content_copy</span>
- </button>
- )}
- {onDeleteMap && (
- <button
- onClick={(e) => { e.stopPropagation(); onDeleteMap(map); }}
- className="p-2 bg-background/60 hover:bg-red-500 text-foreground rounded-none transition-colors"
- title="Eliminar Mapa"
- >
- <span className="material-symbols-outlined text-sm">delete</span>
- </button>
- )}
+ {/* Hover Menu */}
+ <div className="absolute top-2 right-2 flex flex-col gap-1 transform translate-x-[150%] group-hover:translate-x-0 transition-transform duration-300 z-30">
+   <button
+     onClick={(e) => { e.stopPropagation(); onSelectMap(map); }}
+     className="p-2 bg-background/90 hover:bg-primary/20 text-foreground rounded-none border border-primary/20 shadow-xl"
+     title="Abrir Visionador"
+   >
+     <span className="material-symbols-outlined text-sm">visibility</span>
+   </button>
+   <button
+     onClick={(e) => { e.stopPropagation(); onEditMap(map); }}
+     className="p-2 bg-background/90 hover:bg-primary/20 text-foreground rounded-none border border-primary/20 shadow-xl"
+     title="Editar en Editor"
+   >
+     <span className="material-symbols-outlined text-sm">edit</span>
+   </button>
+   <button
+     onClick={(e) => { e.stopPropagation(); onDuplicateMap(map); }}
+     className="p-2 bg-background/90 hover:bg-primary/20 text-foreground rounded-none border border-primary/20 shadow-xl"
+     title="Duplicar Mapa"
+   >
+     <span className="material-symbols-outlined text-sm">content_copy</span>
+   </button>
+   <button
+     onClick={(e) => { e.stopPropagation(); onDeleteMap(map); }}
+     className="p-2 bg-background/90 hover:bg-red-500/20 text-red-400 border border-red-500/20 shadow-xl"
+     title="Eliminar Mapa"
+   >
+     <span className="material-symbols-outlined text-sm">delete</span>
+   </button>
  </div>
  </div>
 
@@ -298,7 +278,7 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  <div className="flex justify-between items-start mb-2">
  <h3 className="font-bold text-foreground text-lg truncate pr-2 group-hover:text-primary transition-colors">{map.nombre}</h3>
  <span className="shrink-0 text-[10px] font-black uppercase tracking-widest bg-foreground/5 text-foreground/60 px-2 py-1 rounded border border-foreground/10">
- {attrs.spatialLevel || attrs.mapType || 'Territorio'}
+ {attrs.spatialLevel || 'Territorio'}
  </span>
  </div>
 
@@ -311,7 +291,7 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  <span className="material-symbols-outlined text-sm">location_on</span>
  {markersCount}
  </div>
- <div className="flex-1 text-right text-[10px] uppercase tracking-wider opacity-50">
+ <div className="flex-1 text-right text-[10px] uppercase tracking-wider opacity-50 font-mono">
  ID: {map.id}
  </div>
  </div>

@@ -1,60 +1,97 @@
-# ERROR REPORT (React ErrorBoundary)
-**Timestamp:** 2026-02-21T00:14:47.659769400
-**Message:** can't access property "value", p2 is null
+# LOG DE ERRORES Y SOLUCIONES — WorldbuildingApp
 
-## Stack Trace
-```
-styfn$1.parseImpl@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/chunk-O7U4DANK.js?v=14aa3c36:15756:35
-styfn$1.parseImplWarn@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/chunk-O7U4DANK.js?v=14aa3c36:15627:19
-styfn$1.parse@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/chunk-O7U4DANK.js?v=14aa3c36:15616:38
-styfn.cssRule@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/chunk-O7U4DANK.js?v=14aa3c36:16009:23
-styfn.css@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/chunk-O7U4DANK.js?v=14aa3c36:16003:10
-styfn$4.appendFromJson@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/chunk-O7U4DANK.js?v=14aa3c36:13991:14
-styfn$4.fromJson@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/chunk-O7U4DANK.js?v=14aa3c36:13999:10
-E@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/react-cytoscapejs.js?v=f2e292fd:820:20
-b/<@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/react-cytoscapejs.js?v=f2e292fd:806:137
-batch@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/chunk-O7U4DANK.js?v=14aa3c36:12921:5
-b@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/react-cytoscapejs.js?v=f2e292fd:805:6
-updateCytoscape@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/react-cytoscapejs.js?v=f2e292fd:867:6
-componentDidMount@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/react-cytoscapejs.js?v=f2e292fd:863:35
-invokeLayoutEffectMountInDEV@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/chunk-F5NMHO6L.js?v=14aa3c36:17899:28
-invokeEffectsInDev@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/chunk-F5NMHO6L.js?v=14aa3c36:19295:33
-commitDoubleInvokeEffectsInDEV@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/chunk-F5NMHO6L.js?v=14aa3c36:19278:31
-flushPassiveEffectsImpl@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/chunk-F5NMHO6L.js?v=14aa3c36:19097:43
-flushPassiveEffects@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/chunk-F5NMHO6L.js?v=14aa3c36:19041:22
-performSyncWorkOnRoot@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/chunk-F5NMHO6L.js?v=14aa3c36:18462:11
-flushSyncCallbacks@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/chunk-F5NMHO6L.js?v=14aa3c36:8707:30
-commitRootImpl@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/chunk-F5NMHO6L.js?v=14aa3c36:19026:11
-commitRoot@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/chunk-F5NMHO6L.js?v=14aa3c36:18871:27
-finishConcurrentRender@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/chunk-F5NMHO6L.js?v=14aa3c36:18399:25
-performConcurrentWorkOnRoot@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/chunk-F5NMHO6L.js?v=14aa3c36:18309:37
-workLoop@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/chunk-CBZ3VTUP.js?v=14aa3c36:194:50
-flushWork@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/chunk-CBZ3VTUP.js?v=14aa3c36:173:22
-performWorkUntilDeadline@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/chunk-CBZ3VTUP.js?v=14aa3c36:381:29
+Registro de errores resueltos para evitar regresiones y acelerar debugging futuro.
 
+---
+
+## 2026-03-31 — Sesión MapEditor Multicapa
+
+### ❌ Error: `StyleSpecification.version` tipo number vs 8
+**Archivo:** `MapEditor.tsx`
+**Mensaje:** `El tipo 'number' no se puede asignar al tipo '8'`
+**Causa:** MapLibre exige `version: 8 as const` en el objeto de estilo.
+**Fix:**
+```tsx
+const mapStyle = useMemo(() => ({
+  version: 8 as const,
+  sources: {},
+  layers: [{ id: 'bg', type: 'background' as const, paint: { 'background-color': mapBgColor } }]
+}), [mapBgColor]);
 ```
 
-## Component Stack
+---
+
+### ❌ Error: Panel del editor muestra botones del viewer (sin función)
+**Causa:** `InteractiveMapView` inyecta su UI vía `setRightPanelContent()`. Al cambiar de `viewer → editor`, ese estado no se limpiaba, tapando el `global-right-panel-portal` que usa el MapEditor.
+**Fix:**
+1. `InteractiveMapView` llama `setRightPanelContent(null)` en el return de su `useEffect` (destructor).
+2. `MapEditor` llama `setRightPanelContent(null)` al montar para limpiar cualquier residuo.
+
+---
+
+### ❌ Error: Tras guardar un mapa nuevo, redirige al EntityEditor en lugar del Atlas
+**Causa:** `MapRouter.onSave` tenía `navigate('/local/${projectName}/entities/Map/${newMapId}')` que cae en el `EntityRouter` genérico sin case para 'map'.
+**Fix:** `onSave` ahora solo hace `setView('manager')`. Nunca navega a rutas externas.
+
+---
+
+### ❌ Error: MapManager no muestra miniatura del mapa
+**Causa:** `getPreview()` busca `snapshotUrl` / `bgImage` en `contenido_json`, pero `MapEditor.handleSave` no los incluía.
+**Fix:** `handleSave` extrae la URL de la primera capa imagen visible y la persiste como `snapshotUrl` y `bgImage`.
+
+---
+
+### ❌ Error: Panel de contexto desaparece al seleccionar mapa en MapManager
+**Causa 1:** `setRightPanelTab('CONTEXTO')` — key en español que no coincide con ninguna pestaña del `GlobalRightPanel` (que usa `'CONTEXT'`).
+**Causa 2:** El `useEffect` que abría el panel solo se disparaba cuando `selectedMapId` cambiaba, no al montar.
+**Fix:** Unificar a `'CONTEXT'` en todo el proyecto. Añadir `useEffect(() => { setRightOpen(true); setRightPanelTab('CONTEXT'); }, [])` en MapManager.
+
+---
+
+### ❌ Error: `toLowerCase` no existe en tipo `unknown`
+**Archivo:** `InteractiveMapView.tsx:44`
+**Causa:** `MapAttributes` tiene `[key: string]: unknown`. Los campos no tipados explícitamente como `string` son `unknown`.
+**Fix:** Cast explícito:
+```tsx
+let mapImage = (mapAttributes.bgImage || mapAttributes.snapshotUrl || null) as string | null;
 ```
 
-w@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/react-cytoscapejs.js?v=f2e292fd:859:5
-div
-GeneralGraphView@http://localhost:3000/jsx/pages/Graph/GeneralGraphView.jsx?t=1771629232082:61:27
-RenderedRoute@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/react-router-dom.js?v=218db2c9:4134:7
-Outlet@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/react-router-dom.js?v=218db2c9:4537:20
-div
-ArchitectLayout@http://localhost:3000/jsx/components/layout/ArchitectLayout.jsx?t=1771629232082:87:49
-RenderedRoute@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/react-router-dom.js?v=218db2c9:4134:7
-Outlet@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/react-router-dom.js?v=218db2c9:4537:20
-main
-div
-AppLayout
-RenderedRoute@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/react-router-dom.js?v=218db2c9:4134:7
-Routes@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/react-router-dom.js?v=218db2c9:4603:7
-Router@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/react-router-dom.js?v=218db2c9:4551:7
-BrowserRouter@http://localhost:3000/@fs/C:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/node_modules/.vite/deps/react-router-dom.js?v=218db2c9:5294:7
-div
-LanguageProvider@http://localhost:3000/jsx/context/LanguageContext.jsx:8:33
-App@http://localhost:3000/jsx/App.jsx?t=1771629232082:27:37
-ErrorBoundary@http://localhost:3000/jsx/main.jsx?t=1771629232082:26:5
+---
+
+### ❌ Error: `entidadId` no existe en tipo `MapMarker`
+**Archivo:** `InteractiveMapView.tsx`
+**Causa:** El campo correcto en `MapMarker` es `entityId`, no `entidadId`.
+**Fix:** Renombrar todas las referencias a `selectedMarker.entityId`.
+
+---
+
+### ❌ Error: `unknown` no asignable a `number` (imageWidth/imageHeight)
+**Archivo:** `InteractiveMapView.tsx`
+**Causa:** Misma raíz que el error de `toLowerCase` — index signature `unknown`.
+**Fix:**
+```tsx
+const imageWidth = (mapAttributes.imageWidth as number) || 1920;
+const imageHeight = (mapAttributes.imageHeight as number) || 1080;
 ```
+
+---
+
+## Errores Históricos (Pre-2026-03-31)
+
+### ❌ Error: `can't access property "value", p2 is null` (2026-02-21)
+**Componente:** `GeneralGraphView` / `react-cytoscapejs`
+**Causa:** `cytoscape` intenta parsear estilos CSS antes de que el DOM esté listo.
+**Estado:** Resuelto migrando a `@xyflow/react`.
+
+---
+
+## Patrones de Prevención
+
+| Patrón | Regla |
+|--------|-------|
+| `contenido_json` | Siempre castear: `as string`, `as number`, `as string \| null` |
+| Panel derecho | Usar key `'CONTEXT'` (inglés) para `setRightPanelTab` |
+| `setRightPanelContent` | Siempre devolver `() => setRightPanelContent(null)` en el destructor |
+| Modales en MapEditor | Siempre fuera del componente `<Map>` de MapLibre |
+| `MapMarker.entityId` | Campo correcto: `entityId` (no `entidadId`) |
+| `snapshotUrl` | Siempre incluir en `handleSave` del MapEditor |

@@ -1,55 +1,117 @@
-# Guía de Desarrollo Diario (Electron + React Vite + SQLite WASM)
+# Guía de Desarrollo Diario — WorldbuildingApp
 
-Esta guía explica el flujo de trabajo tras el pivot a la arquitectura **Local-First** 100% JavaScript/TypeScript.
+Esta guía explica el flujo de trabajo tras el pivot a la arquitectura **Local-First** 100% TypeScript.
 
 ## 1. Arrancar el Entorno de Desarrollo
 
-Ya no se utiliza Tauri ni Rust. El stack se levanta directamente con Vite y Electron:
-
 ```bash
+# Opción A: Script de arranque
+run-app.bat
+
+# Opción B: Manual
 npm run dev
 ```
 
-Este comando levanta:
-1. **Frontend (Vite):** Servidor de desarrollo con Hot Module Replacement (HMR).
-2. **Contenedor (Electron):** Abre la ventana nativa que carga el frontend de Vite.
+El servidor Vite arranca en `http://localhost:5173`. Hot Module Replacement (HMR) activo.
 
-## 2. Modificando la Interfaz y Lógica (TypeScript)
+---
 
-Todo el código vive ahora bajo `src/`.
+## 2. Estructura de Código
 
-- **UI:** Componentes React en `src/features/` y `src/components/`.
-- **Persistencia:** Consultas directas a la base de datos vía `entityService.ts` utilizando `sqlocal` (SQLite WASM).
-- **Tipado:** Es obligatorio usar **TypeScript** en modo estricto. No crear archivos `.js` o `.jsx` nuevos; usar siempre `.ts` o `.tsx`.
+Todo el código vive bajo `src/`:
 
-### Reactividad de Temas e Idioma
-Para asegurar que los cambios de configuración se reflejen en toda la app sin recargar:
-1. Utilizar el hook `useLanguage` para textos.
-2. Si se modifica un ajuste global fuera de un contexto, disparar el evento:
-   ```typescript
-   window.dispatchEvent(new Event('storage_update'));
-   ```
-3. En componentes Layout, usar clases de Tailwind basadas en variables (ej. `bg-background`, `text-foreground`, `bg-primary/20`) en lugar de colores fijos.
+- **`src/features/`** — Módulos por dominio (Maps, Entities, Linguistics, Timeline, Writing…)
+- **`src/components/`** — Componentes comunes reutilizables (Button, GlassPanel, ConfirmationModal…)
+- **`src/database/`** — Servicios de persistencia (`entityService`, `folderService`, `projectService`…)
+- **`src/types/`** — Interfaces TypeScript compartidas (`maps.ts`, etc.)
+- **`src/context/`** — Contextos React (LanguageContext…)
+
+**Reglas de código:**
+- Todos los archivos nuevos deben ser `.ts` / `.tsx`. No crear `.js` / `.jsx`.
+- TypeScript en modo estricto. No usar `any` en nuevos módulos.
+- Castear explícitamente valores `unknown` que vengan de `contenido_json` o index signatures.
+
+---
 
 ## 3. Base de Datos (SQLite WASM)
 
-La base de datos reside en el navegador (WebWorker) y persiste en el sistema de archivos del usuario mediante OPFS. 
+La base de datos reside en el navegador (WebWorker) y persiste en OPFS.
 
-- No necesitas un proceso de base de datos externo.
-- Para cambios en el esquema, se deben aplicar migraciones en los servicios correspondientes (`entityService`, `projectService`, etc.).
+- No se necesita un proceso externo de base de datos.
+- Para cambios de esquema, aplicar migraciones en los servicios correspondientes.
+- `project_id: 0` → atributos globales reutilizables en todos los proyectos.
 
-## 4. Empaquetado de Producción
+---
 
-Para generar el ejecutable nativo (`.exe`):
+## 4. Panel Derecho Global (`GlobalRightPanel`)
+
+Hay **dos mecanismos** para inyectar contenido en el panel lateral derecho:
+
+### A) Portal (recomendado para mapas y carpetas)
+```tsx
+const portalRef = document.getElementById('global-right-panel-portal');
+// En JSX:
+{portalRef && createPortal(<MiPanel />, portalRef)}
+```
+Llama a `setRightPanelTab('CONTEXT')` para activar la pestaña correcta.
+
+### B) setRightPanelContent (para vistas que necesitan controlar toda la pestaña)
+```tsx
+const { setRightPanelContent } = useOutletContext<ArchitectContext>();
+useEffect(() => {
+  setRightPanelContent(<MiContenido />);
+  // ⚠️ OBLIGATORIO: limpiar al desmontar para no bloquear el portal
+  return () => setRightPanelContent(null);
+}, [deps]);
+```
+
+**⚠️ Importante:** El key correcto de la pestaña de contexto es `'CONTEXT'` (inglés). Usar `'CONTEXTO'` no activará ninguna pestaña visible.
+
+---
+
+## 5. MapEditor — Patrones Clave
+
+### Guardar un mapa (siempre incluir snapshotUrl)
+```tsx
+const baseImageLayer = layers.find(l => l.type === 'image' && l.url && l.visible);
+const snapshotUrl = baseImageLayer?.url || '';
+const updatedContent = { ...currentContent, markers, layers, features, snapshotUrl, bgImage: snapshotUrl };
+```
+
+### Vinculación de marcadores con entidades
+El campo de vínculo en `MapMarker` es `entityId` (no `entidadId`).
+
+### Modales dentro del MapEditor
+Los modales deben estar **fuera** del componente `<Map>` de MapLibre para no interferir con los eventos del canvas.
+
+---
+
+## 6. FolderView — Nueva Creación
+
+La tarjeta `+` en la vista de carpetas muestra un menú con tres opciones:
+- **Entidad** → navega a `bible/folder/:id/entity/new/entidadindividual`
+- **Mapa** → navega a `map-editor/create/:folderId`
+- **Línea de Tiempo** → crea carpeta tipo `TIMELINE`
+
+Las `BibleCard` de tipo `Map` navegan al Atlas (`/local/:project/map`), no al EntityRouter.
+
+---
+
+## 7. Reactividad de Temas e Idioma
+
+```typescript
+// Para actualizar tema/idioma sin recargar
+window.dispatchEvent(new Event('storage_update'));
+```
+
+Usar clases Tailwind basadas en variables (`bg-background`, `text-foreground`, `bg-primary/20`) en lugar de colores hex fijos.
+
+---
+
+## 8. Producción
 
 ```bash
 npm run build
 ```
 
-Esto generará los archivos distribuibles en la carpeta `dist/` o `release/`.
-## 5. Entity Builder y Atributos Globales
-
-Para garantizar la reutilización de datos entre diferentes proyectos y entidades:
-- **Atributos Globales:** Al crear una plantilla en el sidebar, usar `project_id: 0`. Esto la hace visible para cualquier proyecto (`getByProject(id) OR project_id = 0`).
-- **Sincronización de Guardado:** Al guardar una entidad nueva, el estado local `isCreation` debe pasar a `false` inmediatamente para permitir ediciones posteriores sin recargar.
-- **Borrado Físico:** Es crítico llamar a `deleteValue` al eliminar atributos de una entidad para evitar datos huérfanos en SQLite.
+Genera los archivos en `dist/`. El ejecutable nativo se empaqueta con el proceso descrito en `Guia_Empaquetado.md`.
