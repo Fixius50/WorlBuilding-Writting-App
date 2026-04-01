@@ -20,11 +20,15 @@ Este proyecto requiere un altísimo nivel de consistencia, documentación y cali
 
 ## 🛡️ ESTÁNDARES TÉCNICOS INVIOLABLES (EXTENDIDO)
 
-1. **Tipado Estricto:** Todo código nuevo DEBE ser TypeScript. Prohibido usar `any`.
-2. **Local-First (Flexible):** La persistencia base usa SQLite WASM. Sin embargo, **está permitido** el uso de APIs (`api.js`) o integraciones de red externas cuando el diseño lo requiera.
-3. **Arquitectura:** La app es 100% Vite Frontend (Web-centric). El servidor Java u otras APIs se pueden usar como apoyo.
-4. **Diseño:** Seguir el estándar "Technical Zen (Monolithic)" definido en `02_Diseño_UI_UX.md`, priorizando paneles sólidos y evitando el "plástico digital" y estéticas Sci-Fi.
-5. **Idioma:** Código e interfaz en Español (Nombres de variables en Inglés por convención técnica).
+  1. **Tipado Estricto:** Todo código nuevo DEBE ser TypeScript. Prohibido usar `any`.
+  2. **Estabilidad de React (CRÍTICO):** 
+     - **useMemo / useCallback:** Obligatorios para cualquier objeto de contexto o función pasada como prop a componentes hijos. Prohibido crear objetos/funciones en el render sin memoizar.
+     - **Gestión de Efectos:** Usar `useRef` para funciones o handlers que se necesiten dentro de un `useEffect` pero que no deban dispararlo de nuevo (patrón de estabilidad).
+     - **Evitar Cascada:** No usar `setState` en bucles de dependencias que afecten al layout global.
+  3. **Local-First (Flexible):** La persistencia base usa SQLite WASM (via `sql-js` o similar). Sin embargo, **está permitido** el uso de APIs (`api.js`) cuando el diseño lo requiera.
+  4. **Arquitectura:** La app es 100% Vite Frontend. El servidor u otras APIs se usan como apoyo.
+  5. **Diseño:** Seguir el estándar "Technical Zen (Monolithic)" definido en `02_Diseño_UI_UX.md`.
+  6. **Idioma:** Código e interfaz en Español (Nombres de variables en Inglés por convención).
 
 ## PRIORIDAD ACTUAL
 

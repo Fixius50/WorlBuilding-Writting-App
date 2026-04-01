@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import MapLibreView from '../components/MapLibreView';
 import Button from '../../../components/common/Button';
@@ -13,68 +13,114 @@ interface ArchitectContext {
   setRightPanelTab: (tab: string) => void;
 }
 
-const InteractiveMapView: React.FC<{ map: Entidad; onBack?: () => void }> = ({ map, onBack }) => {
+const InteractiveMapView: React.FC<{
+  map: Entidad;
+  onBack?: () => void;
+  setRightOpen?: (isOpen: boolean) => void;
+  setRightPanelContent?: (content: React.ReactNode) => void;
+  setRightPanelTitle?: (title: React.ReactNode) => void;
+  setRightPanelTab?: (tab: string) => void;
+}> = ({ map, onBack, setRightOpen: propSetRightOpen, setRightPanelContent: propSetContent, setRightPanelTitle: propSetTitle, setRightPanelTab: propSetTab }) => {
   const [selectedMarker, setSelectedMarker] = useState<MapMarker | null>(null);
-  const { setRightPanelContent, setRightOpen, setRightPanelTitle, setRightPanelTab } = useOutletContext<ArchitectContext>();
-
-  const [localMap, setLocalMap] = useState<Entidad>(map);
   const [availableEntities, setAvailableEntities] = useState<Entidad[]>([]);
 
+  // Intentar outlet context como fallback
+  let outletCtx: any = {};
+  try { outletCtx = useOutletContext<ArchitectContext>() || {}; } catch {}
+
+  // ── Usar refs para las funciones del panel, evitando deps inestables ──
+  // Esto es la clave: las funciones del padre cambian referencia en cada render
+  // pero el contenido (lo que hacen) no cambia. Usamos refs para acceder
+  // a la versión más actualizada sin añadirlas a los dependency arrays.
+  const setRightPanelContentRef = useRef<(c: React.ReactNode) => void>(() => {});
+  const setRightOpenRef = useRef<(o: boolean) => void>(() => {});
+  const setRightPanelTitleRef = useRef<(t: React.ReactNode) => void>(() => {});
+  const setRightPanelTabRef = useRef<(t: string) => void>(() => {});
+
+  setRightPanelContentRef.current = propSetContent ?? outletCtx.setRightPanelContent ?? (() => {});
+  setRightOpenRef.current = propSetRightOpen ?? outletCtx.setRightOpen ?? (() => {});
+  setRightPanelTitleRef.current = propSetTitle ?? outletCtx.setRightPanelTitle ?? (() => {});
+  setRightPanelTabRef.current = propSetTab ?? outletCtx.setRightPanelTab ?? (() => {});
+
+  // ── Carga de entidades (solo cuando cambia el proyecto) ──
   useEffect(() => {
+    if (!map.project_id) return;
     entityService.getAllByProject(map.project_id).then(entities => {
       setAvailableEntities(entities.filter(e => e.tipo !== 'Map' && e.tipo !== 'Mapa'));
     });
   }, [map.project_id]);
 
-  useEffect(() => { setLocalMap(map); }, [map]);
-
-  // Limpiar el panel al desmontar
+  // ── Limpiar panel al desmontar (sin deps inestables) ──
   useEffect(() => {
     return () => {
-      setRightPanelContent(null);
+      setRightPanelContentRef.current(null);
     };
-  }, [setRightPanelContent]);
+  }, []); // Array vacío: solo se ejecuta en mount/unmount
 
-  const mapAttributes: MapAttributes = typeof localMap?.contenido_json === 'string'
-    ? JSON.parse(localMap.contenido_json)
-    : (localMap?.contenido_json || {});
+  // ── Parsear atributos del mapa con useMemo para estabilizar referencias ──
+  const mapAttributes = useMemo<MapAttributes>(() => {
+    try {
+      return typeof map?.contenido_json === 'string'
+        ? JSON.parse(map.contenido_json)
+        : (map?.contenido_json as MapAttributes) || {};
+    } catch {
+      return {} as MapAttributes;
+    }
+  }, [map.contenido_json]); // Solo recalcula si cambia el JSON del mapa
 
-  let mapImage = (mapAttributes.bgImage || mapAttributes.snapshotUrl || null) as string | null;
-  if (mapImage && (
-    mapImage.toLowerCase().includes('duckdns') ||
-    mapImage.toLowerCase().includes('nopreview') ||
-    mapImage === 'placeholder-map.png'
-  )) { mapImage = null; }
+  // Derivar datos del mapa con useMemo (referencias estables entre renders)
+  const markers = useMemo<MapMarker[]>(() => mapAttributes.markers || [], [mapAttributes]);
+  const layers = useMemo<MapLayer[]>(() => mapAttributes.layers || [], [mapAttributes]);
+  const connections = useMemo<MapConnection[]>(() => mapAttributes.connections || [], [mapAttributes]);
+  const features = useMemo(() => mapAttributes.features || { type: 'FeatureCollection', features: [] }, [mapAttributes]);
+  const imageWidth = useMemo(() => (mapAttributes.imageWidth as number) || 1920, [mapAttributes]);
+  const imageHeight = useMemo(() => (mapAttributes.imageHeight as number) || 1080, [mapAttributes]);
+  const is3D = useMemo(() => !!mapAttributes.is3D, [mapAttributes]);
 
-  const markers: MapMarker[] = mapAttributes.markers || [];
-  const layers: MapLayer[] = mapAttributes.layers || [];
-  const connections: MapConnection[] = mapAttributes.connections || [];
-  const features = mapAttributes.features || { type: 'FeatureCollection', features: [] };
-  const imageWidth = (mapAttributes.imageWidth as number) || 1920;
-  const imageHeight = (mapAttributes.imageHeight as number) || 1080;
+  const mapImage = useMemo(() => {
+    const img = (mapAttributes.bgImage || mapAttributes.snapshotUrl || null) as string | null;
+    if (img && (
+      img.toLowerCase().includes('duckdns') ||
+      img.toLowerCase().includes('nopreview') ||
+      img === 'placeholder-map.png'
+    )) return null;
+    return img;
+  }, [mapAttributes]);
 
-  const handleMarkerClick = (marker: MapMarker) => {
+  // ── Handler estable para click en marcador ──
+  const handleMarkerClick = useCallback((marker: MapMarker) => {
     setSelectedMarker(marker);
-    setRightOpen(true);
-  };
+    setRightOpenRef.current(true);
+    setRightPanelTabRef.current('CONTEXT');
+  }, []); // Sin deps: usa refs para acceder a las funciones actualizadas
 
-  // ── Panel Derecho ─────────────────────────────────────────────────────
+  // ── Renderizado del panel derecho ──
+  // El panel se actualiza cuando cambian los datos locales (marcador selecc., markers, etc.)
+  // pero NO cuando cambian las funciones del padre (setRightPanelContent, etc.)
   useEffect(() => {
-    if (setRightPanelTab) setRightPanelTab('CONTEXT');
-    setRightPanelTitle(
+    setRightPanelTitleRef.current(
       <div className="flex flex-col">
         <span className="text-[10px] text-primary font-black uppercase tracking-widest leading-none mb-1">Visionador</span>
-        <span className="text-foreground font-serif font-black text-lg truncate">{localMap.nombre}</span>
+        <span className="text-foreground font-serif font-black text-lg truncate">{map.nombre}</span>
       </div>
     );
 
     if (selectedMarker) {
-      // Panel de marcador seleccionado
       const linkedEntity = selectedMarker.entityId
         ? availableEntities.find(e => e.id === Number(selectedMarker.entityId))
         : null;
 
-      setRightPanelContent(
+      let entityImgUrl = '';
+      if (linkedEntity) {
+        try {
+          const attrs = typeof linkedEntity.contenido_json === 'string'
+            ? JSON.parse(linkedEntity.contenido_json)
+            : (linkedEntity.contenido_json || {});
+          entityImgUrl = attrs.imageUrl || attrs.image || attrs.avatar || '';
+        } catch {}
+      }
+
+      setRightPanelContentRef.current(
         <div className="flex flex-col h-full p-6 gap-6 overflow-y-auto custom-scrollbar animate-in slide-in-from-right-4 duration-300">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-black text-foreground">{selectedMarker.label || 'Marcador'}</h3>
@@ -86,23 +132,16 @@ const InteractiveMapView: React.FC<{ map: Entidad; onBack?: () => void }> = ({ m
             </button>
           </div>
 
-          {/* Imagen de entidad vinculada */}
-          {linkedEntity && (() => {
-            const attrs = typeof linkedEntity.contenido_json === 'string' ? JSON.parse(linkedEntity.contenido_json) : (linkedEntity.contenido_json || {});
-            const imgUrl = attrs.imageUrl || attrs.image || attrs.avatar;
-            return imgUrl ? (
-              <div className="aspect-video rounded-none overflow-hidden border border-foreground/10">
-                <img src={imgUrl} alt={linkedEntity.nombre} className="w-full h-full object-cover" />
-              </div>
-            ) : null;
-          })()}
+          {entityImgUrl && (
+            <div className="aspect-video rounded-none overflow-hidden border border-foreground/10">
+              <img src={entityImgUrl} alt={linkedEntity?.nombre} className="w-full h-full object-cover" />
+            </div>
+          )}
 
-          {/* Descripción */}
           {selectedMarker.description && (
             <p className="text-xs text-foreground/60 leading-relaxed">{selectedMarker.description}</p>
           )}
 
-          {/* Entidad vinculada */}
           {linkedEntity && (
             <div className="p-4 bg-foreground/5 border border-foreground/10">
               <div className="text-[9px] font-black uppercase tracking-widest text-foreground/40 mb-2">Entidad vinculada</div>
@@ -111,19 +150,16 @@ const InteractiveMapView: React.FC<{ map: Entidad; onBack?: () => void }> = ({ m
             </div>
           )}
 
-          {/* Coordenadas */}
           <div className="text-[9px] font-mono text-foreground/30">
             Lat: {selectedMarker.lat?.toFixed(4)} · Lng: {selectedMarker.lng?.toFixed(4)}
           </div>
         </div>
       );
     } else {
-      // Panel por defecto del visionador
       const visibleLayers = layers.filter((l: MapLayer) => l.visible !== false);
 
-      setRightPanelContent(
+      setRightPanelContentRef.current(
         <div className="p-6 h-full flex flex-col gap-6 overflow-y-auto custom-scrollbar animate-in fade-in duration-300">
-          {/* Resumen */}
           <div className="grid grid-cols-2 gap-3">
             <div className="p-4 bg-foreground/5 border border-foreground/10 text-center">
               <div className="text-2xl font-black text-foreground">{markers.length}</div>
@@ -135,7 +171,6 @@ const InteractiveMapView: React.FC<{ map: Entidad; onBack?: () => void }> = ({ m
             </div>
           </div>
 
-          {/* Lista de marcadores */}
           {markers.length > 0 && (
             <div>
               <h4 className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-3">Puntos de Interés</h4>
@@ -143,7 +178,11 @@ const InteractiveMapView: React.FC<{ map: Entidad; onBack?: () => void }> = ({ m
                 {markers.map((m: MapMarker) => (
                   <button
                     key={m.id}
-                    onClick={() => setSelectedMarker(m)}
+                    onClick={() => {
+                      setSelectedMarker(m);
+                      setRightOpenRef.current(true);
+                      setRightPanelTabRef.current('CONTEXT');
+                    }}
                     className="w-full flex items-center gap-3 p-3 bg-foreground/5 hover:bg-primary/10 border border-foreground/5 hover:border-primary/20 transition-all text-left"
                   >
                     <span className="size-2 bg-primary rounded-full flex-shrink-0" />
@@ -158,7 +197,6 @@ const InteractiveMapView: React.FC<{ map: Entidad; onBack?: () => void }> = ({ m
             </div>
           )}
 
-          {/* Sin marcadores */}
           {markers.length === 0 && (
             <div className="flex-1 flex flex-col items-center justify-center text-center opacity-40 py-12">
               <span className="material-symbols-outlined text-4xl mb-3">explore</span>
@@ -167,7 +205,6 @@ const InteractiveMapView: React.FC<{ map: Entidad; onBack?: () => void }> = ({ m
             </div>
           )}
 
-          {/* Volver */}
           {onBack && (
             <div className="pt-4 border-t border-foreground/10 mt-auto">
               <Button
@@ -183,7 +220,9 @@ const InteractiveMapView: React.FC<{ map: Entidad; onBack?: () => void }> = ({ m
         </div>
       );
     }
-  }, [selectedMarker, localMap, layers, markers, availableEntities]);
+  }, [selectedMarker, map.nombre, markers, layers, availableEntities, onBack]);
+  // NOTA: setRightPanelContentRef, setRightPanelTitleRef son refs, no van en deps.
+  // El efecto se dispara solo cuando cambia lo que el usuario VE, no las funciones del padre.
 
   return (
     <div className="flex-1 flex overflow-hidden bg-background relative">
@@ -199,6 +238,7 @@ const InteractiveMapView: React.FC<{ map: Entidad; onBack?: () => void }> = ({ m
             onMapClick={() => {}}
             imageWidth={imageWidth}
             imageHeight={imageHeight}
+            is3D={is3D}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-foreground/60">

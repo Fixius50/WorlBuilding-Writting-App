@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Outlet, useParams, useNavigate, useLocation, NavLink, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { folderService } from '../../database/folderService';
@@ -51,7 +51,7 @@ const ArchitectLayout: React.FC = () => {
 
   // Right Panel Context Content
   const [globalPanelContent, setGlobalPanelContent] = useState<React.ReactNode>(null);
-  const [rightPanelTab, setRightPanelTab] = useState('NOTEBOOKS');
+  const [rightPanelTab, setRightPanelTab] = useState('QUICK_NOTES');
   const [rightPanelTitle, setRightPanelTitle] = useState<string | null>(null);
   const [rightPanelMode, setRightPanelMode] = useState<'overlay' | 'push'>('overlay');
 
@@ -94,10 +94,10 @@ const ArchitectLayout: React.FC = () => {
   const actualUsername = username || 'local';
   const baseUrl = `/${actualUsername}/${projectName}`;
 
-  const loadFolders = async (pId: number) => {
+  const loadFolders = useCallback(async (pId: number) => {
     const rootFolders = await folderService.getByProject(pId);
     setFolders(rootFolders);
-  };
+  }, []);
 
   // Load project and folders
   useEffect(() => {
@@ -114,24 +114,30 @@ const ArchitectLayout: React.FC = () => {
     init();
   }, [projectName]);
 
-  // Clear panel on route change
+  // Clear content on route change, but let the user stay on the same tab (Notes/Explorer)
   useEffect(() => {
     setGlobalPanelContent(null);
-    setRightPanelTab('CONTEXT');
+    // Ya no reseteamos forzosamente a 'CONTEXT' para evitar saltos molestos al navegar/interactuar
   }, [location.pathname]);
 
-  const toggleRightPanel = () => setRightOpen(prev => !prev);
+  const toggleRightPanel = useCallback(() => setRightOpen(prev => !prev), []);
 
   // CRUD Handlers
-  const handleCreateSimpleFolder = async (parentId: number | null = null, type: string = 'FOLDER') => {
-    if (!projectId) return;
+  const handleCreateSimpleFolder = useCallback(async (parentId: number | null = null, type: string = 'FOLDER') => {
+    console.log("Creando carpeta...", { projectId, parentId, type });
+    if (!projectId) {
+      console.error("No se puede crear carpeta: projectId es null");
+      return;
+    }
     try {
+      const folderName = type === 'TIMELINE' ? (t('timeline.title') || 'Nueva Dimensión') : (t('bible.new_folder') || 'Nueva Carpeta');
       const newFolder = await folderService.create(
-        type === 'TIMELINE' ? 'Nueva Timeline' : 'Nueva Carpeta',
+        folderName,
         projectId,
         parentId,
         type as FolderType
       );
+      console.log("Carpeta creada exitosamente:", newFolder);
       await loadFolders(projectId);
       window.dispatchEvent(new CustomEvent('folder-update', {
         detail: { folderId: parentId, type: 'folder', item: newFolder, expand: !!parentId }
@@ -139,26 +145,26 @@ const ArchitectLayout: React.FC = () => {
     } catch (err) {
       console.error("Error creating folder:", err);
     }
-  };
+  }, [projectId, loadFolders, t]);
 
-  const handleRenameFolder = async (folderId: number, newName: string) => {
+  const handleRenameFolder = useCallback(async (folderId: number, newName: string) => {
     try {
       await folderService.update(folderId, newName, projectId!);
       if (projectId) await loadFolders(projectId);
     } catch (err) {
       console.error("Error renaming folder:", err);
     }
-  };
+  }, [projectId, loadFolders]);
 
-  const handleDeleteFolder = (folderId: number, parentId: number | null = null) => {
+  const handleDeleteFolder = useCallback((folderId: number, parentId: number | null = null) => {
     setDeletionTarget({ id: folderId, type: 'folder', parentId });
     setConfirmOpen(true);
-  };
+  }, []);
 
-  const handleDeleteEntity = (entityId: number, folderId: number) => {
+  const handleDeleteEntity = useCallback((entityId: number, folderId: number) => {
     setDeletionTarget({ id: entityId, type: 'entity', parentId: folderId });
     setConfirmOpen(true);
-  };
+  }, []);
 
   const confirmDeletion = async () => {
     if (!deletionTarget || !projectId) return;
@@ -185,10 +191,62 @@ const ArchitectLayout: React.FC = () => {
     }
   };
 
-  const handleCreateEntity = (folderId: number | string, specialType: string = 'entidadindividual') => {
+  const handleCreateEntity = useCallback((folderId: number | string, specialType: string = 'entidadindividual') => {
     const targetSlug = folderId;
     navigate(`${baseUrl}/bible/folder/${targetSlug}/entity/new/${specialType}`);
-  };
+  }, [baseUrl, navigate]);
+
+  const outletContextValue = useMemo(() => ({
+    setRightOpen,
+    toggleRightPanel,
+    rightPanelTab,
+    setRightPanelTab,
+    setRightPanelTitle,
+    setRightPanelMode,
+    setRightPanelContent: setGlobalPanelContent,
+    projectId,
+    projectName,
+    baseUrl,
+    setBottomGraphOpen,
+    panelMode,
+    setAddAttributeHandler,
+    setAvailableTemplates,
+    // CRUD & Bible State
+    handleCreateSimpleFolder,
+    handleDeleteFolder,
+    handleRenameFolder,
+    handleCreateEntity,
+    handleDeleteEntity,
+    folders,
+    searchTerm,
+    setSearchTerm,
+    filterType,
+    setFilterType
+  }), [
+    rightPanelTab,
+    projectId,
+    projectName,
+    baseUrl,
+    panelMode,
+    setRightOpen,
+    toggleRightPanel,
+    setRightPanelTab,
+    setRightPanelTitle,
+    setRightPanelMode,
+    setBottomGraphOpen,
+    setAddAttributeHandler,
+    setAvailableTemplates,
+    handleCreateSimpleFolder,
+    handleDeleteFolder,
+    handleRenameFolder,
+    handleCreateEntity,
+    handleDeleteEntity,
+    folders,
+    searchTerm,
+    filterType,
+    setSearchTerm,
+    setFilterType
+  ]);
 
   if (hideSidebarParam) {
     return (
@@ -197,8 +255,19 @@ const ArchitectLayout: React.FC = () => {
           setRightOpen,
           setRightPanelTab,
           projectId,
+          projectName,
           baseUrl,
-          panelMode
+          panelMode,
+          handleCreateSimpleFolder,
+          handleDeleteFolder,
+          handleRenameFolder,
+          handleCreateEntity,
+          handleDeleteEntity,
+          folders,
+          searchTerm,
+          setSearchTerm,
+          filterType,
+          setFilterType
         }} />
       </div>
     );
@@ -206,7 +275,7 @@ const ArchitectLayout: React.FC = () => {
 
   const sidebarClasses = panelMode === 'floating'
     ? `fixed top-[2vh] left-[2vw] h-[96vh] rounded-none border border-foreground/10 shadow-2xl z-50 transition-all duration-300 flex flex-col monolithic-panel ${leftOpen ? 'w-64 opacity-100 translate-y-0' : 'w-64 opacity-0 -translate-y-4 pointer-events-none'}`
-    : `fixed top-0 left-0 h-full monolithic-panel border-y-0 border-l-0 shadow-2xl z-40 ${panelMode === 'binder' ? '' : 'transition-all duration-500'} flex flex-col rounded-none ${leftOpen ? (panelMode === 'binder' && rightOpen ? 'w-0 -translate-x-full' : 'w-64 translate-x-0') : 'w-64 -translate-x-full'}`;
+    : `fixed top-0 left-0 h-full monolithic-panel border-y-0 border-l-0 shadow-2xl z-50 ${panelMode === 'binder' ? '' : 'transition-all duration-500'} flex flex-col rounded-none ${leftOpen ? (panelMode === 'binder' && rightOpen ? 'w-0 -translate-x-full' : 'w-64 translate-x-0') : 'w-64 -translate-x-full'}`;
 
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden bg-background text-foreground font-sans selection:bg-primary/30">
@@ -341,21 +410,7 @@ const ArchitectLayout: React.FC = () => {
         {/* Main Content */}
         <main className="flex-1 flex flex-col min-w-0 bg-background relative">
           <div className="flex-1 flex flex-col min-w-0 bg-background relative overflow-hidden">
-            <Outlet context={{
-              setRightOpen,
-              toggleRightPanel,
-              rightPanelTab,
-              setRightPanelTab,
-              setRightPanelTitle,
-              setRightPanelMode,
-              setRightPanelContent: setGlobalPanelContent,
-              projectId,
-              baseUrl,
-              setBottomGraphOpen,
-              panelMode,
-              setAddAttributeHandler,
-              setAvailableTemplates
-            }} />
+            <Outlet context={outletContextValue} />
           </div>
 
           <GlobalRightPanel

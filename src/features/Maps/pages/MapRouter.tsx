@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate, useOutletContext, useLocation } from 'react-router-dom';
 import MapCreationWizard from './MapCreationWizard';
 import MapEditor from '../../Specialized/pages/MapEditor';
 import InteractiveMapView from './InteractiveMapView';
@@ -11,13 +11,30 @@ import { Entidad } from '../../../database/types';
 
 const MapRouter = () => {
  const { projectName } = useParams();
- const { projectId } = useOutletContext<{ projectId: number }>();
+ const outletContext = useOutletContext<any>();
+ const { projectId, setRightOpen, setRightPanelContent, setRightPanelTitle, setRightPanelTab } = outletContext || {};
  const navigate = useNavigate();
- const [view, setView] = useState('manager'); // Default to manager
+ const location = useLocation();
+ const [view, setView] = useState('manager');
  const [maps, setMaps] = useState<Entidad[]>([]);
  const [selectedMap, setSelectedMap] = useState<Entidad | null>(null);
  const [newMapId, setNewMapId] = useState<number | null>(null);
  const [mapToDelete, setMapToDelete] = useState<Entidad | null>(null);
+
+ // Resetear al manager si el usuario navega fuera del atlas
+ const prevPathRef = useRef(location.pathname);
+ useEffect(() => {
+ const currentPath = location.pathname;
+ if (prevPathRef.current !== currentPath) {
+ prevPathRef.current = currentPath;
+ // Si la ruta ya no contiene /map, resetear estado
+ if (!currentPath.includes('/map')) {
+ setView('manager');
+ setSelectedMap(null);
+ setNewMapId(null);
+ }
+ }
+ }, [location.pathname]);
 
  React.useEffect(() => {
  if (projectId) loadMaps();
@@ -78,7 +95,7 @@ const MapRouter = () => {
 
   const handleCreateMap = async (
     mapName: string, 
-    config: { bgImage: string; mapType: string; description: string; parentId?: number }
+    config: { bgImage: string; mapType: string; description: string; parentId?: number; is3D: boolean }
   ) => {
     if (!projectId) return;
     try {
@@ -101,6 +118,7 @@ const MapRouter = () => {
           bgImage: config.bgImage || 'placeholder-map.png',
           mapType: config.mapType,
           parentId: config.parentId,
+          is3D: config.is3D,
           layers: [],
           markers: [],
           connections: []
@@ -136,7 +154,14 @@ const MapRouter = () => {
  )}
 
  {view === 'viewer' && selectedMap && (
-  <InteractiveMapView map={selectedMap} onBack={() => { setView('manager'); window.dispatchEvent(new CustomEvent('clear-right-panel')); }} />
+  <InteractiveMapView
+   map={selectedMap}
+   setRightOpen={setRightOpen}
+   setRightPanelContent={setRightPanelContent}
+   setRightPanelTitle={setRightPanelTitle}
+   setRightPanelTab={setRightPanelTab}
+   onBack={() => { setView('manager'); setRightPanelContent?.(null); }}
+  />
  )}
 
  {view === 'wizard' && (

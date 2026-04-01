@@ -6,7 +6,7 @@ interface MapCreationWizardProps {
   onCancel: () => void;
   onCreate: (
     mapName: string, 
-    config: { bgImage: string; mapType: string; description: string; parentId?: number }
+    config: { bgImage: string; mapType: string; description: string; parentId?: number; is3D: boolean }
   ) => void;
 }
 
@@ -19,6 +19,7 @@ const MapCreationWizard: React.FC<MapCreationWizardProps> = ({ onCancel, onCreat
   const [mapName, setMapName] = useState('');
   const [description, setDescription] = useState('');
   const [parentId, setParentId] = useState<number | undefined>(undefined);
+  const [is3D, setIs3D] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
  const handleFileSelect = (e) => {
@@ -41,7 +42,8 @@ const MapCreationWizard: React.FC<MapCreationWizardProps> = ({ onCancel, onCreat
           bgImage: e.target?.result as string,
           mapType,
           description,
-          parentId
+          parentId,
+          is3D
         });
       };
       reader.readAsDataURL(uploadedFile);
@@ -50,7 +52,8 @@ const MapCreationWizard: React.FC<MapCreationWizardProps> = ({ onCancel, onCreat
         bgImage: canvasSource === 'url' ? bgImageUrl : 'placeholder-map.png',
         mapType,
         description,
-        parentId
+        parentId,
+        is3D
       });
     }
   };
@@ -156,10 +159,36 @@ const MapCreationWizard: React.FC<MapCreationWizardProps> = ({ onCancel, onCreat
 
  <div className="h-px w-full bg-foreground/5"></div>
 
- {/* Step 3: Canvas Source */}
+ {/* Step 3: Projection */}
  <section className="space-y-6">
  <div className="flex items-center gap-4">
  <div className={`size-8 rounded-full flex items-center justify-center text-[10px] font-black ${step === 3 ? 'bg-primary text-foreground shadow-lg shadow-primary/30' : 'bg-foreground/10 text-foreground/60'}`}>3</div>
+ <h2 className="text-sm font-black uppercase tracking-[0.2em] text-foreground">Proyección Espacial</h2>
+ </div>
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pl-12">
+  <TypeCard
+    active={is3D === false}
+    onClick={() => setIs3D(false)}
+    icon="map"
+    label="Plano 2D Limitado"
+    desc="Lienzo estático sin repetición infinita. Óptimo para rendimiento y memoria."
+  />
+  <TypeCard
+    active={is3D === true}
+    onClick={() => setIs3D(true)}
+    icon="public"
+    label="Globo 3D Mundial"
+    desc="Proyecta el mapa sobre una esfera que se puede rotar infinitamente."
+  />
+ </div>
+ </section>
+
+ <div className="h-px w-full bg-foreground/5"></div>
+
+ {/* Step 4: Canvas Source */}
+ <section className="space-y-6">
+ <div className="flex items-center gap-4">
+ <div className={`size-8 rounded-full flex items-center justify-center text-[10px] font-black ${step === 4 ? 'bg-primary text-foreground shadow-lg shadow-primary/30' : 'bg-foreground/10 text-foreground/60'}`}>4</div>
  <h2 className="text-sm font-black uppercase tracking-[0.2em] text-foreground">Fuente del Lienzo</h2>
  </div>
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pl-12">

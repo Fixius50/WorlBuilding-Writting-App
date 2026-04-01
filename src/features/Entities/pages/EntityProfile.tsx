@@ -29,7 +29,7 @@ interface EntityWithExtra extends Omit<Entidad, 'valores'> {
 }
 
 const EntityProfile = () => {
-  const { username, projectName, folderSlug, entitySlug } = useParams();
+  const { username, projectName, folderId, entityId } = useParams();
   const { setRightOpen, setRightPanelTab } = useOutletContext<ProfileOutletContext>();
   const [entity, setEntity] = useState<EntityWithExtra | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
@@ -56,13 +56,13 @@ const EntityProfile = () => {
 
   useEffect(() => {
     loadEntity();
-  }, [entitySlug]);
+  }, [entityId]);
 
   const loadEntity = async () => {
-    if (!entitySlug) return;
+    if (!entityId) return;
     setLoading(true);
     try {
-      const data = await entityService.getById(Number(entitySlug));
+      const data = await entityService.getById(Number(entityId));
       if (data) {
         const extra = typeof data.contenido_json === 'string'
           ? JSON.parse(data.contenido_json)
@@ -143,7 +143,7 @@ const EntityProfile = () => {
               </div>
             </div>
 
-            <Link to={`/${username || 'local'}/${projectName}/bible/folder/${folderSlug}/entity/${entitySlug}/edit`}>
+            <Link to={`/${username || 'local'}/${projectName}/bible/folder/${folderId}/entity/${entityId}/edit`}>
               <Button variant="primary" icon="edit" size="sm">Edit Mode</Button>
             </Link>
           </div>
@@ -285,7 +285,7 @@ const EntityProfile = () => {
               </div>
               <div className="flex justify-between py-2 border-b border-foreground/5">
                 <span className="text-[10px] text-foreground/40 uppercase font-bold">Sector</span>
-                <Link to={`/${username || 'local'}/${projectName}/bible/folder/${folderSlug}`} className="text-[10px] font-bold text-indigo-400 hover:underline truncate max-w-[120px]">
+                <Link to={`/${username || 'local'}/${projectName}/bible/folder/${folderId}`} className="text-[10px] font-bold text-indigo-400 hover:underline truncate max-w-[120px]">
                   {entity.carpeta?.nombre}
                 </Link>
               </div>

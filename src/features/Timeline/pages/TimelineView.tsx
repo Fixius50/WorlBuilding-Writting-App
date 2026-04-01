@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useLanguage } from '../../../context/LanguageContext';
 import { useOutletContext, useParams } from 'react-router-dom';
 import { createPortal } from 'react-dom';
@@ -98,34 +98,15 @@ const TimelineView = () => {
  useEffect(() => {
  // Activate Context Mode
  if (setRightPanelTab) setRightPanelTab('CONTEXT');
- // setRightOpen(true); // Don't force open on mount
 
- // Poll for target node availability
- const interval = setInterval(() => {
- const temp = document.getElementById('global-right-panel-portal'); // UPDATED ID
- if (temp) {
- setPortalTarget(temp);
- clearInterval(interval);
- }
- }, 50);
+ const portalEl = document.getElementById('global-right-panel-portal');
+ if (portalEl) setPortalTarget(portalEl);
 
  return () => {
- console.log('[TimelineView] Cleanup: unmounting, clearing portal');
- clearInterval(interval);
- // Clean up portal content manually
- const temp = document.getElementById('global-right-panel-portal');
- if (temp) {
- console.log('[TimelineView] Portal found, clearing innerHTML');
- temp.innerHTML = ''; // Clear any residual content
- } else {
- console.log('[TimelineView] Portal NOT found');
- }
- // CRITICAL: Clear the panel title to prevent persistence across pages
  if (setRightPanelTitle) setRightPanelTitle(null);
- // On Unmount, reset to default notes
  if (setRightPanelTab) setRightPanelTab('NOTEBOOKS');
  };
- }, [setRightPanelTab]);
+ }, [setRightPanelTab, setRightPanelTitle]);
 
  // --- Multiverse State ---
  // (Already declared at the top)
@@ -138,14 +119,14 @@ const TimelineView = () => {
  }
  }, []);
 
- const updateTitle = (timelineName: string | null | undefined) => {
+ const updateTitle = useCallback((timelineName: string | null | undefined) => {
  setRightPanelTitle(
  <div className="flex flex-col">
  <span>{t('timeline.title').toUpperCase()}</span>
  {timelineName && <span className="text-[10px] text-foreground/60 font-medium normal-case tracking-normal mt-0.5">{timelineName}</span>}
  </div>
  );
- };
+ }, [setRightPanelTitle, t]);
 
  // Sync Title based on selection
  useEffect(() => {
@@ -164,7 +145,7 @@ const TimelineView = () => {
  }, [selectedTimelineId, activeTab, universes]);
 
 
- const loadMultiverse = async () => {
+ const loadMultiverse = useCallback(async () => {
  if (!projectId) return;
  try {
  const allFolders = await folderService.getByProject(projectId);
@@ -187,7 +168,7 @@ const TimelineView = () => {
  } catch (error) {
  console.error("Failed to load multiverse", error);
  }
- };
+ }, [projectId, selectedTimelineId]);
 
  // Load events when timeline selection changes
  useEffect(() => {
@@ -202,14 +183,14 @@ const TimelineView = () => {
 
 
 
- const loadEvents = async (lineId: number) => {
+ const loadEvents = useCallback(async (lineId: number) => {
  try {
  const eventsData = await timelineService.getByTimeline(lineId);
  setEvents(eventsData);
  } catch (error) {
  console.error("Failed to load events", error);
  }
- };
+ }, []);
 
  const handleSaveEvent = async () => {
  if (!selectedTimelineId || !newEvent.titulo || !projectId) return;

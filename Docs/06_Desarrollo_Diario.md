@@ -108,10 +108,44 @@ Usar clases Tailwind basadas en variables (`bg-background`, `text-foreground`, `
 
 ---
 
-## 8. Producción
+## 9. Patrones de Estabilidad y Rendimiento (OBLIGATORIO)
+
+Para evitar re-renders en cascada y asegurar que la UI sea fluida (especialmente en el Atlas y Grafo), se deben seguir estos patrones:
+
+### A) Memoización de Contexto y Props
+Cualquier objeto o array pasado a un Context.Provider o a un `Outlet context` debe estar envuelto en `useMemo`. Las funciones deben usar `useCallback`.
+
+```tsx
+const outletContextValue = useMemo(() => ({
+  projectId,
+  handleSave: useCallback((id, data) => { ... }, [projectId])
+}), [projectId]);
+
+return <Outlet context={outletContextValue} />;
+```
+
+### B) Estabilidad en Effects (Patrón de Refs)
+Para llamar a funciones del contexto (como `setRightOpen`) dentro de un `useEffect` sin disparar re-renders infinitos, se deben asignar a una `ref` en el cuerpo del componente.
+
+```tsx
+const setRightOpenRef = useRef(setRightOpen);
+setRightOpenRef.current = setRightOpen;
+
+useEffect(() => {
+  setRightOpenRef.current(true);
+}, []); // Sin dependencias molestas
+```
+
+### C) Prevención de Fugas de Datos
+Al crear entidades, desestructurar `useParams` usando los nombres exactos de la ruta (`folderId`, `entityId`). Nunca asumir nombres como `folderSlug` si la ruta no los define así, ya que resultará en datos guardados en la raíz por error.
+
+---
+
+## 10. Producción
 
 ```bash
 npm run build
 ```
 
 Genera los archivos en `dist/`. El ejecutable nativo se empaqueta con el proceso descrito en `Guia_Empaquetado.md`.
+

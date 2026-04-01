@@ -156,6 +156,11 @@ export async function initializeDatabase() {
     await sql`ALTER TABLE relaciones ADD COLUMN origen_handle TEXT`.catch(() => {});
     await sql`ALTER TABLE relaciones ADD COLUMN destino_handle TEXT`.catch(() => {});
     
+    // MIGRACIÓN PARA SOFT DELETE EN TODAS LAS TABLAS CLAVE
+    await sql`ALTER TABLE carpetas ADD COLUMN borrado INTEGER DEFAULT 0`.catch(() => {});
+    await sql`ALTER TABLE entidades ADD COLUMN borrado INTEGER DEFAULT 0`.catch(() => {});
+    await sql`ALTER TABLE eventos ADD COLUMN borrado INTEGER DEFAULT 0`.catch(() => {});
+    
     // MIGRACIÓN PARA CORREGIR ELIMINACIÓN EN CASCADA (Cleanup de entidades huérfanas)
     // Nota: SQLite no permite alterar FKs fácilmente, así que limpiamos manualmente por ahora
     await sql`DELETE FROM entidades WHERE carpeta_id IS NULL AND project_id IS NOT NULL`.catch(() => {});

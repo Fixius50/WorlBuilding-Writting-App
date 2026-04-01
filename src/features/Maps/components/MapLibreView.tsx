@@ -1,6 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { MapboxOverlay } from '@deck.gl/mapbox';
+import { ScatterplotLayer, TextLayer, PathLayer, GeoJsonLayer } from '@deck.gl/layers';
 import { MapLayer, MapMarker, MapConnection } from '../../../types/maps';
 
 interface MapLibreViewProps {
@@ -13,6 +15,7 @@ interface MapLibreViewProps {
   onMapClick?: (lng: number, lat: number) => void;
   imageWidth: number;
   imageHeight: number;
+  is3D?: boolean;
 }
 
 const MapLibreView: React.FC<MapLibreViewProps> = ({
@@ -24,17 +27,150 @@ const MapLibreView: React.FC<MapLibreViewProps> = ({
   onMarkerClick,
   onMapClick,
   imageWidth,
-  imageHeight
+  imageHeight,
+  is3D = false
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
-  const mapMarkers = useRef<maplibregl.Marker[]>([]);
+  const deckOverlay = useRef<MapboxOverlay | null>(null);
 
-  // 1. Inicializar mapa
+  // Ref estable para onMarkerClick para evitar re-renders al actualizar capas
+  const onMarkerClickRef = useRef(onMarkerClick);
+  onMarkerClickRef.current = onMarkerClick;
+
+  // ── Construir capas de deck.gl ─────────────────────────────────────────
+  const buildDeckLayers = useCallback((
+    currentMarkers: MapMarker[],
+    currentConnections: MapConnection[],
+    currentFeatures: any,
+    currentLayers: MapLayer[]
+  ) => {
+    const deckLayers: any[] = [];
+
+    // ── Capa de conexiones entre marcadores (PathLayer) ────────
+    const connPaths = currentConnections
+      .map(conn => {
+        const src = currentMarkers.find(m => m.id === conn.sourceId);
+        const tgt = currentMarkers.find(m => m.id === conn.targetId);
+        if (!src || !tgt) return null;
+        return {
+          path: [[src.lng || 0, src.lat || 0], [tgt.lng || 0, tgt.lat || 0]],
+          color: hexToRgb(conn.color || '#6366f1'),
+          width: conn.weight || 2,
+          dashed: conn.dashed || false,
+        };
+      })
+      .filter(Boolean) as any[];
+
+    if (connPaths.length > 0) {
+      deckLayers.push(
+        new PathLayer({
+          id: 'deck-connections',
+          data: connPaths,
+          getPath: (d: any) => d.path,
+          getColor: (d: any) => d.color,
+          getWidth: (d: any) => d.width,
+          widthUnits: 'pixels',
+          rounded: true,
+          pickable: false,
+        })
+      );
+    }
+
+    // ── Capa de dibujos GeoJSON (spray + trayectos) ────────────
+    if (currentFeatures?.features?.length > 0) {
+      currentLayers
+        .filter(l => l.type !== 'base' && l.type !== 'image' && l.visible)
+        .forEach(layer => {
+          const layerFeatures = (currentFeatures.features || []).filter(
+            (f: any) => f.properties?.layerId === layer.id
+          );
+          if (layerFeatures.length === 0) return;
+
+          const rgb = hexToRgb(layer.color || '#6366f1');
+
+          deckLayers.push(
+            new GeoJsonLayer({
+              id: `deck-geojson-${layer.id}`,
+              data: { type: 'FeatureCollection', features: layerFeatures },
+              getLineColor: [...rgb, Math.round((layer.opacity ?? 1) * 255)],
+              getFillColor: [...rgb, Math.round((layer.opacity ?? 0.8) * 200)],
+              getPointRadius: layer.type === 'spray' ? 6 : 3,
+              pointRadiusUnits: 'pixels',
+              getLineWidth: 3,
+              lineWidthUnits: 'pixels',
+              lineJointRounded: true,
+              lineCapRounded: true,
+              pickable: false,
+            })
+          );
+        });
+    }
+
+    // ── Marcadores: círculo base (ScatterplotLayer) ────────────
+    if (currentMarkers.length > 0) {
+      deckLayers.push(
+        new ScatterplotLayer({
+          id: 'deck-markers-bg',
+          data: currentMarkers,
+          getPosition: (d: MapMarker) => [d.lng || 0, d.lat || 0],
+          getRadius: 12,
+          radiusUnits: 'pixels',
+          getFillColor: [15, 15, 20, 160],
+          getLineColor: [99, 102, 241, 220],
+          lineWidthMinPixels: 2,
+          stroked: true,
+          filled: true,
+          pickable: false,
+        })
+      );
+
+      // Punto inner (más pequeño, blanco)
+      deckLayers.push(
+        new ScatterplotLayer({
+          id: 'deck-markers-dot',
+          data: currentMarkers,
+          getPosition: (d: MapMarker) => [d.lng || 0, d.lat || 0],
+          getRadius: 4,
+          radiusUnits: 'pixels',
+          getFillColor: [255, 255, 255, 240],
+          pickable: true,
+          autoHighlight: true,
+          highlightColor: [99, 102, 241, 255],
+          onClick: (info: any) => {
+            if (info.object) onMarkerClickRef.current(info.object as MapMarker);
+          },
+        })
+      );
+
+      // Etiquetas de texto (TextLayer)
+      deckLayers.push(
+        new TextLayer({
+          id: 'deck-marker-labels',
+          data: currentMarkers.filter(m => m.label),
+          getPosition: (d: MapMarker) => [d.lng || 0, d.lat || 0],
+          getText: (d: MapMarker) => d.label || '',
+          getSize: 11,
+          getColor: [240, 240, 255, 220],
+          getPixelOffset: [0, -20],
+          fontFamily: 'Inter, system-ui, sans-serif',
+          fontWeight: 700,
+          background: true,
+          getBackgroundColor: [15, 15, 25, 180],
+          backgroundPadding: [4, 2, 4, 2],
+          pickable: false,
+        })
+      );
+    }
+
+    return deckLayers;
+  }, []);
+
+  // ── Inicializar mapa MapLibre + overlay deck.gl ────────────────────────
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    map.current = new maplibregl.Map({
+    const mapInstance = new maplibregl.Map({
       container: mapContainer.current,
       style: {
         version: 8,
@@ -58,29 +194,42 @@ const MapLibreView: React.FC<MapLibreViewProps> = ({
       zoom: 1,
       maxZoom: 7,
       minZoom: 0,
-      attributionControl: false
+      renderWorldCopies: is3D,
+      projection: is3D ? { type: 'globe' } as any : undefined,
+      attributionControl: false,
+    } as any);
+
+    map.current = mapInstance;
+
+    // Crear y añadir overlay de deck.gl
+    const overlay = new MapboxOverlay({
+      interleaved: false, // Renderiza encima del mapa base
+      layers: [],
     });
+    deckOverlay.current = overlay;
+    mapInstance.addControl(overlay as any);
+    mapInstance.addControl(new maplibregl.NavigationControl(), 'bottom-right');
 
-    map.current.addControl(new maplibregl.NavigationControl(), 'bottom-right');
-
-    map.current.on('click', (e) => {
+    mapInstance.on('click', (e) => {
       if (onMapClick) onMapClick(e.lngLat.lng, e.lngLat.lat);
     });
 
-    map.current.on('load', () => {
-      if (!map.current) return;
+    mapInstance.on('load', () => {
+      if (!mapInstance) return;
 
-      // ── Capas de imagen superpuestas (clima, fronteras bitmap) ──
-      const imageLayers = (layers || []).filter(l => (l.type === 'image' || l.type === 'base') && l.url && l.id !== 'base' && l.visible);
+      // Capas de imagen superpuestas (climate, borders bitmap)
+      const imageLayers = (layers || []).filter(
+        l => (l.type === 'image' || l.type === 'base') && l.url && l.id !== 'base' && l.visible
+      );
       imageLayers.forEach(layer => {
         const srcId = `overlay-${layer.id}`;
-        if (!map.current!.getSource(srcId)) {
-          map.current!.addSource(srcId, {
+        if (!mapInstance.getSource(srcId)) {
+          mapInstance.addSource(srcId, {
             type: 'image',
             url: layer.url!,
             coordinates: [[-180, 85.0511], [180, 85.0511], [180, -85.0511], [-180, -85.0511]]
           });
-          map.current!.addLayer({
+          mapInstance.addLayer({
             id: `overlay-lay-${layer.id}`,
             type: 'raster',
             source: srcId,
@@ -88,124 +237,22 @@ const MapLibreView: React.FC<MapLibreViewProps> = ({
           });
         }
       });
-
-      // ── Source para dibujos (spray + trayectos GeoJSON) ──
-      map.current.addSource('draw-features', {
-        type: 'geojson',
-        data: features || { type: 'FeatureCollection', features: [] }
-      });
-
-      // Renderizar líneas por capa
-      (layers || []).filter(l => l.type !== 'base' && l.type !== 'image' && l.visible).forEach(layer => {
-        map.current!.addLayer({
-          id: `draw-line-${layer.id}`,
-          type: 'line',
-          source: 'draw-features',
-          filter: ['all', ['==', '$type', 'LineString'], ['==', ['get', 'layerId'], layer.id]],
-          layout: { 'line-join': 'round', 'line-cap': 'round' },
-          paint: {
-            'line-color': layer.color || '#ef4444',
-            'line-width': 3,
-            'line-opacity': layer.opacity ?? 1
-          }
-        });
-        map.current!.addLayer({
-          id: `draw-point-${layer.id}`,
-          type: 'circle',
-          source: 'draw-features',
-          filter: ['all', ['==', '$type', 'Point'], ['==', ['get', 'layerId'], layer.id]],
-          paint: {
-            'circle-color': layer.color || '#10b981',
-            'circle-radius': layer.type === 'spray' ? 7 : 3,
-            'circle-blur': layer.type === 'spray' ? 0.5 : 0,
-            'circle-opacity': (layer.opacity ?? 1) * 0.85
-          }
-        });
-      });
-
-      // ── Source conexiones entre marcadores ──
-      map.current.addSource('connections-source', {
-        type: 'geojson',
-        data: { type: 'FeatureCollection', features: [] }
-      });
-      map.current.addLayer({
-        id: 'connections-layer',
-        type: 'line',
-        source: 'connections-source',
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: {
-          'line-color': ['get', 'color'],
-          'line-width': ['get', 'weight'],
-          'line-opacity': 0.8,
-          'line-dasharray': ['case', ['==', ['get', 'dashed'], true], ['literal', [2, 2]], ['literal', [1]]]
-        }
-      });
     });
 
-    return () => { map.current?.remove(); };
-  }, [mapImage]); // Solo reiniciar si cambia la imagen base
-
-  // 2. Sincronizar features de dibujo
-  useEffect(() => {
-    if (!map.current?.loaded()) return;
-    const src = map.current.getSource('draw-features') as maplibregl.GeoJSONSource;
-    if (src) src.setData(features || { type: 'FeatureCollection', features: [] });
-  }, [features]);
-
-  // 3. Sincronizar marcadores y conexiones
-  useEffect(() => {
-    if (!map.current) return;
-
-    mapMarkers.current.forEach(m => m.remove());
-    mapMarkers.current = [];
-
-    markers.forEach(marker => {
-      const el = document.createElement('div');
-      el.style.cssText = `
-        width:24px; height:24px; background:rgba(99,102,241,0.2);
-        border:2px solid #6366f1; border-radius:50%; cursor:pointer;
-        box-shadow:0 0 15px rgba(99,102,241,0.5);
-        display:flex; align-items:center; justify-content:center;
-        transition: transform 0.2s, background 0.2s;
-      `;
-      el.onmouseenter = () => { el.style.transform = 'scale(1.2)'; el.style.background = 'rgba(99,102,241,0.4)'; };
-      el.onmouseleave = () => { el.style.transform = 'scale(1)'; el.style.background = 'rgba(99,102,241,0.2)'; };
-
-      const dot = document.createElement('div');
-      dot.style.cssText = 'width:6px;height:6px;background:#fff;border-radius:50%;';
-      el.appendChild(dot);
-
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
-        onMarkerClick(marker);
-      });
-
-      const m = new maplibregl.Marker(el)
-        .setLngLat([marker.lng || 0, marker.lat || 0])
-        .addTo(map.current!);
-      mapMarkers.current.push(m);
-    });
-
-    // Conexiones
-    const updateConnections = () => {
-      if (!map.current?.getSource('connections-source')) return;
-      const connFeatures = connections.map(conn => {
-        const src = markers.find(m => m.id === conn.sourceId);
-        const tgt = markers.find(m => m.id === conn.targetId);
-        if (!src || !tgt) return null;
-        return {
-          type: 'Feature' as const,
-          properties: { color: conn.color || '#6366f1', weight: conn.weight || 2, dashed: conn.dashed || false, label: conn.label || '' },
-          geometry: { type: 'LineString' as const, coordinates: [[src.lng || 0, src.lat || 0], [tgt.lng || 0, tgt.lat || 0]] }
-        };
-      }).filter(Boolean) as GeoJSON.Feature[];
-
-      (map.current.getSource('connections-source') as maplibregl.GeoJSONSource).setData({ type: 'FeatureCollection', features: connFeatures });
+    return () => {
+      deckOverlay.current?.finalize();
+      deckOverlay.current = null;
+      mapInstance.remove();
+      map.current = null;
     };
+  }, [mapImage]); // Solo re-inicializa si cambia la imagen base
 
-    if (map.current.loaded()) updateConnections();
-    else map.current.on('load', updateConnections);
-  }, [markers, connections]);
+  // ── Sincronizar capas deck.gl cuando cambian datos ─────────────────────
+  useEffect(() => {
+    if (!deckOverlay.current) return;
+    const newLayers = buildDeckLayers(markers, connections, features, layers);
+    deckOverlay.current.setProps({ layers: newLayers });
+  }, [markers, connections, features, layers, buildDeckLayers]);
 
   return (
     <div className="w-full h-full relative">
@@ -213,5 +260,13 @@ const MapLibreView: React.FC<MapLibreViewProps> = ({
     </div>
   );
 };
+
+// ── Utilidad: hex a RGB array para deck.gl ────────────────────────────────
+function hexToRgb(hex: string): [number, number, number] {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)]
+    : [99, 102, 241];
+}
 
 export default MapLibreView;

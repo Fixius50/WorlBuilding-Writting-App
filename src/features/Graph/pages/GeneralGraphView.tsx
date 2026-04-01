@@ -37,42 +37,42 @@ interface ZenNodeData {
   onNavigate?: () => void;
 }
 
+// --- Helper for Perimeter Handles ---
+const renderPerimeterHandles = (type: 'source' | 'target') => {
+  const sides = [
+    { pos: Position.Top, count: 7, className: "!w-[14%] !h-[2px] !top-0 !translate-y-[-50%]" },
+    { pos: Position.Bottom, count: 7, className: "!w-[14%] !h-[2px] !bottom-0 !translate-y-[50%]" },
+    { pos: Position.Left, count: 5, className: "!h-[20%] !w-[2px] !left-0 !translate-x-[-50%]" },
+    { pos: Position.Right, count: 5, className: "!h-[20%] !w-[2px] !right-0 !translate-x-[50%]" },
+  ];
+
+  return sides.flatMap(side => 
+    Array.from({ length: side.count }).map((_, i) => {
+      const offset = (100 / side.count) * i + (50 / side.count);
+      const style = side.pos === Position.Top || side.pos === Position.Bottom 
+        ? { left: `${offset}%` } 
+        : { top: `${offset}%` };
+      
+      const id = `${type === 'source' ? 's' : 't'}-${side.pos[0]}-${i}`;
+      
+      return (
+        <Handle
+          key={id}
+          id={id}
+          type={type}
+          position={side.pos}
+          style={style}
+          className={`${side.className} !bg-transparent hover:!bg-primary !border-none !rounded-none z-30 transition-all duration-100 !min-w-0 !min-h-0`}
+        />
+      );
+    })
+  );
+};
+
 // --- Custom Node Component ---
-const ZenNode = ({ data, selected }: { data: ZenNodeData, selected: boolean }) => {
+const ZenNode = React.memo(({ data, selected }: { data: ZenNodeData, selected: boolean }) => {
   const typeInfo = getHierarchyType(data.tipo);
   
-  // Generar handles distribuidos para simular conexión en cualquier punto del borde
-  const renderPerimeterHandles = (type: 'source' | 'target') => {
-    const sides = [
-      { pos: Position.Top, count: 7, className: "!w-[14%] !h-[2px] !top-0 !translate-y-[-50%]" },
-      { pos: Position.Bottom, count: 7, className: "!w-[14%] !h-[2px] !bottom-0 !translate-y-[50%]" },
-      { pos: Position.Left, count: 5, className: "!h-[20%] !w-[2px] !left-0 !translate-x-[-50%]" },
-      { pos: Position.Right, count: 5, className: "!h-[20%] !w-[2px] !right-0 !translate-x-[50%]" },
-    ];
-
-    return sides.flatMap(side => 
-      Array.from({ length: side.count }).map((_, i) => {
-        const offset = (100 / side.count) * i + (50 / side.count);
-        const style = side.pos === Position.Top || side.pos === Position.Bottom 
-          ? { left: `${offset}%` } 
-          : { top: `${offset}%` };
-        
-        const id = `${type === 'source' ? 's' : 't'}-${side.pos[0]}-${i}`;
-        
-        return (
-          <Handle
-            key={id}
-            id={id}
-            type={type}
-            position={side.pos}
-            style={style}
-            className={`${side.className} !bg-transparent hover:!bg-primary !border-none !rounded-none z-30 transition-all duration-100 !min-w-0 !min-h-0`}
-          />
-        );
-      })
-    );
-  };
-
   return (
     <div className={`monolithic-panel group min-w-[220px] cursor-pointer transition-all duration-500 relative ${selected ? '!border-primary shadow-[0_0_30px_rgba(var(--primary),0.2)]' : 'border-foreground/20 hover:border-foreground/40'}`}
          style={{
@@ -80,7 +80,9 @@ const ZenNode = ({ data, selected }: { data: ZenNodeData, selected: boolean }) =
            backdropFilter: 'blur(20px)',
            borderRadius: '0px',
            borderWidth: '1px'
-         }}>
+         }}
+         onClick={() => data.onNavigate?.()}
+    >
       
       {/* Handles Multicanal (Perímetro Reactivo) */}
       {renderPerimeterHandles('target')}
@@ -126,7 +128,7 @@ const ZenNode = ({ data, selected }: { data: ZenNodeData, selected: boolean }) =
       </div>
     </div>
   );
-};
+});
 
 interface GraphViewProps {
   projectId?: number;
@@ -202,7 +204,6 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
 
       const newEdges: Edge[] = Array.from(groupMap.entries()).map(([key, rels]) => {
         const [idA, idB] = key.split('-');
-        // Decidimos la dirección visual basada en la primera relación o simplemente A-B
         const source = rels[0].origen_id.toString();
         const target = rels[0].destino_id.toString();
 

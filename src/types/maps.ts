@@ -42,6 +42,7 @@ export interface MapAttributes {
  markers?: MapMarker[];
  connections?: MapConnection[];
  features?: any; // GeoJSON.FeatureCollection stored as any to avoid tight coupling in types if `@types/geojson` is not everywhere
+ is3D?: boolean;
  mapSettings?: {
    zoom: number;
    center: [number, number];

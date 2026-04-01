@@ -19,107 +19,109 @@ import MapEditor from './features/Specialized/pages/MapEditor';
 import Dashboard from './features/Dashboard/pages/Dashboard';
 import WritingHub from './features/Writing/pages/WritingHub';
 import WritingView from './features/Writing/pages/WritingView';
+import DimensionEditor from './features/Timeline/pages/DimensionEditor';
 
 import React, { useState, useEffect } from 'react';
 import { LanguageProvider } from './context/LanguageContext';
 
 interface User {
- username: string;
- // ... otros campos
+  username: string;
+  // ... otros campos
 }
 
 function App() {
- const [theme, setTheme] = useState<string>('deep_space');
- // @ts-ignore - Temporary until we define full User type
- const [user, setUser] = useState<User | null>(null);
+  const [theme, setTheme] = useState<string>('deep_space');
+  // @ts-ignore - Temporary until we define full User type
+  const [user, setUser] = useState<User | null>(null);
 
- useEffect(() => {
- // Load initial
- const savedSettings = localStorage.getItem('app_settings');
- if (savedSettings) {
- try {
- const settings = JSON.parse(savedSettings);
- if (settings.theme) setTheme(settings.theme);
- } catch(e) {}
- }
- const savedUser = localStorage.getItem('user');
- if (savedUser && savedUser !== 'undefined') {
- try {
- setUser(JSON.parse(savedUser));
- } catch(e) {}
- }
+  useEffect(() => {
+    // Load initial
+    const savedSettings = localStorage.getItem('app_settings');
+    if (savedSettings) {
+      try {
+        const settings = JSON.parse(savedSettings);
+        if (settings.theme) setTheme(settings.theme);
+      } catch(e) {}
+    }
+    const savedUser = localStorage.getItem('user');
+    if (savedUser && savedUser !== 'undefined') {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch(e) {}
+    }
 
- const handleSync = () => {
- const updatedSettings = localStorage.getItem('app_settings');
- if (updatedSettings) {
- try {
- const settings = JSON.parse(updatedSettings);
- if (settings.theme) {
- setTheme(prev => settings.theme !== prev ? settings.theme : prev);
- }
- } catch (e) { }
- }
- const updatedUser = localStorage.getItem('user');
- if (updatedUser && updatedUser !== 'undefined') {
- try {
- setUser(JSON.parse(updatedUser));
- } catch (e) { }
- }
- };
+    const handleSync = () => {
+      const updatedSettings = localStorage.getItem('app_settings');
+      if (updatedSettings) {
+        try {
+          const settings = JSON.parse(updatedSettings);
+          if (settings.theme) {
+            setTheme(prev => settings.theme !== prev ? settings.theme : prev);
+          }
+        } catch (e) { }
+      }
+      const updatedUser = localStorage.getItem('user');
+      if (updatedUser && updatedUser !== 'undefined') {
+        try {
+          setUser(JSON.parse(updatedUser));
+        } catch (e) { }
+      }
+    };
 
- window.addEventListener('storage_update', handleSync);
- return () => window.removeEventListener('storage_update', handleSync);
- }, []);
+    window.addEventListener('storage_update', handleSync);
+    return () => window.removeEventListener('storage_update', handleSync);
+  }, []);
 
- useEffect(() => {
- document.body.classList.forEach(cls => {
- if (cls.startsWith('theme-')) document.body.classList.remove(cls);
- });
- document.body.classList.add(`theme-${theme}`);
- }, [theme]);
+  useEffect(() => {
+    document.body.classList.forEach(cls => {
+      if (cls.startsWith('theme-')) document.body.classList.remove(cls);
+    });
+    document.body.classList.add(`theme-${theme}`);
+  }, [theme]);
 
- return (
- <LanguageProvider>
- <div className={`app-container theme-${theme} h-screen w-screen overflow-hidden`}>
- <BrowserRouter>
- <Routes>
- <Route path="/" element={<WorkspaceSelector />} />
+  return (
+    <LanguageProvider>
+      <div className={`app-container theme-${theme} h-screen w-screen overflow-hidden`}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<WorkspaceSelector />} />
 
- <Route element={<AppLayout />}>
- <Route path="/settings" element={<Settings />} />
+            <Route element={<AppLayout />}>
+              <Route path="/settings" element={<Settings />} />
 
- {/* El :username ahora es irrelevante en Local-First, pero lo mantenemos para no romper rutas */}
- <Route path="/local/:projectName" element={<ArchitectLayout />}>
- <Route index element={<ProjectView />} />
- <Route path="settings" element={<Settings />} />
- <Route path="dashboard" element={<Dashboard />} />
- <Route path="entities/:type/:entityId" element={<EntityRouter />} />
+              {/* El :username ahora es irrelevante en Local-First, pero lo mantenemos para no romper rutas */}
+              <Route path="/local/:projectName" element={<ArchitectLayout />}>
+                <Route index element={<ProjectView />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="entities/:type/:entityId" element={<EntityRouter />} />
 
- <Route path="map-editor/create/:folderId" element={<MapEditor mode="create" />} />
- <Route path="map-editor/edit/:entityId" element={<MapEditor mode="edit" />} />
+                <Route path="map-editor/create/:folderId" element={<MapEditor mode="create" />} />
+                <Route path="map-editor/edit/:entityId" element={<MapEditor mode="edit" />} />
 
- <Route path="bible" element={<WorldBibleLayout />}>
-           <Route index element={<BibleGridView />} />
-           <Route path="folder/:folderId/entity/new/:type" element={<EntityBuilder mode="creation" />} />
-           <Route path="folder/:folderId" element={<FolderView />} />
-           <Route path="entity/:entityId" element={<EntityBuilder mode="edit" />} />
-           <Route path="folder/:folderId/entity/:entityId" element={<EntityBuilder mode="edit" />} />
-         </Route>
+                <Route path="bible" element={<WorldBibleLayout />}>
+                  <Route index element={<BibleGridView />} />
+                  <Route path="folder/:folderId/entity/new/:type" element={<EntityBuilder mode="creation" />} />
+                  <Route path="folder/:folderId" element={<FolderView />} />
+                  <Route path="dimension/:folderId" element={<DimensionEditor />} />
+                  <Route path="entity/:entityId" element={<EntityBuilder mode="edit" />} />
+                  <Route path="folder/:folderId/entity/:entityId" element={<EntityBuilder mode="edit" />} />
+                </Route>
 
- <Route path="map" element={<MapRouter />} />
- <Route path="timeline" element={<TimelineView />} />
- <Route path="languages" element={<LinguisticsRouter />} />
- <Route path="trash" element={<TrashView />} />
- <Route path="graph" element={<GeneralGraphView />} />
- <Route path="writing" element={<WritingHub />} />
- <Route path="writing/:notebookId" element={<WritingView />} />
- </Route>
- </Route>
- </Routes>
- </BrowserRouter>
- </div>
- </LanguageProvider>
- );
+                <Route path="map" element={<MapRouter />} />
+                <Route path="timeline" element={<TimelineView />} />
+                <Route path="languages" element={<LinguisticsRouter />} />
+                <Route path="trash" element={<TrashView />} />
+                <Route path="graph" element={<GeneralGraphView />} />
+                <Route path="writing" element={<WritingHub />} />
+                <Route path="writing/:notebookId" element={<WritingView />} />
+              </Route>
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </div>
+    </LanguageProvider>
+  );
 }
 
 export default App;

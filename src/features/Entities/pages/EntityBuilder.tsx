@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useOutletContext, useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { entityService } from '../../../database/entityService';
@@ -41,7 +41,7 @@ interface EntityBuilderProps {
 }
 
 const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
-  const { username, projectName, entitySlug, folderSlug, type } = useParams();
+  const { username, projectName, entityId, folderId, type } = useParams();
   const navigate = useNavigate();
   const [isCreation, setIsCreation] = useState(mode === 'creation');
 
@@ -68,7 +68,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
       images: []
     }),
     project_id: projectId || 1, 
-    carpeta_id: folderSlug ? Number(folderSlug) : null
+    carpeta_id: folderId ? Number(folderId) : null
   });
 
   const [path, setPath] = useState<Carpeta[]>([]);
@@ -84,40 +84,34 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
   // Parse contenido_json safely
-  const getExtra = (): EntityExtras => {
+  const getExtra = useCallback((): EntityExtras => {
     try {
       return JSON.parse(entity.contenido_json || '{}') as EntityExtras;
     } catch (e) {
       return {};
     }
-  };
+  }, [entity.contenido_json]);
 
-  const updateExtra = (updates: Partial<EntityExtras>) => {
+  const updateExtra = useCallback((updates: Partial<EntityExtras>) => {
     const current = getExtra();
     setEntity(prev => ({
       ...prev,
       contenido_json: JSON.stringify({ ...current, ...updates })
     }));
-  };
+  }, [getExtra]);
 
   // --- INITIALIZATION ---
   useEffect(() => {
     setRightOpen(true);
     setRightPanelTab('CONTEXT');
 
-    const interval = setInterval(() => {
-      const el = document.getElementById('global-right-panel-portal');
-      if (el) {
-        setPortalTarget(el);
-        clearInterval(interval);
-      }
-    }, 100);
+    const el = document.getElementById('global-right-panel-portal');
+    if (el) setPortalTarget(el);
 
     return () => {
-      clearInterval(interval);
       setRightPanelTab('NOTEBOOKS');
     };
-  }, []);
+  }, [setRightOpen, setRightPanelTab]);
 
   useEffect(() => {
     const init = async () => {
@@ -139,8 +133,8 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
           }
         });
 
-        if (!isCreation && entitySlug) {
-          const data = await entityService.getById(Number(entitySlug));
+        if (!isCreation && entityId) {
+          const data = await entityService.getById(Number(entityId));
           if (data) {
             setEntity(data);
             const vals = await entityService.getValues(data.id);
@@ -159,7 +153,15 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
       }
     };
     init();
-  }, [entitySlug, isCreation, projectId]);
+  }, [entityId, isCreation, projectId]);
+
+  // Sincronizar projectId si llega después de la montura inicial
+  useEffect(() => {
+    if (projectId && entity.project_id !== projectId) {
+      setEntity(prev => ({ ...prev, project_id: projectId }));
+    }
+  }, [projectId]);
+
 
   useEffect(() => {
     const loadPath = async () => {
@@ -182,7 +184,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
   };
 
   // --- HANDLERS ---
-  const handleSave = async (redirect = true) => {
+  const handleSave = useCallback(async (redirect = true) => {
     setSaving(true);
     try {
       let savedEntity: Entidad;
@@ -192,7 +194,6 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
         savedEntity = await entityService.update(entity.id!, entity);
       }
 
-      // Notificar a otros componentes (FolderView, Sidebar, etc.)
       window.dispatchEvent(new CustomEvent('folder-update', { 
         detail: { folderId: savedEntity.carpeta_id } 
       }));
@@ -207,7 +208,6 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
         }
       }
 
-      // NEW: Actually DELETE removed fields from DB
       for (const rid of removedFieldIds) {
         if (typeof rid === 'number') {
           await entityService.deleteValue(rid);
@@ -220,7 +220,6 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
         setEntity(savedEntity);
         setIsCreation(false);
         setRemovedFieldIds([]);
-        // Force a re-fetch of values to get real IDs from DB
         const freshValues = await entityService.getValues(savedEntity.id);
         setFields(freshValues.map(v => ({
           id: v.id,
@@ -234,7 +233,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
     } finally {
       setSaving(false);
     }
-  };
+  }, [entity, fields, isCreation, navigate, removedFieldIds, projectId]);
 
   const handleFieldChange = (fieldId: number | string, value: string) => {
     setFields(prev => prev.map(f => f.id === fieldId ? { ...f, value } : f));

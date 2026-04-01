@@ -85,13 +85,33 @@ const imageHeight = (mapAttributes.imageHeight as number) || 1080;
 
 ---
 
+---
+
+## 2026-04-01 — Sesión Estabilidad y Persistencia
+
+### ❌ Error: Entidades nuevas no aparecen en la carpeta destino
+**Archivo:** `EntityBuilder.tsx`, `EntityProfile.tsx`
+**Causa:** Discrepancia en `useParams`. La ruta utiliza `:folderId` y `:entityId`, pero los componentes intentaban extraer `folderSlug` y `entitySlug`. Esto causaba que `carpeta_id` fuera `null` (Raíz) por defecto.
+**Fix:** Sincronizar `useParams` con la definición de las rutas en `App.tsx` para usar `folderId` y `entityId`.
+
+---
+
+### ❌ Error: Re-renders infinitos o bloqueos de UI en Atlas/Grafo
+**Causa:** Funciones o valores de contexto inyectados sin `useMemo` o `useCallback`, provocando una cascada de actualizaciones en el layout global.
+**Fix:** Implementar memoización obligatoria para todos los objetos de contexto y usar el patrón de `useRef` para capturar handlers estables dentro de `useEffect`.
+
+---
+
 ## Patrones de Prevención
 
 | Patrón | Regla |
 |--------|-------|
+| `useParams` | Verificar `App.tsx` para usar el nombre exacto (`folderId`, `entityId`) |
+| `useMemo / useCallback` | **OBLIGATORIO** para cualquier objeto de contexto o prop pesada |
+| `useRef (Handlers)` | Usar para inyectar funciones de contexto en `useEffect` sin dependencias volátiles |
 | `contenido_json` | Siempre castear: `as string`, `as number`, `as string \| null` |
 | Panel derecho | Usar key `'CONTEXT'` (inglés) para `setRightPanelTab` |
 | `setRightPanelContent` | Siempre devolver `() => setRightPanelContent(null)` en el destructor |
-| Modales en MapEditor | Siempre fuera del componente `<Map>` de MapLibre |
+| Modales en MapEditor | Siempre fuera del componente `<Map>` |
 | `MapMarker.entityId` | Campo correcto: `entityId` (no `entidadId`) |
 | `snapshotUrl` | Siempre incluir en `handleSave` del MapEditor |

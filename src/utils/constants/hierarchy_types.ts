@@ -43,7 +43,7 @@ export const HIERARCHY_TYPES: Record<string, HierarchyType> = {
     GEOGRAPHY: { id: 'GEOGRAPHY', label: 'Geografía', icon: 'map', color: 'text-green-300', bgColor: 'bg-green-900/20' },
     ENTITIES: { id: 'ENTITIES', label: 'Entidades', icon: 'groups', color: 'text-blue-300', bgColor: 'bg-blue-900/20' },
     MAGIC: { id: 'MAGIC', label: 'Magia', icon: 'auto_fix_high', color: 'text-pink-300', bgColor: 'bg-pink-900/20' },
-    TIMELINE: { id: 'TIMELINE', label: 'Cronología', icon: 'history', color: 'text-orange-300', bgColor: 'bg-orange-900/20' },
+    TIMELINE: { id: 'TIMELINE', label: 'Dimensión', icon: 'lan', color: 'text-orange-300', bgColor: 'bg-orange-900/20' },
     FACTIONS: { id: 'FACTIONS', label: 'Facciones', icon: 'security', color: 'text-red-300', bgColor: 'bg-red-900/20' },
     ITEMS: { id: 'ITEMS', label: 'Objetos', icon: 'inventory_2', color: 'text-gray-300', bgColor: 'bg-gray-900/20' },
     FOLDER: { id: 'FOLDER', label: 'Carpeta', icon: 'folder', color: 'text-gray-400', bgColor: 'bg-gray-900/10' }

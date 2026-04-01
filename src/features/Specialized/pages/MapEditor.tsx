@@ -56,6 +56,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
   const [isDrawing, setIsDrawing] = useState(false);
   const [spacebarPanning, setSpacebarPanning] = useState(false); // Spacebar temporal pan
   const [mapBgColor, setMapBgColor] = useState('#0f0f12');
+  const [is3D, setIs3D] = useState(false); // Flag para renderizado 3D vs 2D
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
   const [allEntities, setAllEntities] = useState<Entidad[]>([]);
   const [showEntityPicker, setShowEntityPicker] = useState(false);
@@ -67,7 +68,22 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
   const [processingLayers, setProcessingLayers] = useState<Set<string>>(new Set());
   const [errorLayers, setErrorLayers] = useState<Set<string>>(new Set());
 
-  const { projectId, setRightOpen = () => {}, setRightPanelTab = (_: string) => {}, setRightPanelContent = (_: React.ReactNode) => {} } = (useOutletContext<any>() || {}) as any;
+  const outletCtx = (useOutletContext<any>() || {}) as any;
+  const { projectId } = outletCtx;
+
+  // ── Refs para funciones del panel (evitan bucles infinitos de re-render) ──
+  const setRightOpenRef = useRef<(o: boolean) => void>(() => {});
+  const setRightPanelTabRef = useRef<(t: string) => void>(() => {});
+  const setRightPanelContentRef = useRef<(c: React.ReactNode) => void>(() => {});
+  setRightOpenRef.current = outletCtx.setRightOpen ?? (() => {});
+  setRightPanelTabRef.current = outletCtx.setRightPanelTab ?? (() => {});
+  setRightPanelContentRef.current = outletCtx.setRightPanelContent ?? (() => {});
+
+  // Alias para compat con el código existente
+  const setRightOpen = useCallback((o: boolean) => setRightOpenRef.current(o), []);
+  const setRightPanelTab = useCallback((t: string) => setRightPanelTabRef.current(t), []);
+  const setRightPanelContent = useCallback((c: React.ReactNode) => setRightPanelContentRef.current(c), []);
+
   const mapRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const portalRef = document.getElementById('global-right-panel-portal');
@@ -144,10 +160,10 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
 
   // ── Detección del color de fondo (tema) ───────────────────────────────
   useEffect(() => {
-    // Limpiar cualquier contenido previo del panel (ej. del InteractiveMapView) para que el portal quede libre
-    setRightPanelContent(null);
-    setRightOpen(true);
-    setRightPanelTab('CONTEXT');
+    // Usar la ref para evitar bucles si el layout se renderiza por el setContent
+    setRightPanelContentRef.current(null);
+    setRightOpenRef.current(true);
+    
     const updateBg = () => {
       const style = getComputedStyle(document.body);
       const bgVar = style.getPropertyValue('--background').trim();
@@ -177,32 +193,16 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
     };
-  }, [setRightOpen, setRightPanelTab, setRightPanelContent]);
+  }, []); // Sin dependencias de funciones ya que usamos refs internas
 
-  // ── Carga inicial ─────────────────────────────────────────────────────
-  useEffect(() => {
-    if (entityId && mode === 'edit') {
-      loadMap(Number(entityId));
-    } else if (mode === 'create') {
-      setMapEntity({
-        id: 0, nombre: 'Nuevo Atlas', tipo: 'Map', descripcion: '',
-        contenido_json: JSON.stringify({ layers: DEFAULT_LAYERS, markers: [], features: { type: 'FeatureCollection', features: [] }, mapSettings: INITIAL_VIEW_STATE }),
-        project_id: projectId || 0, carpeta_id: targetFolderId,
-        fecha_creacion: new Date().toISOString()
-      });
-    }
-    loadAllEntities();
-  }, [entityId, mode, projectId]);
-
-  const loadAllEntities = async () => {
+  const loadAllEntities = useCallback(async () => {
     try {
-      // Usar el método correcto del servicio
       const entities = await entityService.getAllByProject(Number(projectId));
       setAllEntities(entities);
     } catch { /* silencioso */ }
-  };
+  }, [projectId]);
 
-  const loadMap = async (id: number) => {
+  const loadMap = useCallback(async (id: number) => {
     try {
       const entity = await entityService.getById(id);
       if (entity) {
@@ -214,6 +214,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
         setMarkers(attrs.markers || []);
         if (attrs.layers?.length > 0) setLayers(attrs.layers);
         if (attrs.features) setFeatures(attrs.features);
+        setIs3D(!!attrs.is3D);
         if (attrs.mapSettings) {
           setViewState(prev => ({
             ...prev,
@@ -224,7 +225,23 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
         }
       }
     } catch { /* silencioso */ }
-  };
+  }, []);
+
+  // ── Carga inicial ─────────────────────────────────────────────────────
+  useEffect(() => {
+    if (entityId && mode === 'edit') {
+      loadMap(Number(entityId));
+    } else if (mode === 'create') {
+      setMapEntity({
+        id: 0, nombre: 'Nuevo Atlas', tipo: 'Map', descripcion: '',
+        contenido_json: JSON.stringify({ layers: DEFAULT_LAYERS, markers: [], features: { type: 'FeatureCollection', features: [] }, mapSettings: INITIAL_VIEW_STATE, is3D: false }),
+        project_id: projectId || 0, carpeta_id: targetFolderId,
+        fecha_creacion: new Date().toISOString()
+      });
+      setIs3D(false);
+    }
+    loadAllEntities();
+  }, [entityId, mode, projectId, loadMap, loadAllEntities, targetFolderId]);
 
   // ── Guardar ───────────────────────────────────────────────────────────
   const handleSave = async () => {
@@ -240,7 +257,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
       const snapshotUrl = baseImageLayer?.url || currentContent.snapshotUrl || '';
 
       const updatedContent: MapAttributes = {
-        ...currentContent, markers, layers, features,
+        ...currentContent, markers, layers, features, is3D,
         snapshotUrl, // Para la previsualización en MapManager
         bgImage: snapshotUrl, // Campo legado
         mapSettings: { zoom: viewState.zoom, center: [viewState.longitude, viewState.latitude] },
@@ -482,50 +499,55 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
     });
   }, [layers, resolvedUrls]); // Dependencia estable en layers
 
-  // ── Estabilización de Capas de Dibujo ───────────────────────────────────
-  const renderDrawLayers = React.useMemo(() => {
-    return layers.filter(l => (l.type !== 'base' && l.type !== 'image') && l.visible).map(layer => {
-      const sourceId = `src-${layer.id}-${layer.type}`;
-      const sourceKey = `${sourceId}-${(layer as any)._typeVersion || 0}`;
-      
-      const layerFeaturesList = features.features.filter((f: any) => f.properties?.layerId === layer.id);
-      if (layerFeaturesList.length === 0) return null;
+  // ── Capas de Dibujo con Sources estables (sin recrear en cada punto) ──
+  const drawableLayers = React.useMemo(() =>
+    layers.filter(l => l.type !== 'base' && l.type !== 'image' && l.visible),
+  [layers]);
 
-      return (
-        <Source key={sourceKey} id={sourceId} type="geojson" data={{ type: 'FeatureCollection', features: layerFeaturesList }}>
-          {/* Líneas (Trayectos y rutas) */}
-          <Layer
-            id={`lay-line-${layer.id}`}
-            type="line"
-            paint={{
-              'line-color': layer.color || '#ef4444',
-              'line-width': 4,
-              'line-opacity': layer.opacity,
-              'line-dasharray': (layer.type === 'vector' || layer.type === 'line') ? [] : [2, 1]
-            }}
-            layout={{ 'line-join': 'round', 'line-cap': 'round' }}
-            filter={['==', '$type', 'LineString']}
-          />
-
-          {/* Puntos (Spray, pins o nodos) */}
-          <Layer
-            id={`lay-point-${layer.id}`}
-            type="circle"
-            paint={{
-              'circle-color': layer.color || '#10b981',
-              'circle-radius': (layer.type === 'vector' || layer.type === 'line') ? 3 : 8,
-              'circle-blur': (layer.type === 'vector' || layer.type === 'line') ? 0 : 0.6,
-              'circle-opacity': layer.opacity * 0.8
-            }}
-            filter={['==', '$type', 'Point']}
-          />
-        </Source>
-      );
+  const featuresByLayer = React.useMemo(() => {
+    const map: Record<string, any[]> = {};
+    (features.features || []).forEach((f: any) => {
+      const lid = f.properties?.layerId;
+      if (lid) { if (!map[lid]) map[lid] = []; map[lid].push(f); }
     });
-  }, [layers, features]); // Dependencia estable
+    return map;
+  }, [features]);
 
-
-
+  const renderDrawLayers = drawableLayers.map(layer => {
+    const layerFeats = featuresByLayer[layer.id] || [];
+    const sourceId = `draw-src-${layer.id}`;
+    return (
+      <Source
+        key={sourceId}
+        id={sourceId}
+        type="geojson"
+        data={{ type: 'FeatureCollection' as const, features: layerFeats }}
+      >
+        <Layer
+          id={`draw-line-${layer.id}`}
+          type="line"
+          paint={{
+            'line-color': layer.color || '#ef4444',
+            'line-width': 3,
+            'line-opacity': layer.opacity ?? 1,
+          }}
+          layout={{ 'line-join': 'round', 'line-cap': 'round' }}
+          filter={['==', '$type', 'LineString']}
+        />
+        <Layer
+          id={`draw-point-${layer.id}`}
+          type="circle"
+          paint={{
+            'circle-color': layer.color || '#10b981',
+            'circle-radius': layer.type === 'spray' ? 8 : 4,
+            'circle-blur': layer.type === 'spray' ? 0.5 : 0,
+            'circle-opacity': (layer.opacity ?? 1) * 0.85,
+          }}
+          filter={['==', '$type', 'Point']}
+        />
+      </Source>
+    );
+  });
 
 
   const onMapClick = useCallback((e: any) => {
@@ -783,6 +805,8 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
             {...viewState}
             onMove={(evt: any) => setViewState(evt.viewState)}
             mapStyle={mapStyle}
+            projection={is3D ? { name: 'globe' } as any : undefined}
+            renderWorldCopies={is3D}
             onClick={onMapClick}
             onMouseDown={onMouseDown}
             onMouseUp={onMouseUp}

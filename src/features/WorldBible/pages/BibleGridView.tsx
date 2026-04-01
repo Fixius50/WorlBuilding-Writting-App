@@ -90,15 +90,17 @@ const BibleGridView = () => {
   </div>
   ) : (
   <BibleCard
-  key={folder.id}
-  item={folder}
-  type="folder"
-  linkTo={`/${username || 'local'}/${projectName}/bible/folder/${folder.id}`}
-  onDelete={() => handleDeleteFolder(folder.id)}
-  onRename={() => { 
-    setRenamingFolderId(folder.id); 
-    setRenameValue(folder.nombre); 
-  }}
+    key={folder.id}
+    item={folder}
+    type="folder"
+    linkTo={folder.tipo === 'TIMELINE' 
+      ? `/${username || 'local'}/${projectName}/bible/dimension/${folder.id}`
+      : `/${username || 'local'}/${projectName}/bible/folder/${folder.id}`}
+    onDelete={() => handleDeleteFolder(folder.id)}
+    onRename={() => { 
+      setRenamingFolderId(folder.id); 
+      setRenameValue(folder.nombre); 
+    }}
   />
   )
   ))}

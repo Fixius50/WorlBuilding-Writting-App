@@ -60,10 +60,10 @@ const GlobalRightPanel: React.FC<GlobalRightPanelProps> = ({
   }, [contextContent, activeTab, setActiveTab]);
 
   const rightSidebarClasses = panelMode === 'floating'
-    ? `fixed top-[2vh] right-[2vw] h-[96vh] rounded-none border border-foreground/10 shadow-2xl z-50 transition-all duration-300 flex flex-col monolithic-panel ${isOpen ? 'w-[24rem] opacity-100 translate-y-0' : 'w-[24rem] opacity-0 -translate-y-[1rem] pointer-events-none'}`
+    ? `fixed top-[2vh] right-[2vw] h-[96vh] rounded-none border border-foreground/10 shadow-2xl z-50 transition-all duration-300 flex flex-col monolithic-panel ${isOpen ? 'w-[24rem] opacity-100 translate-y-0 pointer-events-auto' : 'w-[24rem] opacity-0 -translate-y-[1rem] pointer-events-none'}`
     : panelMode === 'binder'
-    ? `fixed top-0 left-0 h-full monolithic-panel border-y-0 border-r border-l-0 border-foreground/10 shadow-2xl z-40 flex flex-col rounded-none ${isOpen ? 'w-[24rem] translate-x-0' : 'w-[24rem] -translate-x-full opacity-0 pointer-events-none'}`
-    : `fixed top-0 right-0 h-full monolithic-panel border-y-0 border-r-0 shadow-2xl z-40 transition-all duration-500 ease-in-out flex flex-col rounded-none ${isOpen ? 'w-[24rem] translate-x-0' : 'w-[24rem] translate-x-full'}`;
+    ? `fixed top-0 left-0 h-full monolithic-panel border-y-0 border-r border-l-0 border-foreground/10 shadow-2xl z-50 flex flex-col rounded-none ${isOpen ? 'w-[24rem] translate-x-0 pointer-events-auto' : 'w-[24rem] -translate-x-full opacity-0 pointer-events-none'}`
+    : `fixed top-0 right-0 h-full monolithic-panel border-y-0 border-r-0 shadow-2xl z-50 transition-all duration-500 ease-in-out flex flex-col rounded-none ${isOpen ? 'w-[24rem] translate-x-0 pointer-events-auto' : 'w-[24rem] translate-x-full pointer-events-none'}`;
 
   return (
     <>
