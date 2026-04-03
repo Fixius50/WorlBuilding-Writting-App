@@ -1,4 +1,4 @@
-# WorldbuildingApp V2
+# WorldbuildingApp
 
 ### Build output ###
 target/
@@ -36,7 +36,7 @@ build/
 .vscode/
 
 ### Maven Wrapper ###
-.mvn/wrapper/maven-wrapper.jar
+.mvn/
 
 ### Frontend ###
 node_modules/
