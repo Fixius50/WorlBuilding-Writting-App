@@ -161,6 +161,31 @@ export async function initializeDatabase() {
     await sql`ALTER TABLE entidades ADD COLUMN borrado INTEGER DEFAULT 0`.catch(() => {});
     await sql`ALTER TABLE eventos ADD COLUMN borrado INTEGER DEFAULT 0`.catch(() => {});
     
+    // MIGRACIÓN PARA MULTIVERSO (LÍNEAS PARALELAS)
+    await sql`ALTER TABLE eventos ADD COLUMN linea_id INTEGER`.catch(() => {});
+    
+    // Nueva tabla para Ramas/Líneas de la Dimensión
+    await sql`
+      CREATE TABLE IF NOT EXISTS dimension_lineas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT NOT NULL,
+        carpeta_id INTEGER NOT NULL,
+        color TEXT,
+        FOREIGN KEY (carpeta_id) REFERENCES carpetas(id) ON DELETE CASCADE
+      )
+    `;
+
+    // Nueva tabla para Vinculación de Entidades a Hitos
+    await sql`
+      CREATE TABLE IF NOT EXISTS eventos_entidades (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        evento_id INTEGER NOT NULL,
+        entidad_id INTEGER NOT NULL,
+        FOREIGN KEY (evento_id) REFERENCES eventos(id) ON DELETE CASCADE,
+        FOREIGN KEY (entidad_id) REFERENCES entidades(id) ON DELETE CASCADE
+      )
+    `;
+
     // MIGRACIÓN PARA CORREGIR ELIMINACIÓN EN CASCADA (Cleanup de entidades huérfanas)
     // Nota: SQLite no permite alterar FKs fácilmente, así que limpiamos manualmente por ahora
     await sql`DELETE FROM entidades WHERE carpeta_id IS NULL AND project_id IS NOT NULL`.catch(() => {});

@@ -68,7 +68,9 @@ const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu
           ${isFolder ? 'bg-indigo-500/20 text-indigo-400' : 'bg-foreground/5 text-foreground/60 group-hover:text-foreground border border-foreground/10'}
         `}>
           <span className="material-symbols-outlined">
-            {isFolder ? 'folder' : getIconForType(item.tipo)}
+            {isFolder 
+              ? (item.tipo === 'TIMELINE' ? 'lan' : 'folder') 
+              : getIconForType(item.tipo)}
           </span>
         </div>
       </div>
@@ -76,7 +78,9 @@ const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu
       <div className="relative z-10 mt-auto">
         <h3 className="text-sm font-bold text-foreground truncate group-hover:text-indigo-400 transition-colors drop-shadow-md">{item.nombre}</h3>
         <p className="text-[10px] font-bold uppercase tracking-widest text-foreground/60 mt-1 opacity-70 group-hover:opacity-100 transition-opacity">
-          {isFolder ? 'Folder' : (item.tipo || 'Entity')}
+          {isFolder 
+            ? (item.tipo === 'TIMELINE' ? 'Dimensión' : 'Carpeta') 
+            : (item.tipo || 'Entidad')}
         </p>
       </div>
 

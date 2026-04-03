@@ -51,7 +51,7 @@ const ArchitectLayout: React.FC = () => {
 
   // Right Panel Context Content
   const [globalPanelContent, setGlobalPanelContent] = useState<React.ReactNode>(null);
-  const [rightPanelTab, setRightPanelTab] = useState('QUICK_NOTES');
+  const [rightPanelTab, setRightPanelTab] = useState('CONTEXT');
   const [rightPanelTitle, setRightPanelTitle] = useState<string | null>(null);
   const [rightPanelMode, setRightPanelMode] = useState<'overlay' | 'push'>('overlay');
 

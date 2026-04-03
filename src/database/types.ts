@@ -84,7 +84,9 @@ export interface Evento {
   descripcion: string | null;
   fecha_simulada: string | null;
   project_id: number;
-  timeline_id: number | null;
+  timeline_id: number;
+  linea_id?: number | null;
+  created_at: string;
   borrado: number;
 }
 
@@ -96,4 +98,19 @@ export interface Relacion {
   descripcion: string | null;
   project_id: number;
   created_at: string;
+}
+
+export interface DimensionLinea {
+  id: number;
+  nombre: string;
+  carpeta_id: number;
+  color?: string;
+}
+
+export interface EventoEntidad {
+  id: number;
+  evento_id: number;
+  entidad_id: number;
+  // Virtual field
+  entidad?: Entidad;
 }
