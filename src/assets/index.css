@@ -10,9 +10,29 @@
   /* Light Theme Base - Soft Emerald Green */
   --background: 0 0% 100%;
   --foreground: 240 10% 3.9%;
-  --primary: 142 70% 45%; 
+  --primary: 142 70% 45%;
   --primary-foreground: 0 0% 98%;
   --radius: 0px;
+
+  /* Semantic Colors - Light Theme */
+  --color-indigo: 243 75% 59%;
+  --color-indigo-foreground: 0 0% 100%;
+  --color-emerald: 160 84% 39%;
+  --color-emerald-foreground: 0 0% 100%;
+  --color-red: 0 72% 51%;
+  --color-red-foreground: 0 0% 100%;
+  --color-amber: 38 92% 50%;
+  --color-amber-foreground: 240 10% 4%;
+  --color-purple: 270 70% 60%;
+  --color-purple-foreground: 0 0% 100%;
+  --color-orange: 25 95% 53%;
+  --color-orange-foreground: 0 0% 100%;
+  --color-blue: 217 91% 60%;
+  --color-blue-foreground: 0 0% 100%;
+  --color-cyan: 187 89% 48%;
+  --color-cyan-foreground: 240 10% 4%;
+  --color-destructive: 0 72% 51%;
+  --color-destructive-foreground: 0 0% 100%;
 }
 
 /* 
@@ -37,6 +57,26 @@
   --foreground: 0 0% 98%;
   --primary: 243 75% 59%;
   --primary-foreground: 210 40% 98%;
+
+  /* Semantic Colors - Dark Theme */
+  --color-indigo: 243 75% 59%;
+  --color-indigo-foreground: 210 40% 98%;
+  --color-emerald: 160 84% 39%;
+  --color-emerald-foreground: 0 0% 98%;
+  --color-red: 0 72% 51%;
+  --color-red-foreground: 0 0% 98%;
+  --color-amber: 38 92% 50%;
+  --color-amber-foreground: 240 10% 4%;
+  --color-purple: 270 70% 60%;
+  --color-purple-foreground: 0 0% 98%;
+  --color-orange: 25 95% 53%;
+  --color-orange-foreground: 0 0% 98%;
+  --color-blue: 217 91% 60%;
+  --color-blue-foreground: 0 0% 98%;
+  --color-cyan: 187 89% 48%;
+  --color-cyan-foreground: 240 10% 4%;
+  --color-destructive: 0 72% 51%;
+  --color-destructive-foreground: 0 0% 98%;
 }
 
 .theme-light {
@@ -45,30 +85,130 @@
   --foreground: 240 10% 3.9%;
   --primary: 142 70% 45%;
   --primary-foreground: 0 0% 98%;
+
+  /* Semantic Colors */
+  --color-indigo: 243 75% 59%;
+  --color-indigo-foreground: 0 0% 100%;
+  --color-emerald: 160 84% 39%;
+  --color-emerald-foreground: 0 0% 100%;
+  --color-red: 0 72% 51%;
+  --color-red-foreground: 0 0% 100%;
+  --color-amber: 38 92% 50%;
+  --color-amber-foreground: 240 10% 4%;
+  --color-purple: 270 70% 60%;
+  --color-purple-foreground: 0 0% 100%;
+  --color-orange: 25 95% 53%;
+  --color-orange-foreground: 0 0% 100%;
+  --color-blue: 217 91% 60%;
+  --color-blue-foreground: 0 0% 100%;
+  --color-cyan: 187 89% 48%;
+  --color-cyan-foreground: 240 10% 4%;
+  --color-destructive: 0 72% 51%;
+  --color-destructive-foreground: 0 0% 100%;
 }
 
 .theme-deep_space {
   --background: 240 10% 2%;
   --foreground: 0 0% 95%;
-  --primary: 243 75% 59%; /* Classic Deep Space Blue for Dark */
+  --primary: 243 75% 59%;
+
+  /* Semantic Colors */
+  --color-indigo: 243 75% 59%;
+  --color-indigo-foreground: 210 40% 98%;
+  --color-emerald: 160 84% 39%;
+  --color-emerald-foreground: 0 0% 100%;
+  --color-red: 0 72% 51%;
+  --color-red-foreground: 0 0% 100%;
+  --color-amber: 38 92% 50%;
+  --color-amber-foreground: 240 10% 4%;
+  --color-purple: 270 70% 60%;
+  --color-purple-foreground: 0 0% 100%;
+  --color-orange: 25 95% 53%;
+  --color-orange-foreground: 0 0% 100%;
+  --color-blue: 217 91% 60%;
+  --color-blue-foreground: 0 0% 100%;
+  --color-cyan: 187 89% 48%;
+  --color-cyan-foreground: 240 10% 4%;
+  --color-destructive: 0 72% 51%;
+  --color-destructive-foreground: 0 0% 100%;
 }
 
 .theme-deep_space_light {
   --background: 0 0% 100%;
   --foreground: 240 10% 10%;
-  --primary: 142 70% 45%; /* Fresh Green for Light */
+  --primary: 142 70% 45%;
+
+  /* Semantic Colors */
+  --color-indigo: 243 75% 59%;
+  --color-indigo-foreground: 0 0% 100%;
+  --color-emerald: 160 84% 39%;
+  --color-emerald-foreground: 0 0% 100%;
+  --color-red: 0 72% 51%;
+  --color-red-foreground: 0 0% 100%;
+  --color-amber: 38 92% 50%;
+  --color-amber-foreground: 240 10% 4%;
+  --color-purple: 270 70% 60%;
+  --color-purple-foreground: 0 0% 100%;
+  --color-orange: 25 95% 53%;
+  --color-orange-foreground: 0 0% 100%;
+  --color-blue: 217 91% 60%;
+  --color-blue-foreground: 0 0% 100%;
+  --color-cyan: 187 89% 48%;
+  --color-cyan-foreground: 240 10% 4%;
+  --color-destructive: 0 72% 51%;
+  --color-destructive-foreground: 0 0% 100%;
 }
 
 .theme-nebula {
   --background: 260 40% 5%;
   --foreground: 0 0% 95%;
-  --primary: 270 100% 80%; /* Bright Lilac for Nebula Dark */
+  --primary: 270 100% 80%;
+
+  /* Semantic Colors */
+  --color-indigo: 243 75% 59%;
+  --color-indigo-foreground: 210 40% 98%;
+  --color-emerald: 160 84% 39%;
+  --color-emerald-foreground: 0 0% 100%;
+  --color-red: 0 72% 51%;
+  --color-red-foreground: 0 0% 100%;
+  --color-amber: 38 92% 50%;
+  --color-amber-foreground: 240 10% 4%;
+  --color-purple: 270 70% 60%;
+  --color-purple-foreground: 0 0% 100%;
+  --color-orange: 25 95% 53%;
+  --color-orange-foreground: 0 0% 100%;
+  --color-blue: 217 91% 60%;
+  --color-blue-foreground: 0 0% 100%;
+  --color-cyan: 187 89% 48%;
+  --color-cyan-foreground: 240 10% 4%;
+  --color-destructive: 0 72% 51%;
+  --color-destructive-foreground: 0 0% 100%;
 }
 
 .theme-nebula_light {
   --background: 260 20% 99%;
   --foreground: 260 10% 15%;
-  --primary: 270 90% 60%; /* Vibrant Purple for Nebula Light */
+  --primary: 270 90% 60%;
+
+  /* Semantic Colors */
+  --color-indigo: 243 75% 59%;
+  --color-indigo-foreground: 0 0% 100%;
+  --color-emerald: 160 84% 39%;
+  --color-emerald-foreground: 0 0% 100%;
+  --color-red: 0 72% 51%;
+  --color-red-foreground: 0 0% 100%;
+  --color-amber: 38 92% 50%;
+  --color-amber-foreground: 240 10% 4%;
+  --color-purple: 270 70% 60%;
+  --color-purple-foreground: 0 0% 100%;
+  --color-orange: 25 95% 53%;
+  --color-orange-foreground: 0 0% 100%;
+  --color-blue: 217 91% 60%;
+  --color-blue-foreground: 0 0% 100%;
+  --color-cyan: 187 89% 48%;
+  --color-cyan-foreground: 240 10% 4%;
+  --color-destructive: 0 72% 51%;
+  --color-destructive-foreground: 0 0% 100%;
 }
 
 /* Zen Editor Migrated Styles */
@@ -196,6 +336,145 @@
   .animate-slide-in-right {
     animation: slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
+
+  /* Semantic Color Utilities - Using CSS Variables */
+  .bg-indigo { background-color: hsl(var(--color-indigo)); }
+  .bg-indigo\/10 { background-color: hsl(var(--color-indigo) / 0.1); }
+  .bg-indigo\/20 { background-color: hsl(var(--color-indigo) / 0.2); }
+  .bg-indigo\/5 { background-color: hsl(var(--color-indigo) / 0.05); }
+  .bg-indigo\/80 { background-color: hsl(var(--color-indigo) / 0.8); }
+  .text-indigo { color: hsl(var(--color-indigo)); }
+  .text-indigo-400 { color: hsl(var(--color-indigo) / 0.8); }
+  .border-indigo { border-color: hsl(var(--color-indigo)); }
+  .border-indigo-500 { border-color: hsl(var(--color-indigo)); }
+  .border-indigo-500\/10 { border-color: hsl(var(--color-indigo) / 0.1); }
+  .border-indigo-500\/20 { border-color: hsl(var(--color-indigo) / 0.2); }
+  .border-indigo-500\/30 { border-color: hsl(var(--color-indigo) / 0.3); }
+  .border-indigo-500\/50 { border-color: hsl(var(--color-indigo) / 0.5); }
+  .shadow-indigo-500\/5 { --tw-shadow-color: hsl(var(--color-indigo) / 0.05); }
+  .shadow-indigo-500\/20 { --tw-shadow-color: hsl(var(--color-indigo) / 0.2); }
+  .hover\:bg-indigo-500\/10:hover { background-color: hsl(var(--color-indigo) / 0.1); }
+  .hover\:bg-indigo-500\/20:hover { background-color: hsl(var(--color-indigo) / 0.2); }
+  .hover\:border-indigo-500\/50:hover { border-color: hsl(var(--color-indigo) / 0.5); }
+  .hover\:text-indigo-400:hover { color: hsl(var(--color-indigo) / 0.8); }
+  .hover\:text-indigo-500:hover { color: hsl(var(--color-indigo)); }
+  .hover\:bg-indigo-500:hover { background-color: hsl(var(--color-indigo)); }
+  .hover\:bg-indigo-400:hover { background-color: hsl(var(--color-indigo) / 0.8); }
+  .group-hover\:bg-indigo-500\/10:hover { background-color: hsl(var(--color-indigo) / 0.1); }
+  .group-hover\:bg-indigo-500\/20:hover { background-color: hsl(var(--color-indigo) / 0.2); }
+  .group-hover\:bg-indigo-400\/5:hover { background-color: hsl(var(--color-indigo) / 0.05); }
+  .group-hover\:text-indigo-400:hover { color: hsl(var(--color-indigo) / 0.8); }
+  .group-hover\:border-indigo-500\/30:hover { border-color: hsl(var(--color-indigo) / 0.3); }
+  .group-hover\:bg-indigo-500\/5:hover { background-color: hsl(var(--color-indigo) / 0.05); }
+
+  .bg-emerald { background-color: hsl(var(--color-emerald)); }
+  .bg-emerald-500\/10 { background-color: hsl(var(--color-emerald) / 0.1); }
+  .bg-emerald-500\/20 { background-color: hsl(var(--color-emerald) / 0.2); }
+  .text-emerald-400 { color: hsl(var(--color-emerald) / 0.8); }
+  .text-emerald-500 { color: hsl(var(--color-emerald)); }
+  .border-emerald-500\/20 { border-color: hsl(var(--color-emerald) / 0.2); }
+  .hover\:bg-emerald-500\/10:hover { background-color: hsl(var(--color-emerald) / 0.1); }
+  .hover\:bg-emerald-500\/20:hover { background-color: hsl(var(--color-emerald) / 0.2); }
+  .hover\:bg-emerald-500:hover { background-color: hsl(var(--color-emerald)); }
+  .hover\:text-emerald-400:hover { color: hsl(var(--color-emerald) / 0.8); }
+  .group-hover\:bg-emerald-500\/10:hover { background-color: hsl(var(--color-emerald) / 0.1); }
+  .group-hover\:bg-emerald-500\/20:hover { background-color: hsl(var(--color-emerald) / 0.2); }
+  .group-hover\:text-emerald-400:hover { color: hsl(var(--color-emerald) / 0.8); }
+  .group-hover\:border-emerald-500\/20:hover { border-color: hsl(var(--color-emerald) / 0.2); }
+  .group-hover\:bg-emerald-500\/5:hover { background-color: hsl(var(--color-emerald) / 0.05); }
+
+  .bg-red-500\/10 { background-color: hsl(var(--color-red) / 0.1); }
+  .bg-red-500\/20 { background-color: hsl(var(--color-red) / 0.2); }
+  .bg-red-500\/80 { background-color: hsl(var(--color-red) / 0.8); }
+  .bg-red-600 { background-color: hsl(var(--color-red) / 0.95); }
+  .bg-red-400 { background-color: hsl(var(--color-red) / 0.85); }
+  .text-red-400 { color: hsl(var(--color-red) / 0.8); }
+  .text-red-500 { color: hsl(var(--color-red)); }
+  .text-red-200 { color: hsl(var(--color-red) / 0.6); }
+  .border-red-500\/20 { border-color: hsl(var(--color-red) / 0.2); }
+  .border-red-500\/30 { border-color: hsl(var(--color-red) / 0.3); }
+  .border-red-600 { border-color: hsl(var(--color-red) / 0.95); }
+  .hover\:bg-red-500\/10:hover { background-color: hsl(var(--color-red) / 0.1); }
+  .hover\:bg-red-500\/20:hover { background-color: hsl(var(--color-red) / 0.2); }
+  .hover\:bg-red-400:hover { background-color: hsl(var(--color-red) / 0.85); }
+  .hover\:bg-red-500:hover { background-color: hsl(var(--color-red)); }
+  .hover\:text-red-400:hover { color: hsl(var(--color-red) / 0.8); }
+  .group-hover\:bg-red-400\/20:hover { background-color: hsl(var(--color-red) / 0.2); }
+
+  .bg-amber-500\/10 { background-color: hsl(var(--color-amber) / 0.1); }
+  .bg-amber-600 { background-color: hsl(var(--color-amber) / 0.95); }
+  .text-amber-400 { color: hsl(var(--color-amber) / 0.8); }
+  .text-amber-500\/80 { color: hsl(var(--color-amber) / 0.8); }
+  .border-amber-500\/20 { border-color: hsl(var(--color-amber) / 0.2); }
+  .border-amber-500\/30 { border-color: hsl(var(--color-amber) / 0.3); }
+  .hover\:bg-amber-500\/10:hover { background-color: hsl(var(--color-amber) / 0.1); }
+  .hover\:border-amber-500\/30:hover { border-color: hsl(var(--color-amber) / 0.3); }
+
+  .bg-purple-500\/10 { background-color: hsl(var(--color-purple) / 0.1); }
+  .bg-purple-500\/20 { background-color: hsl(var(--color-purple) / 0.2); }
+  .bg-purple-600 { background-color: hsl(var(--color-purple) / 0.95); }
+  .text-purple-400 { color: hsl(var(--color-purple) / 0.8); }
+  .border-purple-500\/20 { border-color: hsl(var(--color-purple) / 0.2); }
+
+  .bg-orange-500\/10 { background-color: hsl(var(--color-orange) / 0.1); }
+  .bg-orange-500\/30 { background-color: hsl(var(--color-orange) / 0.3); }
+  .text-orange-400 { color: hsl(var(--color-orange) / 0.8); }
+  .text-orange-400\/60 { color: hsl(var(--color-orange) / 0.6); }
+  .border-orange-500\/20 { border-color: hsl(var(--color-orange) / 0.2); }
+  .border-orange-500\/30 { border-color: hsl(var(--color-orange) / 0.3); }
+  .hover\:bg-orange-500\/10:hover { background-color: hsl(var(--color-orange) / 0.1); }
+  .hover\:border-orange-500\/30:hover { border-color: hsl(var(--color-orange) / 0.3); }
+  .hover\:text-orange-400:hover { color: hsl(var(--color-orange) / 0.8); }
+  .group-hover\:border-orange-500\/20:hover { border-color: hsl(var(--color-orange) / 0.2); }
+  .group-hover\:bg-orange-500\/10:hover { background-color: hsl(var(--color-orange) / 0.1); }
+
+  .bg-blue-500\/20 { background-color: hsl(var(--color-blue) / 0.2); }
+  .bg-blue-600 { background-color: hsl(var(--color-blue) / 0.95); }
+  .shadow-blue-500\/20 { --tw-shadow-color: hsl(var(--color-blue) / 0.2); }
+
+  .bg-cyan-500\/20 { background-color: hsl(var(--color-cyan) / 0.2); }
+  .bg-cyan-600 { background-color: hsl(var(--color-cyan) / 0.95); }
+  .text-cyan-400 { color: hsl(var(--color-cyan) / 0.8); }
+  .shadow-cyan-500\/20 { --tw-shadow-color: hsl(var(--color-cyan) / 0.2); }
+
+  /* Semantic destructive color utilities */
+  .text-destructive { color: hsl(var(--color-destructive)); }
+  .border-destructive\/30 { border-color: hsl(var(--color-destructive) / 0.3); }
+  .hover\:bg-destructive\/10:hover { background-color: hsl(var(--color-destructive) / 0.1); }
+  .hover\:text-destructive:hover { color: hsl(var(--color-destructive)); }
+  .bg-destructive\/10 { background-color: hsl(var(--color-destructive) / 0.1); }
+
+  /* Semantic shadow utilities */
+  .shadow-red-500\/5 { --tw-shadow-color: hsl(var(--color-red) / 0.05); }
+  .shadow-red-500\/20 { --tw-shadow-color: hsl(var(--color-red) / 0.2); }
+  .shadow-amber-500\/20 { --tw-shadow-color: hsl(var(--color-amber) / 0.2); }
+  .shadow-purple-500\/20 { --tw-shadow-color: hsl(var(--color-purple) / 0.2); }
+  .shadow-emerald-500\/20 { --tw-shadow-color: hsl(var(--color-emerald) / 0.2); }
+  .shadow-amber-600 { --tw-shadow-color: hsl(var(--color-amber) / 0.95); }
+  .shadow-purple-600 { --tw-shadow-color: hsl(var(--color-purple) / 0.95); }
+  .shadow-emerald-600 { --tw-shadow-color: hsl(var(--color-emerald) / 0.95); }
+  .shadow-blue-600 { --tw-shadow-color: hsl(var(--color-blue) / 0.95); }
+  .shadow-cyan-600 { --tw-shadow-color: hsl(var(--color-cyan) / 0.95); }
+
+  /* Semantic opacity utilities */
+  .bg-white\/5 { background-color: hsl(0 0% 100% / 0.05); }
+  .bg-white\/10 { background-color: hsl(0 0% 100% / 0.1); }
+  .bg-white\/3 { background-color: hsl(0 0% 100% / 0.03); }
+  .border-white\/5 { border-color: hsl(0 0% 100% / 0.05); }
+  .border-white\/10 { border-color: hsl(0 0% 100% / 0.1); }
+  .border-white\/20 { border-color: hsl(0 0% 100% / 0.2); }
+  .hover\:bg-white\/5:hover { background-color: hsl(0 0% 100% / 0.05); }
+
+  .bg-zinc-900\/50 { background-color: hsl(240 10% 10% / 0.5); }
+  .bg-zinc-900 { background-color: hsl(240 10% 10%); }
+
+  .bg-primary\/20 { background-color: hsl(var(--primary) / 0.2); }
+  .bg-primary\/30 { background-color: hsl(var(--primary) / 0.3); }
+  .bg-primary\/10 { background-color: hsl(var(--primary) / 0.1); }
+  .bg-primary\/5 { background-color: hsl(var(--primary) / 0.05); }
+  .bg-primary\/80 { background-color: hsl(var(--primary) / 0.8); }
+  .text-primary\/20 { color: hsl(var(--primary) / 0.2); }
+  .text-indigo-400\/10 { color: hsl(var(--color-indigo) / 0.1); }
 }
 
 #root {
