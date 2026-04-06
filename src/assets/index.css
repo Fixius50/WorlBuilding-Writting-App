@@ -212,10 +212,54 @@
 }
 
 /* Zen Editor Migrated Styles */
+/* --- Refined Mention System --- */
 .mention {
-  @apply bg-primary/20 text-indigo-400 font-medium rounded-sm px-1 py-0.5 cursor-pointer hover:bg-primary/30 transition-colors;
-  border-bottom: 2px solid rgba(139, 92, 246, 0.3);
+  @apply inline-flex items-center gap-1 font-medium rounded-sm px-1.5 py-0.5 border transition-all cursor-help no-underline;
+  background-color: hsl(var(--foreground) / 0.05);
+  border-color: hsl(var(--foreground) / 0.1);
+  color: hsl(var(--foreground) / 0.8);
 }
+
+.mention:hover {
+  @apply opacity-80 shadow-md;
+}
+
+.mention[data-type="individual"], .mention-individual {
+  background-color: hsl(var(--color-indigo) / 0.1);
+  color: hsl(var(--color-indigo) / 0.8);
+  border-color: hsl(var(--color-indigo) / 0.2);
+}
+
+.mention[data-type="location"], .mention-location {
+  background-color: hsl(var(--color-emerald) / 0.1);
+  color: hsl(var(--color-emerald) / 0.8);
+  border-color: hsl(var(--color-emerald) / 0.2);
+}
+
+.mention[data-type="group"], .mention-group {
+  background-color: hsl(var(--color-purple) / 0.1);
+  color: hsl(var(--color-purple) / 0.8);
+  border-color: hsl(var(--color-purple) / 0.2);
+}
+
+.mention[data-type="timeline"], .mention-timeline {
+  background-color: hsl(var(--color-orange) / 0.1);
+  color: hsl(var(--color-orange) / 0.8);
+  border-color: hsl(var(--color-orange) / 0.2);
+}
+
+.mention[data-type="event"], .mention-event {
+  background-color: hsl(var(--color-red) / 0.1);
+  color: hsl(var(--color-red) / 0.8);
+  border-color: hsl(var(--color-red) / 0.2);
+}
+
+.mention[data-type="item"], .mention-item {
+  background-color: hsl(var(--color-amber) / 0.1);
+  color: hsl(var(--color-amber) / 0.8);
+  border-color: hsl(var(--color-amber) / 0.2);
+}
+
 
 .tiptap p.is-editor-empty:first-child::before {
   color: #4b5563;
@@ -506,4 +550,89 @@ select:focus {
   border-color: hsl(var(--primary));
   outline: none;
 }
+
+/* --- Visual Timeline System (Zen Monolithic) --- */
+.visual-timeline-wrapper {
+  @apply relative my-16 flex items-center w-full;
+}
+
+.visual-timeline-container {
+  @apply overflow-x-auto flex items-center gap-16 py-40 px-8 scroll-smooth no-scrollbar;
+}
+
+.timeline-axis {
+  @apply absolute h-1 left-0 right-0 top-1/2 -translate-y-1/2 z-0;
+  background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.3), transparent);
+}
+
+.events-track {
+  @apply flex items-center gap-20 relative z-10;
+}
+
+.event-wrapper {
+  @apply relative;
+}
+
+.event-wrapper.top { @apply -mt-48; }
+.event-wrapper.bottom { @apply mt-48; }
+
+.event-wrapper::after {
+  content: '';
+  @apply absolute w-0.5 left-1/2 -translate-x-1/2 bg-primary/20;
+}
+
+.event-wrapper.top::after {
+  height: 40px;
+  bottom: -40px;
+}
+
+.event-wrapper.bottom::after {
+  height: 40px;
+  top: -40px;
+}
+
+.scroll-btn {
+  @apply absolute z-20 size-10 rounded-full bg-background/80 border border-foreground/20 text-foreground flex items-center justify-center cursor-pointer backdrop-blur-md hover:bg-primary hover:text-white transition-all;
+}
+
+.scroll-btn.left { @apply left-0; }
+.scroll-btn.right { @apply right-0; }
+
+/* --- Timeline Event Card --- */
+.timeline-event-card {
+  @apply monolithic-panel p-4 min-w-[200px] max-w-[280px] cursor-pointer hover:-translate-y-1 transition-all flex flex-col gap-2;
+}
+
+.event-date {
+  @apply text-[10px] font-black uppercase tracking-widest text-foreground/40;
+}
+
+.event-title {
+  @apply text-sm font-bold text-foreground;
+  font-family: 'Outfit', sans-serif;
+}
+
+.event-description {
+  @apply text-[11px] text-foreground/60 line-clamp-2 leading-relaxed;
+}
+
+.event-dot {
+  @apply absolute size-3 left-1/2 -translate-x-1/2 rounded-full bg-primary;
+  box-shadow: 0 0 10px hsl(var(--primary) / 0.5);
+  transition: all 0.3s ease;
+}
+
+.event-wrapper.top .event-dot { @apply -bottom-10 translate-y-1/2; }
+.event-wrapper.bottom .event-dot { @apply -top-10 -translate-y-1/2; }
+
+.timeline-event-card:hover .event-dot {
+  @apply scale-150;
+  box-shadow: 0 0 20px hsl(var(--primary));
+}
+
+/* Event Context Styles */
+.timeline-event-card.war .event-dot { @apply bg-red-500 shadow-red-500/20; }
+.timeline-event-card.birth .event-dot { @apply bg-emerald-500 shadow-emerald-500/20; }
+.timeline-event-card.death .event-dot { @apply bg-red-600 shadow-red-600/20; }
+
 

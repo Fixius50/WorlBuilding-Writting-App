@@ -1,5 +1,4 @@
 import React from 'react';
-import '../../../assets/TimelineEventCard.css';
 
 /**
  * Componente para mostrar un evento individual en la línea temporal.

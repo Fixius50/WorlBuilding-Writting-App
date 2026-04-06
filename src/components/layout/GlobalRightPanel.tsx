@@ -76,7 +76,7 @@ const GlobalRightPanel: React.FC<GlobalRightPanelProps> = ({
           absolute top-1/2 -translate-y-1/2 w-[2.5rem] h-[6rem] 
           bg-background border border-foreground/10
           rounded-none flex flex-col items-center justify-center gap-[0.25rem]
-          transition-all duration-300 group
+          transition-all duration-300 group pointer-events-auto
           hover:bg-primary/10 hover:border-primary/30
           ${isOpen ? 'text-primary shadow-[-4px_0_15px_-5px_rgba(var(--primary),0.3)] border-r-transparent' : 'text-foreground/60'}
           ${panelMode === 'binder' ? '-right-[2.5rem] border-l-0' : '-left-[2.5rem] border-r-0'}
@@ -140,7 +140,7 @@ const GlobalRightPanel: React.FC<GlobalRightPanelProps> = ({
       {/* Content Area */}
       <div className="flex-1 overflow-hidden relative bg-background/20" style={{ backgroundColor: 'hsl(var(--background) / 0.2)' }}>
         {/* TAB: CONTEXT */}
-        <div className={`absolute inset-0 flex flex-col animate-in fade-in duration-300 ${activeTab === 'CONTEXT' ? 'z-10 opacity-100 pointer-events-auto' : 'z-0 opacity-0 pointer-events-none'}`}>
+        <div className={`absolute inset-0 flex flex-col animate-in fade-in duration-300 ${(activeTab === 'CONTEXT' && isOpen) ? 'z-10 opacity-100 pointer-events-auto' : 'z-0 opacity-0 pointer-events-none'}`}>
           {contextContent ? (
             contextContent
           ) : (
@@ -151,12 +151,12 @@ const GlobalRightPanel: React.FC<GlobalRightPanelProps> = ({
         </div>
 
         {/* TAB: QUICK_NOTES */}
-        <div className={`absolute inset-0 flex flex-col animate-in fade-in duration-300 ${activeTab === 'QUICK_NOTES' ? 'z-10 opacity-100 pointer-events-auto' : 'z-0 opacity-0 pointer-events-none'}`}>
+        <div className={`absolute inset-0 flex flex-col animate-in fade-in duration-300 ${(activeTab === 'QUICK_NOTES' && isOpen) ? 'z-10 opacity-100 pointer-events-auto' : 'z-0 opacity-0 pointer-events-none'}`}>
           <NotebookManager projectId={projectId} />
         </div>
 
         {/* TAB: EXPLORER */}
-        <div className={`absolute inset-0 flex flex-col animate-in fade-in duration-300 ${activeTab === 'EXPLORER' ? 'z-10 opacity-100 pointer-events-auto' : 'z-0 opacity-0 pointer-events-none'}`}>
+        <div className={`absolute inset-0 flex flex-col animate-in fade-in duration-300 ${(activeTab === 'EXPLORER' && isOpen) ? 'z-10 opacity-100 pointer-events-auto' : 'z-0 opacity-0 pointer-events-none'}`}>
           <div className="p-[1rem] border-b border-foreground/10 bg-foreground/[0.01]">
             <div className="relative group mb-[0.75rem]">
               <span className="material-symbols-outlined absolute left-[0.75rem] top-1/2 -translate-y-1/2 text-foreground/60 text-[0.875rem] group-focus-within:text-primary transition-colors">search</span>

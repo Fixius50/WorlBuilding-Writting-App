@@ -17,8 +17,7 @@ const DimensionEditor: React.FC = () => {
   const { 
     setRightPanelContent, 
     setRightOpen, 
-    setRightPanelTitle,
-    setRightPanelTab 
+    setRightPanelTitle 
   } = useOutletContext<any>();
 
   // Data States
@@ -78,56 +77,12 @@ const DimensionEditor: React.FC = () => {
   }, [loadData]);
 
   useEffect(() => {
-    if (!setRightPanelContent) return;
-
-    setRightPanelContent(
-      <div className="space-y-8 p-6 animate-in fade-in slide-in-from-right-4 duration-500">
-        <section className="space-y-4">
-          <h3 className="text-[10px] font-black uppercase tracking-widest text-[hsl(var(--primary))] flex items-center gap-2">
-            <span className="material-symbols-outlined text-sm">settings_ethernet</span>
-            {t('timeline.universe_settings')}
-          </h3>
-          
-          <div className="monolithic-panel p-4 border border-[hsl(var(--panel-border))] bg-[hsl(var(--foreground)/0.02)] space-y-4">
-            <button 
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="w-full flex items-center justify-between p-3 bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--panel-border))] hover:border-[hsl(var(--primary)/0.5)] transition-all group"
-            >
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-sm text-[hsl(var(--foreground)/0.4)] group-hover:text-[hsl(var(--primary))]">
-                  {isExpanded ? 'unfold_less' : 'unfold_more'}
-                </span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-[hsl(var(--foreground)/0.8)]">
-                  {isExpanded ? t('timeline.compress_timeline') : t('timeline.expand_timeline')}
-                </span>
-              </div>
-              <div className={`size-2 rounded-full transition-all duration-500 ${isExpanded ? 'bg-[hsl(var(--primary))] shadow-[0_0_8px_hsl(var(--primary))]' : 'bg-[hsl(var(--foreground)/0.1)]'}`} />
-            </button>
-
-            <button 
-              onClick={() => navigate(`/${username}/${projectName}/bible`)}
-              className="w-full flex items-center gap-3 p-3 bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--panel-border))] hover:border-[hsl(var(--primary)/0.5)] transition-all group"
-            >
-              <span className="material-symbols-outlined text-sm text-[hsl(var(--foreground)/0.4)] group-hover:text-[hsl(var(--primary))]">arrow_back</span>
-              <span className="text-[10px] font-black uppercase tracking-widest text-[hsl(var(--foreground)/0.8)]">{t('timeline.return_bible')}</span>
-            </button>
-          </div>
-        </section>
-
-        <section className="space-y-4">
-          <h3 className="text-[10px] font-black uppercase tracking-widest text-[hsl(var(--foreground)/0.3)] flex items-center gap-2">
-            <span className="material-symbols-outlined text-sm">info</span>
-            {t('common.context')}
-          </h3>
-          <div className="text-[11px] text-[hsl(var(--foreground)/0.6)] leading-relaxed italic border-l-2 border-[hsl(var(--primary)/0.2)] pl-4">
-            {t('timeline.multiverse_desc')}
-          </div>
-        </section>
-      </div>
-    );
-
-    return () => setRightPanelContent(null);
-  }, [isExpanded, setRightPanelContent, t, navigate, username, projectName]);
+    // Clear right panel on this view as requested by user to avoid interaction issues
+    if (setRightPanelContent) {
+      setRightPanelContent(null);
+      setRightOpen(false);
+    }
+  }, [setRightPanelContent, setRightOpen]);
 
   // Helper Functions
   const getYear = (dateStr: string | null): number | null => {
@@ -147,10 +102,10 @@ const DimensionEditor: React.FC = () => {
 
   const calculateX = (dateStr: string | null) => {
     const year = getYear(dateStr);
-    if (year === null) return 5; // Default at 5% margin
+    if (year === null) return 8; // Aumentamos margen base
     const rawPercent = ((year - timelineBounds.min) / timelineBounds.range) * 100;
-    // Apply 5% safety margin on both ends (maps 0-100 to 5-95)
-    return 5 + (rawPercent * 0.9);
+    // Margen de seguridad del 8% al inicio para evitar que pegue al borde izquierdo
+    return 8 + (rawPercent * 0.84);
   };
 
   const handleAddLine = () => {
@@ -261,61 +216,6 @@ const DimensionEditor: React.FC = () => {
     }
   };
 
-  const contextActions = useMemo(() => (
-    <div className="flex flex-col gap-6 p-6 h-full bg-[hsl(var(--background))] animate-in fade-in slide-in-from-right-4 duration-500">
-      <div className="space-y-4">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[hsl(var(--foreground)/0.4)] px-2">{t('timeline.multiverse')}</h3>
-        
-        <button 
-          onClick={() => navigate(`/local/${projectName}/bible/folder/${folder?.padre_id || ''}`)}
-          className="w-full flex items-center gap-3 p-4 bg-[hsl(var(--foreground)/0.05)] hover:bg-[hsl(var(--foreground)/0.1)] border border-[hsl(var(--panel-border))] transition-all group"
-        >
-          <span className="material-symbols-outlined text-lg text-[hsl(var(--foreground)/0.4)] group-hover:text-[hsl(var(--foreground))] transition-colors">arrow_back</span>
-          <span className="text-[11px] font-bold uppercase tracking-widest">{t('timeline.return_bible')}</span>
-        </button>
-
-        <div className="pt-4 border-t border-[hsl(var(--divider-border))] space-y-4">
-          <div className="flex items-center justify-between px-2">
-            <span className="text-[9px] font-black uppercase text-[hsl(var(--foreground)/0.3)]">{t('nav.chronology')}</span>
-            <button 
-              onClick={() => setIsExpanded(!isExpanded)} 
-              className={`px-3 py-1 text-[8px] font-black uppercase tracking-widest border transition-all ${isExpanded ? 'bg-[hsl(var(--primary))] text-white border-[hsl(var(--primary))]' : 'bg-[hsl(var(--foreground)/0.05)] text-[hsl(var(--foreground)/0.4)] border-[hsl(var(--panel-border))]'}`}
-            >
-              {isExpanded ? t('timeline.compress_timeline') : t('timeline.expand_timeline')}
-            </button>
-          </div>
-          
-          <div className="space-y-1">
-            <div className="p-3 bg-[hsl(var(--primary)/0.1)] border border-[hsl(var(--primary)/0.3)] text-[10px] font-bold text-[hsl(var(--primary))] flex items-center gap-3">
-              <div className="size-2 rounded-full bg-[hsl(var(--primary))]" />
-              {t('timeline.main_line')}
-            </div>
-            {lines.map(line => (
-              <div key={line.id} className="p-3 bg-[hsl(var(--foreground)/0.02)] border border-[hsl(var(--divider-border))] text-[10px] font-bold text-[hsl(var(--foreground)/0.6)] flex items-center justify-between group transition-all">
-                <div className="flex items-center gap-3">
-                  <div className="size-2 rounded-full bg-[hsl(var(--foreground)/0.2)]" />
-                  {line.nombre}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-auto p-4 border border-[hsl(var(--primary)/0.1)] bg-[hsl(var(--primary)/0.05)] backdrop-blur-sm">
-        <p className="text-[9px] font-medium text-[hsl(var(--primary)/0.6)] leading-relaxed italic">
-          "{t('timeline.branch_poetic_quote')}"
-        </p>
-      </div>
-    </div>
-  ), [navigate, projectName, folder, lines, loadData, t, isExpanded]);
-
-  useEffect(() => {
-    if (loading) return;
-    setRightPanelTitle(folder?.nombre?.toUpperCase() || t('timeline.multiverse_tag'));
-    setRightPanelContent(contextActions);
-    setRightOpen(true);
-  }, [loading, folder, contextActions, setRightPanelContent, setRightOpen, setRightPanelTitle, t]);
 
   if (loading) return (
     <div className="flex-1 flex items-center justify-center bg-[hsl(var(--background))]">
@@ -337,8 +237,8 @@ const DimensionEditor: React.FC = () => {
         {/* Subtle row separation via a very faint glow instead of a hard border - Removing to fix visual artifacts */}
         <div className="absolute inset-x-0 bottom-0 border-b border-transparent pointer-events-none" />
         {/* Branch Identity Panel (Left Sidebar) */}
-        <div className="w-[300px] flex-shrink-0 p-8 border-r border-[hsl(var(--divider-border))] bg-[hsl(var(--background)/0.2)] backdrop-blur-xl sticky left-0 z-30 flex flex-col justify-start items-start gap-12">
-           <div className="space-y-6 w-full">
+        <div className="w-[300px] flex-shrink-0 p-8 border-r border-[hsl(var(--divider-border))] bg-[hsl(var(--background)/0.2)] backdrop-blur-xl sticky left-0 z-30 flex flex-col justify-between items-start">
+           <div className="space-y-4 w-full">
              <div className="flex items-center justify-between group/title w-full">
                {editingLineId === lineId ? (
                  <div className="flex items-center gap-2 w-full">
@@ -353,8 +253,8 @@ const DimensionEditor: React.FC = () => {
                  </div>
                ) : (
                  <div className="flex items-center gap-4">
-                   <div className={`size-4 rounded-full ${isMain ? 'bg-[hsl(var(--primary))]' : 'bg-[hsl(var(--foreground)/0.2)]'} shadow-[0_0_15px_hsl(var(--primary)/0.4)]`} />
-                   <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[hsl(var(--foreground))]">
+                   <div className={`size-3 rounded-full ${isMain ? 'bg-[hsl(var(--primary))]' : 'bg-[hsl(var(--foreground)/0.2)]'} shadow-[0_0_15px_hsl(var(--primary)/0.4)]`} />
+                   <h2 className="text-xs font-black uppercase tracking-[0.2em] text-[hsl(var(--foreground))]">
                      {isMain ? t('timeline.main_line') : title}
                    </h2>
                    {!isMain && (
@@ -366,18 +266,21 @@ const DimensionEditor: React.FC = () => {
                  </div>
                )}
              </div>
-             <p className="text-[10px] text-[hsl(var(--foreground)/0.3)] font-medium leading-relaxed italic pr-4">
+             <p className="text-[9px] text-[hsl(var(--foreground)/0.3)] font-medium leading-relaxed italic pr-4">
                {isMain ? "El flujo original de la existencia." : "Una bifurcación en el destino."}
              </p>
            </div>
            
-           <button 
-             onClick={() => handleAddEvent(lineId)}
-             className="px-6 py-3 bg-[hsl(var(--primary)/0.05)] hover:bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))] text-[10px] font-black uppercase tracking-widest border border-[hsl(var(--primary)/0.2)] transition-all flex items-center justify-center gap-2 group/btn rounded-full"
-           >
-             <span className="material-symbols-outlined text-sm group-hover/btn:scale-125 transition-transform">add_circle</span>
-             {t('timeline.milestone')}
-           </button>
+           {/* El botón hito ahora está centrado verticalmente respecto al eje que moveremos al centro */}
+           <div className="flex-1 flex items-center w-full">
+             <button 
+               onClick={() => handleAddEvent(lineId)}
+               className="px-6 py-2 bg-[hsl(var(--primary)/0.05)] hover:bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))] text-[10px] font-black uppercase tracking-widest border border-[hsl(var(--primary)/0.2)] transition-all flex items-center justify-center gap-2 group/btn rounded-full whitespace-nowrap"
+             >
+               <span className="material-symbols-outlined text-sm group-hover/btn:scale-125 transition-transform">add_circle</span>
+               {t('timeline.milestone')}
+             </button>
+           </div>
         </div>
 
         {/* Timeline Path (Horizontal Scroll Area) */}
@@ -385,13 +288,13 @@ const DimensionEditor: React.FC = () => {
            {/* Inner Draw Area (Where 4000px width lives) */}
            <div className={`h-full relative flex items-end p-0 ${isExpanded ? 'w-[4000px]' : 'w-full'}`}>
               
-              {/* Permanent horizontal baseline (The Actual Timeline Path) */}
-              <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-[hsl(var(--primary)/0.6)] via-[hsl(var(--primary)/0.2)] to-transparent pointer-events-none z-10 shadow-[0_0_10px_hsl(var(--primary)/0.2)]" />
+              {/* Permanent horizontal baseline (The Actual Timeline Path) - Centrada ahora */}
+              <div className="absolute top-1/2 left-0 right-0 h-px bg-gradient-to-r from-[hsl(var(--primary)/0.6)] via-[hsl(var(--primary)/0.2)] to-transparent pointer-events-none z-10 shadow-[0_0_10px_hsl(var(--primary)/0.2)] -translate-y-1/2" />
 
               {/* Connecting Line (Dashed) between events */}
               {lineEvents.length > 1 && !isLast && (
                 <div 
-                  className="absolute bottom-0 h-px border-b border-dashed border-[hsl(var(--primary)/0.6)] pointer-events-none transition-all duration-700 z-10"
+                  className="absolute top-1/2 h-px border-b border-dashed border-[hsl(var(--primary)/0.6)] pointer-events-none transition-all duration-700 z-10 -translate-y-1/2"
                   style={{ 
                     left: `${calculateX(lineEvents[0].fecha_simulada)}%`,
                     right: `${100 - calculateX(lineEvents[lineEvents.length - 1].fecha_simulada)}%`
@@ -449,10 +352,7 @@ const DimensionEditor: React.FC = () => {
                {(events as Evento[]).map((event) => {
                  const posX = calculateX(event.fecha_simulada);
                  const lineIndex = event.linea_id === null ? 0 : (lines.findIndex(l => l.id === event.linea_id) + 1);
-                 const isEditing = editingId === event.id;
-                 const linked = linkedEntities[event.id] || [];
-                 // 450px is the row height. (lineIndex + 1) * 450 places it at the baseline.
-                 const posY = (lineIndex + 1) * 450;
+                 const posY = (lineIndex * 450) + 225;
 
                  return (
                    <div 
@@ -461,7 +361,7 @@ const DimensionEditor: React.FC = () => {
                      style={{ left: `${posX}%`, top: `${posY}px` }}
                    >
                      {/* Event Details Card (Always visible) */}
-                     <div className="mb-24 w-[350px] monolithic-panel p-5 border border-[hsl(var(--panel-border))] bg-[hsl(var(--background)/0.98)] backdrop-blur-3xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] opacity-100 translate-y-0 transition-all duration-300 z-50 group-hover/card:border-[hsl(var(--primary)/0.5)] group-hover/card:shadow-[0_0_30px_hsl(var(--primary)/0.15)]">
+                     <div className="w-[350px] monolithic-panel p-5 border border-[hsl(var(--panel-border))] bg-[hsl(var(--background)/0.98)] backdrop-blur-3xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] opacity-100 translate-y-0 transition-all duration-300 z-50 group-hover/card:border-[hsl(var(--primary)/0.5)] group-hover/card:shadow-[0_0_30px_hsl(var(--primary)/0.15)]">
                          <div className="flex items-center justify-between mb-4">
                            <div className="flex flex-col">
                              <span className="text-[10px] font-black text-[hsl(var(--primary))] uppercase tracking-[0.2em] leading-none mb-1">{event.fecha_simulada || '?'}</span>
@@ -491,9 +391,6 @@ const DimensionEditor: React.FC = () => {
                            {event.descripcion || 'Sin descripción'}
                          </p>
                      </div>
-                     
-                     {/* The Node (Circle) centered on the timeline intersection */}
-                     <div className="size-7 bg-[hsl(var(--background))] border-[4px] border-[hsl(var(--primary))] rounded-full z-40 shadow-[0_0_20px_hsl(var(--primary)/0.4)] opacity-100 group-hover/card:scale-125 group-hover/card:shadow-[0_0_30px_hsl(var(--primary)/0.6)] transition-all cursor-pointer box-content" />
                    </div>
                  );
                })}
@@ -599,6 +496,73 @@ const DimensionEditor: React.FC = () => {
                       className="px-6 py-4 bg-[hsl(var(--primary))] text-white text-[10px] font-black uppercase tracking-widest shadow-[0_10px_20px_hsl(var(--primary)/0.3)] hover:scale-105 transition-all disabled:opacity-30 disabled:scale-100"
                     >
                       {t('common.confirm')}
+                    </button>
+                 </div>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* Editing Milestone Modal (CRUD Professional) */}
+      {editingId !== null && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-2xl bg-black/80 animate-in fade-in duration-500">
+           <div className="w-full max-w-2xl monolithic-panel p-12 shadow-[0_0_100px_rgba(0,0,0,0.8)] animate-in zoom-in-95 bg-[hsl(var(--background))] border border-[hsl(var(--panel-border))] relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[hsl(var(--primary))] to-transparent" />
+              
+              <div className="mb-10 flex items-center justify-between">
+                 <div>
+                    <h2 className="text-3xl font-black uppercase tracking-tighter text-[hsl(var(--foreground))] leading-none mb-3">{t('timeline.edit_event')}</h2>
+                    <p className="text-[10px] text-[hsl(var(--foreground)/0.3)] uppercase tracking-[0.3em] font-black">Refinar el registro histórico</p>
+                 </div>
+                 <div className="size-16 bg-[hsl(var(--primary)/0.05)] border border-[hsl(var(--primary)/0.1)] flex items-center justify-center text-[hsl(var(--primary))]">
+                    <span className="material-symbols-outlined text-3xl">edit_note</span>
+                 </div>
+              </div>
+
+              <div className="space-y-8">
+                 <div className="grid grid-cols-3 gap-6">
+                    <div className="col-span-2 space-y-3">
+                       <label className="text-[10px] font-black uppercase tracking-widest text-[hsl(var(--foreground)/0.4)] ml-1">{t('timeline.title')}</label>
+                       <input 
+                         type="text"
+                         value={editTitle}
+                         onChange={(e) => setEditTitle(e.target.value)}
+                         className="w-full bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--panel-border))] p-4 text-sm font-bold focus:border-[hsl(var(--primary))] focus:bg-[hsl(var(--primary)/0.05)] transition-all outline-none"
+                       />
+                    </div>
+                    <div className="space-y-3">
+                       <label className="text-[10px] font-black uppercase tracking-widest text-[hsl(var(--foreground)/0.4)] ml-1">{t('timeline.date')}</label>
+                       <input 
+                         type="text"
+                         value={editDate}
+                         onChange={(e) => setEditDate(e.target.value)}
+                         className="w-full bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--panel-border))] p-4 text-sm font-bold focus:border-[hsl(var(--primary))] focus:bg-[hsl(var(--primary)/0.05)] transition-all outline-none text-center"
+                       />
+                    </div>
+                 </div>
+
+                 <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[hsl(var(--foreground)/0.4)] ml-1">{t('timeline.description')}</label>
+                    <textarea 
+                      value={editDesc}
+                      onChange={(e) => setEditDesc(e.target.value)}
+                      rows={5}
+                      className="w-full bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--panel-border))] p-5 text-sm font-medium focus:border-[hsl(var(--primary))] focus:bg-[hsl(var(--primary)/0.05)] transition-all outline-none resize-none custom-scrollbar italic"
+                    />
+                 </div>
+
+                 <div className="grid grid-cols-2 gap-4 pt-4">
+                    <button 
+                      onClick={handleCancelEdit}
+                      className="px-6 py-4 bg-transparent border border-[hsl(var(--panel-border))] hover:border-[hsl(var(--foreground)/0.2)] text-[10px] font-black uppercase tracking-widest text-[hsl(var(--foreground)/0.3)] hover:text-[hsl(var(--foreground))] transition-all"
+                    >
+                      {t('common.cancel')}
+                    </button>
+                    <button 
+                      onClick={handleSaveEdit}
+                      className="px-6 py-4 bg-[hsl(var(--primary))] text-white text-[10px] font-black uppercase tracking-widest shadow-[0_10px_20px_hsl(var(--primary)/0.3)] hover:scale-105 transition-all"
+                    >
+                      {t('common.save')}
                     </button>
                  </div>
               </div>

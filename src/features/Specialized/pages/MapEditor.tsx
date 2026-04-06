@@ -24,19 +24,21 @@ interface MapEditorProps {
   onSave?: () => Promise<void>;
 }
 
-type DrawMode = 'none' | 'spray' | 'line' | 'marker';
+type DrawMode = 'none' | 'spray' | 'line' | 'marker' | 'eraser';
 
 const DRAW_MODE_LABELS: Record<DrawMode, string> = {
   none: 'Navegar',
   marker: 'Marcador',
   line: 'Trayecto',
   spray: 'Spray',
+  eraser: 'Borrador',
 };
 const DRAW_MODE_ICONS: Record<DrawMode, string> = {
   none: 'pan_tool',
   marker: 'location_on',
   line: 'draw',
   spray: 'brush',
+  eraser: 'ink_eraser',
 };
 
 const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEntityId, folderId: propFolderId, onSave }) => {
@@ -58,6 +60,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
   const [mapBgColor, setMapBgColor] = useState('#0f0f12');
   const [is3D, setIs3D] = useState(false); // Flag para renderizado 3D vs 2D
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
+  const [brushSize, setBrushSize] = useState(20);
   const [allEntities, setAllEntities] = useState<Entidad[]>([]);
   const [showEntityPicker, setShowEntityPicker] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -234,10 +237,13 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
     } else if (mode === 'create') {
       setMapEntity({
         id: 0, nombre: 'Nuevo Atlas', tipo: 'Map', descripcion: '',
+        slug: 'nuevo-atlas', folder_slug: '', imagen_url: '',
         contenido_json: JSON.stringify({ layers: DEFAULT_LAYERS, markers: [], features: { type: 'FeatureCollection', features: [] }, mapSettings: INITIAL_VIEW_STATE, is3D: false }),
-        project_id: projectId || 0, carpeta_id: targetFolderId,
-        fecha_creacion: new Date().toISOString()
-      });
+        project_id: Number(projectId) || 0, carpeta_id: targetFolderId,
+        fecha_creacion: new Date().toISOString(),
+        fecha_actualizacion: new Date().toISOString(),
+        borrado: 0
+      } as Entidad);
       setIs3D(false);
     }
     loadAllEntities();
@@ -266,6 +272,8 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
       if (mode === 'create' || !entityId) {
         await entityService.create({
           nombre: mapEntity.nombre, tipo: 'Map', descripcion: mapEntity.descripcion,
+          slug: mapEntity.nombre.toLowerCase().replace(/ /g, '-'),
+          folder_slug: '', imagen_url: '',
           project_id: projectId, carpeta_id: targetFolderId, contenido_json: JSON.stringify(updatedContent)
         });
         window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Atlas creado.', type: 'success' } }));
@@ -435,6 +443,39 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
     }));
   }, [selectedLayerId]);
 
+  const eraseFeatures = useCallback((lng: number, lat: number) => {
+    if (!mapRef.current) return;
+    const map = mapRef.current.getMap();
+    const cursorPx = map.project([lng, lat]);
+    const radius = brushSize;
+
+    setFeatures((prev: any) => {
+      const newFeatures = (prev.features || []).filter((f: any) => {
+        // Only erase features from the currently selected layer
+        if (f.properties?.layerId !== selectedLayerId) return true;
+
+        if (f.geometry.type === 'Point') {
+          const featPx = map.project(f.geometry.coordinates);
+          const dist = Math.hypot(cursorPx.x - featPx.x, cursorPx.y - featPx.y);
+          return dist > radius;
+        }
+
+        if (f.geometry.type === 'LineString') {
+          // Check if any vertex is within the radius. 
+          // (More complex: check distance to segment, but for drawing, vertex-check is often enough if sampling is high)
+          const isNear = f.geometry.coordinates.some((coord: [number, number]) => {
+            const featPx = map.project(coord);
+            const dist = Math.hypot(cursorPx.x - featPx.x, cursorPx.y - featPx.y);
+            return dist < radius;
+          });
+          return !isNear;
+        }
+        return true;
+      });
+      return { ...prev, features: newFeatures };
+    });
+  }, [brushSize, selectedLayerId]);
+
   const addLinePoint = useCallback((lng: number, lat: number, isNew: boolean = false) => {
     setFeatures((prev: any) => {
       const fts = [...prev.features];
@@ -539,8 +580,8 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
           type="circle"
           paint={{
             'circle-color': layer.color || '#10b981',
-            'circle-radius': layer.type === 'spray' ? 8 : 4,
-            'circle-blur': layer.type === 'spray' ? 0.5 : 0,
+            'circle-radius': layer.type === 'spray' ? (brushSize / 2) : 4,
+            'circle-blur': layer.type === 'spray' ? 0.7 : 0,
             'circle-opacity': (layer.opacity ?? 1) * 0.85,
           }}
           filter={['==', '$type', 'Point']}
@@ -563,16 +604,20 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
       setMarkers(prev => [...prev, { id: newId, lng, lat, label: 'Punto' }]);
       setSelectedMarkerId(newId);
     } else if (drawMode === 'line') {
-      // En modo line: cada clic añade un punto al trayecto actual
       addLinePoint(lng, lat, e.originalEvent?.shiftKey ?? false);
     } else if (drawMode === 'spray') {
       addSprayPoint(lng, lat);
+    } else if (drawMode === 'eraser') {
+      eraseFeatures(lng, lat);
     }
-  }, [drawMode, addLinePoint, addSprayPoint, spacebarPanning]);
+  }, [drawMode, addLinePoint, addSprayPoint, eraseFeatures, spacebarPanning]);
 
-  const onMouseDown = useCallback(() => {
-    if (drawMode === 'spray' || drawMode === 'line') setIsDrawing(true);
-  }, [drawMode]);
+  const onMouseDown = useCallback((e: any) => {
+    if (drawMode === 'spray' || drawMode === 'line' || drawMode === 'eraser') {
+      setIsDrawing(true);
+      if (drawMode === 'eraser') eraseFeatures(e.lngLat.lng, e.lngLat.lat);
+    }
+  }, [drawMode, eraseFeatures]);
 
   const onMouseUp = useCallback(() => setIsDrawing(false), []);
 
@@ -581,10 +626,11 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
     if (drawMode === 'spray') {
       addSprayPoint(e.lngLat.lng, e.lngLat.lat);
     } else if (drawMode === 'line') {
-      // Dibujo continuo de trayecto al arrastrar
       addLinePoint(e.lngLat.lng, e.lngLat.lat, false);
+    } else if (drawMode === 'eraser') {
+      eraseFeatures(e.lngLat.lng, e.lngLat.lat);
     }
-  }, [isDrawing, drawMode, addSprayPoint, addLinePoint]);
+  }, [isDrawing, drawMode, addSprayPoint, addLinePoint, eraseFeatures]);
 
   // ── Panel de capas (portal) ───────────────────────────────────────────
   const renderLayerPanel = () => (
@@ -595,7 +641,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
           <span className="material-symbols-outlined text-sm">layers</span> Multicapas
         </h2>
         <div className="flex items-center gap-1 bg-foreground/5 p-1 flex-wrap">
-          {(['none', 'marker', 'line', 'spray'] as const).map(m => (
+          {(['none', 'marker', 'line', 'spray', 'eraser'] as const).map(m => (
             <button
               key={m}
               onClick={() => setDrawMode(m)}
@@ -613,8 +659,27 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
         </div>
         {drawMode !== 'none' && (
           <p className="text-[9px] text-foreground/40 mt-2 text-center">
-            {drawMode === 'spray' ? 'Mantén pulsado y arrastra para pintar' : drawMode === 'line' ? 'Haz clic para añadir puntos. Shift+clic para nueva línea' : 'Haz clic en el mapa para colocar'}
+            {drawMode === 'spray' ? 'Mantén pulsado y arrastra para pintar' : 
+             drawMode === 'eraser' ? 'Arrastra para borrar trazos y puntos' :
+             drawMode === 'line' ? 'Haz clic para añadir puntos. Shift+clic para nueva línea' : 
+             'Haz clic en el mapa para colocar'}
           </p>
+        )}
+        
+        {/* Brush Size Slider */}
+        {(drawMode === 'spray' || drawMode === 'eraser') && (
+          <div className="mt-4 p-3 bg-foreground/[0.03] border border-foreground/5 flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[9px] font-black uppercase tracking-widest text-foreground/40">Tamaño del Pincel</span>
+              <span className="text-[9px] font-mono text-primary font-bold">{brushSize}px</span>
+            </div>
+            <input 
+              type="range" min="2" max="100" 
+              value={brushSize}
+              onChange={(e) => setBrushSize(Number(e.target.value))}
+              className="w-full accent-primary h-1"
+            />
+          </div>
         )}
       </div>
 
@@ -816,6 +881,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
               spacebarPanning ? 'grab' :
               drawMode === 'line' ? 'crosshair' :
               drawMode === 'spray' ? 'cell' :
+              drawMode === 'eraser' ? 'not-allowed' :
               drawMode === 'marker' ? 'copy' :
               'grab'
             }

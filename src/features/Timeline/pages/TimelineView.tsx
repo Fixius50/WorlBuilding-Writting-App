@@ -10,7 +10,7 @@ import ConfirmationModal from '../../../components/common/ConfirmationModal';
 import GlassPanel from '../../../components/common/GlassPanel';
 import Button from '../../../components/common/Button';
 import TimelineEventCard from '../components/TimelineEventCard';
-import '../../../assets/TimelineView.css';
+// import '../../../assets/TimelineView.css'; // REMOVED: Styles now in index.css
 
 import { TimelineLine, UniverseExtended } from '../../../types/timeline';
 
@@ -67,31 +67,31 @@ const TimelineView = () => {
  const timelineRef = useRef<HTMLDivElement>(null);
 
  const scrollLeft = () => {
- if (timelineRef.current) {
- timelineRef.current.scrollBy({ left: -300, behavior: 'smooth' });
- }
+	if (timelineRef.current) {
+	timelineRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+	}
  };
 
  const scrollRight = () => {
- if (timelineRef.current) {
- timelineRef.current.scrollBy({ left: 300, behavior: 'smooth' });
- }
+	if (timelineRef.current) {
+	timelineRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+	}
  };
 
  // Logic wrappers
  const refreshLinks = async (currentId: number, allTimelines: TimelineLine[]) => {
  // TODO: Implementar relaciones en DB local
- console.log('Refresh links not implemented in local-first yet', currentId, allTimelines);
+	console.log('Refresh links not implemented in local-first yet', currentId, allTimelines);
  };
 
  const handleLinkTimeline = async (targetId: number) => {
  // TODO: Implementar relaciones en DB local
- console.log('Link timeline not implemented in local-first yet', targetId);
+	console.log('Link timeline not implemented in local-first yet', targetId);
  };
 
  const handleUnlinkTimeline = async (targetId: number) => {
  // TODO: Implementar relaciones en DB local
- console.log('Unlink timeline not implemented in local-first yet', targetId);
+	console.log('Unlink timeline not implemented in local-first yet', targetId);
  };
 
  // Portal Setup
