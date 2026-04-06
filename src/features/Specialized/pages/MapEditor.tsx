@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import Map, { NavigationControl, Source, Layer, Marker, Popup } from 'react-map-gl/maplibre';
+// @ts-ignore
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { entityService } from '../../../database/entityService';
 import { Entidad } from '../../../database/types';
@@ -61,11 +62,19 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
   const [is3D, setIs3D] = useState(false); // Flag para renderizado 3D vs 2D
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
   const [brushSize, setBrushSize] = useState(20);
+  const [lineContinuous, setLineContinuous] = useState(true);
+  const [eraserPoint, setEraserPoint] = useState<{ lng: number; lat: number } | null>(null);
   const [allEntities, setAllEntities] = useState<Entidad[]>([]);
   const [showEntityPicker, setShowEntityPicker] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [linkingMarkerId, setLinkingMarkerId] = useState<string | null>(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState<string | null>(null);
+
+  const [history, setHistory] = useState<{ markers: MapMarker[]; features: any }[]>([]);
+  const [future, setFuture] = useState<{ markers: MapMarker[]; features: any }[]>([]);
+  const historyRef = useRef<{ markers: MapMarker[]; features: any }[]>([]);
+  const futureRef = useRef<{ markers: MapMarker[]; features: any }[]>([]);
+  const actionSavedRef = useRef(false);
 
   const [resolvedUrls, setResolvedUrls] = useState<Record<string, string>>({});
   const [processingLayers, setProcessingLayers] = useState<Set<string>>(new Set());
@@ -90,6 +99,91 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
   const mapRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const portalRef = document.getElementById('global-right-panel-portal');
+
+  const getHistorySnapshot = useCallback(() => ({
+    markers: JSON.parse(JSON.stringify(markers)),
+    features: JSON.parse(JSON.stringify(features)),
+  }), [markers, features]);
+
+  const pushHistory = useCallback((snapshot: { markers: MapMarker[]; features: any }) => {
+    setHistory(prev => {
+      const next = [...prev, snapshot];
+      historyRef.current = next;
+      return next;
+    });
+    setFuture([]);
+    futureRef.current = [];
+  }, []);
+
+  const restoreSnapshot = useCallback((snapshot: { markers: MapMarker[]; features: any }) => {
+    setMarkers(snapshot.markers);
+    setFeatures(snapshot.features);
+  }, []);
+
+  const handleUndo = useCallback(() => {
+    const currentHistory = historyRef.current;
+    if (currentHistory.length === 0) return;
+    const lastSnapshot = currentHistory[currentHistory.length - 1];
+    const currentSnapshot = getHistorySnapshot();
+
+    setHistory(prev => {
+      const next = prev.slice(0, -1);
+      historyRef.current = next;
+      return next;
+    });
+    setFuture(prev => {
+      const next = [currentSnapshot, ...prev];
+      futureRef.current = next;
+      return next;
+    });
+    restoreSnapshot(lastSnapshot);
+  }, [getHistorySnapshot, restoreSnapshot]);
+
+  const handleRedo = useCallback(() => {
+    const currentFuture = futureRef.current;
+    if (currentFuture.length === 0) return;
+    const nextSnapshot = currentFuture[0];
+    const currentSnapshot = getHistorySnapshot();
+
+    setFuture(prev => {
+      const next = prev.slice(1);
+      futureRef.current = next;
+      return next;
+    });
+    setHistory(prev => {
+      const next = [...prev, currentSnapshot];
+      historyRef.current = next;
+      return next;
+    });
+    restoreSnapshot(nextSnapshot);
+  }, [getHistorySnapshot, restoreSnapshot]);
+
+  const saveHistorySnapshot = useCallback(() => {
+    if (actionSavedRef.current) return;
+    pushHistory(getHistorySnapshot());
+    actionSavedRef.current = true;
+  }, [getHistorySnapshot, pushHistory]);
+
+  const endCurrentAction = useCallback(() => {
+    setIsDrawing(false);
+    actionSavedRef.current = false;
+  }, []);
+
+  // ── Cuando cambia el modo de línea, finaliza y descarta la línea actual ─
+  useEffect(() => {
+    endCurrentAction();
+    // Elimina la última línea incompleta si existe
+    setFeatures((prev: any) => {
+      if (!prev.features || prev.features.length === 0) return prev;
+      const lastIdx = prev.features.length - 1;
+      const last = prev.features[lastIdx];
+      // Si la última es un LineString con menos de 2 puntos, eliminarla
+      if (last && last.geometry.type === 'LineString' && last.geometry.coordinates.length < 2) {
+        return { ...prev, features: prev.features.slice(0, -1) };
+      }
+      return prev;
+    });
+  }, [lineContinuous, endCurrentAction]);
 
   // ── Utilidad para convertir SVG a PNG (DataURL) ───────────────────────
   const resolveImageUrl = async (url: string, layerId: string): Promise<string> => {
@@ -176,11 +270,30 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
     const observer = new MutationObserver(updateBg);
     observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
-    // ── Spacebar to pan ────────────────────────────────────────────────
+    // ── Teclado: espacio para mover y Ctrl+Z / Ctrl+Y para historial ──
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && !e.repeat && (e.target as HTMLElement).tagName !== 'INPUT' && (e.target as HTMLElement).tagName !== 'TEXTAREA') {
+      const tag = (e.target as HTMLElement).tagName;
+      if (e.code === 'Space' && !e.repeat && tag !== 'INPUT' && tag !== 'TEXTAREA') {
         e.preventDefault();
         setSpacebarPanning(true);
+        endCurrentAction();
+        return;
+      }
+
+      const isUndo = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z';
+      const isRedo = (e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.key.toLowerCase() === 'z' && e.shiftKey));
+      if (isUndo || isRedo) {
+        e.preventDefault();
+        if (isUndo) {
+          handleUndo();
+        } else {
+          handleRedo();
+        }
+        return;
+      }
+
+      if (e.code === 'Escape') {
+        setDrawMode('none');
       }
     };
     const onKeyUp = (e: KeyboardEvent) => {
@@ -402,6 +515,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
             </button>
             <button 
               onClick={() => {
+                saveHistorySnapshot();
                 setMarkers(markers.filter(m => m.id !== showConfirmDelete));
                 setSelectedMarkerId(null);
                 setShowConfirmDelete(null);
@@ -476,16 +590,19 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
     });
   }, [brushSize, selectedLayerId]);
 
-  const addLinePoint = useCallback((lng: number, lat: number, isNew: boolean = false) => {
+  const addLinePoint = useCallback((lng: number, lat: number, forceNew: boolean = false) => {
     setFeatures((prev: any) => {
       const fts = [...prev.features];
       const lastIdx = fts.length - 1;
       const last = lastIdx >= 0 ? fts[lastIdx] : null;
 
-      // Unir al último trayecto si existe y no es "nuevo"
-      const canAppend = !isNew && last && last.geometry.type === 'LineString' && last.properties?.layerId === selectedLayerId;
+      // En separado: click crea nueva (forceNew=true), drag continúa (forceNew=false)
+      // En continuo: click y drag continúan con anterior si existe
+      const hasCurrentLine = last && last.geometry.type === 'LineString' && last.properties?.layerId === selectedLayerId;
+      const shouldAppend = !forceNew && hasCurrentLine;
 
-      if (canAppend) {
+      if (shouldAppend) {
+        // Añadir punto a línea existente
         fts[lastIdx] = {
           ...last,
           geometry: {
@@ -494,6 +611,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
           }
         };
       } else {
+        // Crear nueva línea
         fts.push({
           type: 'Feature',
           geometry: {
@@ -505,7 +623,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
       }
       return { ...prev, features: fts };
     });
-  }, [selectedLayerId]);
+  }, [selectedLayerId, lineContinuous]);
 
   // ── Estabilización de props para el Mapa ───────────────────────────────
   const mapStyle = React.useMemo(() => ({
@@ -554,6 +672,33 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
     return map;
   }, [features]);
 
+  const renderEraserCursor = React.useMemo(() => {
+    if (drawMode !== 'eraser' || !eraserPoint) return null;
+    return (
+      <Source
+        key="eraser-cursor-src"
+        id="eraser-cursor-src"
+        type="geojson"
+        data={{
+          type: 'FeatureCollection' as const,
+          features: [{ type: 'Feature' as const, geometry: { type: 'Point' as const, coordinates: [eraserPoint.lng, eraserPoint.lat] }, properties: {} }]
+        }}
+      >
+        <Layer
+          id="eraser-cursor-layer"
+          type="circle"
+          paint={{
+            'circle-radius': brushSize,
+            'circle-color': 'rgba(255,255,255,0)',
+            'circle-stroke-color': 'rgba(255,255,255,0.9)',
+            'circle-stroke-width': 1,
+            'circle-stroke-opacity': 0.9,
+          }}
+        />
+      </Source>
+    );
+  }, [drawMode, eraserPoint, brushSize]);
+
   const renderDrawLayers = drawableLayers.map(layer => {
     const layerFeats = featuresByLayer[layer.id] || [];
     const sourceId = `draw-src-${layer.id}`;
@@ -592,45 +737,73 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
 
 
   const onMapClick = useCallback((e: any) => {
-    // Si spacebar activo, no procesar clics de dibujo
     if (spacebarPanning) return;
+    if (e.originalEvent?.button === 2) return;
     if (drawMode === 'none') {
       setSelectedMarkerId(null);
       return;
     }
+    e.originalEvent?.preventDefault?.();
+    e.originalEvent?.stopPropagation?.();
+
     const { lng, lat } = e.lngLat;
     if (drawMode === 'marker') {
+      saveHistorySnapshot();
       const newId = `m-${Date.now()}`;
       setMarkers(prev => [...prev, { id: newId, lng, lat, label: 'Punto' }]);
       setSelectedMarkerId(newId);
     } else if (drawMode === 'line') {
-      addLinePoint(lng, lat, e.originalEvent?.shiftKey ?? false);
-    } else if (drawMode === 'spray') {
+      saveHistorySnapshot();
+      const forceNew = !lineContinuous || (e.originalEvent?.shiftKey ?? false);
+      addLinePoint(lng, lat, forceNew);
+    }
+  }, [drawMode, addLinePoint, saveHistorySnapshot, spacebarPanning, lineContinuous]);
+
+  const onMouseDown = useCallback((e: any) => {
+    if (spacebarPanning) return;
+    if (e.originalEvent?.button === 2) return;
+    if (drawMode === 'spray' || drawMode === 'line' || drawMode === 'eraser') {
+      saveHistorySnapshot();
+      setIsDrawing(true);
+      e.originalEvent?.preventDefault?.();
+      e.originalEvent?.stopPropagation?.();
+      const { lng, lat } = e.lngLat;
+      if (drawMode === 'spray') {
+        addSprayPoint(lng, lat);
+      } else if (drawMode === 'line') {
+        // Iniciar nueva línea en drag (separado siempre, continuo depende)
+        addLinePoint(lng, lat, !lineContinuous);
+      } else if (drawMode === 'eraser') {
+        eraseFeatures(lng, lat);
+      }
+      if (drawMode === 'eraser') {
+        setEraserPoint({ lng, lat });
+      }
+    }
+  }, [drawMode, addSprayPoint, addLinePoint, eraseFeatures, saveHistorySnapshot, spacebarPanning, lineContinuous]);
+
+  const onMouseUp = useCallback(() => {
+    endCurrentAction();
+    if (drawMode === 'eraser') setEraserPoint(null);
+  }, [drawMode, endCurrentAction]);
+
+  const onMouseMove = useCallback((e: any) => {
+    if (spacebarPanning) return;
+    if (e.originalEvent?.buttons === 2) return;
+    const { lng, lat } = e.lngLat;
+    if (drawMode === 'eraser') {
+      setEraserPoint({ lng, lat });
+    }
+    if (!isDrawing) return;
+    if (drawMode === 'spray') {
       addSprayPoint(lng, lat);
+    } else if (drawMode === 'line') {
+      // Durante arrastre, continúa la línea iniciada
+      addLinePoint(lng, lat, false);
     } else if (drawMode === 'eraser') {
       eraseFeatures(lng, lat);
     }
-  }, [drawMode, addLinePoint, addSprayPoint, eraseFeatures, spacebarPanning]);
-
-  const onMouseDown = useCallback((e: any) => {
-    if (drawMode === 'spray' || drawMode === 'line' || drawMode === 'eraser') {
-      setIsDrawing(true);
-      if (drawMode === 'eraser') eraseFeatures(e.lngLat.lng, e.lngLat.lat);
-    }
-  }, [drawMode, eraseFeatures]);
-
-  const onMouseUp = useCallback(() => setIsDrawing(false), []);
-
-  const onMouseMove = useCallback((e: any) => {
-    if (!isDrawing) return;
-    if (drawMode === 'spray') {
-      addSprayPoint(e.lngLat.lng, e.lngLat.lat);
-    } else if (drawMode === 'line') {
-      addLinePoint(e.lngLat.lng, e.lngLat.lat, false);
-    } else if (drawMode === 'eraser') {
-      eraseFeatures(e.lngLat.lng, e.lngLat.lat);
-    }
-  }, [isDrawing, drawMode, addSprayPoint, addLinePoint, eraseFeatures]);
+  }, [isDrawing, drawMode, addSprayPoint, addLinePoint, eraseFeatures, spacebarPanning]);
 
   // ── Panel de capas (portal) ───────────────────────────────────────────
   const renderLayerPanel = () => (
@@ -641,7 +814,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
           <span className="material-symbols-outlined text-sm">layers</span> Multicapas
         </h2>
         <div className="flex items-center gap-1 bg-foreground/5 p-1 flex-wrap">
-          {(['none', 'marker', 'line', 'spray', 'eraser'] as const).map(m => (
+          {(['marker', 'line', 'spray', 'eraser'] as const).map(m => (
             <button
               key={m}
               onClick={() => setDrawMode(m)}
@@ -658,12 +831,14 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
           ))}
         </div>
         {drawMode !== 'none' && (
-          <p className="text-[9px] text-foreground/40 mt-2 text-center">
-            {drawMode === 'spray' ? 'Mantén pulsado y arrastra para pintar' : 
-             drawMode === 'eraser' ? 'Arrastra para borrar trazos y puntos' :
-             drawMode === 'line' ? 'Haz clic para añadir puntos. Shift+clic para nueva línea' : 
-             'Haz clic en el mapa para colocar'}
-          </p>
+          <div className="space-y-3">
+            <p className="text-[9px] text-foreground/40 mt-2 text-center">
+              {drawMode === 'spray' ? 'Mantén pulsado y arrastra para pintar' : 
+               drawMode === 'eraser' ? 'Arrastra para borrar trazos y puntos' :
+               drawMode === 'line' ? 'Haz clic para añadir puntos. Shift+clic para nueva línea' : 
+               'Haz clic en el mapa para colocar'}
+            </p>
+          </div>
         )}
         
         {/* Brush Size Slider */}
@@ -773,6 +948,19 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
               )}
             </div>
 
+            {/* Fila 3b: Modo línea (solo para vector) */}
+            {layer.type === 'vector' && drawMode === 'line' && selectedLayerId === layer.id && (
+              <div className="flex items-center justify-center gap-2 text-[9px] p-2 border border-foreground/5 bg-foreground/[0.02]">
+                <span className="uppercase tracking-[0.2em] text-foreground/40">Línea</span>
+                <button
+                  onClick={() => setLineContinuous(prev => !prev)}
+                  className={`rounded-full px-2 py-1 border text-[9px] font-black uppercase tracking-[0.15em] transition-all ${lineContinuous ? 'border-primary bg-primary text-white' : 'border-foreground/20 bg-background text-foreground'}`}
+                >
+                  {lineContinuous ? 'Continuo' : 'Separado'}
+                </button>
+              </div>
+            )}
+
             {/* Fila 4: imagen (URL + subida local) */}
             {layer.type === 'image' && (
               <div className="space-y-1.5" onClick={() => setSelectedLayerId(layer.id)}>
@@ -876,12 +1064,17 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
             onMouseDown={onMouseDown}
             onMouseUp={onMouseUp}
             onMouseMove={onMouseMove}
+            onMouseLeave={onMouseUp}
+            onContextMenu={(e: any) => {
+              e.originalEvent?.preventDefault?.();
+              e.originalEvent?.stopPropagation?.();
+            }}
             dragPan={drawMode === 'none' || drawMode === 'marker' || spacebarPanning}
             cursor={
               spacebarPanning ? 'grab' :
               drawMode === 'line' ? 'crosshair' :
               drawMode === 'spray' ? 'cell' :
-              drawMode === 'eraser' ? 'not-allowed' :
+              drawMode === 'eraser' ? 'crosshair' :
               drawMode === 'marker' ? 'copy' :
               'grab'
             }
@@ -890,6 +1083,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
 
             {renderImageLayers}
             {renderDrawLayers}
+            {renderEraserCursor}
 
             {markers.map(m => (
               <Marker key={m.id} longitude={m.lng || 0} latitude={m.lat || 0}>
@@ -901,6 +1095,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
                   onClick={(e) => { 
                     e.stopPropagation(); 
                     if (e.shiftKey) {
+                      saveHistorySnapshot();
                       setMarkers(markers.filter(mx => mx.id !== m.id));
                       setSelectedMarkerId(null);
                     } else {
