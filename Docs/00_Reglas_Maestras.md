@@ -25,8 +25,8 @@ Este proyecto requiere un altísimo nivel de consistencia, documentación y cali
      - **useMemo / useCallback:** Obligatorios para cualquier objeto de contexto o función pasada como prop a componentes hijos. Prohibido crear objetos/funciones en el render sin memoizar.
      - **Gestión de Efectos:** Usar `useRef` para funciones o handlers que se necesiten dentro de un `useEffect` pero que no deban dispararlo de nuevo (patrón de estabilidad).
      - **Evitar Cascada:** No usar `setState` en bucles de dependencias que afecten al layout global.
-  3. **Local-First (Flexible):** La persistencia base usa SQLite WASM (via `sql-js` o similar). Sin embargo, **está permitido** el uso de APIs (`api.js`) cuando el diseño lo requiera.
-  4. **Arquitectura:** La app es 100% Vite Frontend. El servidor u otras APIs se usan como apoyo.
+  3. **Local-First (Flexible):** La persistencia base usa SQLite WASM (via `sql-js` o similar). Sin embargo, está permitido el uso de APIs (`api.js`) cuando el diseño lo requiera.
+  4. **Arquitectura Híbrida:** Separación física estricta entre `/frontend` (Vite, Clean Architecture) y `/backend` (Java Spring Boot, Domain-Driven Design).
   5. **Diseño:** Seguir el estándar "Technical Zen (Monolithic)" definido en `02_Diseño_UI_UX.md`.
   6. **Idioma:** Código e interfaz en Español (Nombres de variables en Inglés por convención).
 

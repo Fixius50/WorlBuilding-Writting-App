@@ -2,20 +2,22 @@
 
 Este documento define las decisiones arquitectónicas clave del proyecto tras la consolidación de la arquitectura Local-First.
 
-## STACK TECNOLÓGICO ACTUAL
+## STACK TECNOLÓGICO Y ARQUITECTURA HÍBRIDA
 
-* **Frontend (UI y Lógica Core):** React 19.2.4 con Vite.
+El proyecto adopta un "Mapa de Carpetas Definitivo" con separación física total:
+
+* **Frontend (UI y Lógica Core) en `/frontend`:** React 19.2.4 con Vite.
+  * Arquitectura Interna: **Clean Architecture** (`domain`, `application`, `infrastructure`) + **Atomic Design** (`presentation`: `atoms`, `molecules`, `organisms`, `templates`, `pages`).
   * Estado: Context API + Zustand (Manejador de Estado Global ligero).
   * Routing: React Router Dom.
   * Estilos: Glassmorphism y utilidades Tailwind CSS.
-  * Compatibilidad: Optimizado para React 19 (Evitando librerías legacy como `reactflow@11` en favor de `@xyflow/react`).
-* **Persistencia (BBDD Local-First):** SQLite WASM (`sqlocal`) sobre OPFS (Origin Private File System).
+  * Aliasing de rutas configurado (ej. `@components`, `@features`, `@database`, `@assets`).
+* **Persistencia (BBDD Local-First):** SQLite WASM (`sqlocal`) sobre OPFS.
   * Almacenamiento absoluto de datos en el navegador del cliente. Cero latencia de red.
   * Aislamiento: Requiere cabeceras COOP/COEP inyectadas por el servidor auxiliar.
-* **Servidor Auxiliar (Helper):** Java 21 + Spring Web / Jetty.
-  * Localizado en `src/main/java`.
-  * Empaquetado: Servido mediante un lanzador **Node.js (compilado con `pkg`)** llamado `Chronos Atlas.exe`.
-  * Responsabilidad: Gestión de archivos del sistema, inyección de cabeceras de seguridad y servidor de archivos estáticos para la SPA.
+* **Backend Auxiliar (Helper) en `/backend`:** Java 21 + Spring Web / Jetty.
+  * Arquitectura Interna: **Domain-Driven Design (DDD)** con subpaquetes como `worldbible`, `mapeditor` y `linguistics` bajo el namespace `com.worldbuilding`.
+  * Responsabilidad: Gestión de archivos del sistema, OPFS bridge, snapshots en disco y utilidades de entorno.
 
 ## ARQUITECTURA DE DATOS
 

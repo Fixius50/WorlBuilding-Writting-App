@@ -16,6 +16,6 @@ Sistema que une fonemas basados en reglas de construcción silábica (ej. CVC, C
 - **Relaciones:** Sistema de reglas gramaticales vinculadas a lenguas específicas.
 
 ## PERSISTENCIA Y SYNC
-- **Local-First:** Los datos se almacenan en la tabla `entidades` de SQLite local a través de `entityService`.
+- **Local-First:** Los datos se almacenan en la tabla `entidades` de SQLite local a través de la capa de infraestructura del frontend.
 - **Estructura JSON:** Las propiedades visuales de los glifos (`svgPathData`, `layers`) se encapsulan en el campo `contenido_json` de la entidad tipo `Word`.
 - **Exportación:** Capacidad de descargar la fuente compilada directamente como archivo físico para uso en software de diseño externo.

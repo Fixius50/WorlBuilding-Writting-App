@@ -1,4 +1,4 @@
-package com.worldbuilding.auxserver.controller;
+package com.worldbuilding.core.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

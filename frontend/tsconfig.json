@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "ignoreDeprecations": "6.0",
     "target": "ES2020",
     "useDefineForClassFields": true,
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
@@ -19,6 +18,10 @@
     "types": [],
     "baseUrl": ".",
     "paths": {
+      "@components/*": ["src/components/*"],
+      "@features/*": ["src/features/*"],
+      "@database/*": ["src/database/*"],
+      "@assets/*": ["src/assets/*"],
       "@/*": ["./src/*"]
     }
   },

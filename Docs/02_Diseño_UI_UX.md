@@ -34,6 +34,13 @@ El sistema permite la selección dinámica de fuentes en Ajustes, pero la jerarq
 3.  **Interactividad Reactiva:** 
     *   Los cambios de Idioma y Tema se aplican al instante mediante el bus de eventos del sistema sin recargar la página.
 
-## ESTILOS LIMPIOS Y MONOLÍTICOS
-*   Prioridad a paneles de colores sólidos con contraste sutil, limpios. Cero texturas, cero difuminados (`backdrop-blur`). El espacio de escritura debe sentirse inmaculado.
 *   **Prohibición de Estéticas Sci-Fi/Cyber:** Está terminantemente prohibido el diseño estilo "Pantalla de Hacker" o "Sistema Futurista" (referencias a "Datastream", "Buffer", letras hiper-espaciadas `tracking-[0.5em]`, barras interactivas falsas brillantes o colores neón fuera de la paleta controlada). Toda ventana debe sentirse como un panel de diseño técnico, atemporal, purista y académico (Technical Zen).
+
+## ORGANIZACIÓN VISUAL (ATOMIC DESIGN)
+
+La capa de presentación (`/presentation`) se rige estrictamente por Atomic Design:
+1.  **Atoms:** Componentes base indivisibles (botones, inputs, iconos).
+2.  **Molecules:** Uniones simples de átomos (ej. campo de búsqueda con icono).
+3.  **Organisms:** Secciones complejas y autónomas (ej. el Architect Sidebar, el explorador de entidades).
+4.  **Templates:** Layouts de página que definen la estructura sin datos reales.
+5.  **Pages:** Vistas completas que inyectan datos de la capa de `application`.

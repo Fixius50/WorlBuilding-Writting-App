@@ -4,6 +4,15 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
 
 ## 🕒 CRONOLOGÍA DE HITOS (2026)
 
+### ABRIL 2026
+
+- **2026-04-17: Migración a Arquitectura Híbrida (Vite + Spring Boot DDD)**
+  - **Separación Física:** El proyecto se divide en carpetas raíz `/frontend` y `/backend`.
+  - **Clean Architecture Frontend:** Implementación de capas `domain`, `application`, `infrastructure` y `presentation`.
+  - **Atomic Design presentación:** Distribución de componentes en `atoms`, `molecules`, `organisms`, `templates` y `pages`.
+  - **DDD Backend:** Organización del servidor Java por dominios bajo `com.worldbuilding`.
+  - **Path Aliasing:** Configuración de alias `@components`, `@features`, `@database`, `@assets` y `@` en Vite y TS.
+
 ### MARZO 2026
 
 - **2026-03-31: MapEditor Multicapa — Fase de Estabilización y Cierre**

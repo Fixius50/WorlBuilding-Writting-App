@@ -1,4 +1,4 @@
-package com.worldbuilding.auxserver.controller;
+package com.worldbuilding.core.controller;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;

@@ -34,6 +34,9 @@
 - [x] **Tipado Estricto:** Refactorización continua hacia TypeScript estricto.
 - [x] **Estética Inviolable:** Consolidación total del paradigma "Technical Zen / Monolithic".
 - [x] **Arquitectura API (Flexible):** Llamadas de red permitidas para tareas que lo ameriten.
+- [x] **Arquitectura Híbrida Definitiva:** Separación física `/frontend` (Vite + Clean Arch) y `/backend` (Java + DDD).
+- [x] **Clean Architecture + Atomic Design:** Reestructuración total del frontend para escalabilidad y mantenibilidad.
+- [x] **DDD (Domain-Driven Design):** Organización del backend Java por dominios (`worldbible`, `mapeditor`, `linguistics`).
 - [x] **Mapas Multicapa (MapEditor) — Completado ✅**
   - [x] Motor de renderizado de capas con soporte SVG→PNG (DataURL).
   - [x] Capas tipo imagen, dibujo spray y trayectos (LineString acumulativo).

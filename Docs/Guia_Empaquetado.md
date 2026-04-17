@@ -13,13 +13,13 @@ La aplicación **World Bible** no es un ejecutable monolítico simple, sino una 
 ```powershell
 npm run build
 ```
-Esto genera la carpeta `dist/` optimizada.
+Esto genera la carpeta `frontend/dist/` optimizada.
 
 ### Backend Auxiliar (Java/Maven)
 ```powershell
 mvn clean package
 ```
-Esto genera `server-aux/target/server-aux.jar`.
+Esto genera `backend/target/aux-server-1.0.0.jar`.
 
 ## 3. Estrategia de Lanzamiento (Run-App)
 
