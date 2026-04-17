@@ -1,9 +1,9 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App'
-import './assets/index.css'
+import App from '@/App'
+import '@/assets/index.css'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { initializeDatabase } from './database/db'
+import { initializeDatabase } from '@/database/db'
 
 // Global Handlers (Opcional: Migrar a un logger local en el futuro)
 const reportError = (source: string, message: string, stack?: string, componentStack?: string) => {

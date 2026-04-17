@@ -1,82 +1,45 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import AppLayout from './components/layout/AppLayout';
 
-import WorkspaceSelector from './pages/WorkspaceSelector';
-import ProjectView from './pages/ProjectView';
-import Settings from './features/Settings/pages/Settings';
-import ArchitectLayout from './components/layout/ArchitectLayout';
-import GeneralGraphView from './features/Graph/pages/GeneralGraphView';
-import EntityRouter from './features/Entities/pages/EntityRouter';
-import TimelineView from './features/Timeline/pages/TimelineView';
-import MapRouter from './features/Maps/pages/MapRouter';
-import LinguisticsRouter from './features/Linguistics/pages/LinguisticsRouter';
-import TrashView from './features/Trash/pages/TrashView';
-import EntityBuilder from './features/Entities/pages/EntityBuilder';
-import FolderView from './features/Entities/pages/FolderView';
-import WorldBibleLayout from './features/WorldBible/pages/WorldBibleLayout';
-import BibleGridView from './features/WorldBible/pages/BibleGridView';
-import MapEditor from './features/Specialized/pages/MapEditor';
-import Dashboard from './features/Dashboard/pages/Dashboard';
-import WritingHub from './features/Writing/pages/WritingHub';
-import WritingView from './features/Writing/pages/WritingView';
-import DimensionEditor from './features/Timeline/pages/DimensionEditor';
+// Layout
+import AppLayout from '@/components/layout/AppLayout';
+import ArchitectLayout from '@/components/layout/ArchitectLayout';
 
-import React, { useState, useEffect } from 'react';
-import { LanguageProvider } from './context/LanguageContext';
+// Pages (root level)
+import WorkspaceSelector from '@/pages/WorkspaceSelector';
+import ProjectView from '@/pages/ProjectView';
 
-interface User {
-  username: string;
-  // ... otros campos
-}
+// Features (via barrel files)
+import { Settings } from '@/features/Settings';
+import { Dashboard } from '@/features/Dashboard';
+import { EntityRouter, EntityBuilder, FolderView } from '@/features/Entities';
+import { GeneralGraphView } from '@/features/Graph';
+import { TimelineView, DimensionEditor } from '@/features/Timeline';
+import { MapRouter } from '@/features/Maps';
+import { MapEditor } from '@/features/Specialized';
+import { LinguisticsRouter } from '@/features/Linguistics';
+import { TrashView } from '@/features/Trash';
+import { WorldBibleLayout, BibleGridView } from '@/features/WorldBible';
+import { WritingHub, WritingView } from '@/features/Writing';
 
-function App() {
-  const [theme, setTheme] = useState<string>('deep_space');
-  // @ts-ignore - Temporary until we define full User type
-  const [user, setUser] = useState<User | null>(null);
+// Store & Context
+import { useAppStore } from '@/store/useAppStore';
+import { LanguageProvider } from '@/context/LanguageContext';
 
+const App = () => {
+  const theme = useAppStore((state) => state.theme);
+  const syncFromStorage = useAppStore((state) => state.syncFromStorage);
+
+  // Sync theme/user desde localStorage cuando otros componentes disparan 'storage_update'
   useEffect(() => {
-    // Load initial
-    const savedSettings = localStorage.getItem('app_settings');
-    if (savedSettings) {
-      try {
-        const settings = JSON.parse(savedSettings);
-        if (settings.theme) setTheme(settings.theme);
-      } catch(e) {}
-    }
-    const savedUser = localStorage.getItem('user');
-    if (savedUser && savedUser !== 'undefined') {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch(e) {}
-    }
-
-    const handleSync = () => {
-      const updatedSettings = localStorage.getItem('app_settings');
-      if (updatedSettings) {
-        try {
-          const settings = JSON.parse(updatedSettings);
-          if (settings.theme) {
-            setTheme(prev => settings.theme !== prev ? settings.theme : prev);
-          }
-        } catch (e) { }
-      }
-      const updatedUser = localStorage.getItem('user');
-      if (updatedUser && updatedUser !== 'undefined') {
-        try {
-          setUser(JSON.parse(updatedUser));
-        } catch (e) { }
-      }
-    };
-
+    const handleSync = () => syncFromStorage();
     window.addEventListener('storage_update', handleSync);
     return () => window.removeEventListener('storage_update', handleSync);
-  }, []);
+  }, [syncFromStorage]);
 
+  // Aplicar clase de tema al body
   useEffect(() => {
-    document.body.classList.forEach(cls => {
-      if (cls.startsWith('theme-')) document.body.classList.remove(cls);
-    });
-    document.body.classList.add(`theme-${theme}`);
+    document.body.className = `theme-${theme}`;
   }, [theme]);
 
   return (
@@ -122,6 +85,6 @@ function App() {
       </div>
     </LanguageProvider>
   );
-}
+};
 
 export default App;
