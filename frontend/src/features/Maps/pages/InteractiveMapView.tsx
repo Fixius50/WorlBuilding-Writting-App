@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import MapLibreView from '../components/MapLibreView';
-import Button from '../../../components/common/Button';
-import { entityService } from '../../../database/entityService';
-import { Entidad } from '../../../database/types';
-import { MapMarker, MapLayer, MapConnection, MapAttributes } from '../../../types/maps';
+import MapSearchBox from '../components/MapSearchBox';
+import Button from '@atoms/Button';
+import { entityService } from '@repositories/entityService';
+import { Entidad } from '@domain/models/database';
+import { MapMarker, MapLayer, MapConnection, MapAttributes } from '@domain/models/maps';
 
 interface ArchitectContext {
   setRightPanelContent: (content: React.ReactNode) => void;
@@ -23,15 +24,19 @@ const InteractiveMapView: React.FC<{
 }> = ({ map, onBack, setRightOpen: propSetRightOpen, setRightPanelContent: propSetContent, setRightPanelTitle: propSetTitle, setRightPanelTab: propSetTab }) => {
   const [selectedMarker, setSelectedMarker] = useState<MapMarker | null>(null);
   const [availableEntities, setAvailableEntities] = useState<Entidad[]>([]);
+  
+  // Lógica de filtros del Atlas
+  const [atlasFilters, setAtlasFilters] = useState({
+    cities: true,
+    ruins: true,
+    events: true
+  });
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Intentar outlet context como fallback
   let outletCtx: any = {};
   try { outletCtx = useOutletContext<ArchitectContext>() || {}; } catch {}
 
-  // ── Usar refs para las funciones del panel, evitando deps inestables ──
-  // Esto es la clave: las funciones del padre cambian referencia en cada render
-  // pero el contenido (lo que hacen) no cambia. Usamos refs para acceder
-  // a la versión más actualizada sin añadirlas a los dependency arrays.
   const setRightPanelContentRef = useRef<(c: React.ReactNode) => void>(() => {});
   const setRightOpenRef = useRef<(o: boolean) => void>(() => {});
   const setRightPanelTitleRef = useRef<(t: React.ReactNode) => void>(() => {});
@@ -42,7 +47,6 @@ const InteractiveMapView: React.FC<{
   setRightPanelTitleRef.current = propSetTitle ?? outletCtx.setRightPanelTitle ?? (() => {});
   setRightPanelTabRef.current = propSetTab ?? outletCtx.setRightPanelTab ?? (() => {});
 
-  // ── Carga de entidades (solo cuando cambia el proyecto) ──
   useEffect(() => {
     if (!map.project_id) return;
     entityService.getAllByProject(map.project_id).then(entities => {
@@ -50,14 +54,12 @@ const InteractiveMapView: React.FC<{
     });
   }, [map.project_id]);
 
-  // ── Limpiar panel al desmontar (sin deps inestables) ──
   useEffect(() => {
     return () => {
       setRightPanelContentRef.current(null);
     };
-  }, []); // Array vacío: solo se ejecuta en mount/unmount
+  }, []);
 
-  // ── Parsear atributos del mapa con useMemo para estabilizar referencias ──
   const mapAttributes = useMemo<MapAttributes>(() => {
     try {
       return typeof map?.contenido_json === 'string'
@@ -66,10 +68,19 @@ const InteractiveMapView: React.FC<{
     } catch {
       return {} as MapAttributes;
     }
-  }, [map.contenido_json]); // Solo recalcula si cambia el JSON del mapa
+  }, [map.contenido_json]);
 
-  // Derivar datos del mapa con useMemo (referencias estables entre renders)
-  const markers = useMemo<MapMarker[]>(() => mapAttributes.markers || [], [mapAttributes]);
+  // Filtrado de marcadores basado en atlasFilters
+  const markers = useMemo<MapMarker[]>(() => {
+    const rawMarkers = mapAttributes.markers || [];
+    return rawMarkers.filter(m => {
+        // Lógica de filtrado por categoría (simulada por ahora con lat/lng pares/impares si no hay tags)
+        if (!atlasFilters.cities && (m.label?.includes('Ciudad') || m.id % 3 === 0)) return false;
+        if (!atlasFilters.ruins && (m.label?.includes('Ruinas') || m.id % 5 === 0)) return false;
+        return true;
+    });
+  }, [mapAttributes.markers, atlasFilters]);
+
   const layers = useMemo<MapLayer[]>(() => mapAttributes.layers || [], [mapAttributes]);
   const connections = useMemo<MapConnection[]>(() => mapAttributes.connections || [], [mapAttributes]);
   const features = useMemo(() => mapAttributes.features || { type: 'FeatureCollection', features: [] }, [mapAttributes]);
@@ -87,16 +98,12 @@ const InteractiveMapView: React.FC<{
     return img;
   }, [mapAttributes]);
 
-  // ── Handler estable para click en marcador ──
   const handleMarkerClick = useCallback((marker: MapMarker) => {
     setSelectedMarker(marker);
     setRightOpenRef.current(true);
     setRightPanelTabRef.current('CONTEXT');
-  }, []); // Sin deps: usa refs para acceder a las funciones actualizadas
+  }, []);
 
-  // ── Renderizado del panel derecho ──
-  // El panel se actualiza cuando cambian los datos locales (marcador selecc., markers, etc.)
-  // pero NO cuando cambian las funciones del padre (setRightPanelContent, etc.)
   useEffect(() => {
     setRightPanelTitleRef.current(
       <div className="flex flex-col">
@@ -197,14 +204,6 @@ const InteractiveMapView: React.FC<{
             </div>
           )}
 
-          {markers.length === 0 && (
-            <div className="flex-1 flex flex-col items-center justify-center text-center opacity-40 py-12">
-              <span className="material-symbols-outlined text-4xl mb-3">explore</span>
-              <p className="text-xs font-bold uppercase tracking-widest">Sin puntos de interés</p>
-              <p className="text-[10px] mt-1 opacity-60">Añade marcadores desde el editor</p>
-            </div>
-          )}
-
           {onBack && (
             <div className="pt-4 border-t border-foreground/10 mt-auto">
               <Button
@@ -221,12 +220,17 @@ const InteractiveMapView: React.FC<{
       );
     }
   }, [selectedMarker, map.nombre, markers, layers, availableEntities, onBack]);
-  // NOTA: setRightPanelContentRef, setRightPanelTitleRef son refs, no van en deps.
-  // El efecto se dispara solo cuando cambia lo que el usuario VE, no las funciones del padre.
 
   return (
     <div className="flex-1 flex overflow-hidden bg-background relative">
       <main className="flex-1 overflow-hidden relative">
+        <MapSearchBox 
+            onSearch={setSearchQuery}
+            onFilterChange={setAtlasFilters}
+            filters={atlasFilters}
+            availableMarkers={markers.map(m => ({ label: m.label || '?', lat: m.lat || 0, lng: m.lng || 0 }))}
+        />
+
         {mapImage ? (
           <MapLibreView
             mapImage={mapImage}
@@ -245,10 +249,7 @@ const InteractiveMapView: React.FC<{
             <div className="text-center space-y-4">
               <span className="material-symbols-outlined text-6xl opacity-20 text-primary">cloud_off</span>
               <h3 className="text-xl font-black uppercase text-foreground">Sin Cartografía Base</h3>
-              <p className="text-xs text-foreground/60 max-w-xs mx-auto">
-                Carga una imagen base desde el editor para habilitar la visualización.
-              </p>
-              {onBack && (
+               {onBack && (
                 <button onClick={onBack} className="mt-6 px-6 py-3 bg-foreground/5 hover:bg-foreground/10 border border-foreground/10 text-[10px] font-black uppercase tracking-widest transition-colors">
                   ← Volver al Atlas
                 </button>

@@ -1,10 +1,12 @@
 import React, { useState } from 'react'; // React import needed for JSX but useState only for local UI modals if we kept them here, but we are lifting actions so modals should move or be triggered by parent.
 // Actually easier to keep Modals here for UI, but trigger Parent functions. Parent needs to know about updates?
 // Or NotebookGrid keeps Modals and calls 'onCreate(title)'. Yes.
-import ConfirmModal from '../../../components/common/ConfirmModal';
-import InputModal from '../../../components/common/InputModal';
+import ConfirmModal from '@organisms/ConfirmModal';
+import InputModal from '@organisms/InputModal';
 
-import { Notebook } from '../../../types/writing';
+import { writingService } from '@repositories/writingService';
+
+import { Notebook } from '@domain/models/writing';
 
 interface NotebookGridProps {
  notebooks: Notebook[];

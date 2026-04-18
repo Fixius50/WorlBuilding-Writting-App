@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useLanguage } from '../../../context/LanguageContext';
+import { useLanguage } from '@context/LanguageContext';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { notebookService, Cuaderno } from '../../../database/notebookService';
-import GlassPanel from '../../../components/common/GlassPanel';
+import { notebookService, Cuaderno } from '@repositories/notebookService';
+import GlassPanel from '@atoms/GlassPanel';
 
 interface WritingOutletContext {
   projectId: number;

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import GlassPanel from '../../../components/common/GlassPanel';
-import Avatar from '../../../components/common/Avatar';
-import Button from '../../../components/common/Button';
+import GlassPanel from '@atoms/GlassPanel';
+import Avatar from '@atoms/Avatar';
+import Button from '@atoms/Button';
 
 const TerritoryGridView = ({ id }: { id?: string | number }) => {
  return (

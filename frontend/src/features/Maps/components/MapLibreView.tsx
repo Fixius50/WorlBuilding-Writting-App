@@ -3,7 +3,7 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { MapboxOverlay } from '@deck.gl/mapbox';
 import { ScatterplotLayer, TextLayer, PathLayer, GeoJsonLayer } from '@deck.gl/layers';
-import { MapLayer, MapMarker, MapConnection } from '../../../types/maps';
+import { MapLayer, MapMarker, MapConnection } from '@domain/models/maps';
 
 interface MapLibreViewProps {
   mapImage: string;

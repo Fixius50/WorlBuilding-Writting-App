@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { HIERARCHY_TYPES } from '../../../utils/constants/hierarchy_types';
+import { HIERARCHY_TYPES } from '@utils/constants/hierarchy_types';
 
 interface CreateNodeModalProps {
   isOpen: boolean;

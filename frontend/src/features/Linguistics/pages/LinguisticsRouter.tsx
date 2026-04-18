@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import LinguisticsHub from './LinguisticsHub';
 import GlyphFoundry from './GlyphFoundry';
 
-import { entityService } from '../../../database/entityService';
+import { folderService } from '@repositories/folderService';
+import { entityService } from '@infrastructure/localDB/repositories/entityService';
 
 const LinguisticsRouter = () => {
  const [view, setView] = useState('hub'); // 'hub', 'foundry', 'editor'

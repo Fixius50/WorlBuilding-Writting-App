@@ -1,5 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { entityService } from '@repositories/entityService';
+import { Entidad } from '@domain/models/database';
+import GlassPanel from '@atoms/GlassPanel';
 
 interface MentionHoverCardProps {
  x: number;

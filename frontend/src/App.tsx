@@ -2,29 +2,30 @@ import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 // Layout
-import AppLayout from '@/components/layout/AppLayout';
-import ArchitectLayout from '@/components/layout/ArchitectLayout';
+import AppLayout from '@layout/AppLayout';
+import ArchitectLayout from '@layout/ArchitectLayout';
 
 // Pages (root level)
-import WorkspaceSelector from '@/pages/WorkspaceSelector';
-import ProjectView from '@/pages/ProjectView';
+import WorkspaceSelector from '@presentation/pages/WorkspaceSelector';
+import ProjectView from '@presentation/pages/ProjectView';
 
 // Features (via barrel files)
-import { Settings } from '@/features/Settings';
-import { Dashboard } from '@/features/Dashboard';
-import { EntityRouter, EntityBuilder, FolderView } from '@/features/Entities';
-import { GeneralGraphView } from '@/features/Graph';
-import { TimelineView, DimensionEditor } from '@/features/Timeline';
-import { MapRouter } from '@/features/Maps';
-import { MapEditor } from '@/features/Specialized';
-import { LinguisticsRouter } from '@/features/Linguistics';
-import { TrashView } from '@/features/Trash';
-import { WorldBibleLayout, BibleGridView } from '@/features/WorldBible';
-import { WritingHub, WritingView } from '@/features/Writing';
+import { Settings } from '@features/Settings';
+import { Dashboard } from '@features/Dashboard';
+import { EntityRouter, EntityBuilder, FolderView } from '@features/Entities';
+import { GeneralGraphView } from '@features/Graph';
+import { TimelineView, DimensionEditor } from '@features/Timeline';
+import { MapRouter } from '@features/Maps';
+import { MapEditor } from '@features/Specialized';
+import { LinguisticsRouter } from '@features/Linguistics';
+import { TrashView } from '@features/Trash';
+import { WorldBibleLayout, BibleGridView } from '@features/WorldBible';
+import { WritingHub, WritingView } from '@features/Writing';
+import AnalyticsDashboard from '@features/Analytics/pages/AnalyticsDashboard';
 
 // Store & Context
-import { useAppStore } from '@/store/useAppStore';
-import { LanguageProvider } from '@/context/LanguageContext';
+import { useAppStore } from '@store/useAppStore';
+import { LanguageProvider } from '@context/LanguageContext';
 
 const App = () => {
   const theme = useAppStore((state) => state.theme);
@@ -78,6 +79,7 @@ const App = () => {
                 <Route path="graph" element={<GeneralGraphView />} />
                 <Route path="writing" element={<WritingHub />} />
                 <Route path="writing/:notebookId" element={<WritingView />} />
+                <Route path="analytics" element={<AnalyticsDashboard />} />
               </Route>
             </Route>
           </Routes>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import GlassPanel from '../../../components/common/GlassPanel';
-import Button from '../../../components/common/Button';
+import GlassPanel from '@atoms/GlassPanel';
+import Button from '@atoms/Button';
 
 const GlyphFoundry = () => {
     return (

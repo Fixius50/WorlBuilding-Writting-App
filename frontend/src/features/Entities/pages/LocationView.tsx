@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import GlassPanel from '../../../components/common/GlassPanel';
-import Button from '../../../components/common/Button';
-import { entityService } from '../../../database/entityService';
-import { Entidad } from '../../../database/types';
+import GlassPanel from '@atoms/GlassPanel';
+import Button from '@atoms/Button';
+import { entityService } from '@repositories/entityService';
+import { Entidad } from '@domain/models/database';
 
 interface LocationData extends Partial<Entidad> {
   apellidos?: string;
@@ -60,7 +60,7 @@ const LocationView = ({ id }: { id: string | number }) => {
     }
   };
 
-  const handleChange = (field, value) => {
+  const handleChange = (field: string, value: string) => {
     setLocation(prev => ({ ...prev, [field]: value }));
   };
 

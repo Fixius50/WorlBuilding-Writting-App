@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { useLanguage } from '../../../context/LanguageContext';
+import { useLanguage } from '@context/LanguageContext';
 import { useOutletContext } from 'react-router-dom';
-import GlassPanel from '../../../components/common/GlassPanel';
-import Button from '../../../components/common/Button';
-import { entityService } from '../../../database/entityService';
-import { Entidad } from '../../../database/types';
+import GlassPanel from '@atoms/GlassPanel';
+import Button from '@atoms/Button';
+import { entityService } from '@repositories/entityService';
+import { Entidad } from '@domain/models/database';
 
 interface MapManagerProps {
  maps: Entidad[];

@@ -1,5 +1,6 @@
 import React from 'react';
-import { useLanguage } from '../../../context/LanguageContext';
+import { useLanguage } from '@context/LanguageContext';
+import GlassPanel from '@atoms/GlassPanel';
 
 const MapEditorSettings = ({ settings, onUpdate }) => {
  const { t } = useLanguage();

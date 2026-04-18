@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useOutletContext, useLocation } from 'react-router-dom';
 import MapCreationWizard from './MapCreationWizard';
-import MapEditor from '../../Specialized/pages/MapEditor';
+import MapEditor from '@features/Specialized/pages/MapEditor';
 import InteractiveMapView from './InteractiveMapView';
 import MapManager from './MapManager';
-import { entityService } from '../../../database/entityService';
-import { folderService } from '../../../database/folderService';
-import ConfirmationModal from '../../../components/common/ConfirmationModal';
-import { Entidad } from '../../../database/types';
+import { entityService } from '@repositories/entityService';
+import { folderService } from '@repositories/folderService';
+import ConfirmationModal from '@organisms/ConfirmationModal';
+import { Entidad } from '@domain/models/database';
 
 const MapRouter = () => {
  const { projectName } = useParams();

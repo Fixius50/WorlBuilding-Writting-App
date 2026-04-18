@@ -1,8 +1,8 @@
-import { entityService } from '../../../database/entityService';
-import { Entidad } from '../../../database/types';
+import { entityService } from '@repositories/entityService';
+import { Entidad } from '@domain/models/database';
 import { useState, useEffect } from 'react';
-import GlassPanel from '../../../components/common/GlassPanel';
-import Button from '../../../components/common/Button';
+import GlassPanel from '@atoms/GlassPanel';
+import Button from '@atoms/Button';
 
 interface CollectiveData extends Partial<Entidad> {
   cantidadMiembros?: string;

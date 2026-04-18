@@ -1,15 +1,20 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useOutletContext, useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
-import { entityService } from '../../../database/entityService';
-import { folderService } from '../../../database/folderService';
-import { templateService } from '../../../database/templateService';
+import { useLanguage } from '@context/LanguageContext';
+import { folderService } from '@repositories/folderService';
+import { entityService } from '@repositories/entityService';
+import { templateService } from '@repositories/templateService';
+import { Entidad, Plantilla } from '@domain/models/database';
+import GlassPanel from '@atoms/GlassPanel';
+import Button from '@atoms/Button';
+import Switch from '@atoms/Switch';
+import ConfirmationModal from '@organisms/ConfirmationModal';
 import AttributeField from './AttributeField';
-import GlassPanel from '../../../components/common/GlassPanel';
-import Avatar from '../../../components/common/Avatar';
+import Avatar from '@atoms/Avatar';
 import EntityBuilderSidebar from '../components/EntityBuilderSidebar';
-import Breadcrumbs from '../../../components/common/Breadcrumbs';
-import { Entidad, Carpeta, Plantilla, Valor } from '../../../database/types';
+import Breadcrumbs from '@molecules/Breadcrumbs';
+import { Carpeta, Valor } from '@domain/models/database';
 
 interface LayoutContext {
   projectId: number;

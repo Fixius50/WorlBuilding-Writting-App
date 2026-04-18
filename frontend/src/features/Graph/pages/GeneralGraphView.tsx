@@ -20,13 +20,13 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useOutletContext, useNavigate } from 'react-router-dom';
-import { entityService } from '../../../database/entityService';
-import { relationshipService, Relacion } from '../../../database/relationshipService';
-import { Entidad } from '../../../database/types';
-import { getHierarchyType } from '../../../utils/constants/hierarchy_types';
-import Button from '../../../components/common/Button';
-import GlassPanel from '../../../components/common/GlassPanel';
-import { useLanguage } from '../../../context/LanguageContext';
+import { entityService } from '@repositories/entityService';
+import { relationshipService, Relacion } from '@repositories/relationshipService';
+import { Entidad } from '@domain/models/database';
+import { getHierarchyType } from '@utils/constants/hierarchy_types';
+import Button from '@atoms/Button';
+import GlassPanel from '@atoms/GlassPanel';
+import { useLanguage } from '@context/LanguageContext';
 
 interface ZenNodeData {
   label?: string;

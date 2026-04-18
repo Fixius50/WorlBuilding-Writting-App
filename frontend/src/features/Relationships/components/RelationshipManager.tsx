@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { entityService } from '../../../database/entityService';
-import { relationshipService } from '../../../database/relationshipService';
-import { Entidad, Relacion } from '../../../database/types';
-import Button from '../../../components/common/Button';
+import { entityService } from '@repositories/entityService';
+import { relationshipService } from '@repositories/relationshipService';
+import { Entidad, Relacion } from '@domain/models/database';
+import Button from '@atoms/Button';
 
 // Mapping of internal types to user-friendly labels and endpoints
 // Mapping of internal types to user-friendly labels (Matches 'Categoria' in EntidadGenerica)

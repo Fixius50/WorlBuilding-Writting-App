@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import GlassPanel from '../../../components/common/GlassPanel';
-import Avatar from '../../../components/common/Avatar';
-import Button from '../../../components/common/Button';
-import { entityService } from '../../../database/entityService';
-import { Entidad } from '../../../database/types';
-import { relationshipService } from '../../../database/relationshipService';
+import { entityService } from '@repositories/entityService';
+import { relationshipService } from '@repositories/relationshipService';
+import { Entidad } from '@domain/models/database';
+import Button from '@atoms/Button';
+import GlassPanel from '@atoms/GlassPanel';
+import Avatar from '@atoms/Avatar';
 
 interface CharacterExtras {
   imagenUrl?: string;

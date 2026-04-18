@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { useLanguage } from '../../../context/LanguageContext';
+import { useLanguage } from '@context/LanguageContext';
 import { createPortal } from 'react-dom';
 import { useOutletContext, useParams, useNavigate } from 'react-router-dom';
-import { notebookService, Cuaderno, Hoja } from '../../../database/notebookService';
-import ZenEditor from '../../Editor/components/ZenEditor';
-import ConfirmModal from '../../../components/common/ConfirmModal';
+import { writingService } from '@repositories/writingService';
+import { notebookService, Cuaderno, Hoja } from '@repositories/notebookService';
+import ZenEditor from '@features/Editor/components/ZenEditor';
+import ConfirmModal from '@organisms/ConfirmModal';
+import GlassPanel from '@atoms/GlassPanel';
 
 const WritingView = () => {
   const { notebookId } = useParams();
@@ -118,6 +120,17 @@ const WritingView = () => {
     saveTimeout.current = setTimeout(() => {
       savePage(updatedPages[currentPageIndex]);
     }, 800);
+  };
+
+  const handleSnapshot = async (html: string) => {
+    if (!pages[currentPageIndex]) return;
+    try {
+      // Por ahora guardamos un snapshot simple como una página "oculta" o log (simulado)
+      console.log("Guardando snapshot...", html.substring(0, 50));
+      // En una implementación real, esto iría a una tabla `snapshots` en SQLite
+    } catch (err) {
+      console.error("Error saving snapshot:", err);
+    }
   };
 
   const handleTitleChangeInternal = (index: number, newTitle: string) => {
@@ -323,20 +336,17 @@ const WritingView = () => {
     <div className="flex-1 flex w-full h-full bg-[#111] relative overflow-hidden font-sans text-foreground/60">
       {portalRef && createPortal(renderRightPanel(), portalRef)}
       <div className="flex-1 flex flex-col relative z-10 overflow-hidden">
-        <main className="flex-1 flex flex-col relative no-scrollbar">
+        <main className="flex-1 flex flex-col relative no-scrollbar bg-[#1e1e1e]">
           {currentPage && (
-            <div className="flex-1 flex flex-col overflow-hidden animate-in slide-in-from-bottom-8 duration-700">
-              <div className="h-10 flex items-end px-2 bg-[#0d1117] border-b border-[#1e1e1e] select-none shrink-0">
-                <div className="flex items-center h-9 px-4 border-t-[3px] border-[#007acc] bg-[#1e1e1e] text-foreground/60 text-sm gap-2 min-w-[200px] max-w-[300px]">
-                  <span className="material-symbols-outlined text-[14px] text-blue-400">history_edu</span>
-                  <span className="truncate max-w-[200px]">{currentPage.titulo || `Hoja ${currentPageIndex + 1}`}</span>
-                  <span className={`material-symbols-outlined text-[14px] ${saving ? 'opacity-100 text-blue-400 animate-spin' : 'opacity-0'}`}>sync</span>
-                </div>
-              </div>
-              <div className="flex-1 bg-[#1e1e1e] overflow-y-auto custom-scrollbar">
-                <ZenEditor content={currentPage.contenido || ''} onUpdate={handleContentChange} paperMode={true} />
-              </div>
-            </div>
+             <ZenEditor 
+                content={currentPage.contenido || ''} 
+                title={currentPage.titulo || ''}
+                onUpdate={handleContentChange} 
+                onTitleChange={(newTitle) => handleTitleChangeInternal(currentPageIndex, newTitle)}
+                onSnapshot={handleSnapshot}
+                snapshots={[]} // TODO: Cargar desde DB
+                onRestoreSnapshot={(id) => console.log("Restaurando...", id)}
+             />
           )}
         </main>
       </div>

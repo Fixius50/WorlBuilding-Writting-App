@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import GlassPanel from '../../../components/common/GlassPanel';
-import RelationshipManager from '../../Relationships/components/RelationshipManager';
-import { entityService } from '../../../database/entityService';
+import GlassPanel from '@atoms/GlassPanel';
+import Button from '@atoms/Button';
+import RelationshipManager from '@features/Relationships/components/RelationshipManager';
+import { entityService } from '@repositories/entityService';
+import { folderService } from '@repositories/folderService';
 
 const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned }) => {
  const [activeTab, setActiveTab] = useState('ESENCIA'); // ESENCIA, RELACIONES, CRÓNICA

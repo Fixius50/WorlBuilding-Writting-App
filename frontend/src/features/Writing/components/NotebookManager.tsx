@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useLanguage } from '../../../context/LanguageContext';
-import ConfirmationModal from '../../../components/common/ConfirmationModal';
-import { Notebook } from '../../../types/writing';
-import ZenEditor from '../../Editor/components/ZenEditor';
+import { useLanguage } from '@context/LanguageContext';
+import ConfirmationModal from '@organisms/ConfirmationModal';
+import { Notebook } from '@domain/models/writing';
+import ZenEditor from '@features/Editor/components/ZenEditor';
 
 
 // Mock storage for development/fallback if API fails or for local-first speed

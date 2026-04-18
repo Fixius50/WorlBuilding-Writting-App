@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { ResponsivePie } from '@nivo/pie';
 import { ResponsiveBar } from '@nivo/bar';
-import { entityService } from '../../../database/entityService';
-import { folderService } from '../../../database/folderService';
-import { Entidad } from '../../../database/types';
-import GlassPanel from '../../../components/common/GlassPanel';
+import { entityService } from '@repositories/entityService';
+import { folderService } from '@repositories/folderService';
+import { Entidad } from '@domain/models/database';
+import GlassPanel from '@atoms/GlassPanel';
 
 const Dashboard: React.FC = () => {
  const { projectId } = useOutletContext<{ projectId: number }>();

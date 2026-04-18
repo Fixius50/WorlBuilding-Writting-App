@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useLanguage } from '../../../context/LanguageContext';
+import { folderService } from '@repositories/folderService';
+import { entityService } from '@repositories/entityService';
+import { Carpeta, Entidad } from '@domain/models/database';
+import { useLanguage } from '@context/LanguageContext';
 import { useOutletContext, Link, useParams, useNavigate } from 'react-router-dom';
 import BibleCard from '../components/BibleCard';
-
-import { Carpeta } from '../../../database/types';
 
 interface BibleContext {
  handleOpenCreateModal: () => void;

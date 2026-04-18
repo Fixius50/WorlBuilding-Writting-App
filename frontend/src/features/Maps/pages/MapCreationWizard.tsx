@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import GlassPanel from '../../../components/common/GlassPanel';
-import Button from '../../../components/common/Button';
+import { entityService } from '@repositories/entityService';
+import GlassPanel from '@atoms/GlassPanel';
+import Button from '@atoms/Button';
 
 interface MapCreationWizardProps {
   onCancel: () => void;

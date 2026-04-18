@@ -1,7 +1,8 @@
 import React from 'react';
-import { useLanguage } from '../../../context/LanguageContext';
-import GlassPanel from '../../../components/common/GlassPanel';
-import { Word } from '../../../database/types';
+import { useLanguage } from '@context/LanguageContext';
+import GlassPanel from '@atoms/GlassPanel';
+import Button from '@atoms/Button';
+import { Word } from '@domain/models/database';
 
 export interface GrammarRule {
  id: number | string;

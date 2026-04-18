@@ -20,8 +20,22 @@
     "paths": {
       "@components/*": ["src/components/*"],
       "@features/*": ["src/features/*"],
-      "@database/*": ["src/database/*"],
+      "@database": ["src/infrastructure/localDB/client"],
+      "@context/*": ["src/context/*"],
+      "@network/*": ["src/infrastructure/network/*"],
       "@assets/*": ["src/assets/*"],
+      "@domain/*": ["src/domain/*"],
+      "@application/*": ["src/application/*"],
+      "@infrastructure/*": ["src/infrastructure/*"],
+      "@presentation/*": ["src/presentation/*"],
+      "@repositories/*": ["src/infrastructure/localDB/repositories/*"],
+      "@atoms/*": ["src/presentation/atoms/*"],
+      "@molecules/*": ["src/presentation/molecules/*"],
+      "@organisms/*": ["src/presentation/organisms/*"],
+      "@layout/*": ["src/presentation/layout/*"],
+      "@utils/*": ["src/infrastructure/utils/*"],
+      "@store/*": ["src/store/*"],
+      "@locales/*": ["src/locales/*"],
       "@/*": ["./src/*"]
     }
   },

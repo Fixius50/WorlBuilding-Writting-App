@@ -1,18 +1,17 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { useLanguage } from '../../../context/LanguageContext';
+import { useLanguage } from '@context/LanguageContext';
 import { useOutletContext, useParams } from 'react-router-dom';
 import { createPortal } from 'react-dom';
-import { timelineService } from '../../../database/timelineService';
-import { folderService } from '../../../database/folderService';
-import { entityService } from '../../../database/entityService';
-import { Evento, Carpeta, Entidad } from '../../../database/types';
-import ConfirmationModal from '../../../components/common/ConfirmationModal';
-import GlassPanel from '../../../components/common/GlassPanel';
-import Button from '../../../components/common/Button';
+import { timelineService } from '@repositories/timelineService';
+import { folderService } from '@repositories/folderService';
+import { entityService } from '@repositories/entityService';
+import { Evento, Carpeta, Entidad } from '@domain/models/database';
+import ConfirmationModal from '@organisms/ConfirmationModal';
+import GlassPanel from '@atoms/GlassPanel';
+import Button from '@atoms/Button';
 import TimelineEventCard from '../components/TimelineEventCard';
-// import '../../../assets/TimelineView.css'; // REMOVED: Styles now in index.css
 
-import { TimelineLine, UniverseExtended } from '../../../types/timeline';
+import { TimelineLine, UniverseExtended } from '@domain/models/timeline';
 
 interface TimelineOutletContext {
   setRightPanelTab?: (tab: string) => void;

@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { sqlocal } from '../../../database/db';
-import { projectService } from '../../../database/projectService';
-import { useLanguage } from '../../../context/LanguageContext';
-import { syncService } from '../../../services/syncService';
-import ComingSoonWrapper from '../../../components/common/ComingSoonWrapper';
-import { Proyecto } from '../../../database/types';
+import { sqlocal } from '@database';
+import { projectService } from '@repositories/projectService';
+import { useLanguage } from '@context/LanguageContext';
+import { syncService } from '@network/syncService';
+import { timelineService } from '@repositories/timelineService';
+import { templateService } from '@repositories/templateService';
+import GlassPanel from '@atoms/GlassPanel';
+import Button from '@atoms/Button';
+import ComingSoonWrapper from '@molecules/ComingSoonWrapper';
+import { Proyecto } from '@domain/models/database';
 
 interface UserData {
   displayName?: string;

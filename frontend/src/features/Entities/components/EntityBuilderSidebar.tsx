@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 // Force Refresh 19:12
-import { Plantilla, Valor } from '../../../database/types';
-import { templateService } from '../../../database/templateService';
-import ConfirmModal from '../../../components/common/ConfirmModal';
-import Button from '../../../components/common/Button';
+import { Plantilla, Valor } from '@domain/models/database';
+import { entityService } from '@repositories/entityService';
+import { templateService } from '@repositories/templateService';
+import GlassPanel from '@atoms/GlassPanel';
+import Button from '@atoms/Button';
+import ConfirmModal from '@organisms/ConfirmModal';
 
 interface EntityBuilderSidebarProps {
   templates: Plantilla[];

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getHierarchyType } from '../../../utils/constants/hierarchy_types';
-import { folderService } from '../../../database/folderService';
-import { entityService } from '../../../database/entityService';
-import { Carpeta, Entidad } from '../../../database/types';
+import { getHierarchyType } from '@utils/constants/hierarchy_types';
+import { folderService } from '@repositories/folderService';
+import { entityService } from '@repositories/entityService';
+import { Carpeta, Entidad } from '@domain/models/database';
 
 const getIconForType = (type?: string) => {
  switch (type?.toLowerCase()) {

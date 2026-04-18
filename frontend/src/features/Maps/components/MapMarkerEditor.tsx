@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import GlassPanel from '../../../components/common/GlassPanel';
-import Button from '../../../components/common/Button';
-import { MapMarker } from '../../../types/maps';
+import GlassPanel from '@atoms/GlassPanel';
+import Button from '@atoms/Button';
+import { entityService } from '@repositories/entityService';
+import { MapMarker } from '@domain/models/maps';
 
 interface MapMarkerEditorProps {
   markers: MapMarker[];

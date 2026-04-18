@@ -1,183 +1,154 @@
-import { useEditor, EditorContent } from '@tiptap/react'
+import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import Mention from '@tiptap/extension-mention'
-import React, { useEffect } from 'react'
-import suggestion from '../../../utils/suggestion'
-import MentionHoverCard from './MentionHoverCard'; // ADDED
-import { EditorSettings, MentionData } from '../../../types/writing';
+import React, { useEffect, useState, useCallback, useRef } from 'react'
+import suggestion from '@utils/suggestion'
+import slashSuggestion from '@utils/slashSuggestion'
+import MentionHoverCard from './MentionHoverCard'
+import EditorTopBar from './EditorTopBar'
+import { EditorSettings, MentionData } from '@domain/models/writing'
 
 interface ZenEditorProps {
   content: string;
+  title: string;
   onUpdate: (html: string) => void;
+  onTitleChange: (newTitle: string) => void;
+  onSnapshot: (html: string) => void;
+  snapshots?: { id: number; timestamp: string }[];
+  onRestoreSnapshot?: (id: number) => void;
   editable?: boolean;
-  paperMode?: boolean;
 }
 
-const ZenEditor: React.FC<ZenEditorProps> = ({ content, onUpdate, editable = true, paperMode = false }) => {
-  // Load local settings for typography
-  const [settings, setSettings] = React.useState<EditorSettings>({
+const ZenEditor: React.FC<ZenEditorProps> = ({ 
+  content, 
+  title,
+  onUpdate, 
+  onTitleChange,
+  onSnapshot,
+  snapshots = [],
+  onRestoreSnapshot = () => {},
+  editable = true 
+}) => {
+  const [settings] = useState<EditorSettings>({
     font: 'Cormorant Garamond',
     fontSize: 18
   });
 
-  React.useEffect(() => {
-    const savedSettings = localStorage.getItem('app_settings');
-    if (savedSettings) {
-      setSettings(JSON.parse(savedSettings));
-    }
+  const [wordCount, setWordCount] = useState(0);
+  const snapshotTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Cuenta palabras (simple regex)
+  const countWords = useCallback((text: string) => {
+    return text.trim().split(/\s+/).filter(Boolean).length;
   }, []);
 
   const editor = useEditor({
     extensions: [
       StarterKit,
       Placeholder.configure({
-        placeholder: 'Escribe tu historia aquí... Usa @ para mencionar entidades.',
+        placeholder: 'Escribe tu historia aquí... Usa / para comandos o @ para mencionar.',
       }),
       Mention.configure({
-        HTMLAttributes: {
-          class: 'mention',
-        },
+        HTMLAttributes: { class: 'mention' },
         suggestion,
-        renderLabel({ options, node }) {
-          return `${node.attrs.label ?? node.attrs.id}`
+      }),
+      Mention.extend({
+        name: 'slashMenu',
+      }).configure({
+        HTMLAttributes: { class: 'slash-command' },
+        suggestion: {
+          ...slashSuggestion,
+          char: '/',
         },
-      }).extend({
-        parseHTML() {
-          return [
-            { tag: 'span[data-type]' },
-            { tag: 'span.mention' }
-          ]
-        },
-        addAttributes() {
-          return {
-            id: {
-              default: null,
-              parseHTML: element => element.getAttribute('data-id'),
-              renderHTML: attributes => ({
-                'data-id': attributes.id,
-              }),
-            },
-            label: {
-              default: null,
-              parseHTML: element => element.getAttribute('data-label'),
-              renderHTML: attributes => ({
-                'data-label': attributes.label,
-              }),
-            },
-            type: {
-              default: 'generic',
-              parseHTML: element => element.getAttribute('data-type'),
-              renderHTML: attributes => ({
-                'data-type': attributes.type,
-                'class': `mention mention-${attributes.type?.toLowerCase() || 'generic'}`,
-              }),
-            },
-            desc: {
-              default: null,
-              parseHTML: element => element.getAttribute('data-desc'),
-              renderHTML: attributes => ({
-                'data-desc': attributes.desc,
-              }),
-            },
-          }
-        }
       }),
     ],
     content: content,
     editable: editable,
     onUpdate: ({ editor }) => {
-      onUpdate(editor.getHTML())
+      onUpdate(editor.getHTML());
+      setWordCount(countWords(editor.getText()));
     },
     editorProps: {
       attributes: {
-        // REMOVED P-8 TO ALLOW CONTAINER TO CONTROL SPACING
-        class: `prose ${paperMode ? 'prose-invert' : 'prose-invert'} max-w-none focus:outline-none min-h-[500px] ${paperMode ? 'text-foreground/60' : 'text-foreground/90'} leading-relaxed text-lg transition-all`,
+        class: 'prose prose-invert max-w-none focus:outline-none min-h-[70vh] text-foreground/90 leading-relaxed text-lg pb-40 px-4 md:px-0',
         style: `font-family: "${settings.font}", serif; font-size: ${settings.fontSize}px;`,
       },
     },
-  })
+  });
+
+  // Snapshot Logic: Auto 5 min
+  useEffect(() => {
+    snapshotTimer.current = setInterval(() => {
+      if (editor && !editor.isEmpty) {
+        onSnapshot(editor.getHTML());
+      }
+    }, 5 * 60 * 1000);
+
+    return () => {
+      if (snapshotTimer.current) clearInterval(snapshotTimer.current);
+    };
+  }, [editor, onSnapshot]);
 
   useEffect(() => {
     if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content)
+      editor.commands.setContent(content);
+      setWordCount(countWords(editor.getText()));
     }
-  }, [content, editor])
+  }, [content, editor, countWords]);
 
-  if (!editor) {
-    return null
-  }
-
-  /* Click Logic for Mention Card */
-  const [activeMention, setActiveMention] = React.useState<{
-    x: number;
-    y: number;
-    data: MentionData;
-  } | null>(null);
-
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      // 1. Check if clicked on a mention
-      const target = e.target as HTMLElement;
-      const mention = target.closest('.mention') as HTMLElement | null;
-
-      if (mention) {
-        e.preventDefault(); // Prevent editor cursor placement specific quirks if needed
-        const rect = mention.getBoundingClientRect();
-        setActiveMention({
-          x: rect.left,
-          y: rect.bottom,
-          data: {
-            label: mention.getAttribute('data-label') || mention.innerText.replace('@', ''),
-            type: mention.getAttribute('data-type'),
-            desc: mention.getAttribute('data-desc'),
-            id: mention.getAttribute('data-id')
-          }
-        });
-        return;
-      }
-    };
-
-    const handleGlobalClick = (e: MouseEvent) => {
-      // If we have an active mention, and we click something that is NOT a mention and NOT the card...
-      if (activeMention) {
-        const target = e.target as HTMLElement;
-        const isMention = target.closest('.mention');
-        const isCard = target.closest('.mention-card-portal'); // We will add this class to the card
-
-        if (!isMention && !isCard) {
-          setActiveMention(null);
-        }
-      }
-    };
-
-    const container = document.querySelector('.zen-editor-container');
-    if (container) {
-      container.addEventListener('click', handleClick as unknown as EventListener);
-    }
-    window.addEventListener('mousedown', handleGlobalClick as unknown as EventListener);
-
-    return () => {
-      if (container) container.removeEventListener('click', handleClick as unknown as EventListener);
-      window.removeEventListener('mousedown', handleGlobalClick as unknown as EventListener);
-    };
-  }, [activeMention]);
-
-
-
-  /* ... inside return ... */
+  if (!editor) return null;
 
   return (
-    <div className={`zen-editor-container w-full h-full overflow-y-auto no-scrollbar ${paperMode ? 'bg-transparent border-none shadow-none' : 'bg-card/20 rounded-none border border-border/50'}`}>
-      <EditorContent editor={editor} className="h-full w-full" />
-      {activeMention && (
-        <MentionHoverCard
-          x={activeMention.x}
-          y={activeMention.y}
-          data={activeMention.data}
-          onClose={() => setActiveMention(null)}
-        />
-      )}
+    <div className="flex flex-col w-full h-full bg-background overflow-hidden">
+      {/* HEADER DE PRODUCTIVIDAD */}
+      <EditorTopBar 
+        title={title}
+        onTitleChange={onTitleChange}
+        wordCount={wordCount}
+        wordGoal={2000} // Custom meta default (se puede pasar por props luego)
+        saving={false} // Se puede conectar al estado global de guardado
+        onManualSnapshot={() => onSnapshot(editor.getHTML())}
+        snapshots={snapshots}
+        onRestoreSnapshot={onRestoreSnapshot}
+      />
+
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="max-w-4xl mx-auto py-20 relative">
+          
+          {/* BUBBLE MENU (FORMATO RÁPIDO) */}
+          {editor && (
+            <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
+              <div className="flex items-center gap-1 p-1 bg-background border border-foreground/10 shadow-2xl backdrop-blur-md">
+                <button
+                  onClick={() => editor.chain().focus().toggleBold().run()}
+                  className={`p-2 hover:bg-foreground/10 transition-colors ${editor.isActive('bold') ? 'text-primary' : 'text-foreground/60'}`}
+                >
+                  <span className="material-symbols-outlined text-lg">format_bold</span>
+                </button>
+                <button
+                  onClick={() => editor.chain().focus().toggleItalic().run()}
+                  className={`p-2 hover:bg-foreground/10 transition-colors ${editor.isActive('italic') ? 'text-primary' : 'text-foreground/60'}`}
+                >
+                  <span className="material-symbols-outlined text-lg">format_italic</span>
+                </button>
+                <div className="w-px h-4 bg-foreground/10 mx-1" />
+                <button
+                  onClick={() => {
+                     const url = window.prompt('URL del enlace:');
+                     if (url) editor.chain().focus().setLink({ href: url }).run();
+                  }}
+                  className={`p-2 hover:bg-foreground/10 transition-colors ${editor.isActive('link') ? 'text-primary' : 'text-foreground/60'}`}
+                >
+                  <span className="material-symbols-outlined text-lg">link</span>
+                </button>
+              </div>
+            </BubbleMenu>
+          )}
+
+          <EditorContent editor={editor} />
+        </div>
+      </div>
     </div>
   )
 }

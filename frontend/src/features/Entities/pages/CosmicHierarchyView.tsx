@@ -1,7 +1,9 @@
 import React from 'react';
-import GlassPanel from '../../../components/common/GlassPanel';
-import Avatar from '../../../components/common/Avatar';
-import Button from '../../../components/common/Button';
+import { entityService } from '@repositories/entityService';
+import { Entidad } from '@domain/models/database';
+import Button from '@atoms/Button';
+import GlassPanel from '@atoms/GlassPanel';
+import Avatar from '@atoms/Avatar';
 
 interface CosmicHierarchyViewProps {
   id?: string | number;

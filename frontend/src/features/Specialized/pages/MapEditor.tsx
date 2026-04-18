@@ -4,10 +4,11 @@ import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import Map, { NavigationControl, Source, Layer, Marker, Popup } from 'react-map-gl/maplibre';
 // @ts-ignore
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { entityService } from '../../../database/entityService';
-import { Entidad } from '../../../database/types';
-import { MapMarker, MapLayer, MapAttributes } from '../../../types/maps';
-import Button from '../../../components/common/Button';
+import { entityService } from '@repositories/entityService';
+import { Entidad } from '@domain/models/database';
+import { MapMarker, MapLayer, MapAttributes } from '@domain/models/maps';
+import GlassPanel from '@atoms/GlassPanel';
+import Button from '@atoms/Button';
 
 const DEFAULT_LAYERS: MapLayer[] = [
   { id: 'base', name: 'Mapa Base', visible: true, opacity: 1, type: 'image', url: '' },

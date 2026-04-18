@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { trashService } from '../../../database/trashService';
+import { trashService } from '@repositories/trashService';
 
 interface TrashItem {
   id: number;

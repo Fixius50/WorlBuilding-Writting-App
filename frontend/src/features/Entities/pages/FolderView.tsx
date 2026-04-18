@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate, useOutletContext } from 'react-router-dom';
 import { createPortal } from 'react-dom';
-import { useLanguage } from '../../../context/LanguageContext';
-import { folderService } from '../../../database/folderService';
-import { entityService } from '../../../database/entityService';
-import BibleCard from '../../WorldBible/components/BibleCard';
-import Breadcrumbs from '../../../components/common/Breadcrumbs';
-import MoveModal from '../../../components/common/MoveModal';
-import { getHierarchyType } from '../../../utils/constants/hierarchy_types';
-import { Carpeta, Entidad } from '../../../database/types';
+import { useLanguage } from '@context/LanguageContext';
+import { folderService } from '@repositories/folderService';
+import { entityService } from '@repositories/entityService';
+import BibleCard from '@features/WorldBible/components/BibleCard';
+import Breadcrumbs from '@molecules/Breadcrumbs';
+import MoveModal from '@organisms/MoveModal';
+import { getHierarchyType } from '@utils/constants/hierarchy_types';
+import { Carpeta, Entidad } from '@domain/models/database';
 
 interface OutletContext {
   handleCreateEntity: (type: string) => void;

@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
-import { useLanguage } from '../../../context/LanguageContext';
-import { timelineService } from '../../../database/timelineService';
-import { folderService } from '../../../database/folderService';
-import { entityService } from '../../../database/entityService';
-import { Evento, Carpeta, DimensionLinea, Entidad } from '../../../database/types';
-import ConfirmationModal from '../../../components/common/ConfirmationModal';
+import { useLanguage } from '@context/LanguageContext';
+import { timelineService } from '@repositories/timelineService';
+import { folderService } from '@repositories/folderService';
+import { entityService } from '@repositories/entityService';
+import { Evento, Carpeta, DimensionLinea, Entidad } from '@domain/models/database';
+import ConfirmationModal from '@organisms/ConfirmationModal';
 
 const DimensionEditor: React.FC = () => {
   const { username, projectName, folderId } = useParams<{ username: string; projectName: string; folderId: string }>();

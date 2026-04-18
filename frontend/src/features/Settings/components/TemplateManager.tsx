@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { folderService } from '../../../database/folderService';
-import { templateService } from '../../../database/templateService';
-import { Plantilla } from '../../../database/types';
-import GlassPanel from '../../../components/common/GlassPanel';
-import ConfirmationModal from '../../../components/common/ConfirmationModal';
+import { folderService } from '@repositories/folderService';
+import { templateService } from '@repositories/templateService';
+import { Plantilla } from '@domain/models/database';
+import GlassPanel from '@atoms/GlassPanel';
+import ConfirmationModal from '@organisms/ConfirmationModal';
 
 export interface TemplateField {
   label: string;

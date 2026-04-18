@@ -1,8 +1,13 @@
 import React, { useState, useMemo } from 'react';
-import { useLanguage } from '../../../context/LanguageContext';
+import { folderService } from '@repositories/folderService';
+import { entityService } from '@repositories/entityService';
+import { Carpeta, Entidad } from '@domain/models/database';
+import GlassPanel from '@atoms/GlassPanel';
+import Button from '@atoms/Button';
+import { useLanguage } from '@context/LanguageContext';
 import { Outlet, useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import CreateNodeModal from '../components/CreateNodeModal';
-import { FolderType, Carpeta } from '../../../database/types';
+import { FolderType } from '@domain/models/database';
 
 interface ArchitectContext {
   projectId: number;

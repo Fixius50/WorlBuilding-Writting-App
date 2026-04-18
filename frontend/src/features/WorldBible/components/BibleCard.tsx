@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Entidad, Carpeta } from '../../../database/types';
+import { Entidad, Carpeta } from '@domain/models/database';
 
 interface BibleCardItem {
   id: number | string;

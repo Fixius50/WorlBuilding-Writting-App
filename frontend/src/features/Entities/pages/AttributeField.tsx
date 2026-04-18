@@ -1,5 +1,6 @@
 import React from 'react';
-import { Plantilla, Entidad } from '../../../database/types';
+import { Plantilla, Entidad, Valor } from '@domain/models/database';
+import GlassPanel from '@atoms/GlassPanel';
 
 interface AttributeFieldProps {
  attribute: Plantilla | { plantilla: Plantilla };

@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useOutletContext } from 'react-router-dom';
+import { useParams, Link, useOutletContext, useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
-import { entityService } from '../../../database/entityService';
-import { Entidad } from '../../../database/types';
-import GlassPanel from '../../../components/common/GlassPanel';
-import Avatar from '../../../components/common/Avatar';
-import Button from '../../../components/common/Button';
+import { entityService } from '@repositories/entityService';
+import { Entidad } from '@domain/models/database';
+import GlassPanel from '@atoms/GlassPanel';
+import Avatar from '@atoms/Avatar';
+import Button from '@atoms/Button';
+import SecondaryTabs from '@molecules/SecondaryTabs';
+import MiniGraph from '../components/MiniGraph';
+import MiniTimeline from '../components/MiniTimeline';
 
 interface ProfileOutletContext {
   setRightOpen: (open: boolean) => void;
   setRightPanelTab: (tab: string) => void;
+  setRightPanelContent: (content: React.ReactNode) => void;
+  setRightPanelTitle: (title: React.ReactNode) => void;
 }
 
 interface EntityWithExtra extends Omit<Entidad, 'valores'> {
@@ -25,32 +30,24 @@ interface EntityWithExtra extends Omit<Entidad, 'valores'> {
   carpeta?: {
     nombre: string;
   };
-  [key: string]: unknown; // Extended fields from contenido_json
+  [key: string]: unknown;
 }
 
 const EntityProfile = () => {
   const { username, projectName, folderId, entityId } = useParams();
-  const { setRightOpen, setRightPanelTab } = useOutletContext<ProfileOutletContext>();
+  const navigate = useNavigate();
+  const { setRightOpen, setRightPanelTab, setRightPanelContent, setRightPanelTitle } = useOutletContext<ProfileOutletContext>();
   const [entity, setEntity] = useState<EntityWithExtra | null>(null);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('GENERAL');
   const [loading, setLoading] = useState(true);
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
     setRightOpen(true);
     setRightPanelTab('CONTEXT');
-
-    const interval = setInterval(() => {
-      const el = document.getElementById('global-right-panel-portal');
-      if (el) {
-        setPortalTarget(el);
-        clearInterval(interval);
-      }
-    }, 100);
-
+    
     return () => {
-      clearInterval(interval);
-      setRightPanelTab('NOTEBOOKS');
+      setRightPanelContent(null);
+      setRightPanelTitle(null);
     };
   }, []);
 
@@ -68,7 +65,6 @@ const EntityProfile = () => {
           ? JSON.parse(data.contenido_json)
           : (data.contenido_json || {});
         
-        // Fetch values for attributes
         const vals = await entityService.getValues(data.id);
         
         setEntity({
@@ -87,234 +83,201 @@ const EntityProfile = () => {
     }
   };
 
-  if (loading) return <div className="p-20 text-center animate-pulse text-foreground/50">Accessing Archives...</div>;
-  if (!entity) return <div className="p-20 text-center text-red-400">Entity not found.</div>;
+  useEffect(() => {
+    if (entity) {
+      setRightPanelTitle(
+        <div className="flex flex-col">
+          <span className="text-[9px] font-black uppercase tracking-widest text-primary mb-1">Metadatos Etéreos</span>
+          <span className="text-foreground font-black text-sm truncate">{entity.nombre}</span>
+        </div>
+      );
 
-  // Derived Data
+      setRightPanelContent(
+        <div className="p-6 space-y-8 animate-in fade-in duration-500">
+           <section>
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-4 px-2">Identidad Técnica</h3>
+              <div className="bg-foreground/5 border border-foreground/10 p-4 space-y-3">
+                 <div className="flex justify-between items-center pb-2 border-b border-foreground/5">
+                    <span className="text-[10px] text-foreground/60 uppercase font-bold">UID</span>
+                    <span className="text-[10px] font-mono text-foreground/40">{entity.id}</span>
+                 </div>
+                 <div className="flex justify-between items-center pb-2 border-b border-foreground/5">
+                    <span className="text-[10px] text-foreground/60 uppercase font-bold">Fecha de Inicio</span>
+                    <span className="text-[10px] text-foreground/40">{new Date(entity.fecha_creacion).toLocaleDateString()}</span>
+                 </div>
+                 <div className="flex justify-between items-center">
+                    <span className="text-[10px] text-foreground/60 uppercase font-bold">Última Mutación</span>
+                    <span className="text-[10px] text-foreground/40">{new Date(entity.fecha_actualizacion).toLocaleDateString()}</span>
+                 </div>
+              </div>
+           </section>
+
+           <section>
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-4 px-2">Tags de Clasificación</h3>
+              <div className="flex flex-wrap gap-2">
+                {(entity.tags || '').split(',').filter(Boolean).map((tag, i) => (
+                  <span key={i} className="text-[10px] font-bold text-foreground/60 bg-foreground/10 px-3 py-1 border border-foreground/10 uppercase tracking-tighter hover:text-primary hover:border-primary/40 transition-colors cursor-default">
+                    {tag.trim()}
+                  </span>
+                ))}
+              </div>
+           </section>
+        </div>
+      );
+    }
+  }, [entity]);
+
+  if (loading) return <div className="p-20 text-center animate-pulse text-foreground/50 h-full flex items-center justify-center font-black uppercase tracking-[0.4em] text-xs">Accediendo a la Cápsula...</div>;
+  if (!entity) return <div className="p-20 text-center text-red-400">Error: Entidad no encontrada.</div>;
+
   const attributes = (entity.valores || []).map((val) => ({
     label: val.plantilla.nombre,
     value: val.valor || '',
     type: val.plantilla.tipo
   })).filter((a) => ['number', 'text', 'short_text'].includes(a.type));
 
-  // Simple Relation Mock until backend relation graph is fully wired
-  const relationships = (entity.valores || [])
-    .filter((v) => v.plantilla.tipo === 'entity_link' && v.valor)
-    .map((v) => ({
-      name: "Linked Entity (ID: " + v.valor + ")",
-      role: v.plantilla.nombre,
-      type: "Link"
-    }));
+  const tabs = [
+    { id: 'GENERAL', label: 'Esencia' },
+    { id: 'RELACIONES', label: 'Hilos de Causalidad' },
+    { id: 'BACKLINKS', label: 'Apariciones' },
+  ];
+
+  const handleEntityNavigate = (id: number) => {
+    navigate(`/${username || 'local'}/${projectName}/bible/folder/${folderId}/entity/${id}`);
+  };
 
   return (
-    <div className="flex-1 p-8 lg:p-12 max-w-7xl mx-auto w-full animate-in fade-in duration-500 overflow-y-auto custom-scrollbar">
-
-      {/* --- HEADER --- */}
-      <header className="flex flex-col lg:flex-row items-start gap-8 mb-12">
-        <div className="relative group">
-          <Avatar name={entity.nombre} size="xl" className="size-32 lg:size-40 rounded-none border-2 border-primary/30 ring-4 ring-primary/10 shadow-2xl" />
-          <div className="absolute -bottom-2 -right-2 size-8 rounded-none bg-primary flex items-center justify-center text-foreground border-4 border-background-dark shadow-lg">
-            <span className="material-symbols-outlined text-sm">verified</span>
-          </div>
-        </div>
-
-        <div className="flex-1 space-y-4 pt-2">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-4xl lg:text-5xl font-manrope font-black text-foreground tracking-tight leading-none">{entity.nombre}</h1>
-                {entity.carpeta && (
-                  <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/20">
-                    {entity.carpeta.nombre}
-                  </span>
-                )}
+    <div className="flex-1 flex flex-col h-full bg-[#0a0a0a] overflow-hidden animate-in fade-in duration-700">
+      
+      {/* --- PREMIUM HEADER --- */}
+      <div className="shrink-0 p-8 lg:px-12 lg:pt-16 lg:pb-8 border-b border-foreground/5 bg-gradient-to-b from-primary/5 to-transparent relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2" />
+        
+        <div className="flex flex-col lg:flex-row items-center lg:items-end gap-10 relative z-10">
+          <Avatar 
+            name={entity.nombre} 
+            size="xl" 
+            className="size-32 lg:size-48 rounded-none border-t-4 border-primary shadow-[0_40px_80px_rgba(0,0,0,0.5)] bg-card" 
+          />
+          
+          <div className="flex-1 text-center lg:text-left space-y-4">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
+                <h1 className="text-4xl lg:text-6xl font-serif font-black text-foreground tracking-tight leading-none italic">{entity.nombre}</h1>
+                <span className="px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] bg-primary/10 text-primary border border-primary/30">
+                  {entity.tipo || 'ENTIDAD'}
+                </span>
                 {entity.categoria && (
-                  <span className="px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-[10px] font-black uppercase tracking-widest border border-purple-500/20">
+                  <span className="px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] bg-purple-500/10 text-purple-400 border border-purple-500/30">
                     {entity.categoria}
                   </span>
                 )}
               </div>
-              <div className="flex gap-2">
-                {(entity.tags || '').split(',').filter(Boolean).map((tag: string, i: number) => (
-                  <span key={i} className="text-xs font-bold text-foreground/60 bg-foreground/5 px-2 py-1 rounded-none">
-                    #{tag.trim()}
-                  </span>
-                ))}
-              </div>
+              <p className="text-lg text-foreground/40 font-medium italic max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                "{entity.descripcion || "Existencia sin descripción vinculada aún."}"
+              </p>
             </div>
 
-            <Link to={`/${username || 'local'}/${projectName}/bible/folder/${folderId}/entity/${entityId}/edit`}>
-              <Button variant="primary" icon="edit" size="sm">Edit Mode</Button>
-            </Link>
+            <div className="flex items-center justify-center lg:justify-start gap-4">
+               <Link to={`/${username || 'local'}/${projectName}/bible/folder/${folderId}/entity/${entityId}/edit`}>
+                  <button className="px-6 py-3 bg-foreground text-background text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-primary transition-all active:scale-95">
+                    Transmutar Archivo
+                  </button>
+               </Link>
+               <button className="size-11 border border-foreground/10 hover:border-primary/50 text-foreground/40 hover:text-primary transition-all flex items-center justify-center">
+                  <span className="material-symbols-outlined text-xl">share</span>
+               </button>
+            </div>
           </div>
-
-          <p className="text-lg text-foreground/60 leading-relaxed max-w-3xl line-clamp-3">
-            {entity.descripcion || "No description provided."}
-          </p>
         </div>
-      </header>
+      </div>
 
-      {/* --- TABS --- */}
-      <div className="flex items-center gap-8 border-b border-foreground/10 mb-8">
-        {['overview', 'chronology'].map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`pb-4 text-xs font-black uppercase tracking-[0.2em] transition-all relative ${activeTab === tab ? 'text-foreground' : 'text-foreground/60 hover:text-foreground/60'
-              }`}
-          >
-            {tab}
-            {activeTab === tab && (
-              <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]"></div>
+      {/* --- CONTENT AREA & TABS --- */}
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="px-8 lg:px-12 py-4 bg-background/40 backdrop-blur-md border-b border-foreground/5 sticky top-0 z-20">
+          <SecondaryTabs 
+            tabs={tabs} 
+            activeTab={activeTab} 
+            onChange={setActiveTab} 
+          />
+        </div>
+
+        <main className="flex-1 overflow-y-auto custom-scrollbar p-8 lg:p-12">
+          <div className="max-w-7xl mx-auto">
+            
+            {activeTab === 'GENERAL' && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 animate-in slide-in-from-bottom-4 duration-500">
+                
+                {/* Visuals: Graph & Meta */}
+                <div className="lg:col-span-12 space-y-12">
+                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                      <MiniGraph entityId={Number(entityId)} onNavigate={handleEntityNavigate} />
+                      
+                      <div className="flex flex-col gap-8">
+                         <div className="grid grid-cols-2 gap-4">
+                            {attributes.slice(0, 4).map((attr, i) => (
+                              <div key={i} className="p-6 bg-foreground/[0.03] border border-foreground/5">
+                                 <div className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-1">{attr.label}</div>
+                                 <div className="text-xl font-bold text-foreground">
+                                    {attr.value}
+                                    {!isNaN(parseFloat(attr.value)) && <span className="text-[10px] text-foreground/20 ml-1">pts</span>}
+                                 </div>
+                              </div>
+                            ))}
+                         </div>
+                         <div className="flex-1 p-8 border border-dashed border-foreground/10 flex flex-col items-center justify-center text-center opacity-40">
+                            <span className="material-symbols-outlined text-4xl mb-3">auto_awesome</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest leading-relaxed max-w-[200px]">
+                               Nivel de Presencia en el Mundo: Elevado
+                            </span>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+
+                {/* Vertical Timeline */}
+                <div className="lg:col-span-12">
+                   <div className="pb-8 mb-8 border-b border-foreground/5">
+                        <h3 className="text-xs font-black uppercase tracking-[0.3em] text-foreground/60 flex items-center gap-3">
+                           <span className="material-symbols-outlined text-lg">history_edu</span>
+                           Cronología Vital del Arcano
+                        </h3>
+                   </div>
+                   <MiniTimeline entityId={Number(entityId)} />
+                </div>
+              </div>
             )}
-          </button>
-        ))}
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* --- MAIN CONTENT --- */}
-        <div className="lg:col-span-2 space-y-8">
+            {activeTab === 'RELACIONES' && (
+              <div className="animate-in fade-in duration-500 py-20 text-center flex flex-col items-center justify-center opacity-30">
+                 <span className="material-symbols-outlined text-6xl mb-4">account_tree</span>
+                 <p className="font-serif italic text-lg italic">"En la red de almas, ningún ser es un desierto."</p>
+                 <span className="text-[10px] font-black uppercase tracking-widest mt-2">(Módulo de Relaciones Completo en Desarrollo)</span>
+              </div>
+            )}
 
-          {activeTab === 'overview' && (
-            <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
-              {/* Core Stats */}
-              <GlassPanel className="p-8">
-                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground/60 mb-6">Core Statistics</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-                  {attributes.map((attr, idx: number) => (
-                    <div key={idx} className="space-y-2">
-                      <div className="flex justify-between items-end">
-                        <span className="text-sm font-bold text-foreground capitalize">{attr.label}</span>
-                        <span className="text-xs font-black text-foreground/60">{String(attr.value).substring(0, 20)}</span>
-                      </div>
-                      {/* Render bar only if numeric enough */}
-                      {!isNaN(parseFloat(attr.value)) && (
-                        <div className="h-2 w-full bg-foreground/5 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full bg-gradient-to-r from-primary to-indigo-400 rounded-full`}
-                            style={{ width: `${Math.min(parseFloat(attr.value), 100)}%` }}
-                          ></div>
-                        </div>
-                      )}
+            {activeTab === 'BACKLINKS' && (
+              <div className="animate-in slide-in-from-right-8 duration-500 space-y-6 max-w-3xl">
+                 <div className="pb-4 border-b border-primary/20">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-primary">Referencias en la Obra</h3>
+                 </div>
+                 {[1,2,3].map(i => (
+                    <div key={i} className="p-4 bg-foreground/5 border border-foreground/10 hover:border-primary/40 transition-all group">
+                       <div className="flex justify-between items-center mb-2">
+                          <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-tighter">Capítulo {i}: Los Albores</span>
+                          <span className="text-[9px] text-primary font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Leer Fragmento →</span>
+                       </div>
+                       <p className="text-sm text-foreground/60 leading-relaxed italic">
+                          "...y entre las sombras, {entity.nombre} observaba el destino plegarse sobre los hombres..."
+                       </p>
                     </div>
-                  ))}
-                  {attributes.length === 0 && <div className="text-sm text-foreground/60 italic col-span-2">No numeric attributes defined.</div>}
-                </div>
-              </GlassPanel>
-
-              {/* Full Bio */}
-              <GlassPanel className="p-8">
-                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground/60 mb-8 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-lg">auto_stories</span>
-                  Narrative & Connections
-                </h3>
-
-                <div className="space-y-8 divide-y divide-white/5">
-                  <section className="pb-8">
-                    {entity.descripcion && entity.descripcion.startsWith('{"') ? (
-                      <div className="p-6 rounded-none border border-amber-500/30 bg-amber-500/5 flex flex-col items-center text-center">
-                        <span className="material-symbols-outlined text-4xl text-amber-500 mb-3">map</span>
-                        <h4 className="text-lg font-bold text-amber-500 mb-1">Interactive Map Data</h4>
-                        <p className="text-sm text-foreground/60 max-w-md">
-                          This entity contains spatial configuration data. Access the
-                          <strong className="text-foreground ml-1">Map Editor</strong> to visualize and modify this content.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="prose prose-invert prose-sm max-w-none text-foreground/60 leading-relaxed">
-                        {(entity.descripcion || "No description provided.").split('\n').map((p: string, i: number) => (
-                          <p key={i} className="mb-4 last:mb-0">{p}</p>
-                        ))}
-                      </div>
-                    )}
-                  </section>
-
-                  <section className="pt-8">
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-primary mb-4 flex items-center gap-2 opacity-80">
-                      <span className="w-1 h-1 rounded-full bg-primary"></span>
-                      Established Connections
-                    </h4>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {relationships.map((rel, i: number) => (
-                        <div key={i} className="group flex items-center gap-3 p-3 bg-foreground/5 rounded-none border border-foreground/10 hover:border-primary/30 hover:bg-foreground/10 transition-all cursor-pointer">
-                          <div className="size-10 rounded-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center text-sm font-bold text-foreground group-hover:scale-110 transition-transform shadow-inner border border-foreground/40">
-                            {String(rel.name || '').charAt(0)}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-bold text-foreground group-hover:text-primary transition-colors truncate">{rel.name}</div>
-                            <div className="flex items-center gap-1.5 text-xs text-foreground/60">
-                              <span className="material-symbols-outlined text-[10px]">link</span>
-                              <span className="truncate">{rel.role}</span>
-                            </div>
-                          </div>
-                          <span className="material-symbols-outlined text-foreground/60 group-hover:text-primary text-sm -ml-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">arrow_forward</span>
-                        </div>
-                      ))}
-                      {relationships.length === 0 && (
-                        <div className="col-span-2 py-8 text-center bg-foreground/5 rounded-none border border-dashed border-foreground/40">
-                          <span className="material-symbols-outlined text-foreground/60 mb-2">link_off</span>
-                          <p className="text-sm text-foreground/60 italic">No established relationships found.</p>
-                        </div>
-                      )}
-                    </div>
-                  </section>
-                </div>
-              </GlassPanel>
-            </div>
-          )}
-
-          {activeTab === 'chronology' && (
-            <div className="p-12 text-center border-2 border-dashed border-foreground/10 rounded-none opacity-50">
-              <span className="material-symbols-outlined text-4xl mb-4">history_edu</span>
-              <p className="text-sm text-foreground/60">Timeline events will appear here.</p>
-            </div>
-          )}
-
-        </div>
-      </div>
-
-      {portalTarget && createPortal(
-        <div className="p-6 space-y-8 animate-in fade-in duration-500">
-          <div>
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-4">Quick Details</h3>
-            <div className="space-y-3">
-              <div className="flex justify-between py-2 border-b border-foreground/5">
-                <span className="text-[10px] text-foreground/40 uppercase font-bold">ID</span>
-                <span className="text-[10px] font-mono text-foreground/30">{entity.id}</span>
+                 ))}
               </div>
-              <div className="flex justify-between py-2 border-b border-foreground/5">
-                <span className="text-[10px] text-foreground/40 uppercase font-bold">Sector</span>
-                <Link to={`/${username || 'local'}/${projectName}/bible/folder/${folderId}`} className="text-[10px] font-bold text-indigo-400 hover:underline truncate max-w-[120px]">
-                  {entity.carpeta?.nombre}
-                </Link>
-              </div>
-              <div className="flex justify-between py-2 border-b border-foreground/5">
-                <span className="text-[10px] text-foreground/40 uppercase font-bold">Last Edited</span>
-                <span className="text-[10px] text-foreground/60">Just now</span>
-              </div>
-            </div>
+            )}
+
           </div>
-
-          {relationships.length > 0 && (
-            <div className="pt-6 border-t border-foreground/10">
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-4">Linked Beings</h3>
-              <div className="space-y-2">
-                {relationships.map((rel, i: number) => (
-                  <div key={i} className="flex items-center gap-3 p-3 bg-foreground/5 border border-foreground/5 hover:border-indigo-500/30 rounded-none transition-colors cursor-pointer group">
-                    <div className="size-8 rounded-none bg-indigo-500/10 flex items-center justify-center text-[10px] font-black text-indigo-400 group-hover:bg-indigo-500/20">L</div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[11px] font-bold text-foreground truncate">{rel.name}</div>
-                      <div className="text-[9px] text-foreground/40 uppercase tracking-tighter">{rel.role}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>,
-        portalTarget
-      )}
+        </main>
+      </div>
     </div>
   );
 };

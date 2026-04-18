@@ -55,8 +55,52 @@
 - [ ] **Herramienta Borrador (MapEditor):** Eliminar trazos individuales de capas de dibujo.
 - [ ] **Paginación EntityPicker:** Carga diferida si el proyecto crece mucho.
 
-## IDEAS FUTURAS
+## VISIÓN ESTRATÉGICA POR MÓDULOS (DETALLE TÉCNICO-FUNCIONAL) 🔭
 
-- Generador de nombres procedural por cultura.
-- Integración de IA local para resúmenes de historia.
-- Modo "Presentación" para mostrar el mundo a lectores.
+A partir de la Fase 4, el proyecto evoluciona hacia un "cerebro conectado" de nivel profesional. El desglose detallado por módulos es el siguiente:
+
+### 1. Módulo de Escritura y Edición (features/Writing & features/Editor) 🟢
+El núcleo `ZenEditor` con menciones `@` evolucionará hacia un entorno de autoría total:
+- **Control de Versiones (Snapshots):** 🟢
+    - **Modo Automático:** Configurable por el usuario (mínimo cada 5 minutos de actividad).
+    - **Modo Manual:** Botón "Instant Snapshot" en la Top Bar para puntos de guardado críticos.
+- **Seguimiento de Metas y Estadísticas:** 🟢
+    - **Metas Custom:** Configurables por proyecto/capítulo (ej. "Meta de hoy: 1500 palabras").
+    - Visualización de progreso mediante gráficos dinámicos utilizando la librería **@nivo**.
+- **Split View Dinámico:** Capacidad de anclar fichas de la WorldBible en una mitad de la pantalla mientras se escribe en la otra, evitando modales flotantes que obstruyan el texto.
+
+### 2. Módulo de Cartografía Profesional (features/Maps) 🟢
+- **Atlas Dinámico:** 🟢
+    - **Buscador Contextual:** Caja flotante tipo "Google Maps" para localizar entidades y marcadores al instante.
+    - **Quick Filters:** Panel de switches para filtrar Ciudades, Ruinas y Eventos Históricos en tiempo real.
+- **Herramienta de Medición de Distancias:** Compás digital que calcule distancias y tiempos de viaje (a pie, caballo, barco).
+- **Capas Temáticas (Polygonal Layers):** Dibujo de fronteras y biomas.
+- **Marcadores Personalizados (Custom Pins):** Soporte para iconos `.svg` / `.png`.
+
+### 3. Módulo de la Biblia y Entidades (features/WorldBible & features/Entities) 🟢
+- **Fichas 360° (Todo en Uno):** Organización por pestañas `[General] | [Relaciones] | [Apariciones]`. 🟢
+- **Mini-Grafo Interactivo:** 🟢
+    - Visualización de conexiones directas; al interactuar, permite expandir nodos y navegar internamente sin saltar de página (manteniendo el foco).
+- **Backlinks Automáticos:** Sección de "Apariciones" que lista menciones cronológicas de la entidad en todo el proyecto.
+
+### 4. Módulo de Líneas Temporales (features/Timeline)
+Gestión avanzada del tiempo cronológico:
+- **Filtrado por Entidades:** Capacidad de seleccionar un personaje o lugar y filtrar la línea temporal para mostrar *solo* los eventos en los que participó.
+- **Múltiples Calendarios Paralelos:** Soporte para sistemas de tiempo divergentes (ej. Calendario Élfico vs Humano) sincronizados mediante un "tiempo absoluto" interno en el motor.
+
+### 5. Módulo de Grafos Semánticos (features/Graph)
+Visualización política y social profunda:
+- **Filtros por Tipo de Relación:** Capacidad de ocultar o mostrar tipos de conexión específicos (ej. "Mostrar solo Enemistades y Vasallajes" para analizar el panorama de guerra) eliminando el ruido visual.
+
+### 6. Herramientas de Productividad y Salida (Core)
+- **Command Palette (Ctrl + K / Cmd + K):** Buscador global emergente para saltar instantáneamente a cualquier ficha, mapa o capítulo sin usar el ratón.
+- **Módulo de Exportación Global:** 
+    - Generador de **"Wiki Offline"** (exportación total a HTML/Markdown interconectado).
+    - Compilador profesional a PDF para lectura externa.
+
+### 7. Excelencia Técnica (QoL & Security)
+- **Analytics Dashboard:** 🟢
+    - Mapa de calor de contribución (estilo GitHub).
+    - Sesiones de escritura activas (Pomodoro/Time Tracking).
+- **Generación Procedural:** Integración de IA local (Ollama/WebLLM).
+

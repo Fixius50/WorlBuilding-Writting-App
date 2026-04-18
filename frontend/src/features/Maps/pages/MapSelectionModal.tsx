@@ -1,5 +1,5 @@
 import React from 'react';
-import GlassPanel from '../../../components/common/GlassPanel';
+import GlassPanel from '@atoms/GlassPanel';
 
 const MapSelectionModal = ({ maps, onSelect, onCreateNew, onClose }) => {
  return (
