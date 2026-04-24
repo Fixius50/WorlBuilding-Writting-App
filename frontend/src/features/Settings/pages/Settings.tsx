@@ -1,172 +1,61 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { sqlocal } from '@database';
-import { projectService } from '@repositories/projectService';
 import { useLanguage } from '@context/LanguageContext';
-import { syncService } from '@network/syncService';
-import { timelineService } from '@repositories/timelineService';
-import { templateService } from '@repositories/templateService';
+import { useSettingsStore } from '@store/useSettingsStore';
 import GlassPanel from '@atoms/GlassPanel';
 import Button from '@atoms/Button';
 import ComingSoonWrapper from '@molecules/ComingSoonWrapper';
-import { Proyecto } from '@domain/models/database';
-
-interface UserData {
-  displayName?: string;
-  username?: string;
-  avatarUrl?: string;
-}
-
-interface NotificationData {
-  id: number;
-  message: string;
-  type: 'success' | 'info' | 'error';
-}
 
 const Settings = () => {
   const navigate = useNavigate();
   const { language, changeLanguage } = useLanguage();
-  const [user, setUser] = useState<UserData | null>(null);
-  const [projects, setProjects] = useState<Proyecto[]>([]);
-  const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState('general');
-  const [notifications, setNotifications] = useState<NotificationData[]>([]);
-
-  // Settings State
-  const [settings, setSettings] = useState({
-    theme: 'deep_space',
-    font: 'Outfit',
-    fontSize: 16,
-    panelMode: 'classic' // 'classic', 'binder', 'floating'
-  });
-
-  useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser && storedUser !== "undefined") {
-        setUser(JSON.parse(storedUser));
-      }
-      const savedSettings = localStorage.getItem('app_settings');
-      if (savedSettings) {
-        setSettings(JSON.parse(savedSettings));
-      }
-      const savedSync = localStorage.getItem('sync_projects');
-      if (savedSync) {
-        setSelectedProjects(JSON.parse(savedSync));
-      }
-      loadProjects();
-    } catch (e) {
-      console.error("Failed to parse user settings", e);
-    }
-  }, []);
-
-  const loadProjects = async () => {
-    try {
-      const data = await projectService.list();
-      if (data) setProjects(data);
-    } catch (err) {
-      console.error("Error loading projects for sync", err);
-    }
-  };
-
-  const addNotification = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
-    const id = Date.now();
-    setNotifications(prev => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setNotifications(prev => prev.filter(n => n.id !== id));
-    }, 3000);
-  };
-
-  const updateSetting = (key: string, value: unknown) => {
-    const newSettings = { ...settings, [key]: value };
-    setSettings(newSettings);
-    localStorage.setItem('app_settings', JSON.stringify(newSettings));
-    window.dispatchEvent(new Event('storage_update'));
-    addNotification(`Ajuste actualizado: ${key}`);
-  };
-
-  const toggleProjectSelection = (id: string) => {
-    const isSelected = selectedProjects.includes(id);
-    const newSelection = isSelected
-      ? selectedProjects.filter(p => p !== id)
-      : [...selectedProjects, id];
-
-    setSelectedProjects(newSelection);
-    localStorage.setItem('sync_projects', JSON.stringify(newSelection));
-    addNotification(isSelected ? "Universo desmarcado de sincronización" : "Universo incluido en sincronización");
-  };
-
-  const handleDownloadBackup = async () => {
-    addNotification("Sincronizando con el servidor local...", "info");
-    try {
-      const res = await syncService.exportToDisk('worldbuilding_master');
-      if (res.success) {
-        addNotification("Copia de seguridad guardada en el servidor", "success");
-      } else {
-        addNotification(res.message, "error");
-      }
-    } catch (err) {
-      console.error("Backup error", err);
-      addNotification("Error en la sincronización con el servidor", "error");
-    }
-  };
-
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const handleImportDatabase = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const {
+    user,
+    projects,
+    selectedProjects,
+    settings,
+    notifications,
+    initialize,
+    updateSetting,
+    toggleProjectSelection,
+    updateProfile,
+    setAvatar,
+    handleDownloadBackup,
+    handleImportDatabase
+  } = useSettingsStore();
 
-    if (!file.name.endsWith('.db') && !file.name.endsWith('.sqlite3') && !file.name.endsWith('.sqlite')) {
-      addNotification("Solo se permiten bases de datos SQLite (.db, .sqlite3)", "error");
-      return;
-    }
-
-    addNotification("Sobrescribiendo la base de datos local OPFS...", "info");
-
-    try {
-      await sqlocal.overwriteDatabaseFile(file);
-      addNotification("Universo importado con éxito. Por favor recarga la página.", "success");
-      setTimeout(() => window.location.reload(), 1500);
-    } catch (err: unknown) {
-      console.error("Import error", err);
-      addNotification("Error al sobreescribir la base de datos local", "error");
-    }
-
-    // Clear input
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (file.size > 1024 * 1024) {
-      addNotification("Imagen demasiado grande (máx 1MB)", "error");
+      useSettingsStore.getState().addNotification("Imagen demasiado grande (máx 1MB)", "error");
       return;
     }
 
     const reader = new FileReader();
     reader.onload = (ev: ProgressEvent<FileReader>) => {
       const newAvatar = ev.target?.result as string;
-      const updatedUser = { ...(user || {}), avatarUrl: newAvatar };
-      setUser(updatedUser);
-      try {
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        addNotification("Foto de perfil actualizada", "success");
-      } catch (err) {
-        addNotification("Error al guardar imagen (memoria llena)", "error");
-        console.error("Storage error", err);
-      }
+      setAvatar(newAvatar);
     };
     reader.readAsDataURL(file);
   };
 
-  const updateProfile = (key: string, value: string) => {
-    const updatedUser = { ...(user || {}), [key]: value };
-    setUser(updatedUser);
-    localStorage.setItem('user', JSON.stringify(updatedUser));
-    window.dispatchEvent(new Event('storage_update'));
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const success = await handleImportDatabase(file);
+    if (success) {
+      setTimeout(() => window.location.reload(), 1500);
+    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const tabs = [
@@ -283,7 +172,7 @@ const Settings = () => {
                     <input
                       type="file"
                       ref={fileInputRef}
-                      onChange={handleImportDatabase}
+                      onChange={handleImport}
                       accept=".db,.sqlite,.sqlite3"
                       className="hidden"
                     />
