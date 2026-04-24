@@ -1,5 +1,24 @@
 import React from 'react';
 
+interface GlyphEditorPropertiesProps {
+  tool: any;
+  setTool: any;
+  strokeWidth: any;
+  setStrokeWidth: any;
+  color: any;
+  setColor: any;
+  opacity: any;
+  setOpacity: any;
+  layers: any;
+  activeLayerId: any;
+  setActiveLayerId: any;
+  onToggleLayerVisibility: any;
+  onToggleLayerLock: any;
+  onAddLayer: any;
+  onDeleteLayer: any;
+  activeShape: any;
+}
+
 const GlyphEditorProperties = ({
  // Tool Props
  tool,
@@ -19,7 +38,7 @@ const GlyphEditorProperties = ({
  onAddLayer,
  onDeleteLayer,
  activeShape
-}) => {
+}: GlyphEditorPropertiesProps) => {
  return (
  <div className="flex flex-col h-full gap-8 p-6 text-foreground/60">
  {/* --- TOOLS SECTION (Moved from Center) --- */}
@@ -127,7 +146,7 @@ const GlyphEditorProperties = ({
  </div>
 
  <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
- {layers.slice().reverse().map(layer => (
+ {layers.slice().reverse().map((layer: any) => (
  <div
  key={layer.id}
  onClick={() => setActiveLayerId(layer.id)}

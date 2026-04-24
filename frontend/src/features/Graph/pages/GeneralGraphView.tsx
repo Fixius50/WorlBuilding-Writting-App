@@ -246,7 +246,7 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
         destino_id: parseInt(params.target),
         tipo: 'RELACIONADO',
         descripcion: '',
-        project_id: projectId,
+        project_id: projectId ?? 0,
         origen_handle: params.sourceHandle,
         destino_handle: params.targetHandle
       });

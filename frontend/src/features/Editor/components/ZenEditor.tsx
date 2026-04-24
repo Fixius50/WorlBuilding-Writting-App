@@ -136,7 +136,7 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
                 <button
                   onClick={() => {
                      const url = window.prompt('URL del enlace:');
-                     if (url) editor.chain().focus().setLink({ href: url }).run();
+                     if (url) (editor.chain().focus() as any).setLink({ href: url }).run();
                   }}
                   className={`p-2 hover:bg-foreground/10 transition-colors ${editor.isActive('link') ? 'text-primary' : 'text-foreground/60'}`}
                 >

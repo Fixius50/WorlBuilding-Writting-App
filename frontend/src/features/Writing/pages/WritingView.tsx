@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '@context/LanguageContext';
 import { createPortal } from 'react-dom';
 import { useOutletContext, useParams, useNavigate } from 'react-router-dom';
-import { writingService } from '@repositories/writingService';
 import { notebookService, Cuaderno, Hoja } from '@repositories/notebookService';
 import ZenEditor from '@features/Editor/components/ZenEditor';
 import ConfirmModal from '@organisms/ConfirmModal';

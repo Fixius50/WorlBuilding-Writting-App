@@ -1,4 +1,4 @@
-import { Carpeta } from "../database/types";
+import { Carpeta } from "./database";
 
 export interface TimelineLine extends Carpeta {
  lineasTemporales?: TimelineLine[];

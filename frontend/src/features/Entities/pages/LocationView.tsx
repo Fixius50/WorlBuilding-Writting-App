@@ -44,9 +44,9 @@ const LocationView = ({ id }: { id: string | number }) => {
   };
 
   const handleSave = async () => {
-    if (!entity) return;
+    if (!entity || !location) return;
     try {
-      const { nombre, tipo, descripcion, ...extra } = location;
+      const { nombre, tipo, descripcion, ...extra } = location as any;
 
       await entityService.update(entity.id, {
         nombre,

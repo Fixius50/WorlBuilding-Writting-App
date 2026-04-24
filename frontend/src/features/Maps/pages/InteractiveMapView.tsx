@@ -64,7 +64,7 @@ const InteractiveMapView: React.FC<{
     try {
       return typeof map?.contenido_json === 'string'
         ? JSON.parse(map.contenido_json)
-        : (map?.contenido_json as MapAttributes) || {};
+        : (map?.contenido_json as unknown as MapAttributes) || {};
     } catch {
       return {} as MapAttributes;
     }
@@ -75,8 +75,8 @@ const InteractiveMapView: React.FC<{
     const rawMarkers = mapAttributes.markers || [];
     return rawMarkers.filter(m => {
         // Lógica de filtrado por categoría (simulada por ahora con lat/lng pares/impares si no hay tags)
-        if (!atlasFilters.cities && (m.label?.includes('Ciudad') || m.id % 3 === 0)) return false;
-        if (!atlasFilters.ruins && (m.label?.includes('Ruinas') || m.id % 5 === 0)) return false;
+        if (!atlasFilters.cities && (m.label?.includes('Ciudad') || Number(m.id) % 3 === 0)) return false;
+        if (!atlasFilters.ruins && (m.label?.includes('Ruinas') || Number(m.id) % 5 === 0)) return false;
         return true;
     });
   }, [mapAttributes.markers, atlasFilters]);

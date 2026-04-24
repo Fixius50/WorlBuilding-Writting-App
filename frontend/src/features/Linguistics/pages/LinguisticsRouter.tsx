@@ -8,13 +8,14 @@ import { entityService } from '@infrastructure/localDB/repositories/entityServic
 const LinguisticsRouter = () => {
  const [view, setView] = useState('hub'); // 'hub', 'foundry', 'editor'
  const [selectedWord, setSelectedWord] = useState<unknown>(null);
+ const [editorWord, setEditorWord] = useState<any>(null);
 
- const handleOpenEditor = (word) => {
- setSelectedWord(word);
- console.log("Opening editor for", word);
+ const handleOpenEditor = (word: any) => {
+ setEditorWord(word);
+ setView('editor');
  };
 
- const handleSaveGlyph = async (saveData) => {
+ const handleSaveGlyph = async (saveData: any) => {
  if (saveData.wordId) {
  try {
   // Use entityService to update the word's glyph data

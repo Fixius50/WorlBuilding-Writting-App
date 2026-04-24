@@ -329,7 +329,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
           ? JSON.parse(entity.contenido_json)
           : (entity.contenido_json || {});
         setMarkers(attrs.markers || []);
-        if (attrs.layers?.length > 0) setLayers(attrs.layers);
+        if (attrs.layers && attrs.layers.length > 0) setLayers(attrs.layers);
         if (attrs.features) setFeatures(attrs.features);
         setIs3D(!!attrs.is3D);
         if (attrs.mapSettings) {
@@ -1129,8 +1129,8 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
 
                 return (
                   <Popup
-                    longitude={marker.lng}
-                    latitude={marker.lat}
+                    longitude={marker.lng || 0}
+                    latitude={marker.lat || 0}
                     anchor="bottom"
                     closeButton={false}
                     closeOnClick={true}
@@ -1155,7 +1155,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
 
                       <div className="p-4 space-y-3">
                         <p className="text-[10px] text-foreground/50 leading-tight italic">
-                          {linkedEntity?.descripcion ? (linkedEntity.descripcion.slice(0, 80) + '...') : 'Coordenadas: ' + marker.lng.toFixed(2) + ', ' + marker.lat.toFixed(2)}
+                          {linkedEntity?.descripcion ? (linkedEntity.descripcion.slice(0, 80) + '...') : 'Coordenadas: ' + (marker.lng || 0).toFixed(2) + ', ' + (marker.lat || 0).toFixed(2)}
                         </p>
                         
                         <div className="flex gap-2">
@@ -1193,7 +1193,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
                         </button>
                         
                         <div className="flex items-center gap-2">
-                          <span className="text-[8px] font-mono text-foreground/20 italic">{marker.lng.toFixed(2)}, {marker.lat.toFixed(2)}</span>
+                          <span className="text-[8px] font-mono text-foreground/20 italic">{(marker.lng || 0).toFixed(2)}, {(marker.lat || 0).toFixed(2)}</span>
                           <button 
                             onClick={(e) => {
                               e.stopPropagation();

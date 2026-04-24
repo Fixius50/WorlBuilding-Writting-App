@@ -15,21 +15,21 @@ const EntityRouter = () => {
  switch (lowerType) {
  case 'character':
  case 'entidadindividual':
- return <CharacterView id={entityId} />;
+ return <CharacterView id={entityId as string} />;
  case 'location':
  case 'zona':
- return <LocationView id={entityId} />;
+ return <LocationView id={entityId as string} />;
  case 'culture':
  case 'entidadcolectiva':
- return <CollectiveView id={entityId} />;
+ return <CollectiveView id={entityId as string} />;
  case 'universe':
  case 'galaxy':
  case 'system':
- return <CosmicHierarchyView id={entityId} type={lowerType} />;
+ return <CosmicHierarchyView id={entityId as string} type={lowerType as string} />;
  case 'planet':
- return <TerritoryGridView id={entityId} />;
+ return <TerritoryGridView id={entityId as string} />;
  case 'construccion':
- return <LocationView id={entityId} />; // Reusing LocationView for now
+ return <LocationView id={entityId as string} />; // Reusing LocationView for now
  case 'efectos':
  return <div className="p-8 text-foreground">Effect/Spell View for ID: {entityId}</div>;
  case 'interaccion':

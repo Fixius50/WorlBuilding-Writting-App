@@ -1,7 +1,7 @@
 import React from 'react';
 import GlassPanel from '@atoms/GlassPanel';
 
-const SpecializedMap = ({ entity, active }) => {
+const SpecializedMap = ({ entity, active }: { entity?: any, active?: boolean }) => {
  if (!active) return null;
 
  return (

@@ -4,7 +4,7 @@ import React from 'react';
  * Componente para mostrar un evento individual en la línea temporal.
  * Utiliza estética Dark Glassmorphism.
  */
-const TimelineEventCard = ({ event, onClick }) => {
+const TimelineEventCard = ({ event, onClick }: { event: any, onClick: any }) => {
  const { title, date, description, type } = event;
 
  // Formatear la fecha para mostrarla de forma legible

@@ -76,7 +76,7 @@ const MapRouter = () => {
  project_id: projectId,
  carpeta_id: map.carpeta_id,
  contenido_json: JSON.stringify(newAttrs)
- });
+ } as any);
  await loadMaps();
  } catch (err) {
  console.error("Error duplicating map:", err);
@@ -123,7 +123,7 @@ const MapRouter = () => {
           markers: [],
           connections: []
         })
-      });
+      } as any);
 
       setNewMapId(newEntity.id);
       setView('editor');

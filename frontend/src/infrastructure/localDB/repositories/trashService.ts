@@ -3,12 +3,12 @@ import { Entidad, Carpeta } from '@domain/models/database';
 
 export const trashService = {
   async getItems(projectId: number): Promise<unknown[]> {
-    const entities = await sql<unknown>`
+    const entities = await sql<any[]>`
       SELECT id, nombre, tipo, fecha_creacion as deleted_date, 'ENTIDAD' as item_tipo
       FROM entidades 
       WHERE project_id = ${projectId} AND borrado = 1
     `;
-    const folders = await sql<unknown>`
+    const folders = await sql<any[]>`
       SELECT id, nombre, tipo, 'FOLDER' as item_tipo, NULL as deleted_date
       FROM carpetas
       WHERE project_id = ${projectId} AND borrado = 1

@@ -13,7 +13,7 @@ const CustomNode = ({ data }: NodeProps) => {
     <div className={`p-3 border-t-2 ${data.isMain ? 'border-primary bg-primary/10 shadow-[0_0_20px_rgba(var(--primary-rgb),0.2)]' : 'border-foreground/20 bg-foreground/5'} backdrop-blur-md flex flex-col items-center justify-center min-w-[120px]`}>
       <Handle type="target" position={Position.Top} className="opacity-0" />
       <span className="text-[10px] font-black uppercase tracking-widest text-foreground truncate w-full text-center">
-        {data.label}
+        {data.label as string}
       </span>
       <Handle type="source" position={Position.Bottom} className="opacity-0" />
     </div>
@@ -43,8 +43,9 @@ const MiniGraph: React.FC<MiniGraphProps> = ({ entityId, onNavigate }) => {
       const edges: any[] = [];
 
       relations.forEach((rel, index) => {
-        const otherId = rel.entidad_a_id === entityId ? rel.entidad_b_id : rel.entidad_a_id;
-        const otherName = rel.entidad_a_id === entityId ? rel.nombre_b : rel.nombre_a;
+        const isOrigen = rel.origen_id === entityId;
+        const otherId = isOrigen ? rel.destino_id : rel.origen_id;
+        const otherName = isOrigen ? rel.nombre_destino : rel.nombre_origen;
         
         const angle = (index / relations.length) * 2 * Math.PI;
         const radius = 180;
@@ -60,7 +61,7 @@ const MiniGraph: React.FC<MiniGraphProps> = ({ entityId, onNavigate }) => {
           id: `e-${rel.id}`,
           source: String(entityId),
           target: String(otherId),
-          label: rel.tipo_relacion,
+          label: rel.tipo,
           className: 'stroke-primary/20',
           labelStyle: { fill: 'rgba(255,255,255,0.4)', fontSize: 8, fontWeight: 900, textTransform: 'uppercase' },
         });

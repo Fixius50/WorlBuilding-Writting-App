@@ -1,7 +1,7 @@
 import React from 'react';
 import GlassPanel from '@atoms/GlassPanel';
 
-const SpecializedTimeline = ({ entities = [], onAddEvent }) => {
+const SpecializedTimeline = ({ entities = [], onAddEvent }: { entities?: any[], onAddEvent?: () => void }) => {
 
  // Sort entities? Ideally either by a custom attribute or just creation ID for now.
  // Let's assume they are sorted by ID (chronological creation)

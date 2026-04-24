@@ -16,11 +16,14 @@ export const relationshipService = {
     return await sql<Relacion>`SELECT * FROM relaciones WHERE project_id = ${projectId}`;
   },
 
-  async getByEntity(entityId: number): Promise<Relacion[]> {
-    return await sql<Relacion>`
-      SELECT r.*, e.nombre as nombreDestino, e.tipo as tipoEntidadDestino 
+  async getByEntity(entityId: number): Promise<any[]> {
+    return await sql`
+      SELECT r.*, 
+             e1.nombre as nombre_origen, 
+             e2.nombre as nombre_destino
       FROM relaciones r
-      LEFT JOIN entidades e ON r.destino_id = e.id
+      JOIN entidades e1 ON r.origen_id = e1.id
+      JOIN entidades e2 ON r.destino_id = e2.id
       WHERE r.origen_id = ${entityId} OR r.destino_id = ${entityId}
     `;
   },

@@ -5,7 +5,7 @@ import RelationshipManager from '@features/Relationships/components/Relationship
 import { entityService } from '@repositories/entityService';
 import { folderService } from '@repositories/folderService';
 
-const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned }) => {
+const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned }: { node: any, elements: any[], onClose?: () => void, onCenter?: () => void, onLock?: () => void, isPinned?: boolean }) => {
  const [activeTab, setActiveTab] = useState('ESENCIA'); // ESENCIA, RELACIONES, CRÓNICA
  const [details, setDetails] = useState<unknown>(null);
  const [loading, setLoading] = useState(false);

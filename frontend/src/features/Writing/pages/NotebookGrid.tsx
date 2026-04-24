@@ -4,7 +4,6 @@ import React, { useState } from 'react'; // React import needed for JSX but useS
 import ConfirmModal from '@organisms/ConfirmModal';
 import InputModal from '@organisms/InputModal';
 
-import { writingService } from '@repositories/writingService';
 
 import { Notebook } from '@domain/models/writing';
 

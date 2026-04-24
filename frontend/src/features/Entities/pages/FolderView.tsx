@@ -38,7 +38,7 @@ const FolderView: React.FC = () => {
     allFolders: folders,
     setRightOpen,
     setRightPanelTab
-  } = useOutletContext<any>();
+  } = useOutletContext<OutletContext & { allFolders: Carpeta[] }>();
 
   const [entities, setEntities] = useState<Entidad[]>([]);
   const [subfolders, setSubfolders] = useState<Carpeta[]>([]);
@@ -234,7 +234,7 @@ const FolderView: React.FC = () => {
         onConfirm={handleMoveItem}
         folders={folders}
         title={`Mover ${itemToMove?.type === 'folder' ? 'Carpeta' : 'Entidad'}`}
-        currentItemId={itemToMove?.item?.id}
+        currentItemId={itemToMove?.item?.id ?? 0}
         itemType={itemToMove?.type || 'entity'}
       />
     </div>

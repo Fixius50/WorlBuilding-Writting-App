@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import ConfirmationModal from '../common/ConfirmationModal'; // Adjust path if needed
+import ConfirmationModal from '@organisms/ConfirmationModal';
 
 interface Note {
  id: number;

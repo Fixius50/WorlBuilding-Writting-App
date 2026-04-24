@@ -94,7 +94,9 @@ const NotebookManager: React.FC<NotebookManagerProps> = ({ projectId }) => {
  <ZenEditor
  content={activeNotebook.contenido || ''}
  onUpdate={(newContent) => updateNotebook(activeNotebook.id, 'contenido', newContent)}
- paperMode={false}
+ title={activeNotebook.titulo}
+ onTitleChange={(newTitle) => updateNotebook(activeNotebook.id, 'titulo', newTitle)}
+ onSnapshot={() => {}}
  />
  </div>
 

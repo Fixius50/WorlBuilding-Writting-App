@@ -2,12 +2,12 @@ import React from 'react';
 import { useLanguage } from '@context/LanguageContext';
 import GlassPanel from '@atoms/GlassPanel';
 
-const MapEditorSettings = ({ settings, onUpdate }) => {
+const MapEditorSettings = ({ settings, onUpdate }: { settings: any, onUpdate: any }) => {
  const { t } = useLanguage();
 
  if (!settings) return null;
 
- const handleChange = (key, value) => {
+ const handleChange = (key: any, value: any) => {
  onUpdate({ ...settings, [key]: value });
  };
 

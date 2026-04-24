@@ -1,7 +1,7 @@
 import React from 'react';
 import GlassPanel from '@atoms/GlassPanel';
 
-const MapSelectionModal = ({ maps, onSelect, onCreateNew, onClose }) => {
+const MapSelectionModal = ({ maps, onSelect, onCreateNew, onClose }: { maps: any[], onSelect: (map: any) => void, onCreateNew: () => void, onClose: () => void }) => {
  return (
  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 animate-in fade-in duration-300">
  <div className="w-full max-w-3xl animate-in zoom-in-95 duration-500">

@@ -23,7 +23,7 @@ const MapCreationWizard: React.FC<MapCreationWizardProps> = ({ onCancel, onCreat
   const [is3D, setIs3D] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
- const handleFileSelect = (e) => {
+ const handleFileSelect = (e: any) => {
  const file = e.target.files?.[0];
  if (file && file.type.startsWith('image/')) {
  setUploadedFile(file);

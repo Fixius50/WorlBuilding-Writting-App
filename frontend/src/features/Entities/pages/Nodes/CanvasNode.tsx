@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import AttributeField from '../AttributeField';
 
-const CanvasNode = ({ data, selected }) => {
+const CanvasNode = ({ data, selected }: { data: any, selected?: boolean }) => {
  // data contains: attribute (model), value, onChange (fn), linkableEntities (array)
 
  return (

@@ -42,7 +42,7 @@ const CollectiveView = ({ id }: { id: string | number }) => {
  };
 
  const handleSave = async () => {
-    if (!entity) return; // Added check for entity
+    if (!entity || !collective) return; // Added check for entity and collective
  try {
       const { nombre, tipo, descripcion, ...extra } = collective; // Destructure collective for update
 
@@ -60,8 +60,8 @@ const CollectiveView = ({ id }: { id: string | number }) => {
  }
  };
 
- const handleChange = (field, value) => {
- setCollective(prev => ({ ...prev, [field]: value }));
+  const handleChange = (field: string, value: string) => {
+ setCollective(prev => prev ? ({ ...prev, [field]: value }) : null);
  };
 
  if (loading) return <div className="p-20 text-center text-foreground/60 animate-pulse">Gathering intelligence...</div>;

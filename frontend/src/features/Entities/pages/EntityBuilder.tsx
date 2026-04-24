@@ -194,9 +194,11 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
     try {
       let savedEntity: Entidad;
       if (isCreation) {
-        savedEntity = await entityService.create(entity as Omit<Entidad, 'id' | 'fecha_creacion'>);
+        savedEntity = await entityService.create(entity as any);
       } else {
-        savedEntity = await entityService.update(entity.id!, entity);
+        await entityService.update(entity.id!, entity as any);
+        const refreshed = await entityService.getById(entity.id!);
+        savedEntity = refreshed ?? (entity as unknown as Entidad);
       }
 
       window.dispatchEvent(new CustomEvent('folder-update', { 

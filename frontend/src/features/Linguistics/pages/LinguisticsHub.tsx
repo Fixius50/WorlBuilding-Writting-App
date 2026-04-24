@@ -356,6 +356,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
  const centerX = (minX + maxX) / 2;
  const centerY = (minY + maxY) / 2;
  const stage = stageRef.current;
+ if (!stage) return;
  const offsetX = (stage.width() / 2) - centerX;
  const offsetY = (stage.height() / 2) - centerY;
 
@@ -404,18 +405,23 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
  const existingWord = lexicon.find((w: Word) => w.id === activeGlyphId);
 
  const entityData: Omit<Entidad, 'id' | 'fecha_creacion'> = {
- nombre: existingWord?.lema || 'Nuevo Glifo',
- tipo: 'Word',
- project_id: Number(projectParam) || 0,
- carpeta_id: activeLangId!,
- contenido_json: JSON.stringify({
- ...(existingWord || {}),
- lema: existingWord?.lema || 'Nuevo Glifo',
- categoriaGramatical: 'GLYPH',
- svgPathData: svgPath,
- rawEditorData: JSON.stringify(centeredLayers)
- }),
- descripcion: existingWord?.definicion || ''
+   nombre: existingWord?.lema || 'Nuevo Glifo',
+   tipo: 'Word',
+   project_id: Number(projectParam) || 0,
+   carpeta_id: activeLangId!,
+   contenido_json: JSON.stringify({
+     ...(existingWord || {}),
+     lema: existingWord?.lema || 'Nuevo Glifo',
+     categoriaGramatical: 'GLYPH',
+     svgPathData: svgPath,
+     rawEditorData: JSON.stringify(centeredLayers)
+   }),
+   descripcion: existingWord?.definicion || '',
+   slug: '',
+   folder_slug: null,
+   imagen_url: null,
+   fecha_actualizacion: '',
+   borrado: 0
  };
 
  if (existingWord) {
@@ -461,12 +467,17 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
  if (!activeLangId || !projectId) return;
  try {
  const entityData: Omit<Entidad, 'id' | 'fecha_creacion'> = {
- nombre: updatedData.lema,
- tipo: 'Word',
- project_id: Number(projectParam) || 0,
- carpeta_id: activeLangId!,
- descripcion: updatedData.definicion || '',
- contenido_json: JSON.stringify(updatedData)
+   nombre: updatedData.lema,
+   tipo: 'Word',
+   project_id: Number(projectParam) || 0,
+   carpeta_id: activeLangId!,
+   descripcion: updatedData.definicion || '',
+   contenido_json: JSON.stringify(updatedData),
+   slug: '',
+   folder_slug: null,
+   imagen_url: null,
+   fecha_actualizacion: '',
+   borrado: 0
  };
 
  if (updatedData.isNew) {
@@ -493,7 +504,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
  const def = (item.traduccionEspanol || item.definicion || '').toLowerCase();
  return lema.includes(search) || def.includes(search);
  });
- const handleDrawEnd = (phase: string, data: { pos: { x: number, y: number } }) => {
+ const handleDrawEnd = (phase: string, data: any) => {
  // Handle drawing logic updates to layers state
  if (phase === 'START') {
  // LAYER LOCK CHECK:
@@ -613,19 +624,19 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
  const handleCreateNewWord = async () => {
  if (!activeLangId) return;
  setEditingWord({
- id: 'temp-' + Date.now(),
- lema: '',
- definicion: '',
- categoriaGramatical: 'Noun',
- isNew: true,
- nombre: '',
- tipo: 'Word',
- project_id: Number(projectParam) || 0,
- carpeta_id: activeLangId,
- descripcion: '',
- contenido_json: '{}',
- fecha_creacion: new Date().toISOString()
- });
+  id: 'temp-' + Date.now(),
+  lema: '',
+  definicion: '',
+  categoriaGramatical: 'Noun',
+  isNew: true,
+  nombre: '',
+  tipo: 'Word',
+  project_id: Number(projectParam) || 0,
+  carpeta_id: activeLangId,
+  descripcion: '',
+  contenido_json: '{}',
+  fecha_creacion: new Date().toISOString()
+  } as any);
  setIsMeaningModalOpen(true);
  };
 
@@ -638,16 +649,19 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
 
  try {
  await entityService.create({
- nombre: lema,
- tipo: 'Word',
- project_id: Number(projectParam) || 0,
- carpeta_id: activeLangId!,
- descripcion: def || '',
- contenido_json: JSON.stringify({
- lema,
- definicion: def,
- categoriaGramatical: cat
- })
+   nombre: lema,
+   tipo: 'Word',
+   project_id: Number(projectParam) || 0,
+   carpeta_id: activeLangId!,
+   descripcion: def || '',
+   contenido_json: JSON.stringify({
+     lema,
+     definicion: def,
+     categoriaGramatical: cat
+   }),
+   slug: '',
+   folder_slug: null,
+   imagen_url: null
  });
  loadData();
  addLog('Palabra creada', 'success');
@@ -665,15 +679,18 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
 
  try {
  await entityService.create({
- nombre: titulo,
- tipo: 'Rule',
- project_id: Number(projectParam) || 0,
- carpeta_id: activeLangId!,
- descripcion: contenido || '',
- contenido_json: JSON.stringify({
- titulo,
- contenido
- })
+   nombre: titulo,
+   tipo: 'Rule',
+   project_id: Number(projectParam) || 0,
+   carpeta_id: activeLangId!,
+   descripcion: contenido || '',
+   contenido_json: JSON.stringify({
+     titulo,
+     contenido
+   }),
+   slug: '',
+   folder_slug: null,
+   imagen_url: null
  });
  loadData();
  addLog('Regla creada', 'success');
@@ -709,16 +726,19 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
 
  try {
  await entityService.create({
- nombre: composerText,
- tipo: 'Word',
- project_id: Number(projectParam) || 0,
- carpeta_id: activeLangId!,
- descripcion: `Entrada automática (${new Date().toLocaleDateString()})`,
- contenido_json: JSON.stringify({
- lema: composerText,
- categoriaGramatical: 'COMPUESTA',
- definicion: `Entrada automática (${new Date().toLocaleDateString()})`
- })
+   nombre: composerText,
+   tipo: 'Word',
+   project_id: Number(projectParam) || 0,
+   carpeta_id: activeLangId!,
+   descripcion: `Entrada automática (${new Date().toLocaleDateString()})`,
+   contenido_json: JSON.stringify({
+     lema: composerText,
+     categoriaGramatical: 'COMPUESTA',
+     definicion: `Entrada automática (${new Date().toLocaleDateString()})`
+   }),
+   slug: '',
+   folder_slug: null,
+   imagen_url: null
  });
  loadData();
  addLog(`Palabra "${composerText}" indexada automáticamente`, 'success');
@@ -761,16 +781,19 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
  
  try {
  await entityService.create({
- nombre: charName,
- tipo: 'Word',
- project_id: projectId!,
- carpeta_id: activeLangId!,
- descripcion: 'Glifo importado',
- contenido_json: JSON.stringify({
- lema: charName,
- categoriaGramatical: 'GLYPH',
- svgPathData: svgPathData
- })
+   nombre: charName,
+   tipo: 'Word',
+   project_id: projectId!,
+   carpeta_id: activeLangId!,
+   descripcion: 'Glifo importado',
+   contenido_json: JSON.stringify({
+     lema: charName,
+     categoriaGramatical: 'GLYPH',
+     svgPathData: svgPathData
+   }),
+   slug: '',
+   folder_slug: null,
+   imagen_url: null
  });
  loadData();
  addLog(`Glifo ${charName} importado`, 'success');
@@ -820,7 +843,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
  if (commands) {
  commands.forEach((cmdStr: string) => {
  const type = cmdStr[0].toUpperCase();
- const args = cmdStr.slice(1).trim().split(/[\s,]+/).map(parseFloat);
+ const args = cmdStr.slice(1).trim().split(/[\\s,]+/).map(parseFloat);
  if (type === 'M') path.moveTo(args[0], args[1]);
  else if (type === 'L') path.lineTo(args[0], args[1]);
  else if (type === 'C') path.curveTo(args[0], args[1], args[2], args[3], args[4], args[5]);
@@ -1190,7 +1213,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
         return filtered;
       });
     }}
-    activeShape={selectedShapeId && !Array.isArray(selectedShapeId) ? layers.flatMap(l => l.shapes).find(s => s.id === selectedShapeId) : null}
+    activeShape={(selectedShapeId && !Array.isArray(selectedShapeId) ? layers.flatMap(l => l.shapes).find(s => s.id === selectedShapeId) : null) as any}
     onUndo={undo}
     onRedo={redo}
     onClear={() => {
