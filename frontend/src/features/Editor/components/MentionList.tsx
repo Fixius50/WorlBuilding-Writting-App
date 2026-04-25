@@ -68,7 +68,7 @@ const MentionList = forwardRef<MentionListRef, MentionListProps>((props, ref) =>
  }))
 
  return (
- <div className="items bg-white border border-foreground/10 rounded-none shadow-2xl overflow-hidden min-w-[200px] p-2 animate-in zoom-in-95 duration-200">
+ <div className="items bg-background border border-foreground/10 rounded-none shadow-2xl overflow-hidden min-w-[200px] p-2 animate-in zoom-in-95 duration-200">
  {props.items.length ? (
  props.items.map((item, index) => {
  const getIconAndColor = (type: string) => {
@@ -87,14 +87,14 @@ const MentionList = forwardRef<MentionListRef, MentionListProps>((props, ref) =>
  return (
  <button
  className={`flex w-full items-center text-xs px-3 py-2 rounded-none outline-none text-left transition-all gap-3 ${index === selectedIndex
- ? 'bg-primary text-foreground shadow-lg scale-[1.02]'
- : 'text-foreground/60 hover:bg-foreground/5'
+ ? 'bg-primary text-primary-foreground shadow-lg scale-[1.02]'
+ : 'text-foreground/80 hover:bg-foreground/5'
  }`}
  key={index}
  onClick={() => selectItem(index)}
  >
- <div className={`p-1 rounded flex items-center justify-center ${index === selectedIndex ? 'bg-foreground/20' : style.bg}`}>
- <span className={`material-symbols-outlined text-[14px] ${index === selectedIndex ? 'text-foreground' : style.color}`}>
+ <div className={`p-1 rounded flex items-center justify-center ${index === selectedIndex ? 'bg-primary-foreground/20' : style.bg}`}>
+ <span className={`material-symbols-outlined text-[14px] ${index === selectedIndex ? 'text-primary-foreground' : style.color}`}>
  {style.icon}
  </span>
  </div>

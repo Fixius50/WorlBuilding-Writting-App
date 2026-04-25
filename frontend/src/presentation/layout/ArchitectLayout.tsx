@@ -7,7 +7,8 @@ import { entityService } from '@repositories/entityService';
 import { Carpeta, Proyecto, Plantilla, FolderType } from '@domain/models/database';
 import GlobalRightPanel from './GlobalRightPanel';
 import ConfirmationModal from '@organisms/ConfirmationModal';
-import BottomGraphDrawer from '@features/Graph/components/BottomGraphDrawer';
+import ControlPanel from '@features/Graph/components/ControlPanel';
+import { syncService } from '@network/syncService';
 
 interface NavItemProps {
   to: string;
@@ -46,6 +47,9 @@ const ArchitectLayout: React.FC = () => {
   // Layout State
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(false);
+  const [editingPageId, setEditingPageId] = useState<number | null>(null);
+  const [statsData, setStatsData] = useState<any>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const [loadedProject, setLoadedProject] = useState<Proyecto | null>(null);
   const [projectId, setProjectId] = useState<number | null>(null);
 
@@ -112,6 +116,23 @@ const ArchitectLayout: React.FC = () => {
       }
     };
     init();
+  }, [projectName]);
+
+  // Auto-backup cada 5 minutos
+  useEffect(() => {
+    if (!projectName) return;
+    
+    const interval = setInterval(async () => {
+      console.log(`[AutoSync] Iniciando backup automático para: ${projectName}`);
+      const res = await syncService.exportToDisk(projectName);
+      if (res.success) {
+        console.log(`[AutoSync] Backup exitoso: ${res.message}`);
+      } else {
+        console.warn(`[AutoSync] Falló el backup automático: ${res.message}`);
+      }
+    }, 5 * 60 * 1000); // 5 minutos
+
+    return () => clearInterval(interval);
   }, [projectName]);
 
   // Clear content on route change, but let the user stay on the same tab (Notes/Explorer)
@@ -205,6 +226,7 @@ const ArchitectLayout: React.FC = () => {
     setRightPanelMode,
     setRightPanelContent: setGlobalPanelContent,
     projectId,
+    setStatsData,
     projectName,
     baseUrl,
     setBottomGraphOpen,
@@ -228,6 +250,7 @@ const ArchitectLayout: React.FC = () => {
     projectName,
     baseUrl,
     panelMode,
+    statsData,
     setRightOpen,
     toggleRightPanel,
     setRightPanelTab,
@@ -301,6 +324,7 @@ const ArchitectLayout: React.FC = () => {
                 <NavItem to={`${baseUrl}/map`} icon="map" label={t('nav.atlas')} collapsed={false} />
                 <NavItem to={`${baseUrl}/timeline`} icon="calendar_month" label={t('nav.chronology')} collapsed={false} />
                 <NavItem to={`${baseUrl}/languages`} icon="translate" label={t('nav.languages')} collapsed={false} />
+                <NavItem to={`${baseUrl}/analytics`} icon="analytics" label={t('project.analytics_title')} collapsed={false} />
                 <div className="h-px bg-foreground/10 my-2 mx-2 opacity-50"></div>
                 <NavItem to={`${baseUrl}/writing`} icon="edit_note" label={t('nav.writing')} collapsed={false} />
               </div>
@@ -408,7 +432,9 @@ const ArchitectLayout: React.FC = () => {
         )}
 
         {/* Main Content */}
-        <main className="flex-1 flex flex-col min-w-0 bg-background relative">
+        <main 
+          className="flex-1 flex flex-col min-w-0 bg-background relative transition-all duration-500"
+        >
           <div className="flex-1 flex flex-col min-w-0 bg-background relative overflow-hidden">
             <Outlet context={outletContextValue} />
           </div>
@@ -424,39 +450,19 @@ const ArchitectLayout: React.FC = () => {
               }
             }}
             contextContent={globalPanelContent}
-            folders={folders}
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            filterType={filterType}
-            setFilterType={setFilterType}
             projectId={projectId}
             activeTab={rightPanelTab}
             setActiveTab={setRightPanelTab}
             title={rightPanelTitle}
-            handleCreateSimpleFolder={handleCreateSimpleFolder}
-            handleRenameFolder={handleRenameFolder}
-            handleDeleteFolder={handleDeleteFolder}
-            handleCreateEntity={handleCreateEntity}
             panelMode={panelMode}
-            addAttributeHandler={addAttributeHandler}
-            availableTemplates={availableTemplates}
           />
 
-          {!bottomGraphOpen && !hideSidebarParam && (
-            <button
-              onClick={() => setBottomGraphOpen(true)}
-              className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 px-6 py-2 rounded-none bg-background border border-foreground/10 hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all text-foreground/60 hover:text-indigo-400 shadow-2xl group animate-in slide-in-from-bottom-8"
-            >
-              <span className="material-symbols-outlined text-[1.125rem] group-hover:-translate-y-1 transition-transform text-indigo-500 group-hover:drop-shadow-[0_0_0.5rem_rgba(99,102,241,0.6)]">hub</span>
-              <span className="text-[0.65rem] font-black uppercase tracking-widest">Abrir Grafo</span>
-            </button>
-          )}
-
-          <BottomGraphDrawer 
-            isOpen={bottomGraphOpen} 
-            onClose={() => setBottomGraphOpen(false)}
+          <ControlPanel
+            isOpen={bottomGraphOpen}
+            onToggle={() => setBottomGraphOpen(prev => !prev)}
             projectId={projectId ?? undefined}
             projectName={projectName}
+            statsData={statsData}
           />
         </main>
       </div>

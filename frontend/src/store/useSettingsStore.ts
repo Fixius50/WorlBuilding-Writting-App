@@ -29,8 +29,11 @@ const defaultSettings: AppSettings = {
   theme: 'deep_space',
   font: 'Outfit',
   fontSize: 16,
-  panelMode: 'classic'
+  panelMode: 'classic',
+  autoBackup: false
 };
+
+let autoBackupInterval: ReturnType<typeof setInterval> | null = null;
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
   user: null,
@@ -54,6 +57,13 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     const projects = await SettingsUseCase.loadProjects();
 
     set({ user, settings, selectedProjects, projects });
+
+    // Setup auto-backup
+    if (settings.autoBackup && !autoBackupInterval) {
+      autoBackupInterval = setInterval(() => {
+        get().handleDownloadBackup();
+      }, 10 * 60 * 1000); // Cada 10 minutos
+    }
   },
 
   updateSetting: (key: keyof AppSettings, value: unknown) => {
@@ -61,6 +71,17 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     set({ settings: newSettings });
     SettingsUseCase.saveSettings(newSettings);
     get().addNotification(`Ajuste actualizado: ${key}`);
+
+    if (key === 'autoBackup') {
+      if (value && !autoBackupInterval) {
+        autoBackupInterval = setInterval(() => {
+          get().handleDownloadBackup();
+        }, 10 * 60 * 1000);
+      } else if (!value && autoBackupInterval) {
+        clearInterval(autoBackupInterval);
+        autoBackupInterval = null;
+      }
+    }
   },
 
   toggleProjectSelection: (id: string) => {

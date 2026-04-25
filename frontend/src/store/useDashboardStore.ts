@@ -13,7 +13,10 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     entityCount: 0,
     folderCount: 0,
     entitiesByType: [],
-    recentActivity: []
+    recentActivity: [],
+    wordCount: 0,
+    pageCount: 0,
+    notebookCount: 0
   },
   isLoading: false,
   error: null,

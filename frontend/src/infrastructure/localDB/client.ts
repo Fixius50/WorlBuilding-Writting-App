@@ -141,6 +141,25 @@ export async function initializeDatabase() {
   )
   `;
 
+  // Tabla de Snapshots (Control de Versiones)
+  await sql`
+  CREATE TABLE IF NOT EXISTS hojas_snapshots (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  hoja_id INTEGER NOT NULL,
+  contenido TEXT,
+  fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (hoja_id) REFERENCES hojas(id) ON DELETE CASCADE
+  )
+  `;
+
+  // Índices para mejorar rendimiento en uniones y filtrados frecuentes
+  await sql`CREATE INDEX IF NOT EXISTS idx_entidades_project_id ON entidades(project_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_entidades_carpeta_id ON entidades(carpeta_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_entidades_tipo ON entidades(tipo)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_relaciones_origen_id ON relaciones(origen_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_relaciones_destino_id ON relaciones(destino_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_relaciones_project_id ON relaciones(project_id)`;
+
   console.log('Database tables ensured');
 
   // --- MIGRACIONES MANUALES (Para tablas que ya existen pero necesitan columnas nuevas) ---

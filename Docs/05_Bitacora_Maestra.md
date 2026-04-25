@@ -6,6 +6,19 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
 
 ### ABRIL 2026
 
+- **2026-04-25: Módulo de Escritura Avanzada, Preview Inline y Saneamiento**
+  - **Control de Versiones (Snapshots)**: Tabla `hojas_snapshots` en SQLite. Guardado automático cada 5 min de escritura y manual desde la UI. Sistema de restauración funcional.
+  - **Estadísticas Nivo**: Integración de `@nivo/bar` para mostrar la distribución de palabras en el Archivador.
+  - **Eliminación de Split View**: Eliminada la funcionalidad de vista dividida por redundancia con el nuevo sistema de Preview Inline.
+  - **Menciones Inteligentes (@)**: Al hacer clic en una mención, se abre una previsualización detallada en el panel derecho (Right Panel) en lugar de navegar fuera de la escritura.
+  - **Saneamiento de Roadmap**: Limpieza de descripciones en `03_Roadmap_Vivo.md` para elementos ya implementados.
+  - **Sincronización Silenciosa**: Auto-backup de la DB SQLite cada 5 min hacia el servidor local en `ArchitectLayout`.
+  - **Borrador Quirúrgico**: Mejora del MapEditor para permitir borrar trazos parciales segmentando líneas.
+  - **Panel de Control Global**: Sustitución del drawer del grafo por un Panel de Control multi-sección extensible. Botón toggle flotante persistente.
+  - **Base de Datos General**: Implementación de la sección **Datos** con búsqueda full-text y filtros por tipo/carpeta.
+  - **Preview Inline**: Visualización de detalles de entidad dentro del panel inferior y lateral.
+  - **Simplificación UI**: Centralización de notas y explorador en el panel inferior; panel derecho dedicado exclusivamente al contexto dinámico.
+
 - **2026-04-17: Migración a Arquitectura Híbrida (Vite + Spring Boot DDD)**
   - **Separación Física:** El proyecto se divide en carpetas raíz `/frontend` y `/backend`.
   - **Clean Architecture Frontend:** Implementación de capas `domain`, `application`, `infrastructure` y `presentation`.
@@ -70,17 +83,8 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
 
 ### Patrones Establecidos
 
-- **Panel Derecho (GlobalRightPanel):** Usa key `'CONTEXT'` para la pestaña de contexto (NO 'CONTEXTO'). Los componentes inyectan contenido vía `createPortal` al `#global-right-panel-portal` O vía `setRightPanelContent()` del OutletContext. Si se usa `setRightPanelContent`, el componente **debe limpiar** con `setRightPanelContent(null)` en su destructor.
+- **Panel Derecho (GlobalRightPanel):** Reducido exclusivamente a la pestaña de **CONTEXTO**. Solo inyecta contenido contextual relevante a la vista activa. Los componentes deben inyectar contenido vía `setRightPanelContent()` del OutletContext (método preferido) y **limpiar obligatoriamente** con `setRightPanelContent(null)` al desmontar.
+- **Panel de Control Inferior (ControlPanel):** Hub central para herramientas globales (Grafo, Base de Datos, Notas). El botón de toggle es fijo y persistente. Admite redimensionado manual sin animaciones de transición para máxima fluidez.
 - **MapAttributes `[key: string]: unknown`:** Los campos extra de `MapAttributes` son `unknown`. Siempre castear explícitamente: `as string`, `as number`, etc.
 - **MapMarker.entityId:** El campo de vínculo con entidades es `entityId` (no `entidadId`). No confundir entre versiones.
 - **Guardado de Mapas:** `handleSave` en `MapEditor` debe incluir `snapshotUrl` y `bgImage` para que `MapManager.getPreview()` pueda mostrar la miniatura.
-
----
-
-## 🎯 PRÓXIMAS PRIORIDADES
-
-1. **Alta:** Herramienta Borrador en MapEditor para eliminar trazos individuales de capas de dibujo.
-2. **Alta:** Sincronización automática de backups SQLite al disco físico vía Servidor Auxiliar.
-3. **Media:** Optimización de rendimiento en consultas relacionales complejas.
-4. **Baja:** Paginación/carga diferida del EntityPicker si el proyecto crece.
-5. **Baja:** Generador de nombres procedural por cultura.

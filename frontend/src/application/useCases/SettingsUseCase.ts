@@ -14,6 +14,7 @@ export interface AppSettings {
   font: string;
   fontSize: number;
   panelMode: string;
+  autoBackup: boolean;
 }
 
 export class SettingsUseCase {

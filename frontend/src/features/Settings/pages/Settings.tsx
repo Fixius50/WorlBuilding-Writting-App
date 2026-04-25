@@ -196,6 +196,22 @@ const Settings = () => {
                   </div>
                 </div>
 
+                <div className="flex items-center justify-between p-4 bg-foreground/[0.02] border border-foreground/10 rounded-none mb-6">
+                  <div>
+                    <h4 className="text-xs font-black uppercase tracking-widest text-foreground">Sincronización Automática</h4>
+                    <p className="text-[10px] text-foreground/50 mt-1">Guarda una copia en el servidor local cada 10 minutos (si hay cambios pendientes).</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer"
+                      checked={settings.autoBackup || false}
+                      onChange={(e) => updateSetting('autoBackup', e.target.checked)}
+                    />
+                    <div className="w-11 h-6 bg-foreground/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-foreground/30 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                  </label>
+                </div>
+
                 <div className="space-y-4">
                   <label className="text-[10px] font-black uppercase tracking-widest text-foreground/60 block">Universos para sincronización</label>
                   <div className="grid grid-cols-2 gap-3">

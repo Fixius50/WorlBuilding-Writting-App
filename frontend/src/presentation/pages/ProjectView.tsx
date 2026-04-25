@@ -140,7 +140,7 @@ const ProjectView: React.FC = () => {
  title={t('project.analytics_title')}
  desc={t('project.analytics_desc')}
  color="bg-cyan-600 shadow-cyan-500/20"
- onClick={() => navigate(`${baseUrl}/dashboard`)}
+ onClick={() => navigate(`${baseUrl}/analytics`)}
  t={t}
  />
  </div>

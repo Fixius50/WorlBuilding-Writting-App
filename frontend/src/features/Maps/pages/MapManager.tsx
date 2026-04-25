@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { useLanguage } from '@context/LanguageContext';
 import { useOutletContext } from 'react-router-dom';
+
 import GlassPanel from '@atoms/GlassPanel';
 import Button from '@atoms/Button';
 import { entityService } from '@repositories/entityService';
@@ -19,17 +19,15 @@ interface MapManagerProps {
 interface MapManagerContext {
   setRightPanelTab: (tab: string) => void;
   setRightOpen?: (open: boolean) => void;
+  setRightPanelContent?: (content: React.ReactNode) => void;
 }
 
 const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap, onDeleteMap, onDuplicateMap, onEditMap }) => {
  const { t } = useLanguage();
- const { setRightPanelTab, setRightOpen = () => { } } = useOutletContext<MapManagerContext>();
+ const { setRightPanelTab, setRightOpen = () => { }, setRightPanelContent } = useOutletContext<MapManagerContext>();
  const [searchTerm, setSearchTerm] = useState('');
  const [spatialFilter, setSpatialFilter] = useState('ALL');
  const [selectedMapId, setSelectedMapId] = useState<number | null>(null);
-
- // Portal Target
- const portalRef = document.getElementById('global-right-panel-portal');
 
  const selectedMap = maps.find(m => m.id === selectedMapId);
 
@@ -75,14 +73,20 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  useEffect(() => {
   setRightOpen(true);
   setRightPanelTab('CONTEXT');
+  return () => {
+    // Limpiar panel al desmontar
+    setRightPanelContent?.(null);
+  };
  }, []);
 
+ // Sincronizar panel de detalles con el mapa seleccionado
  useEffect(() => {
   if (selectedMapId) {
-  setRightPanelTab('CONTEXT');
-  setRightOpen(true);
+   setRightPanelTab('CONTEXT');
+   setRightOpen(true);
   }
- }, [selectedMapId]);
+  setRightPanelContent?.(renderRightPanel());
+ }, [selectedMapId, maps]);
 
  const renderRightPanel = () => {
  if (!selectedMap) return null;
@@ -164,7 +168,6 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
 
  return (
  <div className="flex-1 flex overflow-hidden bg-background">
- {portalRef && selectedMap && createPortal(renderRightPanel(), portalRef)}
  <div className="flex-1 p-8 overflow-y-auto">
  <div className="max-w-7xl mx-auto space-y-8">
 

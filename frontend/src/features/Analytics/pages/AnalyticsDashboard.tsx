@@ -1,136 +1,140 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import GlassPanel from '@atoms/GlassPanel';
-import Button from '@atoms/Button';
 import { motion } from 'framer-motion';
+import { useOutletContext } from 'react-router-dom';
+import { useDashboardStore } from '@store/useDashboardStore';
+import { ResponsivePie } from '@nivo/pie';
 
 const AnalyticsDashboard = () => {
-  // Datos simulados (en producción vendrían de una consulta SQL agregada)
-  const stats = [
-    { label: 'Palabras Totales', value: '42,500', sub: '+1.2k hoy', icon: 'description', color: 'text-primary' },
-    { label: 'Entidades Creadas', value: '158', sub: '24 ubicaciones', icon: 'account_tree', color: 'text-purple-400' },
-    { label: 'Mapas Activos', value: '12', sub: '3 en edición', icon: 'map', color: 'text-amber-400' },
-    { label: 'Tiempo de Escritura', value: '84h', sub: 'Promedio 2h/día', icon: 'timer', color: 'text-emerald-400' },
-  ];
+  const { projectId } = useOutletContext<{ projectId: number }>();
+  const { stats, isLoading, loadStats } = useDashboardStore();
 
-  // Generación de "Heatmap" simulado (30 días)
-  const heatmapData = Array.from({ length: 30 }, (_, i) => ({
-    day: i,
-    intensity: Math.floor(Math.random() * 5), // 0 to 4
-  }));
+  useEffect(() => {
+    if (projectId) {
+      loadStats(projectId);
+    }
+  }, [projectId, loadStats]);
+
+  const cards = [
+    { label: 'Palabras Totales', value: stats.wordCount.toLocaleString(), icon: 'description', color: 'text-primary' },
+    { label: 'Entidades Creadas', value: stats.entityCount, icon: 'account_tree', color: 'text-purple-400' },
+    { label: 'Hojas de Archivador', value: stats.pageCount, icon: 'auto_stories', color: 'text-amber-400' },
+    { label: 'Archivadores Activos', value: stats.notebookCount, icon: 'folder_open', color: 'text-emerald-400' },
+  ];
 
   return (
     <div className="flex-1 p-8 lg:p-12 max-w-7xl mx-auto w-full animate-in fade-in duration-700 overflow-y-auto custom-scrollbar">
       
       <header className="mb-12 space-y-2">
         <h1 className="text-4xl lg:text-5xl font-serif font-black text-foreground italic tracking-tight">Códice de Actividad</h1>
-        <p className="text-sm text-foreground/40 font-bold uppercase tracking-[0.3em]">Métricas de Esfuerzo y Evolución del Mundo</p>
+        <p className="text-sm text-foreground/40 font-bold uppercase tracking-[0.3em]">Métricas Reales de tu Universo</p>
       </header>
 
       {/* Rila de Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        {stats.map((stat, i) => (
-          <GlassPanel key={i} className="p-6 border-b-4 border-b-transparent hover:border-b-primary transition-all group">
-            <div className="flex items-start justify-between mb-4">
+        {cards.map((stat, i) => (
+          <GlassPanel key={i} className="p-6 border-b-4 border-b-transparent hover:border-b-primary transition-all group relative overflow-hidden">
+             {/* Sutil gradiente de fondo basado en el color de la card */}
+            <div className={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity bg-current ${stat.color}`}></div>
+            
+            <div className="flex items-start justify-between mb-4 relative z-10">
               <span className={`material-symbols-outlined ${stat.color} text-2xl`}>{stat.icon}</span>
-              <span className="text-[10px] font-black uppercase tracking-widest text-foreground/20 group-hover:text-primary/40 transition-colors">Ver Detalle</span>
+              {isLoading && <div className="size-4 rounded-full border-2 border-foreground/10 border-t-primary animate-spin"></div>}
             </div>
-            <div className="text-3xl font-black text-foreground mb-1">{stat.value}</div>
-            <div className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mb-1">{stat.label}</div>
-            <div className="text-[9px] font-black text-primary opacity-60 uppercase">{stat.sub}</div>
+            <div className="text-3xl font-black text-foreground mb-1 relative z-10">{isLoading ? '...' : stat.value}</div>
+            <div className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest relative z-10">{stat.label}</div>
           </GlassPanel>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
         
-        {/* HEATMAP DE CONTRIBUCIÓN */}
-        <div className="lg:col-span-2">
-          <GlassPanel className="p-8">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground/60">Mapa de Calor: Intensidad de Escritura</h3>
-              <div className="flex items-center gap-2">
-                 <span className="text-[8px] text-foreground/30 uppercase font-black">Menos</span>
-                 <div className="flex gap-1">
-                    {[0, 1, 2, 3, 4].map(v => (
-                       <div key={v} className={`size-3 ${v === 0 ? 'bg-foreground/5' : v === 1 ? 'bg-primary/20' : v === 2 ? 'bg-primary/40' : v === 3 ? 'bg-primary/70' : 'bg-primary'}`} />
-                    ))}
-                 </div>
-                 <span className="text-[8px] text-foreground/30 uppercase font-black">Más</span>
+        {/* DISTRIBUCIÓN DE ENTIDADES (Real) */}
+        <GlassPanel className="p-8 h-[450px] flex flex-col">
+          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground/60 mb-8">Distribución por Tipo de Entidad</h3>
+          <div className="flex-1 min-h-0">
+            {stats.entitiesByType.length > 0 ? (
+              <ResponsivePie
+                data={stats.entitiesByType}
+                margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
+                innerRadius={0.6}
+                padAngle={2}
+                cornerRadius={8}
+                colors={{ scheme: 'nivo' }}
+                borderWidth={0}
+                theme={{
+                  tooltip: { container: { background: 'hsl(var(--background))', color: 'hsl(var(--foreground))', fontSize: '10px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' } },
+                  labels: { text: { fontSize: 10, fontWeight: 800, fill: 'hsl(var(--foreground))' } }
+                }}
+              />
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-foreground/20 italic text-sm">
+                 <span className="material-symbols-outlined text-4xl mb-2">inventory_2</span>
+                 No hay entidades registradas aún
               </div>
-            </div>
+            )}
+          </div>
+        </GlassPanel>
 
-            <div className="flex flex-wrap gap-2">
-              {heatmapData.map((data, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: i * 0.01 }}
-                  className={`size-6 lg:size-8 border border-foreground/5 transition-all hover:border-primary/50 cursor-pointer ${
-                    data.intensity === 0 ? 'bg-foreground/5' : 
-                    data.intensity === 1 ? 'bg-primary/20' : 
-                    data.intensity === 2 ? 'bg-primary/40' : 
-                    data.intensity === 3 ? 'bg-primary/70' : 'bg-primary shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]'
-                  }`}
-                  title={`Día ${i + 1}: ${data.intensity * 500} palabras`}
-                />
-              ))}
+        {/* ANÁLISIS DE ACTIVIDAD (Heatmap) */}
+        <GlassPanel className="p-8 flex flex-col">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground/60">Consistencia Cronológica</h3>
+            <div className="flex items-center gap-1">
+               <div className="size-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+               <span className="text-[9px] text-emerald-500 font-black uppercase">En Línea</span>
             </div>
-            
-            <div className="mt-8 pt-6 border-t border-foreground/5 flex justify-between items-center">
-               <div className="flex gap-8">
-                  <div className="flex flex-col">
-                     <span className="text-xl font-black text-foreground">12 días</span>
-                     <span className="text-[9px] text-foreground/40 uppercase font-bold tracking-widest">Racha Actual</span>
-                  </div>
-                  <div className="flex flex-col">
-                     <span className="text-xl font-black text-foreground">22k</span>
-                     <span className="text-[9px] text-foreground/40 uppercase font-bold tracking-widest">Este mes</span>
-                  </div>
-               </div>
-               <button className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">Configurar Metas</button>
-            </div>
-          </GlassPanel>
-        </div>
-
-        {/* SESIONES RECIENTES */}
-        <div className="lg:col-span-1">
-          <GlassPanel className="p-8 h-full flex flex-col">
-            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground/60 mb-6">Sesiones Recientes</h3>
-            <div className="flex-1 space-y-4">
-              {[
-                { name: 'Capítulo 4: El Velo', time: '1h 20m', words: '1,450' },
-                { name: 'Ficha: El Archiduque', time: '45m', words: '320' },
-                { name: 'Mapa: Valle Sombrío', time: '2h 10m', words: '-' },
-                { name: 'Línea de Tiempo', time: '15m', words: '-' },
-              ].map((session, i) => (
-                <div key={i} className="p-4 bg-foreground/5 border border-foreground/10 hover:border-primary/20 transition-all flex items-center justify-between group">
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-[11px] font-bold text-foreground truncate group-hover:text-primary transition-colors">{session.name}</span>
-                    <span className="text-[9px] text-foreground/30 uppercase tracking-tighter">HACE 2 HORAS</span>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <div className="text-[10px] font-black text-foreground/80">{session.time}</div>
-                    <div className="text-[9px] text-primary/60 font-black">{session.words} pal.</div>
-                  </div>
+          </div>
+          
+          <div className="flex-1 flex flex-col justify-center">
+             <p className="text-2xl font-serif italic text-foreground/80 mb-6 leading-tight">
+                "El ritmo del creador es el pulso de su mundo."
+             </p>
+             
+             <div className="space-y-6">
+                <div>
+                   <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-2">
+                      <span>Progreso del Códice</span>
+                      <span>{Math.min(100, Math.round((stats.entityCount / 50) * 100))}%</span>
+                   </div>
+                   <div className="h-1 w-full bg-foreground/5 rounded-full overflow-hidden">
+                      <motion.div 
+                         initial={{ width: 0 }}
+                         animate={{ width: `${Math.min(100, (stats.entityCount / 50) * 100)}%` }}
+                         className="h-full bg-primary"
+                      />
+                   </div>
                 </div>
-              ))}
-            </div>
-            <button className="w-full py-4 mt-6 border border-dashed border-foreground/20 hover:border-primary/40 text-[9px] font-black uppercase tracking-widest text-foreground/40 hover:text-primary transition-all">
-              Ver Historial Completo
-            </button>
-          </GlassPanel>
-        </div>
+                
+                <div>
+                   <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-2">
+                      <span>Volumen de Crónicas</span>
+                      <span>{Math.min(100, Math.round((stats.wordCount / 10000) * 100))}% de la meta</span>
+                   </div>
+                   <div className="h-1 w-full bg-foreground/5 rounded-full overflow-hidden">
+                      <motion.div 
+                         initial={{ width: 0 }}
+                         animate={{ width: `${Math.min(100, (stats.wordCount / 10000) * 100)}%` }}
+                         className="h-full bg-amber-500"
+                      />
+                   </div>
+                </div>
+             </div>
+          </div>
+        </GlassPanel>
 
       </div>
 
-      {/* FOOTER: Análisis Predictivo (Mock) */}
-      <div className="mt-12 p-8 bg-gradient-to-r from-primary/10 via-transparent to-transparent border-l-4 border-l-primary flex items-center gap-8">
-         <span className="material-symbols-outlined text-4xl text-primary animate-pulse">insights</span>
-         <div className="space-y-1">
-            <h4 className="text-sm font-black text-foreground uppercase tracking-widest">Análisis del Oráculo</h4>
-            <p className="text-[11px] text-foreground/60 leading-relaxed max-w-2xl">
-               Basado en tu ritmo actual, completarás el primer arco de tu historia en aproximadamente <strong className="text-primary italic">24 días</strong>. Tu mayor productividad ocurre durante las sesiones nocturnas con un promedio de 850 palabras/hora.
+      {/* FOOTER: Análisis Predictivo */}
+      <div className="p-8 bg-foreground/[0.02] border border-foreground/10 rounded-none flex items-center gap-8 relative overflow-hidden">
+         <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+         <span className="material-symbols-outlined text-4xl text-primary opacity-50">insights</span>
+         <div className="space-y-1 relative z-10">
+            <h4 className="text-sm font-black text-foreground uppercase tracking-widest">Resumen del Arquitecto</h4>
+            <p className="text-[11px] text-foreground/60 leading-relaxed max-w-3xl">
+               Has documentado un total de <strong className="text-foreground">{stats.entityCount} entidades</strong> y tejido <strong className="text-foreground">{stats.wordCount} palabras</strong> en tus crónicas. 
+               La mayor densidad de conocimiento se concentra en la categoría <strong className="text-primary italic">{stats.entitiesByType[0]?.label || 'General'}</strong>. 
+               Sigue esculpiendo el vacío; cada entrada fortalece la coherencia de tu universo.
             </p>
          </div>
       </div>

@@ -84,5 +84,24 @@ export const notebookService = {
 
   async deletePage(id: number): Promise<void> {
     await sql`DELETE FROM hojas WHERE id = ${id}`;
+  },
+
+  // --- Snapshots ---
+  async createSnapshot(hojaId: number, contenido: string): Promise<void> {
+    await sql`INSERT INTO hojas_snapshots (hoja_id, contenido) VALUES (${hojaId}, ${contenido})`;
+  },
+
+  async getSnapshots(hojaId: number): Promise<{ id: number; timestamp: string; contenido: string }[]> {
+    const results = await sql<{ id: number; fecha_creacion: string; contenido: string }>`
+      SELECT id, fecha_creacion, contenido FROM hojas_snapshots 
+      WHERE hoja_id = ${hojaId} 
+      ORDER BY fecha_creacion DESC 
+      LIMIT 20
+    `;
+    return results.map(r => ({
+      id: r.id,
+      timestamp: r.fecha_creacion,
+      contenido: r.contenido
+    }));
   }
 };

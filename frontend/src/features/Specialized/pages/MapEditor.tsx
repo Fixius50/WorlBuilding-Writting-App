@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { createPortal } from 'react-dom';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import Map, { NavigationControl, Source, Layer, Marker, Popup } from 'react-map-gl/maplibre';
 // @ts-ignore
@@ -9,6 +8,7 @@ import { Entidad } from '@domain/models/database';
 import { MapMarker, MapLayer, MapAttributes } from '@domain/models/maps';
 import GlassPanel from '@atoms/GlassPanel';
 import Button from '@atoms/Button';
+import { useRightPanelPortal } from '@/hooks/useRightPanelPortal';
 
 const DEFAULT_LAYERS: MapLayer[] = [
   { id: 'base', name: 'Mapa Base', visible: true, opacity: 1, type: 'image', url: '' },
@@ -99,7 +99,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
 
   const mapRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const portalRef = document.getElementById('global-right-panel-portal');
+  const portalRef = useRightPanelPortal();
 
   const getHistorySnapshot = useCallback(() => ({
     markers: JSON.parse(JSON.stringify(markers)),
@@ -189,7 +189,8 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
   // ── Utilidad para convertir SVG a PNG (DataURL) ───────────────────────
   const resolveImageUrl = async (url: string, layerId: string): Promise<string> => {
     if (!url) return '';
-    const isSvg = url.toLowerCase().includes('.svg') || url.startsWith('data:image/svg+xml');
+    const cleanUrl = url.toLowerCase().split('?')[0];
+    const isSvg = cleanUrl.endsWith('.svg') || url.startsWith('data:image/svg+xml');
     
     if (!isSvg) return url;
 
@@ -231,7 +232,8 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
       
       for (const layer of imageLayers) {
         // Solo procesar si es un SVG y no ha sido resuelto aún para esta URL exacta
-        const isSvg = layer.url?.toLowerCase().includes('.svg') || layer.url?.startsWith('data:image/svg+xml');
+        const cleanUrl = layer.url?.toLowerCase().split('?')[0] || '';
+        const isSvg = cleanUrl.endsWith('.svg') || layer.url?.startsWith('data:image/svg+xml');
         const currentResolved = resolvedUrls[layer.id];
         const needsProcess = isSvg && (!currentResolved || (layer.url !== currentResolved && !currentResolved.startsWith('data:image/png')));
         
@@ -361,7 +363,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
       setIs3D(false);
     }
     loadAllEntities();
-  }, [entityId, mode, projectId, loadMap, loadAllEntities, targetFolderId]);
+  }, [entityId, mode, projectId, loadMap, loadAllEntities]);
 
   // ── Guardar ───────────────────────────────────────────────────────────
   const handleSave = async () => {
@@ -417,7 +419,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
     const filtered = allEntities.filter(e => 
       e.nombre.toLowerCase().includes(searchQuery.toLowerCase()) || 
       e.tipo.toLowerCase().includes(searchQuery.toLowerCase())
-    ).slice(0, 8);
+    ).slice(0, 50);
 
     return (
       <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-in fade-in duration-300">
@@ -565,27 +567,50 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
     const radius = brushSize;
 
     setFeatures((prev: any) => {
-      const newFeatures = (prev.features || []).filter((f: any) => {
-        // Only erase features from the currently selected layer
-        if (f.properties?.layerId !== selectedLayerId) return true;
+      const newFeatures = (prev.features || []).flatMap((f: any) => {
+        // Solo borrar de la capa seleccionada
+        if (f.properties?.layerId !== selectedLayerId) return [f];
 
         if (f.geometry.type === 'Point') {
           const featPx = map.project(f.geometry.coordinates);
           const dist = Math.hypot(cursorPx.x - featPx.x, cursorPx.y - featPx.y);
-          return dist > radius;
+          return dist > radius ? [f] : [];
         }
 
         if (f.geometry.type === 'LineString') {
-          // Check if any vertex is within the radius. 
-          // (More complex: check distance to segment, but for drawing, vertex-check is often enough if sampling is high)
-          const isNear = f.geometry.coordinates.some((coord: [number, number]) => {
-            const featPx = map.project(coord);
-            const dist = Math.hypot(cursorPx.x - featPx.x, cursorPx.y - featPx.y);
-            return dist < radius;
+          const segments: any[] = [];
+          let currentPart: any[] = [];
+          
+          f.geometry.coordinates.forEach((coord: [number, number]) => {
+            const ptPx = map.project(coord);
+            const dist = Math.hypot(cursorPx.x - ptPx.x, cursorPx.y - ptPx.y);
+            if (dist > radius) {
+              currentPart.push(coord);
+            } else {
+              // Rompemos la línea aquí
+              if (currentPart.length >= 2) {
+                segments.push(currentPart);
+              }
+              currentPart = [];
+            }
           });
-          return !isNear;
+          
+          if (currentPart.length >= 2) {
+            segments.push(currentPart);
+          }
+
+          // Convertimos cada segmento en una nueva feature de LineString
+          return segments.map((seg, idx) => ({
+            ...f,
+            id: `${f.id}-part-${idx}-${Date.now()}`,
+            geometry: {
+              ...f.geometry,
+              coordinates: seg
+            }
+          }));
         }
-        return true;
+
+        return [f];
       });
       return { ...prev, features: newFeatures };
     });
@@ -806,7 +831,8 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
     }
   }, [isDrawing, drawMode, addSprayPoint, addLinePoint, eraseFeatures, spacebarPanning]);
 
-  // ── Panel de capas (portal) ───────────────────────────────────────────
+  // ── Panel de capas → inyectado en GlobalRightPanel vía outlet context ────────
+  // Se ejecuta cada vez que cambia el estado que el panel necesita mostrar
   const renderLayerPanel = () => (
     <div className="flex flex-col h-full animate-in slide-in-from-right duration-500">
       {/* Cabecera + herramientas */}
@@ -1035,6 +1061,16 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
     </div>
   );
 
+  // Sincronizar el panel lateral con el contenido actual
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setRightPanelContent(renderLayerPanel());
+    return () => {
+      // Limpiar al desmontar para que el panel no quede huérfano
+      setRightPanelContentRef.current(null);
+    };
+  }, [layers, drawMode, brushSize, selectedLayerId, markers, features, mapEntity, is3D, errorLayers, resolvedUrls]);
+
   return (
     <div className="flex flex-col h-full w-full bg-background text-foreground overflow-hidden">
       {/* Input de archivo oculto (global) */}
@@ -1225,8 +1261,6 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
           </Map>
         </div>
 
-        {/* Panel de capas (Portal) */}
-        {portalRef && createPortal(renderLayerPanel(), portalRef)}
       </main>
 
       {/* Modales fuera del Map para evitar conflictos con eventos del canvas */}

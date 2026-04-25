@@ -18,6 +18,7 @@ interface ZenEditorProps {
   snapshots?: { id: number; timestamp: string }[];
   onRestoreSnapshot?: (id: number) => void;
   editable?: boolean;
+  onMentionClick?: (id: string) => void;
 }
 
 const ZenEditor: React.FC<ZenEditorProps> = ({ 
@@ -28,20 +29,25 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
   onSnapshot,
   snapshots = [],
   onRestoreSnapshot = () => {},
-  editable = true 
+  editable = true,
+  onMentionClick = () => {}
 }) => {
   const [settings] = useState<EditorSettings>({
     font: 'Cormorant Garamond',
     fontSize: 18
   });
 
-  const [wordCount, setWordCount] = useState(0);
-  const snapshotTimer = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  // Cuenta palabras (simple regex)
   const countWords = useCallback((text: string) => {
     return text.trim().split(/\s+/).filter(Boolean).length;
   }, []);
+
+  const [wordCount, setWordCount] = useState(0);
+  const snapshotTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const mentionClickRef = useRef(onMentionClick);
+
+  useEffect(() => {
+    mentionClickRef.current = onMentionClick;
+  }, [onMentionClick]);
 
   const editor = useEditor({
     extensions: [
@@ -74,6 +80,18 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
         class: 'prose prose-invert max-w-none focus:outline-none min-h-[70vh] text-foreground/90 leading-relaxed text-lg pb-40 px-4 md:px-0',
         style: `font-family: "${settings.font}", serif; font-size: ${settings.fontSize}px;`,
       },
+      handleClick: (view, pos, event) => {
+        const { target } = event;
+        const mentionEl = (target as HTMLElement).closest('.mention');
+        if (mentionEl) {
+          const id = mentionEl.getAttribute('data-id');
+          if (id && mentionClickRef.current) {
+            mentionClickRef.current(id);
+            return true;
+          }
+        }
+        return false;
+      }
     },
   });
 

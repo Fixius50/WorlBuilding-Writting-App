@@ -50,10 +50,24 @@
 - [x] **FolderView — "Nueva Creación":** Menú desplegable con Entidad / Mapa / Línea de Tiempo; eliminado "Archivo Vacío".
 - [x] **Routing de Mapas:** BibleCard tipo `Map` navega al Atlas; key de tab `CONTEXT` unificado en todos los componentes.
 - [x] **InteractiveMapView refactorizado:** Panel lateral funcional (lista de marcadores, stats, detalles de entidad vinculada); limpia contextContent al desmontar.
-- [ ] **Sincronización:** Automatización de copias de seguridad SQLite (`.sqlite`) vía Servidor Auxiliar.
+- [x] **Panel de Control Global — Completado ✅**
+  - [x] Sustitución del BottomGraphDrawer por un Panel de Control multi-sección extensible.
+  - [x] Botón toggle flotante persistente (estilo Dashboard).
+  - [x] Sección **Red**: Grafo de entidades integrado.
+  - [x] Sección **Datos**: Base de datos general de todas las entidades con búsqueda y filtros.
+  - [x] Sección **Notas**: Migración del NotebookManager al panel inferior.
+  - [x] **Preview Inline**: Visualización de detalles de entidad dentro del panel sin navegar fuera.
+  - [x] **Optimización UX**: Apertura y redimensionado instantáneo (sin transiciones de altura).
+- [x] **Limpieza del Panel Derecho**: Eliminación de las pestañas Explorer y Quick Notes (migradas al ControlPanel); simplificación a solo "Contexto".
+- [x] **Sincronización Automática — Completado ✅**
+  - [x] Implementación de auto-backup cada 5 minutos hacia el servidor local (Java).
+  - [x] Sincronización persistente de la base de datos `.sqlite` al disco físico.
 - [ ] Optimización de rendimiento en consultas relacionales complejas.
-- [ ] **Herramienta Borrador (MapEditor):** Eliminar trazos individuales de capas de dibujo.
-- [ ] **Paginación EntityPicker:** Carga diferida si el proyecto crece mucho.
+- [x] **Herramienta Borrador (MapEditor) — Completado ✅**
+  - [x] Capacidad de eliminar partes individuales de un trazo (LineString) segmentando la figura.
+  - [x] Borrado dinámico basado en radio de pincel para puntos y líneas.
+- [x] **Paginación EntityPicker — Completado ✅**
+  - [x] Implementación de limitación de carga (slicing) para mejorar el rendimiento con cientos de entidades.
 
 ## VISIÓN ESTRATÉGICA POR MÓDULOS (DETALLE TÉCNICO-FUNCIONAL) 🔭
 
@@ -61,13 +75,9 @@ A partir de la Fase 4, el proyecto evoluciona hacia un "cerebro conectado" de ni
 
 ### 1. Módulo de Escritura y Edición (features/Writing & features/Editor) 🟢
 El núcleo `ZenEditor` con menciones `@` evolucionará hacia un entorno de autoría total:
-- **Control de Versiones (Snapshots):** 🟢
-    - **Modo Automático:** Configurable por el usuario (mínimo cada 5 minutos de actividad).
-    - **Modo Manual:** Botón "Instant Snapshot" en la Top Bar para puntos de guardado críticos.
-- **Seguimiento de Metas y Estadísticas:** 🟢
-    - **Metas Custom:** Configurables por proyecto/capítulo (ej. "Meta de hoy: 1500 palabras").
-    - Visualización de progreso mediante gráficos dinámicos utilizando la librería **@nivo**.
-- **Split View Dinámico:** Capacidad de anclar fichas de la WorldBible en una mitad de la pantalla mientras se escribe en la otra, evitando modales flotantes que obstruyan el texto.
+- **Control de Versiones (Snapshots):** 🟢 [COMPLETADO ✅]
+- **Seguimiento de Metas y Estadísticas:** 🟢 [COMPLETADO ✅]
+- **Previsualización Inline:** 🟢 [COMPLETADO ✅] (Sustituye al Split View)
 
 ### 2. Módulo de Cartografía Profesional (features/Maps) 🟢
 - **Atlas Dinámico:** 🟢
@@ -78,10 +88,9 @@ El núcleo `ZenEditor` con menciones `@` evolucionará hacia un entorno de autor
 - **Marcadores Personalizados (Custom Pins):** Soporte para iconos `.svg` / `.png`.
 
 ### 3. Módulo de la Biblia y Entidades (features/WorldBible & features/Entities) 🟢
-- **Fichas 360° (Todo en Uno):** Organización por pestañas `[General] | [Relaciones] | [Apariciones]`. 🟢
+- **Fichas 360° (Todo en Uno):** 🟢
 - **Mini-Grafo Interactivo:** 🟢
-    - Visualización de conexiones directas; al interactuar, permite expandir nodos y navegar internamente sin saltar de página (manteniendo el foco).
-- **Backlinks Automáticos:** Sección de "Apariciones" que lista menciones cronológicas de la entidad en todo el proyecto.
+- **Backlinks Automáticos:** 🟢
 
 ### 4. Módulo de Líneas Temporales (features/Timeline)
 Gestión avanzada del tiempo cronológico:
@@ -100,7 +109,4 @@ Visualización política y social profunda:
 
 ### 7. Excelencia Técnica (QoL & Security)
 - **Analytics Dashboard:** 🟢
-    - Mapa de calor de contribución (estilo GitHub).
-    - Sesiones de escritura activas (Pomodoro/Time Tracking).
 - **Generación Procedural:** Integración de IA local (Ollama/WebLLM).
-

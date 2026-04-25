@@ -45,31 +45,38 @@ La base de datos reside en el navegador (WebWorker) y persiste en OPFS.
 
 ## 4. Panel Derecho Global (`GlobalRightPanel`)
 
-Hay **dos mecanismos** para inyectar contenido en el panel lateral derecho:
+Tras la refactorización de abril de 2026, el panel derecho se ha simplificado para reducir el ruido visual.
 
-### A) Portal (recomendado para mapas y carpetas)
-```tsx
-const portalRef = document.getElementById('global-right-panel-portal');
-// En JSX:
-{portalRef && createPortal(<MiPanel />, portalRef)}
-```
-Llama a `setRightPanelTab('CONTEXT')` para activar la pestaña correcta.
+**Regla de Oro:** Solo existe la pestaña de **CONTEXTO**. Las Notas y el Explorador se han movido al **Panel de Control** inferior.
 
-### B) setRightPanelContent (para vistas que necesitan controlar toda la pestaña)
+### Mecanismo de inyección (setRightPanelContent)
+Este es el método preferido para inyectar contenido dinámico desde las páginas o features:
+
 ```tsx
 const { setRightPanelContent } = useOutletContext<ArchitectContext>();
+
 useEffect(() => {
   setRightPanelContent(<MiContenido />);
-  // ⚠️ OBLIGATORIO: limpiar al desmontar para no bloquear el portal
+  
+  // ⚠️ OBLIGATORIO: limpiar al desmontar
   return () => setRightPanelContent(null);
 }, [deps]);
 ```
 
-**⚠️ Importante:** El key correcto de la pestaña de contexto es `'CONTEXT'` (inglés). Usar `'CONTEXTO'` no activará ninguna pestaña visible.
+---
+
+## 5. Panel de Control Global (`ControlPanel`)
+
+Es el hub central de herramientas de apoyo (drawer inferior).
+
+- **Secciones:** Grafo (Red), Base de Datos (Datos), Notas Rápidas (Notas).
+- **Toggle:** Botón flotante persistente en la parte inferior central.
+- **Resize:** Soporta redimensionado manual. Para mayor fluidez, **no debe tener transiciones de altura** (animaciones CSS) durante el drag o toggle si se busca respuesta instantánea.
+- **Base de Datos:** Incluye previsualización inline. Al seleccionar una entidad, se muestra el detalle dentro del mismo panel sin forzar navegación.
 
 ---
 
-## 5. MapEditor — Patrones Clave
+## 6. MapEditor — Patrones Clave
 
 ### Guardar un mapa (siempre incluir snapshotUrl)
 ```tsx

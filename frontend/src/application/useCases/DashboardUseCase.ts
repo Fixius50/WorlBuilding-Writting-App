@@ -1,5 +1,6 @@
 import { entityService } from '@repositories/entityService';
 import { folderService } from '@repositories/folderService';
+import { notebookService } from '@repositories/notebookService';
 import { Entidad } from '@domain/models/database';
 
 export interface DashboardStats {
@@ -7,6 +8,9 @@ export interface DashboardStats {
   folderCount: number;
   entitiesByType: { id: string; label: string; value: number; color: string }[];
   recentActivity: Entidad[];
+  wordCount: number;
+  pageCount: number;
+  notebookCount: number;
 }
 
 export class DashboardUseCase {
@@ -28,12 +32,29 @@ export class DashboardUseCase {
       color: `hsl(${Math.random() * 360}, 70%, 50%)`
     }));
 
+    // Datos de Escritura
+    const notebooks = await notebookService.getAllByProject(projectId);
+    let pageCount = 0;
+    let wordCount = 0;
+
+    for (const nb of notebooks) {
+      const pages = await notebookService.getPagesByNotebook(nb.id);
+      pageCount += pages.length;
+      pages.forEach(p => {
+        const text = p.contenido || '';
+        // Limpieza básica de HTML si es necesario, pero split funciona aceptablemente
+        wordCount += text.trim().split(/\s+/).filter(Boolean).length;
+      });
+    }
+
     return {
       entityCount: entities.length,
       folderCount: folders.length,
       entitiesByType,
-      // Devuelve las 5 más recientes
-      recentActivity: entities.slice(0, 5)
+      recentActivity: entities.slice(0, 5),
+      wordCount,
+      pageCount,
+      notebookCount: notebooks.length
     };
   }
 }
