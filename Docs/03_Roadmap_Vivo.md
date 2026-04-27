@@ -62,12 +62,20 @@
 - [x] **Sincronización Automática — Completado ✅**
   - [x] Implementación de auto-backup cada 5 minutos hacia el servidor local (Java).
   - [x] Sincronización persistente de la base de datos `.sqlite` al disco físico.
-- [ ] Optimización de rendimiento en consultas relacionales complejas.
-- [x] **Herramienta Borrador (MapEditor) — Completado ✅**
-  - [x] Capacidad de eliminar partes individuales de un trazo (LineString) segmentando la figura.
-  - [x] Borrado dinámico basado en radio de pincel para puntos y líneas.
 - [x] **Paginación EntityPicker — Completado ✅**
-  - [x] Implementación de limitación de carga (slicing) para mejorar el rendimiento con cientos de entidades.
+- [x] **Integración de Estadísticas en ControlPanel — Completado ✅**
+- [ ] Optimización de rendimiento en consultas relacionales complejas.
+
+## FASE 5: EL ECOSISTEMA CONECTADO Y ESPECIALIZACIÓN PROFESIONAL (Futuro 🚀)
+
+Esta fase transformará la herramienta de una base de datos creativa a un entorno de autoría integral y colaborativo.
+
+- [ ] **Módulo de Planificación Visual (Whiteboards):** Lienzo infinito para planificación desestructurada ("Muro de Detective").
+- [ ] **Especialización de Entidades Pro:** Módulos para Árboles Genealógicos y Sistemas de Magia.
+- [ ] **Líneas Temporales de Segunda Generación:** Motor de calendarios fantásticos personalizables.
+- [ ] **Motor Lingüístico Avanzado:** Autogeneración de conjugaciones y evolución fonética.
+- [ ] **Sincronización P2P (Co-Autoría):** Colaboración directa vía WebRTC sin servidor central.
+- [ ] **Compilación Editorial:** Exportación nativa a `.EPUB` y `.PDF` lista para publicación.
 
 ## VISIÓN ESTRATÉGICA POR MÓDULOS (DETALLE TÉCNICO-FUNCIONAL) 🔭
 
@@ -102,11 +110,23 @@ Visualización política y social profunda:
 - **Filtros por Tipo de Relación:** Capacidad de ocultar o mostrar tipos de conexión específicos (ej. "Mostrar solo Enemistades y Vasallajes" para analizar el panorama de guerra) eliminando el ruido visual.
 
 ### 6. Herramientas de Productividad y Salida (Core)
-- **Command Palette (Ctrl + K / Cmd + K):** Buscador global emergente para saltar instantáneamente a cualquier ficha, mapa o capítulo sin usar el ratón.
-- **Módulo de Exportación Global:** 
-    - Generador de **"Wiki Offline"** (exportación total a HTML/Markdown interconectado).
-    - Compilador profesional a PDF para lectura externa.
+- **Command Palette (Ctrl + K / Cmd + K):** Buscador global emergente.
+- **Compilador de Manuscritos:** Exportación a `.EPUB`, `.PDF` o `.DOCX`.
+- **Exportación de la Biblia (Wiki Offline):** Generador de sitio HTML estático.
 
-### 7. Excelencia Técnica (QoL & Security)
-- **Analytics Dashboard:** 🟢
-- **Generación Procedural:** Integración de IA local (Ollama/WebLLM).
+### 7. Planificación Visual y Narrativa
+- **Pizarras Blancas (Whiteboards):** Espacios de planificación libre con post-its e hilos conectores.
+- **Gestor de Arcos Narrativos:** Flujos interactivos para estructurar Planteamiento, Nudo y Clímax.
+
+### 8. Worldbuilding Especializado Pro
+- **Árboles Genealógicos:** Visualización de dinastías, matrimonios y linajes.
+- **Calendarios Fantásticos:** Soporte para meses inventados y ciclos lunares múltiples.
+- **Sistemas de Magia / Religión:** Registro de reglas, costes y jerarquías divinas.
+
+### 9. Excelencia Técnica y Colaboración
+- **Sincronización P2P (WebRTC):** Colaboración directa entre usuarios sin servidor central.
+- **Analytics Dashboard:** 🟢 [COMPLETADO ✅]
+
+---
+> [!IMPORTANT]
+> **Planificacin de Fase 5:** Los detalles tcnicos y flujos UX para las nuevas funcionalidades se encuentran detallados en [08_Especificaciones_Expansion.md](file:///c:/Users/rober/Desktop/Proyectos%20propios/WorldbuildingApp/Docs/08_Especificaciones_Expansion.md).

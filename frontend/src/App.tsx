@@ -21,7 +21,10 @@ import { LinguisticsRouter } from '@features/Linguistics';
 import { TrashView } from '@features/Trash';
 import { WorldBibleLayout, BibleGridView } from '@features/WorldBible';
 import { WritingHub, WritingView } from '@features/Writing';
-import AnalyticsDashboard from '@features/Analytics/pages/AnalyticsDashboard';
+import { AnalyticsDashboard } from '@features/Analytics';
+import { PlanningCenterView } from '@features/PlanningCenter';
+import { CalendarManagerView } from '@features/Calendars';
+import { SyncView } from '@features/Sync';
 
 // Store & Context
 import { useAppStore } from '@store/useAppStore';
@@ -29,14 +32,6 @@ import { LanguageProvider } from '@context/LanguageContext';
 
 const App = () => {
   const theme = useAppStore((state) => state.theme);
-  const syncFromStorage = useAppStore((state) => state.syncFromStorage);
-
-  // Sync theme/user desde localStorage cuando otros componentes disparan 'storage_update'
-  useEffect(() => {
-    const handleSync = () => syncFromStorage();
-    window.addEventListener('storage_update', handleSync);
-    return () => window.removeEventListener('storage_update', handleSync);
-  }, [syncFromStorage]);
 
   // Aplicar clase de tema al body
   useEffect(() => {
@@ -80,6 +75,11 @@ const App = () => {
                 <Route path="writing" element={<WritingHub />} />
                 <Route path="writing/:notebookId" element={<WritingView />} />
                 <Route path="analytics" element={<AnalyticsDashboard />} />
+                <Route path="planning" element={<PlanningCenterView />} />
+                <Route path="planning/:pizarraId" element={<PlanningCenterView />} />
+                <Route path="genealogy" element={<PlanningCenterView />} />
+                <Route path="time" element={<CalendarManagerView />} />
+                <Route path="sync" element={<SyncView />} />
               </Route>
             </Route>
           </Routes>

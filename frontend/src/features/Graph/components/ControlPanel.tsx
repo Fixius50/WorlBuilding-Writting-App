@@ -76,7 +76,6 @@ interface ControlPanelProps {
 }
 
 const SECTIONS: { id: PanelSection; icon: string; label: string }[] = [
-  { id: 'graph', icon: 'hub', label: 'Red' },
   { id: 'database', icon: 'table_chart', label: 'Datos' },
   { id: 'notes', icon: 'sticky_note_2', label: 'Notas' },
   { id: 'stats', icon: 'analytics', label: 'Estadísticas' },
@@ -84,7 +83,7 @@ const SECTIONS: { id: PanelSection; icon: string; label: string }[] = [
 
 const ControlPanel: React.FC<ControlPanelProps> = ({ isOpen, onToggle, projectId, projectName, statsData }) => {
   const [heightVH, setHeightVH] = useState(65);
-  const [activeSection, setActiveSection] = useState<PanelSection>('graph');
+  const [activeSection, setActiveSection] = useState<PanelSection>('database');
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -222,10 +221,6 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ isOpen, onToggle, projectId
 
         {/* ── Contenido de sección ── */}
         <div className="flex-1 relative overflow-hidden bg-background">
-          {/* GRAFO */}
-          <div className={`absolute inset-0 transition-opacity duration-200 ${activeSection === 'graph' ? 'opacity-100 pointer-events-auto z-10' : 'opacity-0 pointer-events-none z-0'}`}>
-            {isOpen && <GraphView projectId={projectId} projectName={projectName} />}
-          </div>
 
           {/* BASE DE DATOS */}
           <div className={`absolute inset-0 transition-opacity duration-200 ${activeSection === 'database' ? 'opacity-100 pointer-events-auto z-10' : 'opacity-0 pointer-events-none z-0'}`}>

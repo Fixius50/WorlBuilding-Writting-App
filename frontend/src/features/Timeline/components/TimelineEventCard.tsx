@@ -5,7 +5,7 @@ import React from 'react';
  * Utiliza estética Dark Glassmorphism.
  */
 const TimelineEventCard = ({ event, onClick }: { event: any, onClick: any }) => {
- const { title, date, description, type } = event;
+ const { titulo: title, fecha_simulada: date, descripcion: description, tipo: type } = event;
 
  // Formatear la fecha para mostrarla de forma legible
  const formattedDate = date ? new Date(date).toLocaleDateString() : 'Sin fecha';

@@ -150,7 +150,8 @@ const DimensionEditor: React.FC = () => {
         fecha_simulada: '0',
         project_id: folder.project_id,
         timeline_id: Number(folderId),
-        linea_id: lineId
+        linea_id: lineId,
+        orden: 0
       });
       
       await loadData();

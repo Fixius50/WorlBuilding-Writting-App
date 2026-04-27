@@ -205,6 +205,35 @@ export async function initializeDatabase() {
       )
     `;
 
+    // Nueva tabla para Pizarras (Whiteboards)
+    await sql`
+      CREATE TABLE IF NOT EXISTS pizarras (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        titulo TEXT NOT NULL,
+        project_id INTEGER NOT NULL,
+        carpeta_id INTEGER,
+        nodos_json TEXT,
+        aristas_json TEXT,
+        viewport_json TEXT, -- Para guardar zoom y posición
+        fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (project_id) REFERENCES proyectos(id) ON DELETE CASCADE
+      )
+    `;
+
+    // Nueva tabla para Calendarios (Sistemas de Tiempo)
+    await sql`
+      CREATE TABLE IF NOT EXISTS calendarios (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT NOT NULL,
+        project_id INTEGER NOT NULL,
+        meses_json TEXT,
+        dias_semana_json TEXT,
+        fecha_inicio_json TEXT,
+        borrado INTEGER DEFAULT 0,
+        FOREIGN KEY (project_id) REFERENCES proyectos(id) ON DELETE CASCADE
+      )
+    `;
+
     // MIGRACIÓN PARA CORREGIR ELIMINACIÓN EN CASCADA (Cleanup de entidades huérfanas)
     // Nota: SQLite no permite alterar FKs fácilmente, así que limpiamos manualmente por ahora
     await sql`DELETE FROM entidades WHERE carpeta_id IS NULL AND project_id IS NOT NULL`.catch(() => {});

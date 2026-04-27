@@ -79,6 +79,7 @@ export interface Valor {
 }
 
 export interface Evento {
+  orden: number;
   id: number;
   titulo: string;
   descripcion: string | null;

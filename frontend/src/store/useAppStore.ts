@@ -42,3 +42,10 @@ export const useAppStore = create<AppState>((set) => ({
     }));
   },
 }));
+
+// Escuchar cambios externos en localStorage (ej. otras pestañas o componentes que usan storage directo)
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage_update', () => {
+    useAppStore.getState().syncFromStorage();
+  });
+}

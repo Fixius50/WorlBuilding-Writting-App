@@ -25,10 +25,11 @@ interface OutletContext {
 }
 
 interface LinguisticsHubProps {
- onOpenEditor?: (glyph: Word) => void;
+  onOpenEditor?: (glyph: Word) => void;
+  onOpenAdvanced?: () => void;
 }
 
-const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
+const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor, onOpenAdvanced }) => {
  const { t } = useLanguage();
  const { projectName: projectParam } = useParams();
  const { setRightPanelTab, setRightOpen } = useOutletContext<OutletContext>(); 
@@ -902,11 +903,12 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor }) => {
  {[
  { id: 'lexicon', label: t('linguistics.lexicon') },
  { id: 'translator', label: t('linguistics.translator') },
- { id: 'diccionario', label: 'DICCIONARIO' }
+ { id: 'diccionario', label: 'DICCIONARIO' },
+ { id: 'advanced', label: 'LABORATORIO', onClick: onOpenAdvanced }
  ].map(tab => (
  <button
  key={tab.id}
- onClick={() => setCenterView(tab.id)}
+ onClick={tab.onClick || (() => setCenterView(tab.id))}
  className={`px-6 py-1.5 rounded-none text-[10px] font-black uppercase tracking-widest transition-all ${centerView === tab.id ? 'bg-primary text-foreground shadow-lg' : 'text-foreground/60 hover:text-foreground/60'}`}
  >
  {tab.label}

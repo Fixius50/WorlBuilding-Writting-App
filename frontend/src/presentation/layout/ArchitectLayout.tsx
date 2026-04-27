@@ -323,14 +323,18 @@ const ArchitectLayout: React.FC = () => {
                 <NavItem to={`${baseUrl}/bible`} icon="menu_book" label={t('nav.bible')} collapsed={false} />
                 <NavItem to={`${baseUrl}/map`} icon="map" label={t('nav.atlas')} collapsed={false} />
                 <NavItem to={`${baseUrl}/timeline`} icon="calendar_month" label={t('nav.chronology')} collapsed={false} />
+                <NavItem to={`${baseUrl}/time`} icon="schedule" label="Calendarios" collapsed={false} />
                 <NavItem to={`${baseUrl}/languages`} icon="translate" label={t('nav.languages')} collapsed={false} />
-                <NavItem to={`${baseUrl}/analytics`} icon="analytics" label={t('project.analytics_title')} collapsed={false} />
+                <NavItem to={`${baseUrl}/planning`} icon="dashboard_customize" label="Centro de Planificación" collapsed={false} />
                 <div className="h-px bg-foreground/10 my-2 mx-2 opacity-50"></div>
                 <NavItem to={`${baseUrl}/writing`} icon="edit_note" label={t('nav.writing')} collapsed={false} />
               </div>
             </div>
 
             <div className="p-3 border-t bg-background mt-auto" >
+              <NavItem to={`${baseUrl}/analytics`} icon="analytics" label={t('project.analytics_title')} collapsed={false} />
+              <NavItem to={`${baseUrl}/sync`} icon="sync" label="Sincronizar" collapsed={false} />
+              <div className="h-px bg-foreground/10 my-2 mx-2 opacity-50"></div>
               <NavItem to={`${baseUrl}/settings`} icon="settings" label={t('nav.settings')} collapsed={false} />
               <NavItem to="/" icon="logout" label={t('nav.logout')} collapsed={false} />
             </div>
