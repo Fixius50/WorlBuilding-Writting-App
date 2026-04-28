@@ -10,8 +10,12 @@ import { sqlocal } from '@database';
 import ConfirmModal from "@organisms/ConfirmModal";
 import { syncService } from '@network/syncService';
 
+import { useAppStore } from '@store/useAppStore';
+
 const WorkspaceSelector: React.FC = () => {
   const navigate = useNavigate();
+  const setUser = useAppStore(state => state.setUser);
+  const setLastProjectId = useAppStore(state => state.setLastProjectId);
   const [workspaces, setWorkspaces] = useState<Proyecto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +46,11 @@ const WorkspaceSelector: React.FC = () => {
   const handleSelect = async (projectName: string) => {
     try {
       // En Local-First, el select es solo navegar a la ruta del proyecto
-      localStorage.setItem('user', JSON.stringify({ username: 'local', success: true }));
+      const selected = workspaces.find(w => w.nombre === projectName);
+      if (selected) {
+        await setLastProjectId(selected.id);
+      }
+      await setUser({ username: 'local' });
       navigate(`/local/${projectName}`);
     } catch (err: any) {
       setError(err.message || "Fallo al entrar al cuaderno");

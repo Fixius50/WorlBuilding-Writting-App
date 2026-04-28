@@ -9,6 +9,7 @@ import GlobalRightPanel from './GlobalRightPanel';
 import ConfirmationModal from '@organisms/ConfirmationModal';
 import ControlPanel from '@features/Graph/components/ControlPanel';
 import { syncService } from '@network/syncService';
+import { useAppStore } from '@store/useAppStore';
 
 interface NavItemProps {
   to: string;
@@ -63,28 +64,11 @@ const ArchitectLayout: React.FC = () => {
   const [bottomGraphOpen, setBottomGraphOpen] = useState(false);
 
   // General Settings State
-  const [panelMode, setPanelMode] = useState<'classic' | 'binder' | 'floating'>('classic');
+  const panelMode = useAppStore(state => state.panelMode);
 
   // Attribute Management State (for EntityBuilder communication)
   const [addAttributeHandler, setAddAttributeHandler] = useState<((templateId: number) => void) | null>(null);
   const [availableTemplates, setAvailableTemplates] = useState<Plantilla[]>([]);
-
-  useEffect(() => {
-    const handleSync = () => {
-      const savedSettings = localStorage.getItem('app_settings');
-      if (savedSettings) {
-        try {
-          const settings = JSON.parse(savedSettings);
-          if (settings.panelMode && ['classic', 'binder', 'floating'].includes(settings.panelMode)) {
-            setPanelMode(settings.panelMode as 'classic' | 'binder' | 'floating');
-          }
-        } catch(e) {}
-      }
-    };
-    handleSync();
-    window.addEventListener('storage_update', handleSync);
-    return () => window.removeEventListener('storage_update', handleSync);
-  }, []);
 
   // Bible Explorer State
   const [folders, setFolders] = useState<Carpeta[]>([]);

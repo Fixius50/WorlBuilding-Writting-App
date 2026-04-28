@@ -1,5 +1,6 @@
 import { sqlocal } from '@database';
 import { projectService } from '@repositories/projectService';
+import { settingsService } from '@repositories/settingsService';
 import { syncService } from '@network/syncService';
 import { Proyecto } from '@domain/models/database';
 
@@ -51,11 +52,11 @@ export class SettingsUseCase {
     }
   }
 
-  // Local Storage Handlers
-  static loadUser(): UserData | null {
+  // SQLite Settings Handlers (Centralized)
+  static async loadUser(): Promise<UserData | null> {
     try {
-      const stored = localStorage.getItem('user');
-      if (stored && stored !== "undefined") {
+      const stored = await settingsService.get('user');
+      if (stored) {
         return JSON.parse(stored);
       }
     } catch (e) {
@@ -64,16 +65,21 @@ export class SettingsUseCase {
     return null;
   }
 
-  static saveUser(user: UserData): void {
-    localStorage.setItem('user', JSON.stringify(user));
-    window.dispatchEvent(new Event('storage_update'));
+  static async saveUser(user: UserData): Promise<void> {
+    await settingsService.set('user', JSON.stringify(user));
   }
 
-  static loadSettings(): AppSettings | null {
+  static async loadSettings(): Promise<AppSettings | null> {
     try {
-      const saved = localStorage.getItem('app_settings');
-      if (saved) {
-        return JSON.parse(saved);
+      const all = await settingsService.getAll();
+      if (Object.keys(all).length > 0) {
+        return {
+          theme: all.theme || 'deep_space',
+          font: all.font || 'Outfit',
+          fontSize: Number(all.fontSize) || 16,
+          panelMode: all.panelMode || 'classic',
+          autoBackup: all.autoBackup === 'true'
+        };
       }
     } catch (e) {
       console.error("Failed to parse app settings", e);
@@ -81,14 +87,17 @@ export class SettingsUseCase {
     return null;
   }
 
-  static saveSettings(settings: AppSettings): void {
-    localStorage.setItem('app_settings', JSON.stringify(settings));
-    window.dispatchEvent(new Event('storage_update'));
+  static async saveSettings(settings: AppSettings): Promise<void> {
+    await settingsService.set('theme', settings.theme);
+    await settingsService.set('font', settings.font);
+    await settingsService.set('fontSize', settings.fontSize.toString());
+    await settingsService.set('panelMode', settings.panelMode);
+    await settingsService.set('autoBackup', settings.autoBackup ? 'true' : 'false');
   }
 
-  static loadSyncProjects(): string[] {
+  static async loadSyncProjects(): Promise<string[]> {
     try {
-      const saved = localStorage.getItem('sync_projects');
+      const saved = await settingsService.get('sync_projects');
       if (saved) {
         return JSON.parse(saved);
       }
@@ -98,7 +107,7 @@ export class SettingsUseCase {
     return [];
   }
 
-  static saveSyncProjects(projects: string[]): void {
-    localStorage.setItem('sync_projects', JSON.stringify(projects));
+  static async saveSyncProjects(projects: string[]): Promise<void> {
+    await settingsService.set('sync_projects', JSON.stringify(projects));
   }
 }

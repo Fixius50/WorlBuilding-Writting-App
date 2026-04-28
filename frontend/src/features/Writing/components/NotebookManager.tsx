@@ -1,24 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@context/LanguageContext';
+import { settingsService } from '@repositories/settingsService';
 import ConfirmationModal from '@organisms/ConfirmationModal';
 import { Notebook } from '@domain/models/writing';
 import ZenEditor from '@features/Editor/components/ZenEditor';
 
+// SQLite Storage for quick notes
+const useNotebooks = (projectId: string | number) => {
+  const [notebooks, setNotebooks] = useState<Notebook[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const key = `notebooks_v2_${projectId}`;
 
-// Mock storage for development/fallback if API fails or for local-first speed
-const useLocalNotebooks = (projectId: string | number): [Notebook[], (newNotebooks: Notebook[]) => void] => {
- const key = `notebooks_v2_${projectId}`;
- const [notebooks, setNotebooks] = useState<Notebook[]>(() => {
- const saved = localStorage.getItem(key);
- return saved ? JSON.parse(saved) : [];
- });
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      const saved = await settingsService.get(key);
+      if (saved) {
+        setNotebooks(JSON.parse(saved));
+      } else {
+        // Migration from localStorage if exists
+        const old = localStorage.getItem(key);
+        if (old) {
+          const parsed = JSON.parse(old);
+          setNotebooks(parsed);
+          await settingsService.set(key, old);
+          localStorage.removeItem(key);
+        }
+      }
+      setIsLoading(false);
+    };
+    load();
+  }, [key]);
 
- const save = (newNotebooks: Notebook[]) => {
- setNotebooks(newNotebooks);
- localStorage.setItem(key, JSON.stringify(newNotebooks));
- };
+  const save = async (newNotebooks: Notebook[]) => {
+    setNotebooks(newNotebooks);
+    await settingsService.set(key, JSON.stringify(newNotebooks));
+  };
 
- return [notebooks, save];
+  return { notebooks, setNotebooks: save, isLoading };
 };
 
 interface NotebookManagerProps {
@@ -26,11 +45,14 @@ interface NotebookManagerProps {
 }
 
 const NotebookManager: React.FC<NotebookManagerProps> = ({ projectId }) => {
- const { t } = useLanguage();
- const [notebooks, setNotebooks] = useLocalNotebooks(projectId || 'global');
- const [activeNotebook, setActiveNotebook] = useState<Notebook | null>(null); // If null, show list. If set, show content.
- const [editingTitleId, setEditingTitleId] = useState<string | null>(null);
- const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const { t } = useLanguage();
+  const { notebooks, setNotebooks, isLoading } = useNotebooks(projectId || 'global');
+  const [activeNotebook, setActiveNotebook] = useState<Notebook | null>(null); // If null, show list. If set, show content.
+  const [editingTitleId, setEditingTitleId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  if (isLoading) return <div className="p-8 text-center opacity-30 italic text-[10px] uppercase font-bold">Iniciando Codex...</div>;
+
 
  // -- CRUD Operations --
 

@@ -29,18 +29,38 @@ import { SyncView } from '@features/Sync';
 // Store & Context
 import { useAppStore } from '@store/useAppStore';
 import { LanguageProvider } from '@context/LanguageContext';
+import { initializeDatabase } from '@database';
 
 const App = () => {
+  const isInitialized = useAppStore((state) => state.isInitialized);
+  const initializeStore = useAppStore((state) => state.initializeStore);
   const theme = useAppStore((state) => state.theme);
+
+  useEffect(() => {
+    const startup = async () => {
+      // 1. Asegurarnos de que las tablas de SQLite existen
+      await initializeDatabase();
+      // 2. Cargar las configuraciones en Zustand
+      await initializeStore();
+    };
+    startup();
+  }, [initializeStore]);
 
   // Aplicar clase de tema al body
   useEffect(() => {
-    document.body.className = `theme-${theme}`;
-  }, [theme]);
+    if (isInitialized) {
+      document.body.className = `theme-${theme}`;
+    }
+  }, [theme, isInitialized]);
+
+  // Pantalla de carga ultra-rápida mientras lee SQLite
+  if (!isInitialized) {
+    return <div className="h-screen w-screen bg-[#111] flex items-center justify-center text-white text-[10px] uppercase font-black tracking-widest animate-pulse">Iniciando Codex...</div>;
+  }
 
   return (
     <LanguageProvider>
-      <div className={`app-container theme-${theme} h-screen w-screen overflow-hidden`}>
+      <div className={`app-container h-screen w-screen overflow-hidden`}>
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<WorkspaceSelector />} />

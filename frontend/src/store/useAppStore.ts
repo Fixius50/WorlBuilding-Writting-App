@@ -1,51 +1,80 @@
 import { create } from 'zustand';
+import { settingsService } from '@repositories/settingsService';
 
 interface User {
-  username: string;
+  username?: string;
+  displayName?: string;
+  avatarUrl?: string;
+  success?: boolean;
+  localMode?: boolean;
 }
 
 interface AppState {
+  isInitialized: boolean;
   theme: string;
+  language: string;
+  panelMode: 'classic' | 'binder' | 'floating';
   user: User | null;
-  setTheme: (theme: string) => void;
-  setUser: (user: User | null) => void;
-  syncFromStorage: () => void;
-}
+  lastProjectId: number | null;
 
-const parseStorageItem = <T>(key: string): T | null => {
-  const raw = localStorage.getItem(key);
-  if (!raw || raw === 'undefined') return null;
-  try {
-    return JSON.parse(raw) as T;
-  } catch {
-    return null;
-  }
-};
+  // Acciones
+  initializeStore: () => Promise<void>;
+  setTheme: (theme: string) => Promise<void>;
+  setLanguage: (lang: string) => Promise<void>;
+  setPanelMode: (mode: 'classic' | 'binder' | 'floating') => Promise<void>;
+  setUser: (user: User | null) => Promise<void>;
+  setLastProjectId: (id: number | null) => Promise<void>;
+}
 
 export const useAppStore = create<AppState>((set) => ({
-  theme: parseStorageItem<{ theme: string }>('app_settings')?.theme ?? 'deep_space',
-  user: parseStorageItem<User>('user'),
+  isInitialized: false,
+  theme: 'deep_space',
+  language: 'es',
+  panelMode: 'classic',
+  user: null,
+  lastProjectId: null,
 
-  setTheme: (theme: string) => {
+  // Esta función se llama UNA VEZ al abrir la app
+  initializeStore: async () => {
+    try {
+      const allSettings = await settingsService.getAll();
+      
+      set({
+        theme: allSettings['theme'] || 'deep_space',
+        language: allSettings['language'] || 'es',
+        panelMode: (allSettings['panelMode'] as any) || 'classic',
+        user: allSettings['user'] ? JSON.parse(allSettings['user']) : null,
+        lastProjectId: allSettings['lastProjectId'] ? Number(allSettings['lastProjectId']) : null,
+        isInitialized: true // Avisamos a la app que ya puede renderizarse
+      });
+    } catch (error) {
+      console.error("Error cargando ajustes desde SQLite:", error);
+      set({ isInitialized: true });
+    }
+  },
+
+  setTheme: async (theme: string) => {
     set({ theme });
-    // Aquí puedes manejar la lógica de guardado local
+    await settingsService.set('theme', theme);
   },
 
-  setUser: (user: User | null) => set({ user }),
-
-  syncFromStorage: () => {
-    const settings = parseStorageItem<{ theme: string }>('app_settings');
-    const user = parseStorageItem<User>('user');
-    set((state) => ({
-      theme: settings?.theme ?? state.theme,
-      user: user ?? state.user,
-    }));
+  setLanguage: async (language: string) => {
+    set({ language });
+    await settingsService.set('language', language);
   },
+
+  setPanelMode: async (panelMode: 'classic' | 'binder' | 'floating') => {
+    set({ panelMode });
+    await settingsService.set('panelMode', panelMode);
+  },
+
+  setUser: async (user: User | null) => {
+    set({ user });
+    await settingsService.set('user', user ? JSON.stringify(user) : '');
+  },
+
+  setLastProjectId: async (id: number | null) => {
+    set({ lastProjectId: id });
+    await settingsService.set('lastProjectId', id ? id.toString() : '');
+  }
 }));
-
-// Escuchar cambios externos en localStorage (ej. otras pestañas o componentes que usan storage directo)
-if (typeof window !== 'undefined') {
-  window.addEventListener('storage_update', () => {
-    useAppStore.getState().syncFromStorage();
-  });
-}

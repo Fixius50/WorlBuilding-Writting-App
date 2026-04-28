@@ -152,6 +152,15 @@ export async function initializeDatabase() {
   )
   `;
 
+  // Tabla de Configuraciones Globales (Sustituye a localStorage)
+  await sql`
+  CREATE TABLE IF NOT EXISTS configuraciones (
+  clave TEXT PRIMARY KEY,
+  valor TEXT NOT NULL,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+  `;
+
   // Índices para mejorar rendimiento en uniones y filtrados frecuentes
   await sql`CREATE INDEX IF NOT EXISTS idx_entidades_project_id ON entidades(project_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_entidades_carpeta_id ON entidades(carpeta_id)`;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { settingsService } from '@repositories/settingsService';
 import ConfirmationModal from '@organisms/ConfirmationModal';
 
 interface Note {
@@ -20,27 +21,35 @@ const GlobalNotes: React.FC<GlobalNotesProps> = ({ projectName, storageKey }) =>
  const getStorageKey = () => storageKey || `notes_v2_${projectName}`;
 
  useEffect(() => {
- const key = getStorageKey();
- if (!key) return; // Safety
+  const loadNotes = async () => {
+    const key = getStorageKey();
+    if (!key) return;
 
- const saved = localStorage.getItem(key);
- if (saved) {
- setNotes(JSON.parse(saved));
- } else if (!storageKey) {
- // Migration from old single string if exists (ONLY for global project notes)
- const oldNotes = localStorage.getItem(`notes_${projectName}`);
- if (oldNotes) {
- const initialNote = { id: Date.now(), title: 'Nota General', content: oldNotes };
- setNotes([initialNote]);
- localStorage.setItem(key, JSON.stringify([initialNote]));
- }
- }
+    const saved = await settingsService.get(key);
+    if (saved) {
+      setNotes(JSON.parse(saved));
+    } else if (!storageKey) {
+      // Migration from old single string if exists (ONLY for global project notes)
+      // Since we are moving to SQLite, we check if there's anything in localStorage to migrate once
+      const oldNotes = localStorage.getItem(`notes_${projectName}`);
+      if (oldNotes) {
+        const initialNote = { id: Date.now(), title: 'Nota General', content: oldNotes };
+        const newNotes = [initialNote];
+        setNotes(newNotes);
+        await settingsService.set(key, JSON.stringify(newNotes));
+        localStorage.removeItem(`notes_${projectName}`); // Cleanup
+      }
+    }
+  };
+  loadNotes();
  }, [projectName, storageKey]);
 
- const saveNotes = (newNotes: Note[]) => {
- setNotes(newNotes);
- const key = getStorageKey();
- if (key) localStorage.setItem(key, JSON.stringify(newNotes));
+ const saveNotes = async (newNotes: Note[]) => {
+  setNotes(newNotes);
+  const key = getStorageKey();
+  if (key) {
+    await settingsService.set(key, JSON.stringify(newNotes));
+  }
  };
 
  const addNote = () => {

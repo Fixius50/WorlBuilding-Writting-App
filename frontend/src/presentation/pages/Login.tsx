@@ -1,47 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAppStore } from '@store/useAppStore';
 
 const Login = () => {
- const navigate = useNavigate();
- const [isRegister, setIsRegister] = useState(false);
- const [formData, setFormData] = useState({
- username: '',
- password: '',
- email: ''
- });
- const [error, setError] = useState('');
- const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const user = useAppStore(state => state.user);
+  const setUser = useAppStore(state => state.setUser);
+  const [isRegister, setIsRegister] = useState(false);
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+    email: ''
+  });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
- useEffect(() => {
- const storedUser = localStorage.getItem('user');
- if (storedUser) {
- navigate('/');
- }
- }, [navigate]);
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
 
- const handleSubmit = async (e: React.FormEvent) => {
- e.preventDefault();
- setError('');
- setLoading(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
 
- try {
- // Simulated local authentication for Local-First architecture
- await new Promise(resolve => setTimeout(resolve, 800)); // Aesthetic delay
- 
- const userData = {
- username: formData.username || 'Architect',
- success: true,
- localMode: true
- };
+    try {
+      // Simulated local authentication for Local-First architecture
+      await new Promise(resolve => setTimeout(resolve, 800)); // Aesthetic delay
+      
+      const userData = {
+        username: formData.username || 'Architect',
+        displayName: formData.username || 'Architect',
+        success: true,
+        localMode: true
+      };
 
- localStorage.setItem('user', JSON.stringify(userData));
- navigate('/');
- } catch (err: any) {
- setError(err.message || 'Authentication failed');
- } finally {
- setLoading(false);
- }
- };
+      await setUser(userData);
+      navigate('/');
+    } catch (err: any) {
+      setError(err.message || 'Authentication failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
  setFormData({ ...formData, [e.target.name]: e.target.value });

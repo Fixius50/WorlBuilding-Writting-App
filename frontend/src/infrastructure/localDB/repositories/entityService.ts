@@ -21,57 +21,50 @@ export const entityService = {
   },
 
   async create(entity: Omit<Entidad, 'id' | 'fecha_creacion' | 'fecha_actualizacion' | 'borrado'>): Promise<Entidad> {
-    const baseSlug = entity.nombre.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    let slug = baseSlug;
-    let counter = 1;
-
-    while (true) {
-      const existing = await sql`SELECT id FROM entidades WHERE project_id = ${entity.project_id} AND slug = ${slug} LIMIT 1`;
-      if (existing.length === 0) break;
-      slug = `${baseSlug}-${counter++}`;
-    }
-
     await sql`
-      INSERT INTO entidades (nombre, slug, tipo, folder_slug, project_id, carpeta_id, contenido_json, imagen_url)
-      VALUES (${entity.nombre}, ${slug}, ${entity.tipo}, ${entity.folder_slug}, ${entity.project_id}, ${entity.carpeta_id}, ${JSON.stringify(entity.contenido_json)}, ${entity.imagen_url})
+      INSERT INTO entidades (nombre, tipo, descripcion, contenido_json, project_id, carpeta_id)
+      VALUES (
+        ${entity.nombre}, 
+        ${entity.tipo}, 
+        ${entity.descripcion || ''}, 
+        ${entity.contenido_json ? (typeof entity.contenido_json === 'string' ? entity.contenido_json : JSON.stringify(entity.contenido_json)) : null}, 
+        ${entity.project_id}, 
+        ${entity.carpeta_id}
+      )
     `;
     
-    const result = await sql<Entidad>`SELECT * FROM entidades WHERE project_id = ${entity.project_id} AND slug = ${slug} LIMIT 1`;
+    // Recuperar la última entidad creada
+    const result = await sql<Entidad>`SELECT * FROM entidades WHERE project_id = ${entity.project_id} ORDER BY id DESC LIMIT 1`;
     return result[0];
   },
 
-  async update(id: number, entity: Partial<Entidad>): Promise<void> {
+  async update(id: number, entity: Partial<Entidad>): Promise<Entidad> {
     const fields: string[] = [];
-    const values: any[] = [];
 
-    if (entity.nombre !== undefined) {
-      fields.push(`nombre = @nombre`);
-    }
-    if (entity.tipo !== undefined) {
-      fields.push(`tipo = @tipo`);
-    }
+    if (entity.nombre !== undefined) fields.push(`nombre = ${entity.nombre}`);
+    if (entity.tipo !== undefined) fields.push(`tipo = ${entity.tipo}`);
+    if (entity.descripcion !== undefined) fields.push(`descripcion = ${entity.descripcion}`);
     if (entity.contenido_json !== undefined) {
-      fields.push(`contenido_json = @contenido_json`);
+      const jsonStr = typeof entity.contenido_json === 'string' ? entity.contenido_json : JSON.stringify(entity.contenido_json);
+      fields.push(`contenido_json = ${jsonStr}`);
     }
-    if (entity.imagen_url !== undefined) {
-      fields.push(`imagen_url = @imagen_url`);
-    }
-    if (entity.carpeta_id !== undefined) {
-      fields.push(`carpeta_id = @carpeta_id`);
+    if (entity.carpeta_id !== undefined) fields.push(`carpeta_id = ${entity.carpeta_id}`);
+
+    if (fields.length > 0) {
+      // Usando sintaxis segura de SQLocal con COALESCE para evitar sobrescribir con null si no se desea
+      await sql`
+        UPDATE entidades SET 
+          nombre = COALESCE(${entity.nombre}, nombre),
+          tipo = COALESCE(${entity.tipo}, tipo),
+          descripcion = COALESCE(${entity.descripcion}, descripcion),
+          contenido_json = COALESCE(${entity.contenido_json ? (typeof entity.contenido_json === 'string' ? entity.contenido_json : JSON.stringify(entity.contenido_json)) : null}, contenido_json),
+          carpeta_id = COALESCE(${entity.carpeta_id}, carpeta_id)
+        WHERE id = ${id}
+      `;
     }
 
-    if (fields.length === 0) return;
-
-    const query = `UPDATE entidades SET ${fields.join(', ')}, fecha_actualizacion = CURRENT_TIMESTAMP WHERE id = ${id}`;
-    
-    // Simplificado para SQLocal handle
-    await sql(query, {
-      nombre: entity.nombre,
-      tipo: entity.tipo,
-      contenido_json: entity.contenido_json ? JSON.stringify(entity.contenido_json) : undefined,
-      imagen_url: entity.imagen_url,
-      carpeta_id: entity.carpeta_id
-    });
+    const result = await sql<Entidad>`SELECT * FROM entidades WHERE id = ${id}`;
+    return result[0];
   },
 
   async delete(id: number): Promise<void> {

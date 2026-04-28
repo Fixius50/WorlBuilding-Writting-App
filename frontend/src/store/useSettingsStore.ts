@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { SettingsUseCase, UserData, AppSettings } from '@application/useCases/SettingsUseCase';
 import { Proyecto } from '@domain/models/database';
+import { useAppStore } from './useAppStore';
 
 export interface NotificationData {
   id: number;
@@ -51,9 +52,9 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   },
 
   initialize: async () => {
-    const user = SettingsUseCase.loadUser();
-    const settings = SettingsUseCase.loadSettings() || defaultSettings;
-    const selectedProjects = SettingsUseCase.loadSyncProjects();
+    const user = await SettingsUseCase.loadUser();
+    const settings = await SettingsUseCase.loadSettings() || defaultSettings;
+    const selectedProjects = await SettingsUseCase.loadSyncProjects();
     const projects = await SettingsUseCase.loadProjects();
 
     set({ user, settings, selectedProjects, projects });
@@ -66,11 +67,19 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     }
   },
 
-  updateSetting: (key: keyof AppSettings, value: unknown) => {
+  updateSetting: async (key: keyof AppSettings, value: unknown) => {
     const newSettings = { ...get().settings, [key]: value as any } as AppSettings;
     set({ settings: newSettings });
-    SettingsUseCase.saveSettings(newSettings);
+    await SettingsUseCase.saveSettings(newSettings);
     get().addNotification(`Ajuste actualizado: ${key}`);
+
+    // Si el ajuste es el tema o el modo de panel, sincronizar con useAppStore para coherencia global
+    if (key === 'theme') {
+      useAppStore.getState().setTheme(value as string);
+    }
+    if (key === 'panelMode') {
+      useAppStore.getState().setPanelMode(value as any);
+    }
 
     if (key === 'autoBackup') {
       if (value && !autoBackupInterval) {
@@ -84,7 +93,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     }
   },
 
-  toggleProjectSelection: (id: string) => {
+  toggleProjectSelection: async (id: string) => {
     const { selectedProjects } = get();
     const isSelected = selectedProjects.includes(id);
     const newSelection = isSelected
@@ -92,21 +101,24 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       : [...selectedProjects, id];
 
     set({ selectedProjects: newSelection });
-    SettingsUseCase.saveSyncProjects(newSelection);
+    await SettingsUseCase.saveSyncProjects(newSelection);
     get().addNotification(isSelected ? "Universo desmarcado de sincronización" : "Universo incluido en sincronización");
   },
 
-  updateProfile: (key: keyof UserData, value: string) => {
+  updateProfile: async (key: keyof UserData, value: string) => {
     const newUser = { ...(get().user || {}), [key]: value };
     set({ user: newUser });
-    SettingsUseCase.saveUser(newUser);
+    await SettingsUseCase.saveUser(newUser);
+    // Sincronizar con el store principal
+    useAppStore.getState().setUser(newUser);
   },
 
-  setAvatar: (avatarUrl: string) => {
+  setAvatar: async (avatarUrl: string) => {
     const newUser = { ...(get().user || {}), avatarUrl };
     set({ user: newUser });
     try {
-      SettingsUseCase.saveUser(newUser);
+      await SettingsUseCase.saveUser(newUser);
+      useAppStore.getState().setUser(newUser);
       get().addNotification("Foto de perfil actualizada", "success");
     } catch (err) {
       get().addNotification("Error al guardar imagen (memoria llena)", "error");

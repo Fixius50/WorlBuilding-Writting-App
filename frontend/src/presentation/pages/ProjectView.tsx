@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLanguage } from '@context/LanguageContext';
 import { useOutletContext, useNavigate, useParams } from 'react-router-dom';
+import { useAppStore } from '@store/useAppStore';
 
 interface ActionCardProps {
  icon: string;
@@ -36,25 +37,9 @@ const ProjectView: React.FC = () => {
  const navigate = useNavigate();
  const { username } = useParams<{ username: string }>();
  const { t } = useLanguage();
+ const user = useAppStore(state => state.user);
 
  const baseUrl = `/${username}/${projectName}`;
- interface UserData {
-    displayName?: string;
-    username?: string;
-  }
-
-  const [user, setUser] = React.useState<UserData | null>(null);
-
- React.useEffect(() => {
- const storedUser = localStorage.getItem('user');
- if (storedUser && storedUser !== "undefined") {
- try {
- setUser(JSON.parse(storedUser));
- } catch (e) {
- console.error("Failed to parse user from localStorage", e);
- }
- }
- }, []);
 
  return (
  <div className="flex-1 flex flex-col h-screen overflow-hidden bg-background">
@@ -78,7 +63,7 @@ const ProjectView: React.FC = () => {
  {/* Welcome Section */}
  <div className="space-y-4 max-w-2xl">
  <h2 className="text-4xl font-black text-foreground tracking-tighter leading-tight">
- {t('project.welcome')} <span className="text-primary">{user?.displayName || t('common.architect')}</span>.
+ {t('project.welcome')} <span className="text-primary">{user?.displayName || user?.username || t('common.architect')}</span>.
  </h2>
  <p className="text-foreground/60 text-lg font-serif italic leading-relaxed opacity-80">
  {t('project.welcome_desc')}
