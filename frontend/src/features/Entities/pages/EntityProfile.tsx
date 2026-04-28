@@ -9,6 +9,7 @@ import Button from '@atoms/Button';
 import SecondaryTabs from '@molecules/SecondaryTabs';
 import MiniGraph from '../components/MiniGraph';
 import MiniTimeline from '../components/MiniTimeline';
+import { notebookService } from '@repositories/notebookService';
 
 interface ProfileOutletContext {
   setRightOpen: (open: boolean) => void;
@@ -40,6 +41,7 @@ const EntityProfile = () => {
   const [entity, setEntity] = useState<EntityWithExtra | null>(null);
   const [activeTab, setActiveTab] = useState('GENERAL');
   const [loading, setLoading] = useState(true);
+  const [mentions, setMentions] = useState<{ hoja_id: number; hoja_titulo: string; cuaderno_titulo: string; cuaderno_id: number }[]>([]);
 
   useEffect(() => {
     setRightOpen(true);
@@ -80,6 +82,23 @@ const EntityProfile = () => {
       console.error("Failed to load entity", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (entity && projectName) {
+      loadMentions();
+    }
+  }, [entity, projectName]);
+
+  const loadMentions = async () => {
+    if (!entity || !projectName) return;
+    try {
+      // Intentar obtener el ID del proyecto si no lo tenemos (aunque suele venir en el contexto o entity)
+      const mentionsData = await notebookService.getMentions(entity.project_id, entity.nombre);
+      setMentions(mentionsData);
+    } catch (err) {
+      console.error("Failed to load mentions", err);
     }
   };
 
@@ -261,17 +280,31 @@ const EntityProfile = () => {
                  <div className="pb-4 border-b border-primary/20">
                     <h3 className="text-xs font-black uppercase tracking-widest text-primary">Referencias en la Obra</h3>
                  </div>
-                 {[1,2,3].map(i => (
-                    <div key={i} className="p-4 bg-foreground/5 border border-foreground/10 hover:border-primary/40 transition-all group">
-                       <div className="flex justify-between items-center mb-2">
-                          <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-tighter">Capítulo {i}: Los Albores</span>
-                          <span className="text-[9px] text-primary font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Leer Fragmento →</span>
-                       </div>
-                       <p className="text-sm text-foreground/60 leading-relaxed italic">
-                          "...y entre las sombras, {entity.nombre} observaba el destino plegarse sobre los hombres..."
-                       </p>
+                 
+                 {mentions.length > 0 ? (
+                    mentions.map((mention, i) => (
+                      <div 
+                        key={i} 
+                        className="p-4 bg-foreground/5 border border-foreground/10 hover:border-primary/40 transition-all group cursor-pointer"
+                        onClick={() => navigate(`/local/${projectName}/writing/${mention.cuaderno_id}?page=${mention.hoja_id}`)}
+                      >
+                         <div className="flex justify-between items-center mb-2">
+                            <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-tighter">
+                              {mention.cuaderno_titulo} — {mention.hoja_titulo}
+                            </span>
+                            <span className="text-[9px] text-primary font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Ir al manuscrito →</span>
+                         </div>
+                         <p className="text-sm text-foreground/60 leading-relaxed italic">
+                            Mencionado en la sección "{mention.hoja_titulo}".
+                         </p>
+                      </div>
+                    ))
+                 ) : (
+                    <div className="py-20 text-center opacity-30 border border-dashed border-foreground/10">
+                       <span className="material-symbols-outlined text-4xl mb-2">find_in_page</span>
+                       <p className="text-[10px] font-black uppercase tracking-widest">Sin apariciones registradas aún.</p>
                     </div>
-                 ))}
+                 )}
               </div>
             )}
 

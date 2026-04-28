@@ -103,5 +103,27 @@ export const notebookService = {
       timestamp: r.fecha_creacion,
       contenido: r.contenido
     }));
+  },
+  
+  // --- Backlinks / Apariciones ---
+  async getMentions(projectId: number, query: string): Promise<{ hoja_id: number; hoja_titulo: string; cuaderno_titulo: string; cuaderno_id: number }[]> {
+    const results = await sql<any>`
+      SELECT 
+        h.id as hoja_id, 
+        h.titulo as hoja_titulo, 
+        c.titulo as cuaderno_titulo,
+        c.id as cuaderno_id
+      FROM hojas h
+      JOIN cuadernos c ON h.cuaderno_id = c.id
+      WHERE c.project_id = ${projectId}
+      AND (h.contenido LIKE ${'%' + query + '%'} OR h.titulo LIKE ${'%' + query + '%'})
+      LIMIT 50
+    `;
+    return results.map(r => ({
+      hoja_id: r.hoja_id,
+      hoja_titulo: r.hoja_titulo || 'Sin título',
+      cuaderno_titulo: r.cuaderno_titulo,
+      cuaderno_id: r.cuaderno_id
+    }));
   }
 };

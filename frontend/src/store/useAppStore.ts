@@ -16,6 +16,7 @@ interface AppState {
   panelMode: 'classic' | 'binder' | 'floating';
   user: User | null;
   lastProjectId: number | null;
+  savedGraphViewport: { x: number; y: number; zoom: number } | null;
 
   // Acciones
   initializeStore: () => Promise<void>;
@@ -24,6 +25,7 @@ interface AppState {
   setPanelMode: (mode: 'classic' | 'binder' | 'floating') => Promise<void>;
   setUser: (user: User | null) => Promise<void>;
   setLastProjectId: (id: number | null) => Promise<void>;
+  setGraphViewport: (viewport: { x: number; y: number; zoom: number } | null) => Promise<void>;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -33,6 +35,7 @@ export const useAppStore = create<AppState>((set) => ({
   panelMode: 'classic',
   user: null,
   lastProjectId: null,
+  savedGraphViewport: null,
 
   // Esta función se llama UNA VEZ al abrir la app
   initializeStore: async () => {
@@ -45,6 +48,7 @@ export const useAppStore = create<AppState>((set) => ({
         panelMode: (allSettings['panelMode'] as any) || 'classic',
         user: allSettings['user'] ? JSON.parse(allSettings['user']) : null,
         lastProjectId: allSettings['lastProjectId'] ? Number(allSettings['lastProjectId']) : null,
+        savedGraphViewport: allSettings['savedGraphViewport'] ? JSON.parse(allSettings['savedGraphViewport']) : null,
         isInitialized: true // Avisamos a la app que ya puede renderizarse
       });
     } catch (error) {
@@ -76,5 +80,10 @@ export const useAppStore = create<AppState>((set) => ({
   setLastProjectId: async (id: number | null) => {
     set({ lastProjectId: id });
     await settingsService.set('lastProjectId', id ? id.toString() : '');
+  },
+
+  setGraphViewport: async (viewport: { x: number; y: number; zoom: number } | null) => {
+    set({ savedGraphViewport: viewport });
+    await settingsService.set('savedGraphViewport', viewport ? JSON.stringify(viewport) : '');
   }
 }));

@@ -27,6 +27,7 @@ import { getHierarchyType } from '@utils/constants/hierarchy_types';
 import Button from '@atoms/Button';
 import GlassPanel from '@atoms/GlassPanel';
 import { useLanguage } from '@context/LanguageContext';
+import { useAppStore } from '@store/useAppStore';
 
 interface ZenNodeData {
   label?: string;
@@ -146,6 +147,9 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [loading, setLoading] = useState(true);
+  
+  const savedViewport = useAppStore(state => state.savedGraphViewport);
+  const setSavedViewport = useAppStore(state => state.setGraphViewport);
   const [entities, setEntities] = useState<Entidad[]>([]);
 
   // Modal para seleccionar relaciones (múltiples vínculos)
@@ -324,8 +328,10 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onEdgeClick={onEdgeClick}
+        onMoveEnd={(_, viewport) => setSavedViewport(viewport)}
+        defaultViewport={savedViewport || { x: 0, y: 0, zoom: 1 }}
         nodeTypes={nodeTypes}
-        fitView
+        fitView={!savedViewport}
         colorMode="dark"
         connectionMode={ConnectionMode.Loose}
         style={{ width: '100%', height: '100%' }}
