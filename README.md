@@ -91,6 +91,10 @@ Developed with 💜 by [Roberto Monedero Alonso](https://github.com/Fixius50)
 *"En la red de almas, ningún ser es un desierto."*
 
 ---
+
+### 📺 Demo & Vision
 <p align="center">
-  <iframe width="100%" height="450" src="https://www.youtube.com/embed/FjV8SHjHvHk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+  <a href="https://www.youtube.com/watch?v=FjV8SHjHvHk">
+    <img src="https://img.youtube.com/vi/FjV8SHjHvHk/maxresdefault.jpg" alt="Chronos Atlas Demo" width="100%" style="border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
+  </a>
 </p>
