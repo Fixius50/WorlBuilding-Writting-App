@@ -199,9 +199,14 @@ export async function initializeDatabase() {
         nombre TEXT NOT NULL,
         carpeta_id INTEGER NOT NULL,
         color TEXT,
-        FOREIGN KEY (carpeta_id) REFERENCES carpetas(id) ON DELETE CASCADE
+        entidad_id INTEGER,
+        FOREIGN KEY (carpeta_id) REFERENCES carpetas(id) ON DELETE CASCADE,
+        FOREIGN KEY (entidad_id) REFERENCES entidades(id) ON DELETE SET NULL
       )
     `;
+
+    // Migración para añadir entidad_id si ya existe la tabla
+    await sql`ALTER TABLE dimension_lineas ADD COLUMN entidad_id INTEGER`.catch(() => {});
 
     // Nueva tabla para Vinculación de Entidades a Hitos
     await sql`

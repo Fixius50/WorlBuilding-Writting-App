@@ -6,6 +6,7 @@ interface DashboardState {
   isLoading: boolean;
   error: unknown | null;
   loadStats: (projectId: number) => Promise<void>;
+  updateWordCount: (count: number) => void;
 }
 
 export const useDashboardStore = create<DashboardState>((set) => ({
@@ -29,5 +30,13 @@ export const useDashboardStore = create<DashboardState>((set) => ({
       console.error("Error loading dashboard stats", error);
       set({ error, isLoading: false });
     }
+  },
+  updateWordCount: (count: number) => {
+    set((state) => ({
+      stats: {
+        ...state.stats,
+        wordCount: count
+      }
+    }));
   }
 }));

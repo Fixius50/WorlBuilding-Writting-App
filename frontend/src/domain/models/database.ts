@@ -9,7 +9,7 @@ export interface Proyecto {
   ultima_modificacion: string;
 }
 
-export type FolderType = 'FOLDER' | 'TIMELINE' | 'CONLANG' | 'MAPS' | 'ARCHIVE';
+export type FolderType = 'FOLDER' | 'TIMELINE' | 'DIMENSION' | 'CONLANG' | 'MAPS' | 'ARCHIVE';
 
 export interface Carpeta {
   id: number;
@@ -106,6 +106,7 @@ export interface DimensionLinea {
   nombre: string;
   carpeta_id: number;
   color?: string;
+  entidad_id?: number | null;
 }
 
 export interface EventoEntidad {

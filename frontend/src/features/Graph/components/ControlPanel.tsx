@@ -3,6 +3,7 @@ import GraphView from '../pages/GeneralGraphView';
 import EntityDatabase from './EntityDatabase';
 import NotebookManager from '@features/Writing/components/NotebookManager';
 import { ResponsiveBar } from '@nivo/bar';
+import { useDashboardStore } from '@store/useDashboardStore';
 
 // --- Subcomponente de Gráficos (Movido para uso interno) ---
 function WritingStatsChart({ pages }: { pages: any[] }) {
@@ -85,6 +86,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ isOpen, onToggle, projectId
   const [heightVH, setHeightVH] = useState(65);
   const [activeSection, setActiveSection] = useState<PanelSection>('database');
   const [currentTime, setCurrentTime] = useState(new Date());
+  
+  const { stats } = useDashboardStore();
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -256,12 +259,12 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ isOpen, onToggle, projectId
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-4 bg-foreground/[0.02] border border-foreground/5 flex flex-col space-y-1">
-                        <span className="text-[8px] font-black uppercase text-foreground/40 tracking-widest">Palabras Hoy</span>
-                        <span className="text-xl font-black text-foreground tabular-nums">{statsData?.wordsToday || 0}</span>
+                        <span className="text-[8px] font-black uppercase text-foreground/40 tracking-widest">Palabras Totales</span>
+                        <span className="text-xl font-black text-foreground tabular-nums">{stats.wordCount.toLocaleString()}</span>
                       </div>
                       <div className="p-4 bg-foreground/[0.02] border border-foreground/5 flex flex-col space-y-1">
                         <span className="text-[8px] font-black uppercase text-foreground/40 tracking-widest">Páginas Totales</span>
-                        <span className="text-xl font-black text-foreground tabular-nums">{statsData?.totalPages || 0}</span>
+                        <span className="text-xl font-black text-foreground tabular-nums">{stats.pageCount}</span>
                       </div>
                     </div>
 

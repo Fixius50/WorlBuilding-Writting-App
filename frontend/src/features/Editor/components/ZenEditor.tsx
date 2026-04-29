@@ -2,12 +2,14 @@ import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import Mention from '@tiptap/extension-mention'
+import CharacterCount from '@tiptap/extension-character-count'
 import React, { useEffect, useState, useCallback, useRef } from 'react'
 import suggestion from '@utils/suggestion'
 import slashSuggestion from '@utils/slashSuggestion'
 import MentionHoverCard from './MentionHoverCard'
 import EditorTopBar from './EditorTopBar'
 import { EditorSettings, MentionData } from '@domain/models/writing'
+import { useDashboardStore } from '@store/useDashboardStore'
 
 interface ZenEditorProps {
   content: string;
@@ -37,10 +39,7 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
     fontSize: 18
   });
 
-  const countWords = useCallback((text: string) => {
-    return text.trim().split(/\s+/).filter(Boolean).length;
-  }, []);
-
+  const updateGlobalWordCount = useDashboardStore(state => state.updateWordCount);
   const [wordCount, setWordCount] = useState(0);
   const snapshotTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const mentionClickRef = useRef(onMentionClick);
@@ -68,12 +67,15 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
           char: '/',
         },
       }),
+      CharacterCount,
     ],
     content: content,
     editable: editable,
     onUpdate: ({ editor }) => {
       onUpdate(editor.getHTML());
-      setWordCount(countWords(editor.getText()));
+      const words = editor.storage.characterCount?.words?.() || 0;
+      setWordCount(words);
+      updateGlobalWordCount(words);
     },
     editorProps: {
       attributes: {
@@ -111,9 +113,11 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
   useEffect(() => {
     if (editor && content !== editor.getHTML()) {
       editor.commands.setContent(content);
-      setWordCount(countWords(editor.getText()));
+      const words = editor.storage.characterCount?.words?.() || 0;
+      setWordCount(words);
+      updateGlobalWordCount(words);
     }
-  }, [content, editor, countWords]);
+  }, [content, editor, updateGlobalWordCount]);
 
   if (!editor) return null;
 

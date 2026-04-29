@@ -157,6 +157,7 @@ const EntityProfile = () => {
 
   const tabs = [
     { id: 'GENERAL', label: 'Esencia' },
+    { id: 'INTELLIGENCE', label: 'Inteligencia de Campo' },
     { id: 'RELACIONES', label: 'Hilos de Causalidad' },
     { id: 'BACKLINKS', label: 'Apariciones' },
   ];
@@ -203,6 +204,17 @@ const EntityProfile = () => {
                     Transmutar Archivo
                   </button>
                </Link>
+
+               {entity.tipo === 'DIMENSION' && (
+                  <button 
+                    onClick={() => navigate(`/local/${projectName}/bible/dimension/${entity.carpeta_id}`)}
+                    className="px-6 py-3 bg-orange-500/20 border border-orange-500/30 text-orange-400 text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-orange-500/30 transition-all active:scale-95 flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-sm">lan</span>
+                    Ver Línea Temporal Paralela
+                  </button>
+               )}
+
                <button className="size-11 border border-foreground/10 hover:border-primary/50 text-foreground/40 hover:text-primary transition-all flex items-center justify-center">
                   <span className="material-symbols-outlined text-xl">share</span>
                </button>
@@ -223,8 +235,7 @@ const EntityProfile = () => {
 
         <main className="flex-1 overflow-y-auto custom-scrollbar p-8 lg:p-12">
           <div className="max-w-7xl mx-auto">
-            
-            {activeTab === 'GENERAL' && (
+                {activeTab === 'GENERAL' && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 animate-in slide-in-from-bottom-4 duration-500">
                 
                 {/* Visuals: Graph & Meta */}
@@ -247,7 +258,7 @@ const EntityProfile = () => {
                          <div className="flex-1 p-8 border border-dashed border-foreground/10 flex flex-col items-center justify-center text-center opacity-40">
                             <span className="material-symbols-outlined text-4xl mb-3">auto_awesome</span>
                             <span className="text-[10px] font-black uppercase tracking-widest leading-relaxed max-w-[200px]">
-                               Nivel de Presencia en el Mundo: Elevado
+                                Nivel de Presencia en el Mundo: Elevado
                             </span>
                          </div>
                       </div>
@@ -263,6 +274,23 @@ const EntityProfile = () => {
                         </h3>
                    </div>
                    <MiniTimeline entityId={Number(entityId)} />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'INTELLIGENCE' && (
+              <div className="flex flex-col lg:flex-row gap-8 h-[calc(100vh-350px)] animate-in fade-in zoom-in-95 duration-500">
+                {/* Split View: Graph Left, Timeline Right */}
+                <div className="flex-1 min-h-[400px] border border-foreground/5 bg-foreground/[0.01] overflow-hidden relative group">
+                  <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-primary/10 border border-primary/20 text-[9px] font-black uppercase tracking-widest text-primary">Mapa de Relaciones</div>
+                  <MiniGraph entityId={Number(entityId)} onNavigate={handleEntityNavigate} />
+                </div>
+                
+                <div className="w-full lg:w-[450px] border border-foreground/5 bg-foreground/[0.01] flex flex-col overflow-hidden relative">
+                  <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-purple-500/10 border border-purple-500/20 text-[9px] font-black uppercase tracking-widest text-purple-400">Secuencia Temporal</div>
+                  <div className="flex-1 overflow-y-auto custom-scrollbar p-6 pt-16">
+                    <MiniTimeline entityId={Number(entityId)} />
+                  </div>
                 </div>
               </div>
             )}

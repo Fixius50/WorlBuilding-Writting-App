@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useOutletContext } from 'react-router-dom';
 import { useDashboardStore } from '@store/useDashboardStore';
 import { ResponsivePie } from '@nivo/pie';
+import StatCard from '../components/StatCard';
 
 const AnalyticsDashboard = () => {
   const { projectId } = useOutletContext<{ projectId: number }>();
@@ -33,17 +34,14 @@ const AnalyticsDashboard = () => {
       {/* Rila de Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         {cards.map((stat, i) => (
-          <GlassPanel key={i} className="p-6 border-b-4 border-b-transparent hover:border-b-primary transition-all group relative overflow-hidden">
-             {/* Sutil gradiente de fondo basado en el color de la card */}
-            <div className={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity bg-current ${stat.color}`}></div>
-            
-            <div className="flex items-start justify-between mb-4 relative z-10">
-              <span className={`material-symbols-outlined ${stat.color} text-2xl`}>{stat.icon}</span>
-              {isLoading && <div className="size-4 rounded-full border-2 border-foreground/10 border-t-primary animate-spin"></div>}
-            </div>
-            <div className="text-3xl font-black text-foreground mb-1 relative z-10">{isLoading ? '...' : stat.value}</div>
-            <div className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest relative z-10">{stat.label}</div>
-          </GlassPanel>
+          <StatCard 
+            key={i}
+            label={stat.label}
+            value={stat.value}
+            icon={stat.icon}
+            color={stat.color}
+            isLoading={isLoading}
+          />
         ))}
       </div>
 

@@ -10,6 +10,11 @@ export const timelineService = {
     return await sql`SELECT * FROM eventos WHERE timeline_id = ${timelineId} AND borrado = 0 ORDER BY fecha_simulada ASC` as Evento[];
   },
 
+  async getById(id: number): Promise<Evento | null> {
+    const results = await sql`SELECT * FROM eventos WHERE id = ${id} AND borrado = 0` as Evento[];
+    return results.length > 0 ? results[0] : null;
+  },
+
   async create(event: Omit<Evento, 'id' | 'borrado' | 'created_at'>): Promise<Evento> {
     const results = await sql`
       INSERT INTO eventos (titulo, descripcion, fecha_simulada, project_id, timeline_id, linea_id)
@@ -34,16 +39,17 @@ export const timelineService = {
 
   // --- MÉTODOS DE MULTIVERSO (LÍNEAS) ---
   
-  async getLinesByFolder(folderId: number): Promise<DimensionLinea[]> {
-    return await sql`SELECT * FROM dimension_lineas WHERE carpeta_id = ${folderId}` as DimensionLinea[];
+  async getLinesByFolder(folderId: number): Promise<Entidad[]> {
+    return await sql`SELECT * FROM entidades WHERE carpeta_id = ${folderId} AND tipo = 'DIMENSION' AND borrado = 0` as Entidad[];
   },
 
-  async createLine(line: Omit<DimensionLinea, 'id'>): Promise<DimensionLinea> {
+  async createLine(line: { nombre: string, carpeta_id: number, project_id: number }): Promise<Entidad> {
+    // En el nuevo modelo, crear una línea es crear una entidad de tipo DIMENSION
     const res = await sql`
-      INSERT INTO dimension_lineas (nombre, carpeta_id, color)
-      VALUES (${line.nombre}, ${line.carpeta_id}, ${line.color || null})
+      INSERT INTO entidades (nombre, tipo, project_id, carpeta_id)
+      VALUES (${line.nombre}, 'DIMENSION', ${line.project_id}, ${line.carpeta_id})
       RETURNING *
-    ` as DimensionLinea[];
+    ` as Entidad[];
     return res[0];
   },
 
