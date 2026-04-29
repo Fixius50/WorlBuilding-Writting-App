@@ -1,84 +1,96 @@
-# WorldbuildingApp Alpha V2
+# Chronos Atlas — Worldbuilding Engine 🌌
+**The Architect's Vault | Local-First & Technical Zen**
 
-Aplicación full-stack para worldbuilding con soporte para conlangs, mapas, líneas temporales y más.
+Chronos Atlas es un motor de worldbuilding de alto rendimiento diseñado para arquitectos de mundos, escritores y lingüistas. Construido bajo una arquitectura **Local-First**, prioriza la soberanía de los datos del usuario mediante el uso de SQLite WASM directamente en el navegador.
+
+---
+
+## 🏗️ Arquitectura Local-First
+A diferencia de las aplicaciones web tradicionales, Chronos Atlas funciona con una base de datos **SQLite (WASM + OPFS)** persistente en tu sistema de archivos local (via navegador), garantizando:
+- **Latencia Zero:** Operaciones de base de datos a velocidad local.
+- **Soberanía:** Tus universos viven en un archivo `.sqlite3` que puedes mover o respaldar libremente.
+- **Privacidad:** Los datos nunca abandonan tu máquina a menos que decidas sincronizarlos explícitamente.
+
+---
 
 ## 🚀 Inicio Rápido
 
-### Opción 1: Script Automático (Recomendado)
-
+### Ejecución con un solo clic (Windows)
 ```bash
 .\INICIAR.bat
 ```
+Este script orquestador automatiza el despliegue del frontend, el backend de sincronización y el motor de base de datos.
 
-Este script:
-
-- ✅ Construye el frontend automáticamente
-- ✅ Inicia el backend con auto-restart
-- ✅ Permite reiniciar desde la UI con el botón "Reiniciar Backend"
-
-### Opción 2: Manual
-
-**Terminal 1 - Frontend:**
-
+### Desarrollo Manual
+**Frontend (Vite + React):**
 ```bash
+cd frontend
 npm run dev
 ```
 
-**Terminal 2 - Backend:**
-
+**Backend (Sincronización Opcional - Spring Boot):**
 ```bash
 .\mvnw.cmd spring-boot:run
 ```
 
-## 📋 Requisitos
+---
 
-- **Node.js** 18+ (para frontend)
-- **Java** 21+ (para backend)
-- **Maven** (incluido como wrapper: `mvnw.cmd`)
+## 💎 Funcionalidades Core
 
-## 🧪 Testing
+### 📖 World Bible (La Biblia del Mundo)
+Gestión jerárquica de entidades (Personajes, Lugares, Objetos, Deidades) mediante plantillas dinámicas y atributos personalizados.
+- **Backlinks (Apariciones):** Rastreo automático de menciones de entidades en tus manuscritos (Estilo Obsidian).
 
-Ejecutar suite de tests:
+### 🕸️ Grafo de Causalidad
+Visualización relacional de alta fidelidad para mapear conexiones entre personajes y facciones.
+- **Memoria de Cámara:** El grafo recuerda exactamente tu zoom y posición (Viewport Persistence).
 
-```bash
-node Docs/mcps/scripts/test-all.mjs
-```
+### ✍️ Writing Hub (Centro de Escritura)
+Entorno de escritura minimalista con gestión de cuadernos y hojas.
+- **Snapshots:** Control de versiones local para cada página de tu obra.
 
-Ver `Docs/mcps/scripts/README.md` para más opciones de testing.
+### 🕒 Multiverse Timeline
+Gestión de líneas temporales paralelas y eventos históricos vinculados a entidades del mapa.
 
-## 📚 Documentación
+---
 
-- **Estructura Core:** `Docs/00_Reglas_Maestras.md` a `04_Arquitectura_Workspaces.md`.
-- **Bitácora Maestra:** `Docs/05_Bitacora_Maestra.md` (Historial consolidado).
-- **Linguistic Engine:** `Docs/06_Arquitectura_Linguistica.md`.
-- **Technical Skills:** `Docs/skills/` (Guías de Arquitecto, Experto y Master).
-- **Testing & Scripts:** `Docs/mcps/` y `Docs/scripts/`.
+## 🛠️ Stack Tecnológico
+- **Frontend:** React 18, TypeScript, Vite.
+- **Estilo:** Vanilla CSS (Technical Zen / Dark Glassmorphism).
+- **Estado:** Zustand (Async Orchestration).
+- **Persistencia:** SQLite WASM (SQLocal) + OPFS.
+- **Backend:** Spring Boot 3 (Java 21) para servicios de exportación y backup.
 
-## 🔧 Desarrollo
+---
 
-### Reiniciar Backend desde UI
-
-1. Inicia con `.\INICIAR.bat`
-2. Abre <http://localhost:8080>
-3. Usa el botón "Reiniciar Backend" en la pantalla principal
-
-### Estructura del Proyecto
-
+## 📂 Estructura del Proyecto
 ```text
 WorldbuildingApp/
-├── src/               # Frontend y Backend Fusionados
-│   ├── main/          # Backend (Spring Boot Java)
-│   ├── assets/        # Frontend (Tailwind/CSS)
-│   ├── components/    # Frontend (React UI)
-│   ├── features/      # Frontend (Lógica y Vistas)
-│   └── database/      # Frontend (Client IndexedDB)
-├── scripts/           # Scripts NodeJS de Refactorización y Utils
-├── Docs/              # Documentación de Arquitectura y Logs
-└── pom.xml            # Configuración Raíz de Maven
+├── frontend/           # Interfaz de Usuario y Lógica Local-First
+│   ├── src/
+│   │   ├── application/   # Casos de Uso y Lógica de Negocio
+│   │   ├── domain/        # Modelos e Interfaces
+│   │   ├── infrastructure/# Persistencia (SQLite) y Repositorios
+│   │   ├── presentation/  # Componentes UI (Atoms, Molecules, Layouts)
+│   │   └── store/         # Gestión de Estado Global (Zustand)
+├── main/               # Backend de Sincronización y Backup (Java)
+├── Docs/               # Master Documentation & Architect Logs
+└── scripts/            # Herramientas de Refactorización y Automatización
 ```
 
-## 📝 Notas
+---
 
-- El backend corre en `http://localhost:8080`
-- El frontend (dev) corre en `http://localhost:5173`
-- Los logs se guardan en `Docs/logs/server.log`
+## 📝 Requisitos
+- **Node.js** 18+ (Frontend)
+- **Java** 21+ (Backend de Sincronización)
+- **Navegador Moderno** (Chrome/Edge/Arc recomendados por soporte OPFS)
+
+---
+
+Developed with 💜 by [Roberto Monedero Alonso](https://github.com/Fixius50)
+*"En la red de almas, ningún ser es un desierto."*
+
+---
+<p align="center">
+  <iframe width="100%" height="450" src="https://www.youtube.com/embed/FjV8SHjHvHk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+</p>
