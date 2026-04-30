@@ -386,7 +386,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
         )}
 
         {/* NAVEGACIÓN DE PESTAÑAS */}
-        <div className="px-[1.5rem] lg:px-[3rem] border-b border-foreground/5 bg-background/40 sticky top-[9.875rem] z-30 backdrop-blur-md">
+        <div className={`px-[1.5rem] lg:px-[3rem] border-b border-foreground/5 bg-background/40 sticky ${isInBible ? 'top-0' : 'top-[9.875rem]'} z-30 backdrop-blur-md transition-all duration-300`}>
           <div className="flex items-center justify-center gap-[3rem]">
             {['identity', 'narrative', 'attributes'].map((tab) => (
               <button

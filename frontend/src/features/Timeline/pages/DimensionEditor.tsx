@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
+import { useParams, useNavigate, useOutletContext, useLocation } from 'react-router-dom';
 import { useLanguage } from '@context/LanguageContext';
 import { timelineService } from '@repositories/timelineService';
 import { folderService } from '@repositories/folderService';
@@ -19,6 +19,8 @@ const DimensionEditor: React.FC = () => {
     setRightOpen, 
     setRightPanelTitle 
   } = useOutletContext<any>();
+  const location = useLocation();
+  const isInBible = location.pathname.includes('/bible');
 
   // Data States
   const [folder, setFolder] = useState<Carpeta | null>(null);
@@ -300,20 +302,22 @@ const DimensionEditor: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[hsl(var(--background))] selection:bg-[hsl(var(--primary)/0.3)]">
-      <header className="relative z-40 py-8 px-10 border-b border-[hsl(var(--divider-border))] bg-[hsl(var(--background)/0.8)] flex flex-col items-center justify-center backdrop-blur-2xl">
-        <div className="flex flex-col items-center gap-4">
-          <div className="size-12 bg-[hsl(var(--primary)/0.1)] border border-[hsl(var(--primary)/0.2)] flex items-center justify-center text-[hsl(var(--primary))] shadow-[0_0_20px_hsl(var(--primary)/0.2)] mb-2">
-             <span className="material-symbols-outlined text-2xl">lan</span>
-          </div>
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-4 mb-2">
-              <h1 className="text-3xl font-black tracking-[-0.04em] text-[hsl(var(--foreground))] uppercase">{folder?.nombre}</h1>
-              <div className="px-4 py-1 bg-[hsl(var(--primary)/0.1)] border border-[hsl(var(--primary)/0.3)] text-[hsl(var(--primary))] text-[10px] font-black uppercase tracking-widest rounded-full">{t('timeline.multiverse_tag')}</div>
+      {!isInBible && (
+        <header className="relative z-40 py-8 px-10 border-b border-[hsl(var(--divider-border))] bg-[hsl(var(--background)/0.8)] flex flex-col items-center justify-center backdrop-blur-2xl">
+          <div className="flex flex-col items-center gap-4">
+            <div className="size-12 bg-[hsl(var(--primary)/0.1)] border border-[hsl(var(--primary)/0.2)] flex items-center justify-center text-[hsl(var(--primary))] shadow-[0_0_20px_hsl(var(--primary)/0.2)] mb-2">
+              <span className="material-symbols-outlined text-2xl">lan</span>
             </div>
-            <p className="text-[11px] font-black text-[hsl(var(--foreground)/0.3)] uppercase tracking-[0.4em] translate-x-[0.2em]">{t('timeline.multiverse')}</p>
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-4 mb-2">
+                <h1 className="text-3xl font-black tracking-[-0.04em] text-[hsl(var(--foreground))] uppercase">{folder?.nombre}</h1>
+                <div className="px-4 py-1 bg-[hsl(var(--primary)/0.1)] border border-[hsl(var(--primary)/0.3)] text-[hsl(var(--primary))] text-[10px] font-black uppercase tracking-widest rounded-full">{t('timeline.multiverse_tag')}</div>
+              </div>
+              <p className="text-[11px] font-black text-[hsl(var(--foreground)/0.3)] uppercase tracking-[0.4em] translate-x-[0.2em]">{t('timeline.multiverse')}</p>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       <main className="flex-1 overflow-auto custom-scrollbar relative bg-[radial-gradient(circle_at_50%_-20%,hsl(var(--primary)/0.05),transparent)]">
          <div className="relative z-10">
@@ -477,6 +481,46 @@ const DimensionEditor: React.FC = () => {
               </div>
               <div className="mt-10 pt-8 border-t border-[hsl(var(--divider-border))] text-right">
                  <button onClick={() => setIsImportModalOpen(false)} className="px-8 py-3 bg-[hsl(var(--foreground)/0.02)] text-[10px] font-black uppercase tracking-widest text-[hsl(var(--foreground)/0.3)]">{t('common.cancel')}</button>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {isEntityPickerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 backdrop-blur-xl bg-black/60">
+           <div className="w-full max-w-xl monolithic-panel p-10 bg-[hsl(var(--background))] border border-[hsl(var(--panel-border))] relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1 h-full bg-[hsl(var(--primary))]" />
+              <div className="flex items-center justify-between mb-8">
+                 <div>
+                    <h2 className="text-2xl font-black uppercase tracking-tighter text-[hsl(var(--foreground))]">{t('timeline.link_entity')}</h2>
+                    <p className="text-[10px] text-[hsl(var(--foreground)/0.3)] uppercase tracking-widest mt-2">Vincular personaje o lugar</p>
+                 </div>
+                 <button onClick={() => setIsEntityPickerOpen(false)} className="size-10 flex items-center justify-center bg-[hsl(var(--foreground)/0.05)] hover:bg-rose-500 hover:text-white transition-all">
+                    <span className="material-symbols-outlined">close</span>
+                 </button>
+              </div>
+              <div className="max-h-[450px] overflow-y-auto pr-4 space-y-3 custom-scrollbar">
+                 {projectEntities.map(ent => (
+                   <button 
+                     key={ent.id}
+                     onClick={() => { handleToggleLinkEntity(currentEventForLinking!, ent.id); setIsEntityPickerOpen(false); }}
+                     className="w-full p-5 bg-[hsl(var(--foreground)/0.02)] border border-[hsl(var(--divider-border))] hover:border-[hsl(var(--primary)/0.5)] flex items-center justify-between group transition-all hover:bg-[hsl(var(--primary)/0.03)]"
+                   >
+                     <div className="flex items-center gap-5">
+                        <div className="size-10 bg-[hsl(var(--foreground)/0.05)] flex items-center justify-center group-hover:text-[hsl(var(--primary))] transition-all">
+                           <span className="material-symbols-outlined">person</span>
+                        </div>
+                        <div className="text-left">
+                           <div className="text-[13px] font-black text-[hsl(var(--foreground))]">{ent.nombre}</div>
+                           <div className="text-[9px] text-[hsl(var(--foreground)/0.3)] uppercase tracking-widest font-bold">{ent.tipo}</div>
+                        </div>
+                     </div>
+                     <span className="material-symbols-outlined text-sm text-[hsl(var(--primary))] opacity-0 group-hover:opacity-100 transition-opacity">add_link</span>
+                   </button>
+                 ))}
+              </div>
+              <div className="mt-10 pt-8 border-t border-[hsl(var(--divider-border))] text-right">
+                 <button onClick={() => setIsEntityPickerOpen(false)} className="px-8 py-3 bg-[hsl(var(--foreground)/0.02)] text-[10px] font-black uppercase tracking-widest text-[hsl(var(--foreground)/0.3)]">{t('common.cancel')}</button>
               </div>
            </div>
         </div>

@@ -39,26 +39,37 @@ const WorldBibleLayout: React.FC = () => {
 
   // Determinar si estamos en la raíz o en profundidad
   const isRoot = useMemo(() => {
-    return location.pathname.endsWith('/bible') || location.pathname.endsWith('/bible/');
+    // Si la ruta termina exactamente en /bible o /bible/
+    const path = location.pathname.split('?')[0];
+    return path.endsWith('/bible') || path.endsWith('/bible/');
   }, [location.pathname]);
 
   // Obtener el título dinámico (Nombre de la carpeta o Biblia del Mundo)
   const dynamicTitle = useMemo(() => {
     if (isRoot) return "Biblia del Mundo";
     
-    // PRIORIDAD 1: Si estamos en una ENTIDAD
-    const entityMatch = location.pathname.match(/\/entity\/(\d+)/);
-    if (entityMatch) {
-       // Por ahora mostramos un genérico o buscamos en algún sitio si es posible
+    // PRIORIDAD 1: Si estamos en una DIMENSIÓN
+    if (location.pathname.includes('/dimension')) {
+       const folderMatch = location.pathname.match(/\/folder\/(\d+)/);
+       if (folderMatch) {
+         const id = Number(folderMatch[1]);
+         const folder = architectContext?.folders?.find(f => f.id === id);
+         return folder ? `Dimensión: ${folder.nombre}` : "Visor de Dimensiones";
+       }
+       return "Visor de Dimensiones";
+    }
+
+    // PRIORIDAD 2: Si estamos en una ENTIDAD
+    if (location.pathname.includes('/entity/')) {
        return "Ficha de Entidad";
     }
 
-    // PRIORIDAD 2: Si estamos en una CARPETA
+    // PRIORIDAD 3: Si estamos en una CARPETA
     const folderMatch = location.pathname.match(/\/folder\/(\d+)/);
     if (folderMatch) {
       const id = Number(folderMatch[1]);
       const folder = architectContext?.folders?.find(f => f.id === id);
-      return folder ? folder.nombre : "Explorador";
+      return folder ? folder.nombre : "Explorador de Archivos";
     }
 
     return "Biblia del Mundo";
