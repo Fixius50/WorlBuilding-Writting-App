@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useOutletContext, useNavigate } from 'react-router-dom';
-import { createPortal } from 'react-dom';
 import { entityService } from '@repositories/entityService';
-import { Entidad } from '@domain/models/database';
-import GlassPanel from '@atoms/GlassPanel';
+import { Entidad, Valor } from '@domain/models/database';
 import Avatar from '@atoms/Avatar';
-import Button from '@atoms/Button';
 import SecondaryTabs from '@molecules/SecondaryTabs';
 import MiniGraph from '../components/MiniGraph';
 import MiniTimeline from '../components/MiniTimeline';
+import DynamicAttributeForm from '../components/DynamicAttributeForm';
 import { notebookService } from '@repositories/notebookService';
 
 interface ProfileOutletContext {
@@ -18,14 +16,8 @@ interface ProfileOutletContext {
   setRightPanelTitle: (title: React.ReactNode) => void;
 }
 
-interface EntityWithExtra extends Omit<Entidad, 'valores'> {
-  valores?: {
-    valor: string | null;
-    plantilla: {
-      nombre: string;
-      tipo: string;
-    }
-  }[];
+interface EntityWithExtra extends Entidad {
+  valores?: Valor[];
   tags?: string;
   categoria?: string;
   carpeta?: {
@@ -94,7 +86,6 @@ const EntityProfile = () => {
   const loadMentions = async () => {
     if (!entity || !projectName) return;
     try {
-      // Intentar obtener el ID del proyecto si no lo tenemos (aunque suele venir en el contexto o entity)
       const mentionsData = await notebookService.getMentions(entity.project_id, entity.nombre);
       setMentions(mentionsData);
     } catch (err) {
@@ -149,16 +140,10 @@ const EntityProfile = () => {
   if (loading) return <div className="p-20 text-center animate-pulse text-foreground/50 h-full flex items-center justify-center font-black uppercase tracking-[0.4em] text-xs">Accediendo a la Cápsula...</div>;
   if (!entity) return <div className="p-20 text-center text-red-400">Error: Entidad no encontrada.</div>;
 
-  const attributes = (entity.valores || []).map((val) => ({
-    label: val.plantilla.nombre,
-    value: val.valor || '',
-    type: val.plantilla.tipo
-  })).filter((a) => ['number', 'text', 'short_text'].includes(a.type));
-
   const tabs = [
     { id: 'GENERAL', label: 'Esencia' },
     { id: 'INTELLIGENCE', label: 'Inteligencia de Campo' },
-    { id: 'RELACIONES', label: 'Hilos de Causalidad' },
+    { id: 'METADATA', label: 'Arquetipo' },
     { id: 'BACKLINKS', label: 'Apariciones' },
   ];
 
@@ -187,11 +172,6 @@ const EntityProfile = () => {
                 <span className="px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] bg-primary/10 text-primary border border-primary/30">
                   {entity.tipo || 'ENTIDAD'}
                 </span>
-                {entity.categoria && (
-                  <span className="px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] bg-purple-500/10 text-purple-400 border border-purple-500/30">
-                    {entity.categoria}
-                  </span>
-                )}
               </div>
               <p className="text-lg text-foreground/40 font-medium italic max-w-2xl mx-auto lg:mx-0 leading-relaxed">
                 "{entity.descripcion || "Existencia sin descripción vinculada aún."}"
@@ -204,17 +184,6 @@ const EntityProfile = () => {
                     Transmutar Archivo
                   </button>
                </Link>
-
-               {entity.tipo === 'DIMENSION' && (
-                  <button 
-                    onClick={() => navigate(`/local/${projectName}/bible/dimension/${entity.carpeta_id}`)}
-                    className="px-6 py-3 bg-orange-500/20 border border-orange-500/30 text-orange-400 text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-orange-500/30 transition-all active:scale-95 flex items-center gap-2"
-                  >
-                    <span className="material-symbols-outlined text-sm">lan</span>
-                    Ver Línea Temporal Paralela
-                  </button>
-               )}
-
                <button className="size-11 border border-foreground/10 hover:border-primary/50 text-foreground/40 hover:text-primary transition-all flex items-center justify-center">
                   <span className="material-symbols-outlined text-xl">share</span>
                </button>
@@ -235,27 +204,13 @@ const EntityProfile = () => {
 
         <main className="flex-1 overflow-y-auto custom-scrollbar p-8 lg:p-12">
           <div className="max-w-7xl mx-auto">
-                {activeTab === 'GENERAL' && (
+            {activeTab === 'GENERAL' && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 animate-in slide-in-from-bottom-4 duration-500">
-                
-                {/* Visuals: Graph & Meta */}
                 <div className="lg:col-span-12 space-y-12">
                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                       <MiniGraph entityId={Number(entityId)} onNavigate={handleEntityNavigate} />
-                      
-                      <div className="flex flex-col gap-8">
-                         <div className="grid grid-cols-2 gap-4">
-                            {attributes.slice(0, 4).map((attr, i) => (
-                              <div key={i} className="p-6 bg-foreground/[0.03] border border-foreground/5">
-                                 <div className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-1">{attr.label}</div>
-                                 <div className="text-xl font-bold text-foreground">
-                                    {attr.value}
-                                    {!isNaN(parseFloat(attr.value)) && <span className="text-[10px] text-foreground/20 ml-1">pts</span>}
-                                 </div>
-                              </div>
-                            ))}
-                         </div>
-                         <div className="flex-1 p-8 border border-dashed border-foreground/10 flex flex-col items-center justify-center text-center opacity-40">
+                      <div className="space-y-6">
+                         <div className="p-8 border border-dashed border-foreground/10 flex flex-col items-center justify-center text-center opacity-40 h-full">
                             <span className="material-symbols-outlined text-4xl mb-3">auto_awesome</span>
                             <span className="text-[10px] font-black uppercase tracking-widest leading-relaxed max-w-[200px]">
                                 Nivel de Presencia en el Mundo: Elevado
@@ -264,8 +219,6 @@ const EntityProfile = () => {
                       </div>
                    </div>
                 </div>
-
-                {/* Vertical Timeline */}
                 <div className="lg:col-span-12">
                    <div className="pb-8 mb-8 border-b border-foreground/5">
                         <h3 className="text-xs font-black uppercase tracking-[0.3em] text-foreground/60 flex items-center gap-3">
@@ -280,12 +233,10 @@ const EntityProfile = () => {
 
             {activeTab === 'INTELLIGENCE' && (
               <div className="flex flex-col lg:flex-row gap-8 h-[calc(100vh-350px)] animate-in fade-in zoom-in-95 duration-500">
-                {/* Split View: Graph Left, Timeline Right */}
                 <div className="flex-1 min-h-[400px] border border-foreground/5 bg-foreground/[0.01] overflow-hidden relative group">
                   <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-primary/10 border border-primary/20 text-[9px] font-black uppercase tracking-widest text-primary">Mapa de Relaciones</div>
                   <MiniGraph entityId={Number(entityId)} onNavigate={handleEntityNavigate} />
                 </div>
-                
                 <div className="w-full lg:w-[450px] border border-foreground/5 bg-foreground/[0.01] flex flex-col overflow-hidden relative">
                   <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-purple-500/10 border border-purple-500/20 text-[9px] font-black uppercase tracking-widest text-purple-400">Secuencia Temporal</div>
                   <div className="flex-1 overflow-y-auto custom-scrollbar p-6 pt-16">
@@ -295,11 +246,9 @@ const EntityProfile = () => {
               </div>
             )}
 
-            {activeTab === 'RELACIONES' && (
-              <div className="animate-in fade-in duration-500 py-20 text-center flex flex-col items-center justify-center opacity-30">
-                 <span className="material-symbols-outlined text-6xl mb-4">account_tree</span>
-                 <p className="font-serif italic text-lg italic">"En la red de almas, ningún ser es un desierto."</p>
-                 <span className="text-[10px] font-black uppercase tracking-widest mt-2">(Módulo de Relaciones Completo en Desarrollo)</span>
+            {activeTab === 'METADATA' && (
+              <div className="max-w-4xl animate-in fade-in duration-500">
+                 <DynamicAttributeForm entity={entity} onUpdate={loadEntity} />
               </div>
             )}
 
@@ -308,7 +257,6 @@ const EntityProfile = () => {
                  <div className="pb-4 border-b border-primary/20">
                     <h3 className="text-xs font-black uppercase tracking-widest text-primary">Referencias en la Obra</h3>
                  </div>
-                 
                  {mentions.length > 0 ? (
                     mentions.map((mention, i) => (
                       <div 
@@ -320,7 +268,6 @@ const EntityProfile = () => {
                             <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-tighter">
                               {mention.cuaderno_titulo} — {mention.hoja_titulo}
                             </span>
-                            <span className="text-[9px] text-primary font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Ir al manuscrito →</span>
                          </div>
                          <p className="text-sm text-foreground/60 leading-relaxed italic">
                             Mencionado en la sección "{mention.hoja_titulo}".
@@ -335,7 +282,6 @@ const EntityProfile = () => {
                  )}
               </div>
             )}
-
           </div>
         </main>
       </div>

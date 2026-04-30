@@ -24,7 +24,11 @@
         "notes": "Notas Rápidas",
         "explorer": "Explorador",
         "error": "Error",
-        "ok": "Aceptar"
+        "ok": "Aceptar",
+        "name": "Nombre",
+        "type": "Tipo",
+        "folder": "Carpeta",
+        "created_at": "Fecha de Creación"
     },
     "nav": {
         "dashboard": "Panel de Control",

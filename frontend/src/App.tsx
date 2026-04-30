@@ -10,7 +10,7 @@ import WorkspaceSelector from '@presentation/pages/WorkspaceSelector';
 import ProjectView from '@presentation/pages/ProjectView';
 
 // Features (via barrel files)
-import { Settings } from '@features/Settings';
+import { Settings, ArchetypeManager } from '@features/Settings';
 import { Dashboard } from '@features/Dashboard';
 import { EntityRouter, EntityBuilder, FolderView } from '@features/Entities';
 import { GeneralGraphView } from '@features/Graph';
@@ -72,6 +72,7 @@ const App = () => {
               <Route path="/local/:projectName" element={<ArchitectLayout />}>
                 <Route index element={<ProjectView />} />
                 <Route path="settings" element={<Settings />} />
+                <Route path="workshop" element={<ArchetypeManager />} />
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="entities/:type/:entityId" element={<EntityRouter />} />
 

@@ -197,6 +197,9 @@ const FolderView: React.FC = () => {
               <button onClick={(e) => { e.stopPropagation(); handleCreateSimpleFolder(folder.id, 'TIMELINE'); setCreationMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-[11px] font-bold hover:bg-orange-500/10 text-orange-400/60 hover:text-orange-400 border-b border-white/5">
                 <span className="material-symbols-outlined text-base">lan</span> {t('bible.new_timeline')}
               </button>
+              <button onClick={(e) => { e.stopPropagation(); navigate(`/local/${projectName}/map-editor/create/${folder.id}`); setCreationMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-[11px] font-bold hover:bg-emerald-500/10 text-emerald-400/60 hover:text-emerald-400 border-b border-white/5">
+                <span className="material-symbols-outlined text-base">map</span> Nuevo Mapa
+              </button>
               <button onClick={(e) => { e.stopPropagation(); navigate(`/local/${projectName}/bible/folder/${folder.id}/entity/new/entidadindividual`); setCreationMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-[11px] font-bold hover:bg-indigo-500/10 text-indigo-400/60 hover:text-indigo-400">
                 <span className="material-symbols-outlined text-base">person_add</span> Entidad
               </button>
@@ -220,12 +223,16 @@ const FolderView: React.FC = () => {
             key={`e-${ent.id}`}
             item={ent}
             type="entity"
-            linkTo={`/local/${projectName}/bible/folder/${folder.id}/entity/${ent.id}`}
+            linkTo={ent.tipo === 'MAP' 
+              ? `/local/${projectName}/map-editor/edit/${ent.id}`
+              : `/local/${projectName}/bible/folder/${folder.id}/entity/${ent.id}`
+            }
             onDelete={() => handleDeleteEntity(ent.id, folder.id)}
             onRename={() => handleRenameEntity(ent)}
             onMove={() => { setItemToMove({ item: ent, type: 'entity' }); setMoveModalOpen(true); }}
           />
         ))}
+
       </div>
 
       <MoveModal

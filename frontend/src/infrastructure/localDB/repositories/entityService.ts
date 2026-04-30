@@ -1,5 +1,5 @@
 import { sql } from '../client';
-import { Entidad } from '@domain/models/database';
+import { Entidad, Valor } from '@domain/models/database';
 
 export const entityService = {
   async getAllByProject(projectId: number): Promise<Entidad[]> {
@@ -80,13 +80,15 @@ export const entityService = {
     return await sql<Entidad>`SELECT * FROM entidades WHERE project_id = ${projectId} AND tipo = ${type} AND borrado = 0 ORDER BY nombre ASC`;
   },
 
-  async getValues(entityId: number): Promise<any[]> {
-    const rows: any[] = await sql`
+  async getValues(entityId: number): Promise<Valor[]> {
+    const rows = await sql<any>`
       SELECT 
         v.*, 
         p.id as p_id, p.nombre as p_nombre, p.tipo as p_tipo, 
         p.valor_defecto as p_valor_defecto, p.metadata as p_metadata, 
-        p.es_obligatorio as p_es_obligatorio, p.project_id as p_project_id
+        p.es_obligatorio as p_es_obligatorio, p.project_id as p_project_id,
+        p.aplica_a_todo as p_aplica_a_todo, p.tipo_objetivo as p_tipo_objetivo,
+        p.categoria as p_categoria, p.orden as p_orden, p.created_at as p_created_at
       FROM valores v
       JOIN plantillas p ON v.plantilla_id = p.id
       WHERE v.entidad_id = ${entityId}
@@ -104,16 +106,12 @@ export const entityService = {
         valor_defecto: r.p_valor_defecto,
         metadata: r.p_metadata,
         es_obligatorio: r.p_es_obligatorio,
-        project_id: r.p_project_id
-      },
-      attribute: {
-        id: r.p_id,
-        nombre: r.p_nombre,
-        tipo: r.p_tipo,
-        valor_defecto: r.p_valor_defecto,
-        metadata: r.p_metadata,
-        es_obligatorio: r.p_es_obligatorio,
-        project_id: r.p_project_id
+        project_id: r.p_project_id,
+        aplica_a_todo: r.p_aplica_a_todo,
+        tipo_objetivo: r.p_tipo_objetivo,
+        categoria: r.p_categoria,
+        orden: r.p_orden,
+        created_at: r.p_created_at
       }
     }));
   },

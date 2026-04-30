@@ -65,6 +65,10 @@ export interface Plantilla {
   metadata: string | null; // JSON string for options/config
   es_obligatorio: boolean | number;
   project_id: number;
+  aplica_a_todo: boolean | number;
+  tipo_objetivo: string | null;
+  categoria: string | null;
+  orden: number;
   created_at: string;
 }
 

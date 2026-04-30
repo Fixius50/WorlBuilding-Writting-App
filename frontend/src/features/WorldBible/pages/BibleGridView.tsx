@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { folderService } from '@repositories/folderService';
-import { entityService } from '@repositories/entityService';
-import { Carpeta, Entidad } from '@domain/models/database';
+import React, { useState } from 'react';
+// import { folderService } from '@repositories/folderService';
+// import { entityService } from '@repositories/entityService';
+import { Carpeta } from '@domain/models/database';
 import { useLanguage } from '@context/LanguageContext';
-import { useOutletContext, Link, useParams, useNavigate } from 'react-router-dom';
+import { useOutletContext, useParams, useNavigate } from 'react-router-dom';
 import BibleCard from '../components/BibleCard';
 
 interface BibleContext {
@@ -42,18 +42,7 @@ const BibleGridView = () => {
  if (folders === undefined) return <div className="p-20 text-center animate-pulse text-text-muted">{t('common.loading')}</div>;
 
  return (
- <div className="flex-1 p-8 max-w-[1600px] mx-auto w-full h-full overflow-y-auto custom-scrollbar">
- <header className="mb-12 flex flex-col items-center justify-center text-center">
- <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-primary italic mb-4">
- <span className="material-symbols-outlined text-sm">auto_stories</span>
- {t('nav.bible')}
- </div>
- <h1 className="text-5xl font-black text-foreground tracking-tighter mb-4">Biblia del Mundo</h1>
- <p className="text-foreground/40 max-w-lg text-xs leading-relaxed italic">
- {t('bible.central_archive')}
- </p>
- </header>
-
+ <div className="flex-1 p-8 pt-0 max-w-[1600px] mx-auto w-full h-full overflow-y-auto custom-scrollbar">
 
  {/* Content Grid */}
  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">

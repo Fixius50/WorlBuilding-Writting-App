@@ -64,6 +64,12 @@
   - [x] Sincronización persistente de la base de datos `.sqlite` al disco físico.
 - [x] **Paginación EntityPicker — Completado ✅**
 - [x] **Integración de Estadísticas en ControlPanel — Completado ✅**
+- [x] **Motor de Entidades Multiversal (EAV) — Completado ✅**
+  - [x] Implementación de base de datos dinámica (EAV) para atributos ilimitados.
+  - [x] **El Taller (ArchetypeManager)**: Interfaz para definir leyes del mundo y arquetipos dinámicos.
+  - [x] **Gestor Masivo (BibleTableView)**: Interfaz tipo hoja de cálculo con @tanstack/react-table.
+  - [x] **Ráfaga de Creación**: Fila de entrada rápida para poblar el mundo a alta velocidad.
+  - [x] **Inyección Dinámica**: Fórmularios inteligentes en la ficha de entidad que responden a los arquetipos.
 - [ ] Optimización de rendimiento en consultas relacionales complejas.
 
 ## FASE 5: EL ECOSISTEMA CONECTADO Y ESPECIALIZACIÓN PROFESIONAL (Futuro 🚀)

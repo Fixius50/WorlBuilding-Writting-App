@@ -136,6 +136,7 @@ const DimensionEditor: React.FC = () => {
       setRightPanelContent(
         <EventInspector 
           eventId={event.id} 
+          projectId={folder?.project_id}
           onUpdate={loadData} 
           onClose={() => setRightOpen(false)}
           onNavigateToEntity={(id, fId) => navigate(`${baseUrl}/bible/folder/${fId}/entity/${id}`)}
@@ -452,46 +453,6 @@ const DimensionEditor: React.FC = () => {
         type="danger"
       />
 
-      {isEntityPickerOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 backdrop-blur-xl bg-black/60">
-           <div className="w-full max-w-xl monolithic-panel p-10 bg-[hsl(var(--background))] border border-[hsl(var(--panel-border))] relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1 h-full bg-[hsl(var(--primary))]" />
-              <div className="flex items-center justify-between mb-8">
-                 <div>
-                    <h2 className="text-2xl font-black uppercase tracking-tighter text-[hsl(var(--foreground))]">{t('timeline.link_entity')}</h2>
-                    <p className="text-[10px] text-[hsl(var(--foreground)/0.3)] uppercase tracking-widest mt-2">Vincular personaje o lugar</p>
-                 </div>
-                 <button onClick={() => setIsEntityPickerOpen(false)} className="size-10 flex items-center justify-center bg-[hsl(var(--foreground)/0.05)] hover:bg-rose-500 hover:text-white transition-all">
-                    <span className="material-symbols-outlined">close</span>
-                 </button>
-              </div>
-              <div className="max-h-[450px] overflow-y-auto pr-4 space-y-3 custom-scrollbar">
-                 {projectEntities.map(ent => (
-                   <button 
-                     key={ent.id}
-                     onClick={() => { handleToggleLinkEntity(currentEventForLinking!, ent.id); setIsEntityPickerOpen(false); }}
-                     className="w-full p-5 bg-[hsl(var(--foreground)/0.02)] border border-[hsl(var(--divider-border))] hover:border-[hsl(var(--primary)/0.5)] flex items-center justify-between group transition-all hover:bg-[hsl(var(--primary)/0.03)]"
-                   >
-                     <div className="flex items-center gap-5">
-                        <div className="size-10 bg-[hsl(var(--foreground)/0.05)] flex items-center justify-center group-hover:text-[hsl(var(--primary))] transition-all">
-                           <span className="material-symbols-outlined">person</span>
-                        </div>
-                        <div className="text-left">
-                           <div className="text-[13px] font-black text-[hsl(var(--foreground))]">{ent.nombre}</div>
-                           <div className="text-[9px] text-[hsl(var(--foreground)/0.3)] uppercase tracking-widest font-bold">{ent.tipo}</div>
-                        </div>
-                     </div>
-                     <span className="material-symbols-outlined text-sm text-[hsl(var(--primary))] opacity-0 group-hover:opacity-100 transition-opacity">add_link</span>
-                   </button>
-                 ))}
-              </div>
-              <div className="mt-10 pt-8 border-t border-[hsl(var(--divider-border))] text-right">
-                 <button onClick={() => setIsEntityPickerOpen(false)} className="px-8 py-3 bg-[hsl(var(--foreground)/0.02)] text-[10px] font-black uppercase tracking-widest text-[hsl(var(--foreground)/0.3)]">{t('common.cancel')}</button>
-              </div>
-           </div>
-        </div>
-      )}
-
       {isImportModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-2xl bg-black/80">
            <div className="w-full max-w-lg monolithic-panel p-12 bg-[hsl(var(--background))] border border-[hsl(var(--panel-border))] relative overflow-hidden">
@@ -516,43 +477,6 @@ const DimensionEditor: React.FC = () => {
               </div>
               <div className="mt-10 pt-8 border-t border-[hsl(var(--divider-border))] text-right">
                  <button onClick={() => setIsImportModalOpen(false)} className="px-8 py-3 bg-[hsl(var(--foreground)/0.02)] text-[10px] font-black uppercase tracking-widest text-[hsl(var(--foreground)/0.3)]">{t('common.cancel')}</button>
-              </div>
-           </div>
-        </div>
-      )}
-
-      {editingId !== null && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-2xl bg-black/80">
-           <div className="w-full max-w-2xl monolithic-panel p-12 bg-[hsl(var(--background))] border border-[hsl(var(--panel-border))] relative overflow-hidden">
-              <h2 className="text-3xl font-black uppercase tracking-tighter text-[hsl(var(--foreground))] mb-8">{t('timeline.edit_event')}</h2>
-              <div className="space-y-8">
-                 <div className="grid grid-cols-3 gap-6">
-                    <div className="col-span-2 space-y-3">
-                       <label className="text-[10px] font-black uppercase tracking-widest text-[hsl(var(--foreground)/0.4)]">{t('timeline.title')}</label>
-                       <input 
-                         type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)}
-                         className="w-full bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--panel-border))] p-4 text-sm font-bold focus:border-[hsl(var(--primary))] outline-none"
-                       />
-                    </div>
-                    <div className="space-y-3">
-                       <label className="text-[10px] font-black uppercase tracking-widest text-[hsl(var(--foreground)/0.4)]">{t('timeline.date')}</label>
-                       <input 
-                         type="text" value={editDate} onChange={(e) => setEditDate(e.target.value)}
-                         className="w-full bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--panel-border))] p-4 text-sm font-bold focus:border-[hsl(var(--primary))] outline-none text-center"
-                       />
-                    </div>
-                 </div>
-                 <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-[hsl(var(--foreground)/0.4)]">{t('timeline.description')}</label>
-                    <textarea 
-                      value={editDesc} onChange={(e) => setEditDesc(e.target.value)} rows={5}
-                      className="w-full bg-[hsl(var(--foreground)/0.03)] border border-[hsl(var(--panel-border))] p-5 text-sm font-medium focus:border-[hsl(var(--primary))] outline-none resize-none custom-scrollbar italic"
-                    />
-                 </div>
-                 <div className="grid grid-cols-2 gap-4 pt-4">
-                    <button onClick={handleCancelEdit} className="px-6 py-4 bg-transparent border border-[hsl(var(--panel-border))] text-[10px] font-black uppercase tracking-widest text-[hsl(var(--foreground)/0.3)]">{t('common.cancel')}</button>
-                    <button onClick={handleSaveEdit} className="px-6 py-4 bg-[hsl(var(--primary))] text-white text-[10px] font-black uppercase tracking-widest">{t('common.save')}</button>
-                 </div>
               </div>
            </div>
         </div>

@@ -156,3 +156,25 @@ npm run build
 
 Genera los archivos en `dist/`. El ejecutable nativo se empaqueta con el proceso descrito en `Guia_Empaquetado.md`.
 
+---
+
+## 11. Motor de Entidades Multiversal (EAV) — Patrones Clave
+
+Implementado en mayo de 2026 para permitir una flexibilidad total en la definición de atributos.
+
+### A) El Taller (ArchetypeManager)
+- Permite crear `Plantilla` (atributos dinámicos).
+- **Alcance**: Los atributos pueden ser **Globales** (aparecen en todas las entidades) o **Específicos** (solo para un tipo, ej: `PERSONAJE`).
+- **Ubicación**: Accesible en `/workshop`.
+
+### B) Fórmularios Dinámicos (DynamicAttributeForm)
+- Se inyecta en la pestaña `METADATA` de `EntityProfile`.
+- Carga las plantillas aplicables a la entidad y sus valores guardados.
+- **Persistencia**: Los valores se guardan en la tabla `valores`. El guardado es automático (onChange).
+
+### C) Gestor Masivo (BibleTableView)
+- Utiliza `@tanstack/react-table`.
+- **Ráfaga de Creación**: Fila superior para crear múltiples entidades rápidamente.
+- **Scroll Horizontal**: La tabla debe estar envuelta en un contenedor con `overflow-x-auto` para respetar la barra lateral y no romper el layout.
+
+

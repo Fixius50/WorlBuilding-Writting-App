@@ -248,10 +248,12 @@ export async function initializeDatabase() {
       )
     `;
 
-    // MIGRACIÓN PARA CORREGIR ELIMINACIÓN EN CASCADA (Cleanup de entidades huérfanas)
-    // Nota: SQLite no permite alterar FKs fácilmente, así que limpiamos manualmente por ahora
-    await sql`DELETE FROM entidades WHERE carpeta_id IS NULL AND project_id IS NOT NULL`.catch(() => {});
-    
+    // MIGRACIONES PARA MOTOR EAV
+    await sql`ALTER TABLE plantillas ADD COLUMN aplica_a_todo INTEGER DEFAULT 1`.catch(() => {});
+    await sql`ALTER TABLE plantillas ADD COLUMN tipo_objetivo TEXT`.catch(() => {});
+    await sql`ALTER TABLE plantillas ADD COLUMN categoria TEXT`.catch(() => {});
+    await sql`ALTER TABLE plantillas ADD COLUMN orden INTEGER DEFAULT 0`.catch(() => {});
+
     console.log('Migrations completed');
   } catch (err) {
     console.warn('Migration warning (safe if columns exist):', err);
