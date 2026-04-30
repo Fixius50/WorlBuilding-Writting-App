@@ -145,41 +145,26 @@ const FolderView: React.FC = () => {
 
   return (
     <div className="flex-1 p-8 max-w-[1600px] mx-auto w-full h-full overflow-y-auto custom-scrollbar">
-      <header className="mb-10 flex flex-col gap-4">
-        <Breadcrumbs path={path} currentFolder={folder} />
-        <div className="flex items-center gap-6">
-          <div className={`size-16 ${typeInfo.bgColor} border border-white/10 flex items-center justify-center shadow-2xl`}>
-            <span className={`material-symbols-outlined text-3xl ${typeInfo.color}`}>{typeInfo.icon}</span>
+      {portalTarget && createPortal(
+        <div className="p-6 space-y-6 animate-in fade-in duration-500">
+          <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Acciones Rápidas</h3>
+          <div className="grid grid-cols-1 gap-2">
+            <button onClick={() => navigate(`/local/${projectName}/bible/folder/${folder.id}/entity/new/entidadindividual`)} className="flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-indigo-500/10 border border-white/5 hover:border-indigo-500/30 transition-all group">
+              <span className="material-symbols-outlined text-indigo-400 opacity-40 group-hover:opacity-100">person_add</span>
+              <span className="text-[11px] font-bold text-white/60 group-hover:text-white">Nueva Entidad</span>
+            </button>
+            <button onClick={() => handleCreateSimpleFolder(folder.id, 'TIMELINE')} className="flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-orange-500/10 border border-white/5 hover:border-orange-500/30 transition-all group">
+              <span className="material-symbols-outlined text-orange-400 opacity-40 group-hover:opacity-100">lan</span>
+              <span className="text-[11px] font-bold text-white/60 group-hover:text-white">{t('bible.new_timeline')}</span>
+            </button>
+            <button onClick={() => handleCreateSimpleFolder(folder.id, 'FOLDER')} className="flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/5 transition-all group">
+              <span className="material-symbols-outlined text-white/40 group-hover:text-white">create_new_folder</span>
+              <span className="text-[11px] font-bold text-white/60 group-hover:text-white">Nueva Carpeta</span>
+            </button>
           </div>
-          <div>
-            <span className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-widest border border-white/20 ${typeInfo.bgColor} ${typeInfo.color}`}>
-              {typeInfo.label}
-            </span>
-            <h1 className="text-4xl font-black text-white tracking-tighter mt-1">{folder.nombre}</h1>
-          </div>
-        </div>
-
-        {portalTarget && createPortal(
-          <div className="p-6 space-y-6 animate-in fade-in duration-500">
-            <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Acciones Rápidas</h3>
-            <div className="grid grid-cols-1 gap-2">
-              <button onClick={() => navigate(`/local/${projectName}/bible/folder/${folder.id}/entity/new/entidadindividual`)} className="flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-indigo-500/10 border border-white/5 hover:border-indigo-500/30 transition-all group">
-                <span className="material-symbols-outlined text-indigo-400 opacity-40 group-hover:opacity-100">person_add</span>
-                <span className="text-[11px] font-bold text-white/60 group-hover:text-white">Nueva Entidad</span>
-              </button>
-              <button onClick={() => handleCreateSimpleFolder(folder.id, 'TIMELINE')} className="flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-orange-500/10 border border-white/5 hover:border-orange-500/30 transition-all group">
-                <span className="material-symbols-outlined text-orange-400 opacity-40 group-hover:opacity-100">lan</span>
-                <span className="text-[11px] font-bold text-white/60 group-hover:text-white">{t('bible.new_timeline')}</span>
-              </button>
-              <button onClick={() => handleCreateSimpleFolder(folder.id, 'FOLDER')} className="flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/5 transition-all group">
-                <span className="material-symbols-outlined text-white/40 group-hover:text-white">create_new_folder</span>
-                <span className="text-[11px] font-bold text-white/60 group-hover:text-white">Nueva Carpeta</span>
-              </button>
-            </div>
-          </div>,
-          portalTarget
-        )}
-      </header>
+        </div>,
+        portalTarget
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         {/* Creation Card */}

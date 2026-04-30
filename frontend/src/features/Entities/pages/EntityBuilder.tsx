@@ -122,7 +122,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
     const init = async () => {
       setLoading(true);
       try {
-        const templates = await templateService.getByProject(projectId || 1); 
+        const templates = await templateService.getAll(projectId || 1); 
         setAvailableTemplatesLocal(templates);
         setAvailableTemplates(templates);
 
@@ -145,7 +145,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
             const vals = await entityService.getValues(data.id);
             setFields(vals.map(v => ({
               id: v.id,
-              attribute: v.attribute || { id: v.plantilla_id, nombre: 'Unknown', tipo: 'text' } as Plantilla,
+              attribute: v.plantilla || { id: v.plantilla_id, nombre: 'Unknown', tipo: 'text' } as Plantilla,
               value: v.valor || '',
               isTemp: false
             })));
@@ -180,7 +180,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
 
   const refreshTemplates = async () => {
     try {
-      const templates = await templateService.getByProject(projectId || 1);
+      const templates = await templateService.getAll(projectId || 1);
       setAvailableTemplatesLocal(templates);
       setAvailableTemplates(templates);
     } catch (err) {
@@ -230,7 +230,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
         const freshValues = await entityService.getValues(savedEntity.id);
         setFields(freshValues.map(v => ({
           id: v.id,
-          attribute: v.attribute,
+          attribute: v.plantilla || { id: v.plantilla_id, nombre: 'Unknown', tipo: 'text' } as Plantilla,
           value: v.valor || '',
           isTemp: false
         })));
@@ -316,50 +316,54 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
 
   const extras = getExtra();
 
+  const isInBible = location.pathname.includes('/bible');
+
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden relative">
       <div className="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
-        {/* ENCABEZADO DE ENTIDAD - PREMIUM GLASS */}
-        <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-foreground/10 px-[1.5rem] lg:px-[3rem] py-[1rem] flex flex-col items-center gap-0">
-          
-          {/* Breadcrumbs Row */}
-          <div className="w-full max-w-7xl">
-            <Breadcrumbs path={path} />
-          </div>
+        {/* ENCABEZADO DE ENTIDAD - SOLO SI NO ESTAMOS EN LA BIBLIA */}
+        {!isInBible && (
+          <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-foreground/10 px-[1.5rem] lg:px-[3rem] py-[1rem] flex flex-col items-center gap-0">
+            
+            {/* Breadcrumbs Row */}
+            <div className="w-full max-w-7xl">
+              <Breadcrumbs path={path} />
+            </div>
 
-          {/* Fila 1: Logo + Nombre (Más espaciosa) */}
-          <div className="flex items-center gap-[1.25rem] py-[1rem] w-full justify-center">
-            <Avatar 
-              url={extras.iconUrl}
-              name={entity.nombre || 'Nuevo Ente'} 
-              size="md" 
-              className="ring-1 ring-primary/20 ring-offset-4 ring-offset-background shadow-xl" 
-            />
-            <h2 className="text-[1.5rem] font-black text-foreground tracking-[-0.02em] uppercase">
-              {entity.nombre || 'Nuevo Ente'}
-            </h2>
-          </div>
+            {/* Fila 1: Logo + Nombre (Más espaciosa) */}
+            <div className="flex items-center gap-[1.25rem] py-[1rem] w-full justify-center">
+              <Avatar 
+                url={extras.iconUrl}
+                name={entity.nombre || 'Nuevo Ente'} 
+                size="md" 
+                className="ring-1 ring-primary/20 ring-offset-4 ring-offset-background shadow-xl" 
+              />
+              <h2 className="text-[1.5rem] font-black text-foreground tracking-[-0.02em] uppercase">
+                {entity.nombre || 'Nuevo Ente'}
+              </h2>
+            </div>
 
-          {/* Fila 2: Controles de Acción (Más compacta) */}
-          <div className="flex items-center justify-center gap-[2rem] w-full py-[0.75rem] border-t border-foreground/5 bg-foreground/[0.01]">
-            <button 
-              onClick={() => navigate(-1)} 
-              className="flex items-center gap-2 px-[1rem] py-[0.4rem] text-[0.625rem] font-black uppercase tracking-[0.2em] text-foreground/40 hover:text-primary transition-all group"
-            >
-              <span className="material-symbols-outlined text-[0.875rem]">arrow_back</span>
-              Volver
-            </button>
+            {/* Fila 2: Controles de Acción (Más compacta) */}
+            <div className="flex items-center justify-center gap-[2rem] w-full py-[0.75rem] border-t border-foreground/5 bg-foreground/[0.01]">
+              <button 
+                onClick={() => navigate(-1)} 
+                className="flex items-center gap-2 px-[1rem] py-[0.4rem] text-[0.625rem] font-black uppercase tracking-[0.2em] text-foreground/40 hover:text-primary transition-all group"
+              >
+                <span className="material-symbols-outlined text-[0.875rem]">arrow_back</span>
+                Volver
+              </button>
 
-            <button 
-              onClick={() => handleSave(true)} 
-              disabled={saving}
-              className={`flex items-center gap-[0.5rem] px-[2rem] py-[0.6rem] rounded-none font-black text-[0.625rem] uppercase tracking-[0.2em] transition-all shadow-lg ${saving ? 'bg-primary/20 text-primary cursor-wait' : 'bg-primary hover:bg-primary/90 text-white hover:scale-105 active:scale-95 shadow-primary/20'}`}
-             >
-               <span className="material-symbols-outlined text-[1rem]">save</span>
-               {saving ? 'Guardando...' : 'Guardar Cambios'}
-             </button>
+              <button 
+                onClick={() => handleSave(true)} 
+                disabled={saving}
+                className={`flex items-center gap-[0.5rem] px-[2rem] py-[0.6rem] rounded-none font-black text-[0.625rem] uppercase tracking-[0.2em] transition-all shadow-lg ${saving ? 'bg-primary/20 text-primary cursor-wait' : 'bg-primary hover:bg-primary/90 text-white hover:scale-105 active:scale-95 shadow-primary/20'}`}
+              >
+                <span className="material-symbols-outlined text-[1rem]">save</span>
+                {saving ? 'Guardando...' : 'Guardar Cambios'}
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Sidebar Portal */}
         {portalTarget && createPortal(

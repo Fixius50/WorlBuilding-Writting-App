@@ -1,11 +1,7 @@
 import React, { useState, useMemo } from 'react';
-// import { folderService } from '@repositories/folderService';
-// import { entityService } from '@repositories/entityService';
 import { Carpeta } from '@domain/models/database';
-// import GlassPanel from '@atoms/GlassPanel';
-// import Button from '@atoms/Button';
 import { useLanguage } from '@context/LanguageContext';
-import { Outlet, useNavigate, useOutletContext } from 'react-router-dom';
+import { Outlet, useNavigate, useOutletContext, useLocation, useParams } from 'react-router-dom';
 import BibleTableView from '../components/BibleTableView';
 import CreateNodeModal from '../components/CreateNodeModal';
 import { FolderType } from '@domain/models/database';
@@ -30,6 +26,8 @@ interface ArchitectContext {
 
 const WorldBibleLayout: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { projectName } = useParams();
   const { t } = useLanguage();
   
   // Consumir el contexto centralizado del ArchitectLayout
@@ -38,6 +36,33 @@ const WorldBibleLayout: React.FC = () => {
   const [viewMode, setViewMode] = useState<'folders' | 'table'>('folders');
   const [creationModalOpen, setCreationModalOpen] = useState(false);
   const [targetParent, setTargetParent] = useState<Carpeta | null>(null);
+
+  // Determinar si estamos en la raíz o en profundidad
+  const isRoot = useMemo(() => {
+    return location.pathname.endsWith('/bible') || location.pathname.endsWith('/bible/');
+  }, [location.pathname]);
+
+  // Obtener el título dinámico (Nombre de la carpeta o Biblia del Mundo)
+  const dynamicTitle = useMemo(() => {
+    if (isRoot) return "Biblia del Mundo";
+    
+    // PRIORIDAD 1: Si estamos en una ENTIDAD
+    const entityMatch = location.pathname.match(/\/entity\/(\d+)/);
+    if (entityMatch) {
+       // Por ahora mostramos un genérico o buscamos en algún sitio si es posible
+       return "Ficha de Entidad";
+    }
+
+    // PRIORIDAD 2: Si estamos en una CARPETA
+    const folderMatch = location.pathname.match(/\/folder\/(\d+)/);
+    if (folderMatch) {
+      const id = Number(folderMatch[1]);
+      const folder = architectContext?.folders?.find(f => f.id === id);
+      return folder ? folder.nombre : "Explorador";
+    }
+
+    return "Biblia del Mundo";
+  }, [isRoot, location.pathname, architectContext?.folders]);
 
   // Filtrar carpetas raíz para la vista Grid
   const rootFolders = useMemo(() => {
@@ -64,12 +89,14 @@ const WorldBibleLayout: React.FC = () => {
       <main className="flex-1 overflow-y-auto custom-scrollbar relative bg-gradient-to-br from-background-dark to-surface-dark/20 text-foreground flex flex-col">
         
         {/* Encabezado Unificado Centrado */}
-        <header className="pt-12 pb-8 flex flex-col items-center justify-center text-center px-8 z-[100] shrink-0">
+        <header className="pt-12 pb-8 flex flex-col items-center justify-center text-center px-8 z-[100] shrink-0 animate-in fade-in slide-in-from-top-4 duration-700">
           <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-primary italic mb-4">
             <span className="material-symbols-outlined text-sm">auto_stories</span>
             {t('nav.bible')}
           </div>
-          <h1 className="text-5xl font-black text-foreground tracking-tighter mb-6">Biblia del Mundo</h1>
+          <h1 className="text-5xl font-black text-foreground tracking-tighter mb-6 drop-shadow-2xl">
+            {dynamicTitle}
+          </h1>
           
           <div className="w-full max-w-xl space-y-6">
             {/* Buscador Centrado */}
@@ -83,31 +110,44 @@ const WorldBibleLayout: React.FC = () => {
               />
             </div>
 
-            {/* Switch de Vista Centrado */}
-            <div className="flex items-center justify-center gap-2 bg-black/40 backdrop-blur-xl border border-white/10 p-1 w-fit mx-auto rounded-full shadow-2xl">
-              <button
-                onClick={() => setViewMode('folders')}
-                className={`flex items-center gap-2 px-6 py-2 rounded-full transition-all duration-500 ${
-                  viewMode === 'folders' 
-                    ? 'bg-primary text-white shadow-lg shadow-primary/20' 
-                    : 'text-foreground/40 hover:text-foreground/80'
-                }`}
-              >
-                <span className="material-symbols-outlined text-sm">folder</span>
-                <span className="text-[10px] font-black uppercase tracking-widest">Carpetas</span>
-              </button>
-              <button
-                onClick={() => setViewMode('table')}
-                className={`flex items-center gap-2 px-6 py-2 rounded-full transition-all duration-500 ${
-                  viewMode === 'table' 
-                    ? 'bg-primary text-white shadow-lg shadow-primary/20' 
-                    : 'text-foreground/40 hover:text-foreground/80'
-                }`}
-              >
-                <span className="material-symbols-outlined text-sm">table_rows</span>
-                <span className="text-[10px] font-black uppercase tracking-widest">Gestor</span>
-              </button>
-            </div>
+            {isRoot ? (
+              /* Switch de Vista Centrado (Solo en Root) */
+              <div className="flex items-center justify-center gap-2 bg-black/40 backdrop-blur-xl border border-white/10 p-1 w-fit mx-auto rounded-full shadow-2xl animate-in fade-in zoom-in-95">
+                <button
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setViewMode('folders'); }}
+                  className={`flex items-center gap-2 px-6 py-2 rounded-full transition-all duration-500 ${
+                    viewMode === 'folders' 
+                      ? 'bg-primary text-white shadow-lg shadow-primary/20' 
+                      : 'text-foreground/40 hover:text-foreground/80'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-sm">folder</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest">Carpetas</span>
+                </button>
+                <button
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setViewMode('table'); }}
+                  className={`flex items-center gap-2 px-6 py-2 rounded-full transition-all duration-500 ${
+                    viewMode === 'table' 
+                      ? 'bg-primary text-white shadow-lg shadow-primary/20' 
+                      : 'text-foreground/40 hover:text-foreground/80'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-sm">table_rows</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest">Gestor</span>
+                </button>
+              </div>
+            ) : (
+              /* Botón de Volver (Cuando estamos en un elemento) */
+              <div className="animate-in fade-in slide-in-from-bottom-2">
+                <button
+                  onClick={() => navigate(`/local/${projectName}/bible`)}
+                  className="flex items-center gap-3 px-8 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-primary hover:text-white transition-all rounded-full group mx-auto"
+                >
+                  <span className="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform">arrow_back</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">Volver al Archivo Central</span>
+                </button>
+              </div>
+            )}
           </div>
         </header>
 

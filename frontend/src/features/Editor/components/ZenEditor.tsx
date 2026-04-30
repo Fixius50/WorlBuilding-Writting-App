@@ -21,6 +21,7 @@ interface ZenEditorProps {
   onRestoreSnapshot?: (id: number) => void;
   editable?: boolean;
   onMentionClick?: (id: string) => void;
+  minimal?: boolean;
 }
 
 const ZenEditor: React.FC<ZenEditorProps> = ({ 
@@ -32,7 +33,8 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
   snapshots = [],
   onRestoreSnapshot = () => {},
   editable = true,
-  onMentionClick = () => {}
+  onMentionClick = () => {},
+  minimal = false
 }) => {
   const [settings] = useState<EditorSettings>({
     font: 'Cormorant Garamond',
@@ -79,7 +81,7 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-invert max-w-none focus:outline-none min-h-[70vh] text-foreground/90 leading-relaxed text-lg pb-40 px-4 md:px-0',
+        class: `prose prose-invert max-w-none focus:outline-none ${minimal ? 'min-h-[300px]' : 'min-h-[70vh]'} text-foreground/90 leading-relaxed text-lg pb-40 px-4 md:px-0`,
         style: `font-family: "${settings.font}", serif; font-size: ${settings.fontSize}px;`,
       },
       handleClick: (view, pos, event) => {
@@ -128,15 +130,16 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
         title={title}
         onTitleChange={onTitleChange}
         wordCount={wordCount}
-        wordGoal={2000} // Custom meta default (se puede pasar por props luego)
-        saving={false} // Se puede conectar al estado global de guardado
+        wordGoal={2000} 
+        saving={false} 
         onManualSnapshot={() => onSnapshot(editor.getHTML())}
         snapshots={snapshots}
         onRestoreSnapshot={onRestoreSnapshot}
+        minimal={minimal}
       />
 
       <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <div className="max-w-4xl mx-auto py-20 relative">
+        <div className={`max-w-4xl mx-auto ${minimal ? 'py-6' : 'py-20'} relative`}>
           
           {/* BUBBLE MENU (FORMATO RÁPIDO) */}
           {editor && (

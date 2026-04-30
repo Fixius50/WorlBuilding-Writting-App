@@ -233,6 +233,7 @@ const EventInspector: React.FC<EventInspectorProps> = ({
               onTitleChange={() => {}}
               onSnapshot={() => {}}
               editable={true}
+              minimal={true}
             />
           </div>
         </section>
