@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
 
 const GlyphFoundry = () => {

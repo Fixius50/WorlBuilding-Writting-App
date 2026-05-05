@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Peer, { DataConnection } from 'peerjs';
 import Button from '@atoms/Button';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import { useLanguage } from '@context/LanguageContext';
 
 const SyncView: React.FC = () => {
@@ -84,7 +84,7 @@ const SyncView: React.FC = () => {
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <GlassPanel className="p-8 space-y-6 border-primary/10">
+            <MonolithicPanel className="p-8 space-y-6 border-primary/10">
                 <div className="space-y-4">
                     <label className="text-[10px] font-black uppercase tracking-widest text-primary">Tu Identificador (Peer ID)</label>
                     <div className="flex gap-2">
@@ -119,9 +119,9 @@ const SyncView: React.FC = () => {
                         </Button>
                     </div>
                 </div>
-            </GlassPanel>
+            </MonolithicPanel>
 
-            <GlassPanel className="p-8 flex flex-col border-foreground/5">
+            <MonolithicPanel className="p-8 flex flex-col border-foreground/5">
                 <div className="flex justify-between items-center mb-6">
                     <label className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Consola de Puente</label>
                     <div className="flex items-center gap-2">
@@ -149,7 +149,7 @@ const SyncView: React.FC = () => {
                 >
                     Sincronizar ahora
                 </Button>
-            </GlassPanel>
+            </MonolithicPanel>
         </div>
 
         <section className="p-8 border border-dashed border-foreground/10 rounded-none bg-foreground/[0.01]">

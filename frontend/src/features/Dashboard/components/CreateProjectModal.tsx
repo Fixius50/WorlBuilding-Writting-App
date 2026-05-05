@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
 
 interface CreateProjectModalProps {
@@ -25,7 +25,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
  <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
  <div className="absolute inset-0 bg-background/60 " onClick={onClose}></div>
  <div className="relative w-full max-w-md animate-in fade-in zoom-in duration-200">
- <GlassPanel className="p-8 border-primary/30 shadow-2xl shadow-primary/10">
+ <MonolithicPanel className="p-8 border-primary/30 shadow-2xl shadow-primary/10">
  <h2 className="text-2xl font-bold text-foreground mb-6">Create New World</h2>
 
  <form onSubmit={handleSubmit} className="space-y-4">
@@ -62,7 +62,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
  <Button variant="primary" type="submit" icon="add">Create World</Button>
  </div>
  </form>
- </GlassPanel>
+ </MonolithicPanel>
  </div>
  </div>
  );

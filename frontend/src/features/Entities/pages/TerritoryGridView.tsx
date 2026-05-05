@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import Avatar from '@atoms/Avatar';
 import Button from '@atoms/Button';
 
@@ -36,7 +36,7 @@ const TerritoryGridView = ({ id }: { id?: string | number }) => {
 
  <section className="space-y-8">
  {/* Filters Toolbar */}
- <GlassPanel className="p-2 flex items-center justify-between border-foreground/10">
+ <MonolithicPanel className="p-2 flex items-center justify-between border-foreground/10">
  <div className="flex items-center gap-4 flex-1">
  <div className="relative flex-1 max-w-sm">
  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-foreground/60 text-sm">search</span>
@@ -55,7 +55,7 @@ const TerritoryGridView = ({ id }: { id?: string | number }) => {
  <button className="p-1.5 rounded-none text-foreground/60 hover:text-foreground transition-colors"><span className="material-symbols-outlined text-lg">format_list_bulleted</span></button>
  <button className="p-1.5 rounded-none bg-foreground/10 text-foreground shadow-sm"><span className="material-symbols-outlined text-lg">grid_view</span></button>
  </div>
- </GlassPanel>
+ </MonolithicPanel>
 
  {/* Cards Grid */}
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

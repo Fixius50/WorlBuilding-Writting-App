@@ -20,7 +20,6 @@ interface ArchitectContext {
   handleRenameFolder: (id: number, name: string) => void;
   handleCreateEntity: (parentId: number | string, type?: string) => void;
   handleDeleteEntity: (id: number, folderId: number) => void;
-  setRightOpen: (open: boolean) => void;
   [key: string]: unknown;
 }
 
@@ -128,7 +127,7 @@ const WorldBibleLayout: React.FC = () => {
 
               {isRoot ? (
                 /* Switch de Vista Centrado (Solo en Root) */
-                <div className="flex items-center justify-center gap-2 bg-black/40 backdrop-blur-xl border border-[hsl(var(--foreground)/0.1)] p-1 w-fit mx-auto rounded-full shadow-2xl animate-in fade-in zoom-in-95">
+                <div className="flex items-center justify-center gap-2 bg-background  border border-[hsl(var(--foreground)/0.1)] p-1 w-fit mx-auto rounded-full shadow-2xl animate-in fade-in zoom-in-95">
                   <button
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); setViewMode('folders'); }}
                     className={`flex items-center gap-2 px-6 py-2 rounded-full transition-all duration-500 ${

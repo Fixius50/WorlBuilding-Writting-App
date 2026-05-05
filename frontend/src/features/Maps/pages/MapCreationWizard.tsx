@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { entityService } from '@repositories/entityService';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
 
 interface MapCreationWizardProps {
@@ -63,9 +63,9 @@ const MapCreationWizard: React.FC<MapCreationWizardProps> = ({ onCancel, onCreat
  return (
  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 animate-in fade-in duration-300">
  <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto no-scrollbar relative animate-in zoom-in-95 duration-500">
- <GlassPanel className="p-0 border-foreground/40 shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden">
+ <MonolithicPanel className="p-0 border-foreground/40 shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden">
  {/* Header */}
- <header className="p-8 border-b border-foreground/10 flex justify-center gap-12 text-center items-center bg-white/[0.02]">
+ <header className="p-8 border-b border-foreground/10 flex justify-center gap-12 text-center items-center bg-background">
  <div className="flex items-center gap-4">
  <div className="size-12 rounded-none bg-primary/20 text-primary flex items-center justify-center">
  <span className="material-symbols-outlined text-2xl">add_location_alt</span>
@@ -230,7 +230,7 @@ const MapCreationWizard: React.FC<MapCreationWizardProps> = ({ onCancel, onCreat
  </div>
 
  {/* Footer */}
- <footer className="p-8 bg-white/[0.02] border-t border-foreground/10 flex justify-between items-center">
+ <footer className="p-8 bg-background border-t border-foreground/10 flex justify-between items-center">
  <button onClick={onCancel} className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Cancelar</button>
  <div className="flex items-center gap-6">
  <span className="text-[9px] font-black uppercase tracking-widest text-foreground/60">Cambios guardados localmente</span>
@@ -243,7 +243,7 @@ const MapCreationWizard: React.FC<MapCreationWizardProps> = ({ onCancel, onCreat
  </Button>
  </div>
  </footer>
- </GlassPanel>
+ </MonolithicPanel>
  </div>
  </div>
  );
@@ -267,7 +267,7 @@ const TypeCard: React.FC<{ active: boolean; onClick: () => void; icon: string; l
 const SourceCard: React.FC<{ active: boolean; onClick: () => void; icon: string; label: string; desc: string; subdesc: string }> = ({ active, onClick, icon, label, desc, subdesc }) => (
   <div
     onClick={onClick}
-    className={`p-10 rounded-[2.5rem] border transition-all cursor-pointer group flex flex-col items-center text-center gap-4 ${active ? 'bg-primary/5 border-primary shadow-lg' : 'bg-white/[0.02] border-foreground/10 hover:border-foreground/40 hover:bg-white/[0.04]'}`}
+    className={`p-10 rounded-[2.5rem] border transition-all cursor-pointer group flex flex-col items-center text-center gap-4 ${active ? 'bg-primary/5 border-primary shadow-lg' : 'bg-background border-foreground/10 hover:border-foreground/40 hover:bg-background'}`}
   >
     <div className={`size-16 rounded-[2rem] flex items-center justify-center transition-all ${active ? 'bg-primary text-foreground shadow-xl shadow-primary/20' : 'bg-foreground/5 text-foreground/60 group-hover:text-foreground/60'}`}>
       <span className="material-symbols-outlined text-3xl">{icon}</span>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
 import RelationshipManager from '@features/Relationships/components/RelationshipManager';
 import { entityService } from '@repositories/entityService';
@@ -115,7 +115,7 @@ const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned
  const displayValue = String(value);
 
  return (
- <div key={key} className="flex justify-between items-center p-2 rounded bg-white/[0.02] border border-foreground/10">
+ <div key={key} className="flex justify-between items-center p-2 rounded bg-background border border-foreground/10">
  <span className="text-[8px] font-bold text-foreground/60 uppercase">{key.replace(/_/g, ' ')}</span>
  <span className="text-[10px] text-foreground/60 truncate ml-4 font-medium" title={displayValue}>
  {displayValue}
@@ -140,7 +140,7 @@ const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned
  const otherId = String(edge.data.source) === nodeIdStr ? edge.data.target : edge.data.source;
  const otherNode = elements.find(n => String(n.data?.id) === String(otherId));
  return (
- <div key={edge.data.id} className="flex items-center justify-between p-2.5 rounded bg-white/[0.02] border border-foreground/10 group/rel">
+ <div key={edge.data.id} className="flex items-center justify-between p-2.5 rounded bg-background border border-foreground/10 group/rel">
  <div className="flex items-center gap-2 overflow-hidden">
  <span className="size-1 rounded-full bg-primary/40 group-hover/rel:bg-primary transition-colors"></span>
  <span className="text-[10px] text-foreground/60 font-medium truncate">{otherNode?.data?.label || otherNode?.label || 'Incógnito'}</span>

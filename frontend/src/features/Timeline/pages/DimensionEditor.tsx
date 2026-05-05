@@ -7,18 +7,17 @@ import { entityService } from '@repositories/entityService';
 import { Evento, Carpeta, Entidad } from '@domain/models/database';
 import ConfirmationModal from '@organisms/ConfirmationModal';
 import EventInspector from '../components/EventInspector';
+import { useRightPanelStore } from '@store/useRightPanelStore';
 
 const DimensionEditor: React.FC = () => {
   const { username, projectName, folderId } = useParams<{ username: string; projectName: string; folderId: string }>();
-  const baseUrl = `/${username || 'local'}/${projectName}`;
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { openPanel, setCustomContent, closePanel } = useRightPanelStore();
   
-  const { 
-    setRightPanelContent, 
-    setRightOpen, 
-    setRightPanelTitle 
-  } = useOutletContext<any>();
+  const outletContext = useOutletContext<any>();
+  const projectId = outletContext?.projectId;
+  
   const location = useLocation();
   const isInBible = location.pathname.includes('/bible');
 
@@ -118,34 +117,17 @@ const DimensionEditor: React.FC = () => {
     }
   };
 
-  const handleOpenBibleInfo = (entity: Entidad) => {
-    if (!entity) return;
-    if (setRightPanelContent && setRightPanelTitle) {
-      setRightPanelTitle(entity.nombre);
-      navigate(`${baseUrl}/bible/folder/${entity.carpeta_id}/entity/${entity.id}?mode=sidebar`);
-      setRightOpen(true);
-    }
-  };
-
   const handleOpenInspector = (event: Evento) => {
-    if (setRightPanelContent && setRightPanelTitle) {
-      setRightPanelTitle(
-        <div className="flex flex-col">
-          <span className="text-[9px] font-black uppercase tracking-widest text-primary mb-1">Inspector de Hitos</span>
-          <span className="text-foreground font-black text-sm truncate">{event.titulo}</span>
-        </div>
-      );
-      setRightPanelContent(
-        <EventInspector 
-          eventId={event.id} 
-          projectId={folder?.project_id}
-          onUpdate={loadData} 
-          onClose={() => setRightOpen(false)}
-          onNavigateToEntity={(id, fId) => navigate(`${baseUrl}/bible/folder/${fId}/entity/${id}`)}
-        />
-      );
-      setRightOpen(true);
-    }
+    openPanel('bulk', event.id, event.titulo);
+    setCustomContent(
+      <EventInspector 
+        eventId={event.id} 
+        projectId={folder?.project_id}
+        onUpdate={loadData} 
+        onClose={closePanel}
+        onNavigateToEntity={(id, fId) => navigate(`/local/${projectName}/bible/folder/${fId}/entity/${id}`)}
+      />
+    );
   };
 
   const handleRemoveDimension = async (entityId: number) => {
@@ -248,8 +230,7 @@ const DimensionEditor: React.FC = () => {
     return (
       <div key={entityId || 'main'} className="flex flex-row min-h-[450px] last:border-0 group/row bg-transparent overflow-hidden relative" id={`track-${entityId || 'main'}`}>
         <div 
-          onDoubleClick={() => !isMain && handleOpenBibleInfo(lines.find(l => l.id === entityId) || projectEntities.find(e => e.id === entityId)!)}
-          className="w-[300px] flex-shrink-0 p-8 border-r border-[hsl(var(--divider-border))] bg-[hsl(var(--background)/0.2)] backdrop-blur-xl sticky left-0 z-30 flex flex-col justify-between items-start cursor-pointer hover:bg-[hsl(var(--primary)/0.02)] transition-colors group/branch"
+          className="w-[300px] flex-shrink-0 p-8 border-r border-[hsl(var(--divider-border))] bg-[hsl(var(--background)/0.2)]  sticky left-0 z-30 flex flex-col justify-between items-start cursor-pointer hover:bg-[hsl(var(--primary)/0.02)] transition-colors group/branch"
         >
            <div className="space-y-4 w-full">
               <div className="flex items-center justify-between group/title w-full">
@@ -303,7 +284,7 @@ const DimensionEditor: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col h-full bg-[hsl(var(--background))] selection:bg-[hsl(var(--primary)/0.3)]">
       {!isInBible && (
-        <header className="relative z-40 py-8 px-10 border-b border-[hsl(var(--divider-border))] bg-[hsl(var(--background)/0.8)] flex flex-col items-center justify-center backdrop-blur-2xl">
+        <header className="relative z-40 py-8 px-10 border-b border-[hsl(var(--divider-border))] bg-[hsl(var(--background)/0.8)] flex flex-col items-center justify-center ">
           <div className="flex flex-col items-center gap-4">
             <div className="size-12 bg-[hsl(var(--primary)/0.1)] border border-[hsl(var(--primary)/0.2)] flex items-center justify-center text-[hsl(var(--primary))] shadow-[0_0_20px_hsl(var(--primary)/0.2)] mb-2">
               <span className="material-symbols-outlined text-2xl">lan</span>
@@ -410,7 +391,7 @@ const DimensionEditor: React.FC = () => {
                         style={{ left: `${posX}%`, top: `${posY}px` }}
                         onClick={() => handleOpenInspector(event)}
                       >
-                        <div className="w-[350px] monolithic-panel p-5 border border-[hsl(var(--panel-border))] bg-[hsl(var(--background)/0.98)] backdrop-blur-3xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] group-hover/card:border-[hsl(var(--primary)/0.5)] cursor-pointer">
+                        <div className="w-[350px] monolithic-panel p-5 border border-[hsl(var(--panel-border))] bg-[hsl(var(--background)/0.98)]  shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] group-hover/card:border-[hsl(var(--primary)/0.5)] cursor-pointer">
                             <div className="flex items-center justify-between mb-4">
                               <div className="flex flex-col">
                                 <span className="text-[10px] font-black text-[hsl(var(--primary))] uppercase tracking-[0.2em] mb-1">{event.fecha_simulada || '?'}</span>
@@ -458,7 +439,7 @@ const DimensionEditor: React.FC = () => {
       />
 
       {isImportModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-2xl bg-black/80">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6  bg-black/80">
            <div className="w-full max-w-lg monolithic-panel p-12 bg-[hsl(var(--background))] border border-[hsl(var(--panel-border))] relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[hsl(var(--primary))] to-transparent" />
               <div className="mb-10 text-center">
@@ -487,7 +468,7 @@ const DimensionEditor: React.FC = () => {
       )}
 
       {isEntityPickerOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 backdrop-blur-xl bg-black/60">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6  bg-black/60">
            <div className="w-full max-w-xl monolithic-panel p-10 bg-[hsl(var(--background))] border border-[hsl(var(--panel-border))] relative overflow-hidden">
               <div className="absolute top-0 left-0 w-1 h-full bg-[hsl(var(--primary))]" />
               <div className="flex items-center justify-between mb-8">
@@ -501,22 +482,22 @@ const DimensionEditor: React.FC = () => {
               </div>
               <div className="max-h-[450px] overflow-y-auto pr-4 space-y-3 custom-scrollbar">
                  {projectEntities.map(ent => (
-                   <button 
-                     key={ent.id}
-                     onClick={() => { handleToggleLinkEntity(currentEventForLinking!, ent.id); setIsEntityPickerOpen(false); }}
-                     className="w-full p-5 bg-[hsl(var(--foreground)/0.02)] border border-[hsl(var(--divider-border))] hover:border-[hsl(var(--primary)/0.5)] flex items-center justify-between group transition-all hover:bg-[hsl(var(--primary)/0.03)]"
-                   >
-                     <div className="flex items-center gap-5">
-                        <div className="size-10 bg-[hsl(var(--foreground)/0.05)] flex items-center justify-center group-hover:text-[hsl(var(--primary))] transition-all">
-                           <span className="material-symbols-outlined">person</span>
-                        </div>
-                        <div className="text-left">
-                           <div className="text-[13px] font-black text-[hsl(var(--foreground))]">{ent.nombre}</div>
-                           <div className="text-[9px] text-[hsl(var(--foreground)/0.3)] uppercase tracking-widest font-bold">{ent.tipo}</div>
-                        </div>
-                     </div>
-                     <span className="material-symbols-outlined text-sm text-[hsl(var(--primary))] opacity-0 group-hover:opacity-100 transition-opacity">add_link</span>
-                   </button>
+                    <button 
+                      key={ent.id}
+                      onClick={() => { handleToggleLinkEntity(currentEventForLinking!, ent.id); setIsEntityPickerOpen(false); }}
+                      className="w-full p-5 bg-[hsl(var(--foreground)/0.02)] border border-[hsl(var(--divider-border))] hover:border-[hsl(var(--primary)/0.5)] flex items-center justify-between group transition-all hover:bg-[hsl(var(--primary)/0.03)]"
+                    >
+                      <div className="flex items-center gap-5">
+                         <div className="size-10 bg-[hsl(var(--foreground)/0.05)] flex items-center justify-center group-hover:text-[hsl(var(--primary))] transition-all">
+                            <span className="material-symbols-outlined">person</span>
+                         </div>
+                         <div className="text-left">
+                            <div className="text-[13px] font-black text-[hsl(var(--foreground))]">{ent.nombre}</div>
+                            <div className="text-[9px] text-[hsl(var(--foreground)/0.3)] uppercase tracking-widest font-bold">{ent.tipo}</div>
+                         </div>
+                      </div>
+                      <span className="material-symbols-outlined text-sm text-[hsl(var(--primary))] opacity-0 group-hover:opacity-100 transition-opacity">add_link</span>
+                    </button>
                  ))}
               </div>
               <div className="mt-10 pt-8 border-t border-[hsl(var(--divider-border))] text-right">

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Plantilla, Entidad, Valor } from '@domain/models/database';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 
 interface AttributeFieldProps {
  attribute: Plantilla | { plantilla: Plantilla };

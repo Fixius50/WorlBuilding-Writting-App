@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
 import { entityService } from '@repositories/entityService';
 import { MapMarker } from '@domain/models/maps';
@@ -76,7 +76,7 @@ const MapMarkerEditor: React.FC<MapMarkerEditorProps> = ({ markers = [], onAddMa
  </div>
  ) : (
  filteredMarkers.map((marker, index) => (
- <GlassPanel
+ <MonolithicPanel
  key={marker.id || index}
  className={`p-4 cursor-pointer transition-all ${selectedMarkerId === marker.id
  ? 'border-primary bg-primary/10'
@@ -119,7 +119,7 @@ const MapMarkerEditor: React.FC<MapMarkerEditorProps> = ({ markers = [], onAddMa
  </button>
  </div>
  </div>
- </GlassPanel>
+ </MonolithicPanel>
  ))
  )}
  </div>

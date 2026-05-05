@@ -1,36 +1,23 @@
 import React from 'react';
 import { useLanguage } from '@context/LanguageContext';
+import { useRightPanelStore } from '@store/useRightPanelStore';
+import UniversalInspector from '@organisms/UniversalInspector';
 
 interface GlobalRightPanelProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onToggle: () => void;
-  contextContent?: React.ReactNode;
-  projectId: number | null;
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
-  title?: string | null;
-  onClearContext?: () => void;
   panelMode?: 'classic' | 'binder' | 'floating';
 }
 
 const GlobalRightPanel: React.FC<GlobalRightPanelProps> = ({
-  isOpen,
-  onToggle,
-  contextContent,
-  activeTab,
-  setActiveTab,
-  title,
   panelMode = 'classic',
 }) => {
   const { t } = useLanguage();
-
-  // Forzar CONTEXT cuando hay contenido contextual
-  React.useEffect(() => {
-    if (contextContent) {
-      setActiveTab('CONTEXT');
-    }
-  }, [contextContent, setActiveTab]);
+  const { 
+    isOpen, 
+    togglePanel, 
+    closePanel, 
+    title,
+    mode
+  } = useRightPanelStore();
 
   const rightSidebarClasses = panelMode === 'floating'
     ? `fixed top-[2vh] right-[2vw] h-[96vh] rounded-none border border-foreground/10 shadow-2xl z-50 transition-all duration-300 flex flex-col monolithic-panel ${isOpen ? 'w-[24rem] opacity-100 translate-y-0 pointer-events-auto' : 'w-[24rem] opacity-0 -translate-y-[1rem] pointer-events-none'}`
@@ -45,7 +32,7 @@ const GlobalRightPanel: React.FC<GlobalRightPanelProps> = ({
         {/* Toggle lateral — classic y binder */}
         {(panelMode === 'classic' || panelMode === 'binder') && (
           <button
-            onClick={onToggle}
+            onClick={togglePanel}
             className={`
               absolute top-1/2 -translate-y-1/2 w-[2.5rem] h-[6rem]
               bg-background border border-foreground/10
@@ -65,36 +52,25 @@ const GlobalRightPanel: React.FC<GlobalRightPanelProps> = ({
           </button>
         )}
 
-        {/* Header — solo CONTEXT */}
-        <div className="flex items-center border-b border-foreground/10 bg-foreground/[0.02]">
-          <button
-            onClick={() => setActiveTab('CONTEXT')}
-            className={`flex-1 py-[1rem] flex flex-col items-center justify-center gap-[0.25rem] text-[0.6rem] font-black uppercase tracking-[0.15em] transition-colors relative ${activeTab === 'CONTEXT' ? 'text-primary' : 'text-foreground/60 hover:text-primary'}`}
-            title={t('common.context')}
-          >
-            <span className="material-symbols-outlined text-[1.125rem]">view_sidebar</span>
-            <span className="hidden sm:inline">{t('common.context')}</span>
-            {activeTab === 'CONTEXT' && <div className="absolute bottom-0 left-0 right-0 h-[0.125rem] bg-primary" />}
+        {/* Header (Título dinámico) */}
+        <div className="flex items-center justify-between px-[1.5rem] py-[1rem] border-b border-foreground/10 bg-foreground/[0.02]">
+          <div className="flex flex-col">
+            <span className="text-[0.6rem] font-black uppercase tracking-[0.2em] text-primary mb-0.5">
+              {mode === 'bulk' ? 'Editor Masivo' : 'Inspector Central'}
+            </span>
+            <div className="text-[0.875rem] font-bold text-foreground tracking-tight truncate max-w-[15rem]">
+              {title || (mode === 'bulk' ? 'Operaciones de Lote' : 'Detalles de Entidad')}
+            </div>
+          </div>
+          <button onClick={closePanel} className="text-foreground/20 hover:text-foreground transition-colors">
+            <span className="material-symbols-outlined text-sm">close</span>
           </button>
         </div>
 
-        {/* Título opcional */}
-        {title && (
-          <div className="px-[1.5rem] py-[0.75rem] border-b border-foreground/10 bg-foreground/[0.01]">
-            <div className="text-[0.875rem] font-bold text-foreground tracking-tight">{title}</div>
-          </div>
-        )}
-
         {/* Área de contenido */}
-        <div className="flex-1 overflow-hidden relative bg-background/20" style={{ backgroundColor: 'hsl(var(--background) / 0.2)' }}>
+        <div className="flex-1 overflow-hidden relative" style={{ backgroundColor: 'hsl(var(--background))' }}>
           <div className={`absolute inset-0 flex flex-col animate-in fade-in duration-300 ${isOpen ? 'z-10 opacity-100 pointer-events-auto' : 'z-0 opacity-0 pointer-events-none'}`}>
-            {contextContent ? (
-              contextContent
-            ) : (
-              <div id="global-right-panel-portal" className="h-full flex flex-col relative overflow-y-auto no-scrollbar p-[1.5rem] bg-background">
-                {/* Portal Target — inyección desde features */}
-              </div>
-            )}
+             <UniversalInspector />
           </div>
         </div>
       </aside>

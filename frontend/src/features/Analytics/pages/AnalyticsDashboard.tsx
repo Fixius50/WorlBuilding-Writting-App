@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import { motion } from 'framer-motion';
 import { useOutletContext } from 'react-router-dom';
 import { useDashboardStore } from '@store/useDashboardStore';
@@ -48,7 +48,7 @@ const AnalyticsDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
         
         {/* DISTRIBUCIÓN DE ENTIDADES (Real) */}
-        <GlassPanel className="p-8 h-[450px] flex flex-col">
+        <MonolithicPanel className="p-8 h-[450px] flex flex-col">
           <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground/60 mb-8">Distribución por Tipo de Entidad</h3>
           <div className="flex-1 min-h-0">
             {stats.entitiesByType.length > 0 ? (
@@ -72,10 +72,10 @@ const AnalyticsDashboard = () => {
               </div>
             )}
           </div>
-        </GlassPanel>
+        </MonolithicPanel>
 
         {/* ANÁLISIS DE ACTIVIDAD (Heatmap) */}
-        <GlassPanel className="p-8 flex flex-col">
+        <MonolithicPanel className="p-8 flex flex-col">
           <div className="flex items-center justify-between mb-8">
             <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground/60">Consistencia Cronológica</h3>
             <div className="flex items-center gap-1">
@@ -119,7 +119,7 @@ const AnalyticsDashboard = () => {
                 </div>
              </div>
           </div>
-        </GlassPanel>
+        </MonolithicPanel>
 
       </div>
 

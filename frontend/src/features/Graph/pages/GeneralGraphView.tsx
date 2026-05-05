@@ -25,7 +25,7 @@ import { relationshipService, Relacion } from '@repositories/relationshipService
 import { Entidad } from '@domain/models/database';
 import { getHierarchyType } from '@utils/constants/hierarchy_types';
 import Button from '@atoms/Button';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import { useLanguage } from '@context/LanguageContext';
 import { useAppStore } from '@store/useAppStore';
 
@@ -351,13 +351,13 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
         `}</style>
 
         <Background color="rgba(255, 255, 255, 0.05)" gap={20} variant={BackgroundVariant.Lines} />
-        <Controls className="bg-background/80 border-border/50 rounded-none overflow-hidden backdrop-blur-md" />
+        <Controls className="bg-background/80 border-border/50 rounded-none overflow-hidden " />
       </ReactFlow>
 
       {/* Relation Multi-Selector Modal */}
       {multiRelModal && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-           <GlassPanel className="max-w-md w-full border-white/10 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/60  animate-in fade-in duration-300">
+           <MonolithicPanel className="max-w-md w-full border-white/10 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
               <div className="p-6 border-b border-white/5 flex items-center justify-between">
                 <h4 className="text-xs font-black uppercase tracking-widest text-primary">Vínculos Múltiples</h4>
                 <button onClick={() => setMultiRelModal(null)} className="text-foreground/40 hover:text-foreground">
@@ -368,7 +368,7 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
                  <p className="text-[10px] text-foreground/50 mb-4">Se han detectado {multiRelModal.rels.length} tipos de relación entre estos nodos. Selecciona los que deseas gestionar:</p>
                  <div className="space-y-2">
                     {Array.isArray(multiRelModal.rels) && multiRelModal.rels.map((rel) => (
-                      <div key={rel.id} className="flex items-center justify-between p-3 bg-white/[0.03] border border-white/5 hover:border-primary/30 transition-all">
+                      <div key={rel.id} className="flex items-center justify-between p-3 bg-background border border-white/5 hover:border-primary/30 transition-all">
                         <span className="text-[11px] font-bold uppercase text-foreground/80 tracking-tighter">{rel.tipo}</span>
                         <div className="flex items-center gap-2">
                           <button 
@@ -386,10 +386,10 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
                     ))}
                  </div>
               </div>
-              <div className="p-4 bg-white/5 flex justify-end">
+              <div className="p-4 bg-background flex justify-end">
                 <Button size="sm" onClick={() => setMultiRelModal(null)} className="text-[9px] font-black uppercase tracking-widest px-8">Listo</Button>
               </div>
-           </GlassPanel>
+           </MonolithicPanel>
         </div>
       )}
     </div>

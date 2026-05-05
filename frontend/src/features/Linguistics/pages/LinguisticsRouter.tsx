@@ -49,7 +49,7 @@ const LinguisticsRouter = () => {
       )}
       {view === 'advanced' && (
           <div className="flex-1 flex flex-col">
-              <div className="p-4 border-b border-foreground/5 bg-background/50 backdrop-blur-md flex justify-between items-center">
+              <div className="p-4 border-b border-foreground/5 bg-background/50  flex justify-between items-center">
                 <Button variant="ghost" icon="arrow_back" onClick={() => setView('hub')}>Volver al Hub</Button>
                 <div className="text-[10px] font-black uppercase tracking-widest opacity-40">Motor Lingüístico / Laboratorio</div>
               </div>

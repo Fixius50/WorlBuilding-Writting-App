@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import Avatar from '@atoms/Avatar';
 
 const TopNavBar = () => {
@@ -27,7 +27,7 @@ const TopNavBar = () => {
 
  return (
  <div className="h-16 flex items-center justify-center pointer-events-none sticky top-0 z-50 px-8">
- <GlassPanel className="flex items-center gap-2 px-2 py-1.5 rounded-full pointer-events-auto monolithic-panel shadow-2xl">
+ <MonolithicPanel className="flex items-center gap-2 px-2 py-1.5 rounded-full pointer-events-auto monolithic-panel shadow-2xl">
  <Link to="/dashboard" className={`p-2 rounded-full transition-colors ${path === '/dashboard' ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'text-foreground/60 hover:text-foreground hover:bg-foreground/5'}`}>
  <span className="material-symbols-outlined text-xl">home</span>
  </Link>
@@ -60,7 +60,7 @@ const TopNavBar = () => {
  <Avatar name="EW" size="sm" className="bg-primary/20 text-primary border border-primary/30" />
  </Link>
  </div>
- </GlassPanel>
+ </MonolithicPanel>
  </div>
  );
 };

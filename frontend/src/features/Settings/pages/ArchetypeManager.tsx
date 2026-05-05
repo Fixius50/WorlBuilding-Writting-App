@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { templateService } from '@repositories/templateService';
 import { Plantilla } from '@domain/models/database';
 import { useOutletContext } from 'react-router-dom';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
 import { useLanguage } from '@context/LanguageContext';
 
@@ -115,7 +115,7 @@ const ArchetypeManager: React.FC = () => {
       </header>
 
       {showForm && (
-        <GlassPanel className="mb-12 p-8 border-primary/20 bg-primary/5">
+        <MonolithicPanel className="mb-12 p-8 border-primary/20 bg-primary/5">
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
@@ -125,7 +125,7 @@ const ArchetypeManager: React.FC = () => {
                   required
                   value={formData.nombre}
                   onChange={e => setFormData({...formData, nombre: e.target.value})}
-                  className="w-full bg-black/40 border border-white/10 p-3 rounded-none outline-none focus:border-primary/50 transition-all"
+                  className="w-full bg-background border border-white/10 p-3 rounded-none outline-none focus:border-primary/50 transition-all"
                   placeholder="Ej: Nivel de Magia, Raza, Fecha de Coronación..."
                 />
               </div>
@@ -136,7 +136,7 @@ const ArchetypeManager: React.FC = () => {
                   <select 
                     value={formData.tipo}
                     onChange={e => setFormData({...formData, tipo: e.target.value})}
-                    className="w-full bg-black/40 border border-white/10 p-3 rounded-none outline-none focus:border-primary/50"
+                    className="w-full bg-background border border-white/10 p-3 rounded-none outline-none focus:border-primary/50"
                   >
                     <option value="text">Texto Corto</option>
                     <option value="long_text">Texto Largo</option>
@@ -151,7 +151,7 @@ const ArchetypeManager: React.FC = () => {
                   <input 
                     value={formData.categoria || ''}
                     onChange={e => setFormData({...formData, categoria: e.target.value})}
-                    className="w-full bg-black/40 border border-white/10 p-3 rounded-none outline-none focus:border-primary/50"
+                    className="w-full bg-background border border-white/10 p-3 rounded-none outline-none focus:border-primary/50"
                     placeholder="General, Técnico, Biografía..."
                   />
                 </div>
@@ -185,7 +185,7 @@ const ArchetypeManager: React.FC = () => {
                   <select 
                     value={formData.tipo_objetivo || ''}
                     onChange={e => setFormData({...formData, tipo_objetivo: e.target.value})}
-                    className="w-full bg-black/40 border border-white/10 p-3 rounded-none outline-none focus:border-primary/50"
+                    className="w-full bg-background border border-white/10 p-3 rounded-none outline-none focus:border-primary/50"
                   >
                     <option value="PERSONAJE">Personaje</option>
                     <option value="LUGAR">Lugar</option>
@@ -214,7 +214,7 @@ const ArchetypeManager: React.FC = () => {
               </Button>
             </div>
           </form>
-        </GlassPanel>
+        </MonolithicPanel>
       )}
 
       {/* Lista de Atributos */}
@@ -225,9 +225,9 @@ const ArchetypeManager: React.FC = () => {
           </div>
         ) : (
           templates.map(tpl => (
-            <div key={tpl.id} className="group relative flex items-center justify-between p-6 monolithic-panel border border-white/5 hover:border-primary/30 transition-all duration-500 bg-white/[0.01]">
+            <div key={tpl.id} className="group relative flex items-center justify-between p-6 monolithic-panel border border-white/5 hover:border-primary/30 transition-all duration-500 bg-background">
               <div className="flex items-center gap-6">
-                <div className="size-12 rounded-none bg-white/5 flex items-center justify-center text-primary/40 group-hover:text-primary transition-colors">
+                <div className="size-12 rounded-none bg-background flex items-center justify-center text-primary/40 group-hover:text-primary transition-colors">
                   <span className="material-symbols-outlined">
                     {tpl.tipo === 'number' ? '123' : tpl.tipo === 'date' ? 'calendar_today' : tpl.tipo === 'boolean' ? 'toggle_on' : 'match_case'}
                   </span>

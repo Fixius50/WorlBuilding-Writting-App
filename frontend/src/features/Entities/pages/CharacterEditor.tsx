@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { entityService } from '@repositories/entityService';
 import { Entidad } from '@domain/models/database';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
 
 const CharacterEditor = () => {
@@ -46,7 +46,7 @@ const CharacterEditor = () => {
     </div>
     </div>
 
-    <GlassPanel className="p-6 space-y-4">
+    <MonolithicPanel className="p-6 space-y-4">
     <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/60">Primary Identity</h3>
     <div className="space-y-4">
     <InputField label="Full Name" value={name} onChange={setName} />
@@ -56,7 +56,7 @@ const CharacterEditor = () => {
     <InputField label="Species" value="Human" />
     </div>
     </div>
-    </GlassPanel>
+    </MonolithicPanel>
     </div>
 
     {/* Rich Content Editor Section */}

@@ -4,7 +4,7 @@ import { entityService } from '@repositories/entityService';
 import { relationshipService } from '@repositories/relationshipService';
 import { Entidad } from '@domain/models/database';
 import Button from '@atoms/Button';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import Avatar from '@atoms/Avatar';
 
 interface CharacterExtras {
@@ -161,7 +161,7 @@ const CharacterView: React.FC<CharacterViewProps> = ({ id }) => {
  <div className="grid grid-cols-3 gap-6">
  {/* Left Col */}
  <div className="col-span-1 space-y-6">
- <GlassPanel className="p-4">
+ <MonolithicPanel className="p-4">
  <h3 className="text-xs font-bold text-foreground/60 uppercase tracking-wider mb-4 flex items-center gap-2">
  <span className="material-symbols-outlined text-sm">fingerprint</span> Identity
  </h3>
@@ -185,14 +185,14 @@ const CharacterView: React.FC<CharacterViewProps> = ({ id }) => {
  <input type="text" value={character.origen || ''} onChange={(e) => handleChange('origen', e.target.value)} className="w-full sunken-panel border border-foreground/40 rounded px-3 py-2 text-foreground text-sm" readOnly={!isEditing} />
  </div>
  </div>
- </GlassPanel>
+ </MonolithicPanel>
 
 
  </div>
 
  {/* Center/Right Col: Unified Narrative & Relations */}
  <div className="col-span-2 space-y-6">
- <GlassPanel className="p-6 relative overflow-hidden group">
+ <MonolithicPanel className="p-6 relative overflow-hidden group">
  <div className="flex items-center justify-between mb-6">
  <h3 className="text-xs font-bold text-foreground/60 uppercase tracking-wider flex items-center gap-2">
  <span className="material-symbols-outlined text-sm">auto_stories</span> Narrative & Connections
@@ -247,7 +247,7 @@ const CharacterView: React.FC<CharacterViewProps> = ({ id }) => {
  </div>
  )}
  </div>
- </GlassPanel>
+ </MonolithicPanel>
  </div>
  </div>
  </div>

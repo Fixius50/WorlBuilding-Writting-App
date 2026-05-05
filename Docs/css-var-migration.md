@@ -1,23 +1,24 @@
-CSS Variables Migration: Rationale and Plan
+# CSS Variables Migration: Technical Zen Standard (COMPLETED ✅)
 
-- Why migrate hardcoded CSS to CSS variables:
-  - Unify color tokens across the app for visual consistency.
-  - Enable theme support (dark/light) from a single source of truth.
-  - Reduce duplication and risk of drift in colors, borders, and shadows.
-  - Improve maintainability and scalability of the UI system.
+## Rationale
+The migration from hardcoded hex values to CSS variables was essential to:
+- **Unify color tokens** across all modules (Bible, Atlas, Timeline).
+- **Enable dynamic theme support** (Deep Space, Nebula, etc.) via `:root` variables.
+- **Enforce the Technical Zen aesthetic**: Eliminating arbitrary transparencies in favor of semantic opacities (`foreground/X`).
 
-- What was done:
-  - Introduced semantic color tokens in src/assets/index.css (e.g., --color-indigo, --color-emerald, --color-red, --color-amber, --color-purple, --color-orange, --color-blue, --color-cyan, --color-destructive).
-  - Extended theme blocks (.dark, .theme-dark, .theme-light, etc.) to expose these tokens via CSS variables.
-  - Added a set of utility CSS classes that map to semantic color usage (e.g., .bg-indigo, .text-indigo, .border-indigo) to simplify future replacements.
+## Current Implementation (Mayo 2026)
+- **Core Tokens**: Defined in `src/assets/index.css` using HSL variables.
+- **Semantic Mapping**: Tailwind extended to support `foreground/5`, `foreground/10`, etc.
+- **Themes**: All themes (Dark, Light, etc.) drive the same variable names, ensuring total UI consistency.
 
-- How to verify:
-  - Build and run the app locally (npm install; npm run build; npm run dev).
-  - Inspect multiple components (WorldBible, Timeline, Maps, Linguistics, Writing) to ensure color, border, and shadow styling are consistent and driven by CSS variables.
-  - Toggle themes (light/dark) and verify visuals adjust accordingly.
+## Standard "Technical Zen"
+1. **Panels**: Use `bg-background` or `bg-foreground/5` for subtle depth.
+2. **Borders**: Use `border-foreground/10` for hair-line precision.
+3. **Text**: Use `text-foreground` (100%), `text-foreground/60` (secondary), or `text-foreground/40` (metadata).
+4. **Highlights**: Use `text-primary` or `bg-primary/10`.
 
-- How to keep going:
-  - Continue applying the replacements across components (files listed in the task plan).
-  - When all changes are in, commit using a message focused on the rationale (what/why).
+## Verification & Maintenance
+- **Prohibition**: Hardcoded hex values (e.g., `bg-[#1a1a1a]`) are now deprecated and will be flagged in code reviews.
+- **Atomic Design**: Atoms and Molecules must rely exclusively on these variables.
 
-This document serves as the living rationale for the migration and as a reference for future contributors.
+This migration is considered **closed**. All future UI work must adhere to the semantic token system defined here.

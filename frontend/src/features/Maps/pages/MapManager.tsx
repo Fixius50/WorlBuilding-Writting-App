@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '@context/LanguageContext';
 import { useOutletContext } from 'react-router-dom';
 
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
 import { entityService } from '@repositories/entityService';
 import { Entidad } from '@domain/models/database';
+import { useRightPanelStore } from '@store/useRightPanelStore';
 
 interface MapManagerProps {
  maps: Entidad[];
@@ -16,15 +17,9 @@ interface MapManagerProps {
  onEditMap: (map: Entidad) => void;
 }
 
-interface MapManagerContext {
-  setRightPanelTab: (tab: string) => void;
-  setRightOpen?: (open: boolean) => void;
-  setRightPanelContent?: (content: React.ReactNode) => void;
-}
-
 const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap, onDeleteMap, onDuplicateMap, onEditMap }) => {
  const { t } = useLanguage();
- const { setRightPanelTab, setRightOpen = () => { }, setRightPanelContent } = useOutletContext<MapManagerContext>();
+ const { openPanel, setCustomContent, closePanel } = useRightPanelStore();
  const [searchTerm, setSearchTerm] = useState('');
  const [spatialFilter, setSpatialFilter] = useState('ALL');
  const [selectedMapId, setSelectedMapId] = useState<number | null>(null);
@@ -38,16 +33,12 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  return matchesSearch && matchesSpatial;
  });
 
-
  const getPreview = (map: Entidad) => {
  const attrs = typeof map.contenido_json === 'string' ? JSON.parse(map.contenido_json) : (map.contenido_json || {});
  let img = attrs.snapshotUrl || attrs.bgImage;
  if (!img) return null;
  const lower = img.toLowerCase();
- // Filtramos URLs que no son válidas para previsualizar
  if (lower.includes('duckdns') || lower.includes('nopreview') || lower.includes('placeholder')) return null;
- // Si es un DataURL SVG (muy grande), intentar mostrar igualmente  
- // Si es data:image/png de más de 500KB ignoramos (demasiado para thumbnail en lista)
  if (lower.startsWith('data:image/png') && img.length > 512000) return null;
  return img;
  };
@@ -69,26 +60,7 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  }
  };
 
- // Abrir panel al montar y al seleccionar un mapa
- useEffect(() => {
-  setRightOpen(true);
-  setRightPanelTab('CONTEXT');
-  return () => {
-    // Limpiar panel al desmontar
-    setRightPanelContent?.(null);
-  };
- }, []);
-
- // Sincronizar panel de detalles con el mapa seleccionado
- useEffect(() => {
-  if (selectedMapId) {
-   setRightPanelTab('CONTEXT');
-   setRightOpen(true);
-  }
-  setRightPanelContent?.(renderRightPanel());
- }, [selectedMapId, maps]);
-
- const renderRightPanel = () => {
+ const renderRightPanel = useCallback(() => {
  if (!selectedMap) return null;
  const attrs = typeof selectedMap.contenido_json === 'string' ? JSON.parse(selectedMap.contenido_json) : (selectedMap.contenido_json || {});
  
@@ -107,7 +79,6 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  </div>
 
  <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
- {/* Preview Area */}
  <div className="aspect-[16/9] rounded-none monolithic-panel overflow-hidden group">
  {getPreview(selectedMap) ? (
  <img src={getPreview(selectedMap)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="Preview" />
@@ -118,8 +89,7 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  )}
  </div>
 
- {/* Hierarchy Management */}
- <GlassPanel title="JERARQUÍA ESPACIAL" icon="layers">
+ <MonolithicPanel title="JERARQUÍA ESPACIAL" icon="layers">
  <div className="space-y-4">
  <div>
  <label className="text-[10px] font-black uppercase text-text-muted mb-2 block tracking-widest">Nivel de Escala</label>
@@ -127,7 +97,7 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  <select
  value={attrs.spatialLevel || 'TERRITORY'}
  onChange={(e) => handleUpdateMapAttribute(selectedMap, 'spatialLevel', e.target.value)}
- className="w-full appearance-none monolithic-panel rounded-none px-4 py-3 text-xs font-bold text-foreground transition-all hover:bg-foreground/5 focus:border-primary outline-none"
+ className="w-full appearance-none monolithic-panel rounded-none px-4 py-3 text-xs font-bold text-foreground transition-all hover:bg-foreground/5 focus:border-primary outline-none bg-transparent"
  >
  <option value="UNIVERSE">💫 UNIVERSO</option>
  <option value="GALAXY">🌀 GALAXIA</option>
@@ -139,9 +109,8 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  </div>
  </div>
  </div>
- </GlassPanel>
+ </MonolithicPanel>
 
-  {/* Actions Area */}
   <div className="space-y-3 pt-4 border-t border-foreground/10">
     <h4 className="text-[10px] font-black uppercase tracking-widest text-foreground/60 px-1 font-mono">Acciones</h4>
     <Button
@@ -164,14 +133,23 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  </div>
  </div>
  );
- };
+ }, [selectedMap, onSelectMap, onEditMap]);
+
+ useEffect(() => {
+  if (selectedMapId) {
+    openPanel('bulk', selectedMapId, selectedMap?.nombre || 'Mapa');
+    setCustomContent(renderRightPanel());
+  } else {
+    // If we want the panel to stay open with placeholder or close:
+    // closePanel(); 
+  }
+ }, [selectedMapId, selectedMap, openPanel, setCustomContent, renderRightPanel]);
 
  return (
  <div className="flex-1 flex overflow-hidden bg-background">
  <div className="flex-1 p-8 overflow-y-auto">
  <div className="max-w-7xl mx-auto space-y-8">
 
- {/* Header */}
  <div className="flex flex-col md:flex-row justify-between items-end gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
  <div>
  <h1 className="text-3xl font-black text-foreground uppercase tracking-tight flex items-center gap-3">
@@ -187,7 +165,7 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  <select
  value={spatialFilter}
  onChange={(e) => setSpatialFilter(e.target.value)}
- className="appearance-none monolithic-panel border border-foreground/10 rounded-none px-4 py-3 pr-10 text-xs font-bold text-foreground transition-all hover:bg-foreground/5 focus:border-primary outline-none"
+ className="appearance-none monolithic-panel border border-foreground/10 rounded-none px-4 py-3 pr-10 text-xs font-bold text-foreground transition-all hover:bg-foreground/5 focus:border-primary outline-none bg-transparent"
  >
  <option value="ALL">TODA LA ESCALA</option>
  <option value="UNIVERSE">UNIVERSO</option>
@@ -206,16 +184,15 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  placeholder="Buscar mapas..."
  value={searchTerm}
  onChange={e => setSearchTerm(e.target.value)}
- className="w-full monolithic-panel rounded-none pl-10 pr-4 py-3 text-sm text-foreground focus:border-primary outline-none transition-all"
+ className="w-full monolithic-panel rounded-none pl-10 pr-4 py-3 text-sm text-foreground focus:border-primary outline-none transition-all bg-transparent"
  />
  </div>
- </div>
+ <Button variant="primary" icon="add" onClick={onCreateMap}>Nuevo Mapa</Button>
  </div>
  </div>
 
- {/* Grid */}
  {filteredMaps.length === 0 ? (
- <div className="flex flex-col items-center justify-center p-20 border-2 border-dashed border-foreground/10 rounded-none bg-white/[0.01] animate-in zoom-in-95 duration-500">
+ <div className="flex flex-col items-center justify-center p-20 border-2 border-dashed border-foreground/10 rounded-none bg-background animate-in zoom-in-95 duration-500">
  <h3 className="text-xl font-bold text-foreground mb-2">No hay mapas visibles</h3>
  </div>
  ) : (
@@ -227,13 +204,12 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  const markersCount = attrs.markers?.length || 0;
 
  return (
- <GlassPanel
+ <MonolithicPanel
  key={map.id}
  className={`group relative overflow-hidden border-foreground/10 hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 cursor-pointer ${selectedMapId === map.id ? 'ring-2 ring-primary bg-primary/5 shadow-2xl shadow-primary/10' : ''}`}
  onClick={() => setSelectedMapId(map.id)}
  onDoubleClick={() => onSelectMap(map)}
  >
- {/* Image Area */}
  <div className="aspect-[16/9] w-full bg-background/50 relative overflow-hidden border-b border-foreground/10">
  {preview ? (
  <img src={preview} alt={map.nombre} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
@@ -243,40 +219,38 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  </div>
  )}
 
- {/* Hover Menu */}
  <div className="absolute top-2 right-2 flex flex-col gap-1 transform translate-x-[150%] group-hover:translate-x-0 transition-transform duration-300 z-30">
-   <button
-     onClick={(e) => { e.stopPropagation(); onSelectMap(map); }}
-     className="p-2 bg-background/90 hover:bg-primary/20 text-foreground rounded-none border border-primary/20 shadow-xl"
-     title="Abrir Visionador"
-   >
-     <span className="material-symbols-outlined text-sm">visibility</span>
-   </button>
-   <button
-     onClick={(e) => { e.stopPropagation(); onEditMap(map); }}
-     className="p-2 bg-background/90 hover:bg-primary/20 text-foreground rounded-none border border-primary/20 shadow-xl"
-     title="Editar en Editor"
-   >
-     <span className="material-symbols-outlined text-sm">edit</span>
-   </button>
-   <button
-     onClick={(e) => { e.stopPropagation(); onDuplicateMap(map); }}
-     className="p-2 bg-background/90 hover:bg-primary/20 text-foreground rounded-none border border-primary/20 shadow-xl"
-     title="Duplicar Mapa"
-   >
-     <span className="material-symbols-outlined text-sm">content_copy</span>
-   </button>
-   <button
-     onClick={(e) => { e.stopPropagation(); onDeleteMap(map); }}
-     className="p-2 bg-background/90 hover:bg-red-500/20 text-red-400 border border-red-500/20 shadow-xl"
-     title="Eliminar Mapa"
-   >
-     <span className="material-symbols-outlined text-sm">delete</span>
-   </button>
+    <button
+      onClick={(e) => { e.stopPropagation(); onSelectMap(map); }}
+      className="p-2 bg-background/90 hover:bg-primary/20 text-foreground rounded-none border border-primary/20 shadow-xl"
+      title="Abrir Visionador"
+    >
+      <span className="material-symbols-outlined text-sm">visibility</span>
+    </button>
+    <button
+      onClick={(e) => { e.stopPropagation(); onEditMap(map); }}
+      className="p-2 bg-background/90 hover:bg-primary/20 text-foreground rounded-none border border-primary/20 shadow-xl"
+      title="Editar en Editor"
+    >
+      <span className="material-symbols-outlined text-sm">edit</span>
+    </button>
+    <button
+      onClick={(e) => { e.stopPropagation(); onDuplicateMap(map); }}
+      className="p-2 bg-background/90 hover:bg-primary/20 text-foreground rounded-none border border-primary/20 shadow-xl"
+      title="Duplicar Mapa"
+    >
+      <span className="material-symbols-outlined text-sm">content_copy</span>
+    </button>
+    <button
+      onClick={(e) => { e.stopPropagation(); onDeleteMap(map); }}
+      className="p-2 bg-background/90 hover:bg-red-500/20 text-red-400 border border-red-500/20 shadow-xl"
+      title="Eliminar Mapa"
+    >
+      <span className="material-symbols-outlined text-sm">delete</span>
+    </button>
  </div>
  </div>
 
- {/* Content Area */}
  <div className="p-5">
  <div className="flex justify-between items-start mb-2">
  <h3 className="font-bold text-foreground text-lg truncate pr-2 group-hover:text-primary transition-colors">{map.nombre}</h3>
@@ -299,11 +273,12 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  </div>
  </div>
  </div>
- </GlassPanel>
+ </MonolithicPanel>
  );
  })}
  </div>
  )}
+ </div>
  </div>
  </div>
  );

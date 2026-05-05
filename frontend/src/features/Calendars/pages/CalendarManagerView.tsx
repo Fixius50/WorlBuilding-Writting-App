@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { calendarService, Calendario } from '@repositories/calendarService';
 import Button from '@atoms/Button';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import { useLanguage } from '@context/LanguageContext';
 
 const CalendarManagerView: React.FC = () => {
@@ -75,7 +75,7 @@ const CalendarManagerView: React.FC = () => {
         ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {calendars.map(cal => (
-                    <GlassPanel key={cal.id} className="p-6 group hover:border-primary/30 transition-all cursor-pointer" onClick={() => setEditingCalendar(cal)}>
+                    <MonolithicPanel key={cal.id} className="p-6 group hover:border-primary/30 transition-all cursor-pointer" onClick={() => setEditingCalendar(cal)}>
                         <div className="flex justify-between items-start mb-4">
                             <span className="material-symbols-outlined text-primary/40 group-hover:text-primary transition-colors">calendar_month</span>
                             <span className="text-[10px] font-black uppercase tracking-widest text-foreground/20">ID: {cal.id}</span>
@@ -91,14 +91,14 @@ const CalendarManagerView: React.FC = () => {
                                 <span className="text-foreground/60">{JSON.parse(cal.dias_semana_json).length}</span>
                             </div>
                         </div>
-                    </GlassPanel>
+                    </MonolithicPanel>
                 ))}
             </div>
         )}
 
         {editingCalendar && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-300">
-                <GlassPanel className="w-full max-w-2xl p-8 shadow-2xl border-primary/20">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80  animate-in fade-in duration-300">
+                <MonolithicPanel className="w-full max-w-2xl p-8 shadow-2xl border-primary/20">
                     <h2 className="text-2xl font-black uppercase tracking-tighter mb-8 flex items-center gap-3">
                         <span className="material-symbols-outlined text-primary">edit_calendar</span>
                         Configurar Calendario
@@ -215,7 +215,7 @@ const CalendarManagerView: React.FC = () => {
                         <Button variant="ghost" onClick={() => setEditingCalendar(null)}>Cancelar</Button>
                         <Button variant="primary" onClick={handleSave}>Guardar Calendario</Button>
                     </div>
-                </GlassPanel>
+                </MonolithicPanel>
             </div>
         )}
       </div>

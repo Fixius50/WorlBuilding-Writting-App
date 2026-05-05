@@ -145,11 +145,11 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
   const noFolders = !allFolders || allFolders.length === 0;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-2xl bg-black/80 animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6  bg-black/80 animate-in fade-in duration-300">
       <div className="w-full max-w-5xl monolithic-panel bg-background border border-white/10 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
         
         {/* Header */}
-        <header className="p-8 border-b border-white/5 bg-white/[0.01] flex items-center justify-between shrink-0">
+        <header className="p-8 border-b border-white/5 bg-background flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
              <div className="size-12 bg-primary/10 flex items-center justify-center border border-primary/20">
                 <span className="material-symbols-outlined text-primary">dynamic_feed</span>
@@ -170,14 +170,14 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
         <div className="flex-1 overflow-y-auto no-scrollbar grid grid-cols-1 lg:grid-cols-2 gap-0">
           
           {/* Columna 1: Identidad y Nombres */}
-          <div className="p-8 space-y-10 border-r border-white/5 bg-white/[0.01]">
+          <div className="p-8 space-y-10 border-r border-white/5 bg-background">
             <section className="space-y-4">
               <div className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.2em] flex items-center gap-2">
                 <span className="material-symbols-outlined text-xs">label</span>
                 Identidades a Generar
               </div>
               
-              <div className="space-y-3 p-6 bg-white/[0.02] border border-white/5 min-h-[160px] max-h-[240px] overflow-y-auto custom-scrollbar flex flex-wrap gap-2 content-start group focus-within:border-primary/30 transition-all">
+              <div className="space-y-3 p-6 bg-background border border-white/5 min-h-[160px] max-h-[240px] overflow-y-auto custom-scrollbar flex flex-wrap gap-2 content-start group focus-within:border-primary/30 transition-all">
                 {nameList.map(name => (
                   <div key={name} className="flex items-center gap-2 bg-primary/10 border border-primary/20 px-3 py-1.5 animate-in zoom-in-95">
                     <span className="text-[11px] font-black uppercase tracking-tighter text-primary-light">{name}</span>
@@ -218,7 +218,7 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
                     className={`flex flex-col items-center justify-center gap-2 p-4 border transition-all ${
                       type === t.id 
                         ? 'bg-primary/10 border-primary/40 shadow-lg shadow-primary/5' 
-                        : 'bg-white/[0.02] border-white/10 hover:border-white/20 opacity-50 grayscale hover:grayscale-0'
+                        : 'bg-background border-white/10 hover:border-white/20 opacity-50 grayscale hover:grayscale-0'
                     } disabled:opacity-10 disabled:cursor-not-allowed`}
                   >
                     <span className={`material-symbols-outlined ${type === t.id ? t.color : 'text-foreground/40'}`}>{t.icon}</span>
@@ -258,7 +258,7 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
                   <select
                     value={folderId || ''}
                     onChange={e => setFolderId(Number(e.target.value))}
-                    className="w-full bg-white/[0.03] border border-white/10 p-4 rounded-none outline-none focus:border-primary/50 text-xs font-black uppercase tracking-widest cursor-pointer hover:bg-white/[0.05] transition-all"
+                    className="w-full bg-background border border-white/10 p-4 rounded-none outline-none focus:border-primary/50 text-xs font-black uppercase tracking-widest cursor-pointer hover:bg-background transition-all"
                   >
                     {allFolders.map(f => (
                       <option key={f.id} value={f.id}>{f.nombre}</option>
@@ -270,7 +270,7 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
           </div>
 
           {/* Columna 2: Atributos Comunes */}
-          <div className="p-8 space-y-8 bg-black/40 flex flex-col h-full">
+          <div className="p-8 space-y-8 bg-background flex flex-col h-full">
             <header className="flex items-center justify-between shrink-0">
               <div className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.2em] flex items-center gap-2">
                 <span className="material-symbols-outlined text-xs">assignment</span>
@@ -298,7 +298,7 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
                 </div>
               ) : (
                 selectedAttributes.map(attr => (
-                  <div key={attr.template.id} className="p-5 bg-white/[0.02] border border-white/5 space-y-4 group animate-in slide-in-from-right-2">
+                  <div key={attr.template.id} className="p-5 bg-background border border-white/5 space-y-4 group animate-in slide-in-from-right-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="size-2 bg-primary/40 rounded-full" />
@@ -315,7 +315,7 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
                       value={attr.value}
                       onChange={e => handleAttributeValueChange(attr.template.id, e.target.value)}
                       placeholder={`Definir ${attr.template.nombre.toLowerCase()}...`}
-                      className="w-full bg-black/40 border border-white/10 p-3 rounded-none outline-none focus:border-primary/50 text-[11px] font-bold italic transition-all"
+                      className="w-full bg-background border border-white/10 p-3 rounded-none outline-none focus:border-primary/50 text-[11px] font-bold italic transition-all"
                     />
                   </div>
                 ))
@@ -325,7 +325,7 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
         </div>
 
         {/* Footer */}
-        <footer className="p-8 border-t border-white/5 bg-white/[0.01] flex items-center justify-between shrink-0">
+        <footer className="p-8 border-t border-white/5 bg-background flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
              <div className="flex -space-x-2">
                 {nameList.slice(0, 3).map((_, i) => (
@@ -352,7 +352,7 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
           <div className="flex items-center gap-4">
             <button 
               onClick={onClose}
-              className="px-8 py-3 bg-white/5 hover:bg-white/10 text-[10px] font-black uppercase tracking-widest text-foreground/60 transition-all border border-white/5"
+              className="px-8 py-3 bg-background hover:bg-background text-[10px] font-black uppercase tracking-widest text-foreground/60 transition-all border border-white/5"
             >
               Cancelar
             </button>

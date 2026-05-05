@@ -1,12 +1,12 @@
 import React from 'react';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 
 const MapSelectionModal = ({ maps, onSelect, onCreateNew, onClose }: { maps: any[], onSelect: (map: any) => void, onCreateNew: () => void, onClose: () => void }) => {
  return (
  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 animate-in fade-in duration-300">
  <div className="w-full max-w-3xl animate-in zoom-in-95 duration-500">
- <GlassPanel className="overflow-hidden border-foreground/40 shadow-2xl">
- <header className="p-6 border-b border-foreground/10 flex justify-center gap-12 text-center items-center bg-white/[0.02]">
+ <MonolithicPanel className="overflow-hidden border-foreground/40 shadow-2xl">
+ <header className="p-6 border-b border-foreground/10 flex justify-center gap-12 text-center items-center bg-background">
  <div className="flex items-center gap-3">
  <span className="material-symbols-outlined text-primary">map</span>
  <h2 className="text-xl font-manrope font-black text-foreground">Cartografía del Proyecto</h2>
@@ -70,10 +70,10 @@ const MapSelectionModal = ({ maps, onSelect, onCreateNew, onClose }: { maps: any
  })}
  </div>
 
- <footer className="p-6 bg-white/[0.02] border-t border-foreground/10 flex justify-end">
+ <footer className="p-6 bg-background border-t border-foreground/10 flex justify-end">
  <p className="text-[10px] text-foreground/60 font-bold uppercase tracking-widest">Selecciona un mapa para cargar el visor</p>
  </footer>
- </GlassPanel>
+ </MonolithicPanel>
  </div>
  </div>
  );

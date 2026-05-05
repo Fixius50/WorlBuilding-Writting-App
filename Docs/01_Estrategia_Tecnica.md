@@ -8,9 +8,9 @@ El proyecto adopta un "Mapa de Carpetas Definitivo" con separación física tota
 
 * **Frontend (UI y Lógica Core) en `/frontend`:** React 19.2.4 con Vite.
   * Arquitectura Interna: **Clean Architecture** (`domain`, `application`, `infrastructure`) + **Atomic Design** (`presentation`: `atoms`, `molecules`, `organisms`, `templates`, `pages`).
-  * Estado: Context API + Zustand (Manejador de Estado Global ligero).
+  * Estado: Zustand (Manejador de Estado Global centralizado para UI y Paneles). Context API reservado exclusivamente para datos de proyecto/idioma inmutables en el render.
   * Routing: React Router Dom.
-  * Estilos: Glassmorphism y utilidades Tailwind CSS.
+  * Estilos: Technical Zen (Monolithic) basado en variables CSS (`foreground/X`). Prohibido glassmorphism legacy.
   * Aliasing de rutas configurado (ej. `@components`, `@features`, `@database`, `@assets`).
 * **Persistencia (BBDD Local-First):** SQLite WASM (`sqlocal`) sobre OPFS.
   * Almacenamiento absoluto de datos en el navegador del cliente. Cero latencia de red.
@@ -19,11 +19,12 @@ El proyecto adopta un "Mapa de Carpetas Definitivo" con separación física tota
   * Arquitectura Interna: **Domain-Driven Design (DDD)** con subpaquetes como `worldbible`, `mapeditor` y `linguistics` bajo el namespace `com.worldbuilding`.
   * Responsabilidad: Gestión de archivos del sistema, OPFS bridge, snapshots en disco y utilidades de entorno.
 
-## ARQUITECTURA DE DATOS
+## ARQUITECTURA DE PANELES (CHAMELEON INSPECTOR)
 
-1. **Entidades Base:** Todo en el mundo es una "Entidad" aislada guardada en formato relacional.
-2. **Modularidad:** División estricta por módulos de lore (Atlas, Crónicas, Personajes).
+1. **Inspector Universal:** El panel derecho es un contenedor inteligente (`UniversalInspector`) que reacciona al `mode` y `activeId` del store global.
+2. **Inyección de Contenido:** Las vistas pueden inyectar componentes personalizados vía `setCustomContent`, eliminando la necesidad de portales o comunicación via props.
+3. **Persistencia Visual:** El panel mantiene su estado de apertura y contenido de forma independiente a la navegación del `Outlet`.
 
 ## HISTORIAL DE TRANSICIÓN
 
-Inicialmente concebido como un monolito pesado o una app distribuida. El proyecto ha **completado con éxito** la transición a **Local-First (Vite + SQLocal)**. El **Backend Auxiliar (Java)** se mantiene exclusivamente como un facilitador de sistema para persistencia en disco (Snapshots) y utilidades de entorno.
+El proyecto ha **completado con éxito** la transición a la **Arquitectura Monolítica Zen (Mayo 2026)**, eliminando la deuda técnica de los portales manuales y centralizando la lógica de inspección. El **Backend Auxiliar (Java)** se mantiene exclusivamente como un facilitador de sistema para persistencia en disco (Snapshots) y utilidades de entorno.

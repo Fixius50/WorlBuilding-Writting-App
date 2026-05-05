@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { folderService } from '@repositories/folderService';
 import { templateService } from '@repositories/templateService';
 import { Plantilla } from '@domain/models/database';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import ConfirmationModal from '@organisms/ConfirmationModal';
 
 export interface TemplateField {
@@ -84,7 +84,7 @@ const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
 
  return (
  <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
- <GlassPanel className={`${compact ? 'p-4 bg-transparent border-none shadow-none' : 'p-8 space-y-8'}`}>
+ <MonolithicPanel className={`${compact ? 'p-4 bg-transparent border-none shadow-none' : 'p-8 space-y-8'}`}>
  <header className={`flex ${compact ? 'flex-col gap-4' : 'justify-center gap-12 text-center items-center'}`}>
  <div>
  <h3 className={`${compact ? 'text-sm' : 'text-xl'} font-bold text-foreground`}>Atributos Globales</h3>
@@ -100,7 +100,7 @@ const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
  templates.map((tpl, idx) => (
  <div
  key={tpl.id}
- className="flex items-center gap-4 p-4 rounded-none bg-white/[0.02] border border-foreground/10 hover:border-primary/50 hover:bg-foreground/5 transition-all cursor-grab active:cursor-grabbing group select-none"
+ className="flex items-center gap-4 p-4 rounded-none bg-background border border-foreground/10 hover:border-primary/50 hover:bg-foreground/5 transition-all cursor-grab active:cursor-grabbing group select-none"
  draggable
  onDragStart={(e) => {
  e.dataTransfer.setData('application/reactflow/type', 'attribute');
@@ -128,7 +128,7 @@ const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
 
  <NewFieldForm onAdd={handleCreateTemplate} />
  </div>
- </GlassPanel >
+ </MonolithicPanel >
 
  {/* Confirmation Modal */}
  < ConfirmationModal
@@ -174,7 +174,7 @@ const NewFieldForm = ({ onAdd }: { onAdd: (field: TemplateField) => void }) => {
  };
 
  return (
- <div className="p-4 rounded-none border-2 border-dashed border-foreground/40 bg-white/[0.01] space-y-4">
+ <div className="p-4 rounded-none border-2 border-dashed border-foreground/40 bg-background space-y-4">
  <h4 className="text-xs font-black uppercase tracking-widest text-primary">Add New Attribute</h4>
  <div className="grid grid-cols-2 gap-4">
  <input

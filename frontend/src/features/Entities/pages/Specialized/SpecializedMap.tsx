@@ -1,12 +1,12 @@
 import React from 'react';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 
 const SpecializedMap = ({ entity, active }: { entity?: any, active?: boolean }) => {
  if (!active) return null;
 
  return (
  <div className="w-full h-full p-4 animate-fade-in">
- <GlassPanel className="w-full h-[600px] relative overflow-hidden bg-background/40 border-foreground/40 group">
+ <MonolithicPanel className="w-full h-[600px] relative overflow-hidden bg-background/40 border-foreground/40 group">
  {/* Simulated Map Background */}
  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-[#09090b] to-black opacity-80"></div>
  <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/cartographer.png")' }}></div>
@@ -38,7 +38,7 @@ const SpecializedMap = ({ entity, active }: { entity?: any, active?: boolean }) 
  <div className="absolute bottom-4 right-4 text-xs font-mono text-foreground/30">
  COORD: 45.32, -12.04 | SCALE: 1:50000
  </div>
- </GlassPanel>
+ </MonolithicPanel>
  </div>
  );
 };

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Button from '@atoms/Button';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import { useLanguage } from '@context/LanguageContext';
 
 const AdvancedLinguistics: React.FC = () => {
@@ -54,7 +54,7 @@ const AdvancedLinguistics: React.FC = () => {
           </div>
         </header>
 
-        <GlassPanel className="p-8 space-y-6">
+        <MonolithicPanel className="p-8 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4">
               <label className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Entrada (Separado por comas)</label>
@@ -99,21 +99,21 @@ const AdvancedLinguistics: React.FC = () => {
                 </div>
               </div>
           )}
-        </GlassPanel>
+        </MonolithicPanel>
 
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <GlassPanel className="p-6 border-l-4 border-emerald-500/50">
+            <MonolithicPanel className="p-6 border-l-4 border-emerald-500/50">
                 <h4 className="text-[10px] font-black uppercase tracking-widest text-foreground/60 mb-2">Tip de Conjugación</h4>
                 <p className="text-[11px] text-foreground/40 leading-relaxed italic">
                     Usa corchetes para opcionales: <code className="text-primary/60">-[e]r</code> añadirá 'er' si la palabra no termina en 'e', o solo 'r' si ya la tiene.
                 </p>
-            </GlassPanel>
-            <GlassPanel className="p-6 border-l-4 border-amber-500/50">
+            </MonolithicPanel>
+            <MonolithicPanel className="p-6 border-l-4 border-amber-500/50">
                 <h4 className="text-[10px] font-black uppercase tracking-widest text-foreground/60 mb-2">Evolución Diacrónica</h4>
                 <p className="text-[11px] text-foreground/40 leading-relaxed italic">
                     Esta herramienta permite proyectar cómo cambiarían tus palabras a lo largo de los siglos (Lenición, Palatalización, etc).
                 </p>
-            </GlassPanel>
+            </MonolithicPanel>
         </section>
 
         <section className="space-y-4">

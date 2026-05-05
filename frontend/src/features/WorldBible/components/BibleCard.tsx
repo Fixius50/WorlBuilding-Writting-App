@@ -86,7 +86,7 @@ const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu
 
       {/* Item Counter - Premium Glassmorphism Badge */}
       {isFolder && (item.itemCount || 0) > 0 && (
-        <div className="absolute bottom-4 right-4 px-2 py-0.5 bg-white/[0.03] backdrop-blur-md border border-white/10 text-[9px] font-black text-foreground/50 rounded-full shadow-[0_2px_10px_rgba(0,0,0,0.5)] z-10 transition-all group-hover:border-indigo-500/30 group-hover:text-indigo-400 group-hover:bg-indigo-500/10 uppercase tracking-tighter">
+        <div className="absolute bottom-4 right-4 px-2 py-0.5 bg-background  border border-white/10 text-[9px] font-black text-foreground/50 rounded-full shadow-[0_2px_10px_rgba(0,0,0,0.5)] z-10 transition-all group-hover:border-indigo-500/30 group-hover:text-indigo-400 group-hover:bg-indigo-500/10 uppercase tracking-tighter">
           {item.itemCount}
         </div>
       )}

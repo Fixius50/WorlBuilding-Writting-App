@@ -2,7 +2,7 @@ import React from 'react';
 import { entityService } from '@repositories/entityService';
 import { Entidad } from '@domain/models/database';
 import Button from '@atoms/Button';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import Avatar from '@atoms/Avatar';
 
 interface CosmicHierarchyViewProps {
@@ -94,7 +94,7 @@ const CosmicHierarchyView: React.FC<CosmicHierarchyViewProps> = ({ id, type }) =
 
  {/* Right Column: Internal Content List */}
  <div className="lg:col-span-2">
- <GlassPanel className="h-full border-foreground/10 monolithic-panel/40 overflow-hidden flex flex-col shadow-2xl">
+ <MonolithicPanel className="h-full border-foreground/10 monolithic-panel/40 overflow-hidden flex flex-col shadow-2xl">
  <header className="p-8 border-b border-foreground/10 flex justify-center gap-12 text-center items-center">
  <div className="flex items-center gap-4">
  <div className="size-10 rounded-none bg-primary/20 text-primary flex items-center justify-center">
@@ -125,7 +125,7 @@ const CosmicHierarchyView: React.FC<CosmicHierarchyViewProps> = ({ id, type }) =
  Añadir Nueva Entidad
  </button>
  </div>
- </GlassPanel>
+ </MonolithicPanel>
  </div>
  </div>
  </main>

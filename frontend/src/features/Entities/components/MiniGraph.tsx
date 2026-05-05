@@ -10,7 +10,7 @@ interface MiniGraphProps {
 
 const CustomNode = ({ data }: NodeProps) => {
   return (
-    <div className={`p-3 border-t-2 ${data.isMain ? 'border-primary bg-primary/10 shadow-[0_0_20px_rgba(var(--primary-rgb),0.2)]' : 'border-foreground/20 bg-foreground/5'} backdrop-blur-md flex flex-col items-center justify-center min-w-[120px]`}>
+    <div className={`p-3 border-t-2 ${data.isMain ? 'border-primary bg-primary/10 shadow-[0_0_20px_rgba(var(--primary-rgb),0.2)]' : 'border-foreground/20 bg-foreground/5'}  flex flex-col items-center justify-center min-w-[120px]`}>
       <Handle type="target" position={Position.Top} className="opacity-0" />
       <span className="text-[10px] font-black uppercase tracking-widest text-foreground truncate w-full text-center">
         {data.label as string}

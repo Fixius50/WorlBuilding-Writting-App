@@ -4,6 +4,15 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
 
 ## 🕒 CRONOLOGÍA DE HITOS (2026)
 
+### MAYO 2026
+
+- **2026-05-05: Unificación Monolítica Zen y Chameleon Inspector**
+  - **Migración Arquitectónica**: Eliminación total del `ArchitectContext` legacy en favor de `useRightPanelStore` (Zustand).
+  - **Chameleon Inspector**: Implementación del `UniversalInspector` como punto único de entrada para el panel derecho. Eliminación de portales manuales (`createPortal`) en `EntityBuilder` y `WritingView`.
+  - **Simplificación UI**: Eliminación de la pestaña "Notas" en el panel derecho. El panel ahora se centra exclusivamente en el contexto (Inspector).
+  - **Limpieza de Deuda**: Eliminación de estados "fantasma" en `ArchitectLayout` (`statsData`, `addAttributeHandler`, `availableTemplates`).
+  - **Sintaxis Zen**: Estandarización del uso de funciones lambda y tipado estricto (`unknown` en lugar de `any`).
+
 ### ABRIL 2026
 
 - **2026-04-25: Módulo de Escritura Avanzada, Preview Inline y Saneamiento**

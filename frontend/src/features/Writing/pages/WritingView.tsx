@@ -2,35 +2,18 @@ import { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '@context/LanguageContext';
 import { createPortal } from 'react-dom';
 import { useOutletContext, useParams, useNavigate } from 'react-router-dom';
+import { useRightPanelStore } from '@store/useRightPanelStore';
 import { notebookService, Cuaderno, Hoja } from '@repositories/notebookService';
 import { entityService } from '@repositories/entityService';
 import ZenEditor from '@features/Editor/components/ZenEditor';
 import ConfirmModal from '@organisms/ConfirmModal';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 
 const WritingView = () => {
   const { notebookId } = useParams();
   const navigate = useNavigate();
 
-  interface ArchitectContext {
-    setRightPanelTab: (tab: string) => void;
-    setRightPanelTitle: (title: React.ReactNode) => void;
-    setRightPanelContent: (content: React.ReactNode) => void;
-    setRightOpen: (open: boolean) => void;
-    setStatsData: (data: any) => void;
-    projectName: string;
-    projectId: number | null;
-  }
-
-  const { 
-    setRightPanelTab, 
-    setRightPanelTitle, 
-    setRightPanelContent, 
-    setRightOpen, 
-    projectId, 
-    projectName,
-    setStatsData 
-  } = useOutletContext<ArchitectContext>();
+  const { openPanel, setCustomContent } = useRightPanelStore();
   const { t } = useLanguage();
 
   const [notebook, setNotebook] = useState<Cuaderno | null>(null);
@@ -52,49 +35,27 @@ const WritingView = () => {
   useEffect(() => { pagesRef.current = pages; }, [pages]);
   useEffect(() => { indexRef.current = currentPageIndex; }, [currentPageIndex]);
 
-  // Portal Target
-  const [portalRef, setPortalRef] = useState<HTMLElement | null>(null);
   const [activeTab, setActiveTab] = useState<'index' | 'format'>('index');
   const [editingPageId, setEditingPageId] = useState<number | null>(null);
 
   // Update global stats
   useEffect(() => {
-    if (setStatsData && pages.length > 0) {
-      const totalWords = pages.reduce((acc, p) => acc + (p.contenido?.replace(/<[^>]+>/g, '').trim().split(/\s+/).filter(Boolean).length || 0), 0);
-      setStatsData({
-        pages: pages,
-        totalPages: pages.length,
-        wordsToday: totalWords, // Por ahora totalWords como wordsToday hasta tener snapshots históricos
-      });
-    }
-    return () => {
-       if (setStatsData) setStatsData(null);
-    };
-  }, [pages, setStatsData]);
+    /* setStatsData moved to separate store or local logic if needed, 
+       but for now we remove it to clean up ArchitectLayout */
+    return () => {};
+  }, [pages]);
 
   // Initial Load
   useEffect(() => {
-    if (setRightPanelTab) setRightPanelTab('CONTEXT');
-    setRightOpen(true);
+    openPanel('custom', 0, 'Archivador');
     if (notebookId) {
       loadNotebookAndPages(Number(notebookId));
     }
-  }, [notebookId, setRightPanelTab]);
+  }, [notebookId]);
 
-  // Find portal target
   useEffect(() => {
-    const checkPortal = setInterval(() => {
-      const el = document.getElementById('global-right-panel-portal');
-      if (el) {
-        setPortalRef(el);
-        clearInterval(checkPortal);
-      }
-    }, 100);
-    return () => {
-      clearInterval(checkPortal);
-      if (setRightPanelTab) setRightPanelTab('NOTEBOOKS');
-    };
-  }, [setRightPanelTab]);
+    setCustomContent(renderRightPanel(), notebook?.titulo || 'Archivador');
+  }, [notebook, pages, activeTab, searchTerm, editingPageId, saving, currentPageIndex]);
 
   // Cleanup & Save on Unmount
   useEffect(() => {
@@ -173,56 +134,7 @@ const WritingView = () => {
         
         const img = extra.imageUrl || extra.image || extra.avatar || '';
 
-        setRightPanelTitle(
-          <div className="flex flex-col">
-            <span className="text-[9px] font-black uppercase tracking-widest text-primary mb-1">Previsualización de Entidad</span>
-            <span className="text-foreground font-black text-sm truncate">{entity.nombre}</span>
-          </div>
-        );
-
-        setRightPanelContent(
-          <div className="p-6 space-y-8 animate-in fade-in duration-500">
-             {/* Info Básica */}
-             <section className="space-y-4">
-                {img && (
-                  <div className="aspect-video border border-foreground/10 bg-foreground/5 overflow-hidden">
-                    <img src={img} alt={entity.nombre} className="w-full h-full object-cover" />
-                  </div>
-                )}
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 text-[9px] font-black bg-primary/10 text-primary border border-primary/20 uppercase tracking-widest">
-                    {entity.tipo}
-                  </span>
-                </div>
-                <p className="text-xs text-foreground/60 leading-relaxed italic">
-                  {entity.descripcion || "Sin descripción disponible."}
-                </p>
-             </section>
-
-             {/* Backlinks (Simulados o reales si el servicio los da) */}
-             <section className="space-y-4">
-                <h3 className="text-[10px] font-black uppercase tracking-widest text-foreground/40 px-2 border-l-2 border-primary">Apariciones Recientes</h3>
-                <div className="space-y-3">
-                   <div className="p-3 bg-foreground/5 border border-foreground/10 text-[11px] text-foreground/50 italic">
-                      Buscando referencias en el manuscrito...
-                   </div>
-                </div>
-             </section>
-
-             {/* Acciones Rápidas */}
-             <section className="pt-4 border-t border-foreground/5">
-                <button 
-                  onClick={() => navigate(`/local/${projectName}/bible/folder/${entity.carpeta_id}/entity/${entity.id}`)}
-                  className="w-full py-2 bg-foreground/5 border border-foreground/10 text-[10px] font-black uppercase tracking-widest hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all"
-                >
-                  Abrir Ficha Completa
-                </button>
-             </section>
-          </div>
-        );
-
-        setRightPanelTab('CONTEXT');
-        setRightOpen(true);
+        openPanel('entity', Number(id), entity.nombre);
       }
     } catch (err) {
       console.error('Error al cargar previsualización de la mención:', err);
@@ -486,7 +398,6 @@ const WritingView = () => {
 
   return (
     <div className="flex-1 flex w-full h-full bg-[#111] relative overflow-hidden font-sans text-foreground/60">
-      {portalRef && createPortal(renderRightPanel(), portalRef)}
       <div className="flex-1 flex flex-col relative z-10 overflow-hidden">
         <main className="flex-1 flex flex-col relative no-scrollbar bg-[#1e1e1e]">
           {currentPage && (

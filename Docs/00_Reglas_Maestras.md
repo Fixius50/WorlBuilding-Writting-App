@@ -8,8 +8,8 @@ Este proyecto requiere un altísimo nivel de consistencia, documentación y cali
 1. **Doble Verificación:** Antes de escribir cualquier código, verifica la estructura actual y la lógica existente.
 2. **Documentación Continua:** Cada cambio significativo debe registrarse en la `05_Bitacora_Dev.md` o en la `05_Bitacora_Sistematica.md`.
 3. **Modularidad:** Sigue estrictamente la arquitectura modular definida. No mezcles responsabilidades.
-4. **Estética "World Building":** El frontend debe tener una estética técnica, arquitectónica y monolítica (Technical Zen, cero transparencias, paneles sólidos).
-5. **Preservación de Contexto:** Nunca borres comentarios explicativos de lógica compleja salvo que la lógica cambie.
+4. **Estética "World Building":** El frontend debe tener una estética técnica, arquitectónica y monolítica (Technical Zen, paneles sólidos, tipografía académica). Prohibido el uso de glassmorphism ad-hoc o transparencias arbitrarias.
+5. **Estado Centralizado:** El panel derecho se gestiona exclusivamente a través de `useRightPanelStore`. Prohibido el uso de portales manuales (`createPortal`) para el layout global.
 
 ## FLUJO DE TRABAJO
 
@@ -22,11 +22,11 @@ Este proyecto requiere un altísimo nivel de consistencia, documentación y cali
 
   1. **Tipado Estricto:** Todo código nuevo DEBE ser TypeScript. Prohibido usar `any`.
   2. **Estabilidad de React (CRÍTICO):** 
-     - **useMemo / useCallback:** Obligatorios para cualquier objeto de contexto o función pasada como prop a componentes hijos. Prohibido crear objetos/funciones en el render sin memoizar.
-     - **Gestión de Efectos:** Usar `useRef` para funciones o handlers que se necesiten dentro de un `useEffect` pero que no deban dispararlo de nuevo (patrón de estabilidad).
+     - **useMemo / useCallback:** Obligatorios para cualquier objeto de contexto o función pasada como prop a componentes hijos.
+     - **Gestión de Efectos:** Usar `useRef` para funciones o handlers que se necesiten dentro de un `useEffect` (patrón de estabilidad).
      - **Evitar Cascada:** No usar `setState` en bucles de dependencias que afecten al layout global.
-  3. **Local-First (Flexible):** La persistencia base usa SQLite WASM (via `sql-js` o similar). Sin embargo, está permitido el uso de APIs (`api.js`) cuando el diseño lo requiera.
-  4. **Arquitectura Híbrida:** Separación física estricta entre `/frontend` (Vite, Clean Architecture) y `/backend` (Java Spring Boot, Domain-Driven Design).
+  3. **Local-First (Flexible):** La persistencia base usa SQLite WASM.
+  4. **Arquitectura Híbrida:** Separación física estricta entre `/frontend` (Vite, Clean Architecture) y `/backend` (Java Spring Boot, DDD).
   5. **Diseño:** Seguir el estándar "Technical Zen (Monolithic)" definido en `02_Diseño_UI_UX.md`.
   6. **Idioma:** Código e interfaz en Español (Nombres de variables en Inglés por convención).
 

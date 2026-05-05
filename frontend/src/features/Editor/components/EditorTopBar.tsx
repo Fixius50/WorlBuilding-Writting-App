@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
 
 interface EditorTopBarProps {
@@ -30,7 +30,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
   const [showSnapshots, setShowSnapshots] = React.useState(false);
 
   return (
-    <header className={`${minimal ? 'h-12 px-4' : 'h-16 px-8'} flex items-center justify-between bg-background/40 border-b border-foreground/10 backdrop-blur-md select-none shrink-0 z-50`}>
+    <header className={`${minimal ? 'h-12 px-4' : 'h-16 px-8'} flex items-center justify-between bg-background/40 border-b border-foreground/10  select-none shrink-0 z-50`}>
       {/* LADO IZQUIERDO: Título */}
       <div className="flex items-center gap-3 flex-1">
         <span className={`material-symbols-outlined text-primary ${minimal ? 'text-lg' : 'text-xl'}`}>edit_note</span>

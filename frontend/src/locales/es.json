@@ -39,7 +39,8 @@
         "logout": "Salir al Hub",
         "chronology": "Dimensiones",
         "graph": "Grafo",
-        "languages": "Lingüística"
+        "languages": "Lingüística",
+        "trash": "Papelera"
     },
     "settings": {
         "title": "Ajustes",

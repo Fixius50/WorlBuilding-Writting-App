@@ -1,7 +1,7 @@
 import { entityService } from '@repositories/entityService';
 import { Entidad } from '@domain/models/database';
 import { useState, useEffect } from 'react';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
 
 interface CollectiveData extends Partial<Entidad> {
@@ -89,7 +89,7 @@ const CollectiveView = ({ id }: { id: string | number }) => {
 
  <div className="grid grid-cols-3 gap-8">
  <div className="col-span-1 space-y-6">
- <GlassPanel className="p-6">
+ <MonolithicPanel className="p-6">
  <h3 className="text-xs font-bold text-foreground/60 uppercase tracking-widest mb-4 flex items-center gap-2">
  <span className="material-symbols-outlined text-sm">group_work</span> Group Dynamics
  </h3>
@@ -103,11 +103,11 @@ const CollectiveView = ({ id }: { id: string | number }) => {
  <input type="text" value={collective.comportamiento || ''} onChange={(e) => handleChange('comportamiento', e.target.value)} className="w-full sunken-panel border border-foreground/40 rounded px-3 py-2 text-foreground text-sm" readOnly={!isEditing} />
  </div>
  </div>
- </GlassPanel>
+ </MonolithicPanel>
  </div>
 
  <div className="col-span-2 space-y-6">
- <GlassPanel className="p-8">
+ <MonolithicPanel className="p-8">
  <h3 className="text-xs font-bold text-foreground/60 uppercase tracking-widest mb-4 flex items-center gap-2">
  <span className="material-symbols-outlined text-sm">history_edu</span> Mandate & History
  </h3>
@@ -118,7 +118,7 @@ const CollectiveView = ({ id }: { id: string | number }) => {
  className="w-full bg-transparent border-none outline-none text-foreground/60 text-lg leading-relaxed min-h-[400px] resize-none"
  placeholder="Detail the motives, the structure, and the legacy of this group..."
  />
- </GlassPanel>
+ </MonolithicPanel>
  </div>
  </div>
  </div>

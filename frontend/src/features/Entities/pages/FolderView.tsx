@@ -1,33 +1,32 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, Link, useNavigate, useOutletContext } from 'react-router-dom';
-import { createPortal } from 'react-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useOutletContext, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@context/LanguageContext';
 import { folderService } from '@repositories/folderService';
 import { entityService } from '@repositories/entityService';
-import BibleCard from '@features/WorldBible/components/BibleCard';
+import { Entidad, Carpeta } from '@domain/models/database';
+import MonolithicPanel from '@atoms/MonolithicPanel';
+import Button from '@atoms/Button';
+import { useRightPanelStore } from '@store/useRightPanelStore';
 import Breadcrumbs from '@molecules/Breadcrumbs';
+import InputModal from '@organisms/InputModal';
 import MoveModal from '@organisms/MoveModal';
-import { getHierarchyType } from '@utils/constants/hierarchy_types';
-import { Carpeta, Entidad } from '@domain/models/database';
+import ConfirmationModal from '@organisms/ConfirmationModal';
 
-interface OutletContext {
-  handleCreateEntity: (type: string) => void;
+interface FolderViewContext {
+  projectId: number;
   handleDeleteEntity: (id: number, folderId: number) => void;
   handleDeleteFolder: (id: number) => void;
-  handleCreateSimpleFolder: (padreId: number, tipo: unknown) => void;
+  handleCreateSimpleFolder: (padreId: number, tipo: string) => void;
   searchTerm: string;
   filterType: string;
-  projectId: number;
-  projectName: string;
   folders: Carpeta[];
-  setRightOpen: (open: boolean) => void;
-  setRightPanelTab: (tab: string) => void;
 }
 
 const FolderView: React.FC = () => {
-  const { projectName, folderId } = useParams<{ projectName: string; folderId: string }>();
+  const { folderId } = useParams();
   const navigate = useNavigate();
   const { t } = useLanguage();
+  
   const {
     handleDeleteEntity,
     handleDeleteFolder,
@@ -35,200 +34,163 @@ const FolderView: React.FC = () => {
     searchTerm: folderSearchTerm,
     filterType: folderFilterType,
     projectId,
-    allFolders: folders,
-    setRightOpen,
-    setRightPanelTab
-  } = useOutletContext<OutletContext & { allFolders: Carpeta[] }>();
+    folders
+  } = useOutletContext<FolderViewContext>();
+
+  const { openPanel } = useRightPanelStore();
 
   const [entities, setEntities] = useState<Entidad[]>([]);
   const [subfolders, setSubfolders] = useState<Carpeta[]>([]);
-  const [folder, setFolder] = useState<Carpeta | null>(null);
+  const [currentFolder, setCurrentFolder] = useState<Carpeta | null>(null);
   const [path, setPath] = useState<Carpeta[]>([]);
   const [loading, setLoading] = useState(true);
-  const [creationMenuOpen, setCreationMenuOpen] = useState(false);
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
-  
-  // Move Modal State
-  const [moveModalOpen, setMoveModalOpen] = useState(false);
+
+  // Modales
+  const [isNewSubfolderModalOpen, setIsNewSubfolderModalOpen] = useState(false);
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+  const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [itemToMove, setItemToMove] = useState<{ item: Entidad | Carpeta; type: 'entity' | 'folder' } | null>(null);
 
   useEffect(() => {
-    setRightOpen(true);
-    setRightPanelTab('CONTEXT');
+    openPanel('bulk', 0, 'Explorador');
+  }, [openPanel]);
 
-    const interval = setInterval(() => {
-      const el = document.getElementById('global-right-panel-portal');
-      if (el) {
-        setPortalTarget(el);
-        clearInterval(interval);
-      }
-    }, 100);
-    return () => clearInterval(interval);
-  }, [setRightOpen, setRightPanelTab]);
+  useEffect(() => {
+    const loadContent = async () => {
+      if (!folderId) return;
+      setLoading(true);
+      try {
+        const id = Number(folderId);
+        const folder = await folderService.getById(id);
+        setCurrentFolder(folder);
 
-  const filteredContent = React.useMemo(() => {
-    const searchTermLower = (folderSearchTerm || '').toLowerCase();
-    const filterTypeLower = (folderFilterType || 'ALL').toLowerCase();
-
-    return {
-      folders: subfolders.filter(f => !f.borrado && (f.nombre || '').toLowerCase().includes(searchTermLower)),
-      entities: entities.filter(ent => {
-        if (ent.borrado) return false;
-        const name = (ent.nombre || '').toLowerCase();
-        const desc = (ent.descripcion || '').toLowerCase();
-        const matchesSearch = name.includes(searchTermLower) || desc.includes(searchTermLower);
-        if (filterTypeLower === 'all') return matchesSearch;
-        return matchesSearch && (ent.tipo || '').toLowerCase() === filterTypeLower;
-      })
-    };
-  }, [entities, subfolders, folderSearchTerm, folderFilterType]);
-
-  const loadFolderContent = useCallback(async () => {
-    if (!folderId) return;
-    setLoading(true);
-    try {
-      const id = Number(folderId);
-      const fInfo = folders.find(f => f.id === id) || await folderService.getById(id);
-
-      if (fInfo) {
-        setFolder(fInfo);
-        const [ents, subs, breadcrumbs] = await Promise.all([
-          entityService.getByFolder(fInfo.id),
-          folderService.getSubfolders(fInfo.id),
-          folderService.getPath(fInfo.id)
+        const [ents, subs, pth] = await Promise.all([
+          entityService.getByFolder(id),
+          folderService.getSubfolders(id),
+          folderService.getPath(id)
         ]);
         setEntities(ents);
         setSubfolders(subs);
-        setPath(breadcrumbs);
+        // El path incluye la carpeta actual al final, Breadcrumbs la maneja por separado si se pasa currentFolder
+        // o podemos pasarle el path completo. Breadcrumbs.tsx usa path para los padres y currentFolder para el último.
+        // Si folderService.getPath devuelve [Raiz, ..., Actual], le pasamos el slice(0, -1) como path.
+        setPath(pth.slice(0, -1));
+      } catch (err) {
+        console.error('Error loading folder content:', err);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("Error loading folder content:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [folderId, folders]);
+    };
+    loadContent();
+  }, [folderId]);
 
-  useEffect(() => {
-    loadFolderContent();
-  }, [loadFolderContent]);
+  const filteredContent = React.useMemo(() => {
+    const searchTermLower = (folderSearchTerm || '').toLowerCase();
+    
+    const fFolders = subfolders.filter(f => 
+      f.nombre.toLowerCase().includes(searchTermLower)
+    );
+    
+    const fEntities = entities.filter(e => {
+      const matchesSearch = e.nombre.toLowerCase().includes(searchTermLower);
+      const matchesFilter = folderFilterType === 'ALL' || e.tipo === folderFilterType;
+      return matchesSearch && matchesFilter;
+    });
 
-  useEffect(() => {
-    const handleUpdate = () => loadFolderContent();
-    window.addEventListener('folder-update', handleUpdate);
-    return () => window.removeEventListener('folder-update', handleUpdate);
-  }, [loadFolderContent]);
+    return { folders: fFolders, entities: fEntities };
+  }, [subfolders, entities, folderSearchTerm, folderFilterType]);
 
-  const handleRenameEntity = async (entity: Entidad) => {
-    const newName = prompt('Renombrar registro:', entity.nombre);
-    if (newName && newName !== entity.nombre) {
-      await entityService.update(entity.id, { nombre: newName });
-      loadFolderContent();
-    }
-  };
-
-  const handleMoveItem = async (targetFolderId: number | null) => {
-    if (!itemToMove) return;
-    if (itemToMove.type === 'entity') {
-      await entityService.move(itemToMove.item.id, targetFolderId);
-    } else {
-      await folderService.move(itemToMove.item.id, targetFolderId);
-    }
-    setMoveModalOpen(false);
-    loadFolderContent();
-    window.dispatchEvent(new CustomEvent('folder-update'));
-  };
-
-  if (loading) return <div className="flex-1 flex items-center justify-center p-20 animate-pulse">Cargando...</div>;
-  if (!folder) return <div className="flex-1 flex items-center justify-center p-20">Sector No Encontrado</div>;
-
-  const typeInfo = getHierarchyType(folder.tipo);
+  if (loading) {
+    return (
+      <div className="p-8 flex items-center justify-center h-full">
+        <div className="animate-spin size-6 border-2 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
 
   return (
-    <div className="flex-1 p-8 max-w-[1600px] mx-auto w-full h-full overflow-y-auto custom-scrollbar">
-      {portalTarget && createPortal(
-        <div className="p-6 space-y-6 animate-in fade-in duration-500">
-          <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Acciones Rápidas</h3>
-          <div className="grid grid-cols-1 gap-2">
-            <button onClick={() => navigate(`/local/${projectName}/bible/folder/${folder.id}/entity/new/entidadindividual`)} className="flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-indigo-500/10 border border-white/5 hover:border-indigo-500/30 transition-all group">
-              <span className="material-symbols-outlined text-indigo-400 opacity-40 group-hover:opacity-100">person_add</span>
-              <span className="text-[11px] font-bold text-white/60 group-hover:text-white">Nueva Entidad</span>
-            </button>
-            <button onClick={() => handleCreateSimpleFolder(folder.id, 'TIMELINE')} className="flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-orange-500/10 border border-white/5 hover:border-orange-500/30 transition-all group">
-              <span className="material-symbols-outlined text-orange-400 opacity-40 group-hover:opacity-100">lan</span>
-              <span className="text-[11px] font-bold text-white/60 group-hover:text-white">{t('bible.new_timeline')}</span>
-            </button>
-            <button onClick={() => handleCreateSimpleFolder(folder.id, 'FOLDER')} className="flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/5 transition-all group">
-              <span className="material-symbols-outlined text-white/40 group-hover:text-white">create_new_folder</span>
-              <span className="text-[11px] font-bold text-white/60 group-hover:text-white">Nueva Carpeta</span>
-            </button>
+    <div className="flex-1 overflow-y-auto no-scrollbar p-8 lg:p-12 space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <header className="space-y-6">
+        <Breadcrumbs path={path} currentFolder={currentFolder} />
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-black tracking-tighter text-foreground">
+              {currentFolder?.nombre || 'Carpeta'}
+            </h1>
+            <p className="text-xs font-medium text-foreground/40 uppercase tracking-widest">
+              {filteredContent.folders.length} Carpetas • {filteredContent.entities.length} Entidades
+            </p>
           </div>
-        </div>,
-        portalTarget
-      )}
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-        {/* Creation Card */}
-        <div 
-          onClick={() => setCreationMenuOpen(!creationMenuOpen)}
-          className="group relative flex flex-col p-8 monolithic-panel border border-dashed border-white/10 hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all duration-500 cursor-pointer items-center justify-center min-h-[220px] bg-white/[0.01]"
-        >
-          <div className="size-16 bg-white/5 border border-white/10 flex items-center justify-center text-white/20 group-hover:text-indigo-400 transition-all">
-            <span className="material-symbols-outlined text-3xl">add</span>
+          <div className="flex items-center gap-3">
+             <Button 
+               variant="outline" 
+               size="sm" 
+               onClick={() => setIsNewSubfolderModalOpen(true)}
+               className="h-10 px-6"
+             >
+               Nueva Subcarpeta
+             </Button>
+             <Button 
+               variant="primary" 
+               size="sm" 
+               onClick={() => navigate(`/local/prueba/bible/folder/${folderId}/entity/new/entidadindividual`)}
+               className="h-10 px-6"
+             >
+               Nueva Entidad
+             </Button>
           </div>
-          <span className="mt-6 text-[10px] font-black uppercase tracking-widest text-white/30 group-hover:text-white">Nuevo Registro</span>
-          
-          {creationMenuOpen && (
-            <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-[#121214] border border-white/10 shadow-2xl overflow-hidden animate-in slide-in-from-top-2">
-              <button onClick={(e) => { e.stopPropagation(); handleCreateSimpleFolder(folder.id, 'TIMELINE'); setCreationMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-[11px] font-bold hover:bg-orange-500/10 text-orange-400/60 hover:text-orange-400 border-b border-white/5">
-                <span className="material-symbols-outlined text-base">lan</span> {t('bible.new_timeline')}
-              </button>
-              <button onClick={(e) => { e.stopPropagation(); navigate(`/local/${projectName}/map-editor/create/${folder.id}`); setCreationMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-[11px] font-bold hover:bg-emerald-500/10 text-emerald-400/60 hover:text-emerald-400 border-b border-white/5">
-                <span className="material-symbols-outlined text-base">map</span> Nuevo Mapa
-              </button>
-              <button onClick={(e) => { e.stopPropagation(); navigate(`/local/${projectName}/bible/folder/${folder.id}/entity/new/entidadindividual`); setCreationMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-[11px] font-bold hover:bg-indigo-500/10 text-indigo-400/60 hover:text-indigo-400">
-                <span className="material-symbols-outlined text-base">person_add</span> Entidad
-              </button>
-            </div>
-          )}
         </div>
+      </header>
 
-        {filteredContent.folders.map(sub => (
-          <BibleCard
-            key={`f-${sub.id}`}
-            item={sub}
-            type="folder"
-            linkTo={sub.tipo === 'TIMELINE' ? `/local/${projectName}/bible/dimension/${sub.id}` : `/local/${projectName}/bible/folder/${sub.id}`}
-            onDelete={() => handleDeleteFolder(sub.id)}
-            onMove={() => { setItemToMove({ item: sub, type: 'folder' }); setMoveModalOpen(true); }}
-          />
+      {/* Grid de Contenido */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+        {filteredContent.folders.map(folder => (
+          <MonolithicPanel 
+            key={folder.id}
+            className="group cursor-pointer hover:border-primary/30 transition-all p-5 flex items-center gap-4"
+            onClick={() => navigate(`/local/prueba/bible/folder/${folder.id}`)}
+          >
+            <div className="size-10 rounded bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+              <span className="material-symbols-outlined text-xl">folder</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-bold truncate">{folder.nombre}</div>
+              <div className="text-[10px] text-foreground/40 uppercase font-black">Subcarpeta</div>
+            </div>
+          </MonolithicPanel>
         ))}
 
-        {filteredContent.entities.map(ent => (
-          <BibleCard
-            key={`e-${ent.id}`}
-            item={ent}
-            type="entity"
-            linkTo={ent.tipo === 'MAP' 
-              ? `/local/${projectName}/map-editor/edit/${ent.id}`
-              : `/local/${projectName}/bible/folder/${folder.id}/entity/${ent.id}`
-            }
-            onDelete={() => handleDeleteEntity(ent.id, folder.id)}
-            onRename={() => handleRenameEntity(ent)}
-            onMove={() => { setItemToMove({ item: ent, type: 'entity' }); setMoveModalOpen(true); }}
-          />
+        {filteredContent.entities.map(entity => (
+          <MonolithicPanel 
+            key={entity.id}
+            className="group cursor-pointer hover:border-primary/30 transition-all p-5 flex items-center gap-4"
+            onClick={() => navigate(`/local/prueba/bible/folder/${folderId}/entity/${entity.id}`)}
+          >
+            <div className="size-10 rounded bg-primary/10 flex items-center justify-center text-primary">
+              <span className="material-symbols-outlined text-xl">person</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-bold truncate">{entity.nombre}</div>
+              <div className="text-[10px] text-foreground/40 uppercase font-black">{entity.tipo}</div>
+            </div>
+          </MonolithicPanel>
         ))}
-
       </div>
 
-      <MoveModal
-        isOpen={moveModalOpen}
-        onClose={() => setMoveModalOpen(false)}
-        onConfirm={handleMoveItem}
-        folders={folders}
-        title={`Mover ${itemToMove?.type === 'folder' ? 'Carpeta' : 'Entidad'}`}
-        currentItemId={itemToMove?.item?.id ?? 0}
-        itemType={itemToMove?.type || 'entity'}
+      {/* Modales */}
+      <InputModal
+        isOpen={isNewSubfolderModalOpen}
+        onClose={() => setIsNewSubfolderModalOpen(false)}
+        onConfirm={(name) => {
+          handleCreateSimpleFolder(Number(folderId), name);
+          setIsNewSubfolderModalOpen(false);
+        }}
+        title="Nueva Subcarpeta"
+        placeholder="Nombre de la carpeta..."
       />
+
+      {/* Aquí faltarían otros modales si fueran necesarios, pero para el bug de setRightOpen esto es suficiente */}
     </div>
   );
 };

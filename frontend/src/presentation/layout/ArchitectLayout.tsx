@@ -10,6 +10,7 @@ import ConfirmationModal from '@organisms/ConfirmationModal';
 import ControlPanel from '@features/Graph/components/ControlPanel';
 import { syncService } from '@network/syncService';
 import { useAppStore } from '@store/useAppStore';
+import { useRightPanelStore } from '@store/useRightPanelStore';
 
 interface NavItemProps {
   to: string;
@@ -47,18 +48,8 @@ const ArchitectLayout: React.FC = () => {
 
   // Layout State
   const [leftOpen, setLeftOpen] = useState(true);
-  const [rightOpen, setRightOpen] = useState(false);
-  const [editingPageId, setEditingPageId] = useState<number | null>(null);
-  const [statsData, setStatsData] = useState<any>(null);
-  const [currentTime, setCurrentTime] = useState(new Date());
   const [loadedProject, setLoadedProject] = useState<Proyecto | null>(null);
   const [projectId, setProjectId] = useState<number | null>(null);
-
-  // Right Panel Context Content
-  const [globalPanelContent, setGlobalPanelContent] = useState<React.ReactNode>(null);
-  const [rightPanelTab, setRightPanelTab] = useState('CONTEXT');
-  const [rightPanelTitle, setRightPanelTitle] = useState<string | null>(null);
-  const [rightPanelMode, setRightPanelMode] = useState<'overlay' | 'push'>('overlay');
 
   // Bottom Graph Panel State
   const [bottomGraphOpen, setBottomGraphOpen] = useState(false);
@@ -66,9 +57,6 @@ const ArchitectLayout: React.FC = () => {
   // General Settings State
   const panelMode = useAppStore(state => state.panelMode);
 
-  // Attribute Management State (for EntityBuilder communication)
-  const [addAttributeHandler, setAddAttributeHandler] = useState<((templateId: number) => void) | null>(null);
-  const [availableTemplates, setAvailableTemplates] = useState<Plantilla[]>([]);
 
   // Bible Explorer State
   const [folders, setFolders] = useState<Carpeta[]>([]);
@@ -119,13 +107,15 @@ const ArchitectLayout: React.FC = () => {
     return () => clearInterval(interval);
   }, [projectName]);
 
-  // Clear content on route change, but let the user stay on the same tab (Notes/Explorer)
+  // Reset contextual content on navigation if it was custom
+  const { mode, reset } = useRightPanelStore();
   useEffect(() => {
-    setGlobalPanelContent(null);
-    // Ya no reseteamos forzosamente a 'CONTEXT' para evitar saltos molestos al navegar/interactuar
-  }, [location.pathname]);
+    if (mode === 'custom') {
+       reset();
+    }
+  }, [location.pathname, mode, reset]);
 
-  const toggleRightPanel = useCallback(() => setRightOpen(prev => !prev), []);
+  const { isOpen: rightOpen, togglePanel: toggleRightPanel, closePanel, openPanel } = useRightPanelStore();
 
   // CRUD Handlers
   const handleCreateSimpleFolder = useCallback(async (parentId: number | null = null, type: string = 'FOLDER') => {
@@ -202,22 +192,10 @@ const ArchitectLayout: React.FC = () => {
   }, [baseUrl, navigate]);
 
   const outletContextValue = useMemo(() => ({
-    setRightOpen,
     toggleRightPanel,
-    rightPanelTab,
-    setRightPanelTab,
-    setRightPanelTitle,
-    setRightPanelMode,
-    setRightPanelContent: setGlobalPanelContent,
     projectId,
-    setStatsData,
     projectName,
     baseUrl,
-    setBottomGraphOpen,
-    panelMode,
-    setAddAttributeHandler,
-    setAvailableTemplates,
-    // CRUD & Bible State
     handleCreateSimpleFolder,
     handleDeleteFolder,
     handleRenameFolder,
@@ -229,20 +207,9 @@ const ArchitectLayout: React.FC = () => {
     filterType,
     setFilterType
   }), [
-    rightPanelTab,
     projectId,
     projectName,
     baseUrl,
-    panelMode,
-    statsData,
-    setRightOpen,
-    toggleRightPanel,
-    setRightPanelTab,
-    setRightPanelTitle,
-    setRightPanelMode,
-    setBottomGraphOpen,
-    setAddAttributeHandler,
-    setAvailableTemplates,
     handleCreateSimpleFolder,
     handleDeleteFolder,
     handleRenameFolder,
@@ -258,24 +225,7 @@ const ArchitectLayout: React.FC = () => {
   if (hideSidebarParam) {
     return (
       <div className="h-screen w-screen bg-background">
-        <Outlet context={{
-          setRightOpen,
-          setRightPanelTab,
-          projectId,
-          projectName,
-          baseUrl,
-          panelMode,
-          handleCreateSimpleFolder,
-          handleDeleteFolder,
-          handleRenameFolder,
-          handleCreateEntity,
-          handleDeleteEntity,
-          folders,
-          searchTerm,
-          setSearchTerm,
-          filterType,
-          setFilterType
-        }} />
+        <Outlet context={outletContextValue} />
       </div>
     );
   }
@@ -319,6 +269,7 @@ const ArchitectLayout: React.FC = () => {
               <NavItem to={`${baseUrl}/analytics`} icon="analytics" label={t('project.analytics_title')} collapsed={false} />
               <NavItem to={`${baseUrl}/sync`} icon="sync" label="Sincronizar" collapsed={false} />
               <div className="h-px bg-foreground/10 my-2 mx-2 opacity-50"></div>
+              <NavItem to={`${baseUrl}/trash`} icon="delete" label={t('nav.trash')} collapsed={false} />
               <NavItem to={`${baseUrl}/settings`} icon="settings" label={t('nav.settings')} collapsed={false} />
               <NavItem to="/" icon="logout" label={t('nav.logout')} collapsed={false} />
             </div>
@@ -331,7 +282,7 @@ const ArchitectLayout: React.FC = () => {
               if (panelMode === 'binder' && !leftOpen) {
                 // Si está cerrado en binder, abrimos por defecto la navegación
                 setLeftOpen(true);
-                setRightOpen(false);
+                closePanel();
               } else {
                 setLeftOpen(!leftOpen);
               }
@@ -368,7 +319,7 @@ const ArchitectLayout: React.FC = () => {
                   setLeftOpen(false);
                 } else {
                   setLeftOpen(true);
-                  setRightOpen(false);
+                  closePanel();
                 }
               }}
               className={`w-10 py-5 bg-background border border-foreground/10 border-l-0 rounded-r-md flex justify-center text-foreground/60 hover:text-indigo-400 group relative ${leftOpen && !rightOpen ? 'bg-indigo-500/10 text-indigo-500 border-indigo-500/50 shadow-[4px_0_15px_-5px_rgba(99,102,241,0.3)] border-l-transparent' : ''}`}
@@ -381,10 +332,10 @@ const ArchitectLayout: React.FC = () => {
               onClick={() => {
                 if (leftOpen && rightOpen) {
                   setLeftOpen(false);
-                  setRightOpen(false);
+                  closePanel();
                 } else {
                   setLeftOpen(true);
-                  setRightOpen(true);
+                  openPanel('notes');
                 }
               }}
               className={`w-10 py-5 bg-background border border-foreground/10 border-l-0 rounded-r-md flex justify-center text-foreground/60 hover:text-indigo-400 group relative ${leftOpen && rightOpen ? 'bg-indigo-500/10 text-indigo-500 border-indigo-500/50 shadow-[4px_0_15px_-5px_rgba(99,102,241,0.3)] border-l-transparent' : ''}`}
@@ -411,7 +362,7 @@ const ArchitectLayout: React.FC = () => {
             <button
               id="floating-right-toggle"
               onClick={toggleRightPanel}
-              className={`fixed top-[2vh] right-[2vw] z-[70] size-12 rounded-none bg-background border transition-all flex items-center justify-center shadow-2xl ${rightOpen ? 'border-indigo-500 text-indigo-400 bg-indigo-500/10' : 'border-foreground/10 text-foreground/60 hover:text-foreground hover:border-foreground/30'}`}
+              className={`fixed top-[2vh] right-[2vw] z-[70] size-12 rounded-none bg-background border transition-all flex items-center justify-center shadow-2xl ${rightOpen ? 'border-primary text-primary bg-primary/10' : 'border-foreground/10 text-foreground/60 hover:text-foreground hover:border-foreground/30'}`}
               title="Panel de Propiedades"
             >
               <span className="material-symbols-outlined">{rightOpen ? 'close' : 'folder_special'}</span>
@@ -428,20 +379,6 @@ const ArchitectLayout: React.FC = () => {
           </div>
 
           <GlobalRightPanel
-            isOpen={panelMode === 'binder' && !leftOpen ? false : rightOpen}
-            onClose={() => setRightOpen(false)}
-            onToggle={() => {
-              if (panelMode === 'binder') {
-                setLeftOpen(!leftOpen);
-              } else {
-                toggleRightPanel();
-              }
-            }}
-            contextContent={globalPanelContent}
-            projectId={projectId}
-            activeTab={rightPanelTab}
-            setActiveTab={setRightPanelTab}
-            title={rightPanelTitle}
             panelMode={panelMode}
           />
 
@@ -450,7 +387,6 @@ const ArchitectLayout: React.FC = () => {
             onToggle={() => setBottomGraphOpen(prev => !prev)}
             projectId={projectId ?? undefined}
             projectName={projectName}
-            statsData={statsData}
           />
         </main>
       </div>

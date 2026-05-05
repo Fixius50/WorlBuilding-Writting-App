@@ -1,5 +1,5 @@
 import React from 'react';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 
 const SpecializedTimeline = ({ entities = [], onAddEvent }: { entities?: any[], onAddEvent?: () => void }) => {
 
@@ -21,11 +21,11 @@ const SpecializedTimeline = ({ entities = [], onAddEvent }: { entities?: any[], 
  {/* Dot */}
  <div className="absolute left-[-9px] top-0 size-4 rounded-full bg-background border-2 border-primary group-hover:scale-125 group-hover:bg-primary transition-all shadow-[0_0_10px_rgba(99,102,241,0.3)]"></div>
 
- <GlassPanel className="p-6 border-foreground/10 hover:border-primary/30 transition-all hover:-translate-y-1 cursor-pointer">
+ <MonolithicPanel className="p-6 border-foreground/10 hover:border-primary/30 transition-all hover:-translate-y-1 cursor-pointer">
  {/* <span className="text-xs font-black text-primary uppercase tracking-widest mb-1 block">{evt.year || 'Unknown Date'}</span> */}
  <h3 className="text-xl font-bold text-foreground mb-2">{evt.nombre}</h3>
  <p className="text-sm text-text-muted leading-relaxed line-clamp-3">{evt.descripcion || 'No description provided.'}</p>
- </GlassPanel>
+ </MonolithicPanel>
  </div>
  ))}
 

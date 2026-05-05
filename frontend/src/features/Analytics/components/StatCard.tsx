@@ -1,5 +1,5 @@
 import React from 'react';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import { motion } from 'framer-motion';
 
 interface StatCardProps {
@@ -12,7 +12,7 @@ interface StatCardProps {
 
 const StatCard: React.FC<StatCardProps> = ({ label, value, icon, color, isLoading }) => {
   return (
-    <GlassPanel className="p-6 border-b-4 border-b-transparent hover:border-b-primary transition-all group relative overflow-hidden">
+    <MonolithicPanel className="p-6 border-b-4 border-b-transparent hover:border-b-primary transition-all group relative overflow-hidden">
       {/* Sutil gradiente de fondo basado en el color de la card */}
       <div className={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity bg-current ${color}`}></div>
       
@@ -31,7 +31,7 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon, color, isLoadin
       </motion.div>
       
       <div className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest relative z-10">{label}</div>
-    </GlassPanel>
+    </MonolithicPanel>
   );
 };
 

@@ -24,7 +24,7 @@ const StickyNoteNode: React.FC<NodeProps<any>> = ({ data, selected }) => {
       <div className={`
         relative p-4 shadow-2xl transition-all duration-300 w-full h-full
         ${selected ? 'ring-2 ring-primary scale-[1.02]' : 'scale-100'}
-        backdrop-blur-sm border-l-4 border-black/10
+         border-l-4 border-black/10
       `}
       style={{
           backgroundColor: bgColor,

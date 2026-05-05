@@ -12,7 +12,7 @@ import { Entidad } from '@domain/models/database';
 const MapRouter = () => {
  const { projectName } = useParams();
  const outletContext = useOutletContext<any>();
- const { projectId, setRightOpen, setRightPanelContent, setRightPanelTitle, setRightPanelTab } = outletContext || {};
+ const { projectId } = outletContext || {};
  const navigate = useNavigate();
  const location = useLocation();
  const [view, setView] = useState('manager');
@@ -153,16 +153,12 @@ const MapRouter = () => {
  />
  )}
 
- {view === 'viewer' && selectedMap && (
-  <InteractiveMapView
-   map={selectedMap}
-   setRightOpen={setRightOpen}
-   setRightPanelContent={setRightPanelContent}
-   setRightPanelTitle={setRightPanelTitle}
-   setRightPanelTab={setRightPanelTab}
-   onBack={() => { setView('manager'); setRightPanelContent?.(null); }}
-  />
- )}
+  {view === 'viewer' && selectedMap && (
+   <InteractiveMapView
+    map={selectedMap}
+    onBack={() => { setView('manager'); }}
+   />
+  )}
 
  {view === 'wizard' && (
  <MapCreationWizard

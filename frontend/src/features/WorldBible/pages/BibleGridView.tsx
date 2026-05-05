@@ -49,7 +49,7 @@ const BibleGridView = () => {
  {/* Add Folder Card (Zen Style) */}
   <div 
     onClick={() => handleCreateSimpleFolder(null, 'FOLDER')}
-    className="group relative flex flex-col p-8 rounded-none monolithic-panel border border-dashed border-foreground/10 hover:border-primary/50 hover:bg-primary/5 transition-all duration-500 cursor-pointer items-center justify-center min-h-[220px] bg-white/[0.01]"
+    className="group relative flex flex-col p-8 rounded-none monolithic-panel border border-dashed border-foreground/10 hover:border-primary/50 hover:bg-primary/5 transition-all duration-500 cursor-pointer items-center justify-center min-h-[220px] bg-background"
   >
     <div className="size-16 rounded-none bg-primary/5 border border-primary/10 flex items-center justify-center text-primary/40 group-hover:text-primary group-hover:scale-110 group-hover:border-primary/30 transition-all duration-500">
       <span className="material-symbols-outlined text-3xl">add</span>

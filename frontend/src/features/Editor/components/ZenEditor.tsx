@@ -144,7 +144,7 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
           {/* BUBBLE MENU (FORMATO RÁPIDO) */}
           {editor && (
             <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
-              <div className="flex items-center gap-1 p-1 bg-background border border-foreground/10 shadow-2xl backdrop-blur-md">
+              <div className="flex items-center gap-1 p-1 bg-background border border-foreground/10 shadow-2xl ">
                 <button
                   onClick={() => editor.chain().focus().toggleBold().run()}
                   className={`p-2 hover:bg-foreground/10 transition-colors ${editor.isActive('bold') ? 'text-primary' : 'text-foreground/60'}`}

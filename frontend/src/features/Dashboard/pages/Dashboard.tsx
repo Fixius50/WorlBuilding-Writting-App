@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { ResponsivePie } from '@nivo/pie';
 import { ResponsiveBar } from '@nivo/bar';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import { useDashboardStore } from '@store/useDashboardStore';
 import { StatCard } from '@components/common/StatCard';
 
@@ -37,7 +37,7 @@ const Dashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
         {/* Pie Chart: Distribution by Type */}
-        <GlassPanel className="h-[400px] p-6 flex flex-col">
+        <MonolithicPanel className="h-[400px] p-6 flex flex-col">
           <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/60 mb-6 px-2">Distribución de Entidades</h3>
           <div className="flex-1 min-h-0">
             {isLoading ? (
@@ -64,10 +64,10 @@ const Dashboard: React.FC = () => {
               <div className="h-full flex items-center justify-center text-foreground/60 text-xs italic">No hay datos suficientes</div>
             )}
           </div>
-        </GlassPanel>
+        </MonolithicPanel>
 
         {/* Bar Chart: Simplified Activity Placeholder */}
-        <GlassPanel className="h-[400px] p-6 flex flex-col">
+        <MonolithicPanel className="h-[400px] p-6 flex flex-col">
           <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/60 mb-6 px-2">Densidad Geográfica (Zonas)</h3>
           <div className="flex-1 min-h-0">
             <ResponsiveBar
@@ -102,17 +102,17 @@ const Dashboard: React.FC = () => {
               }}
             />
           </div>
-        </GlassPanel>
+        </MonolithicPanel>
       </div>
 
       {/* Recent Activity List */}
-      <GlassPanel className="p-8">
+      <MonolithicPanel className="p-8">
         <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/60 mb-8">Cronología de Cambios Recientes</h3>
         <div className="space-y-4">
           {isLoading ? (
             <p className="text-xs text-foreground/60 italic text-center py-8">Cargando...</p>
           ) : stats.recentActivity.map((e) => (
-            <div key={e.id} className="flex items-center justify-between p-4 rounded-none bg-white/[0.02] border border-foreground/10 hover:border-foreground/40 transition-all group">
+            <div key={e.id} className="flex items-center justify-between p-4 rounded-none bg-background border border-foreground/10 hover:border-foreground/40 transition-all group">
               <div className="flex items-center gap-4">
                 <div className="size-10 rounded-none bg-indigo-500/10 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
                   <span className="material-symbols-outlined text-sm">edit_document</span>
@@ -127,7 +127,7 @@ const Dashboard: React.FC = () => {
           ))}
           {!isLoading && stats.recentActivity.length === 0 && <p className="text-xs text-foreground/60 italic text-center py-8">Aún no hay actividad registrada.</p>}
         </div>
-      </GlassPanel>
+      </MonolithicPanel>
     </div>
   );
 };

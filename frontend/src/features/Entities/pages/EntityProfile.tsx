@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link, useOutletContext, useNavigate } from 'react-router-dom';
+import { useState, useEffect, ReactNode } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { entityService } from '@repositories/entityService';
 import { Entidad, Valor } from '@domain/models/database';
 import Avatar from '@atoms/Avatar';
@@ -9,12 +9,7 @@ import MiniTimeline from '../components/MiniTimeline';
 import DynamicAttributeForm from '../components/DynamicAttributeForm';
 import { notebookService } from '@repositories/notebookService';
 
-interface ProfileOutletContext {
-  setRightOpen: (open: boolean) => void;
-  setRightPanelTab: (tab: string) => void;
-  setRightPanelContent: (content: React.ReactNode) => void;
-  setRightPanelTitle: (title: React.ReactNode) => void;
-}
+import { useRightPanelStore } from '@store/useRightPanelStore';
 
 interface EntityWithExtra extends Entidad {
   valores?: Valor[];
@@ -29,21 +24,20 @@ interface EntityWithExtra extends Entidad {
 const EntityProfile = () => {
   const { username, projectName, folderId, entityId } = useParams();
   const navigate = useNavigate();
-  const { setRightOpen, setRightPanelTab, setRightPanelContent, setRightPanelTitle } = useOutletContext<ProfileOutletContext>();
+  const { openPanel, closePanel, reset } = useRightPanelStore();
   const [entity, setEntity] = useState<EntityWithExtra | null>(null);
   const [activeTab, setActiveTab] = useState('GENERAL');
   const [loading, setLoading] = useState(true);
-  const [mentions, setMentions] = useState<{ hoja_id: number; hoja_titulo: string; cuaderno_titulo: string; cuaderno_id: number }[]>([]);
+  const [mentions, setMentions] = useState<{
+    snippet: ReactNode; hoja_id: number; hoja_titulo: string; cuaderno_titulo: string; cuaderno_id: number 
+}[]>([]);
 
   useEffect(() => {
-    setRightOpen(true);
-    setRightPanelTab('CONTEXT');
-    
-    return () => {
-      setRightPanelContent(null);
-      setRightPanelTitle(null);
-    };
-  }, []);
+    if (entityId) {
+      openPanel('entity', entityId);
+    }
+    return () => reset();
+  }, [entityId, openPanel, reset]);
 
   useEffect(() => {
     loadEntity();
@@ -93,49 +87,7 @@ const EntityProfile = () => {
     }
   };
 
-  useEffect(() => {
-    if (entity) {
-      setRightPanelTitle(
-        <div className="flex flex-col">
-          <span className="text-[9px] font-black uppercase tracking-widest text-primary mb-1">Metadatos Etéreos</span>
-          <span className="text-foreground font-black text-sm truncate">{entity.nombre}</span>
-        </div>
-      );
-
-      setRightPanelContent(
-        <div className="p-6 space-y-8 animate-in fade-in duration-500">
-           <section>
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-4 px-2">Identidad Técnica</h3>
-              <div className="bg-foreground/5 border border-foreground/10 p-4 space-y-3">
-                 <div className="flex justify-between items-center pb-2 border-b border-foreground/5">
-                    <span className="text-[10px] text-foreground/60 uppercase font-bold">UID</span>
-                    <span className="text-[10px] font-mono text-foreground/40">{entity.id}</span>
-                 </div>
-                 <div className="flex justify-between items-center pb-2 border-b border-foreground/5">
-                    <span className="text-[10px] text-foreground/60 uppercase font-bold">Fecha de Inicio</span>
-                    <span className="text-[10px] text-foreground/40">{new Date(entity.fecha_creacion).toLocaleDateString()}</span>
-                 </div>
-                 <div className="flex justify-between items-center">
-                    <span className="text-[10px] text-foreground/60 uppercase font-bold">Última Mutación</span>
-                    <span className="text-[10px] text-foreground/40">{new Date(entity.fecha_actualizacion).toLocaleDateString()}</span>
-                 </div>
-              </div>
-           </section>
-
-           <section>
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-4 px-2">Tags de Clasificación</h3>
-              <div className="flex flex-wrap gap-2">
-                {(entity.tags || '').split(',').filter(Boolean).map((tag, i) => (
-                  <span key={i} className="text-[10px] font-bold text-foreground/60 bg-foreground/10 px-3 py-1 border border-foreground/10 uppercase tracking-tighter hover:text-primary hover:border-primary/40 transition-colors cursor-default">
-                    {tag.trim()}
-                  </span>
-                ))}
-              </div>
-           </section>
-        </div>
-      );
-    }
-  }, [entity]);
+  // El Inspector ahora se gestiona vía Store centralizado en UniversalInspector
 
   if (loading) return <div className="p-20 text-center animate-pulse text-foreground/50 h-full flex items-center justify-center font-black uppercase tracking-[0.4em] text-xs">Accediendo a la Cápsula...</div>;
   if (!entity) return <div className="p-20 text-center text-red-400">Error: Entidad no encontrada.</div>;
@@ -194,7 +146,7 @@ const EntityProfile = () => {
 
       {/* --- CONTENT AREA & TABS --- */}
       <div className="flex-1 flex flex-col min-h-0">
-        <div className="px-8 lg:px-12 py-4 bg-background/40 backdrop-blur-md border-b border-foreground/5 sticky top-0 z-20">
+        <div className="px-8 lg:px-12 py-4 bg-background/40  border-b border-foreground/5 sticky top-0 z-20">
           <SecondaryTabs 
             tabs={tabs} 
             activeTab={activeTab} 
@@ -265,12 +217,12 @@ const EntityProfile = () => {
                         onClick={() => navigate(`/local/${projectName}/writing/${mention.cuaderno_id}?page=${mention.hoja_id}`)}
                       >
                          <div className="flex justify-between items-center mb-2">
-                            <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-tighter">
+                            <span className="text-[10px] font-bold text-primary uppercase tracking-tighter">
                               {mention.cuaderno_titulo} — {mention.hoja_titulo}
                             </span>
                          </div>
-                         <p className="text-sm text-foreground/60 leading-relaxed italic">
-                            Mencionado en la sección "{mention.hoja_titulo}".
+                         <p className="text-sm text-foreground/80 leading-relaxed font-mono bg-foreground/[0.03] p-3 border-l-2 border-primary/40">
+                            {mention.snippet}
                          </p>
                       </div>
                     ))

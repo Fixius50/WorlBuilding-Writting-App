@@ -21,7 +21,7 @@ const ImageNode: React.FC<NodeProps<any>> = ({ data, selected }) => {
       <div className={`
         relative overflow-hidden shadow-2xl transition-all duration-300 w-full h-full
         ${selected ? 'ring-2 ring-primary scale-[1.02]' : 'scale-100'}
-        bg-background/80 backdrop-blur-md border border-foreground/10
+        bg-background/80  border border-foreground/10
       `}>
       <Handle type="target" position={Position.Top} className="!bg-primary" />
       

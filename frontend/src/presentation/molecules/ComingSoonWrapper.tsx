@@ -21,7 +21,7 @@ const ComingSoonWrapper: React.FC<ComingSoonWrapperProps> = ({ children, enabled
 
       {/* Banner de Próximamente */}
       <div className="absolute inset-0 flex items-center justify-center z-10">
-        <div className="bg-red-600/90 text-white text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 shadow-xl rotate-[-4deg] border border-white/20 backdrop-blur-sm animate-pulse">
+        <div className="bg-red-600/90 text-white text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 shadow-xl rotate-[-4deg] border border-white/20  animate-pulse">
           Próximamente
         </div>
       </div>

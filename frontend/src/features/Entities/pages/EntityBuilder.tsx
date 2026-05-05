@@ -6,10 +6,10 @@ import { folderService } from '@repositories/folderService';
 import { entityService } from '@repositories/entityService';
 import { templateService } from '@repositories/templateService';
 import { Entidad, Plantilla } from '@domain/models/database';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
 import Switch from '@atoms/Switch';
-import ConfirmationModal from '@organisms/ConfirmationModal';
+import { useRightPanelStore } from '@store/useRightPanelStore';
 import AttributeField from './AttributeField';
 import Avatar from '@atoms/Avatar';
 import EntityBuilderSidebar from '../components/EntityBuilderSidebar';
@@ -18,10 +18,6 @@ import { Carpeta, Valor } from '@domain/models/database';
 
 interface LayoutContext {
   projectId: number;
-  setRightOpen: (open: boolean) => void;
-  setRightPanelTab: (tab: string) => void;
-  setAddAttributeHandler: (handler: (templateId: number) => void) => void;
-  setAvailableTemplates: (templates: Plantilla[]) => void;
 }
 
 interface EntityField {
@@ -50,13 +46,8 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
   const navigate = useNavigate();
   const [isCreation, setIsCreation] = useState(mode === 'creation');
 
-  const {
-    projectId,
-    setRightOpen,
-    setRightPanelTab,
-    setAddAttributeHandler,
-    setAvailableTemplates
-  } = useOutletContext<LayoutContext>();
+  const { projectId } = useOutletContext<LayoutContext>();
+  const { openPanel, setCustomContent } = useRightPanelStore();
 
   // Core Data State
   const [entity, setEntity] = useState<Partial<Entidad>>({
@@ -107,16 +98,12 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
 
   // --- INITIALIZATION ---
   useEffect(() => {
-    setRightOpen(true);
-    setRightPanelTab('CONTEXT');
+    openPanel('custom', 0, 'Constructor de Entidad');
 
-    const el = document.getElementById('global-right-panel-portal');
-    if (el) setPortalTarget(el);
 
     return () => {
-      setRightPanelTab('NOTEBOOKS');
     };
-  }, [setRightOpen, setRightPanelTab]);
+  }, []);
 
   useEffect(() => {
     const init = async () => {
@@ -124,19 +111,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
       try {
         const templates = await templateService.getAll(projectId || 1); 
         setAvailableTemplatesLocal(templates);
-        setAvailableTemplates(templates);
-
-        setAddAttributeHandler((templateId: number) => {
-          const tpl = templates.find(t => t.id === templateId);
-          if (tpl) {
-            setFields(prev => [...prev, {
-              id: `temp-${tpl.id}-${Date.now()}`,
-              attribute: tpl,
-              value: tpl.valor_defecto || '',
-              isTemp: true
-            }]);
-          }
-        });
+        /* setAddAttributeHandler removed - handled via setCustomContent */
 
         if (!isCreation && entityId) {
           const data = await entityService.getById(Number(entityId));
@@ -182,11 +157,30 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
     try {
       const templates = await templateService.getAll(projectId || 1);
       setAvailableTemplatesLocal(templates);
-      setAvailableTemplates(templates);
     } catch (err) {
       console.error('Error refreshing templates:', err);
     }
   };
+  // --- SIDEBAR SYNC ---
+  useEffect(() => {
+    setCustomContent(
+      <EntityBuilderSidebar
+        key={`sidebar-${availableTemplates.length}-${activeEntityTab}`}
+        templates={availableTemplates}
+        onAddTemplate={(tpl) => {
+          setFields(prev => [...prev, {
+            id: `temp-${tpl.id}-${Date.now()}`,
+            attribute: tpl,
+            value: tpl.valor_defecto || '',
+            isTemp: true
+          }]);
+        }}
+        onRefresh={refreshTemplates}
+        projectId={projectId}
+      />,
+      'Gestión de Atributos'
+    );
+  }, [availableTemplates, activeEntityTab, projectId]);
 
   // --- HANDLERS ---
   const handleSave = useCallback(async (redirect = true) => {
@@ -323,7 +317,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
       <div className="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
         
         {/* ENCABEZADO DE ENTIDAD - RESTAURADO CON ESTILO ZEN */}
-        <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-white/5 px-8 lg:px-12 py-6 flex flex-col items-center gap-4 animate-in slide-in-from-top-4 duration-700">
+        <div className="sticky top-0 z-40 bg-background/80  border-b border-white/5 px-8 lg:px-12 py-6 flex flex-col items-center gap-4 animate-in slide-in-from-top-4 duration-700">
           
           {/* Breadcrumbs Row */}
           <div className="w-full max-w-7xl">
@@ -363,7 +357,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                 <span className="material-symbols-outlined text-lg">visibility</span>
               </button>
 
-              <div className="w-px h-8 bg-white/5 mx-2" />
+              <div className="w-px h-8 bg-background mx-2" />
 
               <button 
                 onClick={() => navigate(-1)} 
@@ -385,27 +379,9 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
           </div>
         </div>
 
-        {/* Sidebar Portal - RESTAURADO */}
-        {portalTarget && createPortal(
-          <EntityBuilderSidebar
-            key={`sidebar-${availableTemplates.length}-${activeEntityTab}`}
-            templates={availableTemplates}
-            onAddTemplate={(tpl) => {
-              setFields(prev => [...prev, {
-                id: `temp-${tpl.id}-${Date.now()}`,
-                attribute: tpl,
-                value: tpl.valor_defecto || '',
-                isTemp: true
-              }]);
-            }}
-            onRefresh={refreshTemplates}
-            projectId={projectId}
-          />,
-          portalTarget
-        )}
 
         {/* NAVEGACIÓN DE PESTAÑAS - ESTILO ZEN */}
-        <div className={`px-8 lg:px-12 border-b border-white/5 bg-background/40 sticky top-[10.5rem] z-30 backdrop-blur-md transition-all duration-300`}>
+        <div className={`px-8 lg:px-12 border-b border-white/5 bg-background/40 sticky top-[10.5rem] z-30  transition-all duration-300`}>
           <div className="flex items-center justify-center gap-16 max-w-7xl mx-auto">
             {['identity', 'narrative', 'attributes'].map((tab) => (
               <button
@@ -492,7 +468,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                       </label>
                       <input
                         type="text"
-                        className="w-full bg-white/[0.02] border border-white/10 rounded-none p-4 text-[11px] text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-white/5 shadow-inner"
+                        className="w-full bg-background border border-white/10 rounded-none p-4 text-[11px] text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-white/5 shadow-inner"
                         placeholder="Importante, Secreto, Fase 1..."
                         value={extras.tags || ''}
                         onChange={(e) => updateExtra({ tags: e.target.value })}
@@ -508,7 +484,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                     <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[hsl(var(--foreground))]">Apariencia y Rasgos</h3>
                   </header>
                   <textarea
-                    className="w-full bg-white/[0.02] border border-white/10 rounded-none p-6 text-[13px] text-foreground/80 leading-relaxed min-h-[20rem] outline-none focus:border-primary/50 transition-all resize-none custom-scrollbar shadow-inner placeholder:italic placeholder:text-white/5"
+                    className="w-full bg-background border border-white/10 rounded-none p-6 text-[13px] text-foreground/80 leading-relaxed min-h-[20rem] outline-none focus:border-primary/50 transition-all resize-none custom-scrollbar shadow-inner placeholder:italic placeholder:text-white/5"
                     placeholder="Describe visualmente esta entidad..."
                     value={extras.appearance}
                     onChange={(e) => updateExtra({ appearance: e.target.value })}
@@ -526,7 +502,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                   
                   <div className="grid grid-cols-2 gap-4">
                     {extras.images?.map((img: string, i: number) => (
-                      <div key={i} className="aspect-[16/10] bg-white/[0.02] border border-white/10 overflow-hidden relative group cursor-zoom-in" onClick={() => setZoomImage(img)}>
+                      <div key={i} className="aspect-[16/10] bg-background border border-white/10 overflow-hidden relative group cursor-zoom-in" onClick={() => setZoomImage(img)}>
                         <img src={img} className="w-full h-full object-cover opacity-40 group-hover:opacity-100 group-hover:scale-110 transition-all duration-1000" alt="Gallery" />
                         <button
                           onClick={(e) => { e.stopPropagation(); removeImage(i); }}
@@ -536,7 +512,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                         </button>
                       </div>
                     ))}
-                    <label className="aspect-[16/10] border-2 border-dashed border-white/5 flex flex-col items-center justify-center gap-4 hover:bg-white/[0.03] hover:border-primary/30 transition-all cursor-pointer group">
+                    <label className="aspect-[16/10] border-2 border-dashed border-white/5 flex flex-col items-center justify-center gap-4 hover:bg-background hover:border-primary/30 transition-all cursor-pointer group">
                       <div className="size-12 rounded-full bg-primary/5 flex items-center justify-center border border-primary/10 group-hover:bg-primary/20 group-hover:scale-110 transition-all">
                         <span className="material-symbols-outlined text-primary/40 group-hover:text-primary text-xl">add_a_photo</span>
                       </div>
@@ -553,7 +529,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                     <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[hsl(var(--foreground))]">Notas de Desarrollador</h3>
                   </header>
                   <textarea
-                    className="w-full bg-white/[0.02] border border-white/10 rounded-none p-6 text-[13px] text-foreground/40 italic leading-relaxed min-h-[15rem] outline-none focus:border-primary/50 transition-all resize-none custom-scrollbar shadow-inner"
+                    className="w-full bg-background border border-white/10 rounded-none p-6 text-[13px] text-foreground/40 italic leading-relaxed min-h-[15rem] outline-none focus:border-primary/50 transition-all resize-none custom-scrollbar shadow-inner"
                     placeholder="Secretos, ideas de desarrollo, conexiones ocultas..."
                     value={extras.notes}
                     onChange={(e) => updateExtra({ notes: e.target.value })}
@@ -605,7 +581,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                 onDrop={handleDropArea}
               >
                 {fields.length === 0 && !isDraggingOver && (
-                  <div className="col-span-full py-32 border border-dashed border-white/5 flex flex-col items-center justify-center text-foreground/20 bg-white/[0.01]">
+                  <div className="col-span-full py-32 border border-dashed border-white/5 flex flex-col items-center justify-center text-foreground/20 bg-background">
                     <span className="material-symbols-outlined text-5xl mb-6 font-light">inventory_2</span>
                     <p className="text-[10px] font-black uppercase tracking-[0.3em]">Área de Atributos Vacía</p>
                     <p className="text-[9px] mt-4 opacity-50 italic">Arrastra aquí tus módulos desde el lateral derecho</p>

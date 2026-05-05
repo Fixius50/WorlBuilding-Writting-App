@@ -28,7 +28,7 @@ const MapSearchBox: React.FC<MapSearchBoxProps> = ({
 
   return (
     <div className="absolute top-8 left-8 z-[1000] flex flex-col gap-2 w-80">
-      <div className="flex items-center bg-background border border-foreground/10 shadow-2xl overflow-hidden backdrop-blur-md">
+      <div className="flex items-center bg-background border border-foreground/10 shadow-2xl overflow-hidden ">
         <div className="flex-1 flex items-center px-4 py-3 gap-3">
           <span className="material-symbols-outlined text-foreground/40 text-lg">search</span>
           <input

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@context/LanguageContext';
 import { useSettingsStore } from '@store/useSettingsStore';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
 import ComingSoonWrapper from '@molecules/ComingSoonWrapper';
 
@@ -257,7 +257,7 @@ const Settings = () => {
                     return (
                       <div key={theme.id} className={`relative flex flex-col gap-3 p-4 rounded-none border transition-all ${isSelected ? 'border-primary bg-primary/5 ring-1 ring-primary/30' : 'sunken-panel hover:border-foreground/40'}`}>
                         <div className="h-24 rounded-none flex items-center justify-center overflow-hidden border border-foreground/10" style={{ backgroundColor: theme.color }}>
-                          <div className="size-10 rounded-full bg-white/10 border-2 border-white/20 shadow-xl backdrop-blur-sm"></div>
+                          <div className="size-10 rounded-full bg-background border-2 border-white/20 shadow-xl "></div>
                         </div>
 
                         <div className="flex flex-col gap-1 items-center mt-2">
@@ -324,7 +324,7 @@ const Settings = () => {
                         {mode === 'floating' && (
                           <div className="w-full h-full bg-foreground/5 relative flex justify-between p-1">
                             <div className="w-4 h-4 rounded-full bg-foreground/30"></div>
-                            <div className="w-1/2 h-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-foreground/20 shadow-xl opacity-80 backdrop-blur-sm border border-foreground/30"></div>
+                            <div className="w-1/2 h-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-foreground/20 shadow-xl opacity-80  border border-foreground/30"></div>
                             <div className="w-4 h-4 rounded-full bg-foreground/30"></div>
                           </div>
                         )}

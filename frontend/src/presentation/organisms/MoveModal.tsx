@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
 import { Carpeta } from '@domain/models/database';
 
@@ -33,7 +33,7 @@ const MoveModal: React.FC<MoveModalProps> = ({
   );
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80  animate-in fade-in duration-300">
       <div className="monolithic-panel shadow-2xl p-6 w-full max-w-md max-h-[80vh] flex flex-col space-y-4 animate-in zoom-in-95 duration-300 overflow-hidden ring-1 ring-foreground/10">
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-bold text-foreground tracking-tight">{title}</h3>

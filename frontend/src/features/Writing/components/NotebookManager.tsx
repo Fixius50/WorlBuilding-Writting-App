@@ -96,7 +96,7 @@ const NotebookManager: React.FC<NotebookManagerProps> = ({ projectId }) => {
  return (
  <div className="flex flex-col h-full monolithic-panel/50 animate-in slide-in-from-right-4 duration-300">
  {/* Header */}
- <div className="flex items-center gap-2 p-3 border-b border-foreground/10 bg-white/[0.02]">
+ <div className="flex items-center gap-2 p-3 border-b border-foreground/10 bg-background">
  <button
  onClick={() => setActiveNotebook(null)}
  className="p-1.5 rounded-none hover:bg-primary/10 text-foreground/60 hover:text-primary transition-colors"
@@ -135,7 +135,7 @@ const NotebookManager: React.FC<NotebookManagerProps> = ({ projectId }) => {
  return (
  <div className="flex flex-col h-full monolithic-panel/50">
  {/* Header */}
- <div className="flex items-center justify-between p-3 border-b border-foreground/10 bg-white/[0.02]">
+ <div className="flex items-center justify-between p-3 border-b border-foreground/10 bg-background">
  <h3 className="text-xs font-black uppercase tracking-widest text-foreground/60">Tus Notas Rápidas</h3>
  <button
  onClick={createNotebook}

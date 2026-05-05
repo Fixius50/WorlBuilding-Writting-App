@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useLanguage } from '@context/LanguageContext';
-import { useOutletContext, useParams } from 'react-router-dom';
-import { createPortal } from 'react-dom';
+import { useOutletContext } from 'react-router-dom';
 import { timelineService } from '@repositories/timelineService';
 import { folderService } from '@repositories/folderService';
 import { entityService } from '@repositories/entityService';
@@ -10,25 +9,13 @@ import ConfirmationModal from '@organisms/ConfirmationModal';
 import Button from '@atoms/Button';
 import TimelineEventCard from '../components/TimelineEventCard';
 import { TimelineLine, UniverseExtended } from '@domain/models/timeline';
+import { useRightPanelStore } from '@store/useRightPanelStore';
 
-interface TimelineOutletContext {
-  setRightPanelTab?: (tab: string) => void;
-  setRightOpen: (open: boolean) => void;
-  setRightPanelTitle: (title: React.ReactNode) => void;
-  setRightPanelMode: (mode: 'CONTEXT' | 'CUSTOM') => void;
-  projectId: number;
-}
-
-interface Anexo {
-  id: number;
-  nombre: string;
-  tipo: string;
-  relId: number;
-}
 
 const TimelineView = () => {
   const { t } = useLanguage();
-  const { setRightPanelTab, setRightOpen, setRightPanelTitle, projectId } = useOutletContext<TimelineOutletContext>();
+  const { projectId } = useOutletContext<{ projectId: number }>();
+  const { openPanel, setCustomContent } = useRightPanelStore();
 
   const [universes, setUniverses] = useState<UniverseExtended[]>([]);
   const [selectedUniverseId, setSelectedUniverseId] = useState<number | null>(null);
@@ -47,7 +34,6 @@ const TimelineView = () => {
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState('universo'); // 'universo' | 'linea' | 'eventos'
 
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
 
   // --- Data Loading ---
@@ -144,7 +130,7 @@ const TimelineView = () => {
       ordenAbsoluto: 0 
     });
     setActiveTab('eventos');
-    setRightOpen(true);
+    openPanel('event', event.id, event.titulo);
   };
 
   // --- Deletion Confirmation ---
@@ -171,13 +157,10 @@ const TimelineView = () => {
     setConfirmState({ ...confirmState, open: false });
   };
 
-  // --- Portal Setup ---
+  // --- Effect to sync sidebar with store ---
   useEffect(() => {
-    if (setRightPanelTab) setRightPanelTab('CONTEXT');
-    const el = document.getElementById('global-right-panel-portal');
-    if (el) setPortalTarget(el);
-    return () => { if (setRightPanelTab) setRightPanelTab('NOTEBOOKS'); };
-  }, [setRightPanelTab]);
+    setCustomContent(sidebarContent, 'Gestión de Multiversos');
+  }, [selectedUniverseId, selectedTimelineId, activeTab, newEvent, newUniverse, universes]);
 
   // --- Renderers ---
   const renderUniverseTab = () => (
@@ -378,9 +361,8 @@ const TimelineView = () => {
 
   return (
     <div className="flex h-screen bg-background text-foreground overflow-hidden">
-      {portalTarget && createPortal(sidebarContent, portalTarget)}
       <main className="flex-1 relative flex flex-col h-full overflow-hidden bg-background">
-        <div className="h-20 border-b border-foreground/10 bg-background/80 backdrop-blur-xl flex items-center justify-center px-10 z-20 shrink-0 relative">
+        <div className="h-20 border-b border-foreground/10 bg-background/80  flex items-center justify-center px-10 z-20 shrink-0 relative">
           <div className="text-center">
             <h1 className="text-2xl font-black uppercase tracking-tighter flex items-center justify-center gap-3">
               <span className="material-symbols-outlined text-amber-500">lan</span>

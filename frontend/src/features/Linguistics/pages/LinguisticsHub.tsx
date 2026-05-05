@@ -1,38 +1,33 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import { useOutletContext, useParams } from 'react-router-dom';
 import Konva from 'konva';
 import { useLanguage } from '@context/LanguageContext';
 import { Entidad, Word } from '@domain/models/database';
-import GlassPanel from '@atoms/GlassPanel';
-import Avatar from '@atoms/Avatar';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
 import { entityService } from '@repositories/entityService';
-import { folderService } from '@repositories/folderService';
 import { Font as OpentypeFont, Glyph as OpentypeGlyph, Path as OpentypePath } from 'opentype.js';
 import UniversalCanvas from '@organisms/editor/UniversalCanvas';
 import UniversalCanvasProperties from '@organisms/editor/UniversalCanvasProperties';
 import ConfirmModal from '@organisms/ConfirmModal';
 import LinguisticsSidebar, { GrammarRule } from '../components/LinguisticsSidebar';
+import { useRightPanelStore } from '@store/useRightPanelStore';
 import { Shape, LayerData } from '@domain/models/canvas';
 import { LogEntry, WritingSystemType, WRITING_SYSTEM_TYPES } from '@domain/models/linguistics';
 
 interface OutletContext {
- setRightPanelTab: (tab: string) => void;
- setRightOpen: (open: boolean) => void;
- setRightPanelTitle: (title: React.ReactNode) => void;
- setRightPanelContent: (content: React.ReactNode) => void;
+  projectId: number;
 }
 
 interface LinguisticsHubProps {
-  onOpenEditor?: (glyph: Word) => void;
   onOpenAdvanced?: () => void;
 }
 
-const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor, onOpenAdvanced }) => {
+const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenAdvanced }) => {
  const { t } = useLanguage();
  const { projectName: projectParam } = useParams();
- const { setRightPanelTab, setRightOpen } = useOutletContext<OutletContext>(); 
+ const { projectId: contextProjectId } = useOutletContext<OutletContext>();
+ const { openPanel, setCustomContent, closePanel } = useRightPanelStore();
  const [projectName, setProjectName] = useState('...');
  const [stats, setStats] = useState({ words: 0, rules: 0, glyphs: 0 });
  const [langName, setLangName] = useState('...');
@@ -41,24 +36,16 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor, onOpenAdv
  const [activeLangId, setActiveLangId] = useState<number | null>(null);
  const [sourceText, setSourceText] = useState('');
  const [renderOutput, setRenderOutput] = useState('');
- const [isMounted, setIsMounted] = useState(false);
 
  // Navigation States
  const [centerView, setCenterView] = useState('lexicon');
  const [searchTerm, setSearchTerm] = useState('');
- const [sidebarTab, setSidebarTab] = useState('MANAGEMENT');
  const [isMeaningModalOpen, setIsMeaningModalOpen] = useState(false);
  const [editingWord, setEditingWord] = useState<Word | null>(null);
  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
  const [wordToDelete, setWordToDelete] = useState<number | string | null>(null);
 
- const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
-
  const [fontName, setFontName] = useState('CHRONOS_ATLAS_V1');
- const [fontAuthor, setFontAuthor] = useState('ARCHITECT_ID');
- const [fontFormat, setFontFormat] = useState('TTF');
- const [fontLigatures, setFontLigatures] = useState(true);
- const [fontKerning, setFontKerning] = useState(true);
 
  const [logs, setLogs] = useState<LogEntry[]>([
  { msg: 'Inicializando Repositorio de Glifos...', type: 'info' },
@@ -110,6 +97,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor, onOpenAdv
     setLayers(next);
  };
 
+
  const [tool, setTool] = useState('brush');
  const [strokeWidth, setStrokeWidth] = useState(4);
  const [color, setColor] = useState('hsl(var(--primary))');
@@ -119,11 +107,6 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor, onOpenAdv
 
   const stageRef = React.useRef<Konva.Stage | null>(null);
 
- // Utility placeholders for missing definitions
- const setRightPanelMode = (mode: string) => {
- console.log("Setting panel mode to:", mode);
- // Implement logic if needed or pass via context
- };
 
  const projectId = activeLangId; // Local fallback or get from context/params
 
@@ -177,31 +160,10 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor, onOpenAdv
  }
  };
 
- useEffect(() => {
- loadData();
- setRightOpen(true);
- if (setRightPanelTab) setRightPanelTab('CONTEXT'); // Updated Mode
- setIsMounted(true);
-
- // Find Portal
- const interval = setInterval(() => {
- const el = document.getElementById('global-right-panel-portal');
- if (el) {
- console.log('[LinguisticsHub] Portal found, clearing before use');
- el.innerHTML = ''; // Clear any residual content from other components
- setPortalTarget(el);
- clearInterval(interval);
- }
- }, 100);
-
- return () => {
- clearInterval(interval);
- console.log('[LinguisticsHub] Cleanup: clearing portal');
- const el = document.getElementById('global-right-panel-portal');
- if (el) el.innerHTML = '';
- if (setRightPanelTab) setRightPanelTab('NOTEBOOKS');
- };
- }, []);
+  useEffect(() => {
+    loadData();
+    openPanel('bulk', 0, 'Lingüística');
+  }, []);
 
  // Apply stroke style to selected shape when strokeStyle changes
  useEffect(() => {
@@ -268,7 +230,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor, onOpenAdv
  const handleOpenEditor = (glyph: Word) => {
  setActiveGlyphId(glyph.id);
  setEditorMode(true);
- setRightPanelMode('LINGUISTICS');
+ // setRightPanelMode('LINGUISTICS');
 
  if (glyph.rawEditorData) {
  try {
@@ -611,7 +573,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor, onOpenAdv
  ]);
  setActiveLayerId(newLayerId);
  setEditorMode(true);
- setRightPanelMode('LINGUISTICS');
+ // setRightPanelMode('LINGUISTICS');
  };
 
   const handleChangeShape = (id: string, newAttrs: Partial<Shape>) => {
@@ -881,6 +843,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor, onOpenAdv
  }
  };
 
+
  return (
  <div className="flex-1 flex flex-col h-full bg-background text-foreground/60 font-sans overflow-hidden">
  <input
@@ -973,7 +936,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor, onOpenAdv
  <Button variant="primary" size="md" onClick={handleCreateNewGlyph} icon="draw">Nuevo Glifo</Button>
  </div>
 
- <GlassPanel className="p-0 border-foreground/10 monolithic-panel/40 overflow-hidden shadow-2xl rounded-[2.5rem]">
+ <MonolithicPanel className="p-0 border-foreground/10 monolithic-panel/40 overflow-hidden shadow-2xl rounded-[2.5rem]">
  <div className="p-6 border-b border-foreground/10 flex items-center gap-4 bg-background/20">
  <div className="flex-1 relative">
  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary/60 text-lg">search</span>
@@ -1009,7 +972,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor, onOpenAdv
  </div>
  )}
  </div>
- </GlassPanel>
+ </MonolithicPanel>
  </section>
  </div>
  ) : centerView === 'translator' ? (
@@ -1020,7 +983,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor, onOpenAdv
  <h3 className="text-3xl font-black text-foreground tracking-tight italic">{t('linguistics.translator')}</h3>
  </div>
 
- <GlassPanel className="p-12 border-primary/20 bg-primary/5 rounded-[3rem] shadow-2xl shadow-primary/5">
+ <MonolithicPanel className="p-12 border-primary/20 bg-primary/5 rounded-[3rem] shadow-2xl shadow-primary/5">
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
  <div className="space-y-6">
  <label className="text-[10px] font-black uppercase tracking-[0.4em] text-primary opacity-60">Entrada de Origen</label>
@@ -1040,7 +1003,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor, onOpenAdv
  </div>
  </div>
  </div>
- </GlassPanel>
+ </MonolithicPanel>
  </section>
  </div>
  ) : (
@@ -1120,7 +1083,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor, onOpenAdv
  <h3 className="text-xs font-black uppercase tracking-[0.5em] text-primary/60">Compositor de Palabras</h3>
  </div>
 
- <GlassPanel className="p-10 border-foreground/10 bg-background/40 rounded-[2.5rem] space-y-8">
+ <MonolithicPanel className="p-10 border-foreground/10 bg-background/40 rounded-[2.5rem] space-y-8">
  <div className="flex gap-8 items-start">
  <div className="flex-1 space-y-4">
  <label className="text-[10px] font-black uppercase tracking-widest text-foreground/60">Escritura Fonética</label>
@@ -1156,7 +1119,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor, onOpenAdv
  )}
  </div>
  </div>
- </GlassPanel>
+ </MonolithicPanel>
  </section>
 
  <section className="space-y-6">
@@ -1181,66 +1144,6 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenEditor, onOpenAdv
  )}
  </main>
 
- {portalTarget && createPortal(
- <div className="h-full flex flex-col bg-background relative overflow-hidden" >
- {editorMode ? (
- <UniversalCanvasProperties
-    tool={tool}
-    setTool={setTool}
-    strokeWidth={strokeWidth}
-    setStrokeWidth={setStrokeWidth}
-    color={color}
-    setColor={setColor}
-    opacity={opacity}
-    setOpacity={setOpacity}
-    lineCap={lineCap}
-    setLineCap={setLineCap}
-    strokeStyle={strokeStyle}
-    setStrokeStyle={setStrokeStyle}
-    layers={layers}
-    activeLayerId={activeLayerId}
-    setActiveLayerId={setActiveLayerId}
-    onToggleLayerVisibility={(id: string | number) => setLayers(prev => prev.map(l => l.id === id ? { ...l, visible: !l.visible } : l))}
-    onToggleLayerLock={(id: string | number) => setLayers(prev => prev.map(l => l.id === id ? { ...l, locked: !l.locked } : l))}
-    onAddLayer={() => {
-      const newId = crypto.randomUUID();
-      setLayers(prev => [{ id: newId, name: `Capa ${prev.length + 1}`, visible: true, locked: false, shapes: [] }, ...prev]);
-      setActiveLayerId(newId);
-    }}
-    onDeleteLayer={(id: string | number) => {
-      if (layers.length === 1) return;
-      setLayers(prev => {
-        const filtered = prev.filter(l => l.id !== id);
-        if (activeLayerId === id) setActiveLayerId(filtered[0].id);
-        return filtered;
-      });
-    }}
-    activeShape={(selectedShapeId && !Array.isArray(selectedShapeId) ? layers.flatMap(l => l.shapes).find(s => s.id === selectedShapeId) : null) as any}
-    onUndo={undo}
-    onRedo={redo}
-    onClear={() => {
-      setLayers(prev => prev.map(l => l.id === activeLayerId ? { ...l, shapes: [] } : l));
-      addLog('Capa limpiada', 'info');
-    }}
-    onSetProperty={(prop: string, val: unknown) => {
-      console.log(`Setting property ${prop} to ${val}`);
-    }}
-  />
- ) : (
- <LinguisticsSidebar
- stats={stats}
- langName={langName}
- glyphs={foundryGlyphs}
- rules={rules}
- onEditGlyph={handleOpenEditor}
- onCreateGlyph={handleCreateNewGlyph}
- onCreateRule={handleAddRule}
- onViewAllGlyphs={() => setCenterView('lexicon')}
- />
- )}
- </div>,
- portalTarget
- )}
 
  {/* Modals */}
  <ConfirmModal
@@ -1362,7 +1265,7 @@ const RuleCard: React.FC<{
  desc: string;
  tags: string[];
 }> = ({ title, statusColor, desc, tags }) => (
- <GlassPanel className="p-8 border-foreground/10 hover:border-foreground/40 transition-all cursor-pointer group space-y-4">
+ <MonolithicPanel className="p-8 border-foreground/10 hover:border-foreground/40 transition-all cursor-pointer group space-y-4">
  <header className="flex justify-center gap-12 text-center items-start">
  <div className="flex items-center gap-3">
  <div className={`size-2 rounded-full bg-${statusColor}-500 shadow-[0_0_10px_rgba(var(--${statusColor}-rgb),0.5)]`}></div>
@@ -1376,7 +1279,7 @@ const RuleCard: React.FC<{
  <span key={tag} className="px-2 py-0.5 rounded monolithic-panel text-[8px] font-black uppercase tracking-widest text-foreground/60">{tag}</span>
  ))}
  </div>
- </GlassPanel>
+ </MonolithicPanel>
 );
 
 // --- SUB-COMPONENTS ---
@@ -1398,7 +1301,7 @@ const MeaningEditorModal: React.FC<{
  return (
  <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-background/60 animate-in fade-in duration-300">
  <div className="w-full max-w-lg monolithic-panel rounded-[2.5rem] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-500">
- <div className="p-8 border-b border-foreground/10 bg-white/[0.02] flex justify-between items-center">
+ <div className="p-8 border-b border-foreground/10 bg-background flex justify-between items-center">
  <div className="flex flex-col">
  <h2 className="text-xl font-black text-foreground italic tracking-tight">Editar Significado</h2>
  <p className="text-[10px] text-foreground/60 font-bold uppercase tracking-widest">Atributos del Lema</p>
@@ -1458,7 +1361,7 @@ const MeaningEditorModal: React.FC<{
  </div>
  </div>
 
- <div className="p-8 bg-white/[0.02] border-t border-foreground/10 flex gap-4">
+ <div className="p-8 bg-background border-t border-foreground/10 flex gap-4">
  <button
  onClick={onClose}
  className="flex-1 py-4 rounded-none text-[10px] font-black uppercase tracking-widest text-foreground/60 hover:text-foreground transition-all"

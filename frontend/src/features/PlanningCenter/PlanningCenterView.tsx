@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useOutletContext, useParams } from 'react-router-dom';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import GraphView from '@features/Graph/pages/GeneralGraphView';
 import { WhiteboardView } from '@features/Planning';
 import { GenealogyView } from '@features/Genealogy';
@@ -21,7 +21,7 @@ const PlanningCenterView: React.FC = () => {
     <div className="h-full w-full flex flex-col bg-background relative overflow-hidden">
       {/* Barra de Pestañas Superior - Pegada arriba, pero sin extenderse lateralmente */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 z-[60] flex justify-center">
-        <div className="border-x border-b border-foreground/10 bg-background/60 backdrop-blur-xl flex items-stretch gap-0.5 h-10 px-2 shadow-xl">
+        <div className="border-x border-b border-foreground/10 bg-background/60  flex items-stretch gap-0.5 h-10 px-2 shadow-xl">
           {TABS.map((tab) => (
             <button
               key={tab.id}
@@ -31,7 +31,7 @@ const PlanningCenterView: React.FC = () => {
                 text-[9px] font-black uppercase tracking-[0.2em]
                 ${activeTab === tab.id 
                   ? 'text-primary bg-primary/5' 
-                  : 'text-foreground/30 hover:text-foreground/60 hover:bg-white/[0.02]'}
+                  : 'text-foreground/30 hover:text-foreground/60 hover:bg-background'}
               `}
             >
               {/* Indicador de pestaña activa */}

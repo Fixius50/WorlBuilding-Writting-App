@@ -11,6 +11,7 @@ import { entityService } from '@repositories/entityService';
 // import { folderService } from '@repositories/folderService';
 import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { useLanguage } from '@context/LanguageContext';
+import { useRightPanelStore } from '@store/useRightPanelStore';
 import CreateMassEntitiesModal from './CreateMassEntitiesModal';
 
 interface TableViewProps {
@@ -29,10 +30,12 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
   const [loading, setLoading] = useState(true);
   const [rowSelection, setRowSelection] = useState({});
 
-  // Consumir el contexto centralizado del ArchitectLayout para el panel derecho
-  const { setRightPanelContent, setRightOpen } = useOutletContext<any>();
+  // Consumir el store centralizado para el panel derecho
+  const { openPanel, closePanel, isOpen: isPanelOpen } = useRightPanelStore();
 
   const [isMassCreateOpen, setIsMassCreateOpen] = useState(false);
+  const [newEntityName, setNewEntityName] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
 
   const loadEntities = async () => {
     setLoading(true);
@@ -76,52 +79,39 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
 
   const selectedCount = Object.keys(rowSelection).length;
 
-  // Inyectar acciones masivas en el panel lateral
+  // Inyectar acciones masivas en el panel lateral mediante el store
   useEffect(() => {
     if (selectedCount > 0) {
-      setRightOpen(true);
-      setRightPanelContent(
-        <div className="p-6 space-y-8 animate-in fade-in slide-in-from-right-4">
-          <header className="border-b border-white/10 pb-4">
-            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Operación Masiva</div>
-            <h2 className="text-xl font-bold text-foreground">{selectedCount} Seleccionados</h2>
-          </header>
-
-          <section className="space-y-4">
-            <div className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">Organización</div>
-            <div className="space-y-2">
-              <label className="text-[10px] text-foreground/60 block px-1">Mover a carpeta:</label>
-              <select
-                onChange={(e) => handleBulkAssignFolder(e.target.value === 'null' ? null : Number(e.target.value))}
-                className="w-full bg-white/5 border border-white/10 p-3 rounded text-xs font-bold uppercase outline-none focus:border-primary/50 transition-colors"
-              >
-                <option value="">Seleccionar destino...</option>
-                <option value="null">Raíz del Proyecto</option>
-                {allFolders.map(f => (
-                  <option key={f.id} value={f.id}>{f.nombre}</option>
-                ))}
-              </select>
-            </div>
-          </section>
-
-          <section className="space-y-4 pt-8 border-t border-white/5">
-            <div className="text-[10px] font-bold text-red-500/40 uppercase tracking-widest">Zona de Peligro</div>
-            <button 
-              onClick={handleBulkDelete}
-              className="w-full flex items-center justify-center gap-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 p-4 rounded border border-red-500/20 transition-all text-xs font-black uppercase tracking-widest"
-            >
-              <span className="material-symbols-outlined text-sm">delete_forever</span>
-              Eliminar Permanentemente
-            </button>
-          </section>
-        </div>
-      );
-    } else {
-      setRightPanelContent(null);
+      openPanel('bulk', null, `${selectedCount} Seleccionados`);
+    } else if (isPanelOpen) {
+      closePanel();
     }
+  }, [selectedCount, openPanel, closePanel]);
 
-    return () => setRightPanelContent(null);
-  }, [selectedCount, rowSelection, allFolders]);
+  const handleGhostCreate = async (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && newEntityName.trim() && !isCreating) {
+      setIsCreating(true);
+      try {
+        await entityService.create({
+          nombre: newEntityName.trim(),
+          tipo: 'entidadindividual',
+          project_id: projectId,
+          carpeta_id: null,
+          descripcion: '',
+          slug: newEntityName.trim().toLowerCase().replace(/\s+/g, '-'),
+          contenido_json: null,
+          folder_slug: null,
+          imagen_url: null
+        });
+        setNewEntityName('');
+        await loadEntities();
+      } catch (err) {
+        console.error('Error creating entity from ghost row:', err);
+      } finally {
+        setIsCreating(false);
+      }
+    }
+  };
 
   const columns = useMemo(() => [
     {
@@ -159,7 +149,7 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
     columnHelper.accessor('tipo', {
       header: () => <span className="uppercase tracking-widest text-[10px] font-black">{t('common.type')}</span>,
       cell: info => (
-        <span className="px-2 py-1 bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-tighter rounded">
+        <span className="px-2 py-1 bg-foreground/[0.03] border border-foreground/10 text-[10px] font-bold uppercase tracking-tighter rounded-none">
           {info.getValue()}
         </span>
       ),
@@ -204,7 +194,7 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
   return (
     <div className="flex-1 flex flex-col p-8 pt-0 overflow-hidden relative">
       <div className="max-w-6xl w-full mx-auto flex-1 flex flex-col monolithic-panel border border-white/5 bg-black/20 overflow-hidden">
-        <div className="flex items-center justify-between p-6 bg-white/[0.02] border-b border-white/10">
+        <div className="flex items-center justify-between p-6 bg-background border-b border-white/10">
           <div className="flex items-center gap-4">
              <div className="size-2 bg-primary animate-pulse" />
              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/60">Registros de la Biblia</h3>
@@ -223,7 +213,7 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
               {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id} className="border-b border-white/10">
                   {headerGroup.headers.map(header => (
-                    <th key={header.id} className="p-4 bg-white/[0.02]">
+                    <th key={header.id} className="p-4 bg-background">
                       {flexRender(header.column.columnDef.header, header.getContext())}
                     </th>
                   ))}
@@ -231,9 +221,33 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
               ))}
             </thead>
             <tbody>
-
+            <tr className="bg-background group/ghost">
+              <td className="p-3 border-b border-foreground/10">
+                <div className="size-4 border border-foreground/20 rounded-none bg-foreground/5 flex items-center justify-center">
+                   <span className="material-symbols-outlined text-[10px] text-primary/40">add</span>
+                </div>
+              </td>
+              <td className="p-2 border-b border-foreground/10">
+                <input
+                  type="text"
+                  placeholder="Nombre de la nueva entidad... (Enter para crear)"
+                  value={newEntityName}
+                  onChange={(e) => setNewEntityName(e.target.value)}
+                  onKeyDown={handleGhostCreate}
+                  disabled={isCreating}
+                  className="w-full bg-transparent border-none outline-none text-xs text-primary font-bold placeholder:text-foreground/20"
+                  autoFocus
+                />
+              </td>
+              <td className="p-2 border-b border-foreground/10">
+                <span className="text-[9px] font-black uppercase py-1 px-2 bg-primary/10 text-primary border border-primary/20">INDIVIDUAL</span>
+              </td>
+              <td className="p-2 border-b border-foreground/10">
+                 <span className="text-[9px] opacity-30 italic">Automático</span>
+              </td>
+            </tr>
               {table.getRowModel().rows.map(row => (
-                <tr key={row.id} className={`border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors group ${row.getIsSelected() ? 'bg-primary/10' : ''}`}>
+                <tr key={row.id} className={`border-b border-foreground/[0.03] hover:bg-background transition-colors group ${row.getIsSelected() ? 'bg-primary/10' : ''}`}>
                   {row.getVisibleCells().map(cell => (
                     <td key={cell.id} className="p-4">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}

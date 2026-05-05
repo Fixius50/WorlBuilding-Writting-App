@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@context/LanguageContext';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { notebookService, Cuaderno } from '@repositories/notebookService';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 
 interface WritingOutletContext {
   projectId: number;
@@ -137,7 +137,7 @@ const WritingHub = () => {
         {/* Buscador Dinámico Centrado */}
         <div className="w-full max-w-md relative group">
           <div className="absolute inset-0 bg-primary/5 blur-xl group-focus-within:bg-primary/10 transition-all duration-500"></div>
-          <div className="relative flex items-center bg-white/[0.03] border border-white/10 group-focus-within:border-primary/40 transition-all">
+          <div className="relative flex items-center bg-background border border-white/10 group-focus-within:border-primary/40 transition-all">
             <span className="material-symbols-outlined ml-4 text-foreground/20 group-focus-within:text-primary transition-colors">search</span>
             <input 
               type="text"
@@ -165,7 +165,7 @@ const WritingHub = () => {
         {/* Siempre mostramos la tarjeta de creación al principio */}
         <div 
           onClick={openCreateModal}
-          className="group relative h-64 border-2 border-dashed border-white/5 flex flex-col items-center justify-center gap-4 text-foreground/20 hover:text-primary/60 hover:border-primary/40 cursor-pointer transition-all bg-white/[0.01]"
+          className="group relative h-64 border-2 border-dashed border-white/5 flex flex-col items-center justify-center gap-4 text-foreground/20 hover:text-primary/60 hover:border-primary/40 cursor-pointer transition-all bg-background"
         >
           <div className="size-16 rounded-none bg-primary/5 border border-primary/10 flex items-center justify-center text-primary/40 group-hover:text-primary group-hover:scale-110 group-hover:border-primary/30 transition-all duration-500">
             <span className="material-symbols-outlined text-4xl">add_circle</span>
@@ -176,7 +176,7 @@ const WritingHub = () => {
         {notebooks
           .filter(nb => nb.titulo.toLowerCase().includes(searchTerm.toLowerCase()) || (nb.genero || '').toLowerCase().includes(searchTerm.toLowerCase()))
           .map((nb) => (
-          <GlassPanel
+          <MonolithicPanel
             key={nb.id}
             onClick={() => navigate(`${baseUrl}/writing/${nb.id}`)}
             className="group relative h-64 p-8 cursor-pointer flex flex-col justify-between overflow-hidden hover:border-primary/40 transition-all hover:-translate-y-2"
@@ -186,19 +186,19 @@ const WritingHub = () => {
 
             <div className="space-y-6">
               <div className="flex justify-between items-start">
-                <div className="size-12 bg-white/[0.03] border border-white/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform shadow-xl">
+                <div className="size-12 bg-background border border-white/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform shadow-xl">
                   <span className="material-symbols-outlined text-2xl">auto_stories</span>
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={(e) => openEditModal(e, nb)}
-                    className="p-2 bg-white/[0.03] border border-white/5 text-foreground/40 hover:text-primary hover:border-primary/30 transition-all opacity-0 group-hover:opacity-100"
+                    className="p-2 bg-background border border-white/5 text-foreground/40 hover:text-primary hover:border-primary/30 transition-all opacity-0 group-hover:opacity-100"
                   >
                     <span className="material-symbols-outlined text-sm">edit</span>
                   </button>
                   <button
                     onClick={(e) => handleDelete(e, nb.id)}
-                    className="p-2 bg-white/[0.03] border border-white/5 text-foreground/40 hover:text-red-400 hover:border-red-400/30 transition-all opacity-0 group-hover:opacity-100"
+                    className="p-2 bg-background border border-white/5 text-foreground/40 hover:text-red-400 hover:border-red-400/30 transition-all opacity-0 group-hover:opacity-100"
                   >
                     <span className="material-symbols-outlined text-sm">delete</span>
                   </button>
@@ -223,17 +223,17 @@ const WritingHub = () => {
               <span className="material-symbols-outlined text-sm text-primary animate-pulse">menu_book</span>
               <span className="text-[9px] font-black uppercase tracking-[0.3em] text-foreground/60 group-hover:text-primary transition-colors">Abrir Crónica</span>
             </div>
-          </GlassPanel>
+          </MonolithicPanel>
         ))}
         
       </div>
 
       {/* Creation/Edit Modal Zen */}
       {isCreating && (
-        <div className="fixed inset-0 z-[100] bg-[#0a0a0c]/90 flex items-center justify-center p-4 backdrop-blur-md"
+        <div className="fixed inset-0 z-[100] bg-[#0a0a0c]/90 flex items-center justify-center p-4 "
           onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
         >
-          <GlassPanel className="p-12 w-full max-w-xl shadow-2xl animate-in zoom-in-95 duration-500 border-white/10">
+          <MonolithicPanel className="p-12 w-full max-w-xl shadow-2xl animate-in zoom-in-95 duration-500 border-white/10">
             <div className="flex items-center gap-6 mb-10">
               <div className="size-14 bg-primary flex items-center justify-center text-foreground shadow-2xl shadow-primary/30">
                 <span className="material-symbols-outlined text-3xl">{notebookToEdit ? 'edit' : 'auto_stories'}</span>
@@ -253,7 +253,7 @@ const WritingHub = () => {
                 <label className="text-[10px] uppercase font-black text-foreground/40 tracking-[0.3em] ml-1">Título del Registro</label>
                 <input
                   autoFocus
-                  className="w-full bg-white/[0.03] border border-white/10 px-6 py-5 text-foreground text-lg outline-none focus:border-primary/50 transition-all placeholder:text-foreground/20 font-serif"
+                  className="w-full bg-background border border-white/10 px-6 py-5 text-foreground text-lg outline-none focus:border-primary/50 transition-all placeholder:text-foreground/20 font-serif"
                   placeholder="Ej: Crónicas de Aethelgard"
                   value={title}
                   onChange={e => setTitle(e.target.value)}
@@ -264,7 +264,7 @@ const WritingHub = () => {
               <div className="space-y-3">
                 <label className="text-[10px] uppercase font-black text-foreground/40 tracking-[0.3em] ml-1">Etiquetas (separadas por coma)</label>
                 <input
-                  className="w-full bg-white/[0.03] border border-white/10 px-6 py-4 text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-foreground/20 text-sm font-mono"
+                  className="w-full bg-background border border-white/10 px-6 py-4 text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-foreground/20 text-sm font-mono"
                   placeholder="Fantasía, Oscuro, Épico..."
                   value={genre}
                   onChange={e => setGenre(e.target.value)}
@@ -297,7 +297,7 @@ const WritingHub = () => {
                 </button>
               </div>
             </div>
-          </GlassPanel>
+          </MonolithicPanel>
         </div>
       )}
     </div>

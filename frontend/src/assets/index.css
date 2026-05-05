@@ -592,7 +592,7 @@ select:focus {
 }
 
 .scroll-btn {
-  @apply absolute z-20 size-10 rounded-full bg-background/80 border border-foreground/20 text-foreground flex items-center justify-center cursor-pointer backdrop-blur-md hover:bg-primary hover:text-white transition-all;
+  @apply absolute z-20 size-10 rounded-full bg-background border border-foreground/20 text-foreground flex items-center justify-center cursor-pointer hover:bg-primary hover:text-white transition-all;
 }
 
 .scroll-btn.left { @apply left-0; }

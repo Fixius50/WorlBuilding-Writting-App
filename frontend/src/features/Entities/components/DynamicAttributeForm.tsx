@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { templateService } from '@repositories/templateService';
 import { entityService } from '@repositories/entityService';
 import { Plantilla, Valor, Entidad } from '@domain/models/database';
-// import GlassPanel from '@atoms/GlassPanel';
+// import MonolithicPanel from '@atoms/MonolithicPanel';
 import { useLanguage } from '@context/LanguageContext';
 
 interface DynamicAttributeFormProps {
@@ -92,7 +92,7 @@ const DynamicAttributeForm: React.FC<DynamicAttributeFormProps> = ({ entity, onU
               const currentValue = valueObj ? valueObj.valor : '';
               
               return (
-                <div key={tpl.id} className="group relative flex flex-col md:flex-row md:items-center justify-between p-4 bg-white/[0.02] border border-white/5 hover:border-primary/20 transition-all rounded-none">
+                <div key={tpl.id} className="group relative flex flex-col md:flex-row md:items-center justify-between p-4 bg-background border border-foreground/5 hover:border-primary/20 transition-all rounded-none">
                   <div className="mb-2 md:mb-0">
                     <label className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest block mb-1">
                       {tpl.nombre}
@@ -104,10 +104,10 @@ const DynamicAttributeForm: React.FC<DynamicAttributeFormProps> = ({ entity, onU
                     {tpl.tipo === 'boolean' ? (
                       <button 
                         onClick={() => handleValueChange(tpl.id, currentValue === 'true' ? 'false' : 'true')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all text-[10px] font-black uppercase tracking-widest ${
+                        className={`flex items-center gap-2 px-4 py-2 border transition-all text-[10px] font-black uppercase tracking-widest ${
                           currentValue === 'true' 
                             ? 'bg-primary border-primary text-white' 
-                            : 'bg-black/20 border-white/10 text-foreground/40'
+                            : 'bg-foreground/5 border-foreground/10 text-foreground/40'
                         }`}
                       >
                         <span className="material-symbols-outlined text-sm">
@@ -120,21 +120,43 @@ const DynamicAttributeForm: React.FC<DynamicAttributeFormProps> = ({ entity, onU
                         type="date"
                         value={currentValue || ''}
                         onChange={e => handleValueChange(tpl.id, e.target.value)}
-                        className="w-full bg-black/40 border border-white/10 p-2 text-xs text-foreground outline-none focus:border-primary/50"
+                        className="w-full bg-foreground/[0.02] border border-foreground/10 p-2 text-xs text-foreground outline-none focus:border-primary/50 transition-colors"
                       />
                     ) : tpl.tipo === 'number' ? (
                       <input 
                         type="number"
                         value={currentValue || ''}
                         onChange={e => handleValueChange(tpl.id, e.target.value)}
-                        className="w-full bg-black/40 border border-white/10 p-2 text-xs text-foreground outline-none focus:border-primary/50"
+                        className="w-full bg-foreground/[0.02] border border-foreground/10 p-2 text-xs text-foreground outline-none focus:border-primary/50 transition-colors"
                       />
+                    ) : tpl.tipo === 'textarea' ? (
+                      <textarea
+                        value={currentValue || ''}
+                        onChange={e => handleValueChange(tpl.id, e.target.value)}
+                        className="w-full bg-foreground/[0.02] border border-foreground/10 p-3 text-xs text-foreground outline-none focus:border-primary/50 transition-colors min-h-[100px] leading-relaxed resize-y"
+                        placeholder="Escribe contenido extendido o Markdown..."
+                      />
+                    ) : tpl.tipo === 'image' ? (
+                      <div className="flex flex-col gap-2 w-full">
+                        <input 
+                          type="text"
+                          value={currentValue || ''}
+                          onChange={e => handleValueChange(tpl.id, e.target.value)}
+                          className="w-full bg-foreground/[0.02] border border-foreground/10 p-2 text-xs text-foreground outline-none focus:border-primary/50 transition-colors"
+                          placeholder="https://ejemplo.com/imagen.png"
+                        />
+                        {currentValue && (
+                          <div className="size-20 border border-foreground/10 bg-foreground/5 overflow-hidden">
+                            <img src={currentValue} alt="Preview" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500" />
+                          </div>
+                        )}
+                      </div>
                     ) : (
                       <input 
                         type="text"
                         value={currentValue || ''}
                         onChange={e => handleValueChange(tpl.id, e.target.value)}
-                        className="w-full bg-black/40 border border-white/10 p-2 text-xs text-foreground outline-none focus:border-primary/50"
+                        className="w-full bg-foreground/[0.02] border border-foreground/10 p-2 text-xs text-foreground outline-none focus:border-primary/50 transition-colors"
                         placeholder="..."
                       />
                     )}

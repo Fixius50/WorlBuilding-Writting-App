@@ -20,7 +20,7 @@ import { useOutletContext } from 'react-router-dom';
 import { entityService } from '@repositories/entityService';
 import { relationshipService } from '@repositories/relationshipService';
 import { Entidad } from '@domain/models/database';
-import GlassPanel from '@atoms/GlassPanel';
+import MonolithicPanel from '@atoms/MonolithicPanel';
 import { useLanguage } from '@context/LanguageContext';
 
 const dagreGraph = new dagre.graphlib.Graph();
@@ -149,14 +149,14 @@ const GenealogyView: React.FC = () => {
           <Controls />
           <MiniMap style={{ backgroundColor: 'transparent' }} nodeColor="rgba(255,255,255,0.1)" />
           <Panel position="top-left" className="m-4">
-              <GlassPanel className="p-4">
+              <MonolithicPanel className="p-4">
                   <h2 className="text-xl font-black uppercase tracking-tighter text-foreground">
                       Árbol Genealógico
                   </h2>
                   <p className="text-[10px] text-foreground/40 font-bold uppercase tracking-widest mt-1">
                       Visualización jerárquica de linajes
                   </p>
-              </GlassPanel>
+              </MonolithicPanel>
           </Panel>
         </ReactFlow>
       )}
