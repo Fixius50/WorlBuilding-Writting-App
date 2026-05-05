@@ -321,58 +321,76 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden relative">
       <div className="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
-        {/* ENCABEZADO DE ENTIDAD - SOLO SI NO ESTAMOS EN LA BIBLIA */}
-        {!isInBible && (
-          <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-foreground/10 px-[1.5rem] lg:px-[3rem] py-[1rem] flex flex-col items-center gap-0">
-            
-            {/* Breadcrumbs Row */}
-            <div className="w-full max-w-7xl">
-              <Breadcrumbs path={path} />
-            </div>
+        
+        {/* ENCABEZADO DE ENTIDAD - RESTAURADO CON ESTILO ZEN */}
+        <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-white/5 px-8 lg:px-12 py-6 flex flex-col items-center gap-4 animate-in slide-in-from-top-4 duration-700">
+          
+          {/* Breadcrumbs Row */}
+          <div className="w-full max-w-7xl">
+            <Breadcrumbs path={path} />
+          </div>
 
-            {/* Fila 1: Logo + Nombre (Más espaciosa) */}
-            <div className="flex items-center gap-[1.25rem] py-[1rem] w-full justify-center">
+          {/* Fila 1: Logo + Nombre + Acciones */}
+          <div className="flex items-center justify-between w-full max-w-7xl gap-8">
+            <div className="flex items-center gap-6">
               <Avatar 
                 url={extras.iconUrl}
                 name={entity.nombre || 'Nuevo Ente'} 
                 size="md" 
-                className="ring-1 ring-primary/20 ring-offset-4 ring-offset-background shadow-xl" 
+                className="ring-1 ring-primary/20 ring-offset-4 ring-offset-background shadow-2xl shadow-primary/10" 
               />
-              <h2 className="text-[1.5rem] font-black text-foreground tracking-[-0.02em] uppercase">
-                {entity.nombre || 'Nuevo Ente'}
-              </h2>
+              <div className="space-y-1">
+                <div className="text-[9px] font-black uppercase tracking-[0.4em] text-[hsl(var(--primary)/0.4)] italic">Editor de Entidad Central</div>
+                <h2 className="text-3xl font-black text-foreground tracking-tighter uppercase">
+                  {entity.nombre || 'Nuevo Ente'}
+                </h2>
+              </div>
             </div>
 
-            {/* Fila 2: Controles de Acción (Más compacta) */}
-            <div className="flex items-center justify-center gap-[2rem] w-full py-[0.75rem] border-t border-foreground/5 bg-foreground/[0.01]">
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => { if(confirm('¿Seguro que quieres borrar esta entidad?')) { /* Lógica de borrado */ } }} 
+                className="size-12 flex items-center justify-center text-[hsl(var(--foreground)/0.2)] hover:text-[hsl(var(--color-red))] hover:bg-[hsl(var(--color-red)/0.05)] transition-all border border-[hsl(var(--foreground)/0.05)]"
+                title="Eliminar Entidad"
+              >
+                <span className="material-symbols-outlined text-lg">delete</span>
+              </button>
+
+              <button 
+                className="size-12 flex items-center justify-center text-[hsl(var(--foreground)/0.2)] hover:text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.05)] transition-all border border-[hsl(var(--foreground)/0.05)]"
+                title="Cambiar Visibilidad"
+              >
+                <span className="material-symbols-outlined text-lg">visibility</span>
+              </button>
+
+              <div className="w-px h-8 bg-white/5 mx-2" />
+
               <button 
                 onClick={() => navigate(-1)} 
-                className="flex items-center gap-2 px-[1rem] py-[0.4rem] text-[0.625rem] font-black uppercase tracking-[0.2em] text-foreground/40 hover:text-primary transition-all group"
+                className="flex items-center gap-3 px-6 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-[hsl(var(--foreground)/0.4)] hover:text-[hsl(var(--foreground))] transition-all group border border-[hsl(var(--foreground)/0.05)] bg-[hsl(var(--foreground)/0.02)]"
               >
-                <span className="material-symbols-outlined text-[0.875rem]">arrow_back</span>
+                <span className="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform">arrow_back</span>
                 Volver
               </button>
 
               <button 
                 onClick={() => handleSave(true)} 
                 disabled={saving}
-                className={`flex items-center gap-[0.5rem] px-[2rem] py-[0.6rem] rounded-none font-black text-[0.625rem] uppercase tracking-[0.2em] transition-all shadow-lg ${saving ? 'bg-primary/20 text-primary cursor-wait' : 'bg-primary hover:bg-primary/90 text-white hover:scale-105 active:scale-95 shadow-primary/20'}`}
+                className={`flex items-center gap-3 px-10 py-3 rounded-none font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-xl ${saving ? 'bg-[hsl(var(--primary)/0.2)] text-[hsl(var(--primary))] cursor-wait' : 'bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.9)] text-[hsl(var(--primary-foreground))] hover:scale-[1.02] active:scale-[0.98] shadow-[hsl(var(--primary)/0.2)]'}`}
               >
-                <span className="material-symbols-outlined text-[1rem]">save</span>
+                <span className="material-symbols-outlined text-sm">{saving ? 'sync' : 'save'}</span>
                 {saving ? 'Guardando...' : 'Guardar Cambios'}
               </button>
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Sidebar Portal */}
+        {/* Sidebar Portal - RESTAURADO */}
         {portalTarget && createPortal(
           <EntityBuilderSidebar
             key={`sidebar-${availableTemplates.length}-${activeEntityTab}`}
             templates={availableTemplates}
-            currentFields={fields}
             onAddTemplate={(tpl) => {
-              // Now only called when specifically requested (e.g. from a future 'Add' button within edit)
               setFields(prev => [...prev, {
                 id: `temp-${tpl.id}-${Date.now()}`,
                 attribute: tpl,
@@ -381,20 +399,21 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
               }]);
             }}
             onRefresh={refreshTemplates}
+            projectId={projectId}
           />,
           portalTarget
         )}
 
-        {/* NAVEGACIÓN DE PESTAÑAS */}
-        <div className={`px-[1.5rem] lg:px-[3rem] border-b border-foreground/5 bg-background/40 sticky ${isInBible ? 'top-0' : 'top-[9.875rem]'} z-30 backdrop-blur-md transition-all duration-300`}>
-          <div className="flex items-center justify-center gap-[3rem]">
+        {/* NAVEGACIÓN DE PESTAÑAS - ESTILO ZEN */}
+        <div className={`px-8 lg:px-12 border-b border-white/5 bg-background/40 sticky top-[10.5rem] z-30 backdrop-blur-md transition-all duration-300`}>
+          <div className="flex items-center justify-center gap-16 max-w-7xl mx-auto">
             {['identity', 'narrative', 'attributes'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveEntityTab(tab)}
-                className={`py-[1.25rem] text-[0.625rem] font-black uppercase tracking-[0.2em] border-b-2 transition-all ${activeEntityTab === tab
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-foreground/60 hover:text-primary'
+                className={`py-6 text-[10px] font-black uppercase tracking-[0.3em] border-b-2 transition-all duration-500 ${activeEntityTab === tab
+                  ? 'border-[hsl(var(--primary))] text-[hsl(var(--primary))] drop-shadow-[0_0_10px_rgba(var(--primary),0.5)]'
+                  : 'border-transparent text-[hsl(var(--foreground)/0.3)] hover:text-[hsl(var(--foreground))]'
                 }`}
               >
                 {tab === 'identity' ? 'Identidad' : tab === 'narrative' ? 'Narrativa' : 'Atributos'}
@@ -403,147 +422,197 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
           </div>
         </div>
 
-        {/* Main Content Area - WITH PROPER SIDE MARGINS */}
-        <div className="p-[1.5rem] lg:p-[3rem] pb-[8rem] max-w-[80rem] mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
+        {/* Main Content Area */}
+        <div className="p-8 lg:p-16 pb-32 max-w-[90rem] mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-1000">
           
           {activeEntityTab === 'identity' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-[2.5rem]">
-              <div className="space-y-[2rem]">
-                <GlassPanel title="NÚCLEO DE IDENTIDAD" icon="fingerprint">
-                  <div className="space-y-[1.5rem]">
-                    <div>
-                      <label className="text-[0.625rem] font-bold uppercase text-primary mb-[0.75rem] block tracking-[0.15em] opacity-70">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+              <div className="space-y-12">
+                {/* NÚCLEO DE IDENTIDAD */}
+                <div className="monolithic-panel border border-white/10 bg-black/20 p-8 space-y-8">
+                  <header className="flex items-center gap-3 text-[hsl(var(--primary))] border-b border-[hsl(var(--foreground)/0.05)] pb-4">
+                    <span className="material-symbols-outlined text-lg">fingerprint</span>
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[hsl(var(--foreground))]">Núcleo de Identidad</h3>
+                  </header>
+                  
+                  <div className="space-y-8">
+                    <div className="space-y-4">
+                      <label className="text-[9px] font-black uppercase text-[hsl(var(--foreground)/0.4)] tracking-[0.2em] block px-1">
                         Nombre de la Entidad
                       </label>
                       <input
                         type="text"
-                        className="w-full bg-foreground/[0.03] border-2 border-foreground/10 rounded-none p-[1.5rem] text-[1.5rem] font-black text-foreground focus:border-primary outline-none transition-all placeholder:text-foreground/30 shadow-inner sunken-panel"
-                        placeholder="Ej: El Rey de Cenizas"
+                        className="w-full bg-[hsl(var(--foreground)/0.02)] border border-[hsl(var(--foreground)/0.1)] rounded-none p-6 text-4xl font-black text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary)/0.5)] outline-none transition-all placeholder:text-[hsl(var(--foreground)/0.05)] shadow-inner"
+                        placeholder="Nombre..."
                         value={entity.nombre}
                         onChange={(e) => setEntity({ ...entity, nombre: e.target.value })}
                       />
                     </div>
-                    <div>
-                      <label className="text-[0.625rem] font-bold uppercase text-foreground/60 mb-[0.75rem] block tracking-[0.15em] opacity-70">
-                        Categoría de Sistema
+                    
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <label className="text-[9px] font-black uppercase text-white/40 tracking-[0.2em] block px-1">
+                          Categoría de Sistema
+                        </label>
+                        <div className="relative group">
+                          <select
+                            className="w-full bg-[hsl(var(--foreground)/0.02)] border border-[hsl(var(--foreground)/0.1)] rounded-none p-4 text-[11px] text-[hsl(var(--foreground))] font-black uppercase tracking-[0.2em] outline-none focus:border-[hsl(var(--primary)/0.5)] transition-all cursor-pointer appearance-none"
+                            value={entity.tipo}
+                            onChange={(e) => setEntity({ ...entity, tipo: e.target.value })}
+                          >
+                            <option value="PERSONAJE">👤 Personaje</option>
+                            <option value="LUGAR">📍 Ubicación</option>
+                            <option value="OBJETO">⚔️ Artefacto</option>
+                            <option value="CONCEPTO">💡 Filosofía</option>
+                            <option value="CRIATURA">🐉 Especie</option>
+                          </select>
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-foreground/20 group-hover:text-primary transition-colors pointer-events-none">expand_more</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <label className="text-[9px] font-black uppercase text-white/40 tracking-[0.2em] block px-1">
+                          Color de Identificación
+                        </label>
+                        <div className="flex items-center gap-4 bg-[hsl(var(--foreground)/0.02)] border border-[hsl(var(--foreground)/0.1)] p-3">
+                          <input
+                            type="color"
+                            className="size-10 bg-transparent border-none cursor-pointer"
+                            value={extras.color || '#6366f1'}
+                            onChange={(e) => updateExtra({ color: e.target.value })}
+                          />
+                          <span className="text-[10px] font-mono text-foreground/40 uppercase">{extras.color || '#6366F1'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <label className="text-[9px] font-black uppercase text-white/40 tracking-[0.2em] block px-1">
+                        Etiquetas (Tags)
                       </label>
-                      <select
-                        className="w-full bg-foreground/[0.03] border-2 border-foreground/10 rounded-none px-[1rem] py-[1rem] text-[0.75rem] text-foreground font-black uppercase tracking-[0.15em] outline-none focus:border-primary transition-all cursor-pointer sunken-panel"
-                        value={extras.categoria}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          updateExtra({ categoria: val });
-                          setEntity(prev => ({ ...prev, tipo: val }));
-                        }}
-                      >
-                        <option value="PERSONAJE">👤 Personaje</option>
-                        <option value="LUGAR">📍 Ubicación</option>
-                        <option value="OBJETO">⚔️ Artefacto</option>
-                        <option value="CONCEPTO">💡 Filosofía/Religión</option>
-                        <option value="CRIATURA">🐉 Especie/Bestia</option>
-                      </select>
+                      <input
+                        type="text"
+                        className="w-full bg-white/[0.02] border border-white/10 rounded-none p-4 text-[11px] text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-white/5 shadow-inner"
+                        placeholder="Importante, Secreto, Fase 1..."
+                        value={extras.tags || ''}
+                        onChange={(e) => updateExtra({ tags: e.target.value })}
+                      />
                     </div>
                   </div>
-                </GlassPanel>
+                </div>
 
-                <GlassPanel title="APARIENCIA Y RASGOS" icon="auto_awesome">
+                {/* APARIENCIA Y RASGOS */}
+                <div className="monolithic-panel border border-white/10 bg-black/20 p-8 space-y-6">
+                  <header className="flex items-center gap-3 text-[hsl(var(--primary))] border-b border-[hsl(var(--foreground)/0.05)] pb-4">
+                    <span className="material-symbols-outlined text-lg">auto_awesome</span>
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[hsl(var(--foreground))]">Apariencia y Rasgos</h3>
+                  </header>
                   <textarea
-                    className="w-full bg-foreground/[0.03] border-2 border-foreground/10 rounded-none p-[1.5rem] text-[0.875rem] text-foreground leading-relaxed min-h-[18.75rem] outline-none focus:border-primary transition-all resize-none custom-scrollbar sunken-panel"
+                    className="w-full bg-white/[0.02] border border-white/10 rounded-none p-6 text-[13px] text-foreground/80 leading-relaxed min-h-[20rem] outline-none focus:border-primary/50 transition-all resize-none custom-scrollbar shadow-inner placeholder:italic placeholder:text-white/5"
                     placeholder="Describe visualmente esta entidad..."
                     value={extras.appearance}
                     onChange={(e) => updateExtra({ appearance: e.target.value })}
                   />
-                </GlassPanel>
+                </div>
               </div>
 
-              <div className="space-y-[2rem]">
-                <GlassPanel title="ARCHIVOS VISUALES" icon="photo_library">
-                  <div className="grid grid-cols-3 gap-[1rem]">
+              <div className="space-y-12">
+                {/* ARCHIVOS VISUALES */}
+                <div className="monolithic-panel border border-white/10 bg-black/20 p-8 space-y-6">
+                  <header className="flex items-center gap-3 text-[hsl(var(--primary))] border-b border-[hsl(var(--foreground)/0.05)] pb-4">
+                    <span className="material-symbols-outlined text-lg">photo_library</span>
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[hsl(var(--foreground))]">Archivos Visuales</h3>
+                  </header>
+                  
+                  <div className="grid grid-cols-2 gap-4">
                     {extras.images?.map((img: string, i: number) => (
-                      <div key={i} className="aspect-square rounded-none monolithic-panel overflow-hidden relative group cursor-zoom-in" onClick={() => setZoomImage(img)}>
-                        <img src={img} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" alt="Gallery" />
+                      <div key={i} className="aspect-[16/10] bg-white/[0.02] border border-white/10 overflow-hidden relative group cursor-zoom-in" onClick={() => setZoomImage(img)}>
+                        <img src={img} className="w-full h-full object-cover opacity-40 group-hover:opacity-100 group-hover:scale-110 transition-all duration-1000" alt="Gallery" />
                         <button
                           onClick={(e) => { e.stopPropagation(); removeImage(i); }}
-                          className="absolute top-[0.5rem] right-[0.5rem] size-[1.75rem] bg-red-500/80 text-white rounded-none flex items-center justify-center translate-y-[-150%] group-hover:translate-y-0 transition-transform shadow-xl"
+                          className="absolute top-2 right-2 size-8 bg-rose-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-2xl"
                         >
-                          <span className="material-symbols-outlined text-[0.75rem]">close</span>
+                          <span className="material-symbols-outlined text-xs">close</span>
                         </button>
                       </div>
                     ))}
-                    <label className="aspect-square rounded-none border-2 border-dashed border-foreground/10 flex flex-col items-center justify-center gap-[0.75rem] hover:bg-foreground/5 hover:border-primary/30 transition-all cursor-pointer group sunken-panel">
-                      <span className="material-symbols-outlined text-primary/50 group-hover:text-primary group-hover:scale-110 transition-all text-[1.5rem]">add_a_photo</span>
-                      <span className="text-[0.5rem] font-black uppercase text-foreground/60 group-hover:text-primary tracking-[0.15em] text-center px-[1rem]">Upload Fragment</span>
+                    <label className="aspect-[16/10] border-2 border-dashed border-white/5 flex flex-col items-center justify-center gap-4 hover:bg-white/[0.03] hover:border-primary/30 transition-all cursor-pointer group">
+                      <div className="size-12 rounded-full bg-primary/5 flex items-center justify-center border border-primary/10 group-hover:bg-primary/20 group-hover:scale-110 transition-all">
+                        <span className="material-symbols-outlined text-primary/40 group-hover:text-primary text-xl">add_a_photo</span>
+                      </div>
+                      <span className="text-[8px] font-black uppercase text-foreground/20 group-hover:text-primary tracking-[0.3em]">Upload Fragment</span>
                       <input type="file" multiple className="hidden" onChange={handleImageUpload} accept="image/*" />
                     </label>
                   </div>
-                </GlassPanel>
+                </div>
 
-                <GlassPanel title="NOTAS DE DESARROLLADOR" icon="edit_note">
+                {/* NOTAS DE DESARROLLADOR */}
+                <div className="monolithic-panel border border-white/10 bg-black/20 p-8 space-y-6">
+                  <header className="flex items-center gap-3 text-[hsl(var(--primary))] border-b border-[hsl(var(--foreground)/0.05)] pb-4">
+                    <span className="material-symbols-outlined text-lg">edit_note</span>
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[hsl(var(--foreground))]">Notas de Desarrollador</h3>
+                  </header>
                   <textarea
-                    className="w-full bg-foreground/[0.03] border-2 border-foreground/10 rounded-none p-[1.5rem] text-[0.875rem] text-foreground/60 italic leading-relaxed min-h-[13.75rem] outline-none focus:border-primary transition-all resize-none custom-scrollbar sunken-panel"
+                    className="w-full bg-white/[0.02] border border-white/10 rounded-none p-6 text-[13px] text-foreground/40 italic leading-relaxed min-h-[15rem] outline-none focus:border-primary/50 transition-all resize-none custom-scrollbar shadow-inner"
                     placeholder="Secretos, ideas de desarrollo, conexiones ocultas..."
                     value={extras.notes}
                     onChange={(e) => updateExtra({ notes: e.target.value })}
                   />
-                </GlassPanel>
+                </div>
               </div>
             </div>
           )}
 
           {activeEntityTab === 'narrative' && (
-            <div className="space-y-[2.5rem]">
-              <GlassPanel className="min-h-[50vh] p-[2rem] flex flex-col border-primary/10">
-                <div className="flex items-center justify-between mb-[2rem]">
-                  <h3 className="text-[0.625rem] font-bold uppercase tracking-[0.15em] text-primary flex items-center gap-[0.75rem]">
-                    <span className="material-symbols-outlined text-[1rem]">history_edu</span> Biografía Narrativa
-                  </h3>
-                  <div className="flex items-center gap-[0.5rem] opacity-30">
-                    <span className="material-symbols-outlined text-[0.75rem]">markdown</span>
-                    <span className="text-[0.5625rem] font-bold tracking-[0.1em]">TEXT READY</span>
+            <div className="space-y-12">
+              <div className="monolithic-panel border border-white/10 bg-black/20 p-12 min-h-[60vh] flex flex-col">
+                <header className="flex items-center justify-between mb-12 border-b border-white/5 pb-6">
+                  <div className="flex items-center gap-4">
+                    <span className="material-symbols-outlined text-primary/60">history_edu</span>
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-[hsl(var(--foreground))]">Biografía Narrativa</h3>
                   </div>
-                </div>
+                  <div className="flex items-center gap-2 text-primary/20">
+                    <span className="material-symbols-outlined text-xs">markdown</span>
+                    <span className="text-[8px] font-black uppercase tracking-widest">System Ready</span>
+                  </div>
+                </header>
                 <textarea
-                  className="flex-1 w-full bg-foreground/[0.03] border-2 border-foreground/10 rounded-none p-[2rem] text-foreground text-[1.125rem] leading-relaxed resize-none focus:border-primary outline-none placeholder:text-foreground/30 custom-scrollbar shadow-inner sunken-panel"
+                  className="flex-1 w-full bg-transparent border-none outline-none text-xl text-foreground/80 leading-relaxed resize-none custom-scrollbar placeholder:text-white/5 italic"
                   placeholder="Escribe la historia, leyendas y mitos corporativos..."
                   value={entity.descripcion || ''}
                   onChange={e => setEntity({ ...entity, descripcion: e.target.value })}
                 />
-              </GlassPanel>
+              </div>
             </div>
           )}
 
           {activeEntityTab === 'attributes' && (
-            <div className="space-y-[2rem] min-h-[60vh] relative">
-              <div className="flex items-center justify-between border-b border-foreground/10 pb-[1.5rem]">
-                <h3 className="text-[0.625rem] font-black uppercase tracking-[0.15em] text-primary flex items-center gap-[0.75rem]">
-                  <span className="material-symbols-outlined text-[1rem]">layers</span> Atributos Modulares
-                </h3>
-                <p className="text-[0.5625rem] text-foreground/60 font-bold uppercase tracking-[0.1em]">
-                  Arrastre elementos desde el panel lateral
-                </p>
-              </div>
+            <div className="space-y-12 min-h-[60vh]">
+              <header className="flex items-center justify-between border-b border-white/10 pb-8">
+                <div className="flex items-center gap-4">
+                  <span className="material-symbols-outlined text-primary/60">layers</span>
+                  <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-[hsl(var(--foreground))]">Atributos Modulares</h3>
+                </div>
+                <div className="px-4 py-2 bg-primary/5 border border-primary/10 text-[9px] font-black text-primary uppercase tracking-widest animate-pulse">
+                  Panel lateral activo para inyectar plantillas
+                </div>
+              </header>
               
               <div 
-                className={`grid grid-cols-1 md:grid-cols-2 gap-[2rem] p-[1rem] transition-all border-2 border-transparent ${isDraggingOver ? 'bg-primary/5 border-dashed border-primary ring-4 ring-primary/10 scale-[1.01]' : ''}`}
+                className={`grid grid-cols-1 md:grid-cols-2 gap-8 p-4 transition-all duration-500 border-2 border-transparent ${isDraggingOver ? 'bg-primary/5 border-dashed border-primary/40 shadow-2xl shadow-primary/5' : ''}`}
                 onDragOver={handleDragOverArea}
                 onDragLeave={handleDragLeaveArea}
                 onDrop={handleDropArea}
               >
                 {fields.length === 0 && !isDraggingOver && (
-                  <div className="col-span-full py-[8rem] border-2 border-dashed border-foreground/10 rounded-none flex flex-col items-center justify-center text-foreground/60 bg-foreground/[0.01]">
-                    <span className="material-symbols-outlined text-[3rem] mb-[1.5rem] opacity-20">inventory_2</span>
-                    <p className="text-[0.75rem] font-black uppercase tracking-[0.15em] opacity-40">Área de Atributos Vacía</p>
-                    <p className="text-[0.625rem] font-bold uppercase tracking-[0.1em] mt-2 opacity-30">Arrastra aquí tus módulos</p>
-                  </div>
-                )}
-                {isDraggingOver && fields.length === 0 && (
-                  <div className="col-span-full py-[8rem] flex flex-col items-center justify-center text-primary animate-pulse">
-                    <span className="material-symbols-outlined text-[4rem] mb-4">add_circle</span>
-                    <p className="text-[0.875rem] font-black uppercase tracking-[0.2em]">Soltar para añadir módulo</p>
+                  <div className="col-span-full py-32 border border-dashed border-white/5 flex flex-col items-center justify-center text-foreground/20 bg-white/[0.01]">
+                    <span className="material-symbols-outlined text-5xl mb-6 font-light">inventory_2</span>
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em]">Área de Atributos Vacía</p>
+                    <p className="text-[9px] mt-4 opacity-50 italic">Arrastra aquí tus módulos desde el lateral derecho</p>
                   </div>
                 )}
                 {fields.map((field) => (
-                  <div key={field.id} className="animate-in fade-in duration-500">
+                  <div key={field.id} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                     <AttributeField
                       attribute={field.attribute}
                       value={field.value}
@@ -559,11 +628,11 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
 
         {/* Overlays */}
         {zoomImage && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 animate-in fade-in duration-300" onClick={() => setZoomImage(null)}>
-            <button className="absolute top-[2.5rem] right-[2.5rem] text-foreground/40 hover:text-foreground transition-colors" onClick={() => setZoomImage(null)}>
-              <span className="material-symbols-outlined text-[3rem]">close</span>
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 animate-in fade-in duration-300" onClick={() => setZoomImage(null)}>
+            <button className="absolute top-10 right-10 text-white/40 hover:text-white transition-colors" onClick={() => setZoomImage(null)}>
+              <span className="material-symbols-outlined text-4xl">close</span>
             </button>
-            <img src={zoomImage} className="max-w-[90vw] max-h-[85vh] object-contain rounded-none shadow-2xl border-4 border-foreground/10" alt="Zoom" />
+            <img src={zoomImage} className="max-w-[90vw] max-h-[85vh] object-contain border border-white/10 shadow-2xl" alt="Zoom" />
           </div>
         )}
       </div>

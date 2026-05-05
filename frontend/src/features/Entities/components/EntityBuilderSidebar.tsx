@@ -1,26 +1,20 @@
 import React, { useState } from 'react';
-// Force Refresh 19:12
-import { Plantilla, Valor } from '@domain/models/database';
-import { entityService } from '@repositories/entityService';
+import { Plantilla } from '@domain/models/database';
 import { templateService } from '@repositories/templateService';
-import GlassPanel from '@atoms/GlassPanel';
-import Button from '@atoms/Button';
 import ConfirmModal from '@organisms/ConfirmModal';
 
 interface EntityBuilderSidebarProps {
   templates: Plantilla[];
   onAddTemplate: (tpl: Plantilla) => void;
   onRefresh?: () => void;
-  onDeleteTemplate?: (id: number) => void;
-  currentFields?: unknown[]; 
+  projectId?: number;
 }
 
 const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({ 
   templates, 
   onAddTemplate, 
   onRefresh, 
-  onDeleteTemplate,
-  currentFields = [] 
+  projectId = 1
 }) => {
   const [filter, setFilter] = useState('');
   const [isCreating, setIsCreating] = useState(false);
@@ -42,7 +36,7 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
     const ghost = document.createElement('div');
     ghost.style.position = 'absolute';
     ghost.style.top = '-1000px'; // Offscreen
-    ghost.className = 'px-3 py-1 bg-primary text-white font-black uppercase text-[9px] tracking-widest pointer-events-none shadow-2xl skew-x-[-10deg]';
+    ghost.className = 'px-3 py-1 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-black uppercase text-[9px] tracking-widest pointer-events-none shadow-2xl skew-x-[-10deg]';
     ghost.innerText = template.nombre;
     document.body.appendChild(ghost);
     e.dataTransfer.setDragImage(ghost, 0, 0);
@@ -59,10 +53,14 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
       const created = await templateService.create({
         nombre: newTpl.nombre,
         tipo: newTpl.tipo,
-        project_id: 0, // Global Template
+        project_id: projectId, 
         valor_defecto: '',
         metadata: null,
-        es_obligatorio: 0
+        es_obligatorio: 0,
+        aplica_a_todo: 0,
+        tipo_objetivo: null,
+        categoria: 'General',
+        orden: 0
       });
       
       if (onRefresh) await onRefresh();
@@ -104,28 +102,28 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
       {/* Header */}
       <div className="p-[1.5rem] border-b border-foreground/10 bg-gradient-to-br from-primary/10 to-transparent">
         <div className="flex items-center justify-between mb-[0.5rem]">
-          <h3 className="text-[0.75rem] font-black uppercase tracking-[0.15em] text-primary flex items-center gap-[0.5rem]">
+          <h3 className="text-[0.75rem] font-black uppercase tracking-[0.15em] text-[hsl(var(--primary))] flex items-center gap-[0.5rem]">
             <span className="material-symbols-outlined text-[1rem]">schema</span> Atributos/Plantillas
           </h3>
           <button
             onClick={() => setIsCreating(!isCreating)}
-            className={`size-[2rem] rounded-full flex items-center justify-center transition-all ${isCreating ? 'bg-red-500 text-white rotate-45' : 'bg-foreground/5 text-primary hover:bg-primary hover:text-white'}`}
+            className={`size-[2rem] rounded-full flex items-center justify-center transition-all ${isCreating ? 'bg-red-500 text-white rotate-45' : 'bg-[hsl(var(--foreground)/0.05)] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-[hsl(var(--primary-foreground))]'}`}
           >
             <span className="material-symbols-outlined text-[1rem]">add</span>
           </button>
         </div>
 
         {isCreating ? (
-          <div className="space-y-[0.75rem] p-[1rem] rounded-none bg-background/40 border border-primary/20 animate-in fade-in zoom-in-95">
+          <div className="space-y-[0.75rem] p-[1rem] rounded-none bg-background/40 border border-[hsl(var(--primary)/0.2)] animate-in fade-in zoom-in-95">
             <input
               autoFocus
               placeholder="Nombre del atributo..."
-              className="w-full bg-transparent border-b border-foreground/40 py-[0.25rem] text-[0.75rem] text-foreground outline-none focus:border-primary"
+              className="w-full bg-transparent border-b border-[hsl(var(--foreground)/0.4)] py-[0.25rem] text-[0.75rem] text-[hsl(var(--foreground))] outline-none focus:border-[hsl(var(--primary))]"
               value={newTpl.nombre}
               onChange={e => setNewTpl({ ...newTpl, nombre: e.target.value })}
             />
             <select
-              className="w-full monolithic-panel border border-foreground/10 rounded-none px-[0.5rem] py-[0.375rem] text-[0.625rem] text-foreground/70 outline-none bg-background"
+              className="w-full monolithic-panel border border-[hsl(var(--foreground)/0.1)] rounded-none px-[0.5rem] py-[0.375rem] text-[0.625rem] text-[hsl(var(--foreground)/0.7)] outline-none bg-background"
               value={newTpl.tipo}
               onChange={e => setNewTpl({ ...newTpl, tipo: e.target.value })}
             >
@@ -138,18 +136,18 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
             </select>
             <button
               onClick={handleCreateTemplate}
-              className="w-full py-[0.5rem] bg-primary text-white rounded-none text-[0.625rem] font-black uppercase tracking-[0.15em] shadow-lg shadow-primary/20"
+              className="w-full py-[0.5rem] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] rounded-none text-[0.625rem] font-black uppercase tracking-[0.15em] shadow-lg shadow-[hsl(var(--primary)/0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
-              Pre-visualizar Atributo
+              Crear Módulo
             </button>
           </div>
         ) : (
           <div className="relative">
-            <span className="material-symbols-outlined absolute left-[0.75rem] top-1/2 -translate-y-1/2 text-[0.75rem] text-foreground/60">search</span>
+            <span className="material-symbols-outlined absolute left-[0.75rem] top-1/2 -translate-y-1/2 text-[0.75rem] text-[hsl(var(--foreground)/0.6)]">search</span>
             <input
               type="text"
               placeholder="Buscar plantillas..."
-              className="w-full monolithic-panel rounded-none pl-[2.25rem] pr-[1rem] py-[0.5rem] text-[0.75rem] text-foreground focus:border-primary/50 outline-none transition-all placeholder:text-foreground/20 bg-background border border-foreground/10"
+              className="w-full monolithic-panel rounded-none pl-[2.25rem] pr-[1rem] py-[0.5rem] text-[0.75rem] text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary)/0.5)] outline-none transition-all placeholder:text-[hsl(var(--foreground)/0.2)] bg-background border border-[hsl(var(--foreground)/0.1)]"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
             />
@@ -175,8 +173,8 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
             >
               <div className="flex items-center justify-between mb-[0.5rem]">
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary/40 text-[1rem]">drag_indicator</span>
-                  <span className="text-[0.75rem] font-bold text-foreground group-hover:text-primary transition-colors">{tpl.nombre}</span>
+                  <span className="material-symbols-outlined text-[hsl(var(--primary)/0.4)] text-[1rem]">drag_indicator</span>
+                  <span className="text-[0.75rem] font-bold text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors">{tpl.nombre}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <button 
@@ -191,7 +189,7 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
                   </button>
                   <button 
                     title="Editar definición"
-                    className="size-[1.5rem] rounded-full flex items-center justify-center hover:bg-primary/20 text-foreground/40 hover:text-primary transition-all"
+                    className="size-[1.5rem] rounded-full flex items-center justify-center hover:bg-[hsl(var(--primary)/0.2)] text-[hsl(var(--foreground)/0.4)] hover:text-[hsl(var(--primary))] transition-all"
                     onClick={(e) => {
                       e.stopPropagation();
                       setEditingTpl(tpl);
@@ -203,10 +201,10 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
               </div>
               <div className="flex items-center gap-[0.5rem]">
                 <div className={`text-[0.5rem] font-black px-[0.5rem] py-[0.125rem] rounded-none uppercase tracking-wider border ${
-                  tpl.tipo === 'text' ? 'bg-primary/10 text-primary border-primary/20' :
+                  tpl.tipo === 'text' ? 'bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))] border-[hsl(var(--primary)/0.2)]' :
                   tpl.tipo === 'number' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                   tpl.tipo === 'boolean' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
-                  'bg-foreground/5 text-foreground/60 border-foreground/10'
+                  'bg-[hsl(var(--foreground)/0.05)] text-[hsl(var(--foreground)/0.6)] border-[hsl(var(--foreground)/0.1)]'
                 }`}>
                   {tpl.tipo}
                 </div>
@@ -221,21 +219,21 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
 
       {/* Edit Form Overlay/Section */}
       {editingTpl && (
-        <div className="p-[1.5rem] border-t border-foreground/10 bg-primary/5 space-y-[0.75rem] animate-in slide-in-from-bottom duration-300">
+        <div className="p-[1.5rem] border-t border-[hsl(var(--foreground)/0.1)] bg-[hsl(var(--primary)/0.05)] space-y-[0.75rem] animate-in slide-in-from-bottom duration-300">
           <div className="flex items-center justify-between">
-            <h4 className="text-[0.625rem] font-black uppercase text-primary tracking-widest">Editando Módulo</h4>
-            <button onClick={() => setEditingTpl(null)} className="text-foreground/40 hover:text-primary transition-colors">
+            <h4 className="text-[0.625rem] font-black uppercase text-[hsl(var(--primary))] tracking-widest">Editando Módulo</h4>
+            <button onClick={() => setEditingTpl(null)} className="text-[hsl(var(--foreground)/0.4)] hover:text-[hsl(var(--primary))] transition-colors">
               <span className="material-symbols-outlined text-[1rem]">close</span>
             </button>
           </div>
           <input
             autoFocus
-            className="w-full bg-background border-b border-primary/40 py-[0.25rem] text-[0.75rem] text-foreground outline-none focus:border-primary"
+            className="w-full bg-background border-b border-[hsl(var(--primary)/0.4)] py-[0.25rem] text-[0.75rem] text-[hsl(var(--foreground))] outline-none focus:border-[hsl(var(--primary))]"
             value={editingTpl.nombre}
             onChange={e => setEditingTpl({ ...editingTpl, nombre: e.target.value })}
           />
           <select
-            className="w-full monolithic-panel border border-foreground/10 rounded-none px-[0.5rem] py-[0.375rem] text-[0.625rem] text-foreground/70 outline-none bg-background"
+            className="w-full monolithic-panel border border-[hsl(var(--foreground)/0.1)] rounded-none px-[0.5rem] py-[0.375rem] text-[0.625rem] text-[hsl(var(--foreground)/0.7)] outline-none bg-background"
             value={editingTpl.tipo}
             onChange={e => setEditingTpl({ ...editingTpl, tipo: e.target.value })}
           >
@@ -249,13 +247,13 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
           <div className="flex gap-2">
             <button
                onClick={() => setEditingTpl(null)}
-               className="flex-1 py-[0.5rem] bg-foreground/5 text-foreground/60 text-[0.625rem] font-black uppercase tracking-widest hover:bg-foreground/10"
+               className="flex-1 py-[0.5rem] bg-[hsl(var(--foreground)/0.05)] text-[hsl(var(--foreground)/0.6)] text-[0.625rem] font-black uppercase tracking-widest hover:bg-[hsl(var(--foreground)/0.1)] transition-all"
             >
               Cancelar
             </button>
             <button
               onClick={handleUpdateTemplate}
-              className="flex-1 py-[0.5rem] bg-primary text-white text-[0.625rem] font-black uppercase tracking-widest"
+              className="flex-1 py-[0.5rem] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-[0.625rem] font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
               Actualizar
             </button>
@@ -264,8 +262,8 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
       )}
 
       {/* Footer Instructions */}
-      <div className="p-[1rem] border-t border-foreground/10 text-center bg-foreground/[0.02]">
-        <p className="text-[0.5625rem] font-bold uppercase tracking-[0.15em] text-foreground/40">
+      <div className="p-[1rem] border-t border-[hsl(var(--foreground)/0.1)] text-center bg-[hsl(var(--foreground)/0.02)]">
+        <p className="text-[0.5625rem] font-bold uppercase tracking-[0.15em] text-[hsl(var(--foreground)/0.4)]">
           Arrastra módulos al centro para añadir
         </p>
       </div>

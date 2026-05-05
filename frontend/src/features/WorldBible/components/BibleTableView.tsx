@@ -11,16 +11,18 @@ import { entityService } from '@repositories/entityService';
 // import { folderService } from '@repositories/folderService';
 import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { useLanguage } from '@context/LanguageContext';
+import CreateMassEntitiesModal from './CreateMassEntitiesModal';
 
 interface TableViewProps {
   projectId: number;
   allFolders: Carpeta[];
   searchTerm: string;
+  handleOpenCreateModal?: (parentFolder?: any) => void;
 }
 
 const columnHelper = createColumnHelper<Entidad>();
 
-const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searchTerm }) => {
+const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searchTerm, handleOpenCreateModal }) => {
   const { t } = useLanguage();
   const { username, projectName } = useParams();
   const [entities, setEntities] = useState<Entidad[]>([]);
@@ -30,10 +32,7 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
   // Consumir el contexto centralizado del ArchitectLayout para el panel derecho
   const { setRightPanelContent, setRightOpen } = useOutletContext<any>();
 
-  // Fila de creación rápida
-  const [newName, setNewName] = useState('');
-  const [newType, setNewType] = useState('PERSONAJE');
-  const [newFolderId, setNewFolderId] = useState<number | string>('null');
+  const [isMassCreateOpen, setIsMassCreateOpen] = useState(false);
 
   const loadEntities = async () => {
     setLoading(true);
@@ -46,31 +45,6 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
     loadEntities();
   }, [projectId]);
 
-  const handleCreateQuick = async () => {
-    if (!newName.trim()) return;
-    const names = newName.split(',').map(n => n.trim()).filter(n => n.length > 0);
-    const folderId = newFolderId === 'null' ? null : Number(newFolderId);
-
-    try {
-      await Promise.all(names.map(name => 
-        entityService.create({
-          nombre: name,
-          tipo: newType,
-          project_id: projectId,
-          carpeta_id: folderId,
-          descripcion: '',
-          contenido_json: null,
-          slug: '',
-          folder_slug: null,
-          imagen_url: null
-        })
-      ));
-      setNewName('');
-      loadEntities();
-    } catch (err) {
-      console.error('Error creating entities:', err);
-    }
-  };
 
   const handleBulkDelete = async () => {
     const selectedIds = Object.keys(rowSelection).map(idx => entities[Number(idx)].id);
@@ -230,6 +204,19 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
   return (
     <div className="flex-1 flex flex-col p-8 pt-0 overflow-hidden relative">
       <div className="max-w-6xl w-full mx-auto flex-1 flex flex-col monolithic-panel border border-white/5 bg-black/20 overflow-hidden">
+        <div className="flex items-center justify-between p-6 bg-white/[0.02] border-b border-white/10">
+          <div className="flex items-center gap-4">
+             <div className="size-2 bg-primary animate-pulse" />
+             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/60">Registros de la Biblia</h3>
+          </div>
+          <button 
+            onClick={() => setIsMassCreateOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20"
+          >
+            <span className="material-symbols-outlined text-sm">add_circle</span>
+            Crear en Serie
+          </button>
+        </div>
         <div className="overflow-auto custom-scrollbar flex-1">
           <table className="w-full text-left border-collapse">
             <thead className="sticky top-0 bg-[#0a0a0a] z-10">
@@ -244,54 +231,6 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
               ))}
             </thead>
             <tbody>
-              <tr className="border-b border-primary/20 bg-primary/5 group">
-                <td className="p-4"></td>
-                <td className="p-4">
-                  <input
-                    value={newName}
-                    onChange={e => setNewName(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && handleCreateQuick()}
-                    placeholder="Nombres (separados por coma)..."
-                    className="w-full bg-transparent border-none outline-none text-sm placeholder:text-primary/30 text-primary font-bold italic"
-                  />
-                </td>
-                <td className="p-4">
-                  <select 
-                    value={newType}
-                    onChange={e => setNewType(e.target.value)}
-                    className="bg-black/40 border border-white/10 p-1 rounded text-[10px] font-bold uppercase tracking-widest outline-none focus:border-primary/50"
-                  >
-                    <option value="ENTIDADINDIVIDUAL">Entidad Individual</option>
-                    <option value="PERSONAJE">Personaje</option>
-                    <option value="LUGAR">Lugar</option>
-                    <option value="ORGANIZACION">Facción</option>
-                    <option value="OBJETO">Objeto</option>
-                    <option value="EVENTO">Evento</option>
-                    <option value="MAP">Mapa</option>
-                  </select>
-                </td>
-                <td className="p-4">
-                  <select
-                    value={newFolderId}
-                    onChange={e => setNewFolderId(e.target.value)}
-                    className="bg-black/40 border border-white/10 p-1 rounded text-[10px] font-bold uppercase tracking-widest outline-none focus:border-primary/50 w-full"
-                  >
-                    <option value="null">Raíz</option>
-                    {allFolders.map(f => (
-                      <option key={f.id} value={f.id}>{f.nombre}</option>
-                    ))}
-                  </select>
-                </td>
-                <td className="p-4">
-                   <button 
-                    onClick={(e) => { e.stopPropagation(); handleCreateQuick(); }}
-                    disabled={!newName.trim()}
-                    className="text-primary hover:text-white transition-colors p-2"
-                  >
-                    <span className="material-symbols-outlined text-sm">add_circle</span>
-                  </button>
-                </td>
-              </tr>
 
               {table.getRowModel().rows.map(row => (
                 <tr key={row.id} className={`border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors group ${row.getIsSelected() ? 'bg-primary/10' : ''}`}>
@@ -306,6 +245,15 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
           </table>
         </div>
       </div>
+
+      <CreateMassEntitiesModal 
+        isOpen={isMassCreateOpen}
+        onClose={() => setIsMassCreateOpen(false)}
+        onCreated={loadEntities}
+        projectId={projectId}
+        allFolders={allFolders}
+        handleOpenCreateModal={handleOpenCreateModal}
+      />
     </div>
   );
 };
