@@ -1,6 +1,45 @@
 import { sql } from '../client';
 import { Entidad, Valor } from '@domain/models/database';
 
+// interface EntityValueQueryResult is an interface that is used to query the database for values of an entity and return them as an array of objects
+// each object has the following properties:
+// - id: number - the id of the value
+// - entidad_id: number - the id of the entity
+// - plantilla_id: number - the id of the template
+// - valor: string - the value of the field
+// - updated_at: string - the updated at timestamp
+// - p_id: number - the id of the plant
+// - p_nombre: string - the name of the plant
+// - p_tipo: string - the type of the plant
+// - p_valor_defecto: string | null - the default value of the plant
+// - p_metadata: string | null - the metadata of the plant
+// - p_es_obligatorio: number | boolean - whether the plant is required
+// - p_project_id: number - the id of the project
+// - p_aplica_a_todo: number | boolean - whether the plant applies to all
+// - p_tipo_objetivo: string | null - the target type of the plant
+// - p_categoria: string | null - the category of the plant
+// - p_orden: number - the order of the plant
+// - p_created_at: string - the created at timestamp
+interface EntityValueQueryResult {
+  id: number,
+  entidad_id: number,
+  plantilla_id: number,
+  valor: string,
+  updated_at: string,
+  p_id: number,
+  p_nombre: string,
+  p_tipo: string,
+  p_valor_defecto: string | null,
+  p_metadata: string | null,
+  p_es_obligatorio: number | boolean,
+  p_project_id: number,
+  p_aplica_a_todo: number | boolean,
+  p_tipo_objetivo: string | null,
+  p_categoria: string | null,
+  p_orden: number,
+  p_created_at: string
+}
+
 export const entityService = {
   async getAllByProject(projectId: number): Promise<Entidad[]> {
     return await sql<Entidad>`SELECT * FROM entidades WHERE project_id = ${projectId} AND borrado = 0 ORDER BY fecha_creacion DESC`;
@@ -81,7 +120,7 @@ export const entityService = {
   },
 
   async getValues(entityId: number): Promise<Valor[]> {
-    const rows = await sql<any>`
+    const rows = await sql<EntityValueQueryResult>`
       SELECT 
         v.*, 
         p.id as p_id, p.nombre as p_nombre, p.tipo as p_tipo, 

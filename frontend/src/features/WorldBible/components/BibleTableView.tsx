@@ -5,6 +5,8 @@ import {
   flexRender,
   createColumnHelper,
   getFilteredRowModel,
+  HeaderContext,
+  CellContext,
 } from '@tanstack/react-table';
 import { Entidad, Carpeta } from '@domain/models/database';
 import { entityService } from '@repositories/entityService';
@@ -18,7 +20,7 @@ interface TableViewProps {
   projectId: number;
   allFolders: Carpeta[];
   searchTerm: string;
-  handleOpenCreateModal?: (parentFolder?: any) => void;
+  handleOpenCreateModal?: (parentFolder?: Carpeta | null) => void;
 }
 
 const columnHelper = createColumnHelper<Entidad>();
@@ -116,7 +118,7 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
   const columns = useMemo(() => [
     {
       id: 'select',
-      header: ({ table }: any) => (
+      header: ({ table }: HeaderContext<Entidad, unknown>) => (
         <input
           type="checkbox"
           checked={table.getIsAllRowsSelected()}
@@ -124,7 +126,7 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
           className="accent-primary"
         />
       ),
-      cell: ({ row }: any) => (
+      cell: ({ row }: CellContext<Entidad, unknown>) => (
         <input
           type="checkbox"
           checked={row.getIsSelected()}

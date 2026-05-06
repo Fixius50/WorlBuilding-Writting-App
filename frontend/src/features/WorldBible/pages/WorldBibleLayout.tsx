@@ -5,23 +5,8 @@ import { Outlet, useNavigate, useOutletContext, useLocation, useParams } from 'r
 import BibleTableView from '../components/BibleTableView';
 import CreateNodeModal from '../components/CreateNodeModal';
 import { FolderType } from '@domain/models/database';
+import { ArchitectContext } from '@domain/models/ui';
 
-interface ArchitectContext {
-  projectId: number;
-  projectName: string;
-  baseUrl: string;
-  folders: Carpeta[];
-  searchTerm: string;
-  setSearchTerm: (term: string) => void;
-  filterType: string;
-  setFilterType: (type: string) => void;
-  handleCreateSimpleFolder: (parentId: number | null, type?: FolderType) => Promise<void>;
-  handleDeleteFolder: (id: number, parentId?: number | null) => void;
-  handleRenameFolder: (id: number, name: string) => void;
-  handleCreateEntity: (parentId: number | string, type?: string) => void;
-  handleDeleteEntity: (id: number, folderId: number) => void;
-  [key: string]: unknown;
-}
 
 const WorldBibleLayout: React.FC = () => {
   const navigate = useNavigate();
@@ -83,7 +68,7 @@ const WorldBibleLayout: React.FC = () => {
     return (architectContext?.folders || []).filter(f => !f.padre_id);
   }, [architectContext?.folders]);
 
-  const handleOpenCreateModal = (parentFolder = null) => {
+  const handleOpenCreateModal = (parentFolder: Carpeta | null = null) => {
     setTargetParent(parentFolder);
     setCreationModalOpen(true);
   };

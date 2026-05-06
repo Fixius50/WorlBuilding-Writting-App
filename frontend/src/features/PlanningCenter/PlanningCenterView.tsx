@@ -2,24 +2,22 @@ import React, { useState } from 'react';
 import { useOutletContext, useParams } from 'react-router-dom';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 import GraphView from '@features/Graph/pages/GeneralGraphView';
-import { WhiteboardView } from '@features/Planning';
 import { GenealogyView } from '@features/Genealogy';
 
-type PlanningTab = 'NETWORK' | 'WHITEBOARD' | 'GENEALOGY';
+type PlanningTab = 'NETWORK' | 'GENEALOGY';
 
 const PlanningCenterView: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<PlanningTab>('WHITEBOARD');
+  const [activeTab, setActiveTab] = useState<PlanningTab>('NETWORK');
   const { projectId, projectName } = useOutletContext<{ projectId: number, projectName: string }>();
 
   const TABS = [
     { id: 'NETWORK', label: 'Red Neuronal', icon: 'hub' },
-    { id: 'WHITEBOARD', label: 'Pizarra de Ideas', icon: 'inventory_2' },
     { id: 'GENEALOGY', label: 'Árbol de Linaje', icon: 'account_tree' },
   ];
 
   return (
     <div className="h-full w-full flex flex-col bg-background relative overflow-hidden">
-      {/* Barra de Pestañas Superior - Pegada arriba, pero sin extenderse lateralmente */}
+      {/* Barra de Pestañas Superior */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 z-[60] flex justify-center">
         <div className="border-x border-b border-foreground/10 bg-background/60  flex items-stretch gap-0.5 h-10 px-2 shadow-xl">
           {TABS.map((tab) => (
@@ -34,7 +32,6 @@ const PlanningCenterView: React.FC = () => {
                   : 'text-foreground/30 hover:text-foreground/60 hover:bg-background'}
               `}
             >
-              {/* Indicador de pestaña activa */}
               {activeTab === tab.id && (
                 <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary animate-in fade-in slide-in-from-bottom-2 duration-300" />
               )}
@@ -48,16 +45,11 @@ const PlanningCenterView: React.FC = () => {
         </div>
       </div>
 
-      {/* Contenedor de Contenido - Sangrado total */}
       <div className="w-full h-full relative">
         <div className={`absolute inset-0 ${activeTab === 'NETWORK' ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none z-0'}`}>
           <GraphView projectId={projectId} projectName={projectName} />
         </div>
         
-        <div className={`absolute inset-0 ${activeTab === 'WHITEBOARD' ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none z-0'}`}>
-          <WhiteboardView />
-        </div>
-
         <div className={`absolute inset-0 ${activeTab === 'GENEALOGY' ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none z-0'}`}>
           <GenealogyView />
         </div>

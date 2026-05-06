@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import LinguisticsHub from './LinguisticsHub';
-import GlyphFoundry from './GlyphFoundry';
 import AdvancedLinguistics from './AdvancedLinguistics';
 
 import { folderService } from '@repositories/folderService';

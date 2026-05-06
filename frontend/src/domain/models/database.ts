@@ -42,7 +42,7 @@ export interface Entidad {
 }
 
 export interface Word extends Omit<Entidad, 'id'> {
-  id: number | string;
+  id: number;
   lema: string;
   palabraOriginal?: string;
   categoriaGramatical: string;
