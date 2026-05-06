@@ -29,7 +29,6 @@ import { SyncView } from '@features/Sync';
 // Store & Context
 import { useAppStore } from '@store/useAppStore';
 import { LanguageProvider } from '@context/LanguageContext';
-import { initializeDatabase } from '@database';
 
 const App = () => {
   const isInitialized = useAppStore((state) => state.isInitialized);
@@ -38,9 +37,7 @@ const App = () => {
 
   useEffect(() => {
     const startup = async () => {
-      // 1. Asegurarnos de que las tablas de SQLite existen
-      await initializeDatabase();
-      // 2. Cargar las configuraciones en Zustand
+      // 1. Cargar las configuraciones en Zustand (La DB ya se inicializó en main.tsx)
       await initializeStore();
     };
     startup();

@@ -101,65 +101,97 @@ const DynamicAttributeForm: React.FC<DynamicAttributeFormProps> = ({ entity, onU
                   </div>
                   
                   <div className="flex items-center gap-3 w-full md:w-2/3">
-                    {tpl.tipo === 'boolean' ? (
-                      <button 
-                        onClick={() => handleValueChange(tpl.id, currentValue === 'true' ? 'false' : 'true')}
-                        className={`flex items-center gap-2 px-4 py-2 border transition-all text-[10px] font-black uppercase tracking-widest ${
-                          currentValue === 'true' 
-                            ? 'bg-primary border-primary text-white' 
-                            : 'bg-foreground/5 border-foreground/10 text-foreground/40'
-                        }`}
-                      >
-                        <span className="material-symbols-outlined text-sm">
-                          {currentValue === 'true' ? 'check_circle' : 'cancel'}
-                        </span>
-                        {currentValue === 'true' ? 'Activado' : 'Desactivado'}
-                      </button>
-                    ) : tpl.tipo === 'date' ? (
-                      <input 
-                        type="date"
-                        value={currentValue || ''}
-                        onChange={e => handleValueChange(tpl.id, e.target.value)}
-                        className="w-full bg-foreground/[0.02] border border-foreground/10 p-2 text-xs text-foreground outline-none focus:border-primary/50 transition-colors"
-                      />
-                    ) : tpl.tipo === 'number' ? (
-                      <input 
-                        type="number"
-                        value={currentValue || ''}
-                        onChange={e => handleValueChange(tpl.id, e.target.value)}
-                        className="w-full bg-foreground/[0.02] border border-foreground/10 p-2 text-xs text-foreground outline-none focus:border-primary/50 transition-colors"
-                      />
-                    ) : tpl.tipo === 'textarea' ? (
-                      <textarea
-                        value={currentValue || ''}
-                        onChange={e => handleValueChange(tpl.id, e.target.value)}
-                        className="w-full bg-foreground/[0.02] border border-foreground/10 p-3 text-xs text-foreground outline-none focus:border-primary/50 transition-colors min-h-[100px] leading-relaxed resize-y"
-                        placeholder="Escribe contenido extendido o Markdown..."
-                      />
-                    ) : tpl.tipo === 'image' ? (
-                      <div className="flex flex-col gap-2 w-full">
-                        <input 
-                          type="text"
-                          value={currentValue || ''}
-                          onChange={e => handleValueChange(tpl.id, e.target.value)}
-                          className="w-full bg-foreground/[0.02] border border-foreground/10 p-2 text-xs text-foreground outline-none focus:border-primary/50 transition-colors"
-                          placeholder="https://ejemplo.com/imagen.png"
-                        />
-                        {currentValue && (
-                          <div className="size-20 border border-foreground/10 bg-foreground/5 overflow-hidden">
-                            <img src={currentValue} alt="Preview" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500" />
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <input 
-                        type="text"
-                        value={currentValue || ''}
-                        onChange={e => handleValueChange(tpl.id, e.target.value)}
-                        className="w-full bg-foreground/[0.02] border border-foreground/10 p-2 text-xs text-foreground outline-none focus:border-primary/50 transition-colors"
-                        placeholder="..."
-                      />
-                    )}
+                    {(() => {
+                      switch (tpl.tipo) {
+                        case 'boolean':
+                          return (
+                            <button 
+                              onClick={() => handleValueChange(tpl.id, currentValue === 'true' ? 'false' : 'true')}
+                              className={`flex items-center gap-2 px-4 py-2 border transition-all text-[10px] font-black uppercase tracking-widest ${
+                                currentValue === 'true' 
+                                  ? 'bg-primary border-primary text-white' 
+                                  : 'bg-foreground/5 border-foreground/10 text-foreground/40'
+                              }`}
+                            >
+                              <span className="material-symbols-outlined text-sm">
+                                {currentValue === 'true' ? 'check_circle' : 'cancel'}
+                              </span>
+                              {currentValue === 'true' ? 'Activado' : 'Desactivado'}
+                            </button>
+                          );
+                        case 'date':
+                          return (
+                            <input 
+                              type="date"
+                              value={currentValue || ''}
+                              onChange={e => handleValueChange(tpl.id, e.target.value)}
+                              className="w-full bg-foreground/[0.02] border border-foreground/10 p-2 text-xs text-foreground outline-none focus:border-primary/50 transition-colors"
+                            />
+                          );
+                        case 'number':
+                          return (
+                            <input 
+                              type="number"
+                              value={currentValue || ''}
+                              onChange={e => handleValueChange(tpl.id, e.target.value)}
+                              className="w-full bg-foreground/[0.02] border border-foreground/10 p-2 text-xs text-foreground outline-none focus:border-primary/50 transition-colors"
+                            />
+                          );
+                        case 'textarea':
+                        case 'long_text':
+                          return (
+                            <textarea
+                              rows={tpl.tipo === 'long_text' ? 4 : 2}
+                              value={currentValue || ''}
+                              onChange={e => handleValueChange(tpl.id, e.target.value)}
+                              className="w-full bg-foreground/[0.02] border border-foreground/10 p-3 text-xs text-foreground outline-none focus:border-primary/50 transition-colors min-h-[80px] leading-relaxed resize-y"
+                              placeholder="Escribe contenido extendido..."
+                            />
+                          );
+                        case 'select':
+                          const metadata = typeof tpl.metadata === 'string' ? JSON.parse(tpl.metadata) : (tpl.metadata || {});
+                          const options = (metadata.options as string[]) || [];
+                          return (
+                            <select
+                              value={currentValue || ''}
+                              onChange={e => handleValueChange(tpl.id, e.target.value)}
+                              className="w-full bg-foreground/[0.02] border border-foreground/10 p-2 text-xs text-foreground outline-none focus:border-primary/50 transition-colors appearance-none"
+                            >
+                              <option value="">Seleccionar...</option>
+                              {options.map(opt => (
+                                <option key={opt} value={opt}>{opt}</option>
+                              ))}
+                            </select>
+                          );
+                        case 'image':
+                          return (
+                            <div className="flex flex-col gap-2 w-full">
+                              <input 
+                                type="text"
+                                value={currentValue || ''}
+                                onChange={e => handleValueChange(tpl.id, e.target.value)}
+                                className="w-full bg-foreground/[0.02] border border-foreground/10 p-2 text-xs text-foreground outline-none focus:border-primary/50 transition-colors"
+                                placeholder="https://ejemplo.com/imagen.png"
+                              />
+                              {currentValue && (
+                                <div className="size-20 border border-foreground/10 bg-foreground/5 overflow-hidden">
+                                  <img src={currentValue} alt="Preview" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500" />
+                                </div>
+                              )}
+                            </div>
+                          );
+                        default:
+                          return (
+                            <input 
+                              type="text"
+                              value={currentValue || ''}
+                              onChange={e => handleValueChange(tpl.id, e.target.value)}
+                              className="w-full bg-foreground/[0.02] border border-foreground/10 p-2 text-xs text-foreground outline-none focus:border-primary/50 transition-colors"
+                              placeholder="..."
+                            />
+                          );
+                      }
+                    })()}
                     
                     {savingId === tpl.id && (
                       <span className="animate-spin material-symbols-outlined text-primary text-sm">sync</span>

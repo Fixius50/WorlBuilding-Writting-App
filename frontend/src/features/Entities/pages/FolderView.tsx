@@ -44,6 +44,7 @@ const FolderView: React.FC = () => {
   const [currentFolder, setCurrentFolder] = useState<Carpeta | null>(null);
   const [path, setPath] = useState<Carpeta[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState('ALL');
 
   // Modales
   const [isNewSubfolderModalOpen, setIsNewSubfolderModalOpen] = useState(false);
@@ -98,8 +99,24 @@ const FolderView: React.FC = () => {
       return matchesSearch && matchesFilter;
     });
 
-    return { folders: fFolders, entities: fEntities };
-  }, [subfolders, entities, folderSearchTerm, folderFilterType]);
+    let finalFolders = fFolders;
+    let finalEntities = fEntities;
+
+    if (activeFilter === 'SPACES') {
+      finalEntities = [];
+    } else if (activeFilter === 'ENTITIES') {
+      finalFolders = [];
+      finalEntities = fEntities.filter(e => e.tipo !== 'MAPA' && e.tipo !== 'TIMELINE');
+    } else if (activeFilter === 'MAPS') {
+      finalFolders = [];
+      finalEntities = fEntities.filter(e => e.tipo === 'MAPA' || e.tipo === 'MAP');
+    } else if (activeFilter === 'TIMELINES') {
+      finalFolders = [];
+      finalEntities = fEntities.filter(e => e.tipo === 'TIMELINE' || e.tipo === 'LINEA_TEMPORAL');
+    }
+
+    return { folders: finalFolders, entities: finalEntities };
+  }, [subfolders, entities, folderSearchTerm, folderFilterType, activeFilter]);
 
   if (loading) {
     return (
@@ -111,37 +128,30 @@ const FolderView: React.FC = () => {
 
   return (
     <div className="flex-1 overflow-y-auto no-scrollbar p-8 lg:p-12 space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <header className="space-y-6">
-        <Breadcrumbs path={path} currentFolder={currentFolder} />
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-black tracking-tighter text-foreground">
-              {currentFolder?.nombre || 'Carpeta'}
-            </h1>
-            <p className="text-xs font-medium text-foreground/40 uppercase tracking-widest">
-              {filteredContent.folders.length} Carpetas • {filteredContent.entities.length} Entidades
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-             <Button 
-               variant="outline" 
-               size="sm" 
-               onClick={() => setIsNewSubfolderModalOpen(true)}
-               className="h-10 px-6"
-             >
-               Nueva Subcarpeta
-             </Button>
-             <Button 
-               variant="primary" 
-               size="sm" 
-               onClick={() => navigate(`/local/prueba/bible/folder/${folderId}/entity/new/entidadindividual`)}
-               className="h-10 px-6"
-             >
-               Nueva Entidad
-             </Button>
-          </div>
-        </div>
-      </header>
+      {/* Header eliminado por unificación en Layout superior */}
+
+      {/* Barra de Filtros Local */}
+      <div className="flex flex-wrap items-center gap-2 mb-6">
+        {[
+          { id: 'ALL', label: 'Todo' },
+          { id: 'SPACES', label: 'Universos/Espacios' },
+          { id: 'ENTITIES', label: 'Entidades' },
+          { id: 'MAPS', label: 'Mapas' },
+          { id: 'TIMELINES', label: 'Líneas Temporales' }
+        ].map(filter => (
+          <button
+            key={filter.id}
+            onClick={() => setActiveFilter(filter.id)}
+            className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all backdrop-blur-sm ${
+              activeFilter === filter.id 
+                ? 'bg-primary text-primary-foreground shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]' 
+                : 'bg-white/5 hover:bg-white/10 text-foreground/60 hover:text-foreground'
+            }`}
+          >
+            {filter.label}
+          </button>
+        ))}
+      </div>
 
       {/* Grid de Contenido */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
@@ -156,7 +166,7 @@ const FolderView: React.FC = () => {
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-bold truncate">{folder.nombre}</div>
-              <div className="text-[10px] text-foreground/40 uppercase font-black">Subcarpeta</div>
+              <div className="text-[10px] text-foreground/40 uppercase font-black">{folder.tipo === 'FOLDER' ? 'Espacio' : folder.tipo}</div>
             </div>
           </MonolithicPanel>
         ))}
@@ -178,17 +188,7 @@ const FolderView: React.FC = () => {
         ))}
       </div>
 
-      {/* Modales */}
-      <InputModal
-        isOpen={isNewSubfolderModalOpen}
-        onClose={() => setIsNewSubfolderModalOpen(false)}
-        onConfirm={(name) => {
-          handleCreateSimpleFolder(Number(folderId), name);
-          setIsNewSubfolderModalOpen(false);
-        }}
-        title="Nueva Subcarpeta"
-        placeholder="Nombre de la carpeta..."
-      />
+      {/* Modales eliminados para la nueva arquitectura estricta */}
 
       {/* Aquí faltarían otros modales si fueran necesarios, pero para el bug de setRightOpen esto es suficiente */}
     </div>

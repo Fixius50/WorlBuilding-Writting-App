@@ -32,6 +32,9 @@ const EntityProfile = () => {
     snippet: ReactNode; hoja_id: number; hoja_titulo: string; cuaderno_titulo: string; cuaderno_id: number 
 }[]>([]);
 
+  const [notes, setNotes] = useState('');
+  const [isEditingNotes, setIsEditingNotes] = useState(false);
+
   useEffect(() => {
     if (entityId) {
       openPanel('entity', entityId);
@@ -42,6 +45,90 @@ const EntityProfile = () => {
   useEffect(() => {
     loadEntity();
   }, [entityId]);
+
+  useEffect(() => {
+    if (entity?.notes) {
+      setNotes(entity.notes as string);
+    }
+  }, [entity]);
+
+  const handleSaveNotes = async () => {
+    if (!entity || !entityId) return;
+    try {
+      const currentExtra = typeof entity.contenido_json === 'string'
+        ? JSON.parse(entity.contenido_json)
+        : (entity.contenido_json || {});
+      
+      const updatedExtra = { ...currentExtra, notes };
+      await entityService.update(Number(entityId), {
+        contenido_json: JSON.stringify(updatedExtra)
+      });
+      setIsEditingNotes(false);
+      // Opcional: recargar entidad para sincronizar
+      // loadEntity(); 
+    } catch (err) {
+      console.error("Failed to save notes", err);
+    }
+  };
+
+  const { setCustomContent } = useRightPanelStore();
+
+  useEffect(() => {
+    if (entity) {
+      setCustomContent(
+        <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+          <div className="flex items-center justify-between border-b border-foreground/10 pb-4">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary flex items-center gap-2">
+              <span className="material-symbols-outlined text-sm">edit_note</span>
+              Notas de Autor
+            </h3>
+            {!isEditingNotes ? (
+              <button 
+                onClick={() => setIsEditingNotes(true)}
+                className="text-[9px] font-black uppercase tracking-widest text-foreground/40 hover:text-primary transition-colors"
+              >
+                Editar
+              </button>
+            ) : (
+              <button 
+                onClick={handleSaveNotes}
+                className="text-[9px] font-black uppercase tracking-widest text-emerald-500 hover:text-emerald-400 transition-colors"
+              >
+                Guardar
+              </button>
+            )}
+          </div>
+
+          {isEditingNotes ? (
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="w-full h-64 bg-foreground/[0.03] border border-foreground/10 p-4 text-xs text-foreground/80 outline-none focus:border-primary/40 font-serif leading-relaxed resize-none custom-scrollbar"
+              placeholder="Escribe aquí las observaciones secretas sobre este arcano..."
+              autoFocus
+            />
+          ) : (
+            <div className="prose prose-invert prose-xs">
+              <p className="text-xs text-foreground/60 leading-relaxed italic whitespace-pre-wrap font-serif">
+                {notes || "No hay notas del autor para esta entidad."}
+              </p>
+            </div>
+          )}
+
+          <div className="pt-8 opacity-20 hover:opacity-100 transition-opacity">
+            <div className="text-[8px] font-black uppercase tracking-[0.4em] mb-4 text-center">Protocolos de Seguridad</div>
+            <button 
+              className="w-full py-3 border border-red-500/20 text-red-500/40 hover:text-red-500 hover:bg-red-500/5 text-[9px] font-black uppercase tracking-widest transition-all"
+              onClick={() => { if(window.confirm('¿Destruir rastro de este arcano?')) navigate(-1); }}
+            >
+              Solicitar Amnesia (Eliminar)
+            </button>
+          </div>
+        </div>,
+        `Archivo: ${entity.nombre}`
+      );
+    }
+  }, [entity, notes, isEditingNotes, setCustomContent]);
 
   const loadEntity = async () => {
     if (!entityId) return;
@@ -89,8 +176,8 @@ const EntityProfile = () => {
 
   // El Inspector ahora se gestiona vía Store centralizado en UniversalInspector
 
-  if (loading) return <div className="p-20 text-center animate-pulse text-foreground/50 h-full flex items-center justify-center font-black uppercase tracking-[0.4em] text-xs">Accediendo a la Cápsula...</div>;
-  if (!entity) return <div className="p-20 text-center text-red-400">Error: Entidad no encontrada.</div>;
+  if (loading) return <div className="p-20 text-center animate-pulse text-foreground/50 h-full flex items-center justify-center font-black uppercase tracking-[0.4em] text-xs bg-background">Accediendo a la Cápsula...</div>;
+  if (!entity) return <div className="p-20 text-center text-red-500 bg-background h-full flex items-center justify-center uppercase font-black tracking-widest">Error: Entidad no encontrada.</div>;
 
   const tabs = [
     { id: 'GENERAL', label: 'Esencia' },
@@ -103,8 +190,11 @@ const EntityProfile = () => {
     navigate(`/${username || 'local'}/${projectName}/bible/folder/${folderId}/entity/${id}`);
   };
 
+  // Parsear imágenes de la galería
+  const galleryImages = (entity.images as string[]) || [];
+
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#0a0a0a] overflow-hidden animate-in fade-in duration-700">
+    <div className="flex-1 flex flex-col h-full bg-background overflow-hidden animate-in fade-in duration-700">
       
       {/* --- PREMIUM HEADER --- */}
       <div className="shrink-0 p-8 lg:px-12 lg:pt-16 lg:pb-8 border-b border-foreground/5 bg-gradient-to-b from-primary/5 to-transparent relative overflow-hidden">
@@ -157,29 +247,42 @@ const EntityProfile = () => {
         <main className="flex-1 overflow-y-auto custom-scrollbar p-8 lg:p-12">
           <div className="max-w-7xl mx-auto">
             {activeTab === 'GENERAL' && (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 animate-in slide-in-from-bottom-4 duration-500">
-                <div className="lg:col-span-12 space-y-12">
-                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                      <MiniGraph entityId={Number(entityId)} onNavigate={handleEntityNavigate} />
-                      <div className="space-y-6">
-                         <div className="p-8 border border-dashed border-foreground/10 flex flex-col items-center justify-center text-center opacity-40 h-full">
-                            <span className="material-symbols-outlined text-4xl mb-3">auto_awesome</span>
-                            <span className="text-[10px] font-black uppercase tracking-widest leading-relaxed max-w-[200px]">
-                                Nivel de Presencia en el Mundo: Elevado
-                            </span>
-                         </div>
-                      </div>
-                   </div>
-                </div>
-                <div className="lg:col-span-12">
-                   <div className="pb-8 mb-8 border-b border-foreground/5">
-                        <h3 className="text-xs font-black uppercase tracking-[0.3em] text-foreground/60 flex items-center gap-3">
-                           <span className="material-symbols-outlined text-lg">history_edu</span>
-                           Cronología Vital del Arcano
-                        </h3>
-                   </div>
-                   <MiniTimeline entityId={Number(entityId)} />
-                </div>
+              <div className="max-w-4xl mx-auto space-y-16 animate-in slide-in-from-bottom-4 duration-500">
+                {/* Artículo de Prosa */}
+                <article className="space-y-8">
+                  <div className="flex items-center gap-4">
+                    <span className="h-px flex-1 bg-gradient-to-r from-transparent to-primary/30"></span>
+                    <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Crónica de su Esencia</h2>
+                    <span className="h-px flex-1 bg-gradient-to-l from-transparent to-primary/30"></span>
+                  </div>
+                  <div className="prose prose-invert prose-lg max-w-none">
+                    <p className="text-xl lg:text-2xl font-serif leading-[1.8] text-foreground/80 first-letter:text-5xl first-letter:font-black first-letter:mr-3 first-letter:float-left first-letter:text-primary italic">
+                      {entity.descripcion || "Este arcano aún no posee una crónica detallada en los registros del mundo."}
+                    </p>
+                  </div>
+                </article>
+
+                {/* Galería de Imágenes */}
+                {galleryImages.length > 0 && (
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-3">
+                       <span className="material-symbols-outlined text-sm text-primary">gallery_thumbnail</span>
+                       <h3 className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Fragmentos Visuales</h3>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {galleryImages.map((img, idx) => (
+                        <div key={idx} className="aspect-square bg-foreground/5 border border-foreground/10 overflow-hidden group relative">
+                          <img 
+                            src={img} 
+                            alt={`Fragmento ${idx}`} 
+                            className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110"
+                          />
+                          <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

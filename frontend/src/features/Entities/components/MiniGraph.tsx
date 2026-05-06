@@ -75,8 +75,14 @@ const MiniGraph: React.FC<MiniGraphProps> = ({ entityId, onNavigate }) => {
 
   return (
     <div className="w-full h-[350px] bg-foreground/[0.02] border border-foreground/10 relative overflow-hidden group">
-      <div className="absolute top-4 left-4 z-10">
+      <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between">
         <span className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40">Mapa de Influencia</span>
+        <button 
+          onClick={() => window.alert('Abrir modal de creación rápida en desarrollo')}
+          className="text-[9px] font-black uppercase tracking-widest text-primary hover:text-foreground transition-colors px-2 py-1 border border-primary/20 bg-background/60 hover:bg-primary/10 backdrop-blur-sm"
+        >
+          + Vincular
+        </button>
       </div>
       
       <ReactFlow

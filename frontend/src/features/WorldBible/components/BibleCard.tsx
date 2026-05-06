@@ -58,7 +58,7 @@ const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu
               className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700"
             />
           </div>
-          <div className="absolute inset-0 z-0 bg-gradient-to-t from-[#0a0a0c] via-[#0a0a0c]/80 to-transparent" />
+          <div className="absolute inset-0 z-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
         </>
       )}
 

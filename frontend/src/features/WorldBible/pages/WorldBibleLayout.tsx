@@ -137,14 +137,37 @@ const WorldBibleLayout: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                /* Botón de Volver (Cuando estamos en una carpeta) */
-                <div className="animate-in fade-in slide-in-from-bottom-2">
+                /* Barra de Herramientas Contextual (Cuando estamos en una carpeta) */
+                <div className="flex flex-wrap items-center justify-center gap-3 animate-in fade-in slide-in-from-bottom-2">
                   <button
                     onClick={() => navigate(`/local/${projectName}/bible`)}
-                    className="flex items-center gap-3 px-8 py-3 bg-[hsl(var(--foreground)/0.05)] hover:bg-[hsl(var(--foreground)/0.1)] border border-[hsl(var(--foreground)/0.1)] text-[hsl(var(--primary))] hover:text-[hsl(var(--foreground))] transition-all rounded-full group mx-auto"
+                    className="flex items-center gap-3 px-6 py-2.5 bg-[hsl(var(--foreground)/0.05)] hover:bg-[hsl(var(--foreground)/0.1)] border border-[hsl(var(--foreground)/0.1)] text-[hsl(var(--primary))] hover:text-[hsl(var(--foreground))] transition-all rounded-full group"
                   >
                     <span className="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform">arrow_back</span>
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Volver al Archivo Central</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Volver</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const id = Number(location.pathname.match(/\/folder\/(\d+)/)?.[1]);
+                      const folder = architectContext?.folders?.find(f => f.id === id);
+                      handleOpenCreateModal(folder || null);
+                    }}
+                    className="flex items-center gap-3 px-6 py-2.5 bg-primary/10 hover:bg-primary/20 border border-primary/20 text-primary transition-all rounded-full group"
+                  >
+                    <span className="material-symbols-outlined text-sm">add_circle</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Nuevo Nodo</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const id = location.pathname.match(/\/folder\/(\d+)/)?.[1];
+                      navigate(`/local/${projectName}/bible/folder/${id || 'root'}/entity/new/entidadindividual`);
+                    }}
+                    className="flex items-center gap-3 px-6 py-2.5 bg-foreground text-background hover:bg-primary hover:text-primary-foreground transition-all rounded-full group shadow-xl"
+                  >
+                    <span className="material-symbols-outlined text-sm">person_add</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Nueva Entidad</span>
                   </button>
                 </div>
               )}

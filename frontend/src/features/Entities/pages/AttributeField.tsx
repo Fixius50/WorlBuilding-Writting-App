@@ -24,20 +24,20 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
  case 'text':
  return (
  <textarea
- className="w-full bg-transparent text-foreground text-sm font-medium focus:outline-none resize-none no-scrollbar h-auto min-h-[100px]"
+ className="w-full bg-transparent text-foreground text-sm font-medium focus:outline-none resize-none no-scrollbar h-auto min-h-[100px] placeholder:text-foreground/20"
  value={value || ''}
  onChange={(e) => onChange(e.target.value)}
- placeholder="..."
+ placeholder="Escribe aquí..."
  />
  );
  case 'short_text':
  return (
  <input
  type="text"
- className="w-full bg-transparent text-foreground text-sm font-medium focus:outline-none"
+ className="w-full bg-transparent text-foreground text-sm font-medium focus:outline-none placeholder:text-foreground/20"
  value={value || ''}
  onChange={(e) => onChange(e.target.value)}
- placeholder="..."
+ placeholder="Escribe aquí..."
  />
  );
  case 'number':
@@ -54,11 +54,11 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
  <div className="flex items-center gap-3">
  <button
  onClick={() => onChange(value === 'true' ? 'false' : 'true')}
- className={`size-6 rounded-none border flex items-center justify-center transition-all ${value === 'true' ? 'bg-indigo-500 border-indigo-500 text-foreground' : 'border-foreground/10 text-transparent hover:border-indigo-500/50'}`}
+ className={`size-6 rounded-none border flex items-center justify-center transition-all ${value === 'true' ? 'bg-primary border-primary text-foreground' : 'border-foreground/10 text-transparent hover:border-primary/50'}`}
  >
  <span className="material-symbols-outlined text-sm">check</span>
  </button>
- <span className="text-xs text-foreground/60">{value === 'true' ? 'Enabled' : 'Disabled'}</span>
+ <span className="text-xs text-foreground">{value === 'true' ? 'Enabled' : 'Disabled'}</span>
  </div>
  );
  case 'select':
@@ -72,13 +72,13 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
  return (
  <div className="relative">
  <select
- className="w-full monolithic-panel rounded-none px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-indigo-500/50 appearance-none cursor-pointer"
+ className="w-full monolithic-panel rounded-none px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50 appearance-none cursor-pointer"
  value={value || ''}
  onChange={(e) => onChange(e.target.value)}
  >
- <option value="" className="bg-[#1a1a20] text-foreground">Select an option...</option>
+ <option value="" className="bg-background text-foreground/50">Select an option...</option>
  {options.map((opt, i) => (
- <option key={i} value={opt} className="bg-[#1a1a20] text-foreground p-2">
+ <option key={i} value={opt} className="bg-background text-foreground py-4">
  {opt}
  </option>
  ))}
@@ -123,13 +123,13 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
  }}
  className="flex items-center gap-3 p-2 hover:bg-foreground/5 rounded-none cursor-pointer group transition-colors"
  >
- <div className={`size-4 rounded border flex items-center justify-center transition-all ${selectedValues.includes(opt) ? 'bg-indigo-500 border-indigo-500' : 'border-foreground/40 group-hover:border-foreground/40'}`}>
+ <div className={`size-4 rounded border flex items-center justify-center transition-all ${selectedValues.includes(opt) ? 'bg-primary border-primary' : 'border-foreground/40 group-hover:border-foreground/40'}`}>
  {selectedValues.includes(opt) && <span className="material-symbols-outlined text-[10px] text-foreground">check</span>}
  </div>
- <span className={`text-xs font-medium ${selectedValues.includes(opt) ? 'text-foreground' : 'text-foreground/60 group-hover:text-foreground/60'}`}>{opt}</span>
+ <span className={`text-xs font-medium ${selectedValues.includes(opt) ? 'text-foreground' : 'text-foreground/80 group-hover:text-foreground'}`}>{opt}</span>
  </label>
  ))}
- {multiOptions.length === 0 && <div className="text-xs text-foreground/60 p-2 italic">No options defined.</div>}
+ {multiOptions.length === 0 && <div className="text-xs text-foreground p-2 italic">No options defined.</div>}
  </div>
  );
  case 'date':
@@ -145,13 +145,13 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
  return (
  <div className="relative">
  <select
- className="w-full monolithic-panel rounded-none px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-indigo-500/50 appearance-none cursor-pointer"
+ className="w-full monolithic-panel rounded-none px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50 appearance-none cursor-pointer"
  value={value || ''}
  onChange={(e) => onChange(e.target.value)}
  >
- <option value="" className="bg-[#1a1a20] text-foreground">Select an Entity...</option>
+ <option value="" className="bg-background text-foreground/50">Select an Entity...</option>
  {linkableEntities.map((ent) => (
- <option key={ent.id} value={ent.id} className="bg-[#1a1a20] text-foreground p-2">
+ <option key={ent.id} value={ent.id} className="bg-background text-foreground py-4">
  {ent.nombre}
  </option>
  ))}
@@ -167,8 +167,8 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
  <div className="flex gap-2">
  <input
  type="text"
- className="flex-1 monolithic-panel rounded-none px-4 py-2 text-xs text-foreground/60 focus:text-foreground focus:outline-none"
- placeholder="Image URL..."
+ className="flex-1 monolithic-panel rounded-none px-4 py-2 text-xs text-foreground focus:outline-none placeholder:text-foreground/30"
+ placeholder="URL de la imagen..."
  value={value || ''}
  onChange={(e) => onChange(e.target.value)}
  />
@@ -179,7 +179,7 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
  </div>
  )}
  {!value && (
- <div className="w-full h-20 rounded-none bg-foreground/5 border border-dashed border-foreground/40 flex items-center justify-center text-foreground/60">
+ <div className="w-full h-20 rounded-none bg-foreground/5 border border-dashed border-foreground/40 flex items-center justify-center text-foreground">
  <span className="material-symbols-outlined">image</span>
  </div>
  )}
@@ -190,12 +190,12 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
  return (
  <div className="space-y-2">
  <textarea
- className="w-full h-32 monolithic-panel rounded-none p-3 text-xs font-mono text-foreground/70 focus:outline-none focus:border-indigo-500/50"
+ className="w-full h-32 monolithic-panel rounded-none p-3 text-xs font-mono text-foreground focus:outline-none focus:border-primary/50 placeholder:text-foreground/20"
  value={tableData}
  onChange={(e) => onChange(e.target.value)}
  placeholder='[{"Item": "Sword", "Qty": 1}, ...]'
  />
- <div className="text-[10px] text-foreground/60 flex justify-between">
+ <div className="text-[10px] text-foreground flex justify-between">
  <span>JSON Format supported</span>
  <span className="material-symbols-outlined text-xs">data_array</span>
  </div>
@@ -212,7 +212,7 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
  };
 
  return (
- <div className="p-4 border border-foreground/10 rounded-none bg-[#0d0d12]/50 relative overflow-hidden h-full flex flex-col group hover:border-indigo-500/20 transition-all">
+ <div className="p-4 border border-foreground/10 rounded-none bg-foreground/[0.02] relative overflow-hidden h-full flex flex-col group hover:border-primary/20 transition-all">
  <label className="text-[10px] font-black uppercase tracking-widest text-foreground/60 mb-3 flex items-center justify-between gap-2">
  <div className="flex items-center gap-2">
  <span className="material-symbols-outlined text-xs opacity-50">label</span>

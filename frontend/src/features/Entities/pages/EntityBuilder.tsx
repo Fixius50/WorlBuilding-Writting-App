@@ -315,53 +315,40 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden relative">
       <div className="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
-        
-        {/* ENCABEZADO DE ENTIDAD - RESTAURADO CON ESTILO ZEN */}
-        <div className="sticky top-0 z-40 bg-background/80  border-b border-white/5 px-8 lg:px-12 py-6 flex flex-col items-center gap-4 animate-in slide-in-from-top-4 duration-700">
+                {/* CABECERA UNIFICADA MONOLÍTICA */}
+        <div className="sticky top-0 z-40 bg-background border-b border-foreground/10 animate-in slide-in-from-top-4 duration-700">
           
-          {/* Breadcrumbs Row */}
-          <div className="w-full max-w-7xl">
-            <Breadcrumbs path={path} />
-          </div>
-
-          {/* Fila 1: Logo + Nombre + Acciones */}
-          <div className="flex items-center justify-between w-full max-w-7xl gap-8">
+          {/* 1. INFORMACIÓN DE ENTIDAD Y ACCIONES (PARTE SUPERIOR) */}
+          <div className="px-8 lg:px-12 py-4 flex items-center justify-between w-full max-w-7xl mx-auto gap-8">
             <div className="flex items-center gap-6">
               <Avatar 
                 url={extras.iconUrl}
                 name={entity.nombre || 'Nuevo Ente'} 
-                size="md" 
-                className="ring-1 ring-primary/20 ring-offset-4 ring-offset-background shadow-2xl shadow-primary/10" 
+                size="sm" 
+                className="ring-1 ring-primary/20 shadow-xl shadow-primary/5" 
               />
-              <div className="space-y-1">
-                <div className="text-[9px] font-black uppercase tracking-[0.4em] text-[hsl(var(--primary)/0.4)] italic">Editor de Entidad Central</div>
-                <h2 className="text-3xl font-black text-foreground tracking-tighter uppercase">
+              <div className="space-y-0.5">
+                <div className="text-[8px] font-black uppercase tracking-[0.4em] text-primary/40 italic">Constructor Central</div>
+                <h2 className="text-xl font-black text-foreground tracking-tighter uppercase leading-none">
                   {entity.nombre || 'Nuevo Ente'}
                 </h2>
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <button 
                 onClick={() => { if(confirm('¿Seguro que quieres borrar esta entidad?')) { /* Lógica de borrado */ } }} 
-                className="size-12 flex items-center justify-center text-[hsl(var(--foreground)/0.2)] hover:text-[hsl(var(--color-red))] hover:bg-[hsl(var(--color-red)/0.05)] transition-all border border-[hsl(var(--foreground)/0.05)]"
+                className="size-10 flex items-center justify-center text-foreground/20 hover:text-red-400 hover:bg-red-400/5 transition-all border border-foreground/5"
                 title="Eliminar Entidad"
               >
-                <span className="material-symbols-outlined text-lg">delete</span>
+                <span className="material-symbols-outlined text-base">delete</span>
               </button>
 
-              <button 
-                className="size-12 flex items-center justify-center text-[hsl(var(--foreground)/0.2)] hover:text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.05)] transition-all border border-[hsl(var(--foreground)/0.05)]"
-                title="Cambiar Visibilidad"
-              >
-                <span className="material-symbols-outlined text-lg">visibility</span>
-              </button>
-
-              <div className="w-px h-8 bg-background mx-2" />
+              <div className="w-px h-6 bg-foreground/10 mx-1" />
 
               <button 
                 onClick={() => navigate(-1)} 
-                className="flex items-center gap-3 px-6 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-[hsl(var(--foreground)/0.4)] hover:text-[hsl(var(--foreground))] transition-all group border border-[hsl(var(--foreground)/0.05)] bg-[hsl(var(--foreground)/0.02)]"
+                className="flex items-center gap-2 px-4 py-2.5 text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40 hover:text-foreground transition-all group border border-foreground/5 bg-foreground/[0.02]"
               >
                 <span className="material-symbols-outlined text-sm group-hover:-translate-x-1 transition-transform">arrow_back</span>
                 Volver
@@ -370,31 +357,30 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
               <button 
                 onClick={() => handleSave(true)} 
                 disabled={saving}
-                className={`flex items-center gap-3 px-10 py-3 rounded-none font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-xl ${saving ? 'bg-[hsl(var(--primary)/0.2)] text-[hsl(var(--primary))] cursor-wait' : 'bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.9)] text-[hsl(var(--primary-foreground))] hover:scale-[1.02] active:scale-[0.98] shadow-[hsl(var(--primary)/0.2)]'}`}
+                className={`flex items-center gap-3 px-8 py-2.5 rounded-none font-black text-[9px] uppercase tracking-[0.2em] transition-all shadow-lg ${saving ? 'bg-primary/20 text-primary cursor-wait' : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:scale-[1.02] active:scale-[0.98] shadow-primary/20'}`}
               >
                 <span className="material-symbols-outlined text-sm">{saving ? 'sync' : 'save'}</span>
                 {saving ? 'Guardando...' : 'Guardar Cambios'}
               </button>
             </div>
           </div>
-        </div>
 
-
-        {/* NAVEGACIÓN DE PESTAÑAS - ESTILO ZEN */}
-        <div className={`px-8 lg:px-12 border-b border-white/5 bg-background/40 sticky top-[10.5rem] z-30  transition-all duration-300`}>
-          <div className="flex items-center justify-center gap-16 max-w-7xl mx-auto">
-            {['identity', 'narrative', 'attributes'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveEntityTab(tab)}
-                className={`py-6 text-[10px] font-black uppercase tracking-[0.3em] border-b-2 transition-all duration-500 ${activeEntityTab === tab
-                  ? 'border-[hsl(var(--primary))] text-[hsl(var(--primary))] drop-shadow-[0_0_10px_rgba(var(--primary),0.5)]'
-                  : 'border-transparent text-[hsl(var(--foreground)/0.3)] hover:text-[hsl(var(--foreground))]'
-                }`}
-              >
-                {tab === 'identity' ? 'Identidad' : tab === 'narrative' ? 'Narrativa' : 'Atributos'}
-              </button>
-            ))}
+          {/* 2. NAVEGACIÓN DE PESTAÑAS (PARTE INFERIOR) */}
+          <div className="border-t border-foreground/5 bg-foreground/[0.02]">
+            <div className="flex items-center justify-center gap-12 max-w-7xl mx-auto">
+              {['identity', 'narrative', 'attributes'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveEntityTab(tab)}
+                  className={`py-4 text-[9px] font-black uppercase tracking-[0.3em] border-b-2 transition-all duration-500 ${activeEntityTab === tab
+                    ? 'border-primary text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.4)]'
+                    : 'border-transparent text-foreground/30 hover:text-foreground'
+                  }`}
+                >
+                  {tab === 'identity' ? 'Identidad' : tab === 'narrative' ? 'Narrativa' : 'Atributos'}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -405,7 +391,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
               <div className="space-y-12">
                 {/* NÚCLEO DE IDENTIDAD */}
-                <div className="monolithic-panel border border-white/10 bg-black/20 p-8 space-y-8">
+                <div className="monolithic-panel border border-foreground/10 bg-foreground/[0.02] p-8 space-y-8">
                   <header className="flex items-center gap-3 text-[hsl(var(--primary))] border-b border-[hsl(var(--foreground)/0.05)] pb-4">
                     <span className="material-symbols-outlined text-lg">fingerprint</span>
                     <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[hsl(var(--foreground))]">Núcleo de Identidad</h3>
@@ -468,7 +454,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                       </label>
                       <input
                         type="text"
-                        className="w-full bg-background border border-white/10 rounded-none p-4 text-[11px] text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-white/5 shadow-inner"
+                        className="w-full bg-foreground/[0.03] border border-foreground/20 rounded-none p-4 text-[11px] text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-foreground/20 shadow-inner"
                         placeholder="Importante, Secreto, Fase 1..."
                         value={extras.tags || ''}
                         onChange={(e) => updateExtra({ tags: e.target.value })}
@@ -484,7 +470,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                     <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[hsl(var(--foreground))]">Apariencia y Rasgos</h3>
                   </header>
                   <textarea
-                    className="w-full bg-background border border-white/10 rounded-none p-6 text-[13px] text-foreground/80 leading-relaxed min-h-[20rem] outline-none focus:border-primary/50 transition-all resize-none custom-scrollbar shadow-inner placeholder:italic placeholder:text-white/5"
+                    className="w-full bg-foreground/[0.03] border border-foreground/20 rounded-none p-6 text-[13px] text-foreground/90 leading-relaxed min-h-[20rem] outline-none focus:border-primary/50 transition-all resize-none custom-scrollbar shadow-inner placeholder:italic placeholder:text-foreground/20"
                     placeholder="Describe visualmente esta entidad..."
                     value={extras.appearance}
                     onChange={(e) => updateExtra({ appearance: e.target.value })}
@@ -502,7 +488,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                   
                   <div className="grid grid-cols-2 gap-4">
                     {extras.images?.map((img: string, i: number) => (
-                      <div key={i} className="aspect-[16/10] bg-background border border-white/10 overflow-hidden relative group cursor-zoom-in" onClick={() => setZoomImage(img)}>
+                      <div key={i} className="aspect-[16/10] bg-background border border-foreground/10 overflow-hidden relative group cursor-zoom-in" onClick={() => setZoomImage(img)}>
                         <img src={img} className="w-full h-full object-cover opacity-40 group-hover:opacity-100 group-hover:scale-110 transition-all duration-1000" alt="Gallery" />
                         <button
                           onClick={(e) => { e.stopPropagation(); removeImage(i); }}
@@ -529,7 +515,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                     <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[hsl(var(--foreground))]">Notas de Desarrollador</h3>
                   </header>
                   <textarea
-                    className="w-full bg-background border border-white/10 rounded-none p-6 text-[13px] text-foreground/40 italic leading-relaxed min-h-[15rem] outline-none focus:border-primary/50 transition-all resize-none custom-scrollbar shadow-inner"
+                    className="w-full bg-foreground/[0.03] border border-foreground/20 rounded-none p-6 text-[13px] text-foreground/60 italic leading-relaxed min-h-[15rem] outline-none focus:border-primary/50 transition-all resize-none custom-scrollbar shadow-inner placeholder:text-foreground/20"
                     placeholder="Secretos, ideas de desarrollo, conexiones ocultas..."
                     value={extras.notes}
                     onChange={(e) => updateExtra({ notes: e.target.value })}
@@ -552,12 +538,12 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                     <span className="text-[8px] font-black uppercase tracking-widest">System Ready</span>
                   </div>
                 </header>
-                <textarea
-                  className="flex-1 w-full bg-transparent border-none outline-none text-xl text-foreground/80 leading-relaxed resize-none custom-scrollbar placeholder:text-white/5 italic"
-                  placeholder="Escribe la historia, leyendas y mitos corporativos..."
-                  value={entity.descripcion || ''}
-                  onChange={e => setEntity({ ...entity, descripcion: e.target.value })}
-                />
+                  <textarea
+                    className="flex-1 w-full bg-transparent border-none outline-none text-xl text-foreground font-medium leading-relaxed resize-none custom-scrollbar placeholder:text-foreground/20 italic"
+                    placeholder="Escribe la historia, leyendas y mitos corporativos..."
+                    value={entity.descripcion || ''}
+                    onChange={e => setEntity({ ...entity, descripcion: e.target.value })}
+                  />
               </div>
             </div>
           )}

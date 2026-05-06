@@ -9,57 +9,98 @@ interface CreateNodeModalProps {
 }
 
 const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCreate, parentFolder }) => {
- const [formData, setFormData] = useState({
- nombre: '',
- descripcion: '',
- tipo: 'FOLDER', // Default
- canvasType: 'BLANK' // BLANK or IMPORT
- });
+  const isRoot = !parentFolder;
 
- if (!isOpen) return null;
+  const [formData, setFormData] = useState({
+    nombre: '',
+    descripcion: '',
+    tipo: 'FOLDER',
+    canvasType: 'BLANK'
+  });
 
- const handleSubmit = () => {
- onCreate(formData);
- onClose();
- setFormData({ nombre: '', descripcion: '', tipo: 'FOLDER', canvasType: 'BLANK' });
- };
+  // Reseteamos el estado cada vez que se abre el modal para evitar fugas de tipos
+  React.useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        nombre: '',
+        descripcion: '',
+        tipo: isRoot ? 'FOLDER' : HIERARCHY_TYPES.UNIVERSE.id,
+        canvasType: 'BLANK'
+      });
+    }
+  }, [isOpen, isRoot]);
 
- const TYPES = [
- HIERARCHY_TYPES.UNIVERSE,
- HIERARCHY_TYPES.GALAXY,
- HIERARCHY_TYPES.SYSTEM,
- HIERARCHY_TYPES.PLANET
- ];
+  if (!isOpen) return null;
 
- const ALL_TYPES = [...TYPES, { id: 'FOLDER', label: 'Carpeta', icon: 'folder', color: 'text-foreground/50' }];
+  const handleSubmit = () => {
+    // Si es root, forzamos FOLDER. Si no, forzamos que NO sea FOLDER (si el estado falló, asignamos UNIVERSE)
+    const finalTipo = isRoot ? 'FOLDER' : (formData.tipo === 'FOLDER' ? HIERARCHY_TYPES.UNIVERSE.id : formData.tipo);
+    const finalData = { ...formData, tipo: finalTipo };
+    
+    onCreate(finalData);
+    onClose();
+  };
+
+
+  const TYPES = [
+  HIERARCHY_TYPES.UNIVERSE,
+  HIERARCHY_TYPES.GALAXY,
+  HIERARCHY_TYPES.SYSTEM,
+  HIERARCHY_TYPES.PLANET
+  ];
+
+  // Si no es raíz, no mostramos la opción de crear Carpeta (Espacio)
+  const ALL_TYPES = isRoot ? [] : [...TYPES];
 
  return (
- <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 ">
- <div className="bg-[#1a1b26] w-full max-w-4xl rounded-none shadow-2xl border border-foreground/40 overflow-hidden flex flex-col max-h-[90vh]">
+  <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4">
+    <div className="bg-background w-full max-w-4xl rounded-none shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-foreground/10 overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
 
- {/* Header */}
- <div className="p-6 border-b border-foreground/10 flex justify-between items-center bg-[#1f202e]">
- <div className="flex items-center gap-3">
- <div className="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400">
- <span className="material-icons text-sm">add</span>
- </div>
- <h2 className="text-xl font-semibold text-foreground">
- {parentFolder ? 'Crear Nuevo Espacio' : 'Crear Nuevo Mapa'}
- </h2>
- </div>
- <button onClick={onClose} className="text-gray-400 hover:text-foreground transition">
- <span className="material-icons">close</span>
- </button>
- </div>
+  {/* Header & Actions Toolbar */}
+  <div className="p-6 border-b border-foreground/5 flex justify-between items-center bg-foreground/[0.03] sticky top-0 z-10">
+    <div className="flex items-center gap-4">
+      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+        <span className="material-symbols-outlined text-base">add_circle</span>
+      </div>
+      <div>
+        <h2 className="text-xl font-black text-foreground tracking-tight leading-none mb-1">
+          {parentFolder ? 'Nuevo espacio' : 'Crear Nuevo Mapa'}
+        </h2>
+        <div className="flex items-center gap-2 text-[10px] font-bold text-foreground/40 uppercase tracking-widest">
+          <span className="material-symbols-outlined text-[12px] opacity-50">location_on</span>
+          <span>{parentFolder ? parentFolder.nombre : 'Raíz del Archivo'}</span>
+        </div>
+      </div>
+    </div>
 
- {/* Content */}
- <div className="p-8 overflow-y-auto flex-1">
- <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
- {/* Identidad */}
- <div className="space-y-6">
- <h3 className="text-sm font-black uppercase tracking-widest text-indigo-400">Identidad</h3>
- <div>
- <label className="block text-[10px] font-black text-foreground/30 uppercase mb-2">Nombre del Espacio</label>
+    <div className="flex items-center gap-2">
+      <button
+        onClick={onClose}
+        className="px-5 py-2.5 rounded-none text-[10px] font-black uppercase tracking-widest text-foreground/40 hover:text-foreground hover:bg-white/5 transition-all"
+      >
+        Cancelar
+      </button>
+
+      <button
+        onClick={handleSubmit}
+        disabled={!formData.nombre}
+        className="px-6 py-2.5 rounded-none bg-primary hover:bg-primary-dark text-primary-foreground text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/10 transition-all disabled:opacity-30 disabled:pointer-events-none flex items-center gap-2"
+      >
+        <span>Confirmar y Crear</span>
+        <span className="material-symbols-outlined text-sm">check_circle</span>
+      </button>
+    </div>
+  </div>
+
+
+  {/* Content */}
+  <div className="p-8 overflow-y-auto flex-1">
+    <div className={`grid grid-cols-1 ${!isRoot ? 'md:grid-cols-2' : ''} gap-8`}>
+      {/* Identidad */}
+      <div className="space-y-6">
+    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Identidad</h3>
+    <div>
+      <label className="block text-[9px] font-black text-foreground/30 uppercase mb-2 tracking-widest">Nombre del espacio</label>
  <input
  autoFocus
  type="text"
@@ -79,61 +120,39 @@ const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCr
  />
  </div>
  </div>
+      </div>
 
- {/* Jerarquía y Visualización */}
- <div className="space-y-6">
- <h3 className="text-sm font-black uppercase tracking-widest text-indigo-400">Configuración</h3>
+      {/* Jerarquía y Visualización (Oculto en Raíz) */}
+      {!isRoot && (
+        <div className="space-y-6">
+          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Configuración</h3>
 
- <div className="space-y-3">
- <label className="block text-[10px] font-black text-foreground/30 uppercase mb-1">Tipo de Jerarquía</label>
- <div className="grid grid-cols-2 gap-2">
- {ALL_TYPES.map(type => (
- <div
- key={type.id}
- onClick={() => setFormData({ ...formData, tipo: type.id })}
- className={`flex items-center gap-3 p-3 rounded-none border cursor-pointer transition-all ${formData.tipo === type.id ? 'bg-indigo-500/10 border-indigo-500/50' : 'bg-foreground/5 border-foreground/10 hover:bg-foreground/10'}`}
- >
- <span className={`material-icons text-lg ${type.color || ''}`}>{type.icon}</span>
- <span className="text-xs font-bold text-foreground/80">{type.label}</span>
- </div>
- ))}
- </div>
- </div>
+          <div className="space-y-3">
+            <label className="block text-[9px] font-black text-foreground/30 uppercase mb-1 tracking-widest">Tipo de Jerarquía</label>
+            <div className="grid grid-cols-2 gap-2">
+              {ALL_TYPES.map(type => (
+                <div
+                  key={type.id}
+                  onClick={() => setFormData({ ...formData, tipo: type.id })}
+                  className={`flex items-center gap-3 p-3 rounded-none border cursor-pointer transition-all ${
+                    formData.tipo === type.id 
+                      ? 'bg-primary/10 border-primary/50 shadow-[0_0_15px_rgba(var(--primary-rgb),0.1)]' 
+                      : 'bg-white/5 border-white/5 hover:bg-white/10'
+                  }`}
+                >
+                  <span className={`material-symbols-outlined text-lg ${type.color || ''}`}>{type.icon}</span>
+                  <span className="text-xs font-bold text-foreground/80">{type.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
 
- <div className="p-4 rounded-none bg-indigo-500/5 border border-indigo-500/10">
- <div className="flex items-center gap-4">
- <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400">
- <span className="material-icons">info</span>
- </div>
- <div>
- <p className="text-[10px] uppercase font-black text-indigo-300">Ubicación Actual</p>
- <p className="text-xs text-indigo-100/50">{parentFolder ? parentFolder.nombre : 'Raíz del Mundo'}</p>
- </div>
- </div>
- </div>
- </div>
- </div>
- </div>
+        </div>
+      )}
+    </div>
+  </div>
 
- {/* Footer */}
- <div className="p-6 border-t border-foreground/10 flex justify-end gap-3 bg-[#1f202e]">
- <button
- onClick={onClose}
- className="px-6 py-3 rounded-none text-xs font-black uppercase tracking-widest text-text-muted hover:text-foreground transition"
- >
- Cancelar
- </button>
 
- <button
- onClick={handleSubmit}
- disabled={!formData.nombre}
- className="px-8 py-3 rounded-none bg-indigo-600 hover:bg-indigo-500 text-foreground text-xs font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20 transition-all disabled:opacity-30 disabled:pointer-events-none"
- >
- Confirmar y Crear
- </button>
- </div>
-
- </div>
  </div>
  );
 };

@@ -195,8 +195,8 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
 
   return (
     <div className="flex-1 flex flex-col p-8 pt-0 overflow-hidden relative">
-      <div className="max-w-6xl w-full mx-auto flex-1 flex flex-col monolithic-panel border border-white/5 bg-black/20 overflow-hidden">
-        <div className="flex items-center justify-between p-6 bg-background border-b border-white/10">
+      <div className="max-w-6xl w-full mx-auto flex-1 flex flex-col monolithic-panel border border-foreground/5 bg-foreground/[0.02] overflow-hidden">
+        <div className="flex items-center justify-between p-6 bg-background border-b border-foreground/10">
           <div className="flex items-center gap-4">
              <div className="size-2 bg-primary animate-pulse" />
              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/60">Registros de la Biblia</h3>
@@ -211,9 +211,9 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
         </div>
         <div className="overflow-auto custom-scrollbar flex-1">
           <table className="w-full text-left border-collapse">
-            <thead className="sticky top-0 bg-[#0a0a0a] z-10">
+            <thead className="sticky top-0 bg-background z-10">
               {table.getHeaderGroups().map(headerGroup => (
-                <tr key={headerGroup.id} className="border-b border-white/10">
+                <tr key={headerGroup.id} className="border-b border-foreground/10">
                   {headerGroup.headers.map(header => (
                     <th key={header.id} className="p-4 bg-background">
                       {flexRender(header.column.columnDef.header, header.getContext())}

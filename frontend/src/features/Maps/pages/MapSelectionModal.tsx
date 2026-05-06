@@ -45,7 +45,7 @@ const MapSelectionModal = ({ maps, onSelect, onCreateNew, onClose }: { maps: any
  onClick={() => onSelect(map)}
  className="group p-4 rounded-none monolithic-panel hover:border-primary/50 hover:bg-foreground/10 transition-all cursor-pointer space-y-3"
  >
- <div className={`aspect-video rounded-none border border-foreground/10 flex items-center justify-center overflow-hidden relative ${!previewImage ? 'bg-gradient-to-br from-slate-800 to-black' : 'sunken-panel'}`}>
+ <div className={`aspect-video rounded-none border border-foreground/10 flex items-center justify-center overflow-hidden relative ${!previewImage ? 'bg-gradient-to-br from-foreground/5 to-background' : 'sunken-panel'}`}>
  {previewImage ? (
  <img
  src={previewImage}
@@ -54,7 +54,7 @@ const MapSelectionModal = ({ maps, onSelect, onCreateNew, onClose }: { maps: any
  />
  ) : (
  <>
- <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+ <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
  <span className="material-symbols-outlined text-4xl opacity-20 group-hover:opacity-40 transition-opacity text-primary">map</span>
  </>
  )}
