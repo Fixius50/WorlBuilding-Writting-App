@@ -73,11 +73,26 @@ const WorldBibleLayout: React.FC = () => {
     setCreationModalOpen(true);
   };
 
-  const handleCreateSubmit = async (formData: { nombre: string; tipo: FolderType }) => {
+  const handleCreateSubmit = async (formData: { nombre: string; tipo: any }) => {
     if (!architectContext?.projectId) return;
-    if (architectContext.handleCreateSimpleFolder) {
-      await architectContext.handleCreateSimpleFolder(targetParent ? targetParent.id : null, formData.tipo);
+    
+    const isFolderType = formData.tipo === 'FOLDER' || formData.tipo === 'TIMELINE';
+    
+    try {
+      if (isFolderType) {
+        if (architectContext.handleCreateSimpleFolder) {
+          await architectContext.handleCreateSimpleFolder(targetParent ? targetParent.id : null, formData.tipo);
+        }
+      } else {
+        // Creación rápida de ENTIDAD (Personaje, Mapa, etc.)
+        if (architectContext.handleCreateQuickEntity && targetParent) {
+          await architectContext.handleCreateQuickEntity(targetParent.id, formData.nombre, formData.tipo);
+        }
+      }
+    } catch (err) {
+      console.error("Error creating node:", err);
     }
+    
     setCreationModalOpen(false);
   };
 

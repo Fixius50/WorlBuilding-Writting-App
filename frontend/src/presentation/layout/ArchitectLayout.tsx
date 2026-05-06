@@ -142,6 +142,32 @@ const ArchitectLayout: React.FC = () => {
     }
   }, [projectId, loadFolders, t]);
 
+  const handleCreateQuickEntity = useCallback(async (parentId: number, name: string, type: string) => {
+    if (!projectId) return;
+    try {
+      const newEntity = await entityService.create({
+        nombre: name,
+        tipo: type,
+        slug: name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''),
+        descripcion: '',
+        carpeta_id: parentId,
+        project_id: projectId,
+        contenido_json: JSON.stringify({}),
+        folder_slug: null,
+        imagen_url: null
+      });
+      
+      // Notificar al árbol de carpetas para que refresque el contenido de parentId
+      window.dispatchEvent(new CustomEvent('folder-update', {
+        detail: { folderId: parentId, type: 'entity', item: newEntity }
+      }));
+      
+      return newEntity;
+    } catch (err) {
+      console.error("Error in quick creation:", err);
+    }
+  }, [projectId]);
+
   const handleRenameFolder = useCallback(async (folderId: number, newName: string) => {
     try {
       await folderService.update(folderId, newName, projectId!);
@@ -197,6 +223,8 @@ const ArchitectLayout: React.FC = () => {
     projectName,
     baseUrl,
     handleCreateSimpleFolder,
+    handleCreateQuickEntity,
+
     handleDeleteFolder,
     handleRenameFolder,
     handleCreateEntity,

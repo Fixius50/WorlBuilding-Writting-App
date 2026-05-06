@@ -33,6 +33,7 @@ export interface ArchitectContext {
   filterType: string;
   setFilterType: (type: string) => void;
   handleCreateSimpleFolder: (parentId: number | null, type?: FolderType) => Promise<void>;
+  handleCreateQuickEntity?: (parentId: number, name: string, type: string) => Promise<any>;
   handleDeleteFolder: (id: number, parentId?: number | null) => void;
   handleRenameFolder: (id: number, name: string) => void;
   handleCreateEntity: (parentId: number | string, type?: string) => void;

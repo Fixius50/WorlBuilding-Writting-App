@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-// import { folderService } from '@repositories/folderService';
-// import { entityService } from '@repositories/entityService';
-import { Carpeta } from '@domain/models/database';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Carpeta, Entidad } from '@domain/models/database';
+import { entityService } from '@repositories/entityService';
 import { useLanguage } from '@context/LanguageContext';
 import { useOutletContext, useParams, useNavigate } from 'react-router-dom';
 import BibleCard from '../components/BibleCard';
@@ -12,20 +11,51 @@ interface BibleContext {
  handleCreateSimpleFolder: (parentId: string | number | null, type: string) => void;
  handleRenameFolder: (id: string | number, name: string) => void;
  folders: Carpeta[];
+ projectId: number;
 }
 
 const BibleGridView = () => {
- const { username, projectName } = useParams();
- const navigate = useNavigate();
- 
- const {
- handleDeleteFolder,
- handleCreateSimpleFolder,
- handleRenameFolder,
- folders = []
- } = useOutletContext<BibleContext>();
+  const { username: urlUsername, projectName } = useParams();
+  const navigate = useNavigate();
+  
+  // Por defecto usamos 'local', pero se mantiene la variable para futuras implementaciones online/multi-usuario
+  const username = urlUsername || 'local';
+  
+  const {
+    handleDeleteFolder,
+    handleCreateSimpleFolder,
+    handleRenameFolder,
+    folders = [],
+    projectId
+  } = useOutletContext<BibleContext>();
 
- const { t } = useLanguage();
+  const [entities, setEntities] = useState<Entidad[]>([]);
+
+  const loadRootEntities = useCallback(async () => {
+    if (!projectId) return;
+    try {
+      const allEnts = await entityService.getAllByProject(projectId);
+      setEntities(allEnts.filter(e => !e.carpeta_id));
+    } catch (err) {
+      console.error("Error loading root entities:", err);
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    loadRootEntities();
+
+    const handleUpdate = (e: any) => {
+      const { folderId } = e.detail || {};
+      if (folderId === null) {
+        loadRootEntities();
+      }
+    };
+
+    window.addEventListener('folder-update', handleUpdate);
+    return () => window.removeEventListener('folder-update', handleUpdate);
+  }, [loadRootEntities]);
+
+  const { t } = useLanguage();
 
  // Rename State
  const [renamingFolderId, setRenamingFolderId] = useState<string | number | null>(null);
@@ -84,8 +114,8 @@ const BibleGridView = () => {
     item={folder}
     type="folder"
     linkTo={folder.tipo === 'TIMELINE' 
-      ? `/${username || 'local'}/${projectName}/bible/dimension/${folder.id}`
-      : `/${username || 'local'}/${projectName}/bible/folder/${folder.id}`}
+      ? `/${username}/${projectName}/bible/dimension/${folder.id}`
+      : `/${username}/${projectName}/bible/folder/${folder.id}`}
     onDelete={() => handleDeleteFolder(folder.id)}
     onRename={() => { 
       setRenamingFolderId(folder.id); 
@@ -93,6 +123,16 @@ const BibleGridView = () => {
     }}
   />
   )
+  ))}
+
+  {entities.map(entity => (
+    <BibleCard
+      key={entity.id}
+      item={entity}
+      type="entity"
+      linkTo={`/${username}/${projectName}/bible/entity/${entity.id}`}
+      onDelete={() => {}} // TODO: Implementar borrado de entidad raíz
+    />
   ))}
 
  </div>

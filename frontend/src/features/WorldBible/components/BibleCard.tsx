@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Entidad, Carpeta } from '@domain/models/database';
+import { getHierarchyVisuals } from '@presentation/utils/hierarchyVisuals';
 
 interface BibleCardItem {
   id: number | string;
@@ -20,33 +20,15 @@ interface BibleCardProps {
   onMove?: (item: BibleCardItem) => void;
 }
 
-const getIconForType = (type?: string) => {
-  switch (type?.toLowerCase()) {
-    case 'text': return 'notes';
-    case 'short_text': return 'short_text';
-    case 'number': return 'pin';
-    case 'date': return 'calendar_today';
-    case 'select': return 'list';
-    case 'boolean': return 'check_box';
-    case 'map': return 'map';
-    case 'timeline': return 'timeline';
-    case 'character': case 'entidadindividual': return 'person';
-    case 'location': case 'zona': case 'construccion': return 'location_on';
-    case 'culture': case 'entidadcolectiva': return 'groups';
-    case 'universe': case 'galaxy': case 'system': case 'planet': return 'public';
-    case 'entity_link': return 'link';
-    default: return 'description';
-  }
-};
-
 const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu, onDelete, onRename, onMove }) => {
   const isFolder = type === 'folder';
+  const visuals = getHierarchyVisuals(item.tipo || (isFolder ? 'FOLDER' : 'UNIVERSE'));
 
   return (
     <Link
       to={linkTo}
       onContextMenu={onContextMenu}
-      className="group relative flex flex-col p-4 rounded-none monolithic-panel border border-foreground/10 hover:border-indigo-500/50 hover:bg-foreground/5 transition-all duration-300 overflow-hidden min-h-[160px]"
+      className="group relative flex flex-col p-4 rounded-none monolithic-panel border border-foreground/10 hover:border-primary/50 hover:bg-foreground/5 transition-all duration-300 overflow-hidden min-h-[160px]"
     >
       {/* Background Image & Overlay */}
       {item.iconUrl && (
@@ -65,12 +47,11 @@ const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu
       <div className="relative z-10 flex items-start justify-between mb-2">
         <div className={`
           size-12 rounded-none flex items-center justify-center text-xl transition-transform group-hover:scale-110 
-          ${isFolder ? 'bg-indigo-500/20 text-indigo-400' : 'bg-foreground/5 text-foreground/60 group-hover:text-foreground border border-foreground/10'}
+          ${isFolder ? 'bg-primary/10' : 'bg-foreground/5 border border-foreground/10'}
+          ${visuals.color}
         `}>
           <span className="material-symbols-outlined">
-            {isFolder 
-              ? (item.tipo === 'TIMELINE' ? 'lan' : 'folder') 
-              : getIconForType(item.tipo)}
+            {visuals.icon}
           </span>
         </div>
       </div>

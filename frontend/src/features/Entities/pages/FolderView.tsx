@@ -5,12 +5,8 @@ import { folderService } from '@repositories/folderService';
 import { entityService } from '@repositories/entityService';
 import { Entidad, Carpeta } from '@domain/models/database';
 import MonolithicPanel from '@atoms/MonolithicPanel';
-import Button from '@atoms/Button';
 import { useRightPanelStore } from '@store/useRightPanelStore';
-import Breadcrumbs from '@molecules/Breadcrumbs';
-import InputModal from '@organisms/InputModal';
-import MoveModal from '@organisms/MoveModal';
-import ConfirmationModal from '@organisms/ConfirmationModal';
+import { getHierarchyVisuals } from '@presentation/utils/hierarchyVisuals';
 
 interface FolderViewContext {
   projectId: number;
@@ -20,6 +16,7 @@ interface FolderViewContext {
   searchTerm: string;
   filterType: string;
   folders: Carpeta[];
+  projectName: string;
 }
 
 const FolderView: React.FC = () => {
@@ -28,13 +25,10 @@ const FolderView: React.FC = () => {
   const { t } = useLanguage();
   
   const {
-    handleDeleteEntity,
-    handleDeleteFolder,
-    handleCreateSimpleFolder,
     searchTerm: folderSearchTerm,
     filterType: folderFilterType,
     projectId,
-    folders
+    projectName
   } = useOutletContext<FolderViewContext>();
 
   const { openPanel } = useRightPanelStore();
@@ -44,13 +38,6 @@ const FolderView: React.FC = () => {
   const [currentFolder, setCurrentFolder] = useState<Carpeta | null>(null);
   const [path, setPath] = useState<Carpeta[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Modales
-  const [isNewSubfolderModalOpen, setIsNewSubfolderModalOpen] = useState(false);
-  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
-  const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
-  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-  const [itemToMove, setItemToMove] = useState<{ item: Entidad | Carpeta; type: 'entity' | 'folder' } | null>(null);
 
   useEffect(() => {
     openPanel('bulk', 0, 'Explorador');
@@ -83,6 +70,17 @@ const FolderView: React.FC = () => {
       }
     };
     loadContent();
+
+    // Suscribirse a actualizaciones para reactividad instantánea
+    const handleUpdate = (e: any) => {
+      const { folderId: updatedFolderId } = e.detail || {};
+      if (Number(updatedFolderId) === Number(folderId)) {
+        loadContent();
+      }
+    };
+
+    window.addEventListener('folder-update', handleUpdate);
+    return () => window.removeEventListener('folder-update', handleUpdate);
   }, [folderId]);
 
   const filteredContent = React.useMemo(() => {
@@ -136,7 +134,7 @@ const FolderView: React.FC = () => {
           <MonolithicPanel 
             key={folder.id}
             className="group cursor-pointer hover:border-primary/30 transition-all p-5 flex items-center gap-4"
-            onClick={() => navigate(`/local/prueba/bible/folder/${folder.id}`)}
+            onClick={() => navigate(`/local/${projectName}/bible/folder/${folder.id}`)}
           >
             <div className="size-10 rounded bg-indigo-500/10 flex items-center justify-center text-indigo-400">
               <span className="material-symbols-outlined text-xl">folder</span>
@@ -148,21 +146,24 @@ const FolderView: React.FC = () => {
           </MonolithicPanel>
         ))}
 
-        {filteredContent.entities.map(entity => (
-          <MonolithicPanel 
-            key={entity.id}
-            className="group cursor-pointer hover:border-primary/30 transition-all p-5 flex items-center gap-4"
-            onClick={() => navigate(`/local/prueba/bible/folder/${folderId}/entity/${entity.id}`)}
-          >
-            <div className="size-10 rounded bg-primary/10 flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined text-xl">person</span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-bold truncate">{entity.nombre}</div>
-              <div className="text-[10px] text-foreground/40 uppercase font-black">{entity.tipo}</div>
-            </div>
-          </MonolithicPanel>
-        ))}
+        {filteredContent.entities.map(entity => {
+          const visuals = getHierarchyVisuals(entity.tipo);
+          return (
+            <MonolithicPanel 
+              key={entity.id}
+              className="group cursor-pointer hover:border-primary/30 transition-all p-5 flex items-center gap-4"
+              onClick={() => navigate(`/local/${projectName}/bible/folder/${folderId}/entity/${entity.id}`)}
+            >
+              <div className={`size-10 rounded bg-foreground/5 flex items-center justify-center ${visuals.color}`}>
+                <span className="material-symbols-outlined text-xl">{visuals.icon}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold truncate">{entity.nombre}</div>
+                <div className="text-[10px] text-foreground/40 uppercase font-black">{entity.tipo}</div>
+              </div>
+            </MonolithicPanel>
+          );
+        })}
       </div>
 
       {/* Modales eliminados para la nueva arquitectura estricta */}
