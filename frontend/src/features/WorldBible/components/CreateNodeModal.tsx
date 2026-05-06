@@ -19,16 +19,22 @@ const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCr
   });
 
   const TYPES = [
+    // Espacios (Mundo)
     HIERARCHY_TYPES.UNIVERSE,
-    HIERARCHY_TYPES.GALAXY,
-    HIERARCHY_TYPES.SYSTEM,
-    HIERARCHY_TYPES.PLANET
+    { id: 'MAP', label: 'Mapa Interactivo', icon: 'map', color: 'text-green-400' },
+    { id: 'TIMELINE', label: 'Línea de Tiempo', icon: 'timeline', color: 'text-purple-400' },
+    // Entidades (Lore)
+    { id: 'PERSONAJE', label: 'Personaje', icon: 'person', color: 'text-blue-400' },
+    { id: 'LUGAR', label: 'Lugar / Ubicación', icon: 'location_on', color: 'text-orange-400' },
+    { id: 'ORGANIZACION', label: 'Facción / Org.', icon: 'diversity_3', color: 'text-red-400' },
+    { id: 'OBJETO', label: 'Objeto / Reliquia', icon: 'diamond', color: 'text-yellow-400' },
+    { id: 'EVENTO', label: 'Evento Histórico', icon: 'history_edu', color: 'text-teal-400' }
   ];
 
   // Reseteamos el estado cada vez que se abre el modal para evitar fugas de tipos
   React.useEffect(() => {
     if (isOpen) {
-      const defaultType = parentFolder ? HIERARCHY_TYPES.UNIVERSE.id : 'FOLDER';
+      const defaultType = parentFolder ? TYPES[0].id : 'FOLDER';
       setFormData({
         nombre: '',
         descripcion: '',
@@ -42,7 +48,7 @@ const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCr
 
   const handleSubmit = () => {
     // Si es root, forzamos FOLDER. Si no, forzamos que NO sea FOLDER
-    const finalTipo = isRoot ? 'FOLDER' : (formData.tipo === 'FOLDER' ? HIERARCHY_TYPES.UNIVERSE.id : formData.tipo);
+    const finalTipo = isRoot ? 'FOLDER' : (formData.tipo === 'FOLDER' ? TYPES[0].id : formData.tipo);
     const finalData = { ...formData, tipo: finalTipo };
     
     onCreate(finalData);
@@ -51,12 +57,12 @@ const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCr
 
   // Lógica inteligente de tipos disponibles
   const AVAILABLE_TYPES = parentFolder
-    ? TYPES // Dentro de carpeta: Solo nodos de contenido (Universo, etc.)
+    ? TYPES // Dentro de carpeta: Omni-Creator (Todo menos carpetas)
     : [{ id: 'FOLDER', label: 'Nueva Carpeta', icon: 'folder', color: 'text-foreground/50' }]; // En Raíz: Solo Carpetas
 
  return (
   <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4">
-    <div className="bg-background w-full max-w-4xl rounded-none shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-foreground/10 overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+    <div className="bg-background w-full max-w-5xl rounded-none shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-foreground/10 overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
 
   {/* Header & Actions Toolbar */}
   <div className="p-6 border-b border-foreground/5 flex justify-between items-center bg-foreground/[0.03] sticky top-0 z-10">
@@ -66,7 +72,7 @@ const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCr
       </div>
       <div>
         <h2 className="text-xl font-black text-foreground tracking-tight leading-none mb-1">
-          {parentFolder ? 'Nuevo espacio' : 'Crear Nuevo Mapa'}
+          {parentFolder ? 'Omni-Constructor' : 'Crear Nueva Carpeta'}
         </h2>
         <div className="flex items-center gap-2 text-[10px] font-bold text-foreground/40 uppercase tracking-widest">
           <span className="material-symbols-outlined text-[12px] opacity-50">location_on</span>
@@ -97,55 +103,79 @@ const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCr
 
   {/* Content */}
   <div className="p-8 overflow-y-auto flex-1">
-    <div className={`grid grid-cols-1 ${!isRoot ? 'md:grid-cols-2' : ''} gap-8`}>
-      {/* Identidad */}
-      <div className="space-y-6">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Identidad</h3>
+    <div className={`grid grid-cols-1 ${!isRoot ? 'lg:grid-cols-[1fr_1.5fr]' : ''} gap-12`}>
+      {/* Columna Izquierda: Identidad */}
+      <div className="space-y-8">
         <div>
-          <label className="block text-[9px] font-black text-foreground/30 uppercase mb-2 tracking-widest">Nombre del espacio</label>
-          <input
-            autoFocus
-            type="text"
-            value={formData.nombre}
-            onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-            className="w-full monolithic-panel rounded-none px-5 py-4 text-foreground focus:outline-none focus:border-indigo-500/50 transition-all shadow-inner"
-            placeholder="ej. Sistema Solar"
-          />
-        </div>
-        <div>
-          <label className="block text-[10px] font-black text-foreground/30 uppercase mb-2">Descripción</label>
-          <textarea
-            value={formData.descripcion}
-            onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-            className="w-full h-32 monolithic-panel rounded-none px-5 py-4 text-foreground focus:outline-none focus:border-indigo-500/50 resize-none transition-all"
-            placeholder="Detalles sobre este nivel jerárquico..."
-          />
+          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-6">Identidad del Nodo</h3>
+          <div className="space-y-6">
+            <div>
+              <label className="block text-[9px] font-black text-foreground/30 uppercase mb-2 tracking-widest">Nombre</label>
+              <input
+                autoFocus
+                type="text"
+                value={formData.nombre}
+                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                className="w-full bg-foreground/[0.03] border border-foreground/10 rounded-none px-5 py-4 text-foreground focus:outline-none focus:border-primary/50 transition-all shadow-inner placeholder:italic"
+                placeholder={isRoot ? "Nombre de la carpeta..." : "Nombre del ente, mapa o cronología..."}
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-foreground/30 uppercase mb-2">Descripción Breve</label>
+              <textarea
+                value={formData.descripcion}
+                onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+                className="w-full h-48 bg-foreground/[0.03] border border-foreground/10 rounded-none px-5 py-4 text-foreground focus:outline-none focus:border-primary/50 resize-none transition-all placeholder:italic"
+                placeholder="Escribe una breve introducción..."
+              />
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Jerarquía y Visualización (Oculto en Raíz) */}
+      {/* Columna Derecha: Configuración (Oculto en Raíz) */}
       {!isRoot && (
-        <div className="space-y-6">
-          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Configuración</h3>
-
-          <div className="space-y-3">
-            <label className="block text-[9px] font-black text-foreground/30 uppercase mb-1 tracking-widest">Tipo de Jerarquía</label>
-            <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-8">
+          <div>
+            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-6">Naturaleza del Nodo</h3>
+            <div className="grid grid-cols-2 gap-3">
               {AVAILABLE_TYPES.map(type => (
                 <div
                   key={type.id}
                   onClick={() => setFormData({ ...formData, tipo: type.id })}
-                  className={`flex items-center gap-3 p-3 rounded-none border cursor-pointer transition-all ${
+                  className={`group relative flex items-center gap-4 p-4 rounded-none border cursor-pointer transition-all duration-300 ${
                     formData.tipo === type.id 
-                      ? 'bg-primary/10 border-primary/50 shadow-[0_0_15px_rgba(var(--primary-rgb),0.1)]' 
-                      : 'bg-white/5 border-white/5 hover:bg-white/10'
+                      ? 'bg-primary/10 border-primary/40 shadow-[0_0_20px_rgba(var(--primary-rgb),0.1)]' 
+                      : 'bg-foreground/[0.02] border-foreground/5 hover:bg-foreground/[0.05] hover:border-foreground/10'
                   }`}
                 >
-                  <span className={`material-symbols-outlined text-lg ${type.color || ''}`}>{type.icon}</span>
-                  <span className="text-xs font-bold text-foreground/80">{type.label}</span>
+                  <div className={`size-10 flex items-center justify-center bg-background border border-foreground/5 group-hover:scale-110 transition-transform ${formData.tipo === type.id ? 'ring-1 ring-primary/30' : ''}`}>
+                    <span className={`material-symbols-outlined text-xl ${type.color || ''}`}>{type.icon}</span>
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className={`text-[11px] font-black uppercase tracking-tighter truncate ${formData.tipo === type.id ? 'text-primary' : 'text-foreground/80'}`}>
+                      {type.label}
+                    </span>
+                    <span className="text-[8px] font-bold text-foreground/30 uppercase tracking-widest">Seleccionar</span>
+                  </div>
+                  {formData.tipo === type.id && (
+                    <div className="absolute top-2 right-2">
+                      <div className="size-2 bg-primary rounded-full animate-pulse"></div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
+          </div>
+          
+          <div className="p-6 bg-primary/[0.02] border border-primary/10">
+            <div className="flex items-center gap-3 text-primary mb-2">
+              <span className="material-symbols-outlined text-sm">info</span>
+              <span className="text-[9px] font-black uppercase tracking-widest">Información del Sistema</span>
+            </div>
+            <p className="text-[10px] text-foreground/40 leading-relaxed italic">
+              Estás creando un nodo de tipo <span className="text-primary font-bold">{AVAILABLE_TYPES.find(t => t.id === formData.tipo)?.label}</span> dentro de <span className="text-foreground/60 font-bold">{parentFolder?.nombre}</span>. Los atributos específicos estarán disponibles tras la creación.
+            </p>
           </div>
         </div>
       )}
