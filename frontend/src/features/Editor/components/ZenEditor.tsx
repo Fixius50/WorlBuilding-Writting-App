@@ -1,5 +1,5 @@
 import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { getZenExtensions } from '@utils/TiptapExtensions'
 import EditorTopBar from './EditorTopBar'
 import { Hoja as HojaModel } from '@repositories/notebookService'
@@ -9,41 +9,118 @@ interface PageEditorProps {
   onUpdate: (html: string) => void;
   numero: number;
   lado: 'izq' | 'der';
+  isLastPage: boolean;
+  onNearEnd: () => void;
+  onJumpNext?: () => void;
+  onJumpBack?: () => void;
+  onAutoDelete?: () => void;
+  autoFocus?: boolean;
 }
 
-// COMPONENTE DE PÁGINA INDIVIDUAL CON SU PROPIO EDITOR
-const PageEditor: React.FC<PageEditorProps> = ({ content, onUpdate, numero, lado }) => {
+const PageEditor: React.FC<PageEditorProps> = ({ 
+  content, 
+  onUpdate, 
+  numero, 
+  lado, 
+  isLastPage, 
+  onNearEnd, 
+  onJumpNext,
+  onJumpBack,
+  onAutoDelete,
+  autoFocus = false
+}) => {
+  const lastHeightRef = useRef(0);
+  const isDeletingRef = useRef(false);
+
   const editor = useEditor({
     extensions: getZenExtensions('Empieza a escribir esta página...'),
     content: content,
     onUpdate: ({ editor }) => {
       onUpdate(editor.getHTML());
+      
+      // Solo creamos página si estamos CRECIENDO y es la última página
+      if (isLastPage && !isDeletingRef.current) {
+        const height = editor.view.dom.scrollHeight;
+        if (height > 900 && height > lastHeightRef.current) {
+          onNearEnd();
+        }
+        lastHeightRef.current = height;
+      }
+    },
+    onCreate: ({ editor }) => {
+      if (autoFocus) {
+        setTimeout(() => editor.commands.focus('start'), 10);
+      }
     },
     editorProps: {
       attributes: {
         class: `prose prose-invert max-w-none focus:outline-none text-foreground/90 leading-relaxed text-lg`,
         style: `font-family: "Cormorant Garamond", serif; font-size: 18px;`,
       },
+      handleKeyDown: (view, event) => {
+        const { selection } = view.state;
+        const isAtStart = selection.$from.pos <= 1;
+        const isAtEnd = selection.$to.pos === view.state.doc.content.size;
+        
+        // Marcamos si estamos borrando para evitar disparar la creación de página por error
+        if (event.key === 'Backspace') {
+          isDeletingRef.current = true;
+          setTimeout(() => { isDeletingRef.current = false; }, 100);
+        } else {
+          isDeletingRef.current = false;
+        }
+
+        // SALTO ADELANTE (Tab / Enter al final)
+        if (event.key === 'Tab' || event.key === 'Enter') {
+          const height = view.dom.scrollHeight;
+          if (height > 950 && isAtEnd && onJumpNext) {
+            event.preventDefault();
+            onJumpNext();
+            return true;
+          }
+        }
+
+        // SALTO ATRÁS / BORRADO AUTO (Backspace al inicio)
+        if (event.key === 'Backspace' && isAtStart) {
+          const isEmpty = view.state.doc.textContent.trim().length === 0;
+          if (isEmpty && onAutoDelete) {
+            event.preventDefault();
+            onAutoDelete();
+            return true;
+          } else if (onJumpBack) {
+            event.preventDefault();
+            onJumpBack();
+            return true;
+          }
+        }
+        return false;
+      }
     },
   });
 
   useEffect(() => {
     if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content, false);
+      if (!editor.isFocused) {
+        editor.commands.setContent(content, false);
+      }
     }
   }, [content, editor]);
+
+  useEffect(() => {
+    if (autoFocus && editor && !editor.isFocused) {
+      editor.commands.focus('start');
+    }
+  }, [autoFocus, editor]);
 
   return (
     <div 
       className={`w-[40vw] h-[1200px] border border-white/10 bg-white/5 shadow-2xl relative flex flex-col mb-[60px] group transition-all duration-500`}
       style={{ boxShadow: '0 25px 50px -12px rgba(0,0,0,0.8)' }}
     >
-      {/* Margen Superior */}
       <div className="h-[100px] flex items-center px-16 opacity-10 border-b border-white/5">
         <span className="text-[9px] font-mono uppercase tracking-[0.4em]">Manuscrito</span>
       </div>
 
-      {/* ÁREA DE ESCRITURA (CONFINADA A LA HOJA CON MÁRGENES) */}
       <div className="flex-1 overflow-hidden relative p-[40px_60px]">
          {editor && (
             <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
@@ -56,7 +133,6 @@ const PageEditor: React.FC<PageEditorProps> = ({ content, onUpdate, numero, lado
          <EditorContent editor={editor} className="h-full prose-editor" />
       </div>
 
-      {/* Margen Inferior con Número de Página */}
       <div className={`h-[100px] flex items-center px-16 border-t border-white/5 opacity-30`}>
         <div className={`w-full flex ${lado === 'izq' ? 'justify-start' : 'justify-end'}`}>
           <span className="text-[11px] font-mono font-bold tracking-[0.5em]">PAGE {numero}</span>
@@ -66,8 +142,18 @@ const PageEditor: React.FC<PageEditorProps> = ({ content, onUpdate, numero, lado
       <style dangerouslySetInnerHTML={{ __html: `
         .prose-editor .ProseMirror {
            height: 100% !important;
+           max-height: 1000px !important;
+           overflow: hidden !important;
            outline: none !important;
            text-align: justify;
+        }
+        /* Corregimos para que el placeholder no afecte a la altura visual */
+        .prose-editor .ProseMirror p.is-editor-empty:first-child::before {
+          content: attr(data-placeholder);
+          float: left;
+          color: #adb5bd;
+          pointer-events: none;
+          height: 0;
         }
       `}} />
     </div>
@@ -79,6 +165,8 @@ interface ZenEditorProps {
   currentPageIndex: number;
   onUpdate: (html: string, index?: number) => void;
   onTitleChange: (index: number, newTitle: string) => void;
+  onCreatePage: () => void;
+  onAutoDeletePage: (index: number) => void;
   onSnapshot: (html: string) => void;
   snapshots?: { id: number; timestamp: string }[];
   onRestoreSnapshot?: (id: number) => void;
@@ -91,16 +179,43 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
   currentPageIndex,
   onUpdate, 
   onTitleChange,
+  onCreatePage,
+  onAutoDeletePage,
   onSnapshot,
   snapshots = [],
   onRestoreSnapshot = () => {},
   minimal = false
 }) => {
-  // Calculamos los pares de páginas para renderizarlos de dos en dos
+  const [focusedPageIndex, setFocusedPageIndex] = React.useState<number | null>(null);
+  const isCreatingPageRef = useRef(false);
+
+  // Evitamos creaciones múltiples en ráfaga
+  const handleAutoCreate = () => {
+    if (isCreatingPageRef.current) return;
+    isCreatingPageRef.current = true;
+    onCreatePage();
+    setTimeout(() => { isCreatingPageRef.current = false; }, 1000);
+  };
+
   const pagePairs: HojaModel[][] = [];
   for (let i = 0; i < pages.length; i += 2) {
     pagePairs.push(pages.slice(i, i + 2));
   }
+
+  const handleJumpNext = (currentIndex: number) => {
+    if (currentIndex < pages.length - 1) {
+      setFocusedPageIndex(currentIndex + 1);
+    } else {
+      handleAutoCreate();
+      setFocusedPageIndex(currentIndex + 1);
+    }
+  };
+
+  const handleJumpBack = (currentIndex: number) => {
+    if (currentIndex > 0) {
+      setFocusedPageIndex(currentIndex - 1);
+    }
+  };
 
   const currentPage = pages[currentPageIndex];
 
@@ -127,6 +242,7 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
                 <div key={pairIndex} className="flex flex-row gap-[4vw]">
                   {pair.map((page, subIndex) => {
                     const globalIndex = pairIndex * 2 + subIndex;
+                    const isLast = globalIndex === pages.length - 1;
                     return (
                       <PageEditor 
                         key={page.id || globalIndex}
@@ -134,6 +250,12 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
                         onUpdate={(html) => onUpdate(html, globalIndex)}
                         numero={globalIndex + 1}
                         lado={subIndex === 0 ? 'izq' : 'der'}
+                        isLastPage={isLast}
+                        onNearEnd={handleAutoCreate}
+                        onJumpNext={() => handleJumpNext(globalIndex)}
+                        onJumpBack={() => handleJumpBack(globalIndex)}
+                        onAutoDelete={() => onAutoDeletePage(globalIndex)}
+                        autoFocus={focusedPageIndex === globalIndex}
                       />
                     );
                   })}

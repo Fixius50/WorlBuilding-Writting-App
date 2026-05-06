@@ -197,10 +197,27 @@ const WritingView = () => {
       const newPage = await notebookService.createPage(notebook.id);
       const updatedPages = [...pages, newPage];
       setPages(updatedPages);
-      // NO saltamos automáticamente a la nueva página
-      // setCurrentPageIndex(pages.length); 
     } catch (err) {
       console.error("Error creating page:", err);
+    }
+  };
+
+  const handleAutoDeletePage = async (index: number) => {
+    // No borramos las 2 primeras páginas (índice 0 y 1)
+    if (index < 2 || !pages[index]) return;
+    
+    try {
+      const pageId = pages[index].id;
+      await notebookService.deletePage(pageId);
+      const newPages = pages.filter((_, i) => i !== index);
+      setPages(newPages);
+      
+      // Si borramos la página en la que estamos, saltamos a la anterior
+      if (currentPageIndex >= index) {
+        setCurrentPageIndex(Math.max(0, index - 1));
+      }
+    } catch (err) {
+      console.error("Error auto-deleting page:", err);
     }
   };
 
@@ -407,6 +424,8 @@ const WritingView = () => {
                 currentPageIndex={currentPageIndex}
                 onUpdate={handleContentChange} 
                 onTitleChange={(index, newTitle) => handleTitleChangeInternal(index, newTitle)}
+                onCreatePage={handleCreatePage}
+                onAutoDeletePage={handleAutoDeletePage}
                 onSnapshot={handleSnapshot}
                 snapshots={snapshots}
                 onRestoreSnapshot={handleRestoreSnapshot}
