@@ -320,16 +320,16 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
           
           {/* 1. INFORMACIÓN DE ENTIDAD Y ACCIONES (PARTE SUPERIOR) */}
           <div className="px-8 lg:px-12 py-4 flex items-center justify-between w-full max-w-7xl mx-auto gap-8">
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-6 min-w-0">
               <Avatar 
                 url={extras.iconUrl}
                 name={entity.nombre || 'Nuevo Ente'} 
                 size="sm" 
-                className="ring-1 ring-primary/20 shadow-xl shadow-primary/5" 
+                className="ring-1 ring-primary/20 shadow-xl shadow-primary/5 shrink-0" 
               />
-              <div className="space-y-0.5">
-                <div className="text-[8px] font-black uppercase tracking-[0.4em] text-primary/40 italic">Constructor Central</div>
-                <h2 className="text-xl font-black text-foreground tracking-tighter uppercase leading-none">
+              <div className="space-y-0.5 min-w-0">
+                <div className="text-[8px] font-black uppercase tracking-[0.4em] text-primary/40 italic truncate">Constructor Central</div>
+                <h2 className="text-xl font-black text-foreground tracking-tighter uppercase leading-none truncate">
                   {entity.nombre || 'Nuevo Ente'}
                 </h2>
               </div>

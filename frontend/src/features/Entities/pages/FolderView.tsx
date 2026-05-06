@@ -44,7 +44,6 @@ const FolderView: React.FC = () => {
   const [currentFolder, setCurrentFolder] = useState<Carpeta | null>(null);
   const [path, setPath] = useState<Carpeta[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState('ALL');
 
   // Modales
   const [isNewSubfolderModalOpen, setIsNewSubfolderModalOpen] = useState(false);
@@ -102,21 +101,21 @@ const FolderView: React.FC = () => {
     let finalFolders = fFolders;
     let finalEntities = fEntities;
 
-    if (activeFilter === 'SPACES') {
+    if (folderFilterType === 'SPACES') {
       finalEntities = [];
-    } else if (activeFilter === 'ENTITIES') {
+    } else if (folderFilterType === 'ENTITIES') {
       finalFolders = [];
       finalEntities = fEntities.filter(e => e.tipo !== 'MAPA' && e.tipo !== 'TIMELINE');
-    } else if (activeFilter === 'MAPS') {
+    } else if (folderFilterType === 'MAPS') {
       finalFolders = [];
       finalEntities = fEntities.filter(e => e.tipo === 'MAPA' || e.tipo === 'MAP');
-    } else if (activeFilter === 'TIMELINES') {
+    } else if (folderFilterType === 'TIMELINES') {
       finalFolders = [];
       finalEntities = fEntities.filter(e => e.tipo === 'TIMELINE' || e.tipo === 'LINEA_TEMPORAL');
     }
 
     return { folders: finalFolders, entities: finalEntities };
-  }, [subfolders, entities, folderSearchTerm, folderFilterType, activeFilter]);
+  }, [subfolders, entities, folderSearchTerm, folderFilterType]);
 
   if (loading) {
     return (
@@ -130,28 +129,6 @@ const FolderView: React.FC = () => {
     <div className="flex-1 overflow-y-auto no-scrollbar p-8 lg:p-12 space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Header eliminado por unificación en Layout superior */}
 
-      {/* Barra de Filtros Local */}
-      <div className="flex flex-wrap items-center gap-2 mb-6">
-        {[
-          { id: 'ALL', label: 'Todo' },
-          { id: 'SPACES', label: 'Universos/Espacios' },
-          { id: 'ENTITIES', label: 'Entidades' },
-          { id: 'MAPS', label: 'Mapas' },
-          { id: 'TIMELINES', label: 'Líneas Temporales' }
-        ].map(filter => (
-          <button
-            key={filter.id}
-            onClick={() => setActiveFilter(filter.id)}
-            className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all backdrop-blur-sm ${
-              activeFilter === filter.id 
-                ? 'bg-primary text-primary-foreground shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]' 
-                : 'bg-white/5 hover:bg-white/10 text-foreground/60 hover:text-foreground'
-            }`}
-          >
-            {filter.label}
-          </button>
-        ))}
-      </div>
 
       {/* Grid de Contenido */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">

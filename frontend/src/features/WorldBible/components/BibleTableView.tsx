@@ -20,12 +20,13 @@ interface TableViewProps {
   projectId: number;
   allFolders: Carpeta[];
   searchTerm: string;
+  filterType?: string;
   handleOpenCreateModal?: (parentFolder?: Carpeta | null) => void;
 }
 
 const columnHelper = createColumnHelper<Entidad>();
 
-const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searchTerm, handleOpenCreateModal }) => {
+const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searchTerm, filterType = 'ALL', handleOpenCreateModal }) => {
   const { t } = useLanguage();
   const { username, projectName } = useParams();
   const [entities, setEntities] = useState<Entidad[]>([]);
@@ -178,8 +179,19 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
     }),
   ], [allFolders, t, username, projectName]);
 
+  const filteredData = useMemo(() => {
+    return entities.filter(e => {
+      if (filterType === 'ALL') return true;
+      if (filterType === 'SPACES') return false; // Las carpetas no están en este array de entidades
+      if (filterType === 'ENTITIES') return e.tipo !== 'MAPA' && e.tipo !== 'TIMELINE' && e.tipo !== 'MAP' && e.tipo !== 'LINEA_TEMPORAL';
+      if (filterType === 'MAPS') return e.tipo === 'MAPA' || e.tipo === 'MAP';
+      if (filterType === 'TIMELINES') return e.tipo === 'TIMELINE' || e.tipo === 'LINEA_TEMPORAL';
+      return true;
+    });
+  }, [entities, filterType]);
+
   const table = useReactTable({
-    data: entities,
+    data: filteredData,
     columns,
     state: {
       globalFilter: searchTerm,

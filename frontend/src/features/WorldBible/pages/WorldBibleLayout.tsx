@@ -99,15 +99,34 @@ const WorldBibleLayout: React.FC = () => {
             </h1>
             
             <div className="w-full max-w-xl space-y-6">
-              {/* Buscador Centrado */}
-              <div className="relative group">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-[hsl(var(--foreground)/0.2)] group-focus-within:text-[hsl(var(--primary))] transition-colors">search</span>
-                <input
-                  value={architectContext.searchTerm}
-                  onChange={e => architectContext.setSearchTerm(e.target.value)}
-                  className="w-full bg-[hsl(var(--foreground)/0.02)] border border-[hsl(var(--foreground)/0.1)] p-4 pl-12 rounded-none focus:border-[hsl(var(--primary)/0.5)] outline-none text-sm transition-all placeholder:italic"
-                  placeholder="Buscar en el archivo central..."
-                />
+              {/* Buscador y Filtros Unificados */}
+              <div className="flex items-center gap-0 bg-[hsl(var(--foreground)/0.02)] border border-[hsl(var(--foreground)/0.1)] focus-within:border-[hsl(var(--primary)/0.5)] transition-all group">
+                <div className="relative flex-1 flex items-center">
+                  <span className="absolute left-4 material-symbols-outlined text-[hsl(var(--foreground)/0.2)] group-focus-within:text-[hsl(var(--primary))] transition-colors">search</span>
+                  <input
+                    value={architectContext.searchTerm}
+                    onChange={e => architectContext.setSearchTerm(e.target.value)}
+                    className="w-full bg-transparent p-4 pl-12 outline-none text-sm placeholder:italic"
+                    placeholder="Buscar en el archivo central..."
+                  />
+                </div>
+                
+                <div className="h-8 w-px bg-[hsl(var(--foreground)/0.1)]" />
+                
+                <div className="relative">
+                  <select
+                    value={architectContext.filterType || 'ALL'}
+                    onChange={e => architectContext.setFilterType?.(e.target.value)}
+                    className="bg-transparent pl-4 pr-10 py-4 text-[10px] font-black uppercase tracking-widest text-[hsl(var(--foreground)/0.6)] hover:text-[hsl(var(--primary))] outline-none appearance-none cursor-pointer transition-colors"
+                  >
+                    <option value="ALL">Todo</option>
+                    <option value="SPACES">Espacios</option>
+                    <option value="ENTITIES">Entidades</option>
+                    <option value="MAPS">Mapas</option>
+                    <option value="TIMELINES">Líneas</option>
+                  </select>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-xs pointer-events-none opacity-40">expand_more</span>
+                </div>
               </div>
 
               {isRoot ? (
@@ -187,6 +206,7 @@ const WorldBibleLayout: React.FC = () => {
             <BibleTableView 
               projectId={architectContext.projectId}
               allFolders={architectContext.folders || []}
+              filterType={architectContext.filterType}
               searchTerm={architectContext.searchTerm}
               handleOpenCreateModal={handleOpenCreateModal}
             />

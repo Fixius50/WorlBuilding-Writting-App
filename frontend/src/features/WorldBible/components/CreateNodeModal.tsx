@@ -119,7 +119,6 @@ const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCr
  placeholder="Detalles sobre este nivel jerárquico..."
  />
  </div>
- </div>
       </div>
 
       {/* Jerarquía y Visualización (Oculto en Raíz) */}
@@ -146,14 +145,14 @@ const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCr
               ))}
             </div>
           </div>
-
         </div>
       )}
     </div>
   </div>
 
 
- </div>
+    </div>
+  </div>
  );
 };
 
