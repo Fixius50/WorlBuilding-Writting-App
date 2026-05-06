@@ -1,14 +1,8 @@
 import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import Placeholder from '@tiptap/extension-placeholder'
-import Mention from '@tiptap/extension-mention'
-import CharacterCount from '@tiptap/extension-character-count'
-import React, { useEffect, useState, useCallback, useRef } from 'react'
-import suggestion from '@utils/suggestion'
-import slashSuggestion from '@utils/slashSuggestion'
-import MentionHoverCard from './MentionHoverCard'
+import React, { useEffect, useState, useRef } from 'react'
+import { getZenExtensions } from '@utils/TiptapExtensions'
 import EditorTopBar from './EditorTopBar'
-import { EditorSettings, MentionData } from '@domain/models/writing'
+import { EditorSettings } from '@domain/models/writing'
 import { useDashboardStore } from '@store/useDashboardStore'
 
 interface ZenEditorProps {
@@ -51,26 +45,9 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
   }, [onMentionClick]);
 
   const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Placeholder.configure({
-        placeholder: 'Escribe tu historia aquí... Usa / para comandos o @ para mencionar.',
-      }),
-      Mention.configure({
-        HTMLAttributes: { class: 'mention' },
-        suggestion,
-      }),
-      Mention.extend({
-        name: 'slashMenu',
-      }).configure({
-        HTMLAttributes: { class: 'slash-command' },
-        suggestion: {
-          ...slashSuggestion,
-          char: '/',
-        },
-      }),
-      CharacterCount,
-    ],
+    extensions: getZenExtensions(
+      'Escribe tu historia aquí... Usa / para comandos o @ para mencionar.'
+    ),
     content: content,
     editable: editable,
     onUpdate: ({ editor }) => {
@@ -161,7 +138,7 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
                 <button
                   onClick={() => {
                      const url = window.prompt('URL del enlace:');
-                     if (url) (editor.chain().focus() as any).setLink({ href: url }).run();
+                     if (url) (editor.chain().focus() as unknown as { extendMarkRange: (type: string) => any, setLink: (args: { href: string }) => any }).extendMarkRange('link').setLink({ href: url }).run();
                   }}
                   className={`p-2 hover:bg-foreground/10 transition-colors ${editor.isActive('link') ? 'text-primary' : 'text-foreground/60'}`}
                 >

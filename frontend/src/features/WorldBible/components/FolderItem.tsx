@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getHierarchyType } from '@utils/constants/hierarchy_types';
+import { getHierarchyVisuals } from '@presentation/utils/hierarchyVisuals';
 import { folderService } from '@repositories/folderService';
 import { entityService } from '@repositories/entityService';
 import { Carpeta, Entidad } from '@domain/models/database';
@@ -163,8 +163,8 @@ const FolderItem: React.FC<FolderItemProps> = ({
  >
  <span onClick={toggle} className={`material-symbols-outlined text-lg transition-transform hover:text-indigo-400 ${isOpen ? 'rotate-90 text-indigo-400' : 'opacity-50'}`}>chevron_right</span>
 
- <span className={`material-symbols-outlined text-lg ${getHierarchyType(folder.tipo).color}`}>
- {getHierarchyType(folder.tipo).icon}
+ <span className={`material-symbols-outlined text-lg ${getHierarchyVisuals(folder.tipo).color}`}>
+ {getHierarchyVisuals(folder.tipo).icon}
  </span>
 
  {isEditing ? (

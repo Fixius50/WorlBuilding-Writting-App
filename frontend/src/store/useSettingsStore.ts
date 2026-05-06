@@ -68,7 +68,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   },
 
   updateSetting: async (key: keyof AppSettings, value: unknown) => {
-    const newSettings = { ...get().settings, [key]: value as any } as AppSettings;
+    const newSettings = { ...get().settings, [key]: value } as AppSettings;
     set({ settings: newSettings });
     await SettingsUseCase.saveSettings(newSettings);
     get().addNotification(`Ajuste actualizado: ${key}`);
@@ -78,7 +78,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       useAppStore.getState().setTheme(value as string);
     }
     if (key === 'panelMode') {
-      useAppStore.getState().setPanelMode(value as any);
+      useAppStore.getState().setPanelMode(value as 'classic' | 'binder' | 'floating');
     }
 
     if (key === 'autoBackup') {

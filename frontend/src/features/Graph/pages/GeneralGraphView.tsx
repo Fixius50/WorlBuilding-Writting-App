@@ -3,27 +3,23 @@ import {
   ReactFlow, 
   Background, 
   Controls, 
-  MiniMap, 
-  Panel,
   useNodesState,
   useEdgesState,
-  addEdge,
-  Connection,
   Edge,
   MarkerType,
   Node,
-  OnConnect,
-  BackgroundVariant,
-  Handle,
   Position,
-  ConnectionMode
+  ConnectionMode,
+  Handle,
+  BackgroundVariant,
+  Connection
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { entityService } from '@repositories/entityService';
 import { relationshipService, Relacion } from '@repositories/relationshipService';
 import { Entidad } from '@domain/models/database';
-import { getHierarchyType } from '@utils/constants/hierarchy_types';
+import { getHierarchyVisuals } from '@presentation/utils/hierarchyVisuals';
 import Button from '@atoms/Button';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 import { useLanguage } from '@context/LanguageContext';
@@ -72,7 +68,7 @@ const renderPerimeterHandles = (type: 'source' | 'target') => {
 
 // --- Custom Node Component ---
 const ZenNode = React.memo(({ data, selected }: { data: ZenNodeData, selected: boolean }) => {
-  const typeInfo = getHierarchyType(data.tipo);
+  const visualInfo = getHierarchyVisuals(data.tipo);
   
   return (
     <div className={`monolithic-panel group min-w-[220px] cursor-pointer transition-all duration-500 relative ${selected ? '!border-primary shadow-[0_0_30px_rgba(var(--primary),0.2)]' : 'border-foreground/20 hover:border-foreground/40'}`}
@@ -93,7 +89,7 @@ const ZenNode = React.memo(({ data, selected }: { data: ZenNodeData, selected: b
       <div className="p-4">
         <div className="flex items-start gap-4">
           <div className="size-9 rounded-none border border-primary/20 bg-primary/5 flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-lg text-primary">{data.icon}</span>
+            <span className="material-symbols-outlined text-lg text-primary">{visualInfo.icon}</span>
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 mb-0.5">{data.tipo}</div>
@@ -168,13 +164,11 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
         relationshipService.getByProject(projectId)
       ]);
 
-      // Filtrar entidades que no tengan carpeta (evitar "fantasmas" huérfanos)
       const filteredEntities = allEntities.filter(ent => ent.carpeta_id !== null);
       setEntities(filteredEntities);
 
-      // Creamos nodos con previsualización interna
       const newNodes: Node[] = filteredEntities.map((ent, idx) => {
-        const typeInfo = getHierarchyType(ent.tipo);
+        const visualInfo = getHierarchyVisuals(ent.tipo);
         const angle = (idx / filteredEntities.length) * 2 * Math.PI;
         const radius = 350 + Math.random() * 50;
 
@@ -184,7 +178,7 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
           data: { 
             label: ent.nombre, 
             tipo: ent.tipo, 
-            icon: typeInfo.icon,
+            icon: visualInfo.icon,
             descripcion: ent.descripcion,
             valores: ent.valores,
             onNavigate: () => navigate(`/local/${projectName}/bible/entity/${ent.id}`)
@@ -197,7 +191,6 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
         };
       });
 
-      // Agrupamos relaciones entre los mismos pares de nodos (sin importar dirección para evitar solapamiento visual)
       const groupMap: Map<string, Relacion[]> = new Map();
       allRels.forEach(rel => {
         const sortedIds = [rel.origen_id, rel.destino_id].sort((a, b) => a - b);
@@ -258,15 +251,10 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
     } catch (err) {
       console.error("Error creating relationship:", err);
     }
-  }, [projectId]);
+  }, [projectId, loadGraph]);
 
   const onReconnect = useCallback(async (oldEdge: Edge, newConnection: Connection) => {
     try {
-      const relId = parseInt(oldEdge.id.replace('e-', '').split('-')[0]); 
-      // Si el ID es compuesto por agrupación, necesitamos el ID real de la relación.
-      // Pero Note: en mi agrupación actual, uso el par de IDs de nodos.
-      // Para simplificar la reconexión, si hay múltiples relaciones agrupadas, 
-      // moveremos todas al nuevo handle o solo la primera.
       const rels = oldEdge.data?.rels as Relacion[];
       if (rels && rels.length > 0) {
         for (const r of rels) {
@@ -282,7 +270,7 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
     } catch (err) {
       console.error("Error reconnecting edge:", err);
     }
-  }, []);
+  }, [loadGraph]);
 
   const onEdgesDelete = useCallback(async (deletedEdges: Edge[]) => {
     for (const edge of deletedEdges) {
@@ -294,7 +282,7 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
       }
     }
     await loadGraph();
-  }, []);
+  }, [loadGraph]);
 
   const onEdgeClick = useCallback((event: React.MouseEvent, edge: Edge) => {
     if (edge.data?.rels && (edge.data.rels as Relacion[]).length > 1) {

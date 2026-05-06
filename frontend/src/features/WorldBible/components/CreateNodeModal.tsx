@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { HIERARCHY_TYPES } from '@utils/constants/hierarchy_types';
+import React, { useState, useEffect } from 'react';
+import { HIERARCHY_DEFINITIONS, HierarchyTypeId } from '@domain/models/hierarchy';
+import { getHierarchyVisuals } from '@presentation/utils/hierarchyVisuals';
 
 interface CreateNodeModalProps {
   isOpen: boolean;
@@ -14,27 +15,31 @@ const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCr
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
-    tipo: 'FOLDER',
+    tipo: 'FOLDER' as HierarchyTypeId,
     canvasType: 'BLANK'
   });
 
-  const TYPES = [
-    // Espacios (Mundo)
-    HIERARCHY_TYPES.UNIVERSE,
-    { id: 'MAP', label: 'Mapa Interactivo', icon: 'map', color: 'text-green-400' },
-    { id: 'TIMELINE', label: 'Línea de Tiempo', icon: 'timeline', color: 'text-purple-400' },
-    // Entidades (Lore)
-    { id: 'PERSONAJE', label: 'Personaje', icon: 'person', color: 'text-blue-400' },
-    { id: 'LUGAR', label: 'Lugar / Ubicación', icon: 'location_on', color: 'text-orange-400' },
-    { id: 'ORGANIZACION', label: 'Facción / Org.', icon: 'diversity_3', color: 'text-red-400' },
-    { id: 'OBJETO', label: 'Objeto / Reliquia', icon: 'diamond', color: 'text-yellow-400' },
-    { id: 'EVENTO', label: 'Evento Histórico', icon: 'history_edu', color: 'text-teal-400' }
+  // Definición de tipos disponibles para el Omni-Constructor
+  const TYPES_IDS: HierarchyTypeId[] = [
+    'UNIVERSE',
+    'MAP',
+    'TIMELINE',
+    'PERSONAJE',
+    'LUGAR',
+    'ORGANIZACION',
+    'OBJETO',
+    'EVENTO',
+    'CONLANG'
   ];
 
-  // Reseteamos el estado cada vez que se abre el modal para evitar fugas de tipos
-  React.useEffect(() => {
+  const TYPES = TYPES_IDS.map(id => ({
+    ...HIERARCHY_DEFINITIONS[id],
+    ...getHierarchyVisuals(id)
+  }));
+
+  useEffect(() => {
     if (isOpen) {
-      const defaultType = parentFolder ? TYPES[0].id : 'FOLDER';
+      const defaultType: HierarchyTypeId = parentFolder ? TYPES[0].id : 'FOLDER';
       setFormData({
         nombre: '',
         descripcion: '',
@@ -47,7 +52,6 @@ const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCr
   if (!isOpen) return null;
 
   const handleSubmit = () => {
-    // Si es root, forzamos FOLDER. Si no, forzamos que NO sea FOLDER
     const finalTipo = isRoot ? 'FOLDER' : (formData.tipo === 'FOLDER' ? TYPES[0].id : formData.tipo);
     const finalData = { ...formData, tipo: finalTipo };
     
@@ -55,10 +59,13 @@ const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCr
     onClose();
   };
 
-  // Lógica inteligente de tipos disponibles
   const AVAILABLE_TYPES = parentFolder
-    ? TYPES // Dentro de carpeta: Omni-Creator (Todo menos carpetas)
-    : [{ id: 'FOLDER', label: 'Nueva Carpeta', icon: 'folder', color: 'text-foreground/50' }]; // En Raíz: Solo Carpetas
+    ? TYPES 
+    : [{ 
+        id: 'FOLDER' as HierarchyTypeId, 
+        label: 'Nueva Carpeta', 
+        ...getHierarchyVisuals('FOLDER')
+      }];
 
  return (
   <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4">
@@ -142,7 +149,7 @@ const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCr
                   {AVAILABLE_TYPES.map(type => (
                     <div
                       key={type.id}
-                      onClick={() => setFormData({ ...formData, tipo: type.id })}
+                      onClick={() => setFormData({ ...formData, tipo: type.id as HierarchyTypeId })}
                       className={`group relative flex items-center gap-4 p-4 rounded-none border cursor-pointer transition-all duration-300 ${
                         formData.tipo === type.id 
                           ? 'bg-primary/10 border-primary/40 shadow-[0_0_20px_rgba(var(--primary-rgb),0.1)]' 

@@ -45,7 +45,7 @@ export const useAppStore = create<AppState>((set) => ({
       set({
         theme: allSettings['theme'] || 'deep_space',
         language: allSettings['language'] || 'es',
-        panelMode: (allSettings['panelMode'] as any) || 'classic',
+        panelMode: (allSettings['panelMode'] as 'classic' | 'binder' | 'floating') || 'classic',
         user: allSettings['user'] ? JSON.parse(allSettings['user']) : null,
         lastProjectId: allSettings['lastProjectId'] ? Number(allSettings['lastProjectId']) : null,
         savedGraphViewport: allSettings['savedGraphViewport'] ? JSON.parse(allSettings['savedGraphViewport']) : null,
