@@ -15,6 +15,14 @@ El proyecto adopta un "Mapa de Carpetas Definitivo" con separación física tota
 * **Persistencia (BBDD Local-First):** SQLite WASM (`sqlocal`) sobre OPFS.
   * Almacenamiento absoluto de datos en el navegador del cliente. Cero latencia de red.
   * Aislamiento: Requiere cabeceras COOP/COEP inyectadas por el servidor auxiliar.
+
+## ARQUITECTURA DE JERARQUÍAS (DDD + ATOMIC)
+
+Para garantizar un código mantenible y escalable, las jerarquías del sistema (Mundos, Personajes, Mapas, etc.) siguen un patrón de desacoplamiento total:
+
+1. **Capa de Dominio (`src/domain/models/hierarchy.ts`):** Define el **"Qué"**. Contiene los IDs literales y las descripciones de negocio. Es el Lenguaje Ubicuo del sistema.
+2. **Capa de Presentación (`src/presentation/utils/hierarchyVisuals.ts`):** Define el **"Cómo se ve"**. Mapea los IDs de dominio a iconos (*Material Symbols*) y colores (*Tailwind Classes*).
+3. **Desacoplamiento:** El dominio no conoce la existencia de Tailwind ni de iconos específicos, protegiendo la lógica de negocio de cambios estéticos.
 * **Backend Auxiliar (Helper) en `/backend`:** Java 21 + Spring Web / Jetty.
   * Arquitectura Interna: **Domain-Driven Design (DDD)** con subpaquetes como `worldbible`, `mapeditor` y `linguistics` bajo el namespace `com.worldbuilding`.
   * Responsabilidad: Gestión de archivos del sistema, OPFS bridge, snapshots en disco y utilidades de entorno.

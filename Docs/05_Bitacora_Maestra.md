@@ -6,6 +6,13 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
 
 ### MAYO 2026
 
+- **2026-05-06: Menciones Dinámicas y Refactorización DDD de Jerarquías**
+  - **Menciones Reales (@)**: Conexión del sistema de autocompletado de Tiptap con la base de datos real (`entityService`). Eliminación de datos mockeados y soporte para búsqueda asíncrona por proyecto.
+  - **Infraestructura de Extensiones**: Centralización de la configuración de Tiptap en `TiptapExtensions.ts`, eliminando duplicidad de código en el editor.
+  - **Arquitectura de Jerarquías (DDD)**: Desacoplamiento total entre las definiciones de negocio (`domain/models/hierarchy.ts`) y la identidad visual (`presentation/utils/hierarchyVisuals.ts`).
+  - **Limpieza de Deuda**: Eliminación de librerías obsoletas (`quill.mention.js`) y archivos legacy (`suggestion.js`, `TiptapExtensions.js`).
+  - **Tipado Estricto**: Saneamiento de múltiples instancias de `any` en `useAppStore`, `useSettingsStore` y componentes del editor.
+
 - **2026-05-05: Unificación Monolítica Zen y Chameleon Inspector**
   - **Migración Arquitectónica**: Eliminación total del `ArchitectContext` legacy en favor de `useRightPanelStore` (Zustand).
   - **Chameleon Inspector**: Implementación del `UniversalInspector` como punto único de entrada para el panel derecho. Eliminación de portales manuales (`createPortal`) en `EntityBuilder` y `WritingView`.

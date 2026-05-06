@@ -25,11 +25,23 @@ Todo el código vive bajo `src/`:
 - **`src/database/`** — Servicios de persistencia (`entityService`, `folderService`, `projectService`…)
 - **`src/types/`** — Interfaces TypeScript compartidas (`maps.ts`, etc.)
 - **`src/context/`** — Contextos React (LanguageContext…)
+- **`src/presentation/utils/`** — Utilidades visuales y mapeos de Atomic Design (iconos, colores).
 
 **Reglas de código:**
 - Todos los archivos nuevos deben ser `.ts` / `.tsx`. No crear `.js` / `.jsx`.
 - TypeScript en modo estricto. No usar `any` en nuevos módulos.
 - Castear explícitamente valores `unknown` que vengan de `contenido_json` o index signatures.
+
+---
+
+## 2.1 Gestión de Jerarquías (DDD + Atomic)
+
+Para añadir un nuevo tipo de entidad o categoría al sistema:
+1. **Dominio:** Añade el ID y la descripción en `src/domain/models/hierarchy.ts`.
+2. **Presentación:** Asocia el icono y color en `src/presentation/utils/hierarchyVisuals.ts`.
+3. **Consumo:** Usa el hook/helper `getHierarchyVisuals(typeId)` en los componentes de Atomic Design.
+
+---
 
 ---
 
