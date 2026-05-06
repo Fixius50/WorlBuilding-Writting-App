@@ -18,22 +18,30 @@ const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCr
     canvasType: 'BLANK'
   });
 
+  const TYPES = [
+    HIERARCHY_TYPES.UNIVERSE,
+    HIERARCHY_TYPES.GALAXY,
+    HIERARCHY_TYPES.SYSTEM,
+    HIERARCHY_TYPES.PLANET
+  ];
+
   // Reseteamos el estado cada vez que se abre el modal para evitar fugas de tipos
   React.useEffect(() => {
     if (isOpen) {
+      const defaultType = parentFolder ? HIERARCHY_TYPES.UNIVERSE.id : 'FOLDER';
       setFormData({
         nombre: '',
         descripcion: '',
-        tipo: isRoot ? 'FOLDER' : HIERARCHY_TYPES.UNIVERSE.id,
+        tipo: defaultType,
         canvasType: 'BLANK'
       });
     }
-  }, [isOpen, isRoot]);
+  }, [isOpen, parentFolder]);
 
   if (!isOpen) return null;
 
   const handleSubmit = () => {
-    // Si es root, forzamos FOLDER. Si no, forzamos que NO sea FOLDER (si el estado falló, asignamos UNIVERSE)
+    // Si es root, forzamos FOLDER. Si no, forzamos que NO sea FOLDER
     const finalTipo = isRoot ? 'FOLDER' : (formData.tipo === 'FOLDER' ? HIERARCHY_TYPES.UNIVERSE.id : formData.tipo);
     const finalData = { ...formData, tipo: finalTipo };
     
@@ -41,16 +49,10 @@ const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCr
     onClose();
   };
 
-
-  const TYPES = [
-  HIERARCHY_TYPES.UNIVERSE,
-  HIERARCHY_TYPES.GALAXY,
-  HIERARCHY_TYPES.SYSTEM,
-  HIERARCHY_TYPES.PLANET
-  ];
-
-  // Si no es raíz, no mostramos la opción de crear Carpeta (Espacio)
-  const ALL_TYPES = isRoot ? [] : [...TYPES];
+  // Lógica inteligente de tipos disponibles
+  const AVAILABLE_TYPES = parentFolder
+    ? TYPES // Dentro de carpeta: Solo nodos de contenido (Universo, etc.)
+    : [{ id: 'FOLDER', label: 'Nueva Carpeta', icon: 'folder', color: 'text-foreground/50' }]; // En Raíz: Solo Carpetas
 
  return (
   <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4">
@@ -98,27 +100,27 @@ const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCr
     <div className={`grid grid-cols-1 ${!isRoot ? 'md:grid-cols-2' : ''} gap-8`}>
       {/* Identidad */}
       <div className="space-y-6">
-    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Identidad</h3>
-    <div>
-      <label className="block text-[9px] font-black text-foreground/30 uppercase mb-2 tracking-widest">Nombre del espacio</label>
- <input
- autoFocus
- type="text"
- value={formData.nombre}
- onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
- className="w-full monolithic-panel rounded-none px-5 py-4 text-foreground focus:outline-none focus:border-indigo-500/50 transition-all shadow-inner"
- placeholder="ej. Sistema Solar"
- />
- </div>
- <div>
- <label className="block text-[10px] font-black text-foreground/30 uppercase mb-2">Descripción</label>
- <textarea
- value={formData.descripcion}
- onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
- className="w-full h-32 monolithic-panel rounded-none px-5 py-4 text-foreground focus:outline-none focus:border-indigo-500/50 resize-none transition-all"
- placeholder="Detalles sobre este nivel jerárquico..."
- />
- </div>
+        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Identidad</h3>
+        <div>
+          <label className="block text-[9px] font-black text-foreground/30 uppercase mb-2 tracking-widest">Nombre del espacio</label>
+          <input
+            autoFocus
+            type="text"
+            value={formData.nombre}
+            onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+            className="w-full monolithic-panel rounded-none px-5 py-4 text-foreground focus:outline-none focus:border-indigo-500/50 transition-all shadow-inner"
+            placeholder="ej. Sistema Solar"
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] font-black text-foreground/30 uppercase mb-2">Descripción</label>
+          <textarea
+            value={formData.descripcion}
+            onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+            className="w-full h-32 monolithic-panel rounded-none px-5 py-4 text-foreground focus:outline-none focus:border-indigo-500/50 resize-none transition-all"
+            placeholder="Detalles sobre este nivel jerárquico..."
+          />
+        </div>
       </div>
 
       {/* Jerarquía y Visualización (Oculto en Raíz) */}
@@ -129,7 +131,7 @@ const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCr
           <div className="space-y-3">
             <label className="block text-[9px] font-black text-foreground/30 uppercase mb-1 tracking-widest">Tipo de Jerarquía</label>
             <div className="grid grid-cols-2 gap-2">
-              {ALL_TYPES.map(type => (
+              {AVAILABLE_TYPES.map(type => (
                 <div
                   key={type.id}
                   onClick={() => setFormData({ ...formData, tipo: type.id })}
