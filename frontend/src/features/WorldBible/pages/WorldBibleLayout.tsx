@@ -73,7 +73,7 @@ const WorldBibleLayout: React.FC = () => {
     setCreationModalOpen(true);
   };
 
-  const handleCreateSubmit = async (formData: { nombre: string; tipo: any }) => {
+  const handleCreateSubmit = async (formData: { nombre: string; tipo: unknown }) => {
     if (!architectContext?.projectId) return;
     
     const isFolderType = formData.tipo === 'FOLDER' || formData.tipo === 'TIMELINE';
@@ -81,16 +81,16 @@ const WorldBibleLayout: React.FC = () => {
     try {
       if (isFolderType) {
         if (architectContext.handleCreateSimpleFolder) {
-          await architectContext.handleCreateSimpleFolder(targetParent ? targetParent.id : null, formData.tipo);
+          await architectContext.handleCreateSimpleFolder(targetParent ? targetParent.id : null, formData.tipo as string);
         }
       } else {
         // Creación rápida de ENTIDAD (Personaje, Mapa, etc.)
         if (architectContext.handleCreateQuickEntity && targetParent) {
-          await architectContext.handleCreateQuickEntity(targetParent.id, formData.nombre, formData.tipo);
+          await architectContext.handleCreateQuickEntity(targetParent.id, formData.nombre, formData.tipo as string);
         }
       }
     } catch (err) {
-      console.error("Error creating node:", err);
+      // [LOG REMOVED]
     }
     
     setCreationModalOpen(false);

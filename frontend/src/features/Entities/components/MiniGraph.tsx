@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useState } from 'react';
-import { ReactFlow, Background, Handle, Position, NodeProps } from '@xyflow/react';
+import { ReactFlow, Background, Handle, Position, NodeProps, Node, Edge } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { relationshipService } from '@repositories/relationshipService';
 
@@ -25,13 +25,13 @@ const nodeTypes = {
 };
 
 const MiniGraph: React.FC<MiniGraphProps> = ({ entityId, onNavigate }) => {
-  const [elements, setElements] = useState<{ nodes: any[]; edges: any[] }>({ nodes: [], edges: [] });
+  const [elements, setElements] = useState<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
 
   useEffect(() => {
     const fetchRelations = async () => {
       const relations = await relationshipService.getByEntity(entityId);
       
-      const nodes: any[] = [
+      const nodes: Node[] = [
         {
           id: String(entityId),
           type: 'custom',
@@ -40,7 +40,7 @@ const MiniGraph: React.FC<MiniGraphProps> = ({ entityId, onNavigate }) => {
         }
       ];
 
-      const edges: any[] = [];
+      const edges: Edge[] = [];
 
       relations.forEach((rel, index) => {
         const isOrigen = rel.origen_id === entityId;

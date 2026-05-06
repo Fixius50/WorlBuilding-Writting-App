@@ -56,7 +56,7 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  await entityService.update(map.id, updated);
  window.dispatchEvent(new CustomEvent('map-updated'));
  } catch (err) {
- console.error("Error updating map attribute", err);
+ // [LOG REMOVED]
  }
  };
 

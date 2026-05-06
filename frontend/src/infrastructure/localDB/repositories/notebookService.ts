@@ -107,7 +107,8 @@ export const notebookService = {
   
   // --- Backlinks / Apariciones ---
   async getMentions(projectId: number, query: string): Promise<{ hoja_id: number; hoja_titulo: string; cuaderno_titulo: string; cuaderno_id: number; snippet: string }[]> {
-    const results = await sql<any>`
+    type MentionRow = { hoja_id: number; hoja_titulo: string | null; content: string | null; cuaderno_titulo: string; cuaderno_id: number };
+    const results = await sql<MentionRow>`
       SELECT 
         h.id as hoja_id, 
         h.titulo as hoja_titulo, 

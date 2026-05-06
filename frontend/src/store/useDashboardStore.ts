@@ -27,7 +27,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
       const stats = await DashboardUseCase.getStats(projectId);
       set({ stats, isLoading: false });
     } catch (error: unknown) {
-      console.error("Error loading dashboard stats", error);
+      // [LOG REMOVED]
       set({ error, isLoading: false });
     }
   },

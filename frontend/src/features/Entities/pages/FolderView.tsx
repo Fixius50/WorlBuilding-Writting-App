@@ -64,7 +64,7 @@ const FolderView: React.FC = () => {
         // Si folderService.getPath devuelve [Raiz, ..., Actual], le pasamos el slice(0, -1) como path.
         setPath(pth.slice(0, -1));
       } catch (err) {
-        console.error('Error loading folder content:', err);
+        // [LOG REMOVED]
       } finally {
         setLoading(false);
       }
@@ -72,8 +72,8 @@ const FolderView: React.FC = () => {
     loadContent();
 
     // Suscribirse a actualizaciones para reactividad instantánea
-    const handleUpdate = (e: any) => {
-      const { folderId: updatedFolderId } = e.detail || {};
+    const handleUpdate = (e: Event) => {
+      const { folderId: updatedFolderId } = (e as CustomEvent<{ folderId: number }>).detail || {};
       if (Number(updatedFolderId) === Number(folderId)) {
         loadContent();
       }

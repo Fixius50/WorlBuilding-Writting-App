@@ -29,7 +29,7 @@ export const syncService = {
       const message = await response.text();
       return { success: true, message: message || 'Backup completado en disco.' };
     } catch (error) {
-      console.error('Error exportando a disco:', error);
+      // [LOG REMOVED]
       return { success: false, message: error instanceof Error ? error.message : 'Error desconocido' };
     }
   },
@@ -56,7 +56,7 @@ export const syncService = {
       
       return { success: true, message: 'Base de datos importada y cargada con éxito.' };
     } catch (error) {
-      console.error('Error importando desde disco:', error);
+      // [LOG REMOVED]
       return { success: false, message: error instanceof Error ? error.message : 'Error desconocido' };
     }
   },
@@ -70,7 +70,7 @@ export const syncService = {
       if (!response.ok) return [];
       return await response.json();
     } catch (error) {
-      console.error('Error listando backups:', error);
+      // [LOG REMOVED]
       return [];
     }
   }

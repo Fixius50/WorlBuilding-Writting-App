@@ -6,7 +6,7 @@ import { ResponsiveBar } from '@nivo/bar';
 import { useDashboardStore } from '@store/useDashboardStore';
 
 // --- Subcomponente de Gráficos (Movido para uso interno) ---
-function WritingStatsChart({ pages }: { pages: any[] }) {
+function WritingStatsChart({ pages }: { pages: { contenido?: string }[] }) {
   const data = pages.map((p, i) => ({
     hoja: `H${i + 1}`,
     palabras: p.contenido?.replace(/<[^>]+>/g, '').trim().split(/\s+/).filter(Boolean).length || 0,
@@ -73,7 +73,7 @@ interface ControlPanelProps {
   onToggle: () => void;
   projectId?: number;
   projectName?: string;
-  statsData?: any;
+  statsData?: { pages?: { contenido?: string }[] };
 }
 
 const SECTIONS: { id: PanelSection; icon: string; label: string }[] = [

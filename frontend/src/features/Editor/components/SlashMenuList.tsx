@@ -2,7 +2,7 @@ import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'rea
 
 interface SlashMenuItem {
   title: string;
-  command: (props: { editor: any; range: any }) => void;
+  command: (props: { editor: unknown; range: unknown }) => void;
   icon: string;
 }
 

@@ -68,7 +68,7 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
       setNewTpl({ nombre: '', tipo: 'text' });
       setIsCreating(false);
     } catch (err) {
-      console.error('Error creating global template:', err);
+      // [LOG REMOVED]
     }
   };
 
@@ -82,7 +82,7 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
       if (onRefresh) await onRefresh();
       setEditingTpl(null);
     } catch (err) {
-      console.error('Error updating template:', err);
+      // [LOG REMOVED]
     }
   };
 
@@ -93,7 +93,7 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
       if (onRefresh) await onRefresh();
       setDeletingId(null);
     } catch (err) {
-      console.error('Error deleting template:', err);
+      // [LOG REMOVED]
     }
   };
 

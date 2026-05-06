@@ -1,22 +1,22 @@
 import React from 'react';
 
 interface GlyphEditorPropertiesProps {
-  tool: any;
-  setTool: any;
-  strokeWidth: any;
-  setStrokeWidth: any;
-  color: any;
-  setColor: any;
-  opacity: any;
-  setOpacity: any;
-  layers: any;
-  activeLayerId: any;
-  setActiveLayerId: any;
-  onToggleLayerVisibility: any;
-  onToggleLayerLock: any;
-  onAddLayer: any;
-  onDeleteLayer: any;
-  activeShape: any;
+  tool: unknown;
+  setTool: unknown;
+  strokeWidth: unknown;
+  setStrokeWidth: unknown;
+  color: unknown;
+  setColor: unknown;
+  opacity: unknown;
+  setOpacity: unknown;
+  layers: unknown;
+  activeLayerId: unknown;
+  setActiveLayerId: unknown;
+  onToggleLayerVisibility: unknown;
+  onToggleLayerLock: unknown;
+  onAddLayer: unknown;
+  onDeleteLayer: unknown;
+  activeShape: unknown;
 }
 
 const GlyphEditorProperties = ({
@@ -146,7 +146,7 @@ const GlyphEditorProperties = ({
  </div>
 
  <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
- {layers.slice().reverse().map((layer: any) => (
+ {layers.slice().reverse().map((layer: unknown) => (
  <div
  key={layer.id}
  onClick={() => setActiveLayerId(layer.id)}

@@ -1,7 +1,9 @@
 import React from 'react';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 
-const SpecializedTimeline = ({ entities = [], onAddEvent }: { entities?: any[], onAddEvent?: () => void }) => {
+type SpecializedEvent = { id: number; nombre?: string; descripcion?: string };
+
+const SpecializedTimeline = ({ entities = [], onAddEvent }: { entities?: SpecializedEvent[], onAddEvent?: () => void }) => {
 
  // Sort entities? Ideally either by a custom attribute or just creation ID for now.
  // Let's assume they are sorted by ID (chronological creation)

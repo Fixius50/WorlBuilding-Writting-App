@@ -102,7 +102,7 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
  selectedValues = value ? JSON.parse(value) : [];
  if (!Array.isArray(selectedValues)) selectedValues = [];
  } catch (e) {
- console.error("Error parsing select values", e);
+ // [LOG REMOVED]
  }
 
  const toggleOption = (opt: string) => {

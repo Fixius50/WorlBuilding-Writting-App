@@ -47,7 +47,7 @@ const ArchetypeManager: React.FC = () => {
         await templateService.update(editingId, formData);
       } else {
         await templateService.create({
-          ...formData as any,
+          ...formData as unknown,
           project_id: projectId
         });
       }
@@ -65,7 +65,7 @@ const ArchetypeManager: React.FC = () => {
       });
       loadTemplates();
     } catch (err) {
-      console.error('Error saving template:', err);
+      // [LOG REMOVED]
     }
   };
 

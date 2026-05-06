@@ -54,7 +54,7 @@ const TimelineView = () => {
       if (!selectedUniverseId && extended.length > 0) {
         setSelectedUniverseId(extended[0].id);
       }
-    } catch (e) { console.error(e); }
+    } catch (e) { /* [LOG REMOVED] */ }
     setLoading(false);
   }, [projectId]);
 
@@ -63,7 +63,7 @@ const TimelineView = () => {
       // Cargamos todos los eventos que pertenecen a este universo (carpeta principal)
       const data = await timelineService.getByTimeline(universeId);
       setEvents(data);
-    } catch (e) { console.error(e); }
+    } catch (e) { /* [LOG REMOVED] */ }
   }, []);
 
   useEffect(() => { loadMultiverse(); }, [loadMultiverse]);
@@ -405,9 +405,16 @@ const TimelineView = () => {
                             .map(event => (
                               <div key={event.id} className="w-[300px] shrink-0">
                                 <TimelineEventCard
-                                  event={{ title: event.titulo, date: event.fecha_simulada || '', description: event.descripcion || '', type: 'GENERAL' }}
-                                  onClick={() => startEditEvent(event)}
-                                />
+                                event={event}
+                                trackId={null}
+                                  posX={0}
+                                   posY={0}
+                                   linkedEntities={[]}
+                                   onOpenInspector={() => startEditEvent(event)}
+                                   onEditStart={() => startEditEvent(event)}
+                                   onDeleteRequest={() => {}}
+                                   onLinkRequest={() => {}}
+                                 />
                               </div>
                             ))
                         )}
@@ -436,9 +443,16 @@ const TimelineView = () => {
                               .map(event => (
                                 <div key={event.id} className="w-[300px] shrink-0">
                                   <TimelineEventCard
-                                    event={{ title: event.titulo, date: event.fecha_simulada || '', description: event.descripcion || '', type: 'GENERAL' }}
-                                    onClick={() => startEditEvent(event)}
-                                  />
+                                  event={event}
+                                  trackId={null}
+                                    posX={0}
+                                     posY={0}
+                                     linkedEntities={[]}
+                                     onOpenInspector={() => startEditEvent(event)}
+                                     onEditStart={() => startEditEvent(event)}
+                                     onDeleteRequest={() => {}}
+                                     onLinkRequest={() => {}}
+                                   />
                                 </div>
                               ))
                           )}

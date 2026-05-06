@@ -5,6 +5,7 @@ import { useOutletContext, useParams, useNavigate } from 'react-router-dom';
 import { useRightPanelStore } from '@store/useRightPanelStore';
 import { notebookService, Cuaderno, Hoja } from '@repositories/notebookService';
 import { entityService } from '@repositories/entityService';
+import { useSettingsStore } from '@store/useSettingsStore';
 import ZenEditor from '@features/Editor/components/ZenEditor';
 import ConfirmModal from '@organisms/ConfirmModal';
 import MonolithicPanel from '@atoms/MonolithicPanel';
@@ -69,7 +70,7 @@ const WritingView = () => {
           notebookService.updatePage(currentPage.id, { 
             contenido: currentPage.contenido || '',
             titulo: currentPage.titulo || '' 
-          }).catch(err => console.error("Error preventing data loss:", err));
+          }).catch(err => { useSettingsStore.getState().addNotification("Error al guardar página", "error"); });
         }
       }
     };
@@ -93,7 +94,7 @@ const WritingView = () => {
         loadSnapshots(newPage.id);
       }
     } catch (err) {
-      console.error("Error loading notebook/pages:", err);
+      useSettingsStore.getState().addNotification("Error al cargar archivador", "error");
       navigate(-1);
     } finally {
       setLoading(false);
@@ -117,11 +118,10 @@ const WritingView = () => {
     const currentPage = pages[currentPageIndex];
     if (!currentPage) return;
     try {
-      console.log("[Snapshot] Guardando versión...");
       await notebookService.createSnapshot(currentPage.id, html);
       await loadSnapshots(currentPage.id);
     } catch (err) {
-      console.error("Error saving snapshot:", err);
+      useSettingsStore.getState().addNotification("Error al crear instantánea", "error");
     }
   };
 
@@ -138,7 +138,7 @@ const WritingView = () => {
         openPanel('entity', Number(id), entity.nombre);
       }
     } catch (err) {
-      console.error('Error al cargar previsualización de la mención:', err);
+      useSettingsStore.getState().addNotification("Error al cargar entidad", "error");
     }
   };
 
@@ -147,7 +147,7 @@ const WritingView = () => {
       const list = await notebookService.getSnapshots(hojaId);
       setSnapshots(list);
     } catch (err) {
-      console.error("Error loading snapshots:", err);
+      useSettingsStore.getState().addNotification("Error al cargar instantáneas", "error");
     }
   };
 
@@ -185,7 +185,7 @@ const WritingView = () => {
         titulo: page.titulo || ''
       });
     } catch (err) {
-      console.error("Error saving page:", err);
+      // [LOG REMOVED]
     } finally {
       if (isMounted.current) setSaving(false);
     }
@@ -198,7 +198,7 @@ const WritingView = () => {
       const updatedPages = [...pages, newPage];
       setPages(updatedPages);
     } catch (err) {
-      console.error("Error creating page:", err);
+      // [LOG REMOVED]
     }
   };
 
@@ -217,7 +217,7 @@ const WritingView = () => {
         setCurrentPageIndex(Math.max(0, index - 1));
       }
     } catch (err) {
-      console.error("Error auto-deleting page:", err);
+      // [LOG REMOVED]
     }
   };
 
@@ -257,7 +257,7 @@ const WritingView = () => {
       setPages(newPages);
       setCurrentPageIndex(nextIndex);
     } catch (err) {
-      console.error("Error deleting page:", err);
+      // [LOG REMOVED]
     } finally {
       setDeleteModalOpen(false);
       setPageToDelete(null);

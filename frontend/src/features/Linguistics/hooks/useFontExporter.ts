@@ -49,7 +49,7 @@ export const useFontExporter = (fontName: string) => {
       
       return true;
     } catch (err) {
-      console.error("Error exportando fuente:", err);
+      // [LOG REMOVED]
       throw err;
     }
   };

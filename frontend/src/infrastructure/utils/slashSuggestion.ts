@@ -1,6 +1,7 @@
 import { ReactRenderer } from '@tiptap/react';
-import tippy from 'tippy.js';
+import tippy, { Instance as TippyInstance } from 'tippy.js';
 import SlashMenuList from '@features/Editor/components/SlashMenuList';
+import { SuggestionProps } from '@tiptap/suggestion';
 
 export default {
   items: ({ query }: { query: string }) => {
@@ -8,42 +9,42 @@ export default {
       {
         title: 'Encabezado 1',
         icon: 'format_h1',
-        command: ({ editor }: any) => {
+        command: ({ editor }: SuggestionProps) => {
           editor.chain().focus().toggleHeading({ level: 1 }).run();
         },
       },
       {
         title: 'Encabezado 2',
         icon: 'format_h2',
-        command: ({ editor }: any) => {
+        command: ({ editor }: SuggestionProps) => {
           editor.chain().focus().toggleHeading({ level: 2 }).run();
         },
       },
       {
         title: 'Lista de viñetas',
         icon: 'format_list_bulleted',
-        command: ({ editor }: any) => {
+        command: ({ editor }: SuggestionProps) => {
           editor.chain().focus().toggleBulletList().run();
         },
       },
       {
         title: 'Cita',
         icon: 'format_quote',
-        command: ({ editor }: any) => {
+        command: ({ editor }: SuggestionProps) => {
           editor.chain().focus().toggleBlockquote().run();
         },
       },
       {
         title: 'Separador',
         icon: 'horizontal_rule',
-        command: ({ editor }: any) => {
+        command: ({ editor }: SuggestionProps) => {
           editor.chain().focus().setHorizontalRule().run();
         },
       },
     ].filter(item => item.title.toLowerCase().startsWith(query.toLowerCase()));
   },
 
-  command: ({ editor, range, props }: any) => {
+  command: ({ editor, range, props }: SuggestionProps & { props: { command: (args: Pick<SuggestionProps, 'editor' | 'range'>) => void } }) => {
     // Usamos una transacción única para borrar y ejecutar, evitando saltos de línea
     editor.chain()
       .focus()
@@ -52,22 +53,22 @@ export default {
     
     // Ejecutamos la lógica del ítem (ej: toggleHeading)
     // Pasamos el editor ya enfocado
-    props.command({ editor });
+    props.command({ editor, range });
   },
 
   render: () => {
-    let component: any;
-    let popup: any;
+    let component: ReactRenderer | null = null;
+    let popup: TippyInstance[] | null = null;
 
     return {
-      onStart: (props: any) => {
+      onStart: (props: SuggestionProps) => {
         component = new ReactRenderer(SlashMenuList, {
           props,
           editor: props.editor,
         });
 
         popup = tippy('body', {
-          getReferenceClientRect: props.clientRect,
+          getReferenceClientRect: (props.clientRect ?? (() => document.body.getBoundingClientRect())) as () => DOMRect,
           appendTo: () => document.body,
           content: component.element,
           showOnCreate: true,
@@ -77,30 +78,32 @@ export default {
         });
       },
 
-      onUpdate(props: any) {
-        component.updateProps(props);
+      onUpdate(props: SuggestionProps) {
+        if (component) {
+          component.updateProps(props);
+        }
 
-        if (!props.clientRect) {
+        if (!props.clientRect || !popup) {
           return;
         }
 
         popup[0].setProps({
-          getReferenceClientRect: props.clientRect,
+          getReferenceClientRect: props.clientRect as () => DOMRect,
         });
       },
 
-      onKeyDown(props: any) {
+      onKeyDown(props: { event: KeyboardEvent }) {
         if (props.event.key === 'Escape') {
-          popup[0].hide();
+          if (popup) popup[0].hide();
           return true;
         }
 
-        return component.ref?.onKeyDown(props);
+        return (component?.ref as { onKeyDown?: (p: unknown) => boolean } | null)?.onKeyDown?.(props);
       },
 
       onExit() {
-        popup[0].destroy();
-        component.destroy();
+        if (popup) popup[0].destroy();
+        if (component) component.destroy();
       },
     };
   },

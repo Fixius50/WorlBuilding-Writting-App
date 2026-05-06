@@ -21,7 +21,7 @@ export const calendarService = {
       INSERT INTO calendarios (nombre, project_id, meses_json, dias_semana_json, fecha_inicio_json)
       VALUES (${calendario.nombre}, ${calendario.project_id}, ${calendario.meses_json}, ${calendario.dias_semana_json}, ${calendario.fecha_inicio_json})
     `;
-    return (result as any).insertId;
+    return (result as unknown as { insertId: number }).insertId;
   },
 
   async update(id: number, calendario: Partial<Calendario>): Promise<void> {

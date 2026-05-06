@@ -41,7 +41,7 @@ const WritingHub = () => {
       const data = await notebookService.getAllByProject(pid);
       setNotebooks(data || []);
     } catch (err) {
-      console.error("Error loading notebooks:", err);
+      // [LOG REMOVED]
     } finally {
       setLoading(false);
     }
@@ -77,19 +77,19 @@ const WritingHub = () => {
     setSaving(true);
     try {
       const pid = projectId ? Number(projectId) : 1;
-      console.log('[WritingHub] Creating notebook - projectId:', pid, 'title:', title, 'genre:', genre);
+      // [LOG REMOVED]
       
       if (notebookToEdit) {
         await notebookService.update(notebookToEdit.id, { titulo: title.trim(), genero: genre });
         setNotebooks(prev => prev.map(n => n.id === notebookToEdit.id ? { ...n, titulo: title.trim(), genero: genre } : n));
       } else {
         const nuevo = await notebookService.create(pid, title.trim(), genre);
-        console.log('[WritingHub] Created notebook:', nuevo);
+        // [LOG REMOVED]
         setNotebooks(prev => [nuevo, ...prev]);
       }
       closeModal();
     } catch (err: unknown) {
-      console.error('[WritingHub] Error saving notebook:', err);
+      // [LOG REMOVED]
       const errorMessage = err instanceof Error ? err.message : 'Error al guardar. Revisa la consola.';
       setSubmitError(errorMessage);
     } finally {
@@ -113,7 +113,7 @@ const WritingHub = () => {
       await notebookService.delete(id);
       setNotebooks(notebooks.filter(n => n.id !== id));
     } catch (err) {
-      console.error("Error deleting notebook:", err);
+      // [LOG REMOVED]
     }
   };
 

@@ -7,7 +7,7 @@ import { initializeDatabase } from '@database'
 
 // Global Handlers (Opcional: Migrar a un logger local en el futuro)
 const reportError = (source: string, message: string, stack?: string, componentStack?: string) => {
- console.error(`[${source}] ${message}`, { stack, componentStack });
+ // [LOG REMOVED]
 };
 
 window.onerror = (message, source, lineno, colno, error) => {
@@ -18,7 +18,7 @@ window.onunhandledrejection = (event) => {
  reportError('Unhandled Promise Rejection', event.reason ? event.reason.message : 'Unknown reason', event.reason ? event.reason.stack : '');
 };
 
-class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: Error | null, errorInfo: any }> {
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: Error | null, errorInfo: { componentStack?: string } | null }> {
   constructor(props: { children: React.ReactNode }) {
   super(props);
   this.state = { hasError: false, error: null, errorInfo: null };
@@ -28,10 +28,10 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   return { hasError: true };
   }
 
-  componentDidCatch(error: unknown, errorInfo: any) {
+  componentDidCatch(error: unknown, errorInfo: { componentStack?: string }) {
   const err = error as Error;
   this.setState({ error: err, errorInfo: errorInfo });
-  console.error("Uncaught Error:", err, errorInfo);
+  // [LOG REMOVED]
   reportError('React ErrorBoundary', err.message, err.stack, errorInfo?.componentStack);
   }
 
@@ -77,5 +77,5 @@ if (rootElement) {
  );
  });
 } else {
- console.error("React root element not found (looked for #root)");
+ // [LOG REMOVED]
 }

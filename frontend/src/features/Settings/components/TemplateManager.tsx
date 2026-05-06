@@ -9,7 +9,7 @@ export interface TemplateField {
   label: string;
   type: string;
   required: boolean;
-  metadata: any;
+  metadata: unknown;
 }
 
 const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
@@ -36,7 +36,7 @@ const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
  // 2. Load Global Templates
  loadGlobalTemplates();
  } catch (err) {
- console.error("Init error:", err);
+ // [LOG REMOVED]
  }
  };
 
@@ -47,7 +47,7 @@ const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
  const data = await templateService.getByProject(0);
  setTemplates(data);
  } catch (err) {
- console.error("Error loading templates:", err);
+ // [LOG REMOVED]
  } finally {
  setLoading(false);
  }
@@ -66,7 +66,7 @@ const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
  });
  loadGlobalTemplates();
  } catch (err) {
- console.error("Error creating template:", err);
+ // [LOG REMOVED]
  }
  };
 
@@ -76,7 +76,7 @@ const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
  await templateService.delete(confirmDeleteId);
  setTemplates(prev => prev.filter(t => t.id !== confirmDeleteId));
  } catch (err) {
- console.error("Error deleting template:", err);
+ // [LOG REMOVED]
  } finally {
  setConfirmDeleteId(null);
  }

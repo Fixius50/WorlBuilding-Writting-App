@@ -37,15 +37,15 @@ const BibleGridView = () => {
       const allEnts = await entityService.getAllByProject(projectId);
       setEntities(allEnts.filter(e => !e.carpeta_id));
     } catch (err) {
-      console.error("Error loading root entities:", err);
+      // [LOG REMOVED]
     }
   }, [projectId]);
 
   useEffect(() => {
     loadRootEntities();
 
-    const handleUpdate = (e: any) => {
-      const { folderId } = e.detail || {};
+    const handleUpdate = (e: Event) => {
+      const { folderId } = (e as CustomEvent<{ folderId: number | null }>).detail || {};
       if (folderId === null) {
         loadRootEntities();
       }

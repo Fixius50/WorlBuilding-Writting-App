@@ -4,6 +4,7 @@ import { entityService } from '@repositories/entityService';
 import { Evento, Entidad } from '@domain/models/database';
 import { useLanguage } from '@context/LanguageContext';
 import ZenEditor from '@features/Editor/components/ZenEditor';
+import { Hoja as HojaModel } from '@repositories/notebookService';
 import Avatar from '@atoms/Avatar';
 
 interface EventInspectorProps {
@@ -40,7 +41,7 @@ const EventInspector: React.FC<EventInspectorProps> = ({
       setEvent(evData);
       setLinkedEntities(entities);
     } catch (err) {
-      console.error("Error loading event inspector data:", err);
+      // [LOG REMOVED]
     }
   }, [eventId]);
 
@@ -67,7 +68,7 @@ const EventInspector: React.FC<EventInspectorProps> = ({
         );
         setSearchResults(filtered.slice(0, 5));
       } catch (err) {
-        console.error("Search error:", err);
+        // [LOG REMOVED]
       }
     };
     const timer = setTimeout(search, 300);
@@ -82,7 +83,7 @@ const EventInspector: React.FC<EventInspectorProps> = ({
       await loadEventData();
       if (onUpdate) onUpdate();
     } catch (err) {
-      console.error("Link error:", err);
+      // [LOG REMOVED]
     }
   };
 
@@ -93,7 +94,7 @@ const EventInspector: React.FC<EventInspectorProps> = ({
       await loadEventData();
       if (onUpdate) onUpdate();
     } catch (err) {
-      console.error("Unlink error:", err);
+      // [LOG REMOVED]
     }
   };
 
@@ -103,7 +104,7 @@ const EventInspector: React.FC<EventInspectorProps> = ({
       await timelineService.update(event.id, { descripcion: html });
       if (onUpdate) onUpdate();
     } catch (err) {
-      console.error("Failed to update event notes:", err);
+      // [LOG REMOVED]
     }
   };
 
@@ -226,15 +227,21 @@ const EventInspector: React.FC<EventInspectorProps> = ({
             Crónica Privada (Notas del GM)
           </h3>
           <div className="flex-1 border border-foreground/10 bg-foreground/[0.02] overflow-hidden">
-            <ZenEditor 
-              content={event.descripcion || ''}
-              title={event.titulo}
-              onUpdate={handleNotesUpdate}
-              onTitleChange={() => {}}
-              onSnapshot={() => {}}
-              editable={true}
-              minimal={true}
-            />
+            {(() => {
+              const page: HojaModel = { id: event.id, titulo: event.titulo, contenido: event.descripcion || '', cuaderno_id: 0, orden: 0, created_at: '' };
+              return (
+                <ZenEditor
+                  pages={[page]}
+                  currentPageIndex={0}
+                  onUpdate={(html) => handleNotesUpdate(html)}
+                  onTitleChange={() => {}}
+                  onCreatePage={() => {}}
+                  onAutoDeletePage={() => {}}
+                  onSnapshot={() => {}}
+                  minimal={true}
+                />
+              );
+            })()}
           </div>
         </section>
       </div>

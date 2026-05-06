@@ -16,7 +16,7 @@ export const relationshipService = {
     return await sql<Relacion>`SELECT * FROM relaciones WHERE project_id = ${projectId}`;
   },
 
-  async getByEntity(entityId: number): Promise<any[]> {
+  async getByEntity(entityId: number): Promise<unknown[]> {
     return await sql`
       SELECT r.*, 
              e1.nombre as nombre_origen, 

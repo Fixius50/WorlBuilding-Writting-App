@@ -11,8 +11,8 @@ import { Entidad } from '@domain/models/database';
 
 const MapRouter = () => {
  const { projectName } = useParams();
- const outletContext = useOutletContext<any>();
- const { projectId } = outletContext || {};
+ const outletContext = useOutletContext<unknown>();
+ const { projectId } = outletContext as { projectId: number };
  const navigate = useNavigate();
  const location = useLocation();
  const [view, setView] = useState('manager');
@@ -56,7 +56,7 @@ const MapRouter = () => {
  } catch (e) { return false; }
  });
  setMaps(mapEntities);
- } catch (err) { console.error("Error loading maps", err); }
+ } catch (err) { /* [LOG REMOVED] */ }
  };
 
   const handleDuplicateMap = async (map: Entidad) => {
@@ -76,10 +76,10 @@ const MapRouter = () => {
  project_id: projectId,
  carpeta_id: map.carpeta_id,
  contenido_json: JSON.stringify(newAttrs)
- } as any);
+ } as unknown);
  await loadMaps();
  } catch (err) {
- console.error("Error duplicating map:", err);
+ // [LOG REMOVED]
  alert("Error al duplicar el mapa.");
  }
  };
@@ -90,7 +90,7 @@ const MapRouter = () => {
  await entityService.delete(mapToDelete.id);
  setMapToDelete(null);
  await loadMaps();
- } catch (err) { console.error("Error deleting map", err); }
+ } catch (err) { /* [LOG REMOVED] */ }
  };
 
   const handleCreateMap = async (
@@ -103,7 +103,7 @@ const MapRouter = () => {
       const defaultFolder = folders.find(f => f.nombre.toLowerCase().includes('map')) || folders[0];
 
       if (!defaultFolder) {
-        console.error("No folders available to create map");
+        // [LOG REMOVED]
         return;
       }
 
@@ -123,13 +123,13 @@ const MapRouter = () => {
           markers: [],
           connections: []
         })
-      } as any);
+      } as unknown);
 
       setNewMapId(newEntity.id);
       setView('editor');
       await loadMaps();
     } catch (err) {
-      console.error("Error creating map:", err);
+      // [LOG REMOVED]
     }
   };
 

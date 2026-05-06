@@ -8,6 +8,7 @@ import MiniGraph from '../components/MiniGraph';
 import MiniTimeline from '../components/MiniTimeline';
 import DynamicAttributeForm from '../components/DynamicAttributeForm';
 import { notebookService } from '@repositories/notebookService';
+import { useSettingsStore } from '@store/useSettingsStore';
 
 import { useRightPanelStore } from '@store/useRightPanelStore';
 
@@ -67,7 +68,7 @@ const EntityProfile = () => {
       // Opcional: recargar entidad para sincronizar
       // loadEntity(); 
     } catch (err) {
-      console.error("Failed to save notes", err);
+      useSettingsStore.getState().addNotification("Error en el proceso", "error");
     }
   };
 
@@ -77,43 +78,15 @@ const EntityProfile = () => {
     if (entity) {
       setCustomContent(
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-          <div className="flex items-center justify-between border-b border-foreground/10 pb-4">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary flex items-center gap-2">
-              <span className="material-symbols-outlined text-sm">edit_note</span>
-              Notas de Autor
-            </h3>
-            {!isEditingNotes ? (
-              <button 
-                onClick={() => setIsEditingNotes(true)}
-                className="text-[9px] font-black uppercase tracking-widest text-foreground/40 hover:text-primary transition-colors"
-              >
-                Editar
-              </button>
-            ) : (
-              <button 
-                onClick={handleSaveNotes}
-                className="text-[9px] font-black uppercase tracking-widest text-emerald-500 hover:text-emerald-400 transition-colors"
-              >
-                Guardar
-              </button>
-            )}
-          </div>
-
-          {isEditingNotes ? (
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="w-full h-64 bg-foreground/[0.03] border border-foreground/10 p-4 text-xs text-foreground/80 outline-none focus:border-primary/40 font-serif leading-relaxed resize-none custom-scrollbar"
-              placeholder="Escribe aquí las observaciones secretas sobre este arcano..."
-              autoFocus
-            />
-          ) : (
-            <div className="prose prose-invert prose-xs">
-              <p className="text-xs text-foreground/60 leading-relaxed italic whitespace-pre-wrap font-serif">
-                {notes || "No hay notas del autor para esta entidad."}
-              </p>
+          <section>
+            <div className="flex items-center justify-between mb-4 px-2">
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Notas de Autor</h3>
+              <span className="material-symbols-outlined text-[14px] text-primary/50">edit_note</span>
             </div>
-          )}
+            <div className="bg-foreground/[0.02] border border-foreground/10 p-5 min-h-[200px] text-xs text-foreground/70 italic leading-relaxed whitespace-pre-wrap">
+              {(entity.notes as string) || "No hay notas secretas para esta entidad..."}
+            </div>
+          </section>
 
           <div className="pt-8 opacity-20 hover:opacity-100 transition-opacity">
             <div className="text-[8px] font-black uppercase tracking-[0.4em] mb-4 text-center">Protocolos de Seguridad</div>
@@ -125,7 +98,7 @@ const EntityProfile = () => {
             </button>
           </div>
         </div>,
-        `Archivo: ${entity.nombre}`
+        `Archivo: ${entity.nombre as string}`
       );
     }
   }, [entity, notes, isEditingNotes, setCustomContent]);
@@ -152,7 +125,7 @@ const EntityProfile = () => {
         });
       }
     } catch (err) {
-      console.error("Failed to load entity", err);
+      useSettingsStore.getState().addNotification("Error al cargar entidad", "error");
     } finally {
       setLoading(false);
     }
@@ -170,7 +143,7 @@ const EntityProfile = () => {
       const mentionsData = await notebookService.getMentions(entity.project_id, entity.nombre);
       setMentions(mentionsData);
     } catch (err) {
-      console.error("Failed to load mentions", err);
+      useSettingsStore.getState().addNotification("Error en el proceso", "error");
     }
   };
 
@@ -210,13 +183,13 @@ const EntityProfile = () => {
           <div className="flex-1 text-center lg:text-left space-y-4">
             <div className="space-y-2">
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
-                <h1 className="text-4xl lg:text-6xl font-serif font-black text-foreground tracking-tight leading-none italic">{entity.nombre}</h1>
+                <h1 className="text-4xl lg:text-6xl font-serif font-black text-foreground tracking-tight leading-none italic">{entity.nombre as string}</h1>
                 <span className="px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] bg-primary/10 text-primary border border-primary/30">
-                  {entity.tipo || 'ENTIDAD'}
+                  {(entity.tipo as string) || 'ENTIDAD'}
                 </span>
               </div>
               <p className="text-lg text-foreground/40 font-medium italic max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                "{entity.descripcion || "Existencia sin descripción vinculada aún."}"
+                "{(entity.descripcion as string) || "Existencia sin descripción vinculada aún."}"
               </p>
             </div>
 
@@ -247,38 +220,41 @@ const EntityProfile = () => {
         <main className="flex-1 overflow-y-auto custom-scrollbar p-8 lg:p-12">
           <div className="max-w-7xl mx-auto">
             {activeTab === 'GENERAL' && (
-              <div className="max-w-4xl mx-auto space-y-16 animate-in slide-in-from-bottom-4 duration-500">
-                {/* Artículo de Prosa */}
-                <article className="space-y-8">
-                  <div className="flex items-center gap-4">
-                    <span className="h-px flex-1 bg-gradient-to-r from-transparent to-primary/30"></span>
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Crónica de su Esencia</h2>
-                    <span className="h-px flex-1 bg-gradient-to-l from-transparent to-primary/30"></span>
+              <div className="max-w-4xl mx-auto animate-in slide-in-from-bottom-4 duration-500 space-y-16">
+                {/* Biografía principal */}
+                <div className="space-y-6">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary flex items-center gap-3 border-b border-foreground/10 pb-4">
+                    <span className="material-symbols-outlined text-lg">history_edu</span>
+                    Biografía y Registro Histórico
+                  </h3>
+                  <div className="text-foreground/80 text-lg leading-relaxed font-serif whitespace-pre-wrap">
+                    {(entity.descripcion as string) || "Esta entidad aún no tiene registros en la historia..."}
                   </div>
-                  <div className="prose prose-invert prose-lg max-w-none">
-                    <p className="text-xl lg:text-2xl font-serif leading-[1.8] text-foreground/80 first-letter:text-5xl first-letter:font-black first-letter:mr-3 first-letter:float-left first-letter:text-primary italic">
-                      {entity.descripcion || "Este arcano aún no posee una crónica detallada en los registros del mundo."}
-                    </p>
-                  </div>
-                </article>
+                </div>
 
-                {/* Galería de Imágenes */}
-                {galleryImages.length > 0 && (
+                {/* Apariencia / Detalles Visuales */}
+                {!!entity.appearance && (
                   <div className="space-y-6">
-                    <div className="flex items-center gap-3">
-                       <span className="material-symbols-outlined text-sm text-primary">gallery_thumbnail</span>
-                       <h3 className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Fragmentos Visuales</h3>
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40 flex items-center gap-3 border-b border-foreground/10 pb-4">
+                      <span className="material-symbols-outlined text-lg">visibility</span>
+                      Apariencia y Rasgos
+                    </h3>
+                    <div className="text-foreground/60 text-md leading-relaxed whitespace-pre-wrap italic">
+                      {entity.appearance as string}
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {galleryImages.map((img, idx) => (
-                        <div key={idx} className="aspect-square bg-foreground/5 border border-foreground/10 overflow-hidden group relative">
-                          <img 
-                            src={img} 
-                            alt={`Fragmento ${idx}`} 
-                            className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110"
-                          />
-                          <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                        </div>
+                  </div>
+                )}
+
+                {/* Galería de imágenes */}
+                {!!entity.images && (entity.images as string[]).length > 0 && (
+                  <div className="space-y-6">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40 flex items-center gap-3 border-b border-foreground/10 pb-4">
+                      <span className="material-symbols-outlined text-lg">photo_library</span>
+                      Archivos Visuales
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {(entity.images as string[]).map((img: string, i: number) => (
+                        <img key={i} src={img} alt="Referencia" className="w-full aspect-square object-cover border border-foreground/10 opacity-70 hover:opacity-100 transition-opacity" />
                       ))}
                     </div>
                   </div>

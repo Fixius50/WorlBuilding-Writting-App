@@ -36,7 +36,7 @@ export default function TrashView() {
       setItems(data as TrashItem[]);
       setError(null);
     } catch (err) {
-      console.error("Error loading trash:", err);
+      // [LOG REMOVED]
       setError(t("trash.error_loading"));
     } finally {
       setLoading(false);
@@ -48,7 +48,7 @@ export default function TrashView() {
       await trashService.restore(tipo, itemId);
       loadItems(); 
     } catch (err) {
-      console.error("Restoration failed", err);
+      // [LOG REMOVED]
     }
   };
 
@@ -57,7 +57,7 @@ export default function TrashView() {
       await trashService.permanentlyDelete(tipo, itemId);
       loadItems();
     } catch (err) {
-      console.error("Deletion failed", err);
+      // [LOG REMOVED]
     }
   };
 

@@ -5,10 +5,10 @@ export const projectService = {
  async list(): Promise<Proyecto[]> {
     try {
       const data = await sql<Proyecto>`SELECT * FROM proyectos ORDER BY ultima_modificacion DESC`;
-      console.log(`[DB] Proyectos cargados: ${data.length}`);
+      // [LOG REMOVED]
       return data;
     } catch (err) {
-      console.error(`[DB] Fallo al listar proyectos:`, err);
+      // [LOG REMOVED]
       return [];
     }
  },
@@ -16,7 +16,7 @@ export const projectService = {
  async create(name: string, title?: string, tag?: string, image_url?: string): Promise<Proyecto> {
     const initials = (title || name || 'P').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
     try {
-      console.log(`[DB] Creando proyecto: ${name}`);
+      // [LOG REMOVED]
       await sql`
         INSERT INTO proyectos (nombre, descripcion, tag, image_url, initials)
         VALUES (${name}, ${title || ''}, ${tag || ''}, ${image_url || ''}, ${initials})
@@ -26,10 +26,10 @@ export const projectService = {
       await new Promise(r => setTimeout(r, 50)); 
       
       const result = await sql<Proyecto>`SELECT * FROM proyectos WHERE nombre = ${name} LIMIT 1`;
-      console.log(`[DB] Proyecto creado con éxito:`, result[0]);
+      // [LOG REMOVED]
       return result[0];
     } catch (err) {
-      console.error(`[DB] Error crítico al crear proyecto:`, err);
+      // [LOG REMOVED]
       throw err;
     }
  },

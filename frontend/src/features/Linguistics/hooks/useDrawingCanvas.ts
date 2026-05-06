@@ -53,7 +53,7 @@ export const useDrawingCanvas = () => {
 
       const newShape: Shape = {
         id: crypto.randomUUID(),
-        type: tool as any,
+        type: tool as unknown,
         stroke: color,
         strokeWidth: strokeWidth,
         opacity: opacity,
@@ -146,7 +146,7 @@ export const useDrawingCanvas = () => {
           return;
         }
       } catch (err) {
-        console.error("Error parsing rawEditorData:", err);
+        // [LOG REMOVED]
       }
     }
 
@@ -154,7 +154,7 @@ export const useDrawingCanvas = () => {
     if (glyph.svgPathData) {
       initialShapes.push({
         id: crypto.randomUUID(),
-        type: 'path' as any,
+        type: 'path' as unknown,
         data: glyph.svgPathData,
         x: 0,
         y: 0,
@@ -163,7 +163,7 @@ export const useDrawingCanvas = () => {
         fill: null,
         scaleX: 1,
         scaleY: 1
-      } as any);
+      } as unknown);
     }
 
     setLayers([

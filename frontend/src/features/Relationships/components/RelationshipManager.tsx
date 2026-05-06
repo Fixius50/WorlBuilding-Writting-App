@@ -28,7 +28,7 @@ interface EnrichedRelationship extends Omit<Relacion, 'created_at'> {
 }
 
 const RelationshipManager = ({ entityId, entityType }: { entityId: number | string; entityType?: string }) => {
- console.log(">>> RELATIONSHIP MANAGER V2 LOADED");
+ // [LOG REMOVED]
  const [relationships, setRelationships] = useState<EnrichedRelationship[]>([]);
  const [loading, setLoading] = useState(false);
  const [isAdding, setIsAdding] = useState(false);
@@ -44,7 +44,7 @@ const RelationshipManager = ({ entityId, entityType }: { entityId: number | stri
 
  useEffect(() => {
  if (entityId) {
- console.log(`[RelationshipManager] Loading for ID: ${entityId} Type: ${entityType}`);
+ // [LOG REMOVED]
  loadRelationships();
  }
  }, [entityId, entityType]);
@@ -59,7 +59,7 @@ const RelationshipManager = ({ entityId, entityType }: { entityId: number | stri
  setLoading(true);
  try {
  const relevant = await relationshipService.getByEntity(Number(entityId));
- console.log(`[RelationshipManager] Relevant relationships found: ${relevant.length}`);
+ // [LOG REMOVED]
 
  // Enrich with details (fetch names)
  const enriched = await Promise.all(relevant.map(async r => {
@@ -73,7 +73,7 @@ const RelationshipManager = ({ entityId, entityType }: { entityId: number | stri
 
  setRelationships(enriched.filter(Boolean));
  } catch (error) {
- console.error("Failed to load relationships", error);
+ // [LOG REMOVED]
  } finally {
  setLoading(false);
  }
@@ -95,7 +95,7 @@ const RelationshipManager = ({ entityId, entityType }: { entityId: number | stri
 
  setTargetItems(filtered || []);
  } catch (error) {
- console.error("Failed to fetch targets", error);
+ // [LOG REMOVED]
  setTargetItems([]);
  } finally {
  setFetchingTargets(false);
@@ -120,7 +120,7 @@ const RelationshipManager = ({ entityId, entityType }: { entityId: number | stri
  // Emit event to notify graph to reload
  window.dispatchEvent(new CustomEvent('relationships-update'));
  } catch (error) {
- console.error("Failed to save relationship", error);
+ // [LOG REMOVED]
  alert("Error saving relationship");
  }
  };
@@ -134,7 +134,7 @@ const RelationshipManager = ({ entityId, entityType }: { entityId: number | stri
  // Emit event to notify graph to reload
  window.dispatchEvent(new CustomEvent('relationships-update'));
  } catch (error) {
- console.error("Failed to delete", error);
+ // [LOG REMOVED]
  }
  }
 

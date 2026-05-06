@@ -29,7 +29,7 @@ const SyncView: React.FC = () => {
       setStatus('CONNECTED');
       addLog(`Conexión recibida de: ${conn.peer}`);
       
-      conn.on('data', (data: any) => {
+      conn.on('data', (data: unknown) => {
           handleIncomingData(data);
       });
     });
@@ -50,14 +50,15 @@ const SyncView: React.FC = () => {
       addLog(`Conectado a: ${targetId}`);
     });
 
-    conn.on('data', (data: any) => {
+    conn.on('data', (data: unknown) => {
         handleIncomingData(data);
     });
   };
 
-  const handleIncomingData = (data: any) => {
-      addLog(`Datos recibidos: ${data.type}`);
-      if (data.type === 'SYNC_REQUEST') {
+  const handleIncomingData = (data: unknown) => {
+      const d = data as { type?: string };
+      addLog(`Datos recibidos: ${d.type}`);
+      if (d.type === 'SYNC_REQUEST') {
           // Responder con datos
           addLog('Enviando datos locales...');
           connection?.send({ type: 'SYNC_DATA', payload: { entities: [] } }); // Placeholder

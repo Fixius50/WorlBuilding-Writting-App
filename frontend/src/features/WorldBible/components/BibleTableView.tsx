@@ -62,7 +62,7 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
         setRowSelection({});
         loadEntities();
       } catch (err) {
-        console.error('Error in bulk delete:', err);
+        // [LOG REMOVED]
       }
     }
   };
@@ -76,7 +76,7 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
       setRowSelection({});
       loadEntities();
     } catch (err) {
-      console.error('Error in bulk assign:', err);
+      // [LOG REMOVED]
     }
   };
 
@@ -109,7 +109,7 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
         setNewEntityName('');
         await loadEntities();
       } catch (err) {
-        console.error('Error creating entity from ghost row:', err);
+        // [LOG REMOVED]
       } finally {
         setIsCreating(false);
       }

@@ -102,7 +102,7 @@ const FolderItem: React.FC<FolderItemProps> = ({
  setContent({ folders: subs, entities: ents });
  setLoaded(true);
  } catch (err) {
- console.error("Error reloading folder content:", err);
+ // [LOG REMOVED]
  }
  };
 
@@ -181,7 +181,7 @@ const FolderItem: React.FC<FolderItemProps> = ({
  try {
  await onRename(folder.id, val);
  setItemName(val);
- } catch (err) { console.error("Rename failed", err); }
+ } catch (err) { /* [LOG REMOVED] */ }
  }
  setIsEditing(false);
  } else if (e.key === 'Escape') {

@@ -36,7 +36,7 @@ const WorkspaceSelector: React.FC = () => {
       const data = await projectService.list();
       setWorkspaces(data);
     } catch (err) {
-      console.error("Failed to load workspaces", err);
+      // [LOG REMOVED]
       setError("Error al cargar cuadernos.");
     } finally {
       setLoading(false);
@@ -52,8 +52,8 @@ const WorkspaceSelector: React.FC = () => {
       }
       await setUser({ username: 'local' });
       navigate(`/local/${projectName}`);
-    } catch (err: any) {
-      setError(err.message || "Fallo al entrar al cuaderno");
+    } catch (err: unknown) {
+      setError((err as Error).message || "Fallo al entrar al cuaderno");
     }
   };
 

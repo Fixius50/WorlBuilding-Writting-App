@@ -10,7 +10,7 @@ interface MapLibreViewProps {
   markers: MapMarker[];
   layers: MapLayer[];
   connections: MapConnection[];
-  features?: any; // GeoJSON FeatureCollection de dibujos (spray, trayectos)
+  features?: unknown; // GeoJSON FeatureCollection de dibujos (spray, trayectos)
   onMarkerClick: (marker: MapMarker) => void;
   onMapClick?: (lng: number, lat: number) => void;
   imageWidth: number;
@@ -42,10 +42,10 @@ const MapLibreView: React.FC<MapLibreViewProps> = ({
   const buildDeckLayers = useCallback((
     currentMarkers: MapMarker[],
     currentConnections: MapConnection[],
-    currentFeatures: any,
+    currentFeatures: unknown,
     currentLayers: MapLayer[]
   ) => {
-    const deckLayers: any[] = [];
+    const deckLayers: unknown[] = [];
 
     // ── Capa de conexiones entre marcadores (PathLayer) ────────
     const connPaths = currentConnections
@@ -60,16 +60,16 @@ const MapLibreView: React.FC<MapLibreViewProps> = ({
           dashed: conn.dashed || false,
         };
       })
-      .filter(Boolean) as any[];
+      .filter(Boolean) as unknown[];
 
     if (connPaths.length > 0) {
       deckLayers.push(
         new PathLayer({
           id: 'deck-connections',
           data: connPaths,
-          getPath: (d: any) => d.path,
-          getColor: (d: any) => d.color,
-          getWidth: (d: any) => d.width,
+          getPath: (d: unknown) => d.path,
+          getColor: (d: unknown) => d.color,
+          getWidth: (d: unknown) => d.width,
           widthUnits: 'pixels',
           rounded: true,
           pickable: false,
@@ -83,7 +83,7 @@ const MapLibreView: React.FC<MapLibreViewProps> = ({
         .filter(l => l.type !== 'base' && l.type !== 'image' && l.visible)
         .forEach(layer => {
           const layerFeatures = (currentFeatures.features || []).filter(
-            (f: any) => f.properties?.layerId === layer.id
+            (f: unknown) => f.properties?.layerId === layer.id
           );
           if (layerFeatures.length === 0) return;
 
@@ -137,7 +137,7 @@ const MapLibreView: React.FC<MapLibreViewProps> = ({
           pickable: true,
           autoHighlight: true,
           highlightColor: [99, 102, 241, 255],
-          onClick: (info: any) => {
+          onClick: (info: unknown) => {
             if (info.object) onMarkerClickRef.current(info.object as MapMarker);
           },
         })
@@ -195,9 +195,9 @@ const MapLibreView: React.FC<MapLibreViewProps> = ({
       maxZoom: 7,
       minZoom: 0,
       renderWorldCopies: is3D,
-      projection: is3D ? { type: 'globe' } as any : undefined,
+      projection: is3D ? { type: 'globe' } as unknown : undefined,
       attributionControl: false,
-    } as any);
+    } as unknown);
 
     map.current = mapInstance;
 
@@ -207,7 +207,7 @@ const MapLibreView: React.FC<MapLibreViewProps> = ({
       layers: [],
     });
     deckOverlay.current = overlay;
-    mapInstance.addControl(overlay as any);
+    mapInstance.addControl(overlay as unknown);
     mapInstance.addControl(new maplibregl.NavigationControl(), 'bottom-right');
 
     mapInstance.on('click', (e) => {

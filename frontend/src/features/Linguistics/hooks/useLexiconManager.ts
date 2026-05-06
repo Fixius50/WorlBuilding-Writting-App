@@ -62,7 +62,7 @@ export const useLexiconManager = (projectParam: string | undefined) => {
         });
       }
     } catch (err) {
-      console.error("Load error:", err);
+      // [LOG REMOVED]
     }
   }, [projectParam, loadLexicon, loadRules]);
 

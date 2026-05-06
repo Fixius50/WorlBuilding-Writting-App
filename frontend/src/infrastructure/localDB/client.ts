@@ -169,7 +169,7 @@ export async function initializeDatabase() {
   await sql`CREATE INDEX IF NOT EXISTS idx_relaciones_destino_id ON relaciones(destino_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_relaciones_project_id ON relaciones(project_id)`;
 
-  console.log('Database tables ensured');
+  // [LOG REMOVED]
 
   // --- MIGRACIONES MANUALES (Para tablas que ya existen pero necesitan columnas nuevas) ---
   try {
@@ -254,15 +254,15 @@ export async function initializeDatabase() {
     await sql`ALTER TABLE plantillas ADD COLUMN categoria TEXT`.catch(() => {});
     await sql`ALTER TABLE plantillas ADD COLUMN orden INTEGER DEFAULT 0`.catch(() => {});
 
-    console.log('Migrations completed');
+    // [LOG REMOVED]
   } catch (err) {
-    console.warn('Migration warning (safe if columns exist):', err);
+    // [LOG REMOVED]
   }
 
-  console.log('Database initialized successfully');
+  // [LOG REMOVED]
 
  } catch (error) {
- console.error('Error initializing database:', error);
+ // [LOG REMOVED]
  throw error;
  }
 }

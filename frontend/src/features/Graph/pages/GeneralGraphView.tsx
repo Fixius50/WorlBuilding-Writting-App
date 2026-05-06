@@ -225,7 +225,7 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
       setNodes(newNodes);
       setEdges(newEdges);
     } catch (error) {
-      console.error('Error loading graph:', error);
+      // [LOG REMOVED]
     } finally {
       setLoading(false);
     }
@@ -249,7 +249,7 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
       });
       await loadGraph();
     } catch (err) {
-      console.error("Error creating relationship:", err);
+      // [LOG REMOVED]
     }
   }, [projectId, loadGraph]);
 
@@ -268,7 +268,7 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
       }
       await loadGraph();
     } catch (err) {
-      console.error("Error reconnecting edge:", err);
+      // [LOG REMOVED]
     }
   }, [loadGraph]);
 

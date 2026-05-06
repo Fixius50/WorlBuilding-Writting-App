@@ -122,7 +122,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       get().addNotification("Foto de perfil actualizada", "success");
     } catch (err) {
       get().addNotification("Error al guardar imagen (memoria llena)", "error");
-      console.error("Storage error", err);
+      // [LOG REMOVED]
     }
   },
 

@@ -132,7 +132,7 @@ const CalendarManagerView: React.FC = () => {
                                     </button>
                                 </div>
                                 <div className="space-y-2 max-h-[250px] overflow-y-auto pr-2 no-scrollbar">
-                                    {JSON.parse(editingCalendar.meses_json || '[]').map((m: any, idx: number) => (
+                                    {JSON.parse(editingCalendar.meses_json || '[]').map((m: { nombre: string; dias: number }, idx: number) => (
                                         <div key={idx} className="flex gap-2 items-center bg-foreground/[0.03] p-2 border border-foreground/5">
                                             <input 
                                                 type="text" value={m.nombre}

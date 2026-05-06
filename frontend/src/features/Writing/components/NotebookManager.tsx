@@ -4,6 +4,7 @@ import { settingsService } from '@repositories/settingsService';
 import ConfirmationModal from '@organisms/ConfirmationModal';
 import { Notebook } from '@domain/models/writing';
 import ZenEditor from '@features/Editor/components/ZenEditor';
+import { Hoja as HojaModel } from '@repositories/notebookService';
 
 // SQLite Storage for quick notes
 const useNotebooks = (projectId: string | number) => {
@@ -113,14 +114,21 @@ const NotebookManager: React.FC<NotebookManagerProps> = ({ projectId }) => {
 
  {/* Editor Area */}
  <div className="flex-1 overflow-hidden relative">
- <ZenEditor
- content={activeNotebook.contenido || ''}
- onUpdate={(newContent) => updateNotebook(activeNotebook.id, 'contenido', newContent)}
- title={activeNotebook.titulo}
- onTitleChange={(newTitle) => updateNotebook(activeNotebook.id, 'titulo', newTitle)}
- onSnapshot={() => {}}
- />
- </div>
+ {(() => {
+   const page: HojaModel = { id: Number(activeNotebook.id) || 0, titulo: activeNotebook.titulo, contenido: activeNotebook.contenido || '', cuaderno_id: 0, orden: 0, created_at: '' };
+   return (
+     <ZenEditor
+       pages={[page]}
+       currentPageIndex={0}
+       onUpdate={(newContent) => updateNotebook(activeNotebook.id, 'contenido', newContent)}
+       onTitleChange={() => {}}
+        onCreatePage={() => {}}
+        onAutoDeletePage={() => {}}
+        onSnapshot={() => {}}
+      />
+    );
+  })()}
+  </div>
 
 
  {/* Footer status */}

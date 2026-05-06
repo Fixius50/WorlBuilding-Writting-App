@@ -1,9 +1,9 @@
-import { ReactRenderer } from '@tiptap/react'
-import tippy, { Instance, Props } from 'tippy.js'
-import MentionList from '@features/Editor/components/MentionList'
-import { entityService } from '@repositories/entityService'
-import { useAppStore } from '@store/useAppStore'
-import { SuggestionOptions } from '@tiptap/suggestion'
+import { ReactRenderer } from '@tiptap/react';
+import tippy, { Instance, Props } from 'tippy.js';
+import MentionList from '@features/Editor/components/MentionList';
+import { entityService } from '@repositories/entityService';
+import { useAppStore } from '@store/useAppStore';
+import { SuggestionOptions, SuggestionProps } from '@tiptap/suggestion';
 
 /**
  * Lógica de sugerencias para la extensión Mention de Tiptap.
@@ -28,7 +28,7 @@ const suggestion: Omit<SuggestionOptions, 'editor'> = {
               useAppStore.getState().setLastProjectId(project.id);
             }
           } catch (e) {
-             console.error("Error en fallback de menciones:", e);
+             /* [LOG REMOVED] */
           }
         }
       }
@@ -59,17 +59,17 @@ const suggestion: Omit<SuggestionOptions, 'editor'> = {
           };
         });
     } catch (err) {
-      console.error('Error al obtener sugerencias de menciones:', err);
+      /* [LOG REMOVED] */
       return [];
     }
   },
 
   render: () => {
-    let component: any;
-    let popup: Instance<Props>[];
+    let component: ReactRenderer | null = null;
+    let popup: Instance<Props>[] | null = null;
 
     return {
-      onStart: (props: any) => {
+      onStart: (props: SuggestionProps) => {
         component = new ReactRenderer(MentionList, {
           props,
           editor: props.editor,
@@ -80,7 +80,7 @@ const suggestion: Omit<SuggestionOptions, 'editor'> = {
         }
 
         popup = tippy('body', {
-          getReferenceClientRect: props.clientRect,
+          getReferenceClientRect: props.clientRect as () => DOMRect,
           appendTo: () => document.body,
           content: component.element,
           showOnCreate: true,
@@ -90,25 +90,29 @@ const suggestion: Omit<SuggestionOptions, 'editor'> = {
         }) as unknown as Instance<Props>[];
       },
 
-      onUpdate(props: any) {
-        component.updateProps(props);
+      onUpdate(props: SuggestionProps) {
+        if (component) {
+          component.updateProps(props);
+        }
 
         if (!props.clientRect) {
           return;
         }
 
-        popup[0].setProps({
-          getReferenceClientRect: props.clientRect,
-        });
+        if (popup) {
+          popup[0].setProps({
+            getReferenceClientRect: props.clientRect as () => DOMRect,
+          });
+        }
       },
 
-      onKeyDown(props: any) {
+      onKeyDown(props: { event: KeyboardEvent }): boolean {
         if (props.event.key === 'Escape') {
-          popup[0].hide();
+          if (popup) popup[0].hide();
           return true;
         }
 
-        return component.ref?.onKeyDown(props);
+        return (component?.ref as { onKeyDown?: (p: unknown) => boolean } | null)?.onKeyDown?.(props) ?? false;
       },
 
       onExit() {

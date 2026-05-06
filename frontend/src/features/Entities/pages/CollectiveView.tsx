@@ -35,7 +35,7 @@ const CollectiveView = ({ id }: { id: string | number }) => {
  });
  }
  } catch (err) {
- console.error("Error loading collective:", err);
+ // [LOG REMOVED]
  } finally {
  setLoading(false);
  }
@@ -55,7 +55,7 @@ const CollectiveView = ({ id }: { id: string | number }) => {
  setIsEditing(false);
  // alert("Changes saved!"); // Removed
  } catch (err) {
- console.error("Error saving:", err);
+ // [LOG REMOVED]
  // alert("Error saving: " + err.message); // Removed
  }
  };

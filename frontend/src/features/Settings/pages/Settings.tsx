@@ -17,7 +17,6 @@ const Settings = () => {
     projects,
     selectedProjects,
     settings,
-    notifications,
     initialize,
     updateSetting,
     toggleProjectSelection,
@@ -75,17 +74,6 @@ const Settings = () => {
         <div className="absolute -bottom-[10%] -right-[10%] size-[40%] bg-primary/5 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
       </div>
       
-      {/* TOAST NOTIFICATIONS */}
-      <div className="fixed top-24 right-8 z-[100] flex flex-col gap-3">
-        {notifications.map(n => (
-          <div key={n.id} className="flex items-center gap-3 px-6 py-4 monolithic-panel border border-foreground/40 rounded-none shadow-2xl animate-slide-in-right">
-            <span className={`material-symbols-outlined ${n.type === 'success' ? 'text-emerald-400' : 'text-primary'}`}>
-              {n.type === 'success' ? 'check_circle' : 'info'}
-            </span>
-            <span className="text-sm font-bold">{n.message}</span>
-          </div>
-        ))}
-      </div>
 
       {/* TOP NAVIGATION BAR */}
       <header className="h-20 flex-none flex items-center justify-center gap-12 text-center px-12 border-b border-foreground/10 bg-background z-30">

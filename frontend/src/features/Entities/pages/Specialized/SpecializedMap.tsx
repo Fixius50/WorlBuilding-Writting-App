@@ -1,7 +1,7 @@
 import React from 'react';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 
-const SpecializedMap = ({ entity, active }: { entity?: any, active?: boolean }) => {
+const SpecializedMap = ({ entity, active }: { entity?: unknown, active?: boolean }) => {
  if (!active) return null;
 
  return (

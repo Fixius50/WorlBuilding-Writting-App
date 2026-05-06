@@ -7,36 +7,36 @@ import { entityService } from '@infrastructure/localDB/repositories/entityServic
 import Button from '@presentation/atoms/Button';
 
 const LinguisticsRouter = () => {
- const [view, setView] = useState('hub'); // 'hub', 'foundry', 'editor', 'advanced'
- const [selectedWord, setSelectedWord] = useState<unknown>(null);
- const [editorWord, setEditorWord] = useState<any>(null);
+  const [view, setView] = useState('hub'); // 'hub', 'foundry', 'editor', 'advanced'
+  const [selectedWord, setSelectedWord] = useState<unknown>(null);
+  const [editorWord, setEditorWord] = useState<unknown>(null);
 
- const handleOpenEditor = (word: any) => {
- setEditorWord(word);
- setView('editor');
- };
+  const handleOpenEditor = (word: unknown) => {
+    setEditorWord(word);
+    setView('editor');
+  };
 
- const handleSaveGlyph = async (saveData: any) => {
- if (saveData.wordId) {
- try {
-  // Use entityService to update the word's glyph data
-  const word = await entityService.getById(saveData.wordId);
-  if (word) {
-    const content = JSON.parse(word.contenido_json || '{}');
-    content.svgPathData = saveData.svgPathData;
-    await entityService.update(saveData.wordId, {
-      ...word,
-      contenido_json: JSON.stringify(content)
-    });
-    console.log("Glyph saved successfully via entityService");
-  }
- } catch (err) {
- console.error("Error saving glyph:", err);
- }
- }
- setSelectedWord(null);
- setView('hub');
- };
+  const handleSaveGlyph = async (saveData: unknown) => {
+    const data = saveData as { wordId?: number; svgPathData?: string };
+    if (data.wordId) {
+      try {
+        // Use entityService to update the word's glyph data
+        const word = await entityService.getById(data.wordId);
+        if (word) {
+          const content = JSON.parse(word.contenido_json || '{}');
+          content.svgPathData = data.svgPathData;
+          await entityService.update(data.wordId, {
+            ...word,
+            contenido_json: JSON.stringify(content)
+          });
+        }
+      } catch (err) {
+        // Error silenciado o manejado por UI en el futuro
+      }
+    }
+    setSelectedWord(null);
+    setView('hub');
+  };
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">

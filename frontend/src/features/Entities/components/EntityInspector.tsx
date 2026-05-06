@@ -25,7 +25,7 @@ const EntityInspector: React.FC<EntityInspectorProps> = ({ entityId }) => {
           setValues(vals.slice(0, 5)); // Solo los 5 primeros para el inspector rápido
         }
       } catch (err) {
-        console.error("Error loading entity for inspector:", err);
+        // [LOG REMOVED]
       } finally {
         setLoading(false);
       }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
-import { Map, NavigationControl, Source, Layer, Marker, Popup } from 'react-map-gl/maplibre';
+import { Map, NavigationControl, Source, Layer, Marker, Popup, MapRef, MapMouseEvent } from 'react-map-gl/maplibre';
 // @ts-ignore
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { entityService } from '@repositories/entityService';
@@ -9,6 +9,18 @@ import { MapMarker, MapLayer, MapAttributes } from '@domain/models/maps';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
 import { useRightPanelStore } from '@store/useRightPanelStore';
+
+type GeoFeatureCollection = {
+  type: 'FeatureCollection';
+  features: GeoFeature[];
+};
+
+type GeoFeature = {
+  id?: string | number;
+  type: 'Feature';
+  geometry: { type: string; coordinates: unknown };
+  properties?: Record<string, unknown>;
+};
 
 const DEFAULT_LAYERS: MapLayer[] = [
   { id: 'base', name: 'Mapa Base', visible: true, opacity: 1, type: 'image', url: '' },
@@ -53,7 +65,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
   const [markers, setMarkers] = useState<MapMarker[]>([]);
   const [layers, setLayers] = useState<MapLayer[]>(DEFAULT_LAYERS);
   const [selectedLayerId, setSelectedLayerId] = useState<string>(DEFAULT_LAYERS[1].id);
-  const [features, setFeatures] = useState<any>({ type: 'FeatureCollection', features: [] });
+  const [features, setFeatures] = useState<GeoFeatureCollection>({ type: 'FeatureCollection', features: [] });
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   const [targetFolderId, setTargetFolderId] = useState<number | null>(initialFolderId ? Number(initialFolderId) : null);
   const [drawMode, setDrawMode] = useState<DrawMode>('none');
@@ -71,10 +83,10 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
   const [linkingMarkerId, setLinkingMarkerId] = useState<string | null>(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState<string | null>(null);
 
-  const [history, setHistory] = useState<{ markers: MapMarker[]; features: any }[]>([]);
-  const [future, setFuture] = useState<{ markers: MapMarker[]; features: any }[]>([]);
-  const historyRef = useRef<{ markers: MapMarker[]; features: any }[]>([]);
-  const futureRef = useRef<{ markers: MapMarker[]; features: any }[]>([]);
+  const [history, setHistory] = useState<{ markers: MapMarker[]; features: GeoFeatureCollection }[]>([]);
+  const [future, setFuture] = useState<{ markers: MapMarker[]; features: GeoFeatureCollection }[]>([]);
+  const historyRef = useRef<{ markers: MapMarker[]; features: GeoFeatureCollection }[]>([]);
+  const futureRef = useRef<{ markers: MapMarker[]; features: GeoFeatureCollection }[]>([]);
   const actionSavedRef = useRef(false);
 
   const [resolvedUrls, setResolvedUrls] = useState<Record<string, string>>({});
@@ -82,10 +94,10 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
   const [errorLayers, setErrorLayers] = useState<Set<string>>(new Set());
 
   const { openPanel, setCustomContent, closePanel } = useRightPanelStore();
-  const outletCtx = (useOutletContext<any>() || {}) as any;
+  const outletCtx = (useOutletContext<{ projectId?: number } | null>() || {}) as { projectId?: number };
   const { projectId } = outletCtx;
 
-  const mapRef = useRef<any>(null);
+  const mapRef = useRef<MapRef>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getHistorySnapshot = useCallback(() => ({
@@ -93,7 +105,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
     features: JSON.parse(JSON.stringify(features)),
   }), [markers, features]);
 
-  const pushHistory = useCallback((snapshot: { markers: MapMarker[]; features: any }) => {
+  const pushHistory = useCallback((snapshot: { markers: MapMarker[]; features: GeoFeatureCollection }) => {
     setHistory(prev => {
       const next = [...prev, snapshot];
       historyRef.current = next;
@@ -103,7 +115,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
     futureRef.current = [];
   }, []);
 
-  const restoreSnapshot = useCallback((snapshot: { markers: MapMarker[]; features: any }) => {
+  const restoreSnapshot = useCallback((snapshot: { markers: MapMarker[]; features: GeoFeatureCollection }) => {
     setMarkers(snapshot.markers);
     setFeatures(snapshot.features);
   }, []);
@@ -159,11 +171,12 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
 
   useEffect(() => {
     endCurrentAction();
-    setFeatures((prev: any) => {
+    setFeatures((prev: GeoFeatureCollection) => {
       if (!prev.features || prev.features.length === 0) return prev;
       const lastIdx = prev.features.length - 1;
       const last = prev.features[lastIdx];
-      if (last && last.geometry.type === 'LineString' && last.geometry.coordinates.length < 2) {
+      const coords = (last?.geometry?.coordinates as unknown[]) || [];
+      if (last && last.geometry.type === 'LineString' && coords.length < 2) {
         return { ...prev, features: prev.features.slice(0, -1) };
       }
       return prev;
@@ -378,12 +391,12 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
   };
 
   const addSprayPoint = useCallback((lng: number, lat: number) => {
-    setFeatures((prev: any) => ({
+    setFeatures((prev: GeoFeatureCollection) => ({
       ...prev,
       features: [
         ...prev.features,
         {
-          type: 'Feature',
+          type: 'Feature' as const,
           geometry: { type: 'Point', coordinates: [lng, lat] },
           properties: { layerId: selectedLayerId }
         }
@@ -397,32 +410,29 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
     const cursorPx = map.project([lng, lat]);
     const radius = brushSize;
 
-    setFeatures((prev: any) => {
-      const newFeatures = (prev.features || []).flatMap((f: any) => {
+    setFeatures((prev: GeoFeatureCollection) => {
+      const newFeatures = (prev.features || []).flatMap((f: GeoFeature) => {
         if (f.properties?.layerId !== selectedLayerId) return [f];
         if (f.geometry.type === 'Point') {
-          const featPx = map.project(f.geometry.coordinates);
+          const coords = f.geometry.coordinates as [number, number];
+          const featPx = map.project(coords);
           const dist = Math.hypot(cursorPx.x - featPx.x, cursorPx.y - featPx.y);
           return dist > radius ? [f] : [];
         }
         if (f.geometry.type === 'LineString') {
-          const segments: any[] = [];
-          let currentPart: any[] = [];
-          f.geometry.coordinates.forEach((coord: [number, number]) => {
+          const segments: GeoFeature[][] = [];
+          let currentPart: [number, number][] = [];
+          (f.geometry.coordinates as [number, number][]).forEach((coord) => {
             const ptPx = map.project(coord);
             const dist = Math.hypot(cursorPx.x - ptPx.x, cursorPx.y - ptPx.y);
             if (dist > radius) currentPart.push(coord);
             else {
-              if (currentPart.length >= 2) segments.push(currentPart);
+              if (currentPart.length >= 2) segments.push(currentPart.map(c => ({ ...f, id: `${f.id}-seg`, geometry: { ...f.geometry, coordinates: [c] } })));
               currentPart = [];
             }
           });
-          if (currentPart.length >= 2) segments.push(currentPart);
-          return segments.map((seg, idx) => ({
-            ...f,
-            id: `${f.id}-part-${idx}-${Date.now()}`,
-            geometry: { ...f.geometry, coordinates: seg }
-          }));
+          if (currentPart.length >= 2) segments.push(currentPart.map(c => ({ ...f, id: `${f.id}-seg2`, geometry: { ...f.geometry, coordinates: [c] } })));
+          return segments.flatMap(s => s);
         }
         return [f];
       });
@@ -431,17 +441,17 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
   }, [brushSize, selectedLayerId]);
 
   const addLinePoint = useCallback((lng: number, lat: number, forceNew: boolean = false) => {
-    setFeatures((prev: any) => {
+    setFeatures((prev: GeoFeatureCollection) => {
       const fts = [...prev.features];
       const lastIdx = fts.length - 1;
       const last = lastIdx >= 0 ? fts[lastIdx] : null;
       const hasCurrentLine = last && last.geometry.type === 'LineString' && last.properties?.layerId === selectedLayerId;
       const shouldAppend = !forceNew && hasCurrentLine;
 
-      if (shouldAppend) {
+      if (shouldAppend && last) {
         fts[lastIdx] = {
           ...last,
-          geometry: { ...last.geometry, coordinates: [...last.geometry.coordinates, [lng, lat]] }
+          geometry: { ...last.geometry, coordinates: [...(last.geometry.coordinates as unknown[]), [lng, lat]] }
         };
       } else {
         fts.push({
@@ -464,7 +474,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
     return layers.filter(l => (l.type === 'base' || l.type === 'image') && l.visible).map(layer => {
       const sourceId = `src-${layer.id}-${layer.type}`;
       const displayUrl = resolvedUrls[layer.id] || layer.url;
-      const sourceKey = `${sourceId}-${(layer as any)._typeVersion || 0}`;
+      const sourceKey = `${sourceId}-${(layer as unknown)._typeVersion || 0}`;
       if (!displayUrl) return null;
       return (
         <Source
@@ -482,9 +492,9 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
 
   const drawableLayers = React.useMemo(() => layers.filter(l => l.type !== 'base' && l.type !== 'image' && l.visible), [layers]);
   const featuresByLayer = React.useMemo(() => {
-    const map: Record<string, any[]> = {};
-    (features.features || []).forEach((f: any) => {
-      const lid = f.properties?.layerId;
+    const map: Record<string, GeoFeature[]> = {};
+    (features.features || []).forEach((f: GeoFeature) => {
+      const lid = f.properties?.layerId as string | undefined;
       if (lid) { if (!map[lid]) map[lid] = []; map[lid].push(f); }
     });
     return map;
@@ -515,14 +525,14 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
     const layerFeats = featuresByLayer[layer.id] || [];
     const sourceId = `draw-src-${layer.id}`;
     return (
-      <Source key={sourceId} id={sourceId} type="geojson" data={{ type: 'FeatureCollection' as const, features: layerFeats }}>
+      <Source key={sourceId} id={sourceId} type="geojson" data={{ type: 'FeatureCollection' as const, features: layerFeats as import('geojson').Feature[] }}>
         <Layer id={`draw-line-${layer.id}`} type="line" paint={{ 'line-color': layer.color || '#ef4444', 'line-width': 3, 'line-opacity': layer.opacity ?? 1 }} layout={{ 'line-join': 'round', 'line-cap': 'round' }} filter={['==', '$type', 'LineString']} />
         <Layer id={`draw-point-${layer.id}`} type="circle" paint={{ 'circle-color': layer.color || '#10b981', 'circle-radius': layer.type === 'spray' ? (brushSize / 2) : 4, 'circle-blur': layer.type === 'spray' ? 0.7 : 0, 'circle-opacity': (layer.opacity ?? 1) * 0.85 }} filter={['==', '$type', 'Point']} />
       </Source>
     );
   });
 
-  const onMapClick = useCallback((e: any) => {
+  const onMapClick = useCallback((e: MapMouseEvent) => {
     if (spacebarPanning) return;
     if (e.originalEvent?.button === 2) return;
     if (drawMode === 'none') { setSelectedMarkerId(null); return; }
@@ -541,7 +551,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
     }
   }, [drawMode, addLinePoint, saveHistorySnapshot, spacebarPanning, lineContinuous]);
 
-  const onMouseDown = useCallback((e: any) => {
+  const onMouseDown = useCallback((e: MapMouseEvent) => {
     if (spacebarPanning) return;
     if (e.originalEvent?.button === 2) return;
     if (drawMode === 'spray' || drawMode === 'line' || drawMode === 'eraser') {
@@ -556,7 +566,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
     }
   }, [drawMode, addSprayPoint, addLinePoint, eraseFeatures, saveHistorySnapshot, spacebarPanning]);
 
-  const onMouseMove = useCallback((e: any) => {
+  const onMouseMove = useCallback((e: MapMouseEvent) => {
     if (drawMode === 'eraser') setEraserPoint(e.lngLat);
     if (!isDrawing) return;
     const { lng, lat } = e.lngLat;

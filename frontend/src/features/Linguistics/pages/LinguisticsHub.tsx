@@ -20,13 +20,14 @@ interface OutletContext {
 
 interface LinguisticsHubProps {
   onOpenAdvanced?: () => void;
+  onOpenEditor?: (word: unknown) => void;
 }
 
-const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenAdvanced }) => {
+const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenAdvanced, onOpenEditor }) => {
   const { t } = useLanguage();
   const { projectName: projectParam } = useParams();
   const { openPanel, closePanel } = useRightPanelStore();
-  
+
   // Lexicon Logic
   const { 
     lexicon, rules, activeLangId, langName, stats, foundryGlyphs, 

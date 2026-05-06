@@ -33,7 +33,7 @@ const DynamicAttributeForm: React.FC<DynamicAttributeFormProps> = ({ entity, onU
       const entityValues = await entityService.getValues(entity.id);
       setValues(entityValues);
     } catch (err) {
-      console.error('Error loading EAV data:', err);
+      // [LOG REMOVED]
     } finally {
       setLoading(false);
     }
@@ -60,7 +60,7 @@ const DynamicAttributeForm: React.FC<DynamicAttributeFormProps> = ({ entity, onU
       
       if (onUpdate) onUpdate();
     } catch (err) {
-      console.error('Error saving EAV value:', err);
+      // [LOG REMOVED]
     } finally {
       setSavingId(null);
     }

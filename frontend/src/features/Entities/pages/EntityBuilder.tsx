@@ -127,7 +127,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
           }
         }
       } catch (err) {
-        console.error(err);
+        // [LOG REMOVED]
       } finally {
         setLoading(false);
       }
@@ -158,7 +158,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
       const templates = await templateService.getAll(projectId || 1);
       setAvailableTemplatesLocal(templates);
     } catch (err) {
-      console.error('Error refreshing templates:', err);
+      // [LOG REMOVED]
     }
   };
   // --- SIDEBAR SYNC ---
@@ -188,9 +188,9 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
     try {
       let savedEntity: Entidad;
       if (isCreation) {
-        savedEntity = await entityService.create(entity as any);
+        savedEntity = await entityService.create(entity as Omit<Entidad, 'id' | 'fecha_creacion' | 'fecha_actualizacion' | 'borrado'>);
       } else {
-        await entityService.update(entity.id!, entity as any);
+        await entityService.update(entity.id!, entity as Partial<Entidad>);
         const refreshed = await entityService.getById(entity.id!);
         savedEntity = refreshed ?? (entity as unknown as Entidad);
       }
@@ -230,7 +230,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
         })));
       }
     } catch (err) {
-      console.error(err);
+      // [LOG REMOVED]
     } finally {
       setSaving(false);
     }
@@ -296,7 +296,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
         }]);
       }
     } catch (err) {
-      console.error('Error dropping attribute:', err);
+      // [LOG REMOVED]
     }
   };
 

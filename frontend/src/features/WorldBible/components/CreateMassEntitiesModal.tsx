@@ -10,7 +10,7 @@ interface CreateMassEntitiesModalProps {
   onCreated: () => void;
   projectId: number;
   allFolders: Carpeta[];
-  handleOpenCreateModal?: (parentFolder?: any) => void;
+  handleOpenCreateModal?: (parentFolder?: unknown) => void;
 }
 
 interface AttributeValue {
@@ -65,7 +65,7 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
       const tpls = await templateService.getAll(projectId);
       setAvailableTemplates(tpls);
     } catch (err) {
-      console.error("Error loading templates for mass create:", err);
+      // [LOG REMOVED]
     }
   };
 
@@ -134,7 +134,7 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
       setNameList([]);
       setSelectedAttributes([]);
     } catch (err) {
-      console.error("Error in mass creation:", err);
+      // [LOG REMOVED]
     } finally {
       setLoading(false);
     }

@@ -4,7 +4,7 @@ import Switch from '@atoms/Switch';
 
 interface MapSearchBoxProps {
   onSearch: (term: string) => void;
-  onFilterChange: (filters: any) => void;
+  onFilterChange: (filters: unknown) => void;
   availableMarkers: { label: string; lat: number; lng: number }[];
   filters: {
     cities: boolean;

@@ -2,12 +2,12 @@ import React from 'react';
 import { useLanguage } from '@context/LanguageContext';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 
-const MapEditorSettings = ({ settings, onUpdate }: { settings: any, onUpdate: any }) => {
+const MapEditorSettings = ({ settings, onUpdate }: { settings: unknown, onUpdate: unknown }) => {
  const { t } = useLanguage();
 
  if (!settings) return null;
 
- const handleChange = (key: any, value: any) => {
+ const handleChange = (key: unknown, value: unknown) => {
  onUpdate({ ...settings, [key]: value });
  };
 

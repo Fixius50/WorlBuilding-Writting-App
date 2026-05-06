@@ -39,8 +39,8 @@ const Login = () => {
 
       await setUser(userData);
       navigate('/');
-    } catch (err: any) {
-      setError(err.message || 'Authentication failed');
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Authentication failed');
     } finally {
       setLoading(false);
     }

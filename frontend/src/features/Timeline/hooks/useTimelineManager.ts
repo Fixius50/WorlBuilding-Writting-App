@@ -55,7 +55,7 @@ export const useTimelineManager = (folderId: string | undefined) => {
         setLinkedEntities(entityMap);
       }
     } catch (err) {
-      console.error("Error loading dimension data:", err);
+      // [LOG REMOVED]
     } finally {
       setLoading(false);
     }
@@ -96,7 +96,7 @@ export const useTimelineManager = (folderId: string | undefined) => {
       await loadData();
       return newEvent;
     } catch (err) {
-      console.error("Failed to add event", err);
+      // [LOG REMOVED]
     }
   };
 
@@ -105,7 +105,7 @@ export const useTimelineManager = (folderId: string | undefined) => {
       await timelineService.delete(id);
       await loadData();
     } catch (err) {
-      console.error("Failed to delete event", err);
+      // [LOG REMOVED]
     }
   };
 
@@ -114,7 +114,7 @@ export const useTimelineManager = (folderId: string | undefined) => {
       await timelineService.update(id, data);
       await loadData();
     } catch (err) {
-      console.error("Failed to update event", err);
+      // [LOG REMOVED]
     }
   };
 
@@ -128,7 +128,7 @@ export const useTimelineManager = (folderId: string | undefined) => {
       }
       await loadData();
     } catch (err) {
-      console.error("Link error:", err);
+      // [LOG REMOVED]
     }
   };
 
@@ -138,7 +138,7 @@ export const useTimelineManager = (folderId: string | undefined) => {
       await entityService.move(entityId, Number(folderId));
       await loadData();
     } catch (err) {
-      console.error("Failed to import dimension", err);
+      // [LOG REMOVED]
     }
   };
 

@@ -7,6 +7,7 @@ import { entityService } from '@repositories/entityService';
 import { Carpeta, Proyecto, Plantilla, FolderType } from '@domain/models/database';
 import GlobalRightPanel from './GlobalRightPanel';
 import ConfirmationModal from '@organisms/ConfirmationModal';
+import { useSettingsStore } from '@store/useSettingsStore';
 import ControlPanel from '@features/Graph/components/ControlPanel';
 import { syncService } from '@network/syncService';
 import { useAppStore } from '@store/useAppStore';
@@ -56,6 +57,7 @@ const ArchitectLayout: React.FC = () => {
 
   // General Settings State
   const panelMode = useAppStore(state => state.panelMode);
+  const notifications = useSettingsStore(state => state.notifications);
 
 
   // Bible Explorer State
@@ -97,12 +99,11 @@ const ArchitectLayout: React.FC = () => {
     if (!projectName) return;
     
     const interval = setInterval(async () => {
-      console.log(`[AutoSync] Iniciando backup automático para: ${projectName}`);
       const res = await syncService.exportToDisk(projectName);
       if (res.success) {
-        console.log(`[AutoSync] Backup exitoso: ${res.message}`);
+        useSettingsStore.getState().addNotification("Copia de seguridad automática realizada", "success");
       } else {
-        console.warn(`[AutoSync] Falló el backup automático: ${res.message}`);
+        useSettingsStore.getState().addNotification("Error en copia automática", "error");
       }
     }, 5 * 60 * 1000); // 5 minutos
 
@@ -121,9 +122,8 @@ const ArchitectLayout: React.FC = () => {
 
   // CRUD Handlers
   const handleCreateSimpleFolder = useCallback(async (parentId: number | null = null, type: string = 'FOLDER') => {
-    console.log("Creando carpeta...", { projectId, parentId, type });
     if (!projectId) {
-      console.error("No se puede crear carpeta: projectId es null");
+      useSettingsStore.getState().addNotification("Error: Proyecto no identificado", "error");
       return;
     }
     try {
@@ -134,13 +134,13 @@ const ArchitectLayout: React.FC = () => {
         parentId,
         type as FolderType
       );
-      console.log("Carpeta creada exitosamente:", newFolder);
+      // [LOG REMOVED]
       await loadFolders(projectId);
       window.dispatchEvent(new CustomEvent('folder-update', {
         detail: { folderId: parentId, type: 'folder', item: newFolder, expand: !!parentId }
       }));
     } catch (err) {
-      console.error("Error creating folder:", err);
+      useSettingsStore.getState().addNotification("Error al crear carpeta", "error");
     }
   }, [projectId, loadFolders, t]);
 
@@ -166,7 +166,7 @@ const ArchitectLayout: React.FC = () => {
       
       return newEntity;
     } catch (err) {
-      console.error("Error in quick creation:", err);
+      // [LOG REMOVED]
     }
   }, [projectId]);
 
@@ -175,7 +175,7 @@ const ArchitectLayout: React.FC = () => {
       await folderService.update(folderId, newName, projectId!);
       if (projectId) await loadFolders(projectId);
     } catch (err) {
-      console.error("Error renaming folder:", err);
+      // [LOG REMOVED]
     }
   }, [projectId, loadFolders]);
 
@@ -207,7 +207,7 @@ const ArchitectLayout: React.FC = () => {
       }
       await loadFolders(projectId);
     } catch (err) {
-      console.error("Deletion failed:", err);
+      // [LOG REMOVED]
     } finally {
       setDeletionTarget(null);
       setConfirmOpen(false);
@@ -430,6 +430,17 @@ const ArchitectLayout: React.FC = () => {
         confirmText={t('common.delete')}
         type="danger"
       />
+      {/* TOAST NOTIFICATIONS */}
+      <div className="fixed top-24 right-8 z-[100] flex flex-col gap-3 pointer-events-none">
+        {notifications.map(n => (
+          <div key={n.id} className="flex items-center gap-3 px-6 py-4 monolithic-panel border border-foreground/40 rounded-none shadow-2xl animate-slide-in-right pointer-events-auto">
+            <span className={`material-symbols-outlined ${n.type === 'success' ? 'text-emerald-400' : n.type === 'error' ? 'text-red-500' : 'text-primary'}`}>
+              {n.type === 'success' ? 'check_circle' : n.type === 'error' ? 'report' : 'info'}
+            </span>
+            <span className="text-sm font-bold">{n.message}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

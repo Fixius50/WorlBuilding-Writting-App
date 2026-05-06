@@ -24,7 +24,7 @@ export class SettingsUseCase {
       const data = await projectService.list();
       return data || [];
     } catch (err) {
-      console.error("Error loading projects for sync", err);
+      // [LOG REMOVED]
       return [];
     }
   }
@@ -34,7 +34,7 @@ export class SettingsUseCase {
       const res = await syncService.exportToDisk('worldbuilding_master');
       return res;
     } catch (err) {
-      console.error("Backup error", err);
+      // [LOG REMOVED]
       return { success: false, message: 'Error en la sincronización con el servidor' };
     }
   }
@@ -47,7 +47,7 @@ export class SettingsUseCase {
       await sqlocal.overwriteDatabaseFile(file);
       return { success: true, message: 'Universo importado con éxito. Por favor recarga la página.' };
     } catch (err: unknown) {
-      console.error("Import error", err);
+      // [LOG REMOVED]
       return { success: false, message: 'Error al sobreescribir la base de datos local' };
     }
   }
@@ -60,7 +60,7 @@ export class SettingsUseCase {
         return JSON.parse(stored);
       }
     } catch (e) {
-      console.error("Failed to parse user settings", e);
+      // [LOG REMOVED]
     }
     return null;
   }
@@ -82,7 +82,7 @@ export class SettingsUseCase {
         };
       }
     } catch (e) {
-      console.error("Failed to parse app settings", e);
+      // [LOG REMOVED]
     }
     return null;
   }
@@ -102,7 +102,7 @@ export class SettingsUseCase {
         return JSON.parse(saved);
       }
     } catch (e) {
-      console.error("Failed to parse sync projects", e);
+      // [LOG REMOVED]
     }
     return [];
   }

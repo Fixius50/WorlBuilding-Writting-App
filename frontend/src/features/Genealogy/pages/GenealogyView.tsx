@@ -83,7 +83,7 @@ const GenealogyView: React.FC = () => {
         ['FAMILIAR', 'PADRE', 'MADRE', 'HIJO', 'HIJA', 'CONYUGE', 'ESPOSO', 'ESPOSA'].includes(r.tipo.toUpperCase())
       );
 
-      const initialNodes: Node[] = characters.map((c: { id: { toString: () => any; }; nombre: any; tipo: any; }) => ({
+      const initialNodes: Node[] = characters.map((c: { id: { toString: () => any; }; nombre: unknown; tipo: unknown; }) => ({
         id: c.id.toString(),
         data: { label: c.nombre, tipo: c.tipo },
         position: { x: 0, y: 0 },
@@ -119,7 +119,7 @@ const GenealogyView: React.FC = () => {
       setNodes(layoutedNodes);
       setEdges(layoutedEdges);
     } catch (error) {
-      console.error("Error loading genealogy data:", error);
+      // [LOG REMOVED]
     } finally {
       setLoading(false);
     }

@@ -52,7 +52,7 @@ export const useAppStore = create<AppState>((set) => ({
         isInitialized: true // Avisamos a la app que ya puede renderizarse
       });
     } catch (error) {
-      console.error("Error cargando ajustes desde SQLite:", error);
+      // [LOG REMOVED]
       set({ isInitialized: true });
     }
   },

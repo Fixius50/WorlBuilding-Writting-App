@@ -64,7 +64,7 @@ const CharacterView: React.FC<CharacterViewProps> = ({ id }) => {
         });
       }
     } catch (err) {
-      console.error("Error loading character:", err);
+      // [LOG REMOVED]
     } finally {
       setLoading(false);
     }
@@ -86,7 +86,7 @@ const CharacterView: React.FC<CharacterViewProps> = ({ id }) => {
       });
       setIsEditing(false);
     } catch (err) {
-      console.error("Error saving:", err);
+      // [LOG REMOVED]
     }
   };
 
@@ -96,7 +96,7 @@ const CharacterView: React.FC<CharacterViewProps> = ({ id }) => {
       if (entity) await entityService.delete(entity.id);
       navigate(-1);
     } catch (err) {
-      console.error(err);
+      // [LOG REMOVED]
     }
   };
 

@@ -37,7 +37,7 @@ const LocationView = ({ id }: { id: string | number }) => {
         });
       }
     } catch (err) {
-      console.error("Error loading location:", err);
+      // [LOG REMOVED]
     } finally {
       setLoading(false);
     }
@@ -46,7 +46,7 @@ const LocationView = ({ id }: { id: string | number }) => {
   const handleSave = async () => {
     if (!entity || !location) return;
     try {
-      const { nombre, tipo, descripcion, ...extra } = location as any;
+      const { nombre, tipo, descripcion, ...extra } = location as LocationData;
 
       await entityService.update(entity.id, {
         nombre,
@@ -56,7 +56,7 @@ const LocationView = ({ id }: { id: string | number }) => {
       });
       setIsEditing(false);
     } catch (err) {
-      console.error("Error saving:", err);
+      // [LOG REMOVED]
     }
   };
 

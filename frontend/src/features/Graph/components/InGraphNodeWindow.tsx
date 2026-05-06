@@ -5,9 +5,11 @@ import RelationshipManager from '@features/Relationships/components/Relationship
 import { entityService } from '@repositories/entityService';
 import { folderService } from '@repositories/folderService';
 
-const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned }: { node: any, elements: any[], onClose?: () => void, onCenter?: () => void, onLock?: () => void, isPinned?: boolean }) => {
+type GraphNode = { id: string; group?: string; data: Record<string, unknown>; label?: string; nombre?: string; category?: string; isFull?: boolean; isStub?: boolean; };
+
+const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned }: { node: GraphNode | null, elements: GraphNode[], onClose?: () => void, onCenter?: () => void, onLock?: () => void, isPinned?: boolean }) => {
  const [activeTab, setActiveTab] = useState('ESENCIA'); // ESENCIA, RELACIONES, CRÓNICA
- const [details, setDetails] = useState<unknown>(null);
+ const [details, setDetails] = useState<Record<string, unknown> | null>(null);
  const [loading, setLoading] = useState(false);
 
  // Fetch full data if not present
@@ -29,7 +31,7 @@ const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned
     setDetails(response);
   }
  } catch (err) {
- console.error(`Error fetching details for node ${node.id}:`, err);
+ // [LOG REMOVED]
  } finally {
  setLoading(false);
  }
@@ -43,7 +45,7 @@ const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned
 
  if (!node) return null;
 
- const data = details || node; // Use fetched details if available
+ const data = (details || node) as Record<string, unknown>;
 
  const categoryColor = node.category === 'Individual' ? 'border-indigo-500/50' :
  node.category === 'Location' ? 'border-emerald-500/50' :
