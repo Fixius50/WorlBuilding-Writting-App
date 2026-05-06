@@ -100,15 +100,16 @@ const WritingView = () => {
     }
   };
 
-  const handleContentChange = (newContent: string) => {
-    if (!pages[currentPageIndex]) return;
+  const handleContentChange = (newContent: string, index?: number) => {
+    const targetIndex = index !== undefined ? index : currentPageIndex;
+    if (!pages[targetIndex]) return;
     const updatedPages = [...pages];
-    updatedPages[currentPageIndex].contenido = newContent;
+    updatedPages[targetIndex].contenido = newContent;
     setPages(updatedPages);
 
     if (saveTimeout.current) clearTimeout(saveTimeout.current);
     saveTimeout.current = setTimeout(() => {
-      savePage(updatedPages[currentPageIndex]);
+      savePage(updatedPages[targetIndex]);
     }, 800);
   };
 
@@ -397,15 +398,15 @@ const WritingView = () => {
   }
 
   return (
-    <div className="flex-1 flex w-full h-full bg-[#111] relative overflow-hidden font-sans text-foreground/60">
-      <div className="flex-1 flex flex-col relative z-10 overflow-hidden">
-        <main className="flex-1 flex flex-col relative no-scrollbar bg-[#1e1e1e]">
+    <div className="flex-1 flex w-full h-full bg-[#111] relative font-sans text-foreground/60">
+      <div className="flex-1 flex flex-col relative z-10">
+        <main className="flex-1 flex flex-col relative bg-[#1e1e1e]">
           {currentPage && (
              <ZenEditor 
-                content={currentPage.contenido || ''} 
-                title={currentPage.titulo || ''}
+                pages={pages}
+                currentPageIndex={currentPageIndex}
                 onUpdate={handleContentChange} 
-                onTitleChange={(newTitle) => handleTitleChangeInternal(currentPageIndex, newTitle)}
+                onTitleChange={(index, newTitle) => handleTitleChangeInternal(index, newTitle)}
                 onSnapshot={handleSnapshot}
                 snapshots={snapshots}
                 onRestoreSnapshot={handleRestoreSnapshot}

@@ -12,25 +12,41 @@ import { SuggestionOptions } from '@tiptap/suggestion'
 const suggestion: Omit<SuggestionOptions, 'editor'> = {
   items: async ({ query }: { query: string }) => {
     try {
-      // 1. Obtener el projectId actual desde el store global
-      const projectId = useAppStore.getState().lastProjectId;
+      let projectId = useAppStore.getState().lastProjectId;
       
+      // Fallback: Si el store no tiene el ID, intentamos obtenerlo por el nombre del proyecto en la URL
       if (!projectId) {
-        console.warn('No hay un proyecto activo para buscar menciones.');
+        const pathParts = window.location.pathname.split('/');
+        const projectNameFromUrl = pathParts[2]; 
+        
+        if (projectNameFromUrl && projectNameFromUrl !== 'local') {
+          try {
+            const { projectService } = await import('@repositories/projectService');
+            const project = await projectService.getByName(projectNameFromUrl);
+            if (project) {
+              projectId = project.id;
+              useAppStore.getState().setLastProjectId(project.id);
+            }
+          } catch (e) {
+             console.error("Error en fallback de menciones:", e);
+          }
+        }
+      }
+
+      if (!projectId) {
         return [];
       }
 
       // 2. Obtener todas las entidades del proyecto desde SQLite
-      const entities = await entityService.getAllByProject(projectId);
+      const entities = await entityService.getAllByProject(Number(projectId));
 
       // 3. Filtrar por el query del usuario (case-insensitive)
-      return entities
+      return (entities || [])
         .filter(item => 
           item.nombre.toLowerCase().includes(query.toLowerCase())
         )
-        .slice(0, 10) // Limitar a 10 resultados por rendimiento
+        .slice(0, 10) 
         .map(item => {
-          // Extraer metadatos si existen
           const extra = item.contenido_json 
             ? (typeof item.contenido_json === 'string' ? JSON.parse(item.contenido_json) : item.contenido_json) 
             : {};

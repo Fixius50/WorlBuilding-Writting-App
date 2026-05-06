@@ -8,43 +8,51 @@ export default {
       {
         title: 'Encabezado 1',
         icon: 'format_h1',
-        command: ({ editor, range }: any) => {
-          editor.chain().focus().deleteRange(range).setNode('heading', { level: 1 }).run();
+        command: ({ editor }: any) => {
+          editor.chain().focus().toggleHeading({ level: 1 }).run();
         },
       },
       {
         title: 'Encabezado 2',
         icon: 'format_h2',
-        command: ({ editor, range }: any) => {
-          editor.chain().focus().deleteRange(range).setNode('heading', { level: 2 }).run();
+        command: ({ editor }: any) => {
+          editor.chain().focus().toggleHeading({ level: 2 }).run();
         },
       },
       {
         title: 'Lista de viñetas',
         icon: 'format_list_bulleted',
-        command: ({ editor, range }: any) => {
-          editor.chain().focus().deleteRange(range).toggleBulletList().run();
+        command: ({ editor }: any) => {
+          editor.chain().focus().toggleBulletList().run();
         },
       },
       {
         title: 'Cita',
         icon: 'format_quote',
-        command: ({ editor, range }: any) => {
-          editor.chain().focus().deleteRange(range).toggleBlockquote().run();
+        command: ({ editor }: any) => {
+          editor.chain().focus().toggleBlockquote().run();
         },
       },
       {
         title: 'Separador',
         icon: 'horizontal_rule',
-        command: ({ editor, range }: any) => {
-          editor.chain().focus().deleteRange(range).setHorizontalRule().run();
+        command: ({ editor }: any) => {
+          editor.chain().focus().setHorizontalRule().run();
         },
       },
     ].filter(item => item.title.toLowerCase().startsWith(query.toLowerCase()));
   },
 
   command: ({ editor, range, props }: any) => {
-    props.command({ editor, range });
+    // Usamos una transacción única para borrar y ejecutar, evitando saltos de línea
+    editor.chain()
+      .focus()
+      .deleteRange(range)
+      .run();
+    
+    // Ejecutamos la lógica del ítem (ej: toggleHeading)
+    // Pasamos el editor ya enfocado
+    props.command({ editor });
   },
 
   render: () => {

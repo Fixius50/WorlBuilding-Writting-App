@@ -83,6 +83,8 @@ const ArchitectLayout: React.FC = () => {
         if (project) {
           setLoadedProject(project);
           setProjectId(project.id);
+          // Actualizar el store global para que las menciones y sugerencias sepan en qué proyecto están
+          await useAppStore.getState().setLastProjectId(project.id);
           await loadFolders(project.id);
         }
       }

@@ -34,6 +34,8 @@ const SlashMenuList = forwardRef((props: SlashMenuListProps, ref) => {
         return true;
       }
       if (event.key === 'Enter') {
+        event.preventDefault();
+        event.stopPropagation();
         selectItem(selectedIndex);
         return true;
       }

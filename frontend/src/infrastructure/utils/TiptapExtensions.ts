@@ -4,7 +4,28 @@ import Mention from '@tiptap/extension-mention'
 import CharacterCount from '@tiptap/extension-character-count'
 import suggestion from './suggestion'
 import slashSuggestion from './slashSuggestion'
-import { AnyExtension } from '@tiptap/core'
+import { AnyExtension, Extension } from '@tiptap/core'
+import { Suggestion } from '@tiptap/suggestion'
+
+const SlashCommands = Extension.create({
+  name: 'slashCommands',
+  addOptions() {
+    return {
+      suggestion: {
+        char: '/',
+        ...slashSuggestion,
+      },
+    }
+  },
+  addProseMirrorPlugins() {
+    return [
+      Suggestion({
+        editor: this.editor,
+        ...this.options.suggestion,
+      }),
+    ]
+  },
+})
 
 /**
  * Colección centralizada de extensiones para el editor Tiptap (ZenEditor).
@@ -21,17 +42,7 @@ export const getZenExtensions = (placeholderText: string = 'Escribe tu historia 
     },
     suggestion,
   }),
-  // Extensión para Comandos de Barra (Slash Menu)
-  Mention.extend({
-    name: 'slashMenu',
-  }).configure({
-    HTMLAttributes: { 
-        class: 'slash-command text-primary font-bold' 
-    },
-    suggestion: {
-      ...slashSuggestion,
-      char: '/',
-    },
-  }),
+  // Usamos nuestra nueva extensión funcional para evitar problemas de nodos fantasmas
+  SlashCommands,
   CharacterCount,
 ];

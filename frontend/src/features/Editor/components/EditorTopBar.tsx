@@ -1,7 +1,5 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import MonolithicPanel from '@atoms/MonolithicPanel';
-import Button from '@atoms/Button';
 
 interface EditorTopBarProps {
   title: string;
@@ -76,53 +74,64 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                </div>
             </div>
 
-            {/* SNAPSHOTS */}
-            <div className="relative">
-              <button
-                onClick={() => setShowSnapshots(!showSnapshots)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 border border-foreground/10 transition-all text-[9px] font-black uppercase tracking-widest text-foreground/40 hover:text-primary group"
-              >
-                <span className="material-symbols-outlined text-sm">history</span>
-                <span>Snapshots</span>
-                <span className="material-symbols-outlined text-sm transition-transform duration-300" style={{ transform: showSnapshots ? 'rotate(180deg)' : 'rotate(0)' }}>expand_more</span>
-              </button>
+            {/* SNAPSHOTS & BACK */}
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <button
+                  onClick={() => setShowSnapshots(!showSnapshots)}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 border border-foreground/10 transition-all text-[9px] font-black uppercase tracking-widest text-foreground/40 hover:text-primary group"
+                >
+                  <span className="material-symbols-outlined text-sm">history</span>
+                  <span>Snapshots</span>
+                  <span className="material-symbols-outlined text-sm transition-transform duration-300" style={{ transform: showSnapshots ? 'rotate(180deg)' : 'rotate(0)' }}>expand_more</span>
+                </button>
 
-              {showSnapshots && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setShowSnapshots(false)} />
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-background border border-foreground/10 shadow-2xl z-50 p-2 animate-in fade-in zoom-in-95 duration-200">
-                    <div className="p-3 border-b border-foreground/5 flex justify-between items-center mb-2">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-foreground/40">Versiones Disponibles</span>
-                      <button 
-                        onClick={() => { onManualSnapshot(); setShowSnapshots(false); }}
-                        className="text-primary hover:text-primary/80 transition-colors"
-                        title="Crear Snapshot ahora"
-                      >
-                        <span className="material-symbols-outlined text-sm">add_circle</span>
-                      </button>
+                {showSnapshots && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowSnapshots(false)} />
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-background border border-foreground/10 shadow-2xl z-50 p-2 animate-in fade-in zoom-in-95 duration-200">
+                      <div className="p-3 border-b border-foreground/5 flex justify-between items-center mb-2">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-foreground/40">Versiones Disponibles</span>
+                        <button 
+                          onClick={() => { onManualSnapshot(); setShowSnapshots(false); }}
+                          className="text-primary hover:text-primary/80 transition-colors"
+                          title="Crear Snapshot ahora"
+                        >
+                          <span className="material-symbols-outlined text-sm">add_circle</span>
+                        </button>
+                      </div>
+                      <div className="max-h-60 overflow-y-auto custom-scrollbar">
+                        {snapshots.length === 0 ? (
+                          <div className="p-4 text-center text-[10px] text-foreground/30 italic">No hay capturas previas</div>
+                        ) : (
+                          snapshots.map((snap) => (
+                            <button
+                              key={snap.id}
+                              onClick={() => { onRestoreSnapshot(snap.id); setShowSnapshots(false); }}
+                              className="w-full text-left p-3 hover:bg-primary/10 transition-colors flex items-center justify-between group"
+                            >
+                              <div className="flex flex-col">
+                                <span className="text-[10px] text-foreground font-bold">{new Date(snap.timestamp).toLocaleString()}</span>
+                                <span className="text-[9px] text-foreground/40">ID: {snap.id}</span>
+                              </div>
+                              <span className="material-symbols-outlined text-sm opacity-0 group-hover:opacity-100 text-primary transition-opacity">restore</span>
+                            </button>
+                          ))
+                        )}
+                      </div>
                     </div>
-                    <div className="max-h-60 overflow-y-auto custom-scrollbar">
-                      {snapshots.length === 0 ? (
-                        <div className="p-4 text-center text-[10px] text-foreground/30 italic">No hay capturas previas</div>
-                      ) : (
-                        snapshots.map((snap) => (
-                          <button
-                            key={snap.id}
-                            onClick={() => { onRestoreSnapshot(snap.id); setShowSnapshots(false); }}
-                            className="w-full text-left p-3 hover:bg-primary/10 transition-colors flex items-center justify-between group"
-                          >
-                            <div className="flex flex-col">
-                              <span className="text-[10px] text-foreground font-bold">{new Date(snap.timestamp).toLocaleString()}</span>
-                              <span className="text-[9px] text-foreground/40">ID: {snap.id}</span>
-                            </div>
-                            <span className="material-symbols-outlined text-sm opacity-0 group-hover:opacity-100 text-primary transition-opacity">restore</span>
-                          </button>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                </>
-              )}
+                  </>
+                )}
+              </div>
+
+              {/* BOTÓN VOLVER ATRÁS */}
+              <button
+                onClick={() => window.history.back()}
+                className="flex items-center gap-2 px-3 py-1.5 bg-foreground/5 hover:bg-red-500/10 border border-foreground/10 hover:border-red-500/30 transition-all text-[9px] font-black uppercase tracking-widest text-foreground/40 hover:text-red-400 group"
+              >
+                <span className="material-symbols-outlined text-sm">arrow_back</span>
+                <span>Volver</span>
+              </button>
             </div>
           </div>
 
