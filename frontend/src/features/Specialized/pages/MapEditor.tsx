@@ -236,7 +236,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
     };
 
     processImageLayers();
-  }, [layers, resolvedUrls]); 
+  }, [layers]); // Eliminado resolvedUrls de las dependencias para evitar bucle
 
   useEffect(() => {
     openPanel('bulk', 0, mapEntity?.nombre || 'Editor de Atlas');
@@ -332,7 +332,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
     loadAllEntities();
   }, [entityId, mode, projectId, loadMap, loadAllEntities]);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!mapEntity) return;
     try {
       const currentContent = typeof mapEntity.contenido_json === 'string'
@@ -364,7 +364,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
         if (onSave) await onSave(); else navigate(-1);
       }
     } catch { }
-  };
+  }, [mapEntity, layers, markers, features, is3D, viewState, mode, entityId, projectId, targetFolderId, onSave, navigate]);
 
   const handleFileUpload = (layerId: string, file: File) => {
     const reader = new FileReader();
