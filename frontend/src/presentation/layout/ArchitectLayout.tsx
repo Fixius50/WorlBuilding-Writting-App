@@ -231,8 +231,8 @@ const ArchitectLayout: React.FC = () => {
   }
 
   const sidebarClasses = panelMode === 'floating'
-    ? `fixed top-[2vh] left-[2vw] h-[96vh] rounded-none border border-foreground/10 shadow-2xl z-50 transition-all duration-300 flex flex-col monolithic-panel ${leftOpen ? 'w-64 opacity-100 translate-y-0' : 'w-64 opacity-0 -translate-y-4 pointer-events-none'}`
-    : `fixed top-0 left-0 h-full monolithic-panel border-y-0 border-l-0 shadow-2xl z-50 ${panelMode === 'binder' ? '' : 'transition-all duration-500'} flex flex-col rounded-none ${leftOpen ? (panelMode === 'binder' && rightOpen ? 'w-0 -translate-x-full' : 'w-64 translate-x-0') : 'w-64 -translate-x-full'}`;
+    ? `fixed top-[2vh] left-[2vw] h-[96vh] rounded-none border border-foreground/10 shadow-2xl z-[200] transition-all duration-300 flex flex-col monolithic-panel ${leftOpen ? 'w-64 opacity-100 translate-y-0' : 'w-64 opacity-0 -translate-y-4 pointer-events-none'}`
+    : `fixed top-0 left-0 h-full monolithic-panel border-y-0 border-l-0 shadow-2xl z-[200] ${panelMode === 'binder' ? '' : 'transition-all duration-500'} flex flex-col rounded-none ${leftOpen ? (panelMode === 'binder' && rightOpen ? 'w-0 -translate-x-full' : 'w-64 translate-x-0') : 'w-64 -translate-x-full'}`;
 
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden bg-background text-foreground font-sans selection:bg-primary/30">
