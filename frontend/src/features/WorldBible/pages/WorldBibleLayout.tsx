@@ -6,6 +6,8 @@ import BibleTableView from '../components/BibleTableView';
 import CreateNodeModal from '../components/CreateNodeModal';
 import { FolderType } from '@domain/models/database';
 import { ArchitectContext } from '@domain/models/ui';
+import { folderService } from '@repositories/folderService';
+import { entityService } from '@repositories/entityService';
 
 
 const WorldBibleLayout: React.FC = () => {
@@ -20,6 +22,9 @@ const WorldBibleLayout: React.FC = () => {
   const [viewMode, setViewMode] = useState<'folders' | 'table'>('folders');
   const [creationModalOpen, setCreationModalOpen] = useState(false);
   const [targetParent, setTargetParent] = useState<Carpeta | null>(null);
+  
+  const [localEntities, setLocalEntities] = useState<any[]>([]);
+  const [localFolders, setLocalFolders] = useState<Carpeta[]>([]);
 
   // Determinar si estamos en la raíz o en profundidad
   const isRoot = useMemo(() => {
@@ -73,24 +78,79 @@ const WorldBibleLayout: React.FC = () => {
     setCreationModalOpen(true);
   };
 
-  const handleCreateSubmit = async (formData: { nombre: string; tipo: unknown }) => {
+  React.useEffect(() => {
+    const loadData = async () => {
+      if (!architectContext?.projectId) return;
+      if (isRoot) {
+        const roots = (architectContext.folders || []).filter(f => !f.padre_id);
+        setLocalFolders(roots);
+        setLocalEntities([]);
+      } else {
+        const match = location.pathname.match(/\/folder\/(\d+)/);
+        if (match) {
+          const currentFolderId = Number(match[1]);
+          const ents = await entityService.getByFolder(currentFolderId);
+          setLocalEntities(ents);
+          setLocalFolders([]);
+        }
+      }
+    };
+    loadData();
+    window.addEventListener('folder-update', loadData);
+    window.addEventListener('entity-update', loadData);
+    return () => {
+      window.removeEventListener('folder-update', loadData);
+      window.removeEventListener('entity-update', loadData);
+    };
+  }, [isRoot, location.pathname, architectContext?.projectId, architectContext?.folders]);
+
+  const handleDeleteEntity = async (id: number) => {
+    if (!confirm('¿Eliminar esta entidad?')) return;
+    try {
+      await entityService.delete(id);
+      window.dispatchEvent(new CustomEvent('entity-update'));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleCreateSubmit = async (rawFormData: unknown) => {
     if (!architectContext?.projectId) return;
     
-    const isFolderType = formData.tipo === 'FOLDER' || formData.tipo === 'TIMELINE';
+    const formData = rawFormData as { nombre: string; descripcion?: string; tipo: unknown };
     
     try {
-      if (isFolderType) {
-        if (architectContext.handleCreateSimpleFolder) {
-          await architectContext.handleCreateSimpleFolder(targetParent ? targetParent.id : null, formData.tipo as string);
-        }
+      if (isRoot) {
+        // Root: Solo creamos carpetas
+        await folderService.create(
+          formData.nombre,
+          architectContext.projectId,
+          null,
+          'FOLDER'
+        );
+        window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: null } }));
       } else {
-        // Creación rápida de ENTIDAD (Personaje, Mapa, etc.)
-        if (architectContext.handleCreateQuickEntity && targetParent) {
-          await architectContext.handleCreateQuickEntity(targetParent.id, formData.nombre, formData.tipo as string);
+        // No root: Solo creamos entidades
+        const currentFolderId = Number(location.pathname.match(/\/folder\/(\d+)/)?.[1]);
+        if (currentFolderId) {
+          const baseSlug = formData.nombre.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+          await entityService.create({
+            nombre: formData.nombre,
+            descripcion: formData.descripcion || '',
+            tipo: (formData.tipo as string) || 'Entidad',
+            carpeta_id: currentFolderId,
+            project_id: architectContext.projectId,
+            slug: baseSlug,
+            contenido_json: null,
+            folder_slug: null,
+            imagen_url: null
+          });
+          window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: currentFolderId } }));
+          window.dispatchEvent(new CustomEvent('entity-update'));
         }
       }
     } catch (err) {
-      // [LOG REMOVED]
+      console.error(err);
     }
     
     setCreationModalOpen(false);
@@ -213,9 +273,11 @@ const WorldBibleLayout: React.FC = () => {
           {(!isRoot || viewMode === 'folders') ? (
             <Outlet context={{
               ...architectContext,
-              folders: rootFolders, 
+              folders: localFolders,
+              entities: localEntities,
               allFolders: architectContext.folders || [],
               handleOpenCreateModal,
+              handleDeleteEntity,
             }} />
           ) : (
             <BibleTableView 

@@ -5,12 +5,14 @@ import { useLanguage } from '@context/LanguageContext';
 import { useOutletContext, useParams, useNavigate } from 'react-router-dom';
 import BibleCard from '../components/BibleCard';
 
-interface BibleContext {
+ interface BibleContext {
  handleOpenCreateModal: () => void;
  handleDeleteFolder: (id: string | number) => void;
  handleCreateSimpleFolder: (parentId: string | number | null, type: string) => void;
  handleRenameFolder: (id: string | number, name: string) => void;
+ handleDeleteEntity: (id: number) => void;
  folders: Carpeta[];
+ entities: Entidad[];
  projectId: number;
 }
 
@@ -25,35 +27,12 @@ const BibleGridView = () => {
     handleDeleteFolder,
     handleCreateSimpleFolder,
     handleRenameFolder,
+    handleDeleteEntity,
     folders = [],
+    entities = [],
     projectId
   } = useOutletContext<BibleContext>();
 
-  const [entities, setEntities] = useState<Entidad[]>([]);
-
-  const loadRootEntities = useCallback(async () => {
-    if (!projectId) return;
-    try {
-      const allEnts = await entityService.getAllByProject(projectId);
-      setEntities(allEnts.filter(e => !e.carpeta_id));
-    } catch (err) {
-      // [LOG REMOVED]
-    }
-  }, [projectId]);
-
-  useEffect(() => {
-    loadRootEntities();
-
-    const handleUpdate = (e: Event) => {
-      const { folderId } = (e as CustomEvent<{ folderId: number | null }>).detail || {};
-      if (folderId === null) {
-        loadRootEntities();
-      }
-    };
-
-    window.addEventListener('folder-update', handleUpdate);
-    return () => window.removeEventListener('folder-update', handleUpdate);
-  }, [loadRootEntities]);
 
   const { t } = useLanguage();
 
@@ -127,11 +106,11 @@ const BibleGridView = () => {
 
   {entities.map(entity => (
     <BibleCard
-      key={entity.id}
+      key={`ent-${entity.id}`}
       item={entity}
       type="entity"
-      linkTo={`/${username}/${projectName}/bible/entity/${entity.id}`}
-      onDelete={() => {}} // TODO: Implementar borrado de entidad raíz
+      linkTo={`/${username || 'local'}/${projectName}/bible/folder/${entity.carpeta_id}/entity/${entity.id}`}
+      onDelete={() => handleDeleteEntity(entity.id)}
     />
   ))}
 
