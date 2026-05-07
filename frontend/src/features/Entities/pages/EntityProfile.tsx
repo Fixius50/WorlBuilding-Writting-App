@@ -16,6 +16,9 @@ interface EntityWithExtra extends Entidad {
   valores?: Valor[];
   tags?: string;
   categoria?: string;
+  notes?: string;
+  appearance?: string;
+  images?: string[];
   carpeta?: {
     nombre: string;
   };
@@ -49,7 +52,7 @@ const EntityProfile = () => {
 
   useEffect(() => {
     if (entity?.notes) {
-      setNotes(entity.notes as string);
+      setNotes(entity.notes);
     }
   }, [entity]);
 
@@ -84,7 +87,7 @@ const EntityProfile = () => {
               <span className="material-symbols-outlined text-[14px] text-primary/50">edit_note</span>
             </div>
             <div className="bg-foreground/[0.02] border border-foreground/10 p-5 min-h-[200px] text-xs text-foreground/70 italic leading-relaxed whitespace-pre-wrap">
-              {(entity.notes as string) || "No hay notas secretas para esta entidad..."}
+              {entity.notes || "No hay notas secretas para esta entidad..."}
             </div>
           </section>
 
@@ -98,7 +101,7 @@ const EntityProfile = () => {
             </button>
           </div>
         </div>,
-        `Archivo: ${entity.nombre as string}`
+        `Archivo: ${entity.nombre}`
       );
     }
   }, [entity, notes, isEditingNotes, setCustomContent]);
@@ -164,7 +167,7 @@ const EntityProfile = () => {
   };
 
   // Parsear imágenes de la galería
-  const galleryImages = (entity.images as string[]) || [];
+  const galleryImages = entity.images || [];
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden animate-in fade-in duration-700">
@@ -183,13 +186,13 @@ const EntityProfile = () => {
           <div className="flex-1 text-center lg:text-left space-y-4">
             <div className="space-y-2">
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
-                <h1 className="text-4xl lg:text-6xl font-serif font-black text-foreground tracking-tight leading-none italic">{entity.nombre as string}</h1>
+                <h1 className="text-4xl lg:text-6xl font-serif font-black text-foreground tracking-tight leading-none italic">{entity.nombre}</h1>
                 <span className="px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] bg-primary/10 text-primary border border-primary/30">
-                  {(entity.tipo as string) || 'ENTIDAD'}
+                  {entity.tipo || 'ENTIDAD'}
                 </span>
               </div>
               <p className="text-lg text-foreground/40 font-medium italic max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                "{(entity.descripcion as string) || "Existencia sin descripción vinculada aún."}"
+                "{entity.descripcion || "Existencia sin descripción vinculada aún."}"
               </p>
             </div>
 
@@ -228,32 +231,32 @@ const EntityProfile = () => {
                     Biografía y Registro Histórico
                   </h3>
                   <div className="text-foreground/80 text-lg leading-relaxed font-serif whitespace-pre-wrap">
-                    {(entity.descripcion as string) || "Esta entidad aún no tiene registros en la historia..."}
+                    {entity.descripcion || "Esta entidad aún no tiene registros en la historia..."}
                   </div>
                 </div>
 
                 {/* Apariencia / Detalles Visuales */}
-                {!!entity.appearance && (
+                {entity.appearance && (
                   <div className="space-y-6">
                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40 flex items-center gap-3 border-b border-foreground/10 pb-4">
                       <span className="material-symbols-outlined text-lg">visibility</span>
                       Apariencia y Rasgos
                     </h3>
                     <div className="text-foreground/60 text-md leading-relaxed whitespace-pre-wrap italic">
-                      {entity.appearance as string}
+                      {entity.appearance}
                     </div>
                   </div>
                 )}
 
                 {/* Galería de imágenes */}
-                {!!entity.images && (entity.images as string[]).length > 0 && (
+                {entity.images && entity.images.length > 0 && (
                   <div className="space-y-6">
                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40 flex items-center gap-3 border-b border-foreground/10 pb-4">
                       <span className="material-symbols-outlined text-lg">photo_library</span>
                       Archivos Visuales
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {(entity.images as string[]).map((img: string, i: number) => (
+                      {entity.images.map((img: string, i: number) => (
                         <img key={i} src={img} alt="Referencia" className="w-full aspect-square object-cover border border-foreground/10 opacity-70 hover:opacity-100 transition-opacity" />
                       ))}
                     </div>
