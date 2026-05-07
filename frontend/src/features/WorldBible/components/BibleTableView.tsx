@@ -14,6 +14,7 @@ import { entityService } from '@repositories/entityService';
 import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { useLanguage } from '@context/LanguageContext';
 import { useRightPanelStore } from '@store/useRightPanelStore';
+import ConfirmationModal from '@organisms/ConfirmationModal';
 import CreateMassEntitiesModal from './CreateMassEntitiesModal';
 
 interface TableViewProps {
@@ -32,12 +33,15 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
   const [entities, setEntities] = useState<Entidad[]>([]);
   const [loading, setLoading] = useState(true);
   const [rowSelection, setRowSelection] = useState({});
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   // Consumir el store centralizado para el panel derecho
   const { openPanel, closePanel, isOpen: isPanelOpen } = useRightPanelStore();
 
   const [isMassCreateOpen, setIsMassCreateOpen] = useState(false);
   const [newEntityName, setNewEntityName] = useState('');
+  const [newEntityType, setNewEntityType] = useState('PERSONAJE');
+  const [newEntityFolderId, setNewEntityFolderId] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
   const loadEntities = async () => {
@@ -52,18 +56,24 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
   }, [projectId]);
 
 
-  const handleBulkDelete = async () => {
-    const selectedIds = Object.keys(rowSelection).map(idx => entities[Number(idx)].id);
+  const handleBulkDeleteClick = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmBulkDelete = async () => {
+    const selectedIds = Object.keys(rowSelection).map(idx => {
+      const rowIndex = Number(idx);
+      return filteredData[rowIndex]?.id;
+    }).filter(id => id !== undefined) as number[];
+
     if (!selectedIds.length) return;
     
-    if (confirm(`¿Eliminar ${selectedIds.length} entidades de forma permanente?`)) {
-      try {
-        await Promise.all(selectedIds.map(id => entityService.delete(id!)));
-        setRowSelection({});
-        loadEntities();
-      } catch (err) {
-        // [LOG REMOVED]
-      }
+    try {
+      await Promise.all(selectedIds.map(id => entityService.delete(id)));
+      setRowSelection({});
+      loadEntities();
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -82,14 +92,14 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
 
   const selectedCount = Object.keys(rowSelection).length;
 
-  // Inyectar acciones masivas en el panel lateral mediante el store
-  useEffect(() => {
-    if (selectedCount > 0) {
-      openPanel('bulk', null, `${selectedCount} Seleccionados`);
-    } else if (isPanelOpen) {
-      closePanel();
+  const handleUpdateField = async (id: number, field: string, value: any) => {
+    try {
+      await entityService.update(id, { [field]: value });
+      await loadEntities();
+    } catch (err) {
+      console.error(err);
     }
-  }, [selectedCount, openPanel, closePanel]);
+  };
 
   const handleGhostCreate = async (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && newEntityName.trim() && !isCreating) {
@@ -97,9 +107,9 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
       try {
         await entityService.create({
           nombre: newEntityName.trim(),
-          tipo: 'entidadindividual',
+          tipo: newEntityType,
           project_id: projectId,
-          carpeta_id: null,
+          carpeta_id: newEntityFolderId,
           descripcion: '',
           slug: newEntityName.trim().toLowerCase().replace(/\s+/g, '-'),
           contenido_json: null,
@@ -152,7 +162,7 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
     columnHelper.accessor('tipo', {
       header: () => <span className="uppercase tracking-widest text-[10px] font-black">{t('common.type')}</span>,
       cell: info => (
-        <span className="px-2 py-1 bg-foreground/[0.03] border border-foreground/10 text-[10px] font-bold uppercase tracking-tighter rounded-none">
+        <span className="text-foreground/40 text-[10px] italic">
           {info.getValue()}
         </span>
       ),
@@ -161,11 +171,17 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
       header: () => <span className="uppercase tracking-widest text-[10px] font-black">{t('common.folder')}</span>,
       cell: info => {
         const folderId = info.getValue();
-        const folder = allFolders.find(f => f.id === folderId);
         return (
-          <span className="text-foreground/40 text-xs italic">
-            {folder ? folder.nombre : 'Raíz'}
-          </span>
+          <select
+            value={folderId || ''}
+            onChange={(e) => handleUpdateField(info.row.original.id!, 'carpeta_id', e.target.value ? Number(e.target.value) : null)}
+            className="bg-transparent border-none text-foreground/40 text-[10px] italic outline-none focus:text-primary"
+          >
+            <option value="">Raíz</option>
+            {allFolders.map(f => (
+              <option key={f.id} value={f.id}>{f.nombre}</option>
+            ))}
+          </select>
         );
       },
     }),
@@ -208,14 +224,20 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
   return (
     <div className="flex-1 flex flex-col p-8 pt-0 overflow-hidden relative">
       <div className="max-w-6xl w-full mx-auto flex-1 flex flex-col monolithic-panel border border-foreground/5 bg-foreground/[0.02] overflow-hidden">
-        <div className="flex items-center justify-between p-6 bg-background border-b border-foreground/10">
-          <div className="flex items-center gap-4">
-             <div className="size-2 bg-primary animate-pulse" />
-             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/60">Registros de la Biblia</h3>
-          </div>
+        <div className="flex items-center justify-start gap-3 p-6 bg-background border-b border-foreground/10 h-[72px]">
+          {selectedCount > 0 && (
+            <button 
+              onClick={handleBulkDeleteClick}
+              className="flex items-center gap-2 px-4 h-9 bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all shadow-lg shadow-red-500/10 shrink-0"
+            >
+              <span className="material-symbols-outlined text-sm">delete_sweep</span>
+              Borrar {selectedCount}
+            </button>
+          )}
+          
           <button 
             onClick={() => setIsMassCreateOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20"
+            className="flex items-center gap-2 px-4 h-9 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20 shrink-0 border border-transparent"
           >
             <span className="material-symbols-outlined text-sm">add_circle</span>
             Crear en Serie
@@ -254,10 +276,31 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
                 />
               </td>
               <td className="p-2 border-b border-foreground/10">
-                <span className="text-[9px] font-black uppercase py-1 px-2 bg-primary/10 text-primary border border-primary/20">INDIVIDUAL</span>
+                <select
+                  value={newEntityType}
+                  onChange={(e) => setNewEntityType(e.target.value)}
+                  className="bg-transparent border-none text-foreground/40 text-[10px] italic outline-none focus:text-primary cursor-pointer"
+                >
+                  <option value="PERSONAJE">Personaje</option>
+                  <option value="LUGAR">Lugar</option>
+                  <option value="OBJETO">Objeto</option>
+                  <option value="CONCEPTO">Concepto</option>
+                  <option value="CRIATURA">Criatura</option>
+                  <option value="MAPA">Mapa</option>
+                  <option value="TIMELINE">Línea Temporal</option>
+                </select>
               </td>
               <td className="p-2 border-b border-foreground/10">
-                 <span className="text-[9px] opacity-30 italic">Automático</span>
+                <select
+                  value={newEntityFolderId || ''}
+                  onChange={(e) => setNewEntityFolderId(e.target.value ? Number(e.target.value) : null)}
+                  className="bg-transparent border-none text-foreground/40 text-[10px] italic outline-none focus:text-primary cursor-pointer"
+                >
+                  <option value="">Raíz</option>
+                  {allFolders.map(f => (
+                    <option key={f.id} value={f.id}>{f.nombre}</option>
+                  ))}
+                </select>
               </td>
             </tr>
               {table.getRowModel().rows.map(row => (
@@ -281,6 +324,16 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
         projectId={projectId}
         allFolders={allFolders}
         handleOpenCreateModal={handleOpenCreateModal}
+      />
+
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={confirmBulkDelete}
+        title="Confirmar Eliminación Masiva"
+        message={`¿Estás seguro de que deseas eliminar ${selectedCount} entidades de forma permanente? Esta acción no se puede deshacer.`}
+        confirmText="Borrar Todo"
+        cancelText="Cancelar"
       />
     </div>
   );

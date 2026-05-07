@@ -15,6 +15,7 @@ import Avatar from '@atoms/Avatar';
 import EntityBuilderSidebar from '../components/EntityBuilderSidebar';
 import Breadcrumbs from '@molecules/Breadcrumbs';
 import { Carpeta, Valor } from '@domain/models/database';
+import ConfirmationModal from '@organisms/ConfirmationModal';
 import FamilyTreeAssigner from '../components/FamilyTreeAssigner';
 
 interface LayoutContext {
@@ -72,6 +73,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
 
   const [fields, setFields] = useState<EntityField[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [removedFieldIds, setRemovedFieldIds] = useState<number[]>([]);
   const [availableTemplates, setAvailableTemplatesLocal] = useState<Plantilla[]>([]);
@@ -315,6 +317,21 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden relative">
+      <ConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={async () => {
+          if (entity.id) {
+            await entityService.delete(entity.id);
+            window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: entity.carpeta_id } }));
+            navigate(-1);
+          }
+        }}
+        title="Confirmar Eliminación"
+        message="¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer."
+        confirmText="Borrar"
+        cancelText="Cancelar"
+      />
       <div className="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
                 {/* CABECERA UNIFICADA MONOLÍTICA */}
         <div className="sticky top-0 z-40 bg-background border-b border-foreground/10 animate-in slide-in-from-top-4 duration-700">
@@ -338,7 +355,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
 
             <div className="flex items-center gap-3">
               <button 
-                onClick={() => { if(confirm('¿Seguro que quieres borrar esta entidad?')) { /* Lógica de borrado */ } }} 
+                onClick={() => setDeleteModalOpen(true)} 
                 className="size-10 flex items-center justify-center text-foreground/20 hover:text-red-400 hover:bg-red-400/5 transition-all border border-foreground/5"
                 title="Eliminar Entidad"
               >

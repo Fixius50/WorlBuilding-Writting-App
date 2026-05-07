@@ -8,6 +8,7 @@ import { FolderType } from '@domain/models/database';
 import { ArchitectContext } from '@domain/models/ui';
 import { folderService } from '@repositories/folderService';
 import { entityService } from '@repositories/entityService';
+import ConfirmationModal from '@organisms/ConfirmationModal';
 
 
 const WorldBibleLayout: React.FC = () => {
@@ -25,6 +26,11 @@ const WorldBibleLayout: React.FC = () => {
   
   const [localEntities, setLocalEntities] = useState<any[]>([]);
   const [localFolders, setLocalFolders] = useState<Carpeta[]>([]);
+  const [currentFolder, setCurrentFolder] = useState<Carpeta | null>(null);
+
+  // Estados para Modal de Confirmación
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [entityToDelete, setEntityToDelete] = useState<number | null>(null);
 
   // Determinar si estamos en la raíz o en profundidad
   const isRoot = useMemo(() => {
@@ -85,10 +91,13 @@ const WorldBibleLayout: React.FC = () => {
         const roots = (architectContext.folders || []).filter(f => !f.padre_id);
         setLocalFolders(roots);
         setLocalEntities([]);
+        setCurrentFolder(null);
       } else {
         const match = location.pathname.match(/\/folder\/(\d+)/);
         if (match) {
           const currentFolderId = Number(match[1]);
+          const folder = architectContext.folders?.find(f => f.id === currentFolderId);
+          setCurrentFolder(folder || null);
           const ents = await entityService.getByFolder(currentFolderId);
           setLocalEntities(ents);
           setLocalFolders([]);
@@ -104,11 +113,17 @@ const WorldBibleLayout: React.FC = () => {
     };
   }, [isRoot, location.pathname, architectContext?.projectId, architectContext?.folders]);
 
-  const handleDeleteEntity = async (id: number) => {
-    if (!confirm('¿Eliminar esta entidad?')) return;
+  const handleDeleteEntity = (id: number) => {
+    setEntityToDelete(id);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDeleteEntity = async () => {
+    if (!entityToDelete) return;
     try {
-      await entityService.delete(id);
+      await entityService.delete(entityToDelete);
       window.dispatchEvent(new CustomEvent('entity-update'));
+      setEntityToDelete(null);
     } catch (err) {
       console.error(err);
     }
@@ -137,7 +152,7 @@ const WorldBibleLayout: React.FC = () => {
           await entityService.create({
             nombre: formData.nombre,
             descripcion: formData.descripcion || '',
-            tipo: (formData.tipo as string) || 'Entidad',
+            tipo: (formData.tipo as string) || 'PERSONAJE',
             carpeta_id: currentFolderId,
             project_id: architectContext.projectId,
             slug: baseSlug,
@@ -275,8 +290,9 @@ const WorldBibleLayout: React.FC = () => {
               ...architectContext,
               folders: localFolders,
               entities: localEntities,
+              currentFolder,
               allFolders: architectContext.folders || [],
-              handleOpenCreateModal,
+              handleOpenCreateModal: () => handleOpenCreateModal(currentFolder),
               handleDeleteEntity,
             }} />
           ) : (
@@ -296,6 +312,16 @@ const WorldBibleLayout: React.FC = () => {
         onClose={() => setCreationModalOpen(false)}
         onCreate={handleCreateSubmit}
         parentFolder={targetParent}
+      />
+
+      <ConfirmationModal
+        isOpen={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+        onConfirm={confirmDeleteEntity}
+        title="Confirmar Eliminación"
+        message="¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer."
+        confirmText="Borrar"
+        cancelText="Cancelar"
       />
     </div>
   );

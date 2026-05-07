@@ -7,6 +7,7 @@ import SecondaryTabs from '@molecules/SecondaryTabs';
 import MiniGraph from '../components/MiniGraph';
 import MiniTimeline from '../components/MiniTimeline';
 import DynamicAttributeForm from '../components/DynamicAttributeForm';
+import ConfirmationModal from '@organisms/ConfirmationModal';
 import { notebookService } from '@repositories/notebookService';
 
 interface ProfileOutletContext {
@@ -37,6 +38,7 @@ const EntityProfile = () => {
   const [entity, setEntity] = useState<EntityWithExtra | null>(null);
   const [activeTab, setActiveTab] = useState('GENERAL');
   const [loading, setLoading] = useState(true);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [mentions, setMentions] = useState<{ hoja_id: number; hoja_titulo: string; cuaderno_titulo: string; cuaderno_id: number }[]>([]);
 
   useEffect(() => {
@@ -173,16 +175,25 @@ const EntityProfile = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-center lg:justify-start gap-4 mt-6">
-               <Link to={`/${username || 'local'}/${projectName}/bible/folder/${folderId}/entity/${entityId}/edit`}>
-                  <button className="px-6 py-3 bg-foreground text-background text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-primary transition-all active:scale-95">
-                    Transmutar Archivo
-                  </button>
-               </Link>
-               <button className="size-11 border border-foreground/10 hover:border-primary/50 text-foreground/40 hover:text-primary transition-all flex items-center justify-center">
-                  <span className="material-symbols-outlined text-xl">share</span>
-               </button>
-            </div>
+             <div className="flex items-center justify-center lg:justify-start gap-4 mt-6">
+                <Link to={`/${username || 'local'}/${projectName}/bible/folder/${folderId}/entity/${entityId}/edit`}>
+                   <button className="px-6 py-3 bg-foreground text-background text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-primary transition-all active:scale-95">
+                     Transmutar Archivo
+                   </button>
+                </Link>
+                
+                <button 
+                  onClick={() => setDeleteModalOpen(true)}
+                  className="px-6 py-3 border border-red-500/30 text-red-400 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all active:scale-95 flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-sm">delete</span>
+                  Borrar Archivo
+                </button>
+
+                <button className="size-11 border border-foreground/10 hover:border-primary/50 text-foreground/40 hover:text-primary transition-all flex items-center justify-center">
+                   <span className="material-symbols-outlined text-xl">share</span>
+                </button>
+             </div>
           </div>
         </div>
       </div>
@@ -299,6 +310,20 @@ const EntityProfile = () => {
           </div>
         </main>
       </div>
+
+      <ConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={async () => {
+          await entityService.delete(Number(entityId));
+          window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: Number(folderId) } }));
+          navigate(`/${username || 'local'}/${projectName}/bible/folder/${folderId}`);
+        }}
+        title="Confirmar Eliminación"
+        message="¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer."
+        confirmText="Borrar"
+        cancelText="Cancelar"
+      />
     </div>
   );
 };

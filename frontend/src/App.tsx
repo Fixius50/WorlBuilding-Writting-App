@@ -79,7 +79,7 @@ const App = () => {
                 <Route path="bible" element={<WorldBibleLayout />}>
                   <Route index element={<BibleGridView />} />
                   <Route path="folder/:folderId/entity/new/:type" element={<EntityBuilder mode="creation" />} />
-                  <Route path="folder/:folderId" element={<FolderView />} />
+                  <Route path="folder/:folderId" element={<BibleGridView />} />
                   <Route path="dimension/:folderId" element={<DimensionEditor />} />
                   <Route path="entity/:entityId" element={<EntityBuilder mode="edit" />} />
                   <Route path="folder/:folderId/entity/:entityId" element={<EntityBuilder mode="edit" />} />

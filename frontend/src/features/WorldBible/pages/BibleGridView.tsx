@@ -14,6 +14,8 @@ import BibleCard from '../components/BibleCard';
  folders: Carpeta[];
  entities: Entidad[];
  projectId: number;
+ searchTerm: string;
+ filterType: string;
 }
 
 const BibleGridView = () => {
@@ -28,13 +30,31 @@ const BibleGridView = () => {
     handleCreateSimpleFolder,
     handleRenameFolder,
     handleDeleteEntity,
+    handleOpenCreateModal,
     folders = [],
     entities = [],
-    projectId
+    projectId,
+    searchTerm = '',
+    filterType = 'ALL'
   } = useOutletContext<BibleContext>();
 
 
   const { t } = useLanguage();
+
+  // Logic: Filter content based on Search and Type
+  const filteredFolders = React.useMemo(() => {
+    return folders.filter(f => 
+      f.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [folders, searchTerm]);
+
+  const filteredEntities = React.useMemo(() => {
+    return entities.filter(e => {
+      const matchesSearch = e.nombre.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesType = filterType === 'ALL' || e.tipo === filterType;
+      return matchesSearch && matchesType;
+    });
+  }, [entities, searchTerm, filterType]);
 
  // Rename State
  const [renamingFolderId, setRenamingFolderId] = useState<string | number | null>(null);
@@ -50,27 +70,31 @@ const BibleGridView = () => {
 
  if (folders === undefined) return <div className="p-20 text-center animate-pulse text-text-muted">{t('common.loading')}</div>;
 
+  const { folderId } = useParams();
+  const isInsideFolder = !!folderId;
+
  return (
  <div className="flex-1 p-8 pt-0 max-w-[1600px] mx-auto w-full h-full overflow-y-auto custom-scrollbar">
 
  {/* Content Grid */}
  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
- {/* Add Folder Card (Zen Style) */}
-  <div 
-    onClick={() => handleCreateSimpleFolder(null, 'FOLDER')}
-    className="group relative flex flex-col p-8 rounded-none monolithic-panel border border-dashed border-foreground/10 hover:border-primary/50 hover:bg-primary/5 transition-all duration-500 cursor-pointer items-center justify-center min-h-[220px] bg-background"
-  >
-    <div className="size-16 rounded-none bg-primary/5 border border-primary/10 flex items-center justify-center text-primary/40 group-hover:text-primary group-hover:scale-110 group-hover:border-primary/30 transition-all duration-500">
+ {/* Add Card (Dynamic) */}
+   <div 
+     onClick={() => handleOpenCreateModal()}
+     className="group relative flex flex-col p-8 rounded-none bg-foreground/[0.01] border border-dashed border-foreground/10 hover:border-primary/40 hover:bg-foreground/[0.03] transition-all duration-500 cursor-pointer items-center justify-center min-h-[220px]"
+   >
+    <div className="size-16 rounded-none bg-foreground/[0.03] border border-foreground/10 flex items-center justify-center text-foreground/20 group-hover:text-primary group-hover:scale-110 group-hover:border-primary/30 transition-all duration-500">
       <span className="material-symbols-outlined text-3xl">add</span>
     </div>
-    <div className="mt-6 text-center">
-      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/30 group-hover:text-foreground/80 transition-colors">
-        {t('bible.new_folder')}
+    
+    <div className="absolute bottom-8 left-0 right-0 text-center">
+      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/30 group-hover:text-foreground/80 transition-colors">
+        {isInsideFolder ? 'NUEVO NODO' : 'NUEVA CARPETA'}
       </span>
     </div>
   </div>
 
-  {folders.map(folder => (
+  {filteredFolders.map(folder => (
   renamingFolderId === folder.id ? (
   <div key={folder.id} className="p-4 rounded-none monolithic-panel border border-primary/50">
   <input
@@ -104,7 +128,7 @@ const BibleGridView = () => {
   )
   ))}
 
-  {entities.map(entity => (
+  {filteredEntities.map(entity => (
     <BibleCard
       key={`ent-${entity.id}`}
       item={entity}
@@ -117,7 +141,7 @@ const BibleGridView = () => {
  </div>
 
   {/* Empty State */}
-  {folders.length === 0 && (
+  {(filteredFolders.length === 0 && filteredEntities.length === 0) && (
     <div className="col-span-full py-12 text-center opacity-20">
       <p className="text-xs font-bold uppercase tracking-widest">{t('bible.empty_archive')}</p>
     </div>
@@ -127,4 +151,3 @@ const BibleGridView = () => {
 };
 
 export default BibleGridView;
-

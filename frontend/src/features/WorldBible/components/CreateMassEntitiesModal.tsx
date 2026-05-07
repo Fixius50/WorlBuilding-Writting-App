@@ -10,7 +10,7 @@ interface CreateMassEntitiesModalProps {
   onCreated: () => void;
   projectId: number;
   allFolders: Carpeta[];
-  handleOpenCreateModal?: (parentFolder?: unknown) => void;
+  handleOpenCreateModal?: (parentFolder?: Carpeta | null) => void;
 }
 
 interface AttributeValue {

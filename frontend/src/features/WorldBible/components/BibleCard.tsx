@@ -28,7 +28,7 @@ const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu
     <Link
       to={linkTo}
       onContextMenu={onContextMenu}
-      className="group relative flex flex-col p-4 rounded-none monolithic-panel border border-foreground/10 hover:border-primary/50 hover:bg-foreground/5 transition-all duration-300 overflow-hidden min-h-[160px]"
+      className="group relative flex flex-col p-6 rounded-none bg-foreground/[0.01] border border-foreground/10 hover:border-primary/40 hover:bg-foreground/[0.03] transition-all duration-500 overflow-hidden min-h-[220px]"
     >
       {/* Background Image & Overlay */}
       {item.iconUrl && (
@@ -44,10 +44,10 @@ const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu
         </>
       )}
 
-      <div className="relative z-10 flex items-start justify-between mb-2">
+      <div className="relative z-10">
         <div className={`
-          size-12 rounded-none flex items-center justify-center text-xl transition-transform group-hover:scale-110 
-          ${isFolder ? 'bg-primary/10' : 'bg-foreground/5 border border-foreground/10'}
+          size-14 rounded-none flex items-center justify-center text-2xl transition-all duration-500
+          ${isFolder ? 'bg-primary/5 border border-primary/10' : 'bg-foreground/[0.03] border border-foreground/10'}
           ${visuals.color}
         `}>
           <span className="material-symbols-outlined">
@@ -56,21 +56,23 @@ const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu
         </div>
       </div>
 
-      <div className="relative z-10 mt-auto">
-        <h3 className="text-sm font-bold text-foreground truncate group-hover:text-indigo-400 transition-colors drop-shadow-md">{item.nombre}</h3>
-        <p className="text-[10px] font-bold uppercase tracking-widest text-foreground/60 mt-1 opacity-70 group-hover:opacity-100 transition-opacity">
-          {isFolder 
-            ? (item.tipo === 'TIMELINE' ? 'Dimensión' : 'Carpeta') 
-            : (item.tipo || 'Entidad')}
-        </p>
-      </div>
-
-      {/* Item Counter - Premium Glassmorphism Badge */}
-      {isFolder && (item.itemCount || 0) > 0 && (
-        <div className="absolute bottom-4 right-4 px-2 py-0.5 bg-background  border border-white/10 text-[9px] font-black text-foreground/50 rounded-full shadow-[0_2px_10px_rgba(0,0,0,0.5)] z-10 transition-all group-hover:border-indigo-500/30 group-hover:text-indigo-400 group-hover:bg-indigo-500/10 uppercase tracking-tighter">
-          {item.itemCount}
+      <div className="relative z-10 mt-auto flex justify-between items-end">
+        <div className="flex flex-col gap-0.5">
+          <h3 className="text-md font-black text-foreground tracking-tight group-hover:text-primary transition-colors">{item.nombre}</h3>
+          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40 group-hover:text-foreground/60 transition-colors">
+            {isFolder 
+              ? (item.tipo === 'TIMELINE' ? 'Dimensión' : 'Carpeta') 
+              : (item.tipo || 'Entidad')}
+          </p>
         </div>
-      )}
+
+        {/* Item Counter Badge */}
+        {isFolder && (item.itemCount || 0) > 0 && (
+          <div className="size-6 bg-foreground/[0.03] border border-foreground/10 flex items-center justify-center rounded-full text-[9px] font-black text-foreground/40 group-hover:border-primary/30 group-hover:text-primary transition-all">
+            {item.itemCount}
+          </div>
+        )}
+      </div>
 
       {/* Hover Indicator / Actions */}
       <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
