@@ -15,6 +15,7 @@ import Avatar from '@atoms/Avatar';
 import EntityBuilderSidebar from '../components/EntityBuilderSidebar';
 import Breadcrumbs from '@molecules/Breadcrumbs';
 import { Carpeta, Valor } from '@domain/models/database';
+import FamilyTreeAssigner from '../components/FamilyTreeAssigner';
 
 interface LayoutContext {
   projectId: number;
@@ -368,7 +369,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
           {/* 2. NAVEGACIÓN DE PESTAÑAS (PARTE INFERIOR) */}
           <div className="border-t border-foreground/5 bg-foreground/[0.02]">
             <div className="flex items-center justify-center gap-12 max-w-7xl mx-auto">
-              {['identity', 'narrative', 'attributes'].map((tab) => (
+              {['identity', 'narrative', 'attributes', 'relationships'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveEntityTab(tab)}
@@ -377,7 +378,9 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                     : 'border-transparent text-foreground/30 hover:text-foreground'
                   }`}
                 >
-                  {tab === 'identity' ? 'Identidad' : tab === 'narrative' ? 'Narrativa' : 'Atributos'}
+                  {tab === 'identity' ? 'Identidad' : 
+                   tab === 'narrative' ? 'Narrativa' : 
+                   tab === 'attributes' ? 'Atributos' : 'Linaje'}
                 </button>
               ))}
             </div>
@@ -583,8 +586,12 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                     />
                   </div>
                 ))}
-              </div>
             </div>
+          </div>
+        )}
+
+          {activeEntityTab === 'relationships' && entity.id && (
+            <FamilyTreeAssigner entityId={entity.id} projectId={projectId} />
           )}
         </div>
 
