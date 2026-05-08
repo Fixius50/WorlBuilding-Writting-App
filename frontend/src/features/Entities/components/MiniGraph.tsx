@@ -1,7 +1,8 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { ReactFlow, Background, Handle, Position, NodeProps, Node, Edge } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { relationshipService } from '@repositories/relationshipService';
+import { relationshipService, RelacionEnriquecida } from '@repositories/relationshipService';
+import { Relacion } from '@domain/models/database';
 
 interface MiniGraphProps {
   entityId: number;
@@ -42,7 +43,7 @@ const MiniGraph: React.FC<MiniGraphProps> = ({ entityId, onNavigate }) => {
 
       const edges: Edge[] = [];
 
-      relations.forEach((rel, index) => {
+      relations.forEach((rel: RelacionEnriquecida, index) => {
         const isOrigen = rel.origen_id === entityId;
         const otherId = isOrigen ? rel.destino_id : rel.origen_id;
         const otherName = isOrigen ? rel.nombre_destino : rel.nombre_origen;

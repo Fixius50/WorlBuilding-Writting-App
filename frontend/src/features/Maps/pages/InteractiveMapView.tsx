@@ -8,6 +8,11 @@ import { Entidad } from '@domain/models/database';
 import { MapMarker, MapLayer, MapConnection, MapAttributes } from '@domain/models/maps';
 import { useRightPanelStore } from '@store/useRightPanelStore';
 
+interface GeoFeatureCollection {
+  type: string;
+  features: Array<{ properties?: Record<string, unknown>; geometry: { type: string; coordinates: unknown } }>;
+}
+
 const InteractiveMapView: React.FC<{
   map: Entidad;
   onBack?: () => void;
@@ -54,7 +59,7 @@ const InteractiveMapView: React.FC<{
 
   const layers = useMemo<MapLayer[]>(() => mapAttributes.layers || [], [mapAttributes]);
   const connections = useMemo<MapConnection[]>(() => mapAttributes.connections || [], [mapAttributes]);
-  const features = useMemo(() => mapAttributes.features || { type: 'FeatureCollection', features: [] }, [mapAttributes]);
+  const features = useMemo<GeoFeatureCollection | undefined>(() => mapAttributes.features as GeoFeatureCollection | undefined, [mapAttributes]);
   const imageWidth = useMemo(() => (mapAttributes.imageWidth as number) || 1920, [mapAttributes]);
   const imageHeight = useMemo(() => (mapAttributes.imageHeight as number) || 1080, [mapAttributes]);
   const is3D = useMemo(() => !!mapAttributes.is3D, [mapAttributes]);

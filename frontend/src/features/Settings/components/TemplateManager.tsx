@@ -44,7 +44,7 @@ const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
  setLoading(true);
  try {
  // Using 0 as convention for global project_id in templateService
- const data = await templateService.getByProject(0);
+ const data = await templateService.getAll(0);
  setTemplates(data);
  } catch (err) {
  // [LOG REMOVED]
@@ -62,8 +62,12 @@ const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
  valor_defecto: null,
  metadata: newField.metadata ? JSON.stringify(newField.metadata) : null,
  es_obligatorio: newField.required,
- project_id: 0
- });
+ project_id: 0,
+ aplica_a_todo: 1,
+  tipo_objetivo: null,
+  categoria: null,
+  orden: 0
+  });
  loadGlobalTemplates();
  } catch (err) {
  // [LOG REMOVED]

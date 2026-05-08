@@ -2,7 +2,9 @@ import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import AttributeField from '../AttributeField';
 
-type CanvasNodeData = { attribute: unknown; value: string; onChange: (v: string) => void; linkableEntities?: unknown[] };
+import { Plantilla, Entidad } from '@domain/models/database';
+
+type CanvasNodeData = { attribute: Plantilla | { plantilla: Plantilla }; value: string; onChange: (v: string) => void; linkableEntities?: Entidad[] };
 
 const CanvasNode = ({ data, selected }: { data: CanvasNodeData, selected?: boolean }) => {
  // data contains: attribute (model), value, onChange (fn), linkableEntities (array)

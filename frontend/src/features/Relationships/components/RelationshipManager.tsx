@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { entityService } from '@repositories/entityService';
 import { relationshipService } from '@repositories/relationshipService';
+import type { RelacionEnriquecida } from '@repositories/relationshipService';
 import { Entidad, Relacion } from '@domain/models/database';
 import Button from '@atoms/Button';
 
@@ -62,7 +63,7 @@ const RelationshipManager = ({ entityId, entityType }: { entityId: number | stri
  // [LOG REMOVED]
 
  // Enrich with details (fetch names)
- const enriched = await Promise.all(relevant.map(async r => {
+ const enriched = await Promise.all(relevant.map(async (r: RelacionEnriquecida) => {
  const isOutgoing = r.origen_id === Number(entityId);
  const otherId = isOutgoing ? r.destino_id : r.origen_id;
 
@@ -71,7 +72,7 @@ const RelationshipManager = ({ entityId, entityType }: { entityId: number | stri
  return { ...r, otherName: otherEntity.nombre, otherType: otherEntity.tipo || 'Entity', isOutgoing };
  }));
 
- setRelationships(enriched.filter(Boolean));
+ setRelationships(enriched.filter(Boolean) as EnrichedRelationship[]);
  } catch (error) {
  // [LOG REMOVED]
  } finally {

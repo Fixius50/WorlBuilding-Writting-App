@@ -1,7 +1,18 @@
 import React from 'react';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 
-const MapSelectionModal = ({ maps, onSelect, onCreateNew, onClose }: { maps: unknown[], onSelect: (map: unknown) => void, onCreateNew: () => void, onClose: () => void }) => {
+interface MapPreview {
+  id: number;
+  nombre: string;
+  iconUrl?: string;
+  attributes?: {
+    snapshotUrl?: string;
+    bgImage?: string;
+    layers?: unknown[];
+  };
+}
+
+const MapSelectionModal = ({ maps, onSelect, onCreateNew, onClose }: { maps: MapPreview[]; onSelect: (map: MapPreview) => void; onCreateNew: () => void; onClose: () => void }) => {
  return (
  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 animate-in fade-in duration-300">
  <div className="w-full max-w-3xl animate-in zoom-in-95 duration-500">
@@ -36,7 +47,7 @@ const MapSelectionModal = ({ maps, onSelect, onCreateNew, onClose }: { maps: unk
  // Get map preview image (Sanitize DuckDNS or broken placeholders)
  let previewImage = map.attributes?.snapshotUrl || map.attributes?.bgImage || map.iconUrl;
  if (previewImage && (previewImage.includes('duckdns') || previewImage.includes('nopreview'))) {
- previewImage = null;
+ previewImage = undefined;
  }
 
  return (

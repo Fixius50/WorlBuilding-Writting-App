@@ -47,7 +47,7 @@ const ArchetypeManager: React.FC = () => {
         await templateService.update(editingId, formData);
       } else {
         await templateService.create({
-          ...formData as unknown,
+          ...(formData as Omit<Plantilla, 'id' | 'created_at'>),
           project_id: projectId
         });
       }

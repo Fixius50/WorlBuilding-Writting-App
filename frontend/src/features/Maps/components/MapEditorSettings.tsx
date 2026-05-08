@@ -2,14 +2,22 @@ import React from 'react';
 import { useLanguage } from '@context/LanguageContext';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 
-const MapEditorSettings = ({ settings, onUpdate }: { settings: unknown, onUpdate: unknown }) => {
- const { t } = useLanguage();
+interface MapSettings {
+showGrid?: boolean;
+  gridSize?: number;
+width?: number;
+  height?: number;
+bgImage?: string;
+}
 
- if (!settings) return null;
+const MapEditorSettings = ({ settings, onUpdate }: { settings: MapSettings; onUpdate: (s: MapSettings) => void }) => {
+  const { t } = useLanguage();
 
- const handleChange = (key: unknown, value: unknown) => {
- onUpdate({ ...settings, [key]: value });
- };
+  if (!settings) return null;
+
+  const handleChange = (key: keyof MapSettings, value: MapSettings[keyof MapSettings]) => {
+    onUpdate({ ...settings, [key]: value });
+  };
 
  return (
  <div className="p-6 space-y-8 animate-in fade-in slide-in-from-right-4">

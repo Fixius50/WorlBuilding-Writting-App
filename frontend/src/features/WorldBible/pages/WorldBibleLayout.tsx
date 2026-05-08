@@ -129,10 +129,8 @@ const WorldBibleLayout: React.FC = () => {
     }
   };
 
-  const handleCreateSubmit = async (rawFormData: unknown) => {
+  const handleCreateSubmit = async (formData: { nombre: string; tipo: string; descripcion?: string }) => {
     if (!architectContext?.projectId) return;
-    
-    const formData = rawFormData as { nombre: string; descripcion?: string; tipo: unknown };
     
     try {
       if (isRoot) {
@@ -152,7 +150,7 @@ const WorldBibleLayout: React.FC = () => {
           await entityService.create({
             nombre: formData.nombre,
             descripcion: formData.descripcion || '',
-            tipo: (formData.tipo as string) || 'PERSONAJE',
+            tipo: formData.tipo || 'PERSONAJE',
             carpeta_id: currentFolderId,
             project_id: architectContext.projectId,
             slug: baseSlug,

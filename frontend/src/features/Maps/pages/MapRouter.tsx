@@ -75,8 +75,11 @@ const MapRouter = () => {
  descripcion: map.descripcion,
  project_id: projectId,
  carpeta_id: map.carpeta_id,
- contenido_json: JSON.stringify(newAttrs)
- } as unknown);
+ contenido_json: JSON.stringify(newAttrs),
+ slug: '',
+ folder_slug: '',
+ imagen_url: ''
+ });
  await loadMaps();
  } catch (err) {
  // [LOG REMOVED]
@@ -113,6 +116,9 @@ const MapRouter = () => {
         carpeta_id: defaultFolder.id,
         tipo: 'Map',
         descripcion: config.description,
+        slug: '',
+        folder_slug: '',
+        imagen_url: '',
         contenido_json: JSON.stringify({
           tipoEspecial: 'map',
           bgImage: config.bgImage || 'placeholder-map.png',
@@ -123,7 +129,7 @@ const MapRouter = () => {
           markers: [],
           connections: []
         })
-      } as unknown);
+      });
 
       setNewMapId(newEntity.id);
       setView('editor');

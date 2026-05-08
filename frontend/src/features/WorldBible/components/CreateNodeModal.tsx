@@ -5,7 +5,7 @@ import { getHierarchyVisuals } from '@presentation/utils/hierarchyVisuals';
 interface CreateNodeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (data: unknown) => void;
+  onCreate: (data: { nombre: string; tipo: string; descripcion?: string }) => void;
   parentFolder?: { id: number; nombre: string } | null;
 }
 

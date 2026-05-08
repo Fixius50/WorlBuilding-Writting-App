@@ -313,7 +313,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
           : (entity.contenido_json || {});
         setMarkers(attrs.markers || []);
         if (attrs.layers && attrs.layers.length > 0) setLayers(attrs.layers);
-        if (attrs.features) setFeatures(attrs.features);
+        if (attrs.features) setFeatures(attrs.features as GeoFeatureCollection);
         setIs3D(!!attrs.is3D);
         if (attrs.mapSettings) {
           setViewState(prev => ({
@@ -367,7 +367,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
           nombre: mapEntity.nombre, tipo: 'Map', descripcion: mapEntity.descripcion,
           slug: mapEntity.nombre.toLowerCase().replace(/ /g, '-'),
           folder_slug: '', imagen_url: '',
-          project_id: projectId, carpeta_id: targetFolderId, contenido_json: JSON.stringify(updatedContent)
+          project_id: projectId || 0, carpeta_id: targetFolderId, contenido_json: JSON.stringify(updatedContent)
         });
         if (onSave) await onSave(); else navigate(-1);
       } else {
@@ -474,7 +474,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
     return layers.filter(l => (l.type === 'base' || l.type === 'image') && l.visible).map(layer => {
       const sourceId = `src-${layer.id}-${layer.type}`;
       const displayUrl = resolvedUrls[layer.id] || layer.url;
-      const sourceKey = `${sourceId}-${(layer as unknown)._typeVersion || 0}`;
+      const sourceKey = `${sourceId}-${(layer as MapLayer & { _typeVersion?: number })._typeVersion || 0}`;
       if (!displayUrl) return null;
       return (
         <Source

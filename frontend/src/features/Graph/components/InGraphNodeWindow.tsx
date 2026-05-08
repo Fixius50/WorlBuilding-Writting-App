@@ -3,13 +3,16 @@ import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
 import RelationshipManager from '@features/Relationships/components/RelationshipManager';
 import { entityService } from '@repositories/entityService';
+import { Entidad } from '@domain/models/database';
 import { folderService } from '@repositories/folderService';
 
 type GraphNode = { id: string; group?: string; data: Record<string, unknown>; label?: string; nombre?: string; category?: string; isFull?: boolean; isStub?: boolean; };
 
+type EntidadExtendida = Entidad & { attributes?: Record<string, unknown> };
+
 const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned }: { node: GraphNode | null, elements: GraphNode[], onClose?: () => void, onCenter?: () => void, onLock?: () => void, isPinned?: boolean }) => {
  const [activeTab, setActiveTab] = useState('ESENCIA'); // ESENCIA, RELACIONES, CRÓNICA
- const [details, setDetails] = useState<Record<string, unknown> | null>(null);
+ const [details, setDetails] = useState<EntidadExtendida | null>(null);
  const [loading, setLoading] = useState(false);
 
  // Fetch full data if not present
@@ -23,7 +26,7 @@ const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned
  if (response && response.contenido_json) {
     try {
       const parsed = JSON.parse(response.contenido_json);
-      setDetails({ ...response, attributes: parsed });
+      setDetails({ ...response, attributes: parsed } as EntidadExtendida);
     } catch (e) {
       setDetails(response);
     }
@@ -46,6 +49,7 @@ const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned
  if (!node) return null;
 
  const data = (details || node) as Record<string, unknown>;
+ const attrs = data.attributes && typeof data.attributes === 'object' ? data.attributes as Record<string, unknown> : {};
 
  const categoryColor = node.category === 'Individual' ? 'border-indigo-500/50' :
  node.category === 'Location' ? 'border-emerald-500/50' :
@@ -95,13 +99,13 @@ const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned
  <div className="space-y-1">
  <span className="text-[8px] font-black uppercase text-foreground/60 tracking-widest">Resumen Etéreo</span>
  <p className="text-xs text-foreground/60 leading-relaxed italic border-l border-foreground/40 pl-3">
- {data.description || data.summary || "Ningún cronista ha registrado detalles sobre esta entidad."}
+ {data.description ? String(data.description) : (data.summary ? String(data.summary) : "Ningún cronista ha registrado detalles sobre esta entidad.")}
  </p>
  </div>
 
- {data.attributes && Object.entries(data.attributes).length > 0 && (
+ {attrs && Object.entries(attrs).length > 0 && (
  <div className="grid grid-cols-1 gap-1.5 pt-2">
- {Object.entries(data.attributes)
+ {Object.entries(attrs)
  .filter(([key, value]) => {
  const k = key.toLowerCase();
  // Filter out technical metadata
@@ -142,13 +146,13 @@ const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned
  const otherId = String(edge.data.source) === nodeIdStr ? edge.data.target : edge.data.source;
  const otherNode = elements.find(n => String(n.data?.id) === String(otherId));
  return (
- <div key={edge.data.id} className="flex items-center justify-between p-2.5 rounded bg-background border border-foreground/10 group/rel">
+ <div key={edge.data.id as string} className="flex items-center justify-between p-2.5 rounded bg-background border border-foreground/10 group/rel">
  <div className="flex items-center gap-2 overflow-hidden">
  <span className="size-1 rounded-full bg-primary/40 group-hover/rel:bg-primary transition-colors"></span>
- <span className="text-[10px] text-foreground/60 font-medium truncate">{otherNode?.data?.label || otherNode?.label || 'Incógnito'}</span>
+ <span className="text-[10px] text-foreground/60 font-medium truncate">{String(otherNode?.data?.label || otherNode?.label || 'Incógnito')}</span>
  </div>
  <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[7px] font-black uppercase tracking-tighter shrink-0">
- {edge.data.label || 'Vínculo'}
+ {String(edge.data.label || 'Vínculo')}
  </span>
  </div>
  );

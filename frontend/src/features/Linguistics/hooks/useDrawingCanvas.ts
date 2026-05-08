@@ -53,7 +53,7 @@ export const useDrawingCanvas = () => {
 
       const newShape: Shape = {
         id: crypto.randomUUID(),
-        type: tool as unknown,
+        type: tool as Shape['type'],
         stroke: color,
         strokeWidth: strokeWidth,
         opacity: opacity,
@@ -154,7 +154,7 @@ export const useDrawingCanvas = () => {
     if (glyph.svgPathData) {
       initialShapes.push({
         id: crypto.randomUUID(),
-        type: 'path' as unknown,
+        type: 'path' as Shape['type'],
         data: glyph.svgPathData,
         x: 0,
         y: 0,
@@ -163,7 +163,7 @@ export const useDrawingCanvas = () => {
         fill: null,
         scaleX: 1,
         scaleY: 1
-      } as unknown);
+      } as Shape);
     }
 
     setLayers([

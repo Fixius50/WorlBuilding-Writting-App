@@ -11,13 +11,18 @@ export interface Relacion {
   destino_handle?: string | null;
 }
 
+export interface RelacionEnriquecida extends Relacion {
+  nombre_origen?: string;
+  nombre_destino?: string;
+}
+
 export const relationshipService = {
   async getByProject(projectId: number): Promise<Relacion[]> {
     return await sql<Relacion>`SELECT * FROM relaciones WHERE project_id = ${projectId}`;
   },
 
-  async getByEntity(entityId: number): Promise<unknown[]> {
-    return await sql`
+  async getByEntity(entityId: number): Promise<RelacionEnriquecida[]> {
+    return await sql<RelacionEnriquecida>`
       SELECT r.*, 
              e1.nombre as nombre_origen, 
              e2.nombre as nombre_destino
