@@ -4,6 +4,7 @@ import { entityService } from '@repositories/entityService';
 import { Entidad } from '@domain/models/database';
 import CosmicProfileView from './CosmicProfileView';
 import IndividualProfileView from './IndividualProfileView';
+import EntityBuilder from './EntityBuilder';
 import InteractiveMapView from '../../Maps/pages/InteractiveMapView';
 
 const EntityRouter = () => {
@@ -58,17 +59,22 @@ const EntityRouter = () => {
   const mapTypes = ['MAP', 'MAPA'];
   const timelineTypes = ['TIMELINE', 'CRONOLOGIA', 'CRONOLOGÍA'];
 
-  // Switch de enrutamiento camaleónico
-  if (cosmicTypes.includes(tipo)) {
-    return <CosmicProfileView entityId={entity.id} />;
+  // Switch de enrutamiento camaleónico (Refactorizado para extensibilidad futura)
+  switch (true) {
+    case cosmicTypes.includes(tipo):
+      return <CosmicProfileView entityId={entity.id} />;
+    
+    case tipo === 'ENTIDAD' || tipo === 'ENTITY':
+      // Redirección directa al Constructor para el tipo genérico 'ENTIDAD'
+      return <EntityBuilder mode="edit" />;
+    
+    case mapTypes.includes(tipo):
+      return <InteractiveMapView map={entity} />;
+    
+    default:
+      // Perfil individual industrial para el resto de nodos (Personajes, Lugares, etc.)
+      return <IndividualProfileView />;
   }
-
-  if (mapTypes.includes(tipo)) {
-    return <InteractiveMapView map={entity} />;
-  }
-
-  // Por defecto, perfil individual (Personajes, Lugares, Cronologías, etc.)
-  return <IndividualProfileView />;
 };
 
 export default EntityRouter;

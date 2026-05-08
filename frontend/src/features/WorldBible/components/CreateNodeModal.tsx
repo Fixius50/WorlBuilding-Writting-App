@@ -21,13 +21,14 @@ const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCr
 
   // Definición de tipos disponibles para el Omni-Constructor
   const TYPES_IDS: HierarchyTypeId[] = [
-    'UNIVERSE',
-    'MAP',
-    'TIMELINE',
+    'ENTIDAD',
     'PERSONAJE',
+    'OBJETO',
+    'MAP',
+    'UNIVERSE',
+    'TIMELINE',
     'LUGAR',
     'ORGANIZACION',
-    'OBJETO',
     'EVENTO',
     'CONLANG'
   ];

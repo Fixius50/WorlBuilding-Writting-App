@@ -21,6 +21,7 @@ export type HierarchyTypeId =
   | 'ORGANIZACION'
   | 'OBJETO'
   | 'EVENTO'
+  | 'ENTIDAD'
   | 'CONLANG';
 
 export interface HierarchyTypeDefinition {
@@ -114,5 +115,10 @@ export const HIERARCHY_DEFINITIONS: Record<HierarchyTypeId, HierarchyTypeDefinit
     id: 'CONLANG',
     label: 'Lengua Construida',
     description: 'Sistemas lingüísticos y glifos.'
+  },
+  ENTIDAD: {
+    id: 'ENTIDAD',
+    label: 'Constructor Directo',
+    description: 'Nodo modular con acceso total al constructor.'
   }
 };

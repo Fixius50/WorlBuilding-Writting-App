@@ -97,6 +97,11 @@ export const HIERARCHY_VISUALS: Record<HierarchyTypeId, HierarchyVisuals> = {
     icon: 'translate', 
     color: 'text-indigo-400', 
     bgColor: 'bg-indigo-900/20' 
+  },
+  ENTIDAD: { 
+    icon: 'token', 
+    color: 'text-primary', 
+    bgColor: 'bg-primary/10' 
   }
 };
 

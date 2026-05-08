@@ -41,7 +41,29 @@ const CosmicCanvasEditor: React.FC<{ entityId: number }> = ({ entityId }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
+  const [selectedEntityId, setSelectedEntityId] = useState<number | null>(entityId);
+  const [selectedEntity, setSelectedEntity] = useState<Entidad | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Cargar entidad seleccionada para el panel derecho
+  useEffect(() => {
+    if (selectedEntityId) {
+      loadSelectedEntity(selectedEntityId);
+    }
+  }, [selectedEntityId]);
+
+  const loadSelectedEntity = async (id: number) => {
+    try {
+      const data = await entityService.getById(id);
+      setSelectedEntity(data);
+    } catch (err) {
+      console.error("Error loading selected entity:", err);
+    }
+  };
+
+  const onNodeClick = useCallback((_: any, node: Node) => {
+    setSelectedEntityId(Number(node.id));
+  }, []);
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -209,6 +231,7 @@ const CosmicCanvasEditor: React.FC<{ entityId: number }> = ({ entityId }) => {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onNodeClick={onNodeClick}
           nodeTypes={nodeTypes}
           fitView
           colorMode="dark"
@@ -229,15 +252,30 @@ const CosmicCanvasEditor: React.FC<{ entityId: number }> = ({ entityId }) => {
         <div className="p-6 border-b border-foreground/10 bg-[#0a0a0a] sticky top-0 z-10">
           <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40 flex items-center gap-2">
             <span className="material-symbols-outlined text-sm">settings_input_component</span>
-            Telemetría de Nodo
+            Telemetría: {selectedEntity?.nombre || 'Seleccionar...'}
           </h2>
         </div>
         
         <div className="p-6">
-           <DynamicAttributeForm 
-             entity={entity} 
-             onUpdate={() => {/* Opcional: refrescar canvas si el nombre cambia */}} 
-           />
+           {selectedEntity && (
+             <div className="space-y-6">
+               <button 
+                 onClick={() => navigate(`/${username}/${projectName}/bible/entity/${selectedEntity.id}`)}
+                 className="w-full h-10 border border-primary/30 text-primary text-[10px] font-black uppercase tracking-widest hover:bg-primary/10 transition-colors flex items-center justify-center gap-2"
+               >
+                 <span className="material-symbols-outlined text-sm">open_in_new</span>
+                 ABRIR_CONSTRUCTOR_COMPLETO
+               </button>
+               
+               <div className="h-px bg-foreground/10" />
+
+               <DynamicAttributeForm 
+                 key={selectedEntity.id}
+                 entity={selectedEntity} 
+                 onUpdate={() => {/* Opcional: refrescar canvas si el nombre cambia */}} 
+               />
+             </div>
+           )}
         </div>
         
         <div className="mt-auto p-6 space-y-4">

@@ -268,16 +268,6 @@ const WorldBibleLayout: React.FC = () => {
                     <span className="text-[10px] font-black uppercase tracking-[0.2em]">Nuevo Nodo</span>
                   </button>
 
-                  <button
-                    onClick={() => {
-                      const id = location.pathname.match(/\/folder\/(\d+)/)?.[1];
-                      navigate(`/local/${projectName}/bible/folder/${id || 'root'}/entity/new/entidadindividual`);
-                    }}
-                    className="flex items-center gap-3 px-6 py-2.5 bg-foreground text-background hover:bg-primary hover:text-primary-foreground transition-all rounded-full group shadow-xl"
-                  >
-                    <span className="material-symbols-outlined text-sm">person_add</span>
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Nueva Entidad</span>
-                  </button>
                 </div>
               )}
             </div>

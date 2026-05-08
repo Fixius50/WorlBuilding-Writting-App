@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useOutletContext, useNavigate } from 'react-router-dom';
+import { useParams, useOutletContext, useNavigate } from 'react-router-dom';
 import { entityService } from '@repositories/entityService';
 import { Entidad, Valor } from '@domain/models/database';
 import Avatar from '@atoms/Avatar';
@@ -7,7 +7,6 @@ import SecondaryTabs from '@molecules/SecondaryTabs';
 import MiniGraph from '../components/MiniGraph';
 import MiniTimeline from '../components/MiniTimeline';
 import DynamicAttributeForm from '../components/DynamicAttributeForm';
-import ConfirmationModal from '@organisms/ConfirmationModal';
 import { notebookService } from '@repositories/notebookService';
 
 interface ProfileOutletContext {
@@ -32,13 +31,12 @@ interface EntityWithExtra extends Entidad {
 }
 
 const IndividualProfileView = () => {
-  const { username, projectName, folderId, entityId } = useParams();
+  const { username, projectName, entityId } = useParams();
   const navigate = useNavigate();
   const { setRightOpen, setRightPanelTab, setRightPanelContent, setRightPanelTitle } = useOutletContext<ProfileOutletContext>();
   const [entity, setEntity] = useState<EntityWithExtra | null>(null);
   const [activeTab, setActiveTab] = useState('GENERAL');
   const [loading, setLoading] = useState(true);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [mentions, setMentions] = useState<{ hoja_id: number; hoja_titulo: string; cuaderno_titulo: string; cuaderno_id: number }[]>([]);
 
   useEffect(() => {
@@ -99,131 +97,60 @@ const IndividualProfileView = () => {
     }
   };
 
-  useEffect(() => {
-    if (entity) {
-      setRightPanelTitle(
-        <div className="flex flex-col">
-          <span className="text-[9px] font-black uppercase tracking-widest text-primary mb-1">Registro de Creador</span>
-          <span className="text-foreground font-black text-sm truncate">{entity.nombre}</span>
-        </div>
-      );
+  if (loading) return (
+    <div className="flex-1 flex items-center justify-center bg-black">
+      <div className="text-primary font-mono tracking-[0.5em] text-xs">
+        [ RECUPERANDO ARCHIVO INDIVIDUAL ]
+      </div>
+    </div>
+  );
 
-      setRightPanelContent(
-        <div className="p-6 space-y-8 animate-in fade-in duration-500">
-           {/* --- PANEL DE NOTAS DE AUTOR (Reemplaza a la Identidad Técnica) --- */}
-           <section>
-              <div className="flex items-center justify-between mb-4 px-2">
-                <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Notas de Autor</h3>
-                <span className="material-symbols-outlined text-[14px] text-primary/50">edit_note</span>
-              </div>
-              <div className="bg-foreground/[0.02] border border-foreground/10 p-5 min-h-[200px] text-xs text-foreground/70 italic leading-relaxed whitespace-pre-wrap">
-                {entity.notes || "No hay notas secretas para esta entidad. Utiliza el modo edición para añadirlas."}
-              </div>
-           </section>
-
-           <section>
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-4 px-2">Tags de Clasificación</h3>
-              <div className="flex flex-wrap gap-2">
-                {(entity.tags || '').split(',').filter(Boolean).map((tag, i) => (
-                  <span key={i} className="text-[10px] font-bold text-foreground/60 bg-foreground/10 px-3 py-1 border border-foreground/10 uppercase tracking-tighter hover:text-primary hover:border-primary/40 transition-colors cursor-default">
-                    {tag.trim()}
-                  </span>
-                ))}
-              </div>
-           </section>
-        </div>
-      );
-    }
-  }, [entity]);
-
-  if (loading) return <div className="p-20 text-center animate-pulse text-foreground/50 h-full flex items-center justify-center font-black uppercase tracking-[0.4em] text-xs">Accediendo a la Cápsula...</div>;
-  if (!entity) return <div className="p-20 text-center text-red-400">Error: Entidad no encontrada.</div>;
+  if (!entity) return <div className="p-20 text-center text-destructive bg-black h-full font-mono">ERROR_404: ARCHIVO_NO_EXISTE</div>;
 
   const tabs = [
-    { id: 'GENERAL', label: 'Esencia' },
-    { id: 'INTELLIGENCE', label: 'Inteligencia de Campo' },
-    { id: 'METADATA', label: 'Arquetipo' },
-    { id: 'BACKLINKS', label: 'Apariciones' },
+    { id: 'GENERAL', label: 'REGISTRO', icon: 'description' },
+    { id: 'TELEMETRY', label: 'ATRIBUTOS', icon: 'settings_input_component' },
+    { id: 'HISTORY', label: 'CRÓNICA', icon: 'history' },
+    { id: 'RELATIONS', label: 'VÍNCULOS', icon: 'account_tree' },
+    { id: 'MENTIONS', label: 'CITAS', icon: 'menu_book' }
   ];
 
-  const handleEntityNavigate = (id: number) => {
-    const fid = folderId || entity?.carpeta_id;
-    if (fid) {
-      navigate(`/${username || 'local'}/${projectName}/bible/folder/${fid}/entity/${id}`);
-    } else {
-      navigate(`/${username || 'local'}/${projectName}/bible/entity/${id}`);
-    }
-  };
-
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#0a0a0a] overflow-hidden animate-in fade-in duration-700">
+    <div className="flex-1 flex flex-col h-full bg-black overflow-hidden font-mono">
       
-      {/* --- PREMIUM HEADER --- */}
-      <div className="shrink-0 p-8 lg:px-12 lg:pt-16 lg:pb-8 border-b border-foreground/5 bg-gradient-to-b from-primary/5 to-transparent relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2" />
+      {/* --- INDUSTRIAL HEADER (Individual) --- */}
+      <header className="shrink-0 p-12 lg:px-16 lg:py-16 border-b border-foreground/10 bg-black relative flex flex-col items-center text-center gap-6">
+        <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
         
-        <div className="flex flex-col lg:flex-row items-center lg:items-end gap-10 relative z-10">
-          <Avatar 
-            name={entity.nombre} 
-            url={entity.iconUrl || undefined}
-            size="xl" 
-            className="size-32 lg:size-48 rounded-none border-t-4 border-primary shadow-[0_40px_80px_rgba(0,0,0,0.5)] bg-card" 
-          />
+        <div className="relative z-10 space-y-4 flex flex-col items-center">
+          <div className="px-3 py-1 bg-primary/10 border border-primary/30 text-primary text-[10px] font-black uppercase tracking-[0.3em]">
+            {entity.tipo || 'ENTIDAD_GENÉRICA'}
+          </div>
           
-          <div className="flex-1 text-center lg:text-left space-y-4">
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
-                <h1 className="text-4xl lg:text-6xl font-serif font-black text-foreground tracking-tight leading-none italic">{entity.nombre}</h1>
-                <span className="px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] bg-primary/10 text-primary border border-primary/30">
-                  {entity.tipo || 'ENTIDAD'}
-                </span>
-              </div>
-            </div>
+          <h1 className="text-4xl lg:text-5xl font-black text-foreground tracking-[0.05em] uppercase leading-none">
+            {entity.nombre}
+          </h1>
+          
+          <div className="h-1 w-24 bg-primary/50" />
 
-             <div className="flex items-center justify-center lg:justify-start gap-4 mt-6">
-                {['MAP', 'MAPA', 'TIMELINE', 'CRONOLOGIA', 'CRONOLOGÍA'].includes(entity.tipo?.toUpperCase()) ? (
-                  <button 
-                    onClick={() => {
-                      if (['MAP', 'MAPA'].includes(entity.tipo?.toUpperCase())) {
-                        navigate(`/${username || 'local'}/${projectName}/map`);
-                      } else {
-                        navigate(`/${username || 'local'}/${projectName}/timeline`);
-                      }
-                    }}
-                    className="px-6 py-3 bg-primary text-foreground text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:brightness-110 transition-all active:scale-95 flex items-center gap-2"
-                  >
-                    <span className="material-symbols-outlined text-sm">
-                      {['MAP', 'MAPA'].includes(entity.tipo?.toUpperCase()) ? 'map' : 'timeline'}
-                    </span>
-                    {['MAP', 'MAPA'].includes(entity.tipo?.toUpperCase()) ? 'Abrir Atlas' : 'Ver Cronología'}
-                  </button>
-                ) : (
-                  <Link to={folderId ? `/${username || 'local'}/${projectName}/bible/folder/${folderId}/entity/${entityId}/edit` : `/${username || 'local'}/${projectName}/bible/entity/${entityId}/edit`}>
-                    <button className="px-6 py-3 bg-foreground text-background text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-primary transition-all active:scale-95">
-                      Transmutar Archivo
-                    </button>
-                  </Link>
-                )}
-                
-                <button 
-                  onClick={() => setDeleteModalOpen(true)}
-                  className="px-6 py-3 border border-red-500/30 text-red-400 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all active:scale-95 flex items-center gap-2"
-                >
-                  <span className="material-symbols-outlined text-sm">delete</span>
-                  Borrar Archivo
-                </button>
-
-                <button className="size-11 border border-foreground/10 hover:border-primary/50 text-foreground/40 hover:text-primary transition-all flex items-center justify-center">
-                   <span className="material-symbols-outlined text-xl">share</span>
-                </button>
-             </div>
+          <div className="flex items-center gap-2 mt-4">
+             <button 
+               onClick={() => navigate(`/${username || 'local'}/${projectName}/bible/entity/${entityId}/edit`)}
+               className="h-10 px-6 bg-foreground text-background text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-colors flex items-center gap-2"
+             >
+               <span className="material-symbols-outlined text-sm">edit</span>
+               EDITAR_REGISTRO
+             </button>
+             <button className="size-10 border border-foreground/10 flex items-center justify-center text-foreground/40 hover:text-primary transition-colors">
+                <span className="material-symbols-outlined text-sm">share</span>
+             </button>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* --- CONTENT AREA & TABS --- */}
-      <div className="flex-1 flex flex-col min-h-0">
-        <div className="px-8 lg:px-12 py-4 bg-background/40 backdrop-blur-md border-b border-foreground/5 sticky top-0 z-20">
+      {/* --- CONTENT AREA --- */}
+      <div className="flex-1 flex flex-col min-h-0 bg-[#050505]">
+        <div className="bg-black border-b border-foreground/10 flex justify-center">
           <SecondaryTabs 
             tabs={tabs} 
             activeTab={activeTab} 
@@ -232,126 +159,89 @@ const IndividualProfileView = () => {
         </div>
 
         <main className="flex-1 overflow-y-auto custom-scrollbar p-8 lg:p-12">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-5xl mx-auto space-y-12">
             
-            {/* --- PESTAÑA GENERAL ARREGLADA --- */}
             {activeTab === 'GENERAL' && (
-              <div className="max-w-4xl mx-auto animate-in slide-in-from-bottom-4 duration-500 space-y-16">
-                {/* Biografía principal */}
+              <div className="space-y-10 animate-in fade-in duration-500">
                 <div className="space-y-6">
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary flex items-center gap-3 border-b border-foreground/10 pb-4">
-                    <span className="material-symbols-outlined text-lg">history_edu</span>
-                    Biografía y Registro Histórico
-                  </h3>
-                  <div className="text-foreground/80 text-lg leading-relaxed font-serif whitespace-pre-wrap">
-                    {entity.descripcion || "Esta entidad aún no tiene registros en la historia..."}
+                  <div className="flex items-center gap-4">
+                    <div className="size-2 bg-primary" />
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40">RESUMEN_DESCRIPTIVO</h3>
+                  </div>
+                  <div className="bg-black border border-foreground/10 p-8 text-foreground/70 text-lg leading-relaxed whitespace-pre-wrap font-sans">
+                    {entity.descripcion || "Sin registros descriptivos disponibles."}
                   </div>
                 </div>
 
-                {/* Apariencia / Detalles Visuales */}
                 {entity.appearance && (
                   <div className="space-y-6">
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40 flex items-center gap-3 border-b border-foreground/10 pb-4">
-                      <span className="material-symbols-outlined text-lg">visibility</span>
-                      Apariencia y Rasgos
-                    </h3>
-                    <div className="text-foreground/60 text-md leading-relaxed whitespace-pre-wrap italic">
+                    <div className="flex items-center gap-4">
+                      <div className="size-2 bg-foreground/20" />
+                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40">ANÁLISIS_VISUAL</h3>
+                    </div>
+                    <div className="bg-black border border-foreground/10 p-8 text-foreground/50 text-sm leading-relaxed whitespace-pre-wrap italic">
                       {entity.appearance}
                     </div>
                   </div>
                 )}
-
-                {/* Galería de imágenes */}
-                {entity.images && entity.images.length > 0 && (
-                  <div className="space-y-6">
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40 flex items-center gap-3 border-b border-foreground/10 pb-4">
-                      <span className="material-symbols-outlined text-lg">photo_library</span>
-                      Archivos Visuales
-                    </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {entity.images.map((img: string, i: number) => (
-                        <img key={i} src={img} alt="Referencia" className="w-full aspect-square object-cover border border-foreground/10 opacity-70 hover:opacity-100 transition-opacity" />
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 
-            {/* --- LAS DEMÁS PESTAÑAS SE MANTIENEN IGUAL --- */}
-            {activeTab === 'INTELLIGENCE' && (
-              <div className="flex flex-col lg:flex-row gap-8 h-[calc(100vh-350px)] animate-in fade-in zoom-in-95 duration-500">
-                <div className="flex-1 min-h-[400px] border border-foreground/5 bg-foreground/[0.01] overflow-hidden relative group">
-                  <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-primary/10 border border-primary/20 text-[9px] font-black uppercase tracking-widest text-primary">Mapa de Relaciones</div>
-                  <MiniGraph entityId={Number(entityId)} onNavigate={handleEntityNavigate} />
+            {activeTab === 'TELEMETRY' && (
+              <div className="animate-in fade-in duration-500">
+                <DynamicAttributeForm entity={entity} onUpdate={loadEntity} />
+              </div>
+            )}
+
+            {activeTab === 'RELATIONS' && (
+              <div className="space-y-8 animate-in fade-in duration-500 h-[600px] border border-foreground/10 bg-black">
+                <MiniGraph entityId={entity.id} onNavigate={(id) => navigate(`/${username}/${projectName}/bible/entity/${id}`)} />
+              </div>
+            )}
+
+            {activeTab === 'HISTORY' && (
+              <div className="animate-in fade-in duration-500 min-h-[500px]">
+                <MiniTimeline entityId={entity.id} />
+              </div>
+            )}
+
+            {activeTab === 'MENTIONS' && (
+              <div className="space-y-6 animate-in fade-in duration-500">
+                <div className="flex items-center gap-4">
+                  <div className="size-2 bg-primary" />
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40">REFERENCIAS_EN_CUADERNOS</h3>
                 </div>
-                <div className="w-full lg:w-[450px] border border-foreground/5 bg-foreground/[0.01] flex flex-col overflow-hidden relative">
-                  <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-purple-500/10 border border-purple-500/20 text-[9px] font-black uppercase tracking-widest text-purple-400">Secuencia Temporal</div>
-                  <div className="flex-1 overflow-y-auto custom-scrollbar p-6 pt-16">
-                    <MiniTimeline entityId={Number(entityId)} />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'METADATA' && (
-              <div className="max-w-4xl animate-in fade-in duration-500">
-                 <DynamicAttributeForm entity={entity} onUpdate={loadEntity} />
-              </div>
-            )}
-
-            {activeTab === 'BACKLINKS' && (
-              <div className="animate-in slide-in-from-right-8 duration-500 space-y-6 max-w-3xl">
-                 <div className="pb-4 border-b border-primary/20">
-                    <h3 className="text-xs font-black uppercase tracking-widest text-primary">Referencias en la Obra</h3>
-                 </div>
-                 {mentions.length > 0 ? (
-                    mentions.map((mention, i) => (
-                      <div 
-                        key={i} 
-                        className="p-4 bg-foreground/5 border border-foreground/10 hover:border-primary/40 transition-all group cursor-pointer"
-                        onClick={() => navigate(`/local/${projectName}/writing/${mention.cuaderno_id}?page=${mention.hoja_id}`)}
-                      >
-                         <div className="flex justify-between items-center mb-2">
-                            <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-tighter">
-                              {mention.cuaderno_titulo} — {mention.hoja_titulo}
-                            </span>
-                         </div>
-                         <p className="text-sm text-foreground/60 leading-relaxed italic">
-                            Mencionado en la sección "{mention.hoja_titulo}".
-                         </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {mentions.length > 0 ? mentions.map((m, idx) => (
+                    <div 
+                      key={idx} 
+                      onClick={() => navigate(`/${username}/${projectName}/writing/${m.cuaderno_id}`)}
+                      className="p-4 bg-black border border-foreground/10 hover:border-primary/30 cursor-pointer group flex items-center justify-between"
+                    >
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-foreground group-hover:text-primary transition-colors uppercase tracking-widest">{m.hoja_titulo}</span>
+                        <span className="text-[8px] text-foreground/30 uppercase mt-1">CUADERNO: {m.cuaderno_titulo}</span>
                       </div>
-                    ))
-                 ) : (
-                    <div className="py-20 text-center opacity-30 border border-dashed border-foreground/10">
-                       <span className="material-symbols-outlined text-4xl mb-2">find_in_page</span>
-                       <p className="text-[10px] font-black uppercase tracking-widest">Sin apariciones registradas aún.</p>
+                      <span className="material-symbols-outlined text-foreground/20 group-hover:text-primary text-sm">open_in_new</span>
                     </div>
-                 )}
+                  )) : (
+                    <div className="col-span-full p-12 text-center border border-dashed border-foreground/10 text-foreground/20 text-[10px] uppercase tracking-widest">
+                      Sin referencias detectadas en los archivos de escritura.
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
         </main>
       </div>
 
-      <ConfirmationModal
-        isOpen={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-        onConfirm={async () => {
-          await entityService.delete(Number(entityId));
-          const fid = folderId || entity?.carpeta_id;
-          if (fid) {
-            window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: Number(fid) } }));
-            navigate(`/${username || 'local'}/${projectName}/bible/folder/${fid}`);
-          } else {
-            navigate(`/${username || 'local'}/${projectName}/bible`);
-          }
-        }}
-        title="Confirmar Eliminación"
-        message="¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer."
-        confirmText="Borrar"
-        cancelText="Cancelar"
-      />
+      {/* --- SYSTEM FOOTER --- */}
+      <footer className="p-4 bg-black border-t border-foreground/10 flex justify-between items-center opacity-40">
+         <div className="text-[8px] uppercase tracking-[0.2em]">FILE_VERSION: 1.0.42_STABLE</div>
+         <div className="text-[8px] uppercase tracking-[0.2em]">ACCESS_TIMESTAMP: {new Date().toISOString()}</div>
+      </footer>
     </div>
   );
 };
