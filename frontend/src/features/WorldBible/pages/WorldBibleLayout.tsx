@@ -9,6 +9,7 @@ import { ArchitectContext } from '@domain/models/ui';
 import { folderService } from '@repositories/folderService';
 import { entityService } from '@repositories/entityService';
 import ConfirmationModal from '@organisms/ConfirmationModal';
+import { useRightPanelStore } from '@store/useRightPanelStore';
 
 
 const WorldBibleLayout: React.FC = () => {
@@ -19,6 +20,7 @@ const WorldBibleLayout: React.FC = () => {
   
   // Consumir el contexto centralizado del ArchitectLayout
   const architectContext = useOutletContext<ArchitectContext>();
+  const { openPanel, closePanel, setActiveTab, setCustomContent } = useRightPanelStore();
   
   const [viewMode, setViewMode] = useState<'folders' | 'table'>('folders');
   const [creationModalOpen, setCreationModalOpen] = useState(false);
@@ -292,6 +294,11 @@ const WorldBibleLayout: React.FC = () => {
               allFolders: architectContext.folders || [],
               handleOpenCreateModal: () => handleOpenCreateModal(currentFolder),
               handleDeleteEntity,
+              // Arreglo para el error de contexto en Profile Views
+              setRightOpen: (open: boolean) => open ? openPanel('custom') : closePanel(),
+              setRightPanelTab: setActiveTab,
+              setRightPanelContent: (content: React.ReactNode) => useRightPanelStore.setState({ content, mode: 'custom', isOpen: true }),
+              setRightPanelTitle: (title: React.ReactNode) => useRightPanelStore.setState({ title }),
             }} />
           ) : (
             <BibleTableView 

@@ -8,12 +8,12 @@ interface RightPanelState {
   mode: RightPanelMode;
   activeId: number | string | null;
   content: ReactNode | null;
-  title: string | null;
+  title: ReactNode | null;
   activeTab: string;
 
   // Acciones
-  openPanel: (mode: RightPanelMode, activeId?: number | string | null, title?: string | null) => void;
-  setCustomContent: (content: ReactNode, title?: string | null) => void;
+  openPanel: (mode: RightPanelMode, activeId?: number | string | null, title?: ReactNode | null) => void;
+  setCustomContent: (content: ReactNode, title?: ReactNode | null) => void;
   closePanel: () => void;
   togglePanel: () => void;
   setActiveTab: (tab: string) => void;

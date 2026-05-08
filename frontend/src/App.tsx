@@ -12,7 +12,7 @@ import ProjectView from '@presentation/pages/ProjectView';
 // Features (via barrel files)
 import { Settings, ArchetypeManager } from '@features/Settings';
 import { Dashboard } from '@features/Dashboard';
-import { EntityRouter, EntityBuilder, FolderView } from '@features/Entities';
+import { EntityRouter, EntityBuilder, EntityEditRouter, FolderView } from '@features/Entities';
 import { GeneralGraphView } from '@features/Graph';
 import { TimelineView, DimensionEditor } from '@features/Timeline';
 import { MapRouter } from '@features/Maps';
@@ -81,8 +81,10 @@ const App = () => {
                   <Route path="folder/:folderId/entity/new/:type" element={<EntityBuilder mode="creation" />} />
                   <Route path="folder/:folderId" element={<BibleGridView />} />
                   <Route path="dimension/:folderId" element={<DimensionEditor />} />
-                  <Route path="entity/:entityId" element={<EntityBuilder mode="edit" />} />
-                  <Route path="folder/:folderId/entity/:entityId" element={<EntityBuilder mode="edit" />} />
+                  <Route path="entity/:entityId" element={<EntityRouter />} />
+                  <Route path="entity/:entityId/edit" element={<EntityEditRouter />} />
+                  <Route path="folder/:folderId/entity/:entityId" element={<EntityRouter />} />
+                  <Route path="folder/:folderId/entity/:entityId/edit" element={<EntityEditRouter />} />
                 </Route>
 
                 <Route path="map" element={<MapRouter />} />

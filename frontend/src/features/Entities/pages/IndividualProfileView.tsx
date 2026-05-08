@@ -31,7 +31,7 @@ interface EntityWithExtra extends Entidad {
   [key: string]: unknown;
 }
 
-const EntityProfile = () => {
+const IndividualProfileView = () => {
   const { username, projectName, folderId, entityId } = useParams();
   const navigate = useNavigate();
   const { setRightOpen, setRightPanelTab, setRightPanelContent, setRightPanelTitle } = useOutletContext<ProfileOutletContext>();
@@ -147,7 +147,12 @@ const EntityProfile = () => {
   ];
 
   const handleEntityNavigate = (id: number) => {
-    navigate(`/${username || 'local'}/${projectName}/bible/folder/${folderId}/entity/${id}`);
+    const fid = folderId || entity?.carpeta_id;
+    if (fid) {
+      navigate(`/${username || 'local'}/${projectName}/bible/folder/${fid}/entity/${id}`);
+    } else {
+      navigate(`/${username || 'local'}/${projectName}/bible/entity/${id}`);
+    }
   };
 
   return (
@@ -176,11 +181,29 @@ const EntityProfile = () => {
             </div>
 
              <div className="flex items-center justify-center lg:justify-start gap-4 mt-6">
-                <Link to={`/${username || 'local'}/${projectName}/bible/folder/${folderId}/entity/${entityId}/edit`}>
-                   <button className="px-6 py-3 bg-foreground text-background text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-primary transition-all active:scale-95">
-                     Transmutar Archivo
-                   </button>
-                </Link>
+                {['MAP', 'MAPA', 'TIMELINE', 'CRONOLOGIA', 'CRONOLOGÍA'].includes(entity.tipo?.toUpperCase()) ? (
+                  <button 
+                    onClick={() => {
+                      if (['MAP', 'MAPA'].includes(entity.tipo?.toUpperCase())) {
+                        navigate(`/${username || 'local'}/${projectName}/map`);
+                      } else {
+                        navigate(`/${username || 'local'}/${projectName}/timeline`);
+                      }
+                    }}
+                    className="px-6 py-3 bg-primary text-foreground text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:brightness-110 transition-all active:scale-95 flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-sm">
+                      {['MAP', 'MAPA'].includes(entity.tipo?.toUpperCase()) ? 'map' : 'timeline'}
+                    </span>
+                    {['MAP', 'MAPA'].includes(entity.tipo?.toUpperCase()) ? 'Abrir Atlas' : 'Ver Cronología'}
+                  </button>
+                ) : (
+                  <Link to={folderId ? `/${username || 'local'}/${projectName}/bible/folder/${folderId}/entity/${entityId}/edit` : `/${username || 'local'}/${projectName}/bible/entity/${entityId}/edit`}>
+                    <button className="px-6 py-3 bg-foreground text-background text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-primary transition-all active:scale-95">
+                      Transmutar Archivo
+                    </button>
+                  </Link>
+                )}
                 
                 <button 
                   onClick={() => setDeleteModalOpen(true)}
@@ -316,8 +339,13 @@ const EntityProfile = () => {
         onClose={() => setDeleteModalOpen(false)}
         onConfirm={async () => {
           await entityService.delete(Number(entityId));
-          window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: Number(folderId) } }));
-          navigate(`/${username || 'local'}/${projectName}/bible/folder/${folderId}`);
+          const fid = folderId || entity?.carpeta_id;
+          if (fid) {
+            window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: Number(fid) } }));
+            navigate(`/${username || 'local'}/${projectName}/bible/folder/${fid}`);
+          } else {
+            navigate(`/${username || 'local'}/${projectName}/bible`);
+          }
         }}
         title="Confirmar Eliminación"
         message="¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer."
@@ -328,4 +356,4 @@ const EntityProfile = () => {
   );
 };
 
-export default EntityProfile;
+export default IndividualProfileView;

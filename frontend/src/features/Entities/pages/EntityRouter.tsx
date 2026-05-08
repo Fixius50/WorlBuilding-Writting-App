@@ -1,51 +1,74 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import CharacterView from './CharacterView';
-import LocationView from './LocationView';
-import CollectiveView from './CollectiveView';
-import CosmicHierarchyView from './CosmicHierarchyView';
-import TerritoryGridView from './TerritoryGridView';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { entityService } from '@repositories/entityService';
+import { Entidad } from '@domain/models/database';
+import CosmicProfileView from './CosmicProfileView';
+import IndividualProfileView from './IndividualProfileView';
+import InteractiveMapView from '../../Maps/pages/InteractiveMapView';
 
 const EntityRouter = () => {
- const { type, entityId } = useParams();
+  const { entityId } = useParams();
+  const [entity, setEntity] = useState<Entidad | null>(null);
+  const [loading, setLoading] = useState(true);
 
- const renderView = () => {
- const lowerType = type?.toLowerCase();
+  useEffect(() => {
+    if (entityId) {
+      loadEntity();
+    }
+  }, [entityId]);
 
- switch (lowerType) {
- case 'character':
- case 'entidadindividual':
- return <CharacterView id={entityId as string} />;
- case 'location':
- case 'zona':
- return <LocationView id={entityId as string} />;
- case 'culture':
- case 'entidadcolectiva':
- return <CollectiveView id={entityId as string} />;
- case 'universe':
- case 'galaxy':
- case 'system':
- return <CosmicHierarchyView id={entityId as string} type={lowerType as string} />;
- case 'planet':
- return <TerritoryGridView id={entityId as string} />;
- case 'construccion':
- return <LocationView id={entityId as string} />; // Reusing LocationView for now
- case 'efectos':
- return <div className="p-8 text-foreground">Effect/Spell View for ID: {entityId}</div>;
- case 'interaccion':
- return <div className="p-8 text-foreground">Interaction/Event View for ID: {entityId}</div>;
- case 'magic':
- return <div className="p-8 text-foreground">Magic System View for ID: {entityId}</div>;
- default:
- return <div className="p-8 text-foreground">Unknown Entity Type: {type}</div>;
- }
- };
+  const loadEntity = async () => {
+    setLoading(true);
+    try {
+      const data = await entityService.getById(Number(entityId));
+      setEntity(data);
+    } catch (err) {
+      console.error("Error routing entity:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
- return (
- <div className="flex-1 bg-background overflow-hidden">
- {renderView()}
- </div>
- );
+  if (loading) return (
+    <div className="flex-1 flex items-center justify-center bg-background">
+      <div className="text-primary animate-pulse font-mono tracking-widest">
+        ENRUTANDO ENTIDAD...
+      </div>
+    </div>
+  );
+  
+  if (!entity) return (
+    <div className="flex-1 flex items-center justify-center bg-background">
+      <div className="text-destructive font-bold uppercase tracking-widest">
+        404 - ENTIDAD NO ENCONTRADA EN EL ARCHIVO
+      </div>
+    </div>
+  );
+
+  const tipo = entity.tipo.trim().toUpperCase();
+  const cosmicTypes = [
+    'UNIVERSO', 'UNIVERSE', 'UNIVERSES',
+    'GALAXIA', 'GALAXY', 'GALAXIES',
+    'SISTEMA', 'SYSTEM', 'SYSTEMS',
+    'PLANETA', 'PLANET', 'PLANETS',
+    'DIMENSION', 'DIMENSIÓN', 'DIMENSIONS',
+    'ASTRO', 'ESTRELLA', 'STAR', 'STARS',
+    'COSMOS', 'SPACE', 'ESPACIO'
+  ];
+  const mapTypes = ['MAP', 'MAPA'];
+  const timelineTypes = ['TIMELINE', 'CRONOLOGIA', 'CRONOLOGÍA'];
+
+  // Switch de enrutamiento camaleónico
+  if (cosmicTypes.includes(tipo)) {
+    return <CosmicProfileView entityId={entity.id} />;
+  }
+
+  if (mapTypes.includes(tipo)) {
+    return <InteractiveMapView map={entity} />;
+  }
+
+  // Por defecto, perfil individual (Personajes, Lugares, Cronologías, etc.)
+  return <IndividualProfileView />;
 };
 
 export default EntityRouter;
