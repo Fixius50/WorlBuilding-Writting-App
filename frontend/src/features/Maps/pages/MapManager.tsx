@@ -66,8 +66,8 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  const attrs = typeof selectedMap.contenido_json === 'string' ? JSON.parse(selectedMap.contenido_json) : (selectedMap.contenido_json || {});
  
  return (
- <div className="flex flex-col h-full monolithic-panel animate-in slide-in-from-right duration-500">
- <div className="p-6 border-b border-foreground/10 bg-gradient-to-br from-primary/10 to-transparent">
+  <div className="flex flex-col h-full monolithic-panel animate-in slide-in-from-right duration-500">
+  <div className="p-6 border-b border-foreground/10 bg-gradient-to-br from-primary/10 to-transparent">
  <div className="flex items-center justify-between mb-2">
  <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
  <span className="material-symbols-outlined text-sm">info</span> Detalles del Atlas
@@ -104,7 +104,7 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  <option value="GALAXY">🌀 GALAXIA</option>
  <option value="PLANET">🌍 CUERPO CELESTE</option>
  <option value="TERRITORY">🗺️ TERRITORIO</option>
- <option value="ZONE">📍 ZONA</option>
+ <option value="ZONE">ZONA</option>
  </select>
  <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted pointer-events-none">expand_more</span>
  </div>
@@ -129,6 +129,14 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
       onClick={() => onEditMap(selectedMap)}
     >
       Editar en Editor
+    </Button>
+    <Button
+      variant="ghost"
+      className="w-full justify-center py-3 font-black tracking-widest uppercase text-red-400 hover:bg-red-500/10"
+      icon="delete"
+      onClick={() => { onDeleteMap(selectedMap); setSelectedMapId(null); }}
+    >
+      Eliminar Mapa
     </Button>
   </div>
  </div>
@@ -220,36 +228,36 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  </div>
  )}
 
- <div className="absolute top-2 right-2 flex flex-col gap-1 transform translate-x-[150%] group-hover:translate-x-0 transition-transform duration-300 z-30">
-    <button
-      onClick={(e) => { e.stopPropagation(); onSelectMap(map); }}
-      className="p-2 bg-background/90 hover:bg-primary/20 text-foreground rounded-none border border-primary/20 shadow-xl"
-      title="Abrir Visionador"
-    >
-      <span className="material-symbols-outlined text-sm">visibility</span>
-    </button>
-    <button
-      onClick={(e) => { e.stopPropagation(); onEditMap(map); }}
-      className="p-2 bg-background/90 hover:bg-primary/20 text-foreground rounded-none border border-primary/20 shadow-xl"
-      title="Editar en Editor"
-    >
-      <span className="material-symbols-outlined text-sm">edit</span>
-    </button>
-    <button
-      onClick={(e) => { e.stopPropagation(); onDuplicateMap(map); }}
-      className="p-2 bg-background/90 hover:bg-primary/20 text-foreground rounded-none border border-primary/20 shadow-xl"
-      title="Duplicar Mapa"
-    >
-      <span className="material-symbols-outlined text-sm">content_copy</span>
-    </button>
-    <button
-      onClick={(e) => { e.stopPropagation(); onDeleteMap(map); }}
-      className="p-2 bg-background/90 hover:bg-red-500/20 text-red-400 border border-red-500/20 shadow-xl"
-      title="Eliminar Mapa"
-    >
-      <span className="material-symbols-outlined text-sm">delete</span>
-    </button>
- </div>
+  <div className="absolute bottom-2 right-2 flex items-center gap-1 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+     <button
+       onClick={(e) => { e.stopPropagation(); onSelectMap(map); }}
+       className="p-2 bg-background/90 hover:bg-primary/20 text-foreground rounded-none border border-foreground/10 shadow-xl"
+       title="Abrir Visionador"
+     >
+       <span className="material-symbols-outlined text-sm">visibility</span>
+     </button>
+     <button
+       onClick={(e) => { e.stopPropagation(); onEditMap(map); }}
+       className="p-2 bg-background/90 hover:bg-primary/20 text-foreground rounded-none border border-foreground/10 shadow-xl"
+       title="Editar en Editor"
+     >
+       <span className="material-symbols-outlined text-sm">edit</span>
+     </button>
+     <button
+       onClick={(e) => { e.stopPropagation(); onDuplicateMap(map); }}
+       className="p-2 bg-background/90 hover:bg-primary/20 text-foreground rounded-none border border-foreground/10 shadow-xl"
+       title="Duplicar Mapa"
+     >
+       <span className="material-symbols-outlined text-sm">content_copy</span>
+     </button>
+     <button
+       onClick={(e) => { e.stopPropagation(); onDeleteMap(map); }}
+       className="p-2 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white rounded-none border border-red-500/20 shadow-xl transition-all"
+       title="Eliminar Mapa"
+     >
+       <span className="material-symbols-outlined text-sm">delete</span>
+     </button>
+  </div>
  </div>
 
  <div className="p-5">

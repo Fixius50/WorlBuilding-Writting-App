@@ -454,6 +454,13 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenAdvanced, onOpenE
           word={editingWord}
           onClose={() => setIsMeaningModalOpen(false)}
           onSave={handleSaveMeaning}
+          onDelete={() => {
+            if (editingWord) {
+              setWordToDelete(editingWord.id);
+              setIsDeleteModalOpen(true);
+              setIsMeaningModalOpen(false);
+            }
+          }}
           onEditSymbol={(word) => {
             setIsMeaningModalOpen(false);
             openEditor(word);
@@ -513,8 +520,9 @@ const MeaningEditorModal: React.FC<{
   word: Word | null;
   onClose: () => void;
   onSave: (data: Word & { isNew?: boolean }) => void;
+  onDelete?: () => void;
   onEditSymbol: (word: Word) => void;
-}> = ({ word, onClose, onSave, onEditSymbol }) => {
+}> = ({ word, onClose, onSave, onDelete, onEditSymbol }) => {
   const [data, setData] = useState({
     lema: word?.lema || '',
     definicion: word?.definicion || '',
@@ -523,25 +531,45 @@ const MeaningEditorModal: React.FC<{
   });
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-background/60">
-      <div className="w-full max-w-lg monolithic-panel rounded-[2.5rem] overflow-hidden bg-background">
-        <div className="p-8 border-b border-foreground/10 flex justify-between items-center">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60">
+      <div className="w-full max-w-lg monolithic-panel rounded-[2.5rem] overflow-hidden bg-white text-black">
+        <div className="p-8 border-b border-black/10 flex justify-between items-center">
           <h2 className="text-xl font-black italic">Editar Significado</h2>
-          <button onClick={onClose}><span className="material-symbols-outlined">close</span></button>
+          <div className="flex items-center gap-4">
+            {onDelete && (
+              <button 
+                onClick={onDelete}
+                className="text-red-500 hover:text-red-700 transition-colors"
+                title="Eliminar"
+              >
+                <span className="material-symbols-outlined">delete</span>
+              </button>
+            )}
+            <button onClick={onClose} className="text-black/40 hover:text-black"><span className="material-symbols-outlined">close</span></button>
+          </div>
         </div>
         <div className="p-8 space-y-6">
-          <input value={data.lema} onChange={e => setData(d => ({ ...d, lema: e.target.value }))} className="w-full monolithic-panel p-4" placeholder="Palabra" />
-          <select value={data.categoriaGramatical} onChange={e => setData(d => ({ ...d, categoriaGramatical: e.target.value }))} className="w-full monolithic-panel p-4 bg-background">
-            <option value="Noun">Sustantivo</option>
-            <option value="Verb">Verbo</option>
-            <option value="Adj">Adjetivo</option>
-            <option value="GLYPH">Glifo</option>
-          </select>
-          <textarea value={data.definicion} onChange={e => setData(d => ({ ...d, definicion: e.target.value }))} className="w-full monolithic-panel p-4 h-24" placeholder="Significado" />
-          <Button variant="outline" className="w-full" onClick={() => word && onEditSymbol(word)}>Editar Símbolo</Button>
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase tracking-widest text-black/40 px-4">Palabra / Lema</label>
+            <input value={data.lema} onChange={e => setData(d => ({ ...d, lema: e.target.value }))} className="w-full border border-black/10 p-4 rounded-full bg-black/5 text-black outline-none focus:border-primary" placeholder="Palabra" />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase tracking-widest text-black/40 px-4">Categoría</label>
+            <select value={data.categoriaGramatical} onChange={e => setData(d => ({ ...d, categoriaGramatical: e.target.value }))} className="w-full border border-black/10 p-4 rounded-full bg-black/5 text-black outline-none focus:border-primary">
+              <option value="Noun">Sustantivo</option>
+              <option value="Verb">Verbo</option>
+              <option value="Adj">Adjetivo</option>
+              <option value="GLYPH">Glifo</option>
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase tracking-widest text-black/40 px-4">Significado / Descripción</label>
+            <textarea value={data.definicion} onChange={e => setData(d => ({ ...d, definicion: e.target.value }))} className="w-full border border-black/10 p-4 h-24 rounded-[1.5rem] bg-black/5 text-black outline-none focus:border-primary resize-none" placeholder="Significado" />
+          </div>
+          <Button variant="outline" className="w-full border-black/20 text-black hover:bg-black/5" onClick={() => word && onEditSymbol(word)}>Editar Símbolo</Button>
         </div>
-        <div className="p-8 border-t border-foreground/10 flex gap-4">
-          <Button variant="ghost" className="flex-1" onClick={onClose}>Cancelar</Button>
+        <div className="p-8 border-t border-black/10 flex gap-4">
+          <Button variant="ghost" className="flex-1 text-black/60" onClick={onClose}>Cancelar</Button>
           <Button variant="primary" className="flex-1" onClick={() => word && onSave({ ...word, ...data })}>Guardar</Button>
         </div>
       </div>

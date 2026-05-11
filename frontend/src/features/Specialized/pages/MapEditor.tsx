@@ -71,7 +71,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
   const [drawMode, setDrawMode] = useState<DrawMode>('none');
   const [isDrawing, setIsDrawing] = useState(false);
   const [spacebarPanning, setSpacebarPanning] = useState(false); 
-  const [mapBgColor, setMapBgColor] = useState('#0f0f12');
+  const [mapBgColor, setMapBgColor] = useState('#ffffff');
   const [is3D, setIs3D] = useState(false); 
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
   const [brushSize, setBrushSize] = useState(20);
@@ -584,8 +584,8 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
 
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-6 animate-in fade-in duration-300">
-        <div className="w-full max-w-md monolithic-panel bg-background shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-          <div className="p-4 border-b border-foreground/10 bg-background/50 flex justify-between items-center">
+        <div className="w-full max-w-md monolithic-panel bg-background text-foreground shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+          <div className="p-4 border-b border-foreground/10 bg-background/5 flex justify-between items-center">
             <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
                <span className="material-symbols-outlined text-sm">link</span> Vincular Entidad
             </h3>
@@ -653,7 +653,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
 
   const renderSidebar = useCallback(() => {
     return (
-      <div className="flex flex-col h-full bg-background/50  p-6 space-y-8 overflow-y-auto custom-scrollbar animate-in slide-in-from-right duration-500">
+      <div className="flex flex-col h-full bg-white text-black p-6 space-y-8 overflow-y-auto custom-scrollbar animate-in slide-in-from-right duration-500 border-l border-black/10">
         <div className="space-y-2">
            <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
              <span className="material-symbols-outlined text-sm">settings</span> Configuración del Atlas
@@ -662,7 +662,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
              type="text" 
              value={mapEntity?.nombre || ''} 
              onChange={(e) => setMapEntity(prev => prev ? { ...prev, nombre: e.target.value } : null)}
-             className="w-full monolithic-panel bg-background/40 p-4 font-serif text-lg font-black text-foreground outline-none focus:border-primary/50"
+             className="w-full border border-black/10 bg-black/5 p-4 font-serif text-lg font-black text-black outline-none focus:border-primary/50"
              placeholder="Nombre del Mapa..."
            />
         </div>
@@ -718,9 +718,9 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
   }, [renderSidebar, setCustomContent]);
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-background overflow-hidden relative">
+    <div className="flex-1 flex flex-col h-full bg-white text-black overflow-hidden relative">
       <div className="absolute top-6 left-6 z-[50] flex flex-col gap-4">
-        <div className="monolithic-panel p-2 flex flex-col gap-1 bg-background/90 shadow-2xl">
+        <div className="monolithic-panel p-2 flex flex-col gap-1 bg-white/90 shadow-2xl border border-black/10 text-black">
           {(Object.entries(DRAW_MODE_LABELS) as [DrawMode, string][]).map(([m, label]) => (
             <button key={m} onClick={() => setDrawMode(m)} className={`group relative flex items-center gap-3 p-3 transition-all ${drawMode === m ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-foreground/40 hover:bg-foreground/5 hover:text-foreground'}`} title={label}>
               <span className="material-symbols-outlined text-xl">{DRAW_MODE_ICONS[m]}</span>
@@ -729,7 +729,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
           ))}
         </div>
 
-        <div className="monolithic-panel p-2 flex flex-col gap-1 bg-background/90 shadow-2xl">
+        <div className="monolithic-panel p-2 flex flex-col gap-1 bg-white/90 shadow-2xl border border-black/10">
            <button onClick={() => setIs3D(!is3D)} className={`p-3 transition-all ${is3D ? 'text-primary' : 'text-foreground/40 hover:text-foreground'}`} title="Modo 3D/Inclinación">
              <span className="material-symbols-outlined text-xl">3d_rotation</span>
            </button>

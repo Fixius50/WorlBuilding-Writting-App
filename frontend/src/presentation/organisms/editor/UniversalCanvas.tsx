@@ -32,12 +32,14 @@ export interface UniversalCanvasProps {
   initialNodes?: CanvasNode[];
   initialEdges?: CanvasEdge[];
   onNodeClick?: (id: string) => void;
+  backgroundColor?: string;
 }
 
 const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   initialNodes = defaultNodes,
   initialEdges = defaultEdges,
-  onNodeClick
+  onNodeClick,
+  backgroundColor
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<Konva.Stage>(null);
@@ -124,7 +126,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   }
 
   return (
-    <div ref={containerRef} className="w-full h-full bg-[#0a0a0a] overflow-hidden relative">
+    <div ref={containerRef} className="w-full h-full overflow-hidden relative" style={{ backgroundColor: backgroundColor || '#0a0a0a' }}>
       <Stage
         width={dimensions.width}
         height={dimensions.height}
@@ -154,7 +156,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
             <Line
               key={`h-${i}`}
               points={[startX - 1000, y, endX + 1000, y]}
-              stroke="rgba(0, 255, 255, 0.05)"
+              stroke={backgroundColor === '#ffffff' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(0, 255, 255, 0.05)'}
               strokeWidth={1 / scale}
             />
           ))}
@@ -196,7 +198,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
               />
               <Text
                 text={node.label}
-                fill="#ffffff"
+                fill={backgroundColor === '#ffffff' ? '#111111' : '#ffffff'}
                 fontSize={12}
                 fontFamily="Inter, sans-serif"
                 fontStyle="bold"

@@ -83,7 +83,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   };
 
   return (
-    <div className="w-full h-full cursor-crosshair relative bg-background/20" id="canvas-container">
+    <div className="w-full h-full cursor-crosshair relative bg-white" id="canvas-container">
       <Stage
         width={1000}
         height={800}
