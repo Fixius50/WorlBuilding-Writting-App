@@ -17,8 +17,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import dagre from 'dagre';
 import { useOutletContext } from 'react-router-dom';
-import { entityService } from '@repositories/entityService';
-import { relationshipService } from '@repositories/relationshipService';
+import { RelationshipUseCase } from '@application/useCases/RelationshipUseCase';
 import { Entidad } from '@domain/models/database';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 import { useLanguage } from '@context/LanguageContext';
@@ -71,12 +70,10 @@ const GenealogyView: React.FC = () => {
     setLoading(true);
 
     try {
-      // Obtener todos los personajes
-      const allEntities = await entityService.getAllByProject(projectId);
-      const characters = allEntities.filter(e => e.tipo === 'personaje' || e.tipo === 'personajeprincipal');
+      const { entities: allEntities, relationships: allRelationships } = await RelationshipUseCase.getFullNetwork(projectId);
       
-      // Obtener todas las relaciones
-      const allRelationships = await relationshipService.getByProject(projectId);
+      // Obtener todos los personajes
+      const characters = allEntities.filter(e => e.tipo === 'personaje' || e.tipo === 'personajeprincipal');
       
       // Filtrar solo relaciones familiares
       const familyRels = allRelationships.filter(r => 

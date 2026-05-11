@@ -1,0 +1,166 @@
+.template-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background-color: hsla(var(--background), 0.8);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.template-modal-container {
+  width: 100%;
+  max-width: 28rem;
+  background-color: hsl(var(--background));
+  border: 1px solid hsla(var(--foreground), 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  animation: zoomIn 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+.template-modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid hsla(var(--foreground), 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: hsla(var(--foreground), 0.02);
+}
+
+.template-modal-header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.template-modal-header-title h2 {
+  font-size: 0.625rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+.template-modal-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.template-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.template-modal-label {
+  font-size: 0.5625rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: hsla(var(--foreground), 0.4);
+}
+
+.template-modal-input {
+  width: 100%;
+  background-color: hsla(var(--foreground), 0.03);
+  border: 1px solid hsla(var(--foreground), 0.1);
+  padding: 0.75rem;
+  font-size: 0.75rem;
+  color: hsl(var(--foreground));
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.template-modal-input:focus {
+  border-color: hsla(var(--primary), 0.5);
+}
+
+.template-modal-type-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.template-modal-type-btn {
+  padding: 0.75rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  border: 1px solid hsla(var(--foreground), 0.1);
+  background-color: hsla(var(--foreground), 0.03);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.template-modal-type-btn.active {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--background));
+  border-color: hsl(var(--primary));
+}
+
+.template-modal-options-list {
+  max-height: 10rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-right: 0.5rem;
+}
+
+.template-modal-option-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  background-color: hsla(var(--foreground), 0.02);
+  border: 1px solid hsla(var(--foreground), 0.05);
+}
+
+.template-modal-footer {
+  padding: 1.5rem;
+  border-top: 1px solid hsla(var(--foreground), 0.1);
+  display: flex;
+  gap: 0.75rem;
+}
+
+.template-modal-btn-cancel {
+  flex: 1;
+  padding: 0.75rem;
+  font-size: 0.625rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  border: 1px solid hsla(var(--foreground), 0.1);
+  background: none;
+  cursor: pointer;
+}
+
+.template-modal-btn-save {
+  flex: 1;
+  padding: 0.75rem;
+  font-size: 0.625rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  background-color: hsl(var(--primary));
+  color: hsl(var(--background));
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 10px 15px -3px hsla(var(--primary), 0.2);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}

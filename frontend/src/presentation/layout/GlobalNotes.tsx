@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { settingsService } from '@repositories/settingsService';
+import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
 import ConfirmationModal from '@organisms/ConfirmationModal';
 
 interface Note {
@@ -25,7 +25,7 @@ const GlobalNotes: React.FC<GlobalNotesProps> = ({ projectName, storageKey }) =>
     const key = getStorageKey();
     if (!key) return;
 
-    const saved = await settingsService.get(key);
+    const saved = await WorkspaceUseCase.getSetting(key);
     if (saved) {
       setNotes(JSON.parse(saved));
     } else if (!storageKey) {
@@ -36,7 +36,7 @@ const GlobalNotes: React.FC<GlobalNotesProps> = ({ projectName, storageKey }) =>
         const initialNote = { id: Date.now(), title: 'Nota General', content: oldNotes };
         const newNotes = [initialNote];
         setNotes(newNotes);
-        await settingsService.set(key, JSON.stringify(newNotes));
+        await WorkspaceUseCase.saveSetting(key, JSON.stringify(newNotes));
         localStorage.removeItem(`notes_${projectName}`); // Cleanup
       }
     }
@@ -48,7 +48,7 @@ const GlobalNotes: React.FC<GlobalNotesProps> = ({ projectName, storageKey }) =>
   setNotes(newNotes);
   const key = getStorageKey();
   if (key) {
-    await settingsService.set(key, JSON.stringify(newNotes));
+    await WorkspaceUseCase.saveSetting(key, JSON.stringify(newNotes));
   }
  };
 

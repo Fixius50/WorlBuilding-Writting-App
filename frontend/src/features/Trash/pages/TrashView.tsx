@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { trashService } from '@repositories/trashService';
+import { TrashUseCase, TrashItem } from '@application/useCases/TrashUseCase';
 import { useLanguage } from '@context/LanguageContext';
-
-interface TrashItem {
-  id: number;
-  item_tipo: string;
-  nombre: string;
-  deleted_date: string;
-}
 
 interface OutletContext {
   projectId: number | null;
@@ -32,8 +25,8 @@ export default function TrashView() {
     if (!projectId) return;
     try {
       setLoading(true);
-      const data = await trashService.getItems(projectId);
-      setItems(data as TrashItem[]);
+      const data = await TrashUseCase.getDeletedItems(projectId);
+      setItems(data);
       setError(null);
     } catch (err) {
       // [LOG REMOVED]
@@ -45,7 +38,7 @@ export default function TrashView() {
 
   const handleRestore = async (tipo: string, itemId: number) => {
     try {
-      await trashService.restore(tipo, itemId);
+      await TrashUseCase.restoreItem(tipo, itemId);
       loadItems(); 
     } catch (err) {
       // [LOG REMOVED]
@@ -54,7 +47,7 @@ export default function TrashView() {
 
   const handleDelete = async (tipo: string, itemId: number) => {
     try {
-      await trashService.permanentlyDelete(tipo, itemId);
+      await TrashUseCase.purgeItem(tipo, itemId);
       loadItems();
     } catch (err) {
       // [LOG REMOVED]

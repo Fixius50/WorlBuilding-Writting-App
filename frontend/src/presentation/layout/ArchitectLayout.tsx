@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Outlet, useParams, useNavigate, useLocation, NavLink, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '@context/LanguageContext';
-import { folderService } from '@repositories/folderService';
-import { projectService } from '@repositories/projectService';
-import { entityService } from '@repositories/entityService';
+import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
 import { Carpeta, Proyecto, Plantilla, FolderType } from '@domain/models/database';
 import GlobalRightPanel from './GlobalRightPanel';
 import ConfirmationModal from '@organisms/ConfirmationModal';
 import { useSettingsStore } from '@store/useSettingsStore';
 import ControlPanel from '@features/Graph/components/ControlPanel';
-import { syncService } from '@network/syncService';
+// Sync Service handled by UseCase
 import { useAppStore } from '@store/useAppStore';
 import { useRightPanelStore } from '@store/useRightPanelStore';
 
@@ -73,7 +71,7 @@ const ArchitectLayout: React.FC = () => {
   const baseUrl = `/${actualUsername}/${projectName}`;
 
   const loadFolders = useCallback(async (pId: number) => {
-    const rootFolders = await folderService.getByProject(pId);
+    const rootFolders = await WorkspaceUseCase.getRootFolders(pId);
     setFolders(rootFolders);
   }, []);
 
@@ -81,7 +79,7 @@ const ArchitectLayout: React.FC = () => {
   useEffect(() => {
     const init = async () => {
       if (projectName) {
-        const project = await projectService.getByName(projectName);
+        const project = await WorkspaceUseCase.getProjectByName(projectName);
         if (project) {
           setLoadedProject(project);
           setProjectId(project.id);
@@ -99,7 +97,7 @@ const ArchitectLayout: React.FC = () => {
     if (!projectName) return;
     
     const interval = setInterval(async () => {
-      const res = await syncService.exportToDisk(projectName);
+      const res = await WorkspaceUseCase.exportBackup(projectName);
       if (res.success) {
         useSettingsStore.getState().addNotification("Copia de seguridad automática realizada", "success");
       } else {
@@ -128,7 +126,7 @@ const ArchitectLayout: React.FC = () => {
     }
     try {
       const folderName = type === 'TIMELINE' ? (t('timeline.title') || 'Nueva Dimensión') : (t('bible.new_folder') || 'Nueva Carpeta');
-      const newFolder = await folderService.create(
+      const newFolder = await WorkspaceUseCase.createFolder(
         folderName,
         projectId,
         parentId,
@@ -147,7 +145,7 @@ const ArchitectLayout: React.FC = () => {
   const handleCreateQuickEntity = useCallback(async (parentId: number, name: string, type: string) => {
     if (!projectId) return;
     try {
-      const newEntity = await entityService.create({
+      const newEntity = await WorkspaceUseCase.createQuickEntity({
         nombre: name,
         tipo: type,
         slug: name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''),
@@ -172,7 +170,7 @@ const ArchitectLayout: React.FC = () => {
 
   const handleRenameFolder = useCallback(async (folderId: number, newName: string) => {
     try {
-      await folderService.update(folderId, newName, projectId!);
+      await WorkspaceUseCase.renameFolder(folderId, newName, projectId!);
       if (projectId) await loadFolders(projectId);
     } catch (err) {
       // [LOG REMOVED]
@@ -195,12 +193,12 @@ const ArchitectLayout: React.FC = () => {
 
     try {
       if (type === 'folder') {
-        await folderService.delete(id);
+        await WorkspaceUseCase.deleteFolder(id);
         window.dispatchEvent(new CustomEvent('folder-update', {
           detail: { folderId: parentId, removeId: id, type: 'folder' }
         }));
       } else {
-        await entityService.delete(id);
+        await WorkspaceUseCase.deleteEntity(id);
         window.dispatchEvent(new CustomEvent('folder-update', {
           detail: { folderId: parentId, removeId: id, type: 'entity' }
         }));

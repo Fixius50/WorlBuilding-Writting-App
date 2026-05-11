@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { templateService } from '@repositories/templateService';
-import { entityService } from '@repositories/entityService';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { Plantilla, Valor, Entidad } from '@domain/models/database';
 // import MonolithicPanel from '@atoms/MonolithicPanel';
 import { useLanguage } from '@context/LanguageContext';
@@ -21,7 +20,7 @@ const DynamicAttributeForm: React.FC<DynamicAttributeFormProps> = ({ entity, onU
     setLoading(true);
     try {
       // 1. Cargar todas las plantillas del proyecto
-      const allTemplates = await templateService.getAll(entity.project_id);
+      const allTemplates = await TemplateUseCase.getTemplates(entity.project_id);
       
       // 2. Filtrar las que aplican a esta entidad (Globales o por Tipo)
       const applicable = allTemplates.filter(tpl => 
@@ -30,7 +29,7 @@ const DynamicAttributeForm: React.FC<DynamicAttributeFormProps> = ({ entity, onU
       setTemplates(applicable);
 
       // 3. Cargar valores actuales de la entidad
-      const entityValues = await entityService.getValues(entity.id);
+      const entityValues = await TemplateUseCase.getEntityValues(entity.id);
       setValues(entityValues);
     } catch (err) {
       // [LOG REMOVED]
@@ -49,13 +48,13 @@ const DynamicAttributeForm: React.FC<DynamicAttributeFormProps> = ({ entity, onU
       const existingValue = values.find(v => v.plantilla_id === templateId);
       
       if (existingValue) {
-        await entityService.updateValue(existingValue.id, newValue);
+        await TemplateUseCase.updateEntityValue(existingValue.id, newValue);
       } else {
-        await entityService.addValue(entity.id, templateId, newValue);
+        await TemplateUseCase.addEntityValue(entity.id, templateId, newValue);
       }
       
       // Recargar localmente para mostrar el cambio sin parpadeos
-      const updatedValues = await entityService.getValues(entity.id);
+      const updatedValues = await TemplateUseCase.getEntityValues(entity.id);
       setValues(updatedValues);
       
       if (onUpdate) onUpdate();

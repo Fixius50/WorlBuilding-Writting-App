@@ -3,7 +3,7 @@ import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { Map, NavigationControl, Source, Layer, Marker, Popup, MapRef, MapMouseEvent } from 'react-map-gl/maplibre';
 // @ts-ignore
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { entityService } from '@repositories/entityService';
+import { MapUseCase } from '@application/useCases/MapUseCase';
 import { Entidad } from '@domain/models/database';
 import { MapMarker, MapLayer, MapAttributes } from '@domain/models/maps';
 import MonolithicPanel from '@atoms/MonolithicPanel';
@@ -297,14 +297,14 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
 
   const loadAllEntities = useCallback(async () => {
     try {
-      const entities = await entityService.getAllByProject(Number(projectId));
+      const entities = await MapUseCase.getAllEntities(Number(projectId));
       setAllEntities(entities);
     } catch { }
   }, [projectId]);
 
   const loadMap = useCallback(async (id: number) => {
     try {
-      const entity = await entityService.getById(id);
+      const entity = await MapUseCase.getMapById(id);
       if (entity) {
         setMapEntity(entity);
         setTargetFolderId(entity.carpeta_id);
@@ -363,15 +363,16 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
         lastEdited: new Date().toISOString()
       };
       if (mode === 'create' || !entityId) {
-        await entityService.create({
-          nombre: mapEntity.nombre, tipo: 'Map', descripcion: mapEntity.descripcion,
-          slug: mapEntity.nombre.toLowerCase().replace(/ /g, '-'),
-          folder_slug: '', imagen_url: '',
-          project_id: projectId || 0, carpeta_id: targetFolderId, contenido_json: JSON.stringify(updatedContent)
+        await MapUseCase.createMap({
+          nombre: mapEntity.nombre,
+          project_id: projectId || 0,
+          carpeta_id: targetFolderId,
+          contenido_json: JSON.stringify(updatedContent),
+          imagen_url: ''
         });
         if (onSave) await onSave(); else navigate(-1);
       } else {
-        await entityService.update(Number(entityId), {
+        await MapUseCase.updateMap(Number(entityId), {
           nombre: mapEntity.nombre, carpeta_id: targetFolderId, contenido_json: JSON.stringify(updatedContent)
         });
         if (onSave) await onSave(); else navigate(-1);

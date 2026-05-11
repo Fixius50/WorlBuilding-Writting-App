@@ -98,7 +98,7 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-background border-l border-foreground/10 w-full animate-in slide-in-from-right duration-500">
+    <div className="flex flex-col h-full bg-background w-full">
       {/* Header */}
       <div className="p-[1.5rem] border-b border-foreground/10 bg-gradient-to-br from-primary/10 to-transparent">
         <div className="flex items-center justify-between mb-[0.5rem]">

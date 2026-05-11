@@ -16,8 +16,8 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useOutletContext, useNavigate } from 'react-router-dom';
-import { entityService } from '@repositories/entityService';
-import { relationshipService, Relacion } from '@repositories/relationshipService';
+import { RelationshipUseCase } from '@application/useCases/RelationshipUseCase';
+import { Relacion } from '@repositories/relationshipService';
 import { Entidad } from '@domain/models/database';
 import { getHierarchyVisuals } from '@presentation/utils/hierarchyVisuals';
 import Button from '@atoms/Button';
@@ -159,10 +159,7 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
     if (!projectId) return;
     setLoading(true);
     try {
-      const [allEntities, allRels] = await Promise.all([
-        entityService.getAllByProject(projectId),
-        relationshipService.getByProject(projectId)
-      ]);
+      const { entities: allEntities, relationships: allRels } = await RelationshipUseCase.getFullNetwork(projectId);
 
       const filteredEntities = allEntities.filter(ent => ent.carpeta_id !== null);
       setEntities(filteredEntities);
@@ -238,14 +235,14 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
   const onConnect = useCallback(async (params: Connection) => {
     if (!params.source || !params.target) return;
     try {
-      await relationshipService.create({
+      await RelationshipUseCase.createRelationship({
         origen_id: parseInt(params.source),
         destino_id: parseInt(params.target),
         tipo: 'RELACIONADO',
         descripcion: '',
         project_id: projectId ?? 0,
-        origen_handle: params.sourceHandle,
-        destino_handle: params.targetHandle
+        origen_handle: params.sourceHandle ?? null,
+        destino_handle: params.targetHandle ?? null
       });
       await loadGraph();
     } catch (err) {
@@ -258,11 +255,11 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
       const rels = oldEdge.data?.rels as Relacion[];
       if (rels && rels.length > 0) {
         for (const r of rels) {
-          await relationshipService.update(r.id, {
+          await RelationshipUseCase.updateRelationship(r.id, {
             origen_id: parseInt(newConnection.source!),
             destino_id: parseInt(newConnection.target!),
-            origen_handle: newConnection.sourceHandle,
-            destino_handle: newConnection.targetHandle
+            origen_handle: newConnection.sourceHandle ?? null,
+            destino_handle: newConnection.targetHandle ?? null
           });
         }
       }
@@ -277,7 +274,7 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
       const rels = edge.data?.rels as Relacion[];
       if (rels) {
         for (const r of rels) {
-          await relationshipService.delete(r.id);
+          await RelationshipUseCase.deleteRelationship(r.id);
         }
       }
     }
@@ -362,7 +359,7 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
                           <button 
                             className="text-[9px] font-black text-foreground/40 hover:text-red-400 uppercase"
                             onClick={async () => {
-                              await relationshipService.delete(rel.id);
+                              await RelationshipUseCase.deleteRelationship(rel.id);
                               loadGraph();
                               setMultiRelModal(null);
                             }}

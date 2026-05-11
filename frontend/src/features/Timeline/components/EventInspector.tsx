@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { timelineService } from '@repositories/timelineService';
-import { entityService } from '@repositories/entityService';
+import { TimelineUseCase } from '@application/useCases/TimelineUseCase';
 import { Evento, Entidad } from '@domain/models/database';
 import { useLanguage } from '@context/LanguageContext';
 import ZenEditor from '@features/Editor/components/ZenEditor';
@@ -35,8 +34,8 @@ const EventInspector: React.FC<EventInspectorProps> = ({
   const loadEventData = useCallback(async () => {
     try {
       const [evData, entities] = await Promise.all([
-        timelineService.getById(eventId),
-        timelineService.getLinkedEntities(eventId)
+        TimelineUseCase.getEventById(eventId),
+        TimelineUseCase.getLinkedEntities(eventId)
       ]);
       setEvent(evData);
       setLinkedEntities(entities);
@@ -61,7 +60,7 @@ const EventInspector: React.FC<EventInspectorProps> = ({
         return;
       }
       try {
-        const all = await entityService.getAllByProject(projectId);
+        const all = await TimelineUseCase.getAllEntities(projectId);
         const filtered = all.filter(e => 
           e.nombre.toLowerCase().includes(searchTerm.toLowerCase()) &&
           !linkedEntities.some(le => le.id === e.id)
@@ -77,7 +76,7 @@ const EventInspector: React.FC<EventInspectorProps> = ({
 
   const handleLinkEntity = async (entity: Entidad) => {
     try {
-      await timelineService.linkEntity(eventId, entity.id);
+      await TimelineUseCase.linkEntity(eventId, entity.id);
       setSearchTerm('');
       setShowResults(false);
       await loadEventData();
@@ -90,7 +89,7 @@ const EventInspector: React.FC<EventInspectorProps> = ({
   const handleUnlinkEntity = async (e: React.MouseEvent, entityId: number) => {
     e.stopPropagation();
     try {
-      await timelineService.unlinkEntity(eventId, entityId);
+      await TimelineUseCase.unlinkEntity(eventId, entityId);
       await loadEventData();
       if (onUpdate) onUpdate();
     } catch (err) {
@@ -101,7 +100,7 @@ const EventInspector: React.FC<EventInspectorProps> = ({
   const handleNotesUpdate = async (html: string) => {
     if (!event) return;
     try {
-      await timelineService.update(event.id, { descripcion: html });
+      await TimelineUseCase.updateEvent(event.id, { descripcion: html });
       if (onUpdate) onUpdate();
     } catch (err) {
       // [LOG REMOVED]

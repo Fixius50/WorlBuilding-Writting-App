@@ -3,7 +3,8 @@ import { useLanguage } from '@context/LanguageContext';
 import { createPortal } from 'react-dom';
 import { useOutletContext, useParams, useNavigate } from 'react-router-dom';
 import { useRightPanelStore } from '@store/useRightPanelStore';
-import { notebookService, Cuaderno, Hoja } from '@repositories/notebookService';
+import { Cuaderno, Hoja } from '@repositories/notebookService';
+import { WritingUseCase } from '@application/useCases/WritingUseCase';
 import { entityService } from '@repositories/entityService';
 import { useSettingsStore } from '@store/useSettingsStore';
 import ZenEditor from '@features/Editor/components/ZenEditor';
@@ -67,7 +68,7 @@ const WritingView = () => {
         clearTimeout(saveTimeout.current);
         const currentPage = pagesRef.current[indexRef.current];
         if (currentPage) {
-          notebookService.updatePage(currentPage.id, { 
+          WritingUseCase.updatePage(currentPage.id, { 
             contenido: currentPage.contenido || '',
             titulo: currentPage.titulo || '' 
           }).catch(err => { useSettingsStore.getState().addNotification("Error al guardar página", "error"); });
@@ -79,16 +80,16 @@ const WritingView = () => {
   const loadNotebookAndPages = async (id: number) => {
     try {
       setLoading(true);
-      const nb = await notebookService.getById(id);
+      const nb = await WritingUseCase.getNotebookById(id);
       setNotebook(nb);
 
-      const pgs = await notebookService.getPagesByNotebook(id);
+      const pgs = await WritingUseCase.getPages(id);
       if (pgs && pgs.length > 0) {
         setPages(pgs);
         setCurrentPageIndex(0);
         loadSnapshots(pgs[0].id);
       } else {
-        const newPage = await notebookService.createPage(id);
+        const newPage = await WritingUseCase.createPage(id);
         setPages([newPage]);
         setCurrentPageIndex(0);
         loadSnapshots(newPage.id);
@@ -118,7 +119,7 @@ const WritingView = () => {
     const currentPage = pages[currentPageIndex];
     if (!currentPage) return;
     try {
-      await notebookService.createSnapshot(currentPage.id, html);
+      await WritingUseCase.createSnapshot(currentPage.id, html);
       await loadSnapshots(currentPage.id);
     } catch (err) {
       useSettingsStore.getState().addNotification("Error al crear instantánea", "error");
@@ -144,7 +145,7 @@ const WritingView = () => {
 
   const loadSnapshots = async (hojaId: number) => {
     try {
-      const list = await notebookService.getSnapshots(hojaId);
+      const list = await WritingUseCase.getSnapshots(hojaId);
       setSnapshots(list);
     } catch (err) {
       useSettingsStore.getState().addNotification("Error al cargar instantáneas", "error");
@@ -180,7 +181,7 @@ const WritingView = () => {
   const savePage = async (page: Hoja) => {
     if (isMounted.current) setSaving(true);
     try {
-      await notebookService.updatePage(page.id, {
+      await WritingUseCase.updatePage(page.id, {
         contenido: page.contenido || '',
         titulo: page.titulo || ''
       });
@@ -194,7 +195,7 @@ const WritingView = () => {
   const handleCreatePage = async () => {
     if (!notebook) return;
     try {
-      const newPage = await notebookService.createPage(notebook.id);
+      const newPage = await WritingUseCase.createPage(notebook.id);
       const updatedPages = [...pages, newPage];
       setPages(updatedPages);
     } catch (err) {
@@ -208,7 +209,7 @@ const WritingView = () => {
     
     try {
       const pageId = pages[index].id;
-      await notebookService.deletePage(pageId);
+      await WritingUseCase.deletePage(pageId);
       const newPages = pages.filter((_, i) => i !== index);
       setPages(newPages);
       
@@ -246,7 +247,7 @@ const WritingView = () => {
     if (!pageToDelete) return;
     const { id, index } = pageToDelete;
     try {
-      await notebookService.deletePage(id);
+      await WritingUseCase.deletePage(id);
       const newPages = pages.filter(p => p.id !== id);
       let nextIndex = currentPageIndex;
       if (currentPageIndex === index) {

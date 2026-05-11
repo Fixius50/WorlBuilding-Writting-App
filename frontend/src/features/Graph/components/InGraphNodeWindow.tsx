@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
 import RelationshipManager from '@features/Relationships/components/RelationshipManager';
-import { entityService } from '@repositories/entityService';
+import { RelationshipUseCase } from '@application/useCases/RelationshipUseCase';
 import { Entidad } from '@domain/models/database';
-import { folderService } from '@repositories/folderService';
 
 type GraphNode = { id: string; group?: string; data: Record<string, unknown>; label?: string; nombre?: string; category?: string; isFull?: boolean; isStub?: boolean; };
 
@@ -22,7 +21,7 @@ const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned
  const fetchDetails = async () => {
  try {
  setLoading(true);
- const response = await entityService.getById(Number(node.id));
+ const response = await RelationshipUseCase.getEntityDetails(Number(node.id));
  if (response && response.contenido_json) {
     try {
       const parsed = JSON.parse(response.contenido_json);

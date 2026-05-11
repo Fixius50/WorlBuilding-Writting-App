@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { folderService } from '@repositories/folderService';
-import { templateService } from '@repositories/templateService';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { Plantilla } from '@domain/models/database';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 import ConfirmationModal from '@organisms/ConfirmationModal';
@@ -29,7 +28,7 @@ const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
  const initialize = async () => {
  try {
  // 1. Get Root Folder for attachment (using project 1 as default for now)
- const folders = await folderService.getByProject(1);
+ const folders = await TemplateUseCase.getProjectFolders(1);
  if (folders.length > 0) {
  setRootFolderId(folders[0].id);
  }
@@ -44,7 +43,7 @@ const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
  setLoading(true);
  try {
  // Using 0 as convention for global project_id in templateService
- const data = await templateService.getAll(0);
+ const data = await TemplateUseCase.getTemplates(0);
  setTemplates(data);
  } catch (err) {
  // [LOG REMOVED]
@@ -56,7 +55,7 @@ const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
  const handleCreateTemplate = async (newField: TemplateField) => {
  try {
  // Create as Global (project_id = 0)
- await templateService.create({
+ await TemplateUseCase.createTemplate({
  nombre: newField.label,
  tipo: newField.type,
  valor_defecto: null,
@@ -77,7 +76,7 @@ const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
  const confirmDeleteAction = async () => {
  if (!confirmDeleteId) return;
  try {
- await templateService.delete(confirmDeleteId);
+ await TemplateUseCase.deleteTemplate(confirmDeleteId);
  setTemplates(prev => prev.filter(t => t.id !== confirmDeleteId));
  } catch (err) {
  // [LOG REMOVED]

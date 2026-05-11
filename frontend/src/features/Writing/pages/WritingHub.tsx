@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@context/LanguageContext';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { notebookService, Cuaderno } from '@repositories/notebookService';
+import { Cuaderno } from '@repositories/notebookService';
+import { WritingUseCase } from '@application/useCases/WritingUseCase';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 
 interface WritingOutletContext {
@@ -38,7 +39,7 @@ const WritingHub = () => {
     try {
       setLoading(true);
       const pid = projectId ? Number(projectId) : 1;
-      const data = await notebookService.getAllByProject(pid);
+      const data = await WritingUseCase.getNotebooks(pid);
       setNotebooks(data || []);
     } catch (err) {
       // [LOG REMOVED]
@@ -80,10 +81,10 @@ const WritingHub = () => {
       // [LOG REMOVED]
       
       if (notebookToEdit) {
-        await notebookService.update(notebookToEdit.id, { titulo: title.trim(), genero: genre });
+        await WritingUseCase.updateNotebook(notebookToEdit.id, title, genre);
         setNotebooks(prev => prev.map(n => n.id === notebookToEdit.id ? { ...n, titulo: title.trim(), genero: genre } : n));
       } else {
-        const nuevo = await notebookService.create(pid, title.trim(), genre);
+        const nuevo = await WritingUseCase.createNotebook(pid, title, genre);
         // [LOG REMOVED]
         setNotebooks(prev => [nuevo, ...prev]);
       }
@@ -110,7 +111,7 @@ const WritingHub = () => {
     e.stopPropagation();
     if (!window.confirm('¿Eliminar este archivador?')) return;
     try {
-      await notebookService.delete(id);
+      await WritingUseCase.deleteNotebook(id);
       setNotebooks(notebooks.filter(n => n.id !== id));
     } catch (err) {
       // [LOG REMOVED]

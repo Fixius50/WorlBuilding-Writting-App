@@ -9,8 +9,7 @@ import {
   CellContext,
 } from '@tanstack/react-table';
 import { Entidad, Carpeta } from '@domain/models/database';
-import { entityService } from '@repositories/entityService';
-// import { folderService } from '@repositories/folderService';
+import { WorldBibleUseCase } from '@application/useCases/WorldBibleUseCase';
 import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { useLanguage } from '@context/LanguageContext';
 import { useRightPanelStore } from '@store/useRightPanelStore';
@@ -46,7 +45,7 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
 
   const loadEntities = async () => {
     setLoading(true);
-    const data = await entityService.getAllByProject(projectId);
+    const data = await WorldBibleUseCase.getRootEntities(projectId);
     setEntities(data);
     setLoading(false);
   };
@@ -69,7 +68,7 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
     if (!selectedIds.length) return;
     
     try {
-      await Promise.all(selectedIds.map(id => entityService.delete(id)));
+      await WorldBibleUseCase.bulkDeleteEntities(selectedIds);
       setRowSelection({});
       loadEntities();
     } catch (err) {
@@ -82,7 +81,7 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
     if (!selectedIds.length) return;
 
     try {
-      await Promise.all(selectedIds.map(id => entityService.update(id!, { carpeta_id: folderId })));
+      await WorldBibleUseCase.moveEntitiesToFolder(selectedIds as number[], folderId);
       setRowSelection({});
       loadEntities();
     } catch (err) {
@@ -94,7 +93,7 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
 
   const handleUpdateField = async (id: number, field: string, value: any) => {
     try {
-      await entityService.update(id, { [field]: value });
+      await WorldBibleUseCase.quickUpdateEntity(id, field, value);
       await loadEntities();
     } catch (err) {
       console.error(err);
@@ -105,7 +104,7 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
     if (e.key === 'Enter' && newEntityName.trim() && !isCreating) {
       setIsCreating(true);
       try {
-        await entityService.create({
+        await WorldBibleUseCase.createEntity({
           nombre: newEntityName.trim(),
           tipo: newEntityType,
           project_id: projectId,
@@ -115,7 +114,7 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
           contenido_json: null,
           folder_slug: null,
           imagen_url: null
-        });
+        } as any);
         setNewEntityName('');
         await loadEntities();
       } catch (err) {

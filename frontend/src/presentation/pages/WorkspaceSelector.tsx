@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { projectService } from '@repositories/projectService';
-import { folderService } from '@repositories/folderService';
-import { entityService } from '@repositories/entityService';
+import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
 import { Proyecto } from '@domain/models/database';
 import CreateWorkspaceModal from "@features/Dashboard/components/CreateWorkspaceModal";
 import EditWorkspaceModal from "@features/Dashboard/components/EditWorkspaceModal";
 import { sqlocal } from '@database';
 import ConfirmModal from "@organisms/ConfirmModal";
-import { syncService } from '@network/syncService';
+// Sync Service handled by UseCase
 
 import { useAppStore } from '@store/useAppStore';
 
@@ -33,7 +31,7 @@ const WorkspaceSelector: React.FC = () => {
   const loadWorkspaces = async () => {
     try {
       setLoading(true);
-      const data = await projectService.list();
+      const data = await WorkspaceUseCase.listProjects();
       setWorkspaces(data);
     } catch (err) {
       // [LOG REMOVED]
@@ -60,7 +58,7 @@ const WorkspaceSelector: React.FC = () => {
   const handleCreateWorkspace = async (formData: { name: string, title: string, genre: string, imageUrl?: string }) => {
     try {
       setLoading(true);
-      const res = await projectService.create(formData.name, formData.title, formData.genre, formData.imageUrl);
+      const res = await WorkspaceUseCase.createProject(formData.name, formData.title, formData.genre, formData.imageUrl);
       if (res) await handleSelect(res.nombre);
     } catch (err) {
       setError("Error al crear cuaderno");
@@ -74,7 +72,7 @@ const WorkspaceSelector: React.FC = () => {
     if (projectToDelete === null) return;
     try {
       setLoading(true);
-      await projectService.delete(projectToDelete);
+      await WorkspaceUseCase.deleteProject(projectToDelete);
       await loadWorkspaces();
       setProjectToDelete(null);
     } catch (err) {
@@ -86,7 +84,7 @@ const WorkspaceSelector: React.FC = () => {
   const handleUpdateWorkspace = async (id: number, data: Partial<Proyecto>) => {
     try {
       setLoading(true);
-      await projectService.update(id, data);
+      await WorkspaceUseCase.updateProject(id, data);
       await loadWorkspaces();
       setProjectToEdit(null);
     } catch (err) {
@@ -100,7 +98,7 @@ const WorkspaceSelector: React.FC = () => {
   const handleExport = async () => {
     try {
       setLoading(true);
-      const res = await syncService.exportToDisk('worldbuilding_master');
+      const res = await WorkspaceUseCase.exportBackup('worldbuilding_master');
       if (res.success) {
         alert("Copia de seguridad guardada con éxito en el servidor local.");
       } else {
@@ -119,7 +117,7 @@ const WorkspaceSelector: React.FC = () => {
 
     try {
       setLoading(true);
-      const res = await syncService.importFromDisk('worldbuilding_master');
+      const res = await WorkspaceUseCase.importBackup('worldbuilding_master');
       if (res.success) {
         alert("Datos restaurados con éxito.");
         window.location.reload();

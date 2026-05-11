@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { entityService } from '@repositories/entityService';
-import { relationshipService } from '@repositories/relationshipService';
+import { RelationshipUseCase } from '@application/useCases/RelationshipUseCase';
 import type { RelacionEnriquecida } from '@repositories/relationshipService';
 import { Entidad, Relacion } from '@domain/models/database';
 import Button from '@atoms/Button';
@@ -59,7 +58,7 @@ const RelationshipManager = ({ entityId, entityType }: { entityId: number | stri
  const loadRelationships = async () => {
  setLoading(true);
  try {
- const relevant = await relationshipService.getByEntity(Number(entityId));
+ const relevant = await RelationshipUseCase.getRelationshipsByEntity(Number(entityId));
  // [LOG REMOVED]
 
  // Enrich with details (fetch names)
@@ -67,7 +66,7 @@ const RelationshipManager = ({ entityId, entityType }: { entityId: number | stri
  const isOutgoing = r.origen_id === Number(entityId);
  const otherId = isOutgoing ? r.destino_id : r.origen_id;
 
- const otherEntity = await entityService.getById(otherId);
+ const otherEntity = await RelationshipUseCase.getEntityDetails(otherId);
  if (!otherEntity) return null;
  return { ...r, otherName: otherEntity.nombre, otherType: otherEntity.tipo || 'Entity', isOutgoing };
  }));
@@ -87,7 +86,7 @@ const RelationshipManager = ({ entityId, entityType }: { entityId: number | stri
  // For now, let's assume we can get all entities from the DB (global search)
  // In a real scenario, we'd filter by projectId. 
  // We'll try to get the current project from somewhere or just use 1 for now if not available.
- const all = await entityService.getAllByProject(1); // Placeholder
+ const { entities: all } = await RelationshipUseCase.getFullNetwork(1); // Placeholder
 
  const filtered = type === 'All' ? all : all.filter(e => {
  const cat = e.tipo || 'Generic';
@@ -107,7 +106,7 @@ const RelationshipManager = ({ entityId, entityType }: { entityId: number | stri
  if (!selectedTargetId || !relType) return;
 
  try {
- await relationshipService.create({
+ await RelationshipUseCase.createRelationship({
  origen_id: Number(entityId),
  destino_id: selectedTargetId,
  tipo: relType,
@@ -129,7 +128,7 @@ const RelationshipManager = ({ entityId, entityType }: { entityId: number | stri
  const handleDelete = async (id: number) => {
  if (!confirm("Are you sure?")) return;
  try {
- await relationshipService.delete(id);
+ await RelationshipUseCase.deleteRelationship(id);
  loadRelationships();
 
  // Emit event to notify graph to reload

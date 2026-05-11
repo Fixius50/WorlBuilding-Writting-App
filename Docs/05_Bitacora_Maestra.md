@@ -6,6 +6,12 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
 
 ### MAYO 2026
 
+- **2026-05-11: Consolidación de Clean Architecture (Use Cases)**
+  - **Capa de Aplicación (`application/useCases`)**: Implementación de Casos de Uso para encapsular la lógica de negocio y prohibir el acceso directo a repositorios desde React.
+  - **Nuevos Casos de Uso Creados**: `TrashUseCase`, `WorldBibleUseCase` (con normalización transaccional EAV), `TimelineUseCase`, `MapUseCase`, `RelationshipUseCase`, `TemplateUseCase` y `WorkspaceUseCase`.
+  - **Desacoplamiento UI**: Vistas como `TimelineView`, `MapEditor`, `WorldBibleLayout`, `ArchitectLayout`, `WorkspaceSelector`, `GlobalNotes` y componentes de `Settings`, `Graph` y `Genealogy` ahora se comunican exclusivamente con la capa de Aplicación.
+  - **Documentación**: Actualizada la `01_Estrategia_Tecnica.md` reflejando el inventario de la enorme deuda técnica restante (Entities, Writing, Maps, Timeline, Linguistics, Calendars).
+
 - **2026-05-06: Menciones Dinámicas y Refactorización DDD de Jerarquías**
   - **Menciones Reales (@)**: Conexión del sistema de autocompletado de Tiptap con la base de datos real (`entityService`). Eliminación de datos mockeados y soporte para búsqueda asíncrona por proyecto.
   - **Infraestructura de Extensiones**: Centralización de la configuración de Tiptap en `TiptapExtensions.ts`, eliminando duplicidad de código en el editor.

@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useLanguage } from '@context/LanguageContext';
 import { useOutletContext } from 'react-router-dom';
-import { timelineService } from '@repositories/timelineService';
-import { folderService } from '@repositories/folderService';
-import { entityService } from '@repositories/entityService';
+import { TimelineUseCase } from '@application/useCases/TimelineUseCase';
 import { Evento, Entidad, DimensionLinea } from '@domain/models/database';
 import ConfirmationModal from '@organisms/ConfirmationModal';
 import Button from '@atoms/Button';
@@ -40,7 +38,7 @@ const TimelineView = () => {
   const loadMultiverse = useCallback(async () => {
     if (!projectId) return;
     try {
-      const allFolders = await folderService.getByProject(projectId);
+      const allFolders = await TimelineUseCase.getUniverses(projectId);
       const timelineFolders = allFolders.filter(f => f.tipo === 'TIMELINE');
       const rootUniverses = timelineFolders.filter(f => f.padre_id === null);
       
@@ -61,7 +59,7 @@ const TimelineView = () => {
   const loadEventsByUniverse = useCallback(async (universeId: number) => {
     try {
       // Cargamos todos los eventos que pertenecen a este universo (carpeta principal)
-      const data = await timelineService.getByTimeline(universeId);
+      const data = await TimelineUseCase.getEventsByUniverse(universeId);
       setEvents(data);
     } catch (e) { /* [LOG REMOVED] */ }
   }, []);
@@ -76,14 +74,14 @@ const TimelineView = () => {
   // --- Handlers ---
   const handleCreateUniverse = async () => {
     if (!newUniverse.nombre || !projectId) return;
-    await folderService.create(newUniverse.nombre, projectId, null, 'TIMELINE');
+    await TimelineUseCase.createUniverse(newUniverse.nombre, projectId);
     setNewUniverse({ nombre: '', descripcion: '' });
     await loadMultiverse();
   };
 
   const handleUpdateUniverse = async () => {
     if (!selectedUniverseId || !projectId) return;
-    await folderService.update(selectedUniverseId, newUniverse.nombre, projectId);
+    await TimelineUseCase.updateTimelineFolder(selectedUniverseId, newUniverse.nombre, projectId);
     await loadMultiverse();
   };
 
@@ -100,7 +98,7 @@ const TimelineView = () => {
 
   const handleCreateTimeline = async () => {
     if (!newLine.nombre || !projectId || !selectedUniverseId) return;
-    await folderService.create(newLine.nombre, projectId, selectedUniverseId, 'TIMELINE');
+    await TimelineUseCase.createTimeline(newLine.nombre, projectId, selectedUniverseId);
     setNewLine({ nombre: '', descripcion: '', universoId: null });
     await loadMultiverse();
   };
@@ -108,9 +106,9 @@ const TimelineView = () => {
   const handleSaveEvent = async () => {
     if (!selectedTimelineId || !newEvent.titulo || !projectId) return;
     if (editingEvent) {
-      await timelineService.update(editingEvent.id, { ...newEvent, timeline_id: selectedTimelineId });
+      await TimelineUseCase.updateEvent(editingEvent.id, { ...newEvent, timeline_id: selectedTimelineId });
     } else {
-      await timelineService.create({
+      await TimelineUseCase.createEvent({
         ...newEvent, project_id: projectId, timeline_id: selectedTimelineId,
         orden: 0
       });
@@ -143,14 +141,13 @@ const TimelineView = () => {
     if (!type || !id) return;
     if (type === 'TIMELINE') {
         // Borrado en cascada: Eliminar carpeta y eventos asociados a esa rama
-        await folderService.delete(id);
-        await timelineService.deleteLine(id); // Este método ya borra eventos con esa linea_id
+        await TimelineUseCase.deleteTimeline(id);
         if (selectedTimelineId === id) setSelectedTimelineId(selectedUniverseId);
     } else if (type === 'EVENT') {
-        await timelineService.delete(id);
+        await TimelineUseCase.deleteEvent(id);
         if (selectedUniverseId) loadEventsByUniverse(selectedUniverseId);
     } else if (type === 'universe') {
-        await folderService.delete(id);
+        await TimelineUseCase.deleteUniverse(id);
         setSelectedUniverseId(null);
     }
     await loadMultiverse();
@@ -297,7 +294,7 @@ const TimelineView = () => {
               <div className="flex gap-2">
                 <Button variant="primary" onClick={async () => {
                   if (editingTimeline) {
-                    await folderService.update(editingTimeline.id, editingTimeline.nombre, projectId);
+                    await TimelineUseCase.updateTimelineFolder(editingTimeline.id, editingTimeline.nombre, projectId);
                     await loadMultiverse();
                   } else await handleCreateTimeline();
                 }} className="flex-1 justify-center !text-[9px]">

@@ -1,159 +1,193 @@
-import React, { useRef, useEffect } from 'react';
-import { Stage, Layer, Line, Rect, Circle, Transformer } from 'react-konva';
+import React, { useRef, useState, useEffect } from 'react';
+import { Stage, Layer, Line, Circle, Text, Group } from 'react-konva';
 import Konva from 'konva';
 import { KonvaEventObject } from 'konva/lib/Node';
-import { Shape, LayerData } from '@domain/models/canvas';
 
-interface UniversalCanvasProps {
-  stageRef: React.RefObject<Konva.Stage | null>;
-  layers: LayerData[];
-  selectedShapeId: string | string[] | null;
-  onSelectShape: (id: string | null) => void;
-  onChangeShape: (id: string, attrs: Partial<Shape>) => void;
-  tool: string;
-  color: string;
-  strokeWidth: number;
-  onDrawEnd: (phase: 'START' | 'MOVE' | 'END', data: { pos?: { x: number, y: number } }) => void;
+export interface CanvasNode {
+  id: string;
+  x: number;
+  y: number;
+  label: string;
+  tipo: string;
 }
 
-const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
-  stageRef,
-  layers,
-  selectedShapeId,
-  onSelectShape,
-  onChangeShape,
-  tool,
-  onDrawEnd
-}) => {
-  const isDrawing = useRef(false);
-  const transformerRef = useRef<Konva.Transformer>(null);
+export interface CanvasEdge {
+  id: string;
+  from: string;
+  to: string;
+}
+
+const initialNodes: CanvasNode[] = [
+  { id: '1', x: 400, y: 300, label: 'El Sol Rojo', tipo: 'estrella' },
+  { id: '2', x: 200, y: 150, label: 'Planeta Alpha', tipo: 'planeta' },
+  { id: '3', x: 600, y: 450, label: 'Planeta Omega', tipo: 'planeta' },
+];
+
+const initialEdges: CanvasEdge[] = [
+  { id: 'e1-2', from: '1', to: '2' },
+  { id: 'e1-3', from: '1', to: '3' },
+];
+
+const UniversalCanvas: React.FC = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<Konva.Stage>(null);
+  
+  const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+  const [nodes, setNodes] = useState<CanvasNode[]>(initialNodes);
+  const [edges] = useState<CanvasEdge[]>(initialEdges);
+  
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    if (tool === 'select' && transformerRef.current && selectedShapeId && !Array.isArray(selectedShapeId)) {
-      const stage = stageRef.current;
-      if (!stage) return;
-      const selectedNode = stage.findOne(`#${selectedShapeId}`);
-      if (selectedNode) {
-        transformerRef.current.nodes([selectedNode]);
-        const layer = transformerRef.current.getLayer();
-        if (layer) layer.batchDraw();
-      } else {
-        transformerRef.current.nodes([]);
+    const handleResize = () => {
+      if (containerRef.current) {
+        setDimensions({
+          width: containerRef.current.offsetWidth,
+          height: containerRef.current.offsetHeight
+        });
       }
-    } else if (transformerRef.current) {
-      transformerRef.current.nodes([]);
-    }
-  }, [selectedShapeId, tool, layers]);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-  const handleMouseDown = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
-    // Si la herramienta es select y el usuario clica en el escenario vacío, deseleccionamos
-    if (tool === 'select') {
-      const clickedOnEmpty = e.target === e.target.getStage();
-      if (clickedOnEmpty) {
-        onSelectShape(null);
+  const handleWheel = (e: KonvaEventObject<WheelEvent>) => {
+    e.evt.preventDefault();
+    const stage = stageRef.current;
+    if (!stage) return;
+    
+    const scaleBy = 1.1;
+    const oldScale = stage.scaleX();
+    const pointer = stage.getPointerPosition();
+    if (!pointer) return;
+    
+    const mousePointTo = {
+      x: (pointer.x - stage.x()) / oldScale,
+      y: (pointer.y - stage.y()) / oldScale,
+    };
+    
+    const newScale = e.evt.deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;
+    setScale(newScale);
+    
+    setPosition({
+      x: pointer.x - mousePointTo.x * newScale,
+      y: pointer.y - mousePointTo.y * newScale,
+    });
+  };
+
+  const handleDragMoveNode = (id: string, e: KonvaEventObject<DragEvent>) => {
+    const newNodes = nodes.map(n => {
+      if (n.id === id) {
+        return { ...n, x: e.target.x(), y: e.target.y() };
       }
-      return;
-    }
-
-    isDrawing.current = true;
-    const stage = e.target.getStage();
-    if (!stage) return;
-    const pos = stage.getPointerPosition();
-    if (pos) onDrawEnd('START', { pos });
+      return n;
+    });
+    setNodes(newNodes);
   };
 
-  const handleMouseMove = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
-    if (!isDrawing.current || tool === 'select') return;
-    const stage = e.target.getStage();
-    if (!stage) return;
-    const pos = stage.getPointerPosition();
-    if (pos) onDrawEnd('MOVE', { pos });
-  };
+  // Cálculo para grid infinito simulado
+  const BACKGROUND_GRID_SIZE = 50;
+  // Aumentamos el margen de renderizado de la grid basándonos en la escala y posición
+  const startX = Math.floor((-position.x / scale) / BACKGROUND_GRID_SIZE) * BACKGROUND_GRID_SIZE - BACKGROUND_GRID_SIZE * 10;
+  const endX = startX + (dimensions.width / scale) + BACKGROUND_GRID_SIZE * 20;
+  const startY = Math.floor((-position.y / scale) / BACKGROUND_GRID_SIZE) * BACKGROUND_GRID_SIZE - BACKGROUND_GRID_SIZE * 10;
+  const endY = startY + (dimensions.height / scale) + BACKGROUND_GRID_SIZE * 20;
 
-  const handleMouseUp = () => {
-    if (!isDrawing.current || tool === 'select') return;
-    isDrawing.current = false;
-    onDrawEnd('END', {});
-  };
-
-  const handleShapeClick = (e: KonvaEventObject<MouseEvent | TouchEvent>, shapeId: string) => {
-    if (tool === 'select') {
-      onSelectShape(shapeId);
-      e.cancelBubble = true;
-    }
-  };
+  const verticalLines = [];
+  for (let x = startX; x < endX; x += BACKGROUND_GRID_SIZE) {
+    verticalLines.push(x);
+  }
+  
+  const horizontalLines = [];
+  for (let y = startY; y < endY; y += BACKGROUND_GRID_SIZE) {
+    horizontalLines.push(y);
+  }
 
   return (
-    <div className="w-full h-full cursor-crosshair relative bg-background/20" id="canvas-container">
+    <div ref={containerRef} className="w-full h-full bg-[#0a0a0a] overflow-hidden relative">
       <Stage
-        width={1000} // Se puede ajustar este width/height con un ResizeObserver
-        height={800}
-        onMouseDown={handleMouseDown}
-        onMousemove={handleMouseMove}
-        onMouseup={handleMouseUp}
-        onTouchStart={handleMouseDown}
-        onTouchMove={handleMouseMove}
-        onTouchEnd={handleMouseUp}
+        width={dimensions.width}
+        height={dimensions.height}
+        draggable
+        onWheel={handleWheel}
+        scaleX={scale}
+        scaleY={scale}
+        x={position.x}
+        y={position.y}
+        onDragEnd={(e) => {
+          if (e.target === stageRef.current) {
+            setPosition({ x: e.target.x(), y: e.target.y() });
+          }
+        }}
         ref={stageRef}
       >
-        {layers.map((layer) => (
-          <Layer key={layer.id} visible={layer.visible}>
-            {layer.shapes.map((shape) => {
-              const shapeProps: Record<string, unknown> = {
-                id: shape.id,
-                onClick: (e: KonvaEventObject<MouseEvent>) => handleShapeClick(e, shape.id),
-                onTap: (e: KonvaEventObject<TouchEvent>) => handleShapeClick(e, shape.id),
-                stroke: shape.stroke || '#ffffff',
-                strokeWidth: shape.strokeWidth || 4,
-                opacity: shape.opacity || 1,
-                lineCap: shape.lineCap || 'round',
-                lineJoin: shape.lineJoin || 'round',
-                dash: shape.dash,
-                tension: shape.tension,
-                globalCompositeOperation: shape.globalCompositeOperation,
-                draggable: tool === 'select' && selectedShapeId === shape.id,
-                onDragEnd: (e: KonvaEventObject<DragEvent>) => {
-                  onChangeShape(shape.id, {
-                    x: e.target.x(),
-                    y: e.target.y()
-                  });
-                },
-                onTransformEnd: (e: KonvaEventObject<Event>) => {
-                  const node = e.target;
-                  onChangeShape(shape.id, {
-                    x: node.x(),
-                    y: node.y(),
-                    scaleX: node.scaleX(),
-                    scaleY: node.scaleY(),
-                    rotation: node.rotation()
-                  });
-                }
-              };
-
-              if (shape.type === 'brush' || shape.type === 'eraser' || shape.type === 'line') {
-                return <Line key={shape.id} points={shape.points || []} {...shapeProps} />;
-              }
-              if (shape.type === 'rect') {
-                return <Rect key={shape.id} x={shape.x} y={shape.y} width={shape.width} height={shape.height} {...shapeProps} />;
-              }
-              if (shape.type === 'circle') {
-                return <Circle key={shape.id} x={shape.x} y={shape.y} radius={shape.radius} {...shapeProps} />;
-              }
-              return null;
-            })}
-          </Layer>
-        ))}
-        {tool === 'select' && (
-          <Layer>
-            <Transformer
-              ref={transformerRef}
-              boundBoxFunc={(oldBox, newBox) => {
-                if (Math.abs(newBox.width) < 5 || Math.abs(newBox.height) < 5) return oldBox;
-                return newBox;
-              }}
+        <Layer id="background-grid">
+          {verticalLines.map((x, i) => (
+            <Line
+              key={`v-${i}`}
+              points={[x, startY - 1000, x, endY + 1000]}
+              stroke="rgba(0, 255, 255, 0.05)"
+              strokeWidth={1 / scale}
             />
-          </Layer>
-        )}
+          ))}
+          {horizontalLines.map((y, i) => (
+            <Line
+              key={`h-${i}`}
+              points={[startX - 1000, y, endX + 1000, y]}
+              stroke="rgba(0, 255, 255, 0.05)"
+              strokeWidth={1 / scale}
+            />
+          ))}
+        </Layer>
+        
+        <Layer id="edges">
+          {edges.map(edge => {
+            const fromNode = nodes.find(n => n.id === edge.from);
+            const toNode = nodes.find(n => n.id === edge.to);
+            if (!fromNode || !toNode) return null;
+            return (
+              <Line
+                key={edge.id}
+                points={[fromNode.x, fromNode.y, toNode.x, toNode.y]}
+                stroke="hsl(var(--primary))"
+                strokeWidth={2}
+                opacity={0.8}
+              />
+            );
+          })}
+        </Layer>
+        
+        <Layer id="nodes">
+          {nodes.map(node => (
+            <Group
+              key={node.id}
+              x={node.x}
+              y={node.y}
+              draggable
+              onDragMove={(e) => handleDragMoveNode(node.id, e)}
+            >
+              <Circle
+                radius={25}
+                fill="#111111"
+                stroke="hsl(var(--primary))"
+                strokeWidth={2}
+              />
+              <Text
+                text={node.label}
+                fill="#ffffff"
+                fontSize={12}
+                fontFamily="Inter, sans-serif"
+                fontStyle="bold"
+                align="center"
+                y={35}
+                x={-50}
+                width={100}
+              />
+            </Group>
+          ))}
+        </Layer>
       </Stage>
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { templateService } from '@repositories/templateService';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { Plantilla } from '@domain/models/database';
 import { useOutletContext } from 'react-router-dom';
 import MonolithicPanel from '@atoms/MonolithicPanel';
@@ -29,7 +29,7 @@ const ArchetypeManager: React.FC = () => {
   const loadTemplates = async () => {
     if (!projectId) return;
     setLoading(true);
-    const data = await templateService.getAll(projectId);
+    const data = await TemplateUseCase.getTemplates(projectId);
     setTemplates(data);
     setLoading(false);
   };
@@ -44,9 +44,9 @@ const ArchetypeManager: React.FC = () => {
 
     try {
       if (editingId) {
-        await templateService.update(editingId, formData);
+        await TemplateUseCase.updateTemplate(editingId, formData);
       } else {
-        await templateService.create({
+        await TemplateUseCase.createTemplate({
           ...(formData as Omit<Plantilla, 'id' | 'created_at'>),
           project_id: projectId
         });
@@ -77,7 +77,7 @@ const ArchetypeManager: React.FC = () => {
 
   const handleDelete = async (id: number) => {
     if (!window.confirm('¿Eliminar este atributo? Esto no borrará los datos ya guardados en las entidades, pero el campo dejará de ser visible.')) return;
-    await templateService.delete(id);
+    await TemplateUseCase.deleteTemplate(id);
     loadTemplates();
   };
 

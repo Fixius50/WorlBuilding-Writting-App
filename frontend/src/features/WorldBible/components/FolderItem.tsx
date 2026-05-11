@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getHierarchyVisuals } from '@presentation/utils/hierarchyVisuals';
-import { folderService } from '@repositories/folderService';
-import { entityService } from '@repositories/entityService';
+import { WorldBibleUseCase } from '@application/useCases/WorldBibleUseCase';
 import { Carpeta, Entidad } from '@domain/models/database';
 
 const getIconForType = (type?: string) => {
@@ -95,10 +94,7 @@ const FolderItem: React.FC<FolderItemProps> = ({
 
  const loadContent = async () => {
  try {
- const [subs, ents] = await Promise.all([
- folderService.getSubfolders(folder.id),
- entityService.getByFolder(folder.id)
- ]);
+ const { folders: subs, entities: ents } = await WorldBibleUseCase.getFolderContent(folder.id);
  setContent({ folders: subs, entities: ents });
  setLoaded(true);
  } catch (err) {

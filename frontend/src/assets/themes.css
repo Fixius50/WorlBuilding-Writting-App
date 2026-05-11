@@ -1,0 +1,197 @@
+/* =====================================================
+   THEMES & COLOR ARCHITECTURE
+   ===================================================== */
+
+/* Global Theme Variables - Outside layers for high priority */
+:root {
+  /* Light Theme Base - Soft Emerald Green */
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+  --primary: 142 70% 45%;
+  --primary-foreground: 0 0% 98%;
+  --radius: 0px;
+
+  /* Semantic Colors - Light Theme */
+  --color-indigo: 243 75% 59%;
+  --color-indigo-foreground: 0 0% 100%;
+  --color-emerald: 160 84% 39%;
+  --color-emerald-foreground: 0 0% 100%;
+  --color-red: 0 72% 51%;
+  --color-red-foreground: 0 0% 100%;
+  --color-amber: 38 92% 50%;
+  --color-amber-foreground: 240 10% 4%;
+  --color-purple: 270 70% 60%;
+  --color-purple-foreground: 0 0% 100%;
+  --color-orange: 25 95% 53%;
+  --color-orange-foreground: 0 0% 100%;
+  --color-blue: 217 91% 60%;
+  --color-blue-foreground: 0 0% 100%;
+  --color-cyan: 187 89% 48%;
+  --color-cyan-foreground: 240 10% 4%;
+  --color-destructive: 0 72% 51%;
+  --color-destructive-foreground: 0 0% 100%;
+}
+
+/* 
+  --- Configuración de Bordes y Sombras Monolíticas --- 
+  El asterisco (*) fuerza que el var(--foreground) se lea del 
+  tema aplicado en el momento, y no se congele en el :root (claro).
+*/
+* {
+  --panel-border: hsl(var(--foreground) / 0.4);
+  --divider-border: hsl(var(--foreground) / 0.1);
+  --sunken-border: hsl(var(--foreground) / 0.2);
+  --sunken-shadow: hsl(var(--foreground) / 0.1);
+}
+
+.dark, .theme-dark {
+  --background: 240 10% 4%;
+  --foreground: 0 0% 98%;
+  --primary: 243 75% 59%;
+  --primary-foreground: 210 40% 98%;
+
+  --color-indigo: 243 75% 59%;
+  --color-indigo-foreground: 210 40% 98%;
+  --color-emerald: 160 84% 39%;
+  --color-emerald-foreground: 0 0% 98%;
+  --color-red: 0 72% 51%;
+  --color-red-foreground: 0 0% 98%;
+  --color-amber: 38 92% 50%;
+  --color-amber-foreground: 240 10% 4%;
+  --color-purple: 270 70% 60%;
+  --color-purple-foreground: 0 0% 98%;
+  --color-orange: 25 95% 53%;
+  --color-orange-foreground: 0 0% 98%;
+  --color-blue: 217 91% 60%;
+  --color-blue-foreground: 0 0% 98%;
+  --color-cyan: 187 89% 48%;
+  --color-cyan-foreground: 240 10% 4%;
+  --color-destructive: 0 72% 51%;
+  --color-destructive-foreground: 0 0% 98%;
+}
+
+.theme-light {
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+  --primary: 142 70% 45%;
+  --primary-foreground: 0 0% 98%;
+
+  --color-indigo: 243 75% 59%;
+  --color-indigo-foreground: 0 0% 100%;
+  --color-emerald: 160 84% 39%;
+  --color-emerald-foreground: 0 0% 100%;
+  --color-red: 0 72% 51%;
+  --color-red-foreground: 0 0% 100%;
+  --color-amber: 38 92% 50%;
+  --color-amber-foreground: 240 10% 4%;
+  --color-purple: 270 70% 60%;
+  --color-purple-foreground: 0 0% 100%;
+  --color-orange: 25 95% 53%;
+  --color-orange-foreground: 0 0% 100%;
+  --color-blue: 217 91% 60%;
+  --color-blue-foreground: 0 0% 100%;
+  --color-cyan: 187 89% 48%;
+  --color-cyan-foreground: 240 10% 4%;
+  --color-destructive: 0 72% 51%;
+  --color-destructive-foreground: 0 0% 100%;
+}
+
+.theme-deep_space {
+  --background: 240 10% 2%;
+  --foreground: 0 0% 95%;
+  --primary: 243 75% 59%;
+
+  --color-indigo: 243 75% 59%;
+  --color-indigo-foreground: 210 40% 98%;
+  --color-emerald: 160 84% 39%;
+  --color-emerald-foreground: 0 0% 100%;
+  --color-red: 0 72% 51%;
+  --color-red-foreground: 0 0% 100%;
+  --color-amber: 38 92% 50%;
+  --color-amber-foreground: 240 10% 4%;
+  --color-purple: 270 70% 60%;
+  --color-purple-foreground: 0 0% 100%;
+  --color-orange: 25 95% 53%;
+  --color-orange-foreground: 0 0% 100%;
+  --color-blue: 217 91% 60%;
+  --color-blue-foreground: 0 0% 100%;
+  --color-cyan: 187 89% 48%;
+  --color-cyan-foreground: 240 10% 4%;
+  --color-destructive: 0 72% 51%;
+  --color-destructive-foreground: 0 0% 100%;
+}
+
+.theme-deep_space_light {
+  --background: 0 0% 100%;
+  --foreground: 240 10% 10%;
+  --primary: 142 70% 45%;
+
+  --color-indigo: 243 75% 59%;
+  --color-indigo-foreground: 0 0% 100%;
+  --color-emerald: 160 84% 39%;
+  --color-emerald-foreground: 0 0% 100%;
+  --color-red: 0 72% 51%;
+  --color-red-foreground: 0 0% 100%;
+  --color-amber: 38 92% 50%;
+  --color-amber-foreground: 240 10% 4%;
+  --color-purple: 270 70% 60%;
+  --color-purple-foreground: 0 0% 100%;
+  --color-orange: 25 95% 53%;
+  --color-orange-foreground: 0 0% 100%;
+  --color-blue: 217 91% 60%;
+  --color-blue-foreground: 0 0% 100%;
+  --color-cyan: 187 89% 48%;
+  --color-cyan-foreground: 240 10% 4%;
+  --color-destructive: 0 72% 51%;
+  --color-destructive-foreground: 0 0% 100%;
+}
+
+.theme-nebula {
+  --background: 260 40% 5%;
+  --foreground: 0 0% 95%;
+  --primary: 270 100% 80%;
+
+  --color-indigo: 243 75% 59%;
+  --color-indigo-foreground: 210 40% 98%;
+  --color-emerald: 160 84% 39%;
+  --color-emerald-foreground: 0 0% 100%;
+  --color-red: 0 72% 51%;
+  --color-red-foreground: 0 0% 100%;
+  --color-amber: 38 92% 50%;
+  --color-amber-foreground: 240 10% 4%;
+  --color-purple: 270 70% 60%;
+  --color-purple-foreground: 0 0% 100%;
+  --color-orange: 25 95% 53%;
+  --color-orange-foreground: 0 0% 100%;
+  --color-blue: 217 91% 60%;
+  --color-blue-foreground: 0 0% 100%;
+  --color-cyan: 187 89% 48%;
+  --color-cyan-foreground: 240 10% 4%;
+  --color-destructive: 0 72% 51%;
+  --color-destructive-foreground: 0 0% 100%;
+}
+
+.theme-nebula_light {
+  --background: 260 20% 99%;
+  --foreground: 260 10% 15%;
+  --primary: 270 90% 60%;
+
+  --color-indigo: 243 75% 59%;
+  --color-indigo-foreground: 0 0% 100%;
+  --color-emerald: 160 84% 39%;
+  --color-emerald-foreground: 0 0% 100%;
+  --color-red: 0 72% 51%;
+  --color-red-foreground: 0 0% 100%;
+  --color-amber: 38 92% 50%;
+  --color-amber-foreground: 240 10% 4%;
+  --color-purple: 270 70% 60%;
+  --color-purple-foreground: 0 0% 100%;
+  --color-orange: 25 95% 53%;
+  --color-orange-foreground: 0 0% 100%;
+  --color-blue: 217 91% 60%;
+  --color-blue-foreground: 0 0% 100%;
+  --color-cyan: 187 89% 48%;
+  --color-cyan-foreground: 240 10% 4%;
+  --color-destructive: 0 72% 51%;
+  --color-destructive-foreground: 0 0% 100%;
+}

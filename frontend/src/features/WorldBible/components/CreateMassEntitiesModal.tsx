@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@context/LanguageContext';
-import { entityService } from '@repositories/entityService';
-import { templateService } from '@repositories/templateService';
+import { WorldBibleUseCase } from '@application/useCases/WorldBibleUseCase';
 import { Carpeta, Plantilla } from '@domain/models/database';
 
 interface CreateMassEntitiesModalProps {
@@ -62,7 +61,7 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
 
   const loadTemplates = async () => {
     try {
-      const tpls = await templateService.getAll(projectId);
+      const tpls = await WorldBibleUseCase.getTemplates(projectId);
       setAvailableTemplates(tpls);
     } catch (err) {
       // [LOG REMOVED]
@@ -109,24 +108,17 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
     setLoading(true);
     try {
       for (const name of nameList) {
-        const entity = await entityService.create({
-          nombre: name,
-          tipo: type,
-          project_id: projectId,
-          carpeta_id: folderId,
-          descripcion: '',
-          contenido_json: null,
-          slug: '',
-          folder_slug: null,
-          imagen_url: null
-        });
-
-        // Añadir atributos comunes
-        for (const attr of selectedAttributes) {
-          if (attr.value.trim()) {
-            await entityService.addValue(entity.id!, attr.template.id, attr.value);
-          }
-        }
+        await WorldBibleUseCase.createEntityWithAttributes(
+          {
+            nombre: name,
+            tipo: type,
+            project_id: projectId,
+            carpeta_id: folderId
+          },
+          selectedAttributes
+            .filter(attr => attr.value.trim())
+            .map(attr => ({ templateId: attr.template.id, value: attr.value }))
+        );
       }
       onCreated();
       onClose();

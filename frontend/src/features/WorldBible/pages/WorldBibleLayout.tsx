@@ -6,8 +6,7 @@ import BibleTableView from '../components/BibleTableView';
 import CreateNodeModal from '../components/CreateNodeModal';
 import { FolderType } from '@domain/models/database';
 import { ArchitectContext } from '@domain/models/ui';
-import { folderService } from '@repositories/folderService';
-import { entityService } from '@repositories/entityService';
+import { WorldBibleUseCase } from '@application/useCases/WorldBibleUseCase';
 import ConfirmationModal from '@organisms/ConfirmationModal';
 import { useRightPanelStore } from '@store/useRightPanelStore';
 
@@ -100,8 +99,8 @@ const WorldBibleLayout: React.FC = () => {
           const currentFolderId = Number(match[1]);
           const folder = architectContext.folders?.find(f => f.id === currentFolderId);
           setCurrentFolder(folder || null);
-          const ents = await entityService.getByFolder(currentFolderId);
-          setLocalEntities(ents);
+          const { entities } = await WorldBibleUseCase.getFolderContent(currentFolderId);
+          setLocalEntities(entities);
           setLocalFolders([]);
         }
       }
@@ -123,7 +122,7 @@ const WorldBibleLayout: React.FC = () => {
   const confirmDeleteEntity = async () => {
     if (!entityToDelete) return;
     try {
-      await entityService.delete(entityToDelete);
+      await WorldBibleUseCase.deleteEntity(entityToDelete);
       window.dispatchEvent(new CustomEvent('entity-update'));
       setEntityToDelete(null);
     } catch (err) {
@@ -137,10 +136,9 @@ const WorldBibleLayout: React.FC = () => {
     try {
       if (isRoot) {
         // Root: Solo creamos carpetas
-        await folderService.create(
+        await WorldBibleUseCase.createCategory(
           formData.nombre,
           architectContext.projectId,
-          null,
           'FOLDER'
         );
         window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: null } }));
@@ -149,7 +147,7 @@ const WorldBibleLayout: React.FC = () => {
         const currentFolderId = Number(location.pathname.match(/\/folder\/(\d+)/)?.[1]);
         if (currentFolderId) {
           const baseSlug = formData.nombre.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-          await entityService.create({
+          await WorldBibleUseCase.createEntity({
             nombre: formData.nombre,
             descripcion: formData.descripcion || '',
             tipo: formData.tipo || 'PERSONAJE',
@@ -159,7 +157,7 @@ const WorldBibleLayout: React.FC = () => {
             contenido_json: null,
             folder_slug: null,
             imagen_url: null
-          });
+          } as any);
           window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: currentFolderId } }));
           window.dispatchEvent(new CustomEvent('entity-update'));
         }

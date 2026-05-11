@@ -17,6 +17,7 @@ import Breadcrumbs from '@molecules/Breadcrumbs';
 import { Carpeta, Valor } from '@domain/models/database';
 import ConfirmationModal from '@organisms/ConfirmationModal';
 import FamilyTreeAssigner from '../components/FamilyTreeAssigner';
+import TemplateSettingsModal from '@organisms/TemplateSettingsModal';
 
 interface LayoutContext {
   projectId: number;
@@ -79,7 +80,11 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
   const [availableTemplates, setAvailableTemplatesLocal] = useState<Plantilla[]>([]);
   const [activeEntityTab, setActiveEntityTab] = useState('identity');
   const [zoomImage, setZoomImage] = useState<string | null>(null);
+  const [showLibrary, setShowLibrary] = useState<boolean>(false);
+  const [editingTemplate, setEditingTemplate] = useState<Plantilla | null>(null);
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+
+
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
   // Parse contenido_json safely
@@ -160,11 +165,13 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
     try {
       const templates = await templateService.getAll(projectId || 1);
       setAvailableTemplatesLocal(templates);
+      return templates;
     } catch (err) {
-      // [LOG REMOVED]
+      return [];
     }
   };
-  // --- SIDEBAR SYNC ---
+  // --- SIDEBAR SYNC (DESACTIVADO EN FAVOR DE LIBRERÍA LOCAL) ---
+  /* 
   useEffect(() => {
     setCustomContent(
       <EntityBuilderSidebar
@@ -184,6 +191,8 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
       'Gestión de Atributos'
     );
   }, [availableTemplates, activeEntityTab, projectId]);
+  */
+
 
   // --- HANDLERS ---
   const handleSave = useCallback(async (redirect = true) => {
@@ -575,13 +584,52 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                   <span className="material-symbols-outlined text-primary/60">layers</span>
                   <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-[hsl(var(--foreground))]">Atributos Modulares</h3>
                 </div>
-                <div className="px-4 py-2 bg-primary/5 border border-primary/10 text-[9px] font-black text-primary uppercase tracking-widest animate-pulse">
-                  Panel lateral activo para inyectar plantillas
+                
+                <div className="relative">
+                  <button
+                    onClick={() => setShowLibrary(!showLibrary)}
+                    className={`flex items-center gap-3 px-6 py-2.5 rounded-none font-black text-[9px] uppercase tracking-[0.2em] transition-all border ${showLibrary ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20' : 'bg-primary/5 text-primary border-primary/20 hover:bg-primary/10'}`}
+                  >
+                    <span className="material-symbols-outlined text-sm">{showLibrary ? 'close' : 'add_box'}</span>
+                    {showLibrary ? 'Cerrar Biblioteca' : 'Añadir Módulo'}
+                  </button>
+
+                  {/* 
+                      LIBRERÍA FLOTANTE (DROPDOWN LOCAL)
+                      Esta sección sustituye la antigua integración con el panel derecho global.
+                      Se utiliza un posicionamiento absoluto para que flote sobre el contenido sin desplazar el layout.
+                  */}
+                  {showLibrary && (
+                    <div className="absolute top-full right-0 mt-4 w-[22rem] h-[32rem] z-50 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+                      <div className="h-full border border-foreground/10 bg-background overflow-hidden flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                        <EntityBuilderSidebar
+                          templates={availableTemplates}
+                          onAddTemplate={(tpl) => {
+                            setFields(prev => [...prev, {
+                              id: `temp-${tpl.id}-${Date.now()}`,
+                              attribute: tpl,
+                              value: tpl.valor_defecto || '',
+                              isTemp: true
+                            }]);
+                          }}
+                          onRefresh={refreshTemplates}
+                          projectId={projectId}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
+
+
               </header>
               
+              {/* 
+                  CONTENEDOR FLEXIBLE DE ATRIBUTOS
+                  Se ha migrado de 'grid' a 'flex-wrap' para permitir que cada módulo (AttributeField)
+                  tenga un ancho variable según su tipo de dato, permitiendo un layout más orgánico.
+              */}
               <div 
-                className={`grid grid-cols-1 md:grid-cols-2 gap-8 p-4 transition-all duration-500 border-2 border-transparent ${isDraggingOver ? 'bg-primary/5 border-dashed border-primary/40 shadow-2xl shadow-primary/5' : ''}`}
+                className={`flex flex-wrap gap-8 p-4 transition-all duration-500 border-2 border-transparent ${isDraggingOver ? 'bg-primary/5 border-dashed border-primary/40 shadow-2xl shadow-primary/5' : ''}`}
                 onDragOver={handleDragOverArea}
                 onDragLeave={handleDragLeaveArea}
                 onDrop={handleDropArea}
@@ -600,10 +648,31 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                       value={field.value}
                       onChange={(val) => handleFieldChange(field.id, val)}
                       onRemove={() => handleRemoveField(field.id)}
+                      onEditTemplate={(tpl) => setEditingTemplate(tpl)}
                     />
                   </div>
                 ))}
             </div>
+
+            {editingTemplate && (
+              <TemplateSettingsModal
+                template={editingTemplate}
+                onClose={() => setEditingTemplate(null)}
+                onSave={async () => {
+                  const updatedTemplates = await refreshTemplates();
+                  const updatedTpl = updatedTemplates.find(t => t.id === editingTemplate.id);
+                  
+                  if (updatedTpl) {
+                    setFields(prev => prev.map(f => 
+                      f.attribute.id === updatedTpl.id 
+                      ? { ...f, attribute: updatedTpl } 
+                      : f
+                    ));
+                  }
+                  setEditingTemplate(null);
+                }}
+              />
+            )}
           </div>
         )}
 

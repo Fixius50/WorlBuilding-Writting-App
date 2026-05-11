@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { entityService } from '@repositories/entityService';
-import { folderService } from '@repositories/folderService';
+import { RelationshipUseCase } from '@application/useCases/RelationshipUseCase';
 import { Entidad, Carpeta } from '@domain/models/database';
 
 interface EntityDatabaseProps {
@@ -44,10 +43,8 @@ const EntityDatabase: React.FC<EntityDatabaseProps> = ({ projectId }) => {
     if (!projectId) return;
     setLoading(true);
     try {
-      const [entities, folds] = await Promise.all([
-        entityService.getAllByProject(projectId),
-        folderService.getByProject(projectId),
-      ]);
+      const { entities } = await RelationshipUseCase.getFullNetwork(projectId);
+      const folds = await RelationshipUseCase.getNetworkFolders(projectId);
       setAllEntities(entities.filter(e => !e.borrado));
       setFolders(folds);
     } catch { /* silencioso */ }
