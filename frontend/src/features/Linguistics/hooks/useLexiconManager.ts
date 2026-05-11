@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { entityService } from '@repositories/entityService';
+import { EntityUseCase } from '@application/useCases/EntityUseCase';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { Entidad, Word } from '@domain/models/database';
 import { GrammarRule } from '../components/LinguisticsSidebar';
 
@@ -40,14 +41,14 @@ export const useLexiconManager = (projectParam: string | undefined) => {
 
   const loadData = useCallback(async () => {
     try {
-      const entities = await entityService.getAllByProject(Number(projectParam ?? '0') || 0);
+      const entities = await EntityUseCase.getAllByProject(Number(projectParam ?? '0') || 0);
       const langs = entities.filter(e => e.tipo === 'Conlang');
       if (langs.length > 0) {
         const active = langs[0];
         setActiveLangId(active.id);
         setLangName(active.nombre);
         
-        const children = await entityService.getByFolder(active.id);
+        const children = await EntityUseCase.getByFolder(active.id);
         loadLexicon(active.id, children);
         loadRules(active.id, children);
         
@@ -88,16 +89,16 @@ export const useLexiconManager = (projectParam: string | undefined) => {
     };
 
     if (updatedData.isNew) {
-      await entityService.create(entityData);
+      await EntityUseCase.create(entityData);
     } else if (editingWordId) {
-      await entityService.update(Number(editingWordId), entityData);
+      await EntityUseCase.update(Number(editingWordId), entityData);
     }
     
     await loadData();
   };
 
   const deleteWord = async (id: number | string) => {
-    await entityService.delete(Number(id));
+    await EntityUseCase.delete(Number(id));
     await loadData();
   };
 

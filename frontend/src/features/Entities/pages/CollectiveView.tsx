@@ -1,4 +1,5 @@
-import { entityService } from '@repositories/entityService';
+import { EntityUseCase } from '@application/useCases/EntityUseCase';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { Entidad } from '@domain/models/database';
 import { useState, useEffect } from 'react';
 import MonolithicPanel from '@atoms/MonolithicPanel';
@@ -22,7 +23,7 @@ const CollectiveView = ({ id }: { id: string | number }) => {
  const loadCollective = async () => {
  setLoading(true);
  try {
- const data = await entityService.getById(Number(id)); // Changed to entityService
+ const data = await EntityUseCase.getById(Number(id)); // Changed to entityService
  if (data) {
  setEntity(data); // Set entity state
  const extra = typeof data.contenido_json === 'string'
@@ -46,7 +47,7 @@ const CollectiveView = ({ id }: { id: string | number }) => {
  try {
       const { nombre, tipo, descripcion, ...extra } = collective; // Destructure collective for update
 
- await entityService.update(entity.id, { // Changed to entityService.update
+ await EntityUseCase.update(entity.id, { // Changed to EntityUseCase.update
         nombre,
         tipo,
         descripcion,

@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { entityService } from '@repositories/entityService';
-import { relationshipService, Relacion } from '@repositories/relationshipService';
+import { EntityUseCase } from '@application/useCases/EntityUseCase';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
+import { RelationshipUseCase } from '@application/useCases/RelationshipUseCase';
+import { Relacion } from '@domain/models/database';
 import { Entidad } from '@domain/models/database';
 import Avatar from '@atoms/Avatar';
 import MonolithicPanel from '@atoms/MonolithicPanel';
-import { settingsService } from '@repositories/settingsService';
+import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
 
 interface FamilyTreeAssignerProps {
   entityId: number;
@@ -41,11 +43,11 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({ entityId, proje
   const loadRelationships = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await relationshipService.getByEntity(entityId);
+      const data = await RelationshipUseCase.getRelationshipsByEntity(entityId);
       setRelationships(data as RelacionExtendida[]);
       
       // Cargar tipos personalizados del proyecto
-      const storedTypes = await settingsService.get(SETTINGS_KEY);
+      const storedTypes = await WorkspaceUseCase.getSetting(SETTINGS_KEY);
       if (storedTypes) {
         const parsed = JSON.parse(storedTypes);
         setAvailableTypes([...DEFAULT_RELATIONSHIP_TYPES, ...parsed]);
@@ -73,7 +75,7 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({ entityId, proje
       }
       try {
         // Obtenemos todas las entidades del proyecto (Búsqueda Global)
-        const all = await entityService.getAllByProject(projectId);
+        const all = await EntityUseCase.getAllByProject(projectId);
         
         const filtered = all.filter(e => {
           const matchesQuery = e.nombre.toLowerCase().includes(searchQuery.toLowerCase());
@@ -98,7 +100,7 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({ entityId, proje
     if (!finalType) return;
 
     try {
-      await relationshipService.create({
+      await RelationshipUseCase.createRelationship({
         origen_id: entityId,
         destino_id: selectedRelative.id,
         tipo: finalType,
@@ -110,7 +112,7 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({ entityId, proje
       if (!availableTypes.includes(finalType)) {
         const customOnly = availableTypes.filter(t => !DEFAULT_RELATIONSHIP_TYPES.includes(t));
         const updatedCustom = [...customOnly, finalType];
-        await settingsService.set(SETTINGS_KEY, JSON.stringify(updatedCustom));
+        await WorkspaceUseCase.saveSetting(SETTINGS_KEY, JSON.stringify(updatedCustom));
         setAvailableTypes([...DEFAULT_RELATIONSHIP_TYPES, ...updatedCustom]);
       }
 
@@ -127,7 +129,7 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({ entityId, proje
   const handleDelete = async (id: number) => {
     if (!confirm('¿Eliminar este vínculo genealógico?')) return;
     try {
-      await relationshipService.delete(id);
+      await RelationshipUseCase.deleteRelationship(id);
       loadRelationships();
     } catch (err) {
       console.error("Error deleting relationship", err);

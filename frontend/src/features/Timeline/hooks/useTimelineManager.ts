@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { timelineService } from '@repositories/timelineService';
-import { folderService } from '@repositories/folderService';
-import { entityService } from '@repositories/entityService';
+import { TimelineUseCase } from '@application/useCases/TimelineUseCase';
+import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
+import { EntityUseCase } from '@application/useCases/EntityUseCase';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { Evento, Carpeta, Entidad } from '@domain/models/database';
 import { useLanguage } from '@context/LanguageContext';
 
@@ -28,15 +29,15 @@ export const useTimelineManager = (folderId: string | undefined) => {
     setLoading(true);
     try {
       const id = Number(folderId);
-      const fInfo = await folderService.getById(id);
+      const fInfo = await WorkspaceUseCase.getFolderById(id);
 
       if (fInfo) {
         setFolder(fInfo);
         const [dbLines, allEvents, pEntities, allDimensions] = await Promise.all([
-          timelineService.getLinesByFolder(id),
-          timelineService.getByTimeline(id),
-          entityService.getAllByProject(fInfo.project_id),
-          entityService.getAllByProjectAndType(fInfo.project_id, 'DIMENSION')
+          TimelineUseCase.getLinesByFolder(id),
+          TimelineUseCase.getByTimeline(id),
+          EntityUseCase.getAllByProject(fInfo.project_id),
+          EntityUseCase.getAllByProjectAndType(fInfo.project_id, 'DIMENSION')
         ]);
 
         setLines(dbLines);
@@ -49,7 +50,7 @@ export const useTimelineManager = (folderId: string | undefined) => {
         const entityMap: Record<number, Entidad[]> = {};
         if (allEvents) {
           await Promise.all(allEvents.map(async (ev) => {
-            entityMap[ev.id] = await timelineService.getLinkedEntities(ev.id);
+            entityMap[ev.id] = await TimelineUseCase.getLinkedEntities(ev.id);
           }));
         }
         setLinkedEntities(entityMap);
@@ -84,7 +85,7 @@ export const useTimelineManager = (folderId: string | undefined) => {
   const handleAddEvent = async (lineId: number | null) => {
     if (!folder || !folderId) return;
     try {
-      const newEvent = await timelineService.create({
+      const newEvent = await TimelineUseCase.create({
         titulo: t('timeline.milestone'),
         descripcion: null,
         fecha_simulada: '0',
@@ -102,7 +103,7 @@ export const useTimelineManager = (folderId: string | undefined) => {
 
   const handleDeleteEvent = async (id: number) => {
     try {
-      await timelineService.delete(id);
+      await TimelineUseCase.delete(id);
       await loadData();
     } catch (err) {
       // [LOG REMOVED]
@@ -111,7 +112,7 @@ export const useTimelineManager = (folderId: string | undefined) => {
 
   const handleSaveEvent = async (id: number, data: { titulo: string, descripcion: string, fecha_simulada: string }) => {
     try {
-      await timelineService.update(id, data);
+      await TimelineUseCase.update(id, data);
       await loadData();
     } catch (err) {
       // [LOG REMOVED]
@@ -122,9 +123,9 @@ export const useTimelineManager = (folderId: string | undefined) => {
     try {
       const alreadyLinked = linkedEntities[eventId]?.some(e => e.id === entityId);
       if (alreadyLinked) {
-        await timelineService.unlinkEntity(eventId, entityId);
+        await TimelineUseCase.unlinkEntity(eventId, entityId);
       } else {
-        await timelineService.linkEntity(eventId, entityId);
+        await TimelineUseCase.linkEntity(eventId, entityId);
       }
       await loadData();
     } catch (err) {
@@ -135,7 +136,7 @@ export const useTimelineManager = (folderId: string | undefined) => {
   const handleImportDimension = async (entityId: number) => {
     if (!folderId) return;
     try {
-      await entityService.move(entityId, Number(folderId));
+      await EntityUseCase.move(entityId, Number(folderId));
       await loadData();
     } catch (err) {
       // [LOG REMOVED]
@@ -143,7 +144,7 @@ export const useTimelineManager = (folderId: string | undefined) => {
   };
 
   const handleRemoveDimension = async (entityId: number) => {
-    await entityService.move(entityId, null);
+    await EntityUseCase.move(entityId, null);
     await loadData();
   };
 

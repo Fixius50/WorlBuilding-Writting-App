@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import LinguisticsHub from './LinguisticsHub';
 import AdvancedLinguistics from './AdvancedLinguistics';
 
-import { folderService } from '@repositories/folderService';
-import { entityService } from '@infrastructure/localDB/repositories/entityService';
+import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
+import { EntityUseCase } from '@application/useCases/EntityUseCase';
 import Button from '@presentation/atoms/Button';
 
 const LinguisticsRouter = () => {
@@ -21,11 +21,11 @@ const LinguisticsRouter = () => {
     if (data.wordId) {
       try {
         // Use entityService to update the word's glyph data
-        const word = await entityService.getById(data.wordId);
+        const word = await EntityUseCase.getById(data.wordId);
         if (word) {
           const content = JSON.parse(word.contenido_json || '{}');
           content.svgPathData = data.svgPathData;
-          await entityService.update(data.wordId, {
+          await EntityUseCase.update(data.wordId, {
             ...word,
             contenido_json: JSON.stringify(content)
           });

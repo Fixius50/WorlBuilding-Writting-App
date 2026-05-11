@@ -73,6 +73,21 @@ export class WorkspaceUseCase {
     await folderService.delete(folderId);
   }
 
+  /** Obtiene una carpeta por su ID */
+  static async getFolderById(folderId: number): Promise<Carpeta | null> {
+    return await folderService.getById(folderId);
+  }
+
+  /** Obtiene subcarpetas de una carpeta específica */
+  static async getSubfolders(folderId: number): Promise<Carpeta[]> {
+    return await folderService.getSubfolders(folderId);
+  }
+
+  /** Obtiene la ruta completa (migas de pan) de una carpeta */
+  static async getFolderPath(folderId: number): Promise<Carpeta[]> {
+    return await folderService.getPath(folderId);
+  }
+
   /** Crea una entidad rápida desde el layout */
   static async createQuickEntity(data: Omit<Entidad, 'id' | 'created_at' | 'fecha_creacion' | 'fecha_actualizacion' | 'borrado'>): Promise<Entidad> {
     return await entityService.create(data);

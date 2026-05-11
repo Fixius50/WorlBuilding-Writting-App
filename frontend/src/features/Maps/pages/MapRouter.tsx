@@ -4,8 +4,9 @@ import MapCreationWizard from './MapCreationWizard';
 import MapEditor from '@features/Specialized/pages/MapEditor';
 import InteractiveMapView from './InteractiveMapView';
 import MapManager from './MapManager';
-import { entityService } from '@repositories/entityService';
-import { folderService } from '@repositories/folderService';
+import { EntityUseCase } from '@application/useCases/EntityUseCase';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
+import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
 import ConfirmationModal from '@organisms/ConfirmationModal';
 import { Entidad } from '@domain/models/database';
 
@@ -47,7 +48,7 @@ const MapRouter = () => {
  const loadMaps = async () => {
  if (!projectId) return;
  try {
- const allEntities = await entityService.getAllByProject(projectId);
+ const allEntities = await EntityUseCase.getAllByProject(projectId);
  const mapEntities = allEntities.filter(e => {
  // Check in attributes or tipo
  try {
@@ -69,7 +70,7 @@ const MapRouter = () => {
       };
 
 
- await entityService.create({
+ await EntityUseCase.create({
  nombre: `${map.nombre} (Copia)`,
  tipo: map.tipo,
  descripcion: map.descripcion,
@@ -90,7 +91,7 @@ const MapRouter = () => {
  const confirmDeleteMap = async () => {
  if (!mapToDelete) return;
  try {
- await entityService.delete(mapToDelete.id);
+ await EntityUseCase.delete(mapToDelete.id);
  setMapToDelete(null);
  await loadMaps();
  } catch (err) { /* [LOG REMOVED] */ }
@@ -102,7 +103,7 @@ const MapRouter = () => {
   ) => {
     if (!projectId) return;
     try {
-      const folders = await folderService.getByProject(projectId);
+      const folders = await WorkspaceUseCase.getRootFolders(projectId);
       const defaultFolder = folders.find(f => f.nombre.toLowerCase().includes('map')) || folders[0];
 
       if (!defaultFolder) {
@@ -110,7 +111,7 @@ const MapRouter = () => {
         return;
       }
 
-      const newEntity = await entityService.create({
+      const newEntity = await EntityUseCase.create({
         nombre: mapName || 'Nuevo Mapa',
         project_id: projectId,
         carpeta_id: defaultFolder.id,

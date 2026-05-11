@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
-import { entityService } from '@repositories/entityService';
+import { EntityUseCase } from '@application/useCases/EntityUseCase';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { Entidad, Valor } from '@domain/models/database';
 
 interface ProfileOutletContext {
@@ -35,18 +36,18 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({ entityId:
     if (!entityId) return;
     setLoading(true);
     try {
-      const data = await entityService.getById(Number(entityId));
+      const data = await EntityUseCase.getById(Number(entityId));
       if (data) {
         const extra = typeof data.contenido_json === 'string'
           ? JSON.parse(data.contenido_json)
           : (data.contenido_json || {});
         
-        const vals = await entityService.getValues(data.id);
+        const vals = await TemplateUseCase.getEntityValues(data.id);
         
         setEntity({ ...data, ...extra });
         setAttributes(vals);
 
-        const allEntities = await entityService.getAllByProject(data.project_id);
+        const allEntities = await EntityUseCase.getAllByProject(data.project_id);
         const children = allEntities.filter(e => {
             const eExtra = typeof e.contenido_json === 'string' ? JSON.parse(e.contenido_json) : (e.contenido_json || {});
             return e.carpeta_id === data.id || eExtra.padre_id === data.id || eExtra.parent_id === data.id;

@@ -92,4 +92,9 @@ export class WritingUseCase {
   static async getSnapshots(pageId: number): Promise<Snapshot[]> {
     return await notebookService.getSnapshots(pageId);
   }
+
+  /** Busca menciones de un texto en los cuadernos del proyecto */
+  static async getMentions(projectId: number, query: string): Promise<any[]> {
+    return await notebookService.getMentions(projectId, query);
+  }
 }

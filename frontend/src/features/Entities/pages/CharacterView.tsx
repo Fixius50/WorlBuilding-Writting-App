@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { entityService } from '@repositories/entityService';
-import { relationshipService } from '@repositories/relationshipService';
+import { EntityUseCase } from '@application/useCases/EntityUseCase';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
+import { RelationshipUseCase } from '@application/useCases/RelationshipUseCase';
 import { Entidad } from '@domain/models/database';
 import Button from '@atoms/Button';
 import MonolithicPanel from '@atoms/MonolithicPanel';
@@ -47,7 +48,7 @@ const CharacterView: React.FC<CharacterViewProps> = ({ id }) => {
   const loadCharacter = async () => {
     setLoading(true);
     try {
-      const data = await entityService.getById(Number(id));
+      const data = await EntityUseCase.getById(Number(id));
       if (data) {
         setEntity(data);
         const extra = typeof data.contenido_json === 'string'
@@ -55,7 +56,7 @@ const CharacterView: React.FC<CharacterViewProps> = ({ id }) => {
           : (data.contenido_json || {});
         
         // Fetch relationships for this character
-        const relations = await relationshipService.getByEntity(data.id);
+        const relations = await RelationshipUseCase.getRelationshipsByEntity(data.id);
         
         setCharacter({
           ...data,
@@ -78,7 +79,7 @@ const CharacterView: React.FC<CharacterViewProps> = ({ id }) => {
       // We don't save relationships back as part of entity update
       delete extra.relaciones;
 
-      await entityService.update(entity.id, {
+      await EntityUseCase.update(entity.id, {
         nombre,
         tipo,
         descripcion,
@@ -93,7 +94,7 @@ const CharacterView: React.FC<CharacterViewProps> = ({ id }) => {
   const handleDelete = async () => {
     if (!window.confirm("Move this character to the Trash Bin?")) return;
     try {
-      if (entity) await entityService.delete(entity.id);
+      if (entity) await EntityUseCase.delete(entity.id);
       navigate(-1);
     } catch (err) {
       // [LOG REMOVED]

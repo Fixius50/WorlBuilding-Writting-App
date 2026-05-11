@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { entityService } from '@repositories/entityService';
+import { EntityUseCase } from '@application/useCases/EntityUseCase';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { Entidad } from '@domain/models/database';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 

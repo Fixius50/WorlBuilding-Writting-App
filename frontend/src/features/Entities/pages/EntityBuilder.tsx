@@ -2,9 +2,9 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useOutletContext, useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { useLanguage } from '@context/LanguageContext';
-import { folderService } from '@repositories/folderService';
-import { entityService } from '@repositories/entityService';
-import { templateService } from '@repositories/templateService';
+import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
+import { EntityUseCase } from '@application/useCases/EntityUseCase';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { Entidad, Plantilla } from '@domain/models/database';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
@@ -117,15 +117,15 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
     const init = async () => {
       setLoading(true);
       try {
-        const templates = await templateService.getAll(projectId || 1); 
+        const templates = await TemplateUseCase.getTemplates(projectId || 1); 
         setAvailableTemplatesLocal(templates);
         /* setAddAttributeHandler removed - handled via setCustomContent */
 
         if (!isCreation && entityId) {
-          const data = await entityService.getById(Number(entityId));
+          const data = await EntityUseCase.getById(Number(entityId));
           if (data) {
             setEntity(data);
-            const vals = await entityService.getValues(data.id);
+            const vals = await TemplateUseCase.getEntityValues(data.id);
             setFields(vals.map(v => ({
               id: v.id,
               attribute: v.plantilla || { id: v.plantilla_id, nombre: 'Unknown', tipo: 'text' } as Plantilla,
@@ -154,7 +154,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
   useEffect(() => {
     const loadPath = async () => {
       if (entity.carpeta_id) {
-        const p = await folderService.getPath(entity.carpeta_id);
+        const p = await WorkspaceUseCase.getFolderPath(entity.carpeta_id);
         setPath(p);
       }
     };
@@ -163,7 +163,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
 
   const refreshTemplates = async () => {
     try {
-      const templates = await templateService.getAll(projectId || 1);
+      const templates = await TemplateUseCase.getTemplates(projectId || 1);
       setAvailableTemplatesLocal(templates);
       return templates;
     } catch (err) {
@@ -200,10 +200,10 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
     try {
       let savedEntity: Entidad;
       if (isCreation) {
-        savedEntity = await entityService.create(entity as Omit<Entidad, 'id' | 'fecha_creacion' | 'fecha_actualizacion' | 'borrado'>);
+        savedEntity = await EntityUseCase.create(entity as Omit<Entidad, 'id' | 'fecha_creacion' | 'fecha_actualizacion' | 'borrado'>);
       } else {
-        await entityService.update(entity.id!, entity as Partial<Entidad>);
-        const refreshed = await entityService.getById(entity.id!);
+        await EntityUseCase.update(entity.id!, entity as Partial<Entidad>);
+        const refreshed = await EntityUseCase.getById(entity.id!);
         savedEntity = refreshed ?? (entity as unknown as Entidad);
       }
 
@@ -215,15 +215,15 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
       for (let i = 0; i < updatedFields.length; i++) {
         const f = updatedFields[i];
         if (f.isTemp) {
-          await entityService.addValue(savedEntity.id, f.attribute.id, f.value);
+          await TemplateUseCase.addEntityValue(savedEntity.id, f.attribute.id, f.value);
         } else {
-          await entityService.updateValue(f.id as number, f.value);
+          await TemplateUseCase.updateEntityValue(f.id as number, f.value);
         }
       }
 
       for (const rid of removedFieldIds) {
         if (typeof rid === 'number') {
-          await entityService.deleteValue(rid);
+          await TemplateUseCase.deleteEntityValue(rid);
         }
       }
 
@@ -233,7 +233,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
         setEntity(savedEntity);
         setIsCreation(false);
         setRemovedFieldIds([]);
-        const freshValues = await entityService.getValues(savedEntity.id);
+        const freshValues = await TemplateUseCase.getEntityValues(savedEntity.id);
         setFields(freshValues.map(v => ({
           id: v.id,
           attribute: v.plantilla || { id: v.plantilla_id, nombre: 'Unknown', tipo: 'text' } as Plantilla,
@@ -331,7 +331,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
         onClose={() => setDeleteModalOpen(false)}
         onConfirm={async () => {
           if (entity.id) {
-            await entityService.delete(entity.id);
+            await EntityUseCase.delete(entity.id);
             window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: entity.carpeta_id } }));
             navigate(-1);
           }

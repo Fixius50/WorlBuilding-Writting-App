@@ -3,7 +3,8 @@ import { useOutletContext, useNavigate, useParams } from 'react-router-dom';
 import MapLibreView from '../components/MapLibreView';
 import MapSearchBox from '../components/MapSearchBox';
 import Button from '@atoms/Button';
-import { entityService } from '@repositories/entityService';
+import { EntityUseCase } from '@application/useCases/EntityUseCase';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { Entidad } from '@domain/models/database';
 import { MapMarker, MapLayer, MapConnection, MapAttributes } from '@domain/models/maps';
 import { useRightPanelStore } from '@store/useRightPanelStore';
@@ -33,7 +34,7 @@ const InteractiveMapView: React.FC<{
 
   useEffect(() => {
     if (!map.project_id) return;
-    entityService.getAllByProject(map.project_id).then(entities => {
+    EntityUseCase.getAllByProject(map.project_id).then(entities => {
       setAvailableEntities(entities.filter(e => e.tipo !== 'Map' && e.tipo !== 'Mapa'));
     });
   }, [map.project_id]);

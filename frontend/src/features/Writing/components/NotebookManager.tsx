@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@context/LanguageContext';
-import { settingsService } from '@repositories/settingsService';
+import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
 import ConfirmationModal from '@organisms/ConfirmationModal';
 import { Notebook } from '@domain/models/writing';
 import ZenEditor from '@features/Editor/components/ZenEditor';
+import { WritingUseCase } from '@application/useCases/WritingUseCase';
 import { Hoja as HojaModel } from '@repositories/notebookService';
 
 // SQLite Storage for quick notes
@@ -15,7 +16,7 @@ const useNotebooks = (projectId: string | number) => {
   useEffect(() => {
     const load = async () => {
       setIsLoading(true);
-      const saved = await settingsService.get(key);
+      const saved = await WorkspaceUseCase.getSetting(key);
       if (saved) {
         setNotebooks(JSON.parse(saved));
       } else {
@@ -24,7 +25,7 @@ const useNotebooks = (projectId: string | number) => {
         if (old) {
           const parsed = JSON.parse(old);
           setNotebooks(parsed);
-          await settingsService.set(key, old);
+          await WorkspaceUseCase.saveSetting(key, old);
           localStorage.removeItem(key);
         }
       }
@@ -35,7 +36,7 @@ const useNotebooks = (projectId: string | number) => {
 
   const save = async (newNotebooks: Notebook[]) => {
     setNotebooks(newNotebooks);
-    await settingsService.set(key, JSON.stringify(newNotebooks));
+    await WorkspaceUseCase.saveSetting(key, JSON.stringify(newNotebooks));
   };
 
   return { notebooks, setNotebooks: save, isLoading };

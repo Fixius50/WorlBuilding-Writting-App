@@ -2,7 +2,8 @@ import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react'
 import React, { useEffect, useRef } from 'react'
 import { getZenExtensions } from '@utils/TiptapExtensions'
 import EditorTopBar from './EditorTopBar'
-import { Hoja as HojaModel } from '@repositories/notebookService'
+import { WritingUseCase } from '@application/useCases/WritingUseCase';
+import { Hoja as HojaModel } from '@repositories/notebookService';
 
 interface PageEditorProps {
   content: string;

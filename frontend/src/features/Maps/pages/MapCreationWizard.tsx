@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { entityService } from '@repositories/entityService';
+import { EntityUseCase } from '@application/useCases/EntityUseCase';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
 

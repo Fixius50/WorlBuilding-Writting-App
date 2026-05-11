@@ -5,7 +5,8 @@ import { useOutletContext, useParams, useNavigate } from 'react-router-dom';
 import { useRightPanelStore } from '@store/useRightPanelStore';
 import { Cuaderno, Hoja } from '@repositories/notebookService';
 import { WritingUseCase } from '@application/useCases/WritingUseCase';
-import { entityService } from '@repositories/entityService';
+import { EntityUseCase } from '@application/useCases/EntityUseCase';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { useSettingsStore } from '@store/useSettingsStore';
 import ZenEditor from '@features/Editor/components/ZenEditor';
 import ConfirmModal from '@organisms/ConfirmModal';
@@ -128,7 +129,7 @@ const WritingView = () => {
 
   const handleMentionClick = async (id: string) => {
     try {
-      const entity = await entityService.getById(Number(id));
+      const entity = await EntityUseCase.getById(Number(id));
       if (entity) {
         const extra = typeof entity.contenido_json === 'string'
           ? JSON.parse(entity.contenido_json)

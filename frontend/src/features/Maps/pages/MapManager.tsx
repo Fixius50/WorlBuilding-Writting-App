@@ -4,7 +4,8 @@ import { useOutletContext } from 'react-router-dom';
 
 import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
-import { entityService } from '@repositories/entityService';
+import { EntityUseCase } from '@application/useCases/EntityUseCase';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { Entidad } from '@domain/models/database';
 import { useRightPanelStore } from '@store/useRightPanelStore';
 
@@ -53,7 +54,7 @@ const MapManager: React.FC<MapManagerProps> = ({ maps, onSelectMap, onCreateMap,
  [key]: value
  })
  };
- await entityService.update(map.id, updated);
+ await EntityUseCase.update(map.id, updated);
  window.dispatchEvent(new CustomEvent('map-updated'));
  } catch (err) {
  // [LOG REMOVED]

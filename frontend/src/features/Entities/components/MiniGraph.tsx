@@ -1,111 +1,78 @@
-import React, { useMemo, useEffect, useState } from 'react';
-import { ReactFlow, Background, Handle, Position, NodeProps, Node, Edge } from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
-import { relationshipService, RelacionEnriquecida } from '@repositories/relationshipService';
-import { Relacion } from '@domain/models/database';
+import React, { useEffect, useState } from 'react';
+import UniversalCanvas, { CanvasNode, CanvasEdge } from '@presentation/organisms/editor/UniversalCanvas';
+import { RelationshipUseCase } from '@application/useCases/RelationshipUseCase';
 
-interface MiniGraphProps {
-  entityId: number;
-  onNavigate: (id: number) => void;
+interface Props {
+  entityId?: number;
+  onNavigate?: (id: string) => void;
+  [key: string]: unknown;
 }
 
-const CustomNode = ({ data }: NodeProps) => {
-  return (
-    <div className={`p-3 border-t-2 ${data.isMain ? 'border-primary bg-primary/10 shadow-[0_0_20px_rgba(var(--primary-rgb),0.2)]' : 'border-foreground/20 bg-foreground/5'}  flex flex-col items-center justify-center min-w-[120px]`}>
-      <Handle type="target" position={Position.Top} className="opacity-0" />
-      <span className="text-[10px] font-black uppercase tracking-widest text-foreground truncate w-full text-center">
-        {data.label as string}
-      </span>
-      <Handle type="source" position={Position.Bottom} className="opacity-0" />
-    </div>
-  );
-};
-
-const nodeTypes = {
-  custom: CustomNode,
-};
-
-const MiniGraph: React.FC<MiniGraphProps> = ({ entityId, onNavigate }) => {
-  const [elements, setElements] = useState<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
+const MiniGraph: React.FC<Props> = ({ entityId }) => {
+  const [nodes, setNodes] = useState<CanvasNode[]>([]);
+  const [edges, setEdges] = useState<CanvasEdge[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchRelations = async () => {
-      const relations = await relationshipService.getByEntity(entityId);
-      
-      const nodes: Node[] = [
-        {
-          id: String(entityId),
-          type: 'custom',
-          data: { label: 'Principal', isMain: true },
-          position: { x: 0, y: 0 },
-        }
-      ];
+    if (!entityId) return;
 
-      const edges: Edge[] = [];
+    RelationshipUseCase.getRelationshipsByEntity(entityId).then(rels => {
+      const nodeMap = new Map<string, CanvasNode>();
+      const newEdges: CanvasEdge[] = [];
 
-      relations.forEach((rel: RelacionEnriquecida, index) => {
-        const isOrigen = rel.origen_id === entityId;
-        const otherId = isOrigen ? rel.destino_id : rel.origen_id;
-        const otherName = isOrigen ? rel.nombre_destino : rel.nombre_origen;
-        
-        const angle = (index / relations.length) * 2 * Math.PI;
-        const radius = 180;
-        
-        nodes.push({
-          id: String(otherId),
-          type: 'custom',
-          data: { label: otherName || 'Entidad', isMain: false },
-          position: { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius },
+      rels.forEach((rel, i) => {
+        const angle = (i / rels.length) * 2 * Math.PI;
+        nodeMap.set(rel.origen_id.toString(), {
+          id: rel.origen_id.toString(),
+          x: 400 + Math.cos(angle) * 150,
+          y: 300 + Math.sin(angle) * 150,
+          label: rel.nombre_origen || 'Desconocido',
+          tipo: 'entidad'
         });
 
-        edges.push({
-          id: `e-${rel.id}`,
-          source: String(entityId),
-          target: String(otherId),
-          label: rel.tipo,
-          className: 'stroke-primary/20',
-          labelStyle: { fill: 'rgba(255,255,255,0.4)', fontSize: 8, fontWeight: 900, textTransform: 'uppercase' },
+        nodeMap.set(rel.destino_id.toString(), {
+          id: rel.destino_id.toString(),
+          x: 400 + Math.cos(angle) * 150,
+          y: 300 + Math.sin(angle) * 150,
+          label: rel.nombre_destino || 'Desconocido',
+          tipo: 'entidad'
+        });
+
+        newEdges.push({
+          id: rel.id.toString(),
+          from: rel.origen_id.toString(),
+          to: rel.destino_id.toString()
         });
       });
 
-      setElements({ nodes, edges });
-    };
+      // Forzar nodo central al medio
+      if (nodeMap.has(entityId.toString())) {
+        const center = nodeMap.get(entityId.toString())!;
+        center.x = 400;
+        center.y = 300;
+      }
 
-    fetchRelations();
+      setNodes(Array.from(nodeMap.values()));
+      setEdges(newEdges);
+      setLoading(false);
+    });
   }, [entityId]);
 
-  return (
-    <div className="w-full h-[350px] bg-foreground/[0.02] border border-foreground/10 relative overflow-hidden group">
-      <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between">
-        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40">Mapa de Influencia</span>
-        <button 
-          onClick={() => window.alert('Abrir modal de creación rápida en desarrollo')}
-          className="text-[9px] font-black uppercase tracking-widest text-primary hover:text-foreground transition-colors px-2 py-1 border border-primary/20 bg-background/60 hover:bg-primary/10 backdrop-blur-sm"
-        >
-          + Vincular
-        </button>
-      </div>
-      
-      <ReactFlow
-        nodes={elements.nodes}
-        edges={elements.edges}
-        nodeTypes={nodeTypes}
-        onNodeClick={(_, node) => {
-          if (Number(node.id) !== entityId) {
-            onNavigate(Number(node.id));
-          }
-        }}
-        fitView
-        zoomOnScroll={false}
-        panOnDrag={true}
-        className="pointer-events-auto"
-      >
-        <Background color="rgba(255, 255, 255, 0.05)" gap={20} />
-      </ReactFlow>
+  if (loading) return <div className="w-full h-64 flex items-center justify-center text-[10px] uppercase font-black tracking-widest text-primary animate-pulse border border-primary/20">Tejiendo Constelación...</div>;
 
-      <div className="absolute bottom-4 right-4 z-10 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity">
-        <span className="text-[8px] text-foreground italic">Arrastra para explorar · Click para viajar</span>
-      </div>
+  if (nodes.length === 0) return (
+    <div className="w-full h-64 flex flex-col items-center justify-center p-6 text-center border border-foreground/10 bg-foreground/5">
+      <span className="material-symbols-outlined text-4xl text-foreground/20 mb-2">hub</span>
+      <p className="text-[10px] text-foreground/40 font-black tracking-widest uppercase">Sin Conexiones Detectadas</p>
+    </div>
+  );
+
+  return (
+    <div className="w-full h-[350px] border border-primary/20 bg-background relative overflow-hidden group">
+       <UniversalCanvas initialNodes={nodes} initialEdges={edges} />
+       <div className="absolute bottom-4 right-4 pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity">
+          <span className="text-[8px] font-black uppercase tracking-widest text-background bg-primary px-2 py-1">Powered by Konva</span>
+       </div>
     </div>
   );
 };

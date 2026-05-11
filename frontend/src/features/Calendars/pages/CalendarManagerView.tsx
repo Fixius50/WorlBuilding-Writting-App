@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { calendarService, Calendario } from '@repositories/calendarService';
+import { CalendarUseCase } from '@application/useCases/CalendarUseCase';
+import { Calendario } from '@repositories/calendarService';
 import Button from '@atoms/Button';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 import { useLanguage } from '@context/LanguageContext';
@@ -15,7 +16,7 @@ const CalendarManagerView: React.FC = () => {
   const loadCalendars = useCallback(async () => {
     if (!projectId) return;
     setLoading(true);
-    const data = await calendarService.getByProject(projectId);
+    const data = await CalendarUseCase.getByProject(projectId);
     setCalendars(data);
     setLoading(false);
   }, [projectId]);
@@ -37,9 +38,9 @@ const CalendarManagerView: React.FC = () => {
     if (!editingCalendar || !projectId) return;
 
     if (editingCalendar.id) {
-        await calendarService.update(editingCalendar.id, editingCalendar);
+        await CalendarUseCase.update(editingCalendar.id, editingCalendar);
     } else {
-        await calendarService.create({
+        await CalendarUseCase.create({
             nombre: editingCalendar.nombre!,
             project_id: projectId,
             meses_json: editingCalendar.meses_json!,

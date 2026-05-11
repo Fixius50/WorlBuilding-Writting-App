@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { timelineService } from '@repositories/timelineService';
-import { entityService } from '@repositories/entityService';
+import { TimelineUseCase } from '@application/useCases/TimelineUseCase';
+import { EntityUseCase } from '@application/useCases/EntityUseCase';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { Evento } from '@domain/models/database';
 
 interface MiniTimelineProps {
@@ -11,7 +12,7 @@ const MiniTimeline: React.FC<MiniTimelineProps> = ({ entityId }) => {
   const [events, setEvents] = useState<Evento[]>([]);
 
   useEffect(() => {
-    timelineService.getByEntity(entityId).then(setEvents);
+    TimelineUseCase.getEventsByEntity(entityId).then(setEvents);
   }, [entityId]);
 
   return (

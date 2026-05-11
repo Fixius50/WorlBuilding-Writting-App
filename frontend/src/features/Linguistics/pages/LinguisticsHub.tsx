@@ -4,7 +4,7 @@ import { useLanguage } from '@context/LanguageContext';
 import { Entidad, Word } from '@domain/models/database';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
-import UniversalCanvas from '@organisms/editor/UniversalCanvas';
+import DrawingCanvas from '@presentation/organisms/editor/DrawingCanvas';
 import ConfirmModal from '@organisms/ConfirmModal';
 import { useRightPanelStore } from '@store/useRightPanelStore';
 import { LogEntry, WRITING_SYSTEM_TYPES } from '@domain/models/linguistics';
@@ -289,7 +289,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenAdvanced, onOpenE
       <main className="flex-1 overflow-y-auto no-scrollbar p-8 lg:p-12 relative flex flex-col">
         {editorMode ? (
           <div className="flex-1 flex flex-col h-full relative">
-            <UniversalCanvas
+            <DrawingCanvas
               stageRef={stageRef}
               layers={layers}
               selectedShapeId={selectedShapeId}

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useOutletContext, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@context/LanguageContext';
-import { folderService } from '@repositories/folderService';
-import { entityService } from '@repositories/entityService';
+import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
+import { EntityUseCase } from '@application/useCases/EntityUseCase';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { Entidad, Carpeta } from '@domain/models/database';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 import { useRightPanelStore } from '@store/useRightPanelStore';
@@ -49,19 +50,19 @@ const FolderView: React.FC = () => {
       setLoading(true);
       try {
         const id = Number(folderId);
-        const folder = await folderService.getById(id);
+        const folder = await WorkspaceUseCase.getFolderById(id);
         setCurrentFolder(folder);
 
         const [ents, subs, pth] = await Promise.all([
-          entityService.getByFolder(id),
-          folderService.getSubfolders(id),
-          folderService.getPath(id)
+          EntityUseCase.getByFolder(id),
+          WorkspaceUseCase.getSubfolders(id),
+          WorkspaceUseCase.getFolderPath(id)
         ]);
         setEntities(ents);
         setSubfolders(subs);
         // El path incluye la carpeta actual al final, Breadcrumbs la maneja por separado si se pasa currentFolder
         // o podemos pasarle el path completo. Breadcrumbs.tsx usa path para los padres y currentFolder para el último.
-        // Si folderService.getPath devuelve [Raiz, ..., Actual], le pasamos el slice(0, -1) como path.
+        // Si WorkspaceUseCase.getPath devuelve [Raiz, ..., Actual], le pasamos el slice(0, -1) como path.
         setPath(pth.slice(0, -1));
       } catch (err) {
         // [LOG REMOVED]

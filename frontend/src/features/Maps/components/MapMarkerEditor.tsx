@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
-import { entityService } from '@repositories/entityService';
+import { EntityUseCase } from '@application/useCases/EntityUseCase';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { MapMarker } from '@domain/models/maps';
 
 interface MapMarkerEditorProps {

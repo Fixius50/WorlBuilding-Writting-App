@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { entityService } from '@repositories/entityService';
+import { EntityUseCase } from '@application/useCases/EntityUseCase';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { Entidad } from '@domain/models/database';
 import EntityBuilder from '@features/Entities/pages/EntityBuilder';
 import CosmicCanvasEditor from '@features/Entities/pages/CosmicCanvasEditor';
@@ -19,7 +20,7 @@ const EntityEditRouter = () => {
   const loadEntity = async () => {
     setLoading(true);
     try {
-      const data = await entityService.getById(Number(entityId));
+      const data = await EntityUseCase.getById(Number(entityId));
       setEntity(data);
     } catch (err) {
       console.error("Error routing entity edit:", err);

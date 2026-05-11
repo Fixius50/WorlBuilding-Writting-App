@@ -56,8 +56,33 @@ export class TimelineUseCase {
   }
 
   // ==========================================
-  // GESTIÓN DE EVENTOS
+  // EVENTOS (SUCESOS)
   // ==========================================
+
+  static async getLinesByFolder(folderId: number): Promise<Entidad[]> {
+    return await timelineService.getLinesByFolder(folderId);
+  }
+
+  static async getByTimeline(timelineId: number): Promise<Evento[]> {
+    return await timelineService.getByTimeline(timelineId);
+  }
+
+  static async create(data: Omit<Evento, 'id' | 'borrado' | 'created_at'>): Promise<Evento> {
+    return await timelineService.create(data);
+  }
+
+  static async update(id: number, updates: Partial<Omit<Evento, 'id' | 'project_id' | 'borrado' | 'created_at'>>): Promise<void> {
+    return await timelineService.update(id, updates);
+  }
+
+  static async delete(id: number): Promise<void> {
+    return await timelineService.delete(id);
+  }
+
+  /** Obtiene todos los eventos asociados a una entidad */
+  static async getEventsByEntity(entityId: number): Promise<Evento[]> {
+    return await timelineService.getByEntity(entityId);
+  }
 
   /** Obtiene todos los eventos de un universo entero (incluyendo todas sus líneas) */
   static async getEventsByUniverse(universeId: number): Promise<Evento[]> {

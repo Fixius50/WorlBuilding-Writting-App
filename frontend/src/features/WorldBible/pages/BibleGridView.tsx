@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Carpeta, Entidad } from '@domain/models/database';
-import { entityService } from '@repositories/entityService';
+import { EntityUseCase } from '@application/useCases/EntityUseCase';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { useLanguage } from '@context/LanguageContext';
 import { useOutletContext, useParams, useNavigate } from 'react-router-dom';
 import BibleCard from '../components/BibleCard';

@@ -3,6 +3,7 @@ import { TimelineUseCase } from '@application/useCases/TimelineUseCase';
 import { Evento, Entidad } from '@domain/models/database';
 import { useLanguage } from '@context/LanguageContext';
 import ZenEditor from '@features/Editor/components/ZenEditor';
+import { WritingUseCase } from '@application/useCases/WritingUseCase';
 import { Hoja as HojaModel } from '@repositories/notebookService';
 import Avatar from '@atoms/Avatar';
 

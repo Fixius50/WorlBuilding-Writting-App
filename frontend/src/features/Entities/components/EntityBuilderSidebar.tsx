@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plantilla } from '@domain/models/database';
-import { templateService } from '@repositories/templateService';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import ConfirmModal from '@organisms/ConfirmModal';
 
 interface EntityBuilderSidebarProps {
@@ -50,7 +50,7 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
   const handleCreateTemplate = async () => {
     if (!newTpl.nombre.trim()) return;
     try {
-      const created = await templateService.create({
+      const created = await TemplateUseCase.createTemplate({
         nombre: newTpl.nombre,
         tipo: newTpl.tipo,
         project_id: projectId, 
@@ -75,7 +75,7 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
   const handleUpdateTemplate = async () => {
     if (!editingTpl || !editingTpl.nombre.trim()) return;
     try {
-      await templateService.update(editingTpl.id, {
+      await TemplateUseCase.updateTemplate(editingTpl.id, {
         nombre: editingTpl.nombre,
         tipo: editingTpl.tipo
       });
@@ -89,7 +89,7 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
   const confirmDelete = async () => {
     if (!deletingId) return;
     try {
-      await templateService.delete(deletingId);
+      await TemplateUseCase.deleteTemplate(deletingId);
       if (onRefresh) await onRefresh();
       setDeletingId(null);
     } catch (err) {

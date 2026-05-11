@@ -65,4 +65,9 @@ export class TemplateUseCase {
   static async updateEntityValue(valueId: number, newValue: string): Promise<void> {
     await entityService.updateValue(valueId, newValue);
   }
+
+  /** Elimina un valor de atributo de una entidad */
+  static async deleteEntityValue(valueId: number): Promise<void> {
+    await entityService.deleteValue(valueId);
+  }
 }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { entityService } from '@repositories/entityService';
+import { EntityUseCase } from '@application/useCases/EntityUseCase';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { Entidad, Valor } from '@domain/models/database';
 import Avatar from '@atoms/Avatar';
 import { useLanguage } from '@context/LanguageContext';
@@ -18,10 +19,10 @@ const EntityInspector: React.FC<EntityInspectorProps> = ({ entityId }) => {
     const loadData = async () => {
       setLoading(true);
       try {
-        const data = await entityService.getById(Number(entityId));
+        const data = await EntityUseCase.getById(Number(entityId));
         if (data) {
           setEntity(data);
-          const vals = await entityService.getValues(data.id);
+          const vals = await TemplateUseCase.getEntityValues(data.id);
           setValues(vals.slice(0, 5)); // Solo los 5 primeros para el inspector rápido
         }
       } catch (err) {

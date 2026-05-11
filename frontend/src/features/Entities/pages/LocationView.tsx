@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
-import { entityService } from '@repositories/entityService';
+import { EntityUseCase } from '@application/useCases/EntityUseCase';
+import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { Entidad } from '@domain/models/database';
 
 interface LocationData extends Partial<Entidad> {
@@ -23,7 +24,7 @@ const LocationView = ({ id }: { id: string | number }) => {
   const loadLocation = async () => {
     setLoading(true);
     try {
-      const data = await entityService.getById(Number(id));
+      const data = await EntityUseCase.getById(Number(id));
       if (data) {
         setEntity(data);
         const extra = typeof data.contenido_json === 'string'
@@ -48,7 +49,7 @@ const LocationView = ({ id }: { id: string | number }) => {
     try {
       const { nombre, tipo, descripcion, ...extra } = location as LocationData;
 
-      await entityService.update(entity.id, {
+      await EntityUseCase.update(entity.id, {
         nombre,
         tipo,
         descripcion,
