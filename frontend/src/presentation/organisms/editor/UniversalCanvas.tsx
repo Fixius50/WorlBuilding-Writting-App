@@ -17,24 +17,40 @@ export interface CanvasEdge {
   to: string;
 }
 
-const initialNodes: CanvasNode[] = [
+const defaultNodes: CanvasNode[] = [
   { id: '1', x: 400, y: 300, label: 'El Sol Rojo', tipo: 'estrella' },
   { id: '2', x: 200, y: 150, label: 'Planeta Alpha', tipo: 'planeta' },
   { id: '3', x: 600, y: 450, label: 'Planeta Omega', tipo: 'planeta' },
 ];
 
-const initialEdges: CanvasEdge[] = [
+const defaultEdges: CanvasEdge[] = [
   { id: 'e1-2', from: '1', to: '2' },
   { id: 'e1-3', from: '1', to: '3' },
 ];
 
-const UniversalCanvas: React.FC = () => {
+export interface UniversalCanvasProps {
+  initialNodes?: CanvasNode[];
+  initialEdges?: CanvasEdge[];
+}
+
+const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
+  initialNodes = defaultNodes,
+  initialEdges = defaultEdges
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<Konva.Stage>(null);
   
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [nodes, setNodes] = useState<CanvasNode[]>(initialNodes);
-  const [edges] = useState<CanvasEdge[]>(initialEdges);
+  const [edges, setEdges] = useState<CanvasEdge[]>(initialEdges);
+
+  useEffect(() => {
+    setNodes(initialNodes);
+  }, [initialNodes]);
+
+  useEffect(() => {
+    setEdges(initialEdges);
+  }, [initialEdges]);
   
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
