@@ -31,11 +31,13 @@ const defaultEdges: CanvasEdge[] = [
 export interface UniversalCanvasProps {
   initialNodes?: CanvasNode[];
   initialEdges?: CanvasEdge[];
+  onNodeClick?: (id: string) => void;
 }
 
 const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   initialNodes = defaultNodes,
-  initialEdges = defaultEdges
+  initialEdges = defaultEdges,
+  onNodeClick
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<Konva.Stage>(null);
@@ -183,6 +185,8 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
               y={node.y}
               draggable
               onDragMove={(e) => handleDragMoveNode(node.id, e)}
+              onClick={() => onNodeClick && onNodeClick(node.id)}
+              onTap={() => onNodeClick && onNodeClick(node.id)}
             >
               <Circle
                 radius={25}
