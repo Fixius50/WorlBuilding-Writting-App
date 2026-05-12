@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { EntityUseCase } from '@application/useCases/EntityUseCase';
-import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { Entidad } from '@domain/models/database';
 import CosmicProfileView from './CosmicProfileView';
-import IndividualProfileView from './IndividualProfileView';
+import IndividualProfileView from './archetypes/IndividualProfileView';
+import TerritoryProfileView from './archetypes/TerritoryProfileView';
+import CollectiveProfileView from './archetypes/CollectiveProfileView';
+import EventProfileView from './archetypes/EventProfileView';
 import EntityBuilder from './EntityBuilder';
 import InteractiveMapView from '../../Maps/pages/InteractiveMapView';
 
@@ -48,33 +50,33 @@ const EntityRouter = () => {
   );
 
   const tipo = entity.tipo.trim().toUpperCase();
-  const cosmicTypes = [
-    'UNIVERSO', 'UNIVERSE', 'UNIVERSES',
-    'GALAXIA', 'GALAXY', 'GALAXIES',
-    'SISTEMA', 'SYSTEM', 'SYSTEMS',
-    'PLANETA', 'PLANET', 'PLANETS',
-    'DIMENSION', 'DIMENSIÓN', 'DIMENSIONS',
-    'ASTRO', 'ESTRELLA', 'STAR', 'STARS',
-    'COSMOS', 'SPACE', 'ESPACIO'
-  ];
-  const mapTypes = ['MAP', 'MAPA'];
-  const timelineTypes = ['TIMELINE', 'CRONOLOGIA', 'CRONOLOGÍA'];
 
-  // Switch de enrutamiento camaleónico (Refactorizado para extensibilidad futura)
+  const cosmicTypes = ['UNIVERSO', 'PLANETA', 'SISTEMA', 'DIMENSION', 'ASTRO'];
+  const actorTypes = ['PERSONAJE', 'OBJETO', 'RELIQUIA', 'VEHICULO'];
+  const territoryTypes = ['REINO', 'CIUDAD', 'LUGAR', 'CONTINENTE'];
+  const collectiveTypes = ['FACCION', 'RELIGION', 'RAZA', 'ORGANIZACION'];
+  const eventTypes = ['EVENTO', 'GUERRA', 'ERA', 'MARCA_TEMPORAL'];
+  
+  const mapTypes = ['MAP', 'MAPA'];
+
   switch (true) {
     case cosmicTypes.includes(tipo):
       return <CosmicProfileView entityId={entity.id} />;
-    
-    case tipo === 'ENTIDAD' || tipo === 'ENTITY':
-      // Redirección directa al Constructor para el tipo genérico 'ENTIDAD'
-      return <EntityBuilder mode="edit" />;
-    
+    case actorTypes.includes(tipo):
+      return <IndividualProfileView entityId={entity.id} />;
+    case territoryTypes.includes(tipo):
+      return <TerritoryProfileView entityId={entity.id} />;
+    case collectiveTypes.includes(tipo):
+      return <CollectiveProfileView entityId={entity.id} />;
+    case eventTypes.includes(tipo):
+      return <EventProfileView entityId={entity.id} />;
     case mapTypes.includes(tipo):
       return <InteractiveMapView map={entity} />;
-    
+    case tipo === 'ENTIDAD' || tipo === 'ENTITY':
+      return <EntityBuilder mode="edit" />;
     default:
-      // Perfil individual industrial para el resto de nodos (Personajes, Lugares, etc.)
-      return <IndividualProfileView />;
+      // Fallback a Individual si no se reconoce
+      return <IndividualProfileView entityId={entity.id} />;
   }
 };
 

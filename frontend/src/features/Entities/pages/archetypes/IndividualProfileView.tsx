@@ -4,8 +4,8 @@ import { EntityUseCase } from '@application/useCases/EntityUseCase';
 import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { Entidad, Valor } from '@domain/models/database';
 import SecondaryTabs from '@presentation/molecules/SecondaryTabs';
-import UniversalCanvas, { CanvasNode, CanvasEdge } from '@presentation/organisms/editor/UniversalCanvas';
 import DynamicAttributeForm from '@features/Entities/components/DynamicAttributeForm';
+import MiniGraph from '@features/Entities/components/MiniGraph';
 
 interface ProfileOutletContext {
   setRightOpen: (open: boolean) => void;
@@ -14,30 +14,28 @@ interface ProfileOutletContext {
   setRightPanelTitle: (title: React.ReactNode) => void;
 }
 
-interface CosmicEntityData extends Entidad {
+interface SpecificEntityData extends Entidad {
   images?: string[];
   notes?: string[];
   [key: string]: unknown;
 }
 
-const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({ entityId: propEntityId }) => {
+const IndividualProfileView: React.FC<{ entityId?: string | number }> = ({ entityId: propEntityId }) => {
   const { username, entityId: paramEntityId, projectName } = useParams();
   const entityId = propEntityId || paramEntityId;
   const navigate = useNavigate();
   const { setRightOpen, setRightPanelTab, setRightPanelContent, setRightPanelTitle } = useOutletContext<ProfileOutletContext>();
 
-  const [entity, setEntity] = useState<CosmicEntityData | null>(null);
+  const [entity, setEntity] = useState<SpecificEntityData | null>(null);
   const [attributes, setAttributes] = useState<Valor[]>([]);
   const [subNodes, setSubNodes] = useState<Entidad[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [activeTab, setActiveTab] = useState<string>('REGISTRO_OBSERVACIÓN');
-  const [nodes, setNodes] = useState<CanvasNode[]>([]);
-  const [edges, setEdges] = useState<CanvasEdge[]>([]);
+  const [activeTab, setActiveTab] = useState<string>('REGISTRO');
 
   const tabs = [
-    { id: 'REGISTRO_OBSERVACIÓN', label: 'REGISTRO_OBSERVACIÓN', icon: 'menu_book' },
-    { id: 'CARTOGRAFÍA_ESPACIAL', label: 'CARTOGRAFÍA_ESPACIAL', icon: 'map' },
+    { id: 'REGISTRO', label: 'REGISTRO', icon: 'menu_book' },
+    { id: 'RED_DE_CONTACTOS', label: 'RED_DE_CONTACTOS', icon: 'hub' },
     { id: 'TELEMETRÍA', label: 'TELEMETRÍA', icon: 'bar_chart' }
   ];
 
@@ -66,44 +64,14 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({ entityId:
             return e.carpeta_id === data.id || eExtra.padre_id === data.id || eExtra.parent_id === data.id;
         });
         setSubNodes(children);
-
-        const newNodes: CanvasNode[] = children.map((c, i) => {
-          const radius = 200;
-          const angle = (i / (children.length || 1)) * 2 * Math.PI;
-          return {
-            id: String(c.id),
-            x: 400 + radius * Math.cos(angle),
-            y: 300 + radius * Math.sin(angle),
-            label: c.nombre,
-            tipo: c.tipo || 'DESCONOCIDO'
-          };
-        });
-        
-        newNodes.push({
-          id: String(data.id),
-          x: 400,
-          y: 300,
-          label: data.nombre,
-          tipo: data.tipo || 'DESCONOCIDO'
-        });
-
-        const newEdges: CanvasEdge[] = children.map(c => ({
-          id: `e-${data.id}-${c.id}`,
-          from: String(data.id),
-          to: String(c.id)
-        }));
-
-        setNodes(newNodes);
-        setEdges(newEdges);
       }
     } catch (err) {
-      console.error("Error loading cosmic entity:", err);
+      console.error("Error loading entity:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Panel Derecho: Sub-Nodos
   useEffect(() => {
     if (entity) {
       setRightOpen(true);
@@ -111,7 +79,7 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({ entityId:
       setRightPanelTitle(
         <div className="flex items-center justify-center gap-2 font-mono w-full">
           <span className="material-symbols-outlined text-primary text-sm">hub</span>
-          <span className="text-[10px] font-black uppercase tracking-widest text-center">CUERPOS CELESTES / ELEMENTOS</span>
+          <span className="text-[10px] font-black uppercase tracking-widest text-center">ELEMENTOS VINCULADOS</span>
         </div>
       );
       
@@ -151,8 +119,8 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({ entityId:
 
   if (loading) return (
     <div className="flex-1 flex items-center justify-center bg-black">
-      <div className="text-primary font-mono tracking-[0.5em] text-xs">
-        [ ACCEDIENDO A ARCHIVOS CÓSMICOS ]
+      <div className="text-primary font-mono tracking-[0.5em] text-xs animate-pulse">
+        [ ACCEDIENDO A ARCHIVOS CLASIFICADOS ]
       </div>
     </div>
   );
@@ -161,23 +129,13 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({ entityId:
 
   return (
     <div className="flex-1 bg-black flex flex-col rounded-none overflow-hidden h-full w-full">
-      
-      {/* 1. Hero Header (Panel de Telemetría Principal) */}
       <header className="bg-black border-b border-foreground/10 p-8 lg:px-16 lg:py-12 flex flex-col items-center text-center gap-6 relative overflow-hidden shrink-0">
-        {/* Tech Decals Background */}
         <div className="absolute top-8 left-12 font-mono text-[9px] text-foreground/20 text-left space-y-1 hidden lg:block">
           <div>SYS_ID: [{entity.id || 'NULL'}]</div>
-          <div>CLASIFICACIÓN_ESTELAR: {entity.tipo || 'DESCONOCIDA'}</div>
-          <div>ESTADO: NODO_ACTIVO</div>
+          <div>TIPO_ENTIDAD: {entity.tipo || 'DESCONOCIDA'}</div>
+          <div>ESTADO: ACTIVO</div>
         </div>
-        <div className="absolute top-8 right-12 font-mono text-[9px] text-foreground/20 text-right space-y-1 hidden lg:block">
-          <div>LATITUD_ESTELAR: 44.5N</div>
-          <div>LONGITUD_ESTELAR: 12.8E</div>
-          <div>REF: CHRONOS_ATLAS_CORE</div>
-        </div>
-
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-        
         <div className="relative z-10 flex flex-col items-center">
            <div className="flex items-center gap-3 mb-4">
               <div className="w-1.5 h-1.5 bg-primary animate-pulse rounded-full" />
@@ -185,44 +143,33 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({ entityId:
                 ESTRUCTURA_{entity.tipo || 'ENTIDAD'}
               </div>
            </div>
-           
            <h1 className="text-4xl md:text-6xl font-black text-[#f1f1f3] tracking-[0.1em] uppercase leading-none rounded-none mb-4">
              {entity.nombre}
            </h1>
-           
            <div className="h-1.5 w-32 bg-primary/50 rounded-none mb-2" />
         </div>
       </header>
 
-      <SecondaryTabs 
-        tabs={tabs} 
-        activeTab={activeTab} 
-        onChange={setActiveTab} 
-        className="bg-[#0f0f11] shrink-0"
-      />
+      <SecondaryTabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} className="bg-[#0f0f11] shrink-0" />
 
-      <div className={`flex-1 relative ${activeTab === 'CARTOGRAFÍA_ESPACIAL' ? 'overflow-hidden' : 'overflow-y-auto custom-scrollbar'}`}>
-        
-        {activeTab === 'REGISTRO_OBSERVACIÓN' && (
+      <div className={`flex-1 relative ${activeTab === 'RED_DE_CONTACTOS' ? 'overflow-hidden' : 'overflow-y-auto custom-scrollbar'}`}>
+        {activeTab === 'REGISTRO' && (
           <main className="p-8 lg:p-12 space-y-12">
             <div className="space-y-6 max-w-5xl mx-auto w-full">
               <div className="flex flex-col items-center gap-4">
                 <div className="size-2 bg-primary" />
-                <h3 className="text-xs font-black text-foreground uppercase tracking-[0.3em] text-center">PROTOCOLO DE DESCRIPCIÓN CÓSMICA</h3>
+                <h3 className="text-xs font-black text-foreground uppercase tracking-[0.3em] text-center">HISTORIAL ARCHIVADO</h3>
               </div>
-              
               <div className="bg-black border border-foreground/10 relative rounded-none overflow-hidden group">
                 <div className="bg-[#0f0f11] border-b border-foreground/10 px-6 py-3 flex justify-between items-center">
                   <span className="text-[9px] font-mono text-primary/60 font-black tracking-widest">[ LECTURA DE ARCHIVO COMPLETA ]</span>
                   <span className="text-[9px] font-mono text-foreground/20">V_1.0.42</span>
                 </div>
-
                 <div className="p-10 font-mono text-lg text-primary/80 leading-relaxed relative min-h-[300px]">
                   <span className="inline-block w-2.5 h-5 bg-primary/70 animate-pulse mr-3 align-middle"></span>
                   <div className="inline whitespace-pre-wrap">
-                    {entity.descripcion || "DATOS_NO_DISPONIBLES: El sensor no ha podido recuperar registros descriptivos para esta coordenada. Proceder con escaneo manual."}
+                    {entity.descripcion || "DATOS_NO_DISPONIBLES: El registro descriptivo está encriptado o vacío."}
                   </div>
-                  
                   <div className="mt-12 pt-8 border-t border-foreground/5 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <span className="size-1.5 rounded-full bg-primary" />
@@ -233,18 +180,16 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({ entityId:
                 </div>
               </div>
             </div>
-
             {entity.images && entity.images.length > 0 && (
               <div className="space-y-10 max-w-5xl mx-auto w-full">
                 <div className="flex flex-col items-center gap-4">
                   <div className="size-2 bg-foreground/20" />
-                  <h3 className="text-xs font-black text-foreground/40 uppercase tracking-[0.3em] text-center">CAPTURAS DE RECONOCIMIENTO VISUAL</h3>
+                  <h3 className="text-xs font-black text-foreground/40 uppercase tracking-[0.3em] text-center">GALERÍA</h3>
                 </div>
-                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {entity.images.map((img, idx) => (
                     <div key={idx} className="aspect-video bg-[#0f0f11] border border-foreground/10 overflow-hidden relative group rounded-none">
-                      <img src={img} alt={`Capture ${idx}`} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 filter grayscale group-hover:grayscale-0" />
+                      <img src={img} alt={`Capture ${idx}`} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 filter grayscale group-hover:grayscale-0 transition-all" />
                       <div className="absolute top-4 left-4 px-3 py-1.5 bg-black/90 text-[9px] font-mono text-primary border border-primary/30 font-black">
                         CAM_SONDA_00{idx + 1}
                       </div>
@@ -253,7 +198,6 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({ entityId:
                 </div>
               </div>
             )}
-
             <div className="max-w-xl mx-auto pt-10 pb-10">
                <div className="border border-foreground/10 bg-black p-8 space-y-8 rounded-none">
                   <div className="space-y-4">
@@ -262,16 +206,13 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({ entityId:
                       <span className="text-center">COMANDOS_DE_SISTEMA</span>
                     </h4>
                     <div className="grid grid-cols-2 gap-2">
-                      <button 
-                        onClick={() => navigate(`/${username || 'local'}/${projectName}/bible/entity/${entityId}/edit`)}
-                        className="h-12 bg-foreground text-background text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-primary transition-colors"
-                      >
+                      <button onClick={() => navigate(`/${username || 'local'}/${projectName}/bible/entity/${entityId}/edit`)} className="h-12 bg-foreground text-background text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-primary transition-colors">
                          <span className="material-symbols-outlined text-sm">edit</span>
                          EDITAR_REG
                       </button>
                       <button className="h-12 bg-transparent border border-red-500/20 text-red-500/50 text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-red-500/10 transition-colors">
                          <span className="material-symbols-outlined text-sm">delete_forever</span>
-                         BORRADO_ESTELAR
+                         BORRADO
                       </button>
                     </div>
                   </div>
@@ -280,9 +221,9 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({ entityId:
           </main>
         )}
 
-        {activeTab === 'CARTOGRAFÍA_ESPACIAL' && (
+        {activeTab === 'RED_DE_CONTACTOS' && (
           <div className="w-full h-full relative">
-            <UniversalCanvas initialNodes={nodes} initialEdges={edges} onNodeClick={(id) => navigate(`/${username || 'local'}/${projectName}/bible/entity/${id}`)} />
+            <MiniGraph entityId={Number(entityId)} />
           </div>
         )}
 
@@ -291,10 +232,9 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({ entityId:
             <DynamicAttributeForm entity={entity} />
           </div>
         )}
-
       </div>
     </div>
   );
 };
 
-export default CosmicProfileView;
+export default IndividualProfileView;

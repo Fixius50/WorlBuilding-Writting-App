@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Stage, Layer, Line, Circle, Text, Group } from 'react-konva';
+import { Stage, Layer, Line, Circle, Text, Group, RegularPolygon, Rect } from 'react-konva';
 import Konva from 'konva';
 import { KonvaEventObject } from 'konva/lib/Node';
 
@@ -180,35 +180,53 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
         </Layer>
         
         <Layer id="nodes">
-          {nodes.map(node => (
-            <Group
-              key={node.id}
-              x={node.x}
-              y={node.y}
-              draggable
-              onDragMove={(e) => handleDragMoveNode(node.id, e)}
-              onClick={() => onNodeClick && onNodeClick(node.id)}
-              onTap={() => onNodeClick && onNodeClick(node.id)}
-            >
-              <Circle
-                radius={25}
-                fill="#111111"
-                stroke="hsl(var(--primary))"
-                strokeWidth={2}
-              />
-              <Text
-                text={node.label}
-                fill={backgroundColor === '#ffffff' ? '#111111' : '#ffffff'}
-                fontSize={12}
-                fontFamily="Inter, sans-serif"
-                fontStyle="bold"
-                align="center"
-                y={35}
-                x={-50}
-                width={100}
-              />
-            </Group>
-          ))}
+          {nodes.map(node => {
+            const tipo = node.tipo ? node.tipo.toUpperCase() : '';
+            let shape = <Circle radius={25} fill="#0a0a0a" stroke="#00ffcc" strokeWidth={2} />;
+            
+            const isActor = ['PERSONAJE', 'OBJETO', 'RELIQUIA', 'VEHICULO'].includes(tipo);
+            const isCosmic = ['UNIVERSO', 'PLANETA', 'SISTEMA', 'DIMENSION', 'ASTRO'].includes(tipo);
+            const isTerritory = ['REINO', 'CIUDAD', 'LUGAR', 'CONTINENTE'].includes(tipo);
+            const isCollective = ['FACCION', 'RELIGION', 'RAZA', 'ORGANIZACION'].includes(tipo);
+            const isEvent = ['EVENTO', 'GUERRA', 'ERA', 'MARCA_TEMPORAL'].includes(tipo);
+
+            if (isActor) {
+              shape = <RegularPolygon sides={4} radius={30} fill="#0a0a0a" stroke="#00ffcc" strokeWidth={2} />;
+            } else if (isCosmic) {
+              shape = <Circle radius={45} fill="#0a0a0a" stroke="#00ffcc" strokeWidth={2} shadowBlur={15} shadowColor="#00ffcc" />;
+            } else if (isTerritory) {
+              shape = <RegularPolygon sides={6} radius={35} fill="#0a0a0a" stroke="#00ffcc" strokeWidth={2} />;
+            } else if (isCollective) {
+              shape = <Rect width={50} height={50} x={-25} y={-25} cornerRadius={5} fill="#0a0a0a" stroke="#00ffcc" strokeWidth={2} />;
+            } else if (isEvent) {
+              shape = <RegularPolygon sides={3} radius={30} rotation={180} fill="#0a0a0a" stroke="#00ffcc" strokeWidth={2} />;
+            }
+
+            return (
+              <Group
+                key={node.id}
+                x={node.x}
+                y={node.y}
+                draggable
+                onDragMove={(e) => handleDragMoveNode(node.id, e)}
+                onClick={() => onNodeClick && onNodeClick(node.id)}
+                onTap={() => onNodeClick && onNodeClick(node.id)}
+              >
+                {shape}
+                <Text
+                  text={node.label}
+                  fill={backgroundColor === '#ffffff' ? '#111111' : '#ffffff'}
+                  fontSize={12}
+                  fontFamily="Inter, sans-serif"
+                  fontStyle="bold"
+                  align="center"
+                  y={isCosmic ? 55 : 40}
+                  x={-50}
+                  width={100}
+                />
+              </Group>
+            );
+          })}
         </Layer>
       </Stage>
     </div>
