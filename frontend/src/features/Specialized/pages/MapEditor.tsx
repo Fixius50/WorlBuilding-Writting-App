@@ -653,7 +653,8 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
 
   const renderSidebar = useCallback(() => {
     return (
-      <div className="flex flex-col h-full bg-white text-black p-6 space-y-8 overflow-y-auto custom-scrollbar animate-in slide-in-from-right duration-500 border-l border-black/10">
+      <div className="flex flex-col h-full bg-white text-black animate-in slide-in-from-right duration-500 border-l border-black/10">
+        <div className="flex-1 p-6 space-y-8 overflow-y-auto custom-scrollbar">
         <div className="space-y-2">
            <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
              <span className="material-symbols-outlined text-sm">settings</span> Configuración del Atlas
@@ -705,7 +706,8 @@ const MapEditor: React.FC<MapEditorProps> = ({ mode = 'edit', entityId: propEnti
           </div>
         </MonolithicPanel>
 
-        <div className="space-y-3 pt-6 border-t border-foreground/10">
+        </div>
+        <div className="p-6 space-y-3 border-t border-black/10 bg-white sticky bottom-0 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
           <Button variant="primary" className="w-full py-4 font-black tracking-widest" icon="save" onClick={handleSave}>Guardar Atlas</Button>
           <Button variant="ghost" className="w-full py-3" icon="arrow_back" onClick={() => navigate(-1)}>Descartar Cambios</Button>
         </div>

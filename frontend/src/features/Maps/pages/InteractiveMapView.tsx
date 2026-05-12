@@ -4,7 +4,6 @@ import MapLibreView from '../components/MapLibreView';
 import MapSearchBox from '../components/MapSearchBox';
 import Button from '@atoms/Button';
 import { EntityUseCase } from '@application/useCases/EntityUseCase';
-import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { Entidad } from '@domain/models/database';
 import { MapMarker, MapLayer, MapConnection, MapAttributes } from '@domain/models/maps';
 import { useRightPanelStore } from '@store/useRightPanelStore';
@@ -24,7 +23,6 @@ const InteractiveMapView: React.FC<{
   const [availableEntities, setAvailableEntities] = useState<Entidad[]>([]);
   const { openPanel, setCustomContent } = useRightPanelStore();
   
-  // Lógica de filtros del Atlas
   const [atlasFilters, setAtlasFilters] = useState({
     cities: true,
     ruins: true,
@@ -139,42 +137,43 @@ const InteractiveMapView: React.FC<{
         const visibleLayers = layers.filter((l: MapLayer) => l.visible !== false);
 
         return (
-          <div className="p-6 h-full flex flex-col gap-6 overflow-y-auto custom-scrollbar animate-in fade-in duration-300">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-4 bg-foreground/5 border border-foreground/10 text-center">
-                <div className="text-2xl font-black text-foreground">{markers.length}</div>
-                <div className="text-[9px] text-foreground/40 uppercase font-black tracking-widest">Marcadores</div>
-              </div>
-              <div className="p-4 bg-foreground/5 border border-foreground/10 text-center">
-                <div className="text-2xl font-black text-foreground">{visibleLayers.length}</div>
-                <div className="text-[9px] text-foreground/40 uppercase font-black tracking-widest">Capas activas</div>
-              </div>
-            </div>
-
-            {markers.length > 0 && (
-              <div>
-                <h4 className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-3">Puntos de Interés</h4>
-                <div className="space-y-2">
-                  {markers.map((m: MapMarker) => (
-                    <button
-                      key={m.id}
-                      onClick={() => handleMarkerClick(m)}
-                      className="w-full flex items-center gap-3 p-3 bg-foreground/5 hover:bg-primary/10 border border-foreground/5 hover:border-primary/20 transition-all text-left"
-                    >
-                      <span className="size-2 bg-primary rounded-full flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[11px] font-bold text-foreground truncate">{m.label || 'Sin nombre'}</div>
-                        {m.description && <div className="text-[9px] text-foreground/40 truncate">{m.description}</div>}
-                      </div>
-                      <span className="material-symbols-outlined text-sm text-foreground/20">chevron_right</span>
-                    </button>
-                  ))}
+          <div className="flex flex-col h-full bg-background/50 animate-in fade-in duration-300">
+            <div className="flex-1 p-6 space-y-8 overflow-y-auto custom-scrollbar">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-4 bg-foreground/5 border border-foreground/10 text-center">
+                  <div className="text-2xl font-black text-foreground">{markers.length}</div>
+                  <div className="text-[9px] text-foreground/40 uppercase font-black tracking-widest">Marcadores</div>
+                </div>
+                <div className="p-4 bg-foreground/5 border border-foreground/10 text-center">
+                  <div className="text-2xl font-black text-foreground">{visibleLayers.length}</div>
+                  <div className="text-[9px] text-foreground/40 uppercase font-black tracking-widest">Capas activas</div>
                 </div>
               </div>
-            )}
 
+              {markers.length > 0 && (
+                <div>
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-3">Puntos de Interés</h4>
+                  <div className="space-y-2">
+                    {markers.map((m: MapMarker) => (
+                      <button
+                        key={m.id}
+                        onClick={() => handleMarkerClick(m)}
+                        className="w-full flex items-center gap-3 p-3 bg-foreground/5 hover:bg-primary/10 border border-foreground/5 hover:border-primary/20 transition-all text-left"
+                      >
+                        <span className="size-2 bg-primary rounded-full flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[11px] font-bold text-foreground truncate">{m.label || 'Sin nombre'}</div>
+                          {m.description && <div className="text-[9px] text-foreground/40 truncate">{m.description}</div>}
+                        </div>
+                        <span className="material-symbols-outlined text-sm text-foreground/20">chevron_right</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
             {onBack && (
-              <div className="pt-4 border-t border-foreground/10 mt-auto">
+              <div className="p-4 border-t border-foreground/10 bg-background/80 sticky bottom-0 z-10 backdrop-blur-md">
                 <Button
                   variant="ghost"
                   className="w-full justify-center py-3 text-[10px] font-black uppercase tracking-widest"
@@ -191,7 +190,7 @@ const InteractiveMapView: React.FC<{
     };
 
     setCustomContent(renderSidebarContent());
-  }, [selectedMarker, markers, layers, availableEntities, onBack, setCustomContent, handleMarkerClick, navigate, projectName]);
+  }, [selectedMarker, markers, layers, availableEntities, onBack, setCustomContent, handleMarkerClick, navigate, projectName, mapAttributes]);
 
   return (
     <div className="flex-1 flex overflow-hidden bg-background relative">

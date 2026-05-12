@@ -87,7 +87,7 @@ const App = () => {
                   <Route path="folder/:folderId/entity/:entityId/edit" element={<EntityEditRouter />} />
                 </Route>
 
-                <Route path="map" element={<MapRouter />} />
+                <Route path="map/*" element={<MapRouter />} />
                 <Route path="timeline" element={<TimelineView />} />
                 <Route path="languages" element={<LinguisticsRouter />} />
                 <Route path="trash" element={<TrashView />} />
