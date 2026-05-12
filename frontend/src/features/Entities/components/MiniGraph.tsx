@@ -68,11 +68,8 @@ const MiniGraph: React.FC<Props> = ({ entityId }) => {
   );
 
   return (
-    <div className="w-full h-[350px] border border-primary/20 bg-background relative overflow-hidden group">
+    <div className="w-full h-full bg-background relative overflow-hidden group">
        <UniversalCanvas initialNodes={nodes} initialEdges={edges} />
-       <div className="absolute bottom-4 right-4 pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity">
-          <span className="text-[8px] font-black uppercase tracking-widest text-background bg-primary px-2 py-1">Powered by Konva</span>
-       </div>
     </div>
   );
 };

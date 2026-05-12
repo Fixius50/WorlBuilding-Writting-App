@@ -38,7 +38,7 @@ const MiniTimeline: React.FC<MiniTimelineProps> = ({ entityId }) => {
       ) : (
         events.map((event, idx) => (
           <div key={event.id} className="relative pl-8 animate-in slide-in-from-left-4 duration-500" style={{ animationDelay: `${idx * 100}ms` }}>
-            <div className="absolute left-0 top-1.5 size-2 rounded-full border-2 border-primary bg-background shadow-[0_0_8px_rgba(var(--primary-rgb),0.5)]" />
+            <div className="absolute left-0 top-1.5 size-2 rounded-full border-2 border-primary bg-background" />
             
             <div className="flex flex-col">
               <span className="text-[9px] font-black uppercase tracking-widest text-primary leading-none mb-1">

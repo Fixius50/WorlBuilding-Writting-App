@@ -191,15 +191,20 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
             const isEvent = ['EVENTO', 'GUERRA', 'ERA', 'MARCA_TEMPORAL'].includes(tipo);
 
             if (isActor) {
-              shape = <RegularPolygon sides={4} radius={30} fill="#0a0a0a" stroke="#00ffcc" strokeWidth={2} />;
+              // ARQUETIPO INDIVIDUAL: Rombo / Cápsula
+              shape = <RegularPolygon sides={4} radius={30} fill="#0a0a0a" stroke="#00ffcc" strokeWidth={1.5} />;
             } else if (isCosmic) {
-              shape = <Circle radius={45} fill="#0a0a0a" stroke="#00ffcc" strokeWidth={2} shadowBlur={15} shadowColor="#00ffcc" />;
+              // ARQUETIPO CÓSMICO: Esferas perfectas (Sin glows)
+              shape = <Circle radius={45} fill="#0a0a0a" stroke="#00ffcc" strokeWidth={2} />;
             } else if (isTerritory) {
-              shape = <RegularPolygon sides={6} radius={35} fill="#0a0a0a" stroke="#00ffcc" strokeWidth={2} />;
+              // ARQUETIPO TERRITORIAL: Hexágono
+              shape = <RegularPolygon sides={6} radius={35} fill="#0a0a0a" stroke="#00ffcc" strokeWidth={1.5} />;
             } else if (isCollective) {
-              shape = <Rect width={50} height={50} x={-25} y={-25} cornerRadius={5} fill="#0a0a0a" stroke="#00ffcc" strokeWidth={2} />;
+              // ARQUETIPO COLECTIVO: Escudo (5 lados)
+              shape = <RegularPolygon sides={5} radius={32} rotation={180} fill="#0a0a0a" stroke="#00ffcc" strokeWidth={1.5} />;
             } else if (isEvent) {
-              shape = <RegularPolygon sides={3} radius={30} rotation={180} fill="#0a0a0a" stroke="#00ffcc" strokeWidth={2} />;
+              // ARQUETIPO CRONOLÓGICO: Triángulo Invertido
+              shape = <RegularPolygon sides={3} radius={30} rotation={180} fill="#0a0a0a" stroke="#00ffcc" strokeWidth={1.5} />;
             }
 
             return (

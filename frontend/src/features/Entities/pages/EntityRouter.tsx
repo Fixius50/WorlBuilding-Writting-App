@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { EntityUseCase } from '@application/useCases/EntityUseCase';
 import { Entidad } from '@domain/models/database';
-import CosmicProfileView from './CosmicProfileView';
+import CosmicProfileView from './archetypes/CosmicProfileView';
 import IndividualProfileView from './archetypes/IndividualProfileView';
 import TerritoryProfileView from './archetypes/TerritoryProfileView';
 import CollectiveProfileView from './archetypes/CollectiveProfileView';
@@ -51,15 +51,17 @@ const EntityRouter = () => {
 
   const tipo = entity.tipo.trim().toUpperCase();
 
-  const cosmicTypes = ['UNIVERSO', 'PLANETA', 'SISTEMA', 'DIMENSION', 'ASTRO'];
-  const actorTypes = ['PERSONAJE', 'OBJETO', 'RELIQUIA', 'VEHICULO'];
-  const territoryTypes = ['REINO', 'CIUDAD', 'LUGAR', 'CONTINENTE'];
-  const collectiveTypes = ['FACCION', 'RELIGION', 'RAZA', 'ORGANIZACION'];
-  const eventTypes = ['EVENTO', 'GUERRA', 'ERA', 'MARCA_TEMPORAL'];
+  const cosmicTypes = ['UNIVERSO', 'PLANETA', 'SISTEMA', 'DIMENSION', 'ASTRO', 'UNIVERSE', 'PLANET', 'SYSTEM', 'ASTRO'];
+  const actorTypes = ['PERSONAJE', 'OBJETO', 'RELIQUIA', 'VEHICULO', 'ENTITY', 'ENTIDAD', 'CHARACTER', 'OBJECT', 'ITEM'];
+  const territoryTypes = ['REINO', 'CIUDAD', 'LUGAR', 'CONTINENTE', 'LOCATION', 'PLACE', 'GEOGRAPHY', 'MAP', 'MAPA'];
+  const collectiveTypes = ['FACCION', 'RELIGION', 'RAZA', 'ORGANIZACION', 'FACTION', 'RELIGION', 'RACE', 'ORGANIZATION', 'CONLANG'];
+  const eventTypes = ['EVENTO', 'GUERRA', 'ERA', 'MARCA_TEMPORAL', 'EVENT', 'WAR', 'TIMELINE', 'LINEA_TEMPORAL'];
   
   const mapTypes = ['MAP', 'MAPA'];
 
   switch (true) {
+    case mapTypes.includes(tipo):
+      return <InteractiveMapView map={entity} />;
     case cosmicTypes.includes(tipo):
       return <CosmicProfileView entityId={entity.id} />;
     case actorTypes.includes(tipo):
@@ -70,12 +72,9 @@ const EntityRouter = () => {
       return <CollectiveProfileView entityId={entity.id} />;
     case eventTypes.includes(tipo):
       return <EventProfileView entityId={entity.id} />;
-    case mapTypes.includes(tipo):
-      return <InteractiveMapView map={entity} />;
     case tipo === 'ENTIDAD' || tipo === 'ENTITY':
       return <EntityBuilder mode="edit" />;
     default:
-      // Fallback a Individual si no se reconoce
       return <IndividualProfileView entityId={entity.id} />;
   }
 };

@@ -17,13 +17,44 @@ interface AttributeValue {
   value: string;
 }
 
-const ENTITY_TYPES = [
-  { id: 'PERSONAJE', label: 'Personaje', icon: 'person', color: 'text-blue-400' },
-  { id: 'LUGAR', label: 'Lugar', icon: 'location_on', color: 'text-emerald-400' },
-  { id: 'ORGANIZACION', label: 'Facción', icon: 'groups', color: 'text-amber-400' },
-  { id: 'OBJETO', label: 'Objeto', icon: 'category', color: 'text-purple-400' },
-  { id: 'EVENTO', label: 'Evento', icon: 'event', color: 'text-rose-400' },
-  { id: 'ENTIDADINDIVIDUAL', label: 'Individual', icon: 'token', color: 'text-slate-400' },
+const ARQUETIPOS_GROUPS = [
+  {
+    name: 'CÓSMICO',
+    types: [
+      { id: 'UNIVERSE', label: 'Universo', icon: 'auto_awesome', color: 'text-indigo-400' },
+      { id: 'PLANET', label: 'Planeta', icon: 'public', color: 'text-blue-400' },
+      { id: 'DIMENSION', label: 'Dimensión', icon: 'layers', color: 'text-cyan-400' },
+    ]
+  },
+  {
+    name: 'INDIVIDUAL',
+    types: [
+      { id: 'PERSONAJE', label: 'Personaje', icon: 'person', color: 'text-blue-400' },
+      { id: 'OBJETO', label: 'Objeto', icon: 'category', color: 'text-purple-400' },
+      { id: 'ENTIDAD', label: 'Genérico', icon: 'token', color: 'text-slate-400' },
+    ]
+  },
+  {
+    name: 'TERRITORIAL',
+    types: [
+      { id: 'LUGAR', label: 'Lugar', icon: 'location_on', color: 'text-emerald-400' },
+      { id: 'MAP', label: 'Mapa', icon: 'map', color: 'text-teal-400' },
+    ]
+  },
+  {
+    name: 'COLECTIVO',
+    types: [
+      { id: 'ORGANIZACION', label: 'Facción', icon: 'groups', color: 'text-amber-400' },
+      { id: 'CONLANG', label: 'Lengua', icon: 'translate', color: 'text-orange-400' },
+    ]
+  },
+  {
+    name: 'HISTÓRICO',
+    types: [
+      { id: 'EVENTO', label: 'Evento', icon: 'event', color: 'text-rose-400' },
+      { id: 'TIMELINE', label: 'Línea', icon: 'history', color: 'text-red-400' },
+    ]
+  }
 ];
 
 const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({ 
@@ -201,21 +232,28 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
                 <span className="material-symbols-outlined text-xs">category</span>
                 Configuración de Clase
               </div>
-              <div className="grid grid-cols-3 gap-2">
-                {ENTITY_TYPES.map(t => (
-                  <button
-                    key={t.id}
-                    disabled={noFolders}
-                    onClick={() => setType(t.id)}
-                    className={`flex flex-col items-center justify-center gap-2 p-4 border transition-all ${
-                      type === t.id 
-                        ? 'bg-primary/10 border-primary/40 shadow-lg shadow-primary/5' 
-                        : 'bg-background border-white/10 hover:border-white/20 opacity-50 grayscale hover:grayscale-0'
-                    } disabled:opacity-10 disabled:cursor-not-allowed`}
-                  >
-                    <span className={`material-symbols-outlined ${type === t.id ? t.color : 'text-foreground/40'}`}>{t.icon}</span>
-                    <span className={`text-[9px] font-black uppercase tracking-widest ${type === t.id ? 'text-foreground' : 'text-foreground/40'}`}>{t.label}</span>
-                  </button>
+              <div className="space-y-6">
+                {ARQUETIPOS_GROUPS.map(group => (
+                  <div key={group.name} className="space-y-2">
+                    <div className="text-[8px] font-black text-foreground/20 uppercase tracking-[0.3em] px-2">{group.name}</div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {group.types.map(t => (
+                        <button
+                          key={t.id}
+                          disabled={noFolders}
+                          onClick={() => setType(t.id)}
+                          className={`flex flex-col items-center justify-center gap-2 p-4 border transition-all ${
+                            type === t.id 
+                              ? 'bg-primary/10 border-primary/40 shadow-lg shadow-primary/5' 
+                              : 'bg-background border-white/10 hover:border-white/20 opacity-50 grayscale hover:grayscale-0'
+                          } disabled:opacity-10 disabled:cursor-not-allowed`}
+                        >
+                          <span className={`material-symbols-outlined ${type === t.id ? t.color : 'text-foreground/40'}`}>{t.icon}</span>
+                          <span className={`text-[9px] font-black uppercase tracking-widest ${type === t.id ? 'text-foreground' : 'text-foreground/40'}`}>{t.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
 

@@ -4,8 +4,8 @@ import { EntityUseCase } from '@application/useCases/EntityUseCase';
 import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
 import { Entidad, Valor } from '@domain/models/database';
 import SecondaryTabs from '@presentation/molecules/SecondaryTabs';
+import UniversalCanvas, { CanvasNode, CanvasEdge } from '@presentation/organisms/editor/UniversalCanvas';
 import DynamicAttributeForm from '@features/Entities/components/DynamicAttributeForm';
-import MiniGraph from '@features/Entities/components/MiniGraph';
 
 interface ProfileOutletContext {
   setRightOpen: (open: boolean) => void;
@@ -14,30 +14,32 @@ interface ProfileOutletContext {
   setRightPanelTitle: (title: React.ReactNode) => void;
 }
 
-interface SpecificEntityData extends Entidad {
+interface CosmicEntityData extends Entidad {
   images?: string[];
   notes?: string[];
   [key: string]: unknown;
 }
 
-const IndividualProfileView: React.FC<{ entityId?: string | number }> = ({ entityId: propEntityId }) => {
+const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({ entityId: propEntityId }) => {
   const { username, entityId: paramEntityId, projectName } = useParams();
   const entityId = propEntityId || paramEntityId;
   const navigate = useNavigate();
   const { setRightOpen, setRightPanelTab, setRightPanelContent, setRightPanelTitle } = useOutletContext<ProfileOutletContext>();
 
-  const [entity, setEntity] = useState<SpecificEntityData | null>(null);
+  const [entity, setEntity] = useState<CosmicEntityData | null>(null);
   const [attributes, setAttributes] = useState<Valor[]>([]);
   const [subNodes, setSubNodes] = useState<Entidad[]>([]);
   const [loading, setLoading] = useState(true);
-  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const [activeTab, setActiveTab] = useState<string>('REGISTRO');
+  const [nodes, setNodes] = useState<CanvasNode[]>([]);
+  const [edges, setEdges] = useState<CanvasEdge[]>([]);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const tabs = [
     { id: 'REGISTRO', label: 'REGISTRO', icon: 'menu_book' },
-    { id: 'RED_DE_CONTACTOS', label: 'RED DE CONTACTOS / LINAJE', icon: 'hub' },
-    { id: 'DATOS_TÉCNICOS', label: 'DATOS TÉCNICOS', icon: 'bar_chart' }
+    { id: 'CARTOGRAFÍA', label: 'CARTOGRAFÍA', icon: 'map' },
+    { id: 'TELEMETRÍA', label: 'TELEMETRÍA', icon: 'bar_chart' }
   ];
 
   useEffect(() => {
@@ -65,9 +67,38 @@ const IndividualProfileView: React.FC<{ entityId?: string | number }> = ({ entit
             return e.carpeta_id === data.id || eExtra.padre_id === data.id || eExtra.parent_id === data.id;
         });
         setSubNodes(children);
+
+        const newNodes: CanvasNode[] = children.map((c, i) => {
+          const radius = 250;
+          const angle = (i / (children.length || 1)) * 2 * Math.PI;
+          return {
+            id: String(c.id),
+            x: 600 + radius * Math.cos(angle),
+            y: 400 + radius * Math.sin(angle),
+            label: c.nombre,
+            tipo: c.tipo || 'DESCONOCIDO'
+          };
+        });
+        
+        newNodes.push({
+          id: String(data.id),
+          x: 600,
+          y: 400,
+          label: data.nombre,
+          tipo: data.tipo || 'DESCONOCIDO'
+        });
+
+        const newEdges: CanvasEdge[] = children.map(c => ({
+          id: `e-${data.id}-${c.id}`,
+          from: String(data.id),
+          to: String(c.id)
+        }));
+
+        setNodes(newNodes);
+        setEdges(newEdges);
       }
     } catch (err) {
-      console.error("Error loading entity:", err);
+      console.error("Error loading cosmic entity:", err);
     } finally {
       setLoading(false);
     }
@@ -94,14 +125,14 @@ const IndividualProfileView: React.FC<{ entityId?: string | number }> = ({ entit
       setRightPanelTitle(
         <div className="flex items-center justify-center gap-2 font-mono w-full">
           <span className="material-symbols-outlined text-foreground/40 text-sm">hub</span>
-          <span className="text-[10px] font-black uppercase tracking-widest text-center">ELEMENTOS VINCULADOS</span>
+          <span className="text-[10px] font-black uppercase tracking-widest text-center">CUERPOS VINCULADOS</span>
         </div>
       );
       
       setRightPanelContent(
         <div className="flex flex-col h-full bg-background">
           <div className="p-6 border-b border-foreground/5">
-             <span className="text-[10px] font-black text-foreground/20 uppercase tracking-widest">Dependencias de {entity.nombre}</span>
+             <span className="text-[10px] font-black text-foreground/20 uppercase tracking-widest">Órbitas de {entity.nombre}</span>
           </div>
           <div className="flex-1 overflow-y-auto custom-scrollbar p-0">
             {subNodes.length > 0 ? (
@@ -120,9 +151,9 @@ const IndividualProfileView: React.FC<{ entityId?: string | number }> = ({ entit
               ))
             ) : (
               <div className="p-16 text-center flex flex-col items-center gap-4">
-                <span className="material-symbols-outlined text-4xl text-foreground/5">inventory_2</span>
+                <span className="material-symbols-outlined text-4xl text-foreground/5">public</span>
                 <div className="text-[10px] uppercase tracking-widest font-black text-foreground/20">
-                  Sin nodos asociados
+                  Sector VacÃ­o
                 </div>
               </div>
             )}
@@ -135,7 +166,7 @@ const IndividualProfileView: React.FC<{ entityId?: string | number }> = ({ entit
   if (loading) return (
     <div className="flex-1 flex items-center justify-center bg-background">
       <div className="text-foreground/20 font-black tracking-[0.4em] text-[10px] animate-pulse">
-        SINCRONIZANDO REGISTRO...
+        CALIBRANDO CARTOGRAFÃ A...
       </div>
     </div>
   );
@@ -144,6 +175,8 @@ const IndividualProfileView: React.FC<{ entityId?: string | number }> = ({ entit
 
   return (
     <div className="flex-1 bg-background flex flex-col h-full w-full animate-in fade-in duration-1000">
+      
+      {/* Hero Header MonolÃ­tico Zen */}
       <header className="bg-background border-b border-foreground/5 px-8 py-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-6">
            <h1 className="text-lg font-black text-foreground tracking-tighter uppercase">
@@ -167,6 +200,13 @@ const IndividualProfileView: React.FC<{ entityId?: string | number }> = ({ entit
             </button>
 
             <button 
+              onClick={() => navigate(`/${username || 'local'}/${projectName}/bible/entity/${entityId}/edit`)} 
+              className="px-4 py-2 border border-foreground/10 text-foreground/60 text-[9px] font-black uppercase tracking-widest hover:bg-primary hover:text-background transition-all"
+            >
+               EDITAR
+            </button>
+
+            <button 
               onClick={() => navigate(`/${username || 'local'}/${projectName}/bible`)}
               className="px-4 py-2 bg-foreground text-background text-[9px] font-black uppercase tracking-widest hover:bg-primary transition-all"
             >
@@ -186,61 +226,71 @@ const IndividualProfileView: React.FC<{ entityId?: string | number }> = ({ entit
 
       <SecondaryTabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} className="bg-foreground/[0.01] border-b border-foreground/5 shrink-0" />
 
-      <div className={`flex-1 relative ${activeTab === 'RED_DE_CONTACTOS' ? 'overflow-hidden' : 'overflow-y-auto no-scrollbar'}`}>
+      <div className={`flex-1 relative ${activeTab === 'CARTOGRAFÍA' ? 'overflow-hidden' : 'overflow-y-auto no-scrollbar'}`}>
+        
         {activeTab === 'REGISTRO' && (
           <main className="p-12 lg:p-24 space-y-24 max-w-6xl mx-auto w-full">
+            
             <section className="space-y-12">
               <div className="flex flex-col items-center gap-4">
-                <h3 className="text-[10px] font-black text-foreground uppercase tracking-[0.4em] border-b border-primary/40 pb-2">CRÓNICA Y BIOGRAFÍA</h3>
+                <h3 className="text-[10px] font-black text-foreground uppercase tracking-[0.4em] border-b border-primary/40 pb-2">CRÓNICA ESTELAR</h3>
               </div>
+              
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-16">
                 <div className="space-y-8">
                   <div className="space-y-2">
                     <label className="text-[9px] font-black text-foreground/20 uppercase tracking-widest">Identificador</label>
                     <div className="text-xs font-bold text-foreground/60 tabular-nums">#{entity.id}</div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black text-foreground/20 uppercase tracking-widest">Clasificación</label>
-                    <div className="text-xs font-bold text-foreground/60 uppercase">{entity.tipo}</div>
-                  </div>
                 </div>
+
                 <div className="text-lg text-foreground/80 leading-relaxed font-light italic first-letter:text-4xl first-letter:font-black first-letter:text-primary first-letter:mr-1 first-letter:float-left">
                   {entity.descripcion || "Sin descripción."}
                 </div>
               </div>
             </section>
+
             {entity.images && entity.images.length > 0 && (
               <section className="space-y-12 pt-12 border-t border-foreground/5">
                 <div className="flex flex-col items-center gap-4">
-                  <h3 className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.4em]">REGISTROS VISUALES</h3>
+                  <h3 className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.4em]">AVISTAMIENTOS VISUALES</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {entity.images.map((img, idx) => (
                     <div key={idx} className="aspect-video bg-foreground/[0.02] border border-foreground/5 overflow-hidden group transition-all">
-                      <img src={img} alt={`Evidence ${idx}`} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 grayscale group-hover:grayscale-0 transition-all duration-700" />
+                      <img src={img} alt={`Cosmic View ${idx}`} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 grayscale group-hover:grayscale-0 transition-all duration-700" />
                     </div>
                   ))}
                 </div>
               </section>
             )}
 
+
           </main>
         )}
 
-        {activeTab === 'RED_DE_CONTACTOS' && (
+        {activeTab === 'CARTOGRAFÍA' && (
           <div className="w-full h-full relative bg-background">
-            <MiniGraph entityId={Number(entityId)} />
+            <UniversalCanvas 
+              initialNodes={nodes} 
+              initialEdges={edges} 
+              onNodeClick={(id) => navigate(`/${username || 'local'}/${projectName}/bible/entity/${id}`)} 
+            />
           </div>
         )}
 
-        {activeTab === 'DATOS_TÉCNICOS' && (
-          <div className="p-12 lg:p-24 max-w-5xl mx-auto">
-            <DynamicAttributeForm entity={entity} />
+        {activeTab === 'TELEMETRÍA' && (
+          <div className="p-12 lg:p-24 max-w-5xl mx-auto space-y-16">
+            <div className="pt-0">
+              <DynamicAttributeForm entity={entity} />
+            </div>
           </div>
         )}
+
       </div>
     </div>
   );
 };
 
-export default IndividualProfileView;
+export default CosmicProfileView;
+
