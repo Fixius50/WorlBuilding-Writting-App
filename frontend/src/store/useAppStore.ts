@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { temporal } from 'zundo';
 import { settingsService } from '@repositories/settingsService';
 
 interface User {
@@ -28,8 +29,9 @@ interface AppState {
   setGraphViewport: (viewport: { x: number; y: number; zoom: number } | null) => Promise<void>;
 }
 
-export const useAppStore = create<AppState>((set) => ({
-  isInitialized: false,
+export const useAppStore = create<AppState>()(
+  temporal((set) => ({
+    isInitialized: false,
   theme: 'deep_space',
   language: 'es',
   panelMode: 'classic',
@@ -86,4 +88,4 @@ export const useAppStore = create<AppState>((set) => ({
     set({ savedGraphViewport: viewport });
     await settingsService.set('savedGraphViewport', viewport ? JSON.stringify(viewport) : '');
   }
-}));
+})));

@@ -15,7 +15,8 @@ export const useWritingView = () => {
   const { notebookId } = useParams();
   const navigate = useNavigate();
 
-  const { openPanel, setCustomContent } = useRightPanelStore();
+  const openPanel = useRightPanelStore(state => state.openPanel);
+  const setCustomContent = useRightPanelStore(state => state.setCustomContent);
 
   const [notebook, setNotebook] = useState<Cuaderno | null>(null);
   const [pages, setPages] = useState<Hoja[]>([]);

@@ -1,8 +1,9 @@
 import React from 'react';
 import { useEventProfile } from './useEventProfile';
-import SecondaryTabs from '@presentation/molecules/SecondaryTabs';
+import SecondaryTabs from '@molecules/SecondaryTabs';
 import DynamicAttributeForm from '@features/Entities/components/DynamicAttributeForm';
 import MiniTimeline from '@features/Entities/components/MiniTimeline';
+import SectionErrorBoundary from '@organisms/SectionErrorBoundary';
 
 const EventProfileView: React.FC<{ entityId?: string | number }> = ({ entityId: propEntityId }) => {
   const {
@@ -24,15 +25,19 @@ const EventProfileView: React.FC<{ entityId?: string | number }> = ({ entityId: 
     { id: 'DATOS_TÉCNICOS', label: 'DATOS TÉCNICOS', icon: 'bar_chart' }
   ];
 
-  if (loading) return (
-    <div className="flex-1 flex items-center justify-center bg-background">
-      <div className="text-foreground/20 font-black tracking-[0.4em] text-[10px] animate-pulse">
-        RECONSTRUYENDO LÍNEA TEMPORAL...
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-background">
+        <div className="text-foreground/20 font-black tracking-[0.4em] text-[10px] animate-pulse">
+          RECONSTRUYENDO LÍNEA TEMPORAL...
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
-  if (!entity) return <div className="p-20 text-center text-destructive bg-background h-full font-black uppercase tracking-widest">404: EVENTO NO ENCONTRADO</div>;
+  if (!entity) {
+    return <div className="p-20 text-center text-destructive bg-background h-full font-black uppercase tracking-widest">404: EVENTO NO ENCONTRADO</div>;
+  }
 
   return (
     <div className="flex-1 bg-background flex flex-col h-full w-full animate-in fade-in duration-1000">
@@ -109,13 +114,17 @@ const EventProfileView: React.FC<{ entityId?: string | number }> = ({ entityId: 
 
         {activeTab === 'CRONOGRAMA' && (
           <div className="w-full h-full p-12 lg:p-24 relative bg-background">
-            <MiniTimeline entityId={Number(entityId)} />
+            <SectionErrorBoundary sectorName="CRONOGRAMA">
+              <MiniTimeline entityId={Number(entityId)} />
+            </SectionErrorBoundary>
           </div>
         )}
 
         {activeTab === 'DATOS_TÉCNICOS' && (
           <div className="p-12 lg:p-24 max-w-5xl mx-auto">
-            <DynamicAttributeForm entity={entity} />
+            <SectionErrorBoundary sectorName="DATOS TÉCNICOS">
+              <DynamicAttributeForm entity={entity} />
+            </SectionErrorBoundary>
           </div>
         )}
       </div>

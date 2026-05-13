@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Stage, Layer, Line, Circle, Text, Group, RegularPolygon, Rect } from 'react-konva';
 import Konva from 'konva';
 import { KonvaEventObject } from 'konva/lib/Node';
+import SectionErrorBoundary from '@organisms/SectionErrorBoundary';
 
 export interface CanvasNode {
   id: string;
@@ -238,4 +239,11 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   );
 };
 
-export default UniversalCanvas;
+// --- Safe Export con Error Boundary ---
+const UniversalCanvasSafe = (props: Parameters<typeof UniversalCanvas>[0]) => (
+  <SectionErrorBoundary sectorName="CANVAS UNIVERSAL">
+    <UniversalCanvas {...props} />
+  </SectionErrorBoundary>
+);
+
+export default UniversalCanvasSafe;

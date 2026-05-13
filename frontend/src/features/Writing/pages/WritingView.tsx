@@ -40,7 +40,7 @@ const WritingView = () => {
     (p.contenido || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const deletePage = (e: React.MouseEvent, id: number, index: number) => {
+  const deletePage = React.useCallback((e: React.MouseEvent, id: number, index: number) => {
     e.stopPropagation();
     if (pages.length <= 1) {
       setPageToDelete({ id, index, error: 'one_page' });
@@ -49,7 +49,7 @@ const WritingView = () => {
     }
     setPageToDelete({ id, index });
     setDeleteModalOpen(true);
-  };
+  }, [pages.length, setPageToDelete, setDeleteModalOpen]);
 
   useEffect(() => {
     const renderRightPanel = () => (

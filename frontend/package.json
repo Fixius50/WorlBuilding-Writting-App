@@ -23,6 +23,7 @@
     "@radix-ui/react-slot": "^1.1.2",
     "@tanstack/react-query": "^5.66.0",
     "@tanstack/react-table": "^8.21.3",
+    "@tanstack/react-virtual": "^3.13.24",
     "@tiptap/core": "^2.11.5",
     "@tiptap/extension-bubble-menu": "^2.11.5",
     "@tiptap/extension-character-count": "^2.11.5",
@@ -36,6 +37,7 @@
     "@types/geojson": "^7946.0.16",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
     "dagre": "^0.8.5",
     "framer-motion": "^12.38.0",
     "konva": "^10.3.0",
@@ -45,6 +47,7 @@
     "peerjs": "^1.5.5",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "react-error-boundary": "^6.1.1",
     "react-konva": "^19.2.4",
     "react-map-gl": "^8.1.0",
     "react-router-dom": "^7.1.5",
@@ -52,6 +55,7 @@
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
     "use-image": "^1.1.4",
+    "zundo": "^2.3.0",
     "zustand": "^5.0.3"
   },
   "devDependencies": {

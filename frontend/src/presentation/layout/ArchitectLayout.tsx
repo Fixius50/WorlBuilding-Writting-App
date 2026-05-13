@@ -5,6 +5,7 @@ import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
 import { Carpeta, Proyecto, Plantilla, FolderType } from '@domain/models/database';
 import GlobalRightPanel from './GlobalRightPanel';
 import ConfirmationModal from '@organisms/ConfirmationModal';
+import CommandPalette from '@organisms/CommandPalette';
 import { useSettingsStore } from '@store/useSettingsStore';
 import ControlPanel from '@features/Graph/components/ControlPanel';
 // Sync Service handled by UseCase
@@ -441,6 +442,8 @@ const ArchitectLayout: React.FC = () => {
           </div>
         ))}
       </div>
+      {/* COMMAND PALETTE — Ctrl+K */}
+      <CommandPalette folders={folders} />
     </div>
   );
 };

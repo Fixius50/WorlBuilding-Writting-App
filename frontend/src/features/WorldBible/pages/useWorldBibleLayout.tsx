@@ -5,15 +5,13 @@ import { Carpeta } from '@domain/models/database';
 import { ArchitectContext } from '@domain/models/ui';
 import { useRightPanelStore } from '@store/useRightPanelStore';
 
-/**
- * 🧠 useWorldBibleLayout
- * Orchestrates navigation, searching, and node lifecycle in WorldBible.
- */
 export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { projectName } = useParams();
-  const { openPanel, closePanel, setActiveTab } = useRightPanelStore();
+  const openPanel = useRightPanelStore(state => state.openPanel);
+  const closePanel = useRightPanelStore(state => state.closePanel);
+  const setActiveTab = useRightPanelStore(state => state.setActiveTab);
   
   const [viewMode, setViewMode] = useState<'folders' | 'table'>('folders');
   const [creationModalOpen, setCreationModalOpen] = useState(false);
@@ -126,11 +124,7 @@ export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
               tipo: formData.tipo || 'PERSONAJE',
               carpeta_id: currentFolderId,
               project_id: architectContext.projectId,
-              slug: baseSlug,
-              contenido_json: null,
-              folder_slug: null,
-              imagen_url: null
-            } as any);
+            });
             window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: currentFolderId } }));
             window.dispatchEvent(new CustomEvent('entity-update'));
           }
