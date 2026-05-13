@@ -9,6 +9,7 @@ El proyecto adopta un "Mapa de Carpetas Definitivo" con separación física tota
 * **Frontend (UI y Lógica Core) en `/frontend`:** React 19.2.4 con Vite.
   * Arquitectura Interna: **Clean Architecture** (`domain`, `application/useCases`, `infrastructure`, `presentation`) + **Atomic Design** (`presentation`: `atoms`, `molecules`, `organisms`, `templates`, `pages`).
     * **Regla de ORO (DDD):** Prohibido el acceso directo a repositorios (`*Service`) desde la capa de UI. Todo acceso debe pasar por la capa `application/useCases/` (Ej. `WorldBibleUseCase`, `MapUseCase`).
+    * **Regla de ORO (Componentes y Control de Flujo):** Obligatorio el uso de sintaxis Arrow Function (`const = () => {}`) y prohibición estricta de `early returns` dentro de bloques `if` en favor de condicionales envolventes. Tipado fuerte sin `any`.
   * Estado: Zustand (Manejador de Estado Global centralizado para UI y Paneles). Context API reservado exclusivamente para datos de proyecto/idioma inmutables en el render.
   * Routing: React Router Dom.
   * Estilos: Technical Zen (Monolithic) basado en variables CSS (`foreground/X`). Prohibido glassmorphism legacy.

@@ -48,7 +48,7 @@ Una interfaz de alto rendimiento para usuarios avanzados.
 A partir de Mayo 2026, el motor EAV se consume a través del sistema de **Inspector Central**.
 
 - **Reactividad**: Al seleccionar una entidad, el `UniversalInspector` detecta su ID y tipo, solicitando al `entityService` los valores dinámicos.
-- **Renderizado Adaptativo**: El inspector utiliza el `DynamicAttributeForm` para pintar solo los campos relevantes del arquetipo activo, eliminando el ruido visual de atributos no aplicables.
+- **Renderizado Adaptativo**: El inspector utiliza el `DynamicAttributeForm` (componente UI estricto Arrow Function sin *early returns* ocultos) para pintar solo los campos relevantes del arquetipo activo, eliminando el ruido visual de atributos no aplicables.
 - **Sin Portales**: La ficha de entidad ya no usa portales; se inyecta directamente en el flujo de estado de `useRightPanelStore`.
 
 ---
@@ -80,6 +80,8 @@ Los arquetipos no son clases rígidas, sino conjuntos de atributos. Esto permite
 ---
 
 ## 4. Próximos Pasos (Evolución)
+
+*Nota de Arquitectura: Todo desarrollo futuro sobre el motor EAV debe acatar la Regla Maestra de Componentes (Arrow Functions obligatorias, sin early returns condicionales y cero `any`).*
 
 1. **Campos de Referencia**: Atributos que permitan seleccionar otra entidad (ej: "Padre", "Localización Actual").
 2. **Validaciones Avanzadas**: Regex personalizados para atributos de tipo texto.

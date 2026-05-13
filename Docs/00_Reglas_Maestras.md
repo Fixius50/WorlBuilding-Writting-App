@@ -30,6 +30,38 @@ Este proyecto requiere un altísimo nivel de consistencia, documentación y cali
   5. **Diseño:** Seguir el estándar "Technical Zen (Monolithic)" definido en `02_Diseño_UI_UX.md`.
   6. **Idioma:** Código e interfaz en Español (Nombres de variables en Inglés por convención).
 
+## CREACIÓN Y GESTIÓN DE COMPONENTES
+
+1. **Sintaxis Exclusiva (Arrow Functions):** 
+   - Se debe utilizar obligatoriamente la sintaxis de funciones flecha (`const Component = () => {}`) para la declaración de todos los componentes, servicios y funciones. Queda **ESTRICTAMENTE PROHIBIDO** el uso de la palabra reservada `function` para declaraciones estándar.
+2. **Flujo de Control (Prohibido Early Return en Ifs):** 
+   - Las validaciones y lógicas de escape NO pueden estar sueltas o ejecutarse mediante `return` dentro de sentencias `if` (ej. `if (!condition) return;` está **prohibido**).
+   - Se debe envolver la lógica en bloques condicionales (ej. `if (condition) { ... }`) para garantizar un flujo de control predecible. Priorizar sentencias `switch` y operadores ternarios.
+3. **Tipado Estricto:** 
+   - Prohibido el uso de `any`. Si un tipo no es determinable, se debe usar `unknown`. Todo componente React debe tipar sus `props` mediante `interface`.
+4. **Preservación de Código (Comentarios):** 
+   - El código antiguo con valor histórico NO debe borrarse de inmediato. Si se reemplaza lógica compleja, debe comentarse para mantener la trazabilidad.
+
+## RESPONSABILIDAD POR CAPAS (CLEAN ARCHITECTURE / DDD)
+
+El proyecto está dividido en un ecosistema robusto. El Frontend respeta las siguientes responsabilidades estrictas:
+
+- **`/domain` (Capa de Dominio):**
+  - **Dedicado a:** Modelos de datos puros y definiciones de tipos estáticos.
+  - **Reglas:** No debe tener dependencias de ninguna otra capa de la aplicación ni de librerías de UI (React).
+- **`/application` (Capa de Aplicación):**
+  - **Dedicado a:** Casos de uso (`useCases`) que orquestan los flujos del usuario y la lógica de negocio.
+  - **Reglas:** Actúa como puente. No renderiza componentes visuales ni ejecuta peticiones directas de bajo nivel.
+- **`/infrastructure` (Capa de Infraestructura):**
+  - **Dedicado a:** Repositorios de acceso a datos locales (`sqlocal`/SQLite) o remotos, clientes HTTP y utilidades técnicas.
+  - **Reglas:** Es la *única* capa autorizada para tener contacto directo con sentencias SQL o fetch/axios.
+- **`/presentation` (Capa de Presentación / UI):**
+  - **Dedicado a:** El ecosistema de React ordenado bajo Atomic Design (`atoms`, `molecules`, `organisms`, `pages`, `layout`).
+  - **Reglas:** Exclusivamente para el renderizado. Consume funciones de `application` y estado global (`stores`). **Cero** lógica pesada de persistencia de datos.
+- **`/features` (Módulos Funcionales):**
+  - **Dedicado a:** Módulos altamente especializados (Graph, Mapas, Timeline) agrupados verticalmente.
+  - **Reglas:** Para características pesadas, se debe implementar el **Patrón Hook-View** (Desacoplar la lógica compleja en un custom hook como `useFeatureLogic.tsx` y dejar el archivo base como `.tsx` de solo renderizado visual).
+
 ## PRIORIDAD ACTUAL
 
 Consultar `03_Roadmap_Vivo.md`.

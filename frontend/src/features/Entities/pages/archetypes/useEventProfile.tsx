@@ -38,31 +38,32 @@ export const useEventProfile = (propEntityId?: string | number) => {
 
   // --- Data Loading ---
   const loadEntityData = useCallback(async () => {
-    if (!entityId) return;
-    setLoading(true);
-    try {
-      const data = await EntityUseCase.getById(Number(entityId));
-      if (data) {
-        const extra = typeof data.contenido_json === 'string'
-          ? JSON.parse(data.contenido_json)
-          : (data.contenido_json || {});
-        
-        const vals = await TemplateUseCase.getEntityValues(data.id);
-        
-        setEntity({ ...data, ...extra });
-        setAttributes(vals);
+    if (entityId) {
+      setLoading(true);
+      try {
+        const data = await EntityUseCase.getById(Number(entityId));
+        if (data) {
+          const extra = typeof data.contenido_json === 'string'
+            ? JSON.parse(data.contenido_json)
+            : (data.contenido_json || {});
+          
+          const vals = await TemplateUseCase.getEntityValues(data.id);
+          
+          setEntity({ ...data, ...extra });
+          setAttributes(vals);
 
-        const allEntities = await EntityUseCase.getAllByProject(data.project_id);
-        const children = allEntities.filter(e => {
-            const eExtra = typeof e.contenido_json === 'string' ? JSON.parse(e.contenido_json) : (e.contenido_json || {});
-            return e.carpeta_id === data.id || eExtra.padre_id === data.id || eExtra.parent_id === data.id;
-        });
-        setSubNodes(children);
+          const allEntities = await EntityUseCase.getAllByProject(data.project_id);
+          const children = allEntities.filter(e => {
+              const eExtra = typeof e.contenido_json === 'string' ? JSON.parse(e.contenido_json) : (e.contenido_json || {});
+              return e.carpeta_id === data.id || eExtra.padre_id === data.id || eExtra.parent_id === data.id;
+          });
+          setSubNodes(children);
+        }
+      } catch (err) {
+        console.error("Error loading entity:", err);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("Error loading entity:", err);
-    } finally {
-      setLoading(false);
     }
   }, [entityId]);
 
@@ -121,13 +122,13 @@ export const useEventProfile = (propEntityId?: string | number) => {
     if (!confirmDelete) {
       setConfirmDelete(true);
       setTimeout(() => setConfirmDelete(false), 3000);
-      return;
-    }
-    try {
-      await EntityUseCase.delete(Number(entityId));
-      navigate(`/${username || 'local'}/${projectName}/bible`);
-    } catch (err) {
-      console.error("Error deleting entity:", err);
+    } else {
+      try {
+        await EntityUseCase.delete(Number(entityId));
+        navigate(`/${username || 'local'}/${projectName}/bible`);
+      } catch (err) {
+        console.error("Error deleting entity:", err);
+      }
     }
   };
 

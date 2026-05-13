@@ -43,3 +43,10 @@ La capa de presentación (`/presentation`) se rige estrictamente por Atomic Desi
 3. **Organisms:** Secciones complejas (ej. el Universal Inspector, el explorador de entidades).
 4. **Templates:** Layouts de página.
 5. **Pages:** Vistas completas.
+
+## DIRECTRICES DE CÓDIGO UI (REACT)
+
+Para mantener la calidad y homogeneidad en la capa de presentación (`/presentation`):
+1. **Componentes Uniformes:** Obligatorio el uso de *Arrow Functions* (`const Component = () => {}`) para la declaración de todo componente visual. Prohibido el uso de `function`.
+2. **Flujo de Renderizado Predecible:** Prohibido el uso de *early returns* como lógicas de escape (`if (!data) return null;`). Se deben utilizar siempre bloques condicionales anidados (`if/else`) o asignaciones ternarias para un flujo de renderizado controlado.
+3. **Tipado Riguroso:** Cero uso de `any`. Las propiedades deben estar estipuladas explícitamente mediante una `interface` de TypeScript. Usar `unknown` en casos de duda.

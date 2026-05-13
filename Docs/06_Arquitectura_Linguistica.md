@@ -7,7 +7,7 @@ Sistema que une fonemas basados en reglas de construcción silábica (ej. CVC, C
 
 ## 2. GLYPH FOUNDRY (ESCRITURA)
 - **Motor de Fuentes:** Uso de `opentype.js` para la generación dinámica de archivos `.ttf` en el cliente.
-- **Tipado Estricto:** Implementación de interfaces `Shape`, `Layer` y `Canvas` para el diseño de glifos.
+- **Tipado y Código Estricto:** Implementación de interfaces `Shape`, `Layer` y `Canvas` para el diseño de glifos. Los componentes de la UI lingüística están regidos por las reglas de flujo de control estricto (*cero early returns*), uso exclusivo de *Arrow Functions* y ausencia de tipo `any`.
 - **Soporte SVG:** Importación y renderizado de glifos directamente desde archivos SVG planos.
 - **Traductor de transliteración:** Convierte texto latino al alfabeto inventado en tiempo real mapeando caracteres a glifos en la RAM.
 

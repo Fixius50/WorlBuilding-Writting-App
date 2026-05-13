@@ -27,9 +27,11 @@ Todo el código vive bajo `src/`:
 - **`src/context/`** — Contextos React (LanguageContext…)
 - **`src/presentation/utils/`** — Utilidades visuales y mapeos de Atomic Design (iconos, colores).
 
-**Reglas de código:**
+**Reglas de código (Clean Code):**
 - Todos los archivos nuevos deben ser `.ts` / `.tsx`. No crear `.js` / `.jsx`.
-- TypeScript en modo estricto. No usar `any` en nuevos módulos.
+- **Sintaxis Reactiva:** Obligatorio utilizar exclusivamente **Arrow Functions** (`const Component = () => {}`). Queda terminantemente prohibida la palabra reservada `function`.
+- **Flujo de Control Estricto:** Está prohibido el uso de *early returns* dentro de condicionales (ej. `if (!x) return;`). Las lógicas deben estar envueltas en condicionales `if/else` completos para asegurar un punto de salida predecible.
+- TypeScript en modo estricto. **Cero `any`.** Usar `unknown` para tipos dinámicos.
 - Castear explícitamente valores `unknown` que vengan de `contenido_json` o index signatures.
 
 ---

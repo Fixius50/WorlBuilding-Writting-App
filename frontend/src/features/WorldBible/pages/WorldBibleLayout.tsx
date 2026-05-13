@@ -11,7 +11,9 @@ import { useWorldBibleLayout } from './useWorldBibleLayout';
 const WorldBibleLayout: React.FC = () => {
   const { t } = useLanguage();
   const architectContext = useOutletContext<ArchitectContext>();
-  const { openPanel, closePanel, setActiveTab } = useRightPanelStore();
+  const openPanel = useRightPanelStore(state => state.openPanel);
+  const closePanel = useRightPanelStore(state => state.closePanel);
+  const setActiveTab = useRightPanelStore(state => state.setActiveTab);
 
   const {
     viewMode,
@@ -131,7 +133,7 @@ const WorldBibleLayout: React.FC = () => {
 
         <div className="flex-1 overflow-hidden flex flex-col">
           {(!isRoot || viewMode === 'folders') ? (
-            <Outlet context={{
+            <Outlet context={React.useMemo(() => ({
               ...architectContext,
               folders: localFolders,
               entities: localEntities,
@@ -143,7 +145,7 @@ const WorldBibleLayout: React.FC = () => {
               setRightPanelTab: setActiveTab,
               setRightPanelContent: (content: React.ReactNode) => useRightPanelStore.setState({ content, mode: 'custom', isOpen: true }),
               setRightPanelTitle: (title: React.ReactNode) => useRightPanelStore.setState({ title }),
-            }} />
+            }), [architectContext, localFolders, localEntities, currentFolder, handleOpenCreateModal, setEntityToDelete, setDeleteConfirmOpen, openPanel, closePanel, setActiveTab])} />
           ) : (
             <BibleTableView 
               projectId={architectContext.projectId}

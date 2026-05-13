@@ -10,6 +10,7 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
   - **Patrón Hook-View Consolidado**: Refactorización de componentes complejos delegando todo el estado y lógica a hooks especializados (`useBottomGraphDrawer`, `useControlPanel`, `useInGraphNodeWindow`, `useBibleGridView`).
   - **Componentes Visuales Puros**: Las vistas ahora se limitan exclusivamente al renderizado y mapeo de UI, aislando la lógica de fetching, filtrado y orquestación de eventos.
   - **Resolución TS2322/TS2353/TS2345**: Corrección de deuda técnica en `MapEditor.tsx`, `MapLibreView.tsx` y `MapRouter.tsx`. Se removió el envío de props inválidas (`mode`, `antialias`) y se estabilizó la integración con MapLibre (parámetro `projection` de deck.gl y tipos de `RefObject`).
+  - **Saneamiento Arquitectónico Estricto**: Auditoría profunda de las capas `/infrastructure` y `/presentation`. Se forzó el uso exclusivo de *Arrow Functions*, se prohibieron los `early returns` dentro de sentencias `if`, centralizando el flujo de control, y se erradicó el uso de `any` a favor de tipado riguroso. Reglas actualizadas formalmente en `00_Reglas_Maestras.md`.
 
 - **2026-05-11: Consolidación de Clean Architecture (Use Cases)**
   - **Capa de Aplicación (`application/useCases`)**: Implementación de Casos de Uso para encapsular la lógica de negocio y prohibir el acceso directo a repositorios desde React.

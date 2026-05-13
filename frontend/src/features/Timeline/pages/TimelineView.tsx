@@ -11,7 +11,7 @@ import { useTimelineView } from './useTimelineView';
 const TimelineView = () => {
   const { t } = useLanguage();
   const { projectId } = useOutletContext<{ projectId: number }>();
-  const { setCustomContent } = useRightPanelStore();
+  const setCustomContent = useRightPanelStore(state => state.setCustomContent);
 
   const {
     universes,

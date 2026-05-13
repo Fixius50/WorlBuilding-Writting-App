@@ -37,25 +37,26 @@ export const useTimelineView = (projectId: number) => {
   });
 
   const loadMultiverse = useCallback(async () => {
-    if (!projectId) return;
-    try {
-      const allFolders = await TimelineUseCase.getUniverses(projectId);
-      const timelineFolders = allFolders.filter(f => f.tipo === 'TIMELINE');
-      const rootUniverses = timelineFolders.filter(f => f.padre_id === null);
-      
-      const extended: UniverseExtended[] = rootUniverses.map(uni => ({
-        ...uni,
-        lineasTemporales: timelineFolders.filter(f => f.padre_id === uni.id) as TimelineLine[]
-      }));
+    if (projectId) {
+      try {
+        const allFolders = await TimelineUseCase.getUniverses(projectId);
+        const timelineFolders = allFolders.filter(f => f.tipo === 'TIMELINE');
+        const rootUniverses = timelineFolders.filter(f => f.padre_id === null);
+        
+        const extended: UniverseExtended[] = rootUniverses.map(uni => ({
+          ...uni,
+          lineasTemporales: timelineFolders.filter(f => f.padre_id === uni.id) as TimelineLine[]
+        }));
 
-      setUniverses(extended);
-      if (!selectedUniverseId && extended.length > 0) {
-        setSelectedUniverseId(extended[0].id);
+        setUniverses(extended);
+        if (!selectedUniverseId && extended.length > 0) {
+          setSelectedUniverseId(extended[0].id);
+        }
+      } catch (e) {
+        // Error
       }
-    } catch (e) {
-      // Error
+      setLoading(false);
     }
-    setLoading(false);
   }, [projectId, selectedUniverseId]);
 
   const loadEventsByUniverse = useCallback(async (universeId: number) => {
@@ -74,53 +75,58 @@ export const useTimelineView = (projectId: number) => {
     else setEvents([]);
   }, [selectedUniverseId, loadEventsByUniverse]);
 
-  const handleCreateUniverse = async () => {
-    if (!newUniverse.nombre || !projectId) return;
-    await TimelineUseCase.createUniverse(newUniverse.nombre, projectId);
-    setNewUniverse({ nombre: '', descripcion: '' });
-    await loadMultiverse();
-  };
+  const handleCreateUniverse = useCallback(async () => {
+    if (newUniverse.nombre && projectId) {
+      await TimelineUseCase.createUniverse(newUniverse.nombre, projectId);
+      setNewUniverse({ nombre: '', descripcion: '' });
+      await loadMultiverse();
+    }
+  }, [newUniverse.nombre, projectId, loadMultiverse]);
 
-  const handleUpdateUniverse = async () => {
-    if (!selectedUniverseId || !projectId) return;
-    await TimelineUseCase.updateTimelineFolder(selectedUniverseId, newUniverse.nombre, projectId);
-    await loadMultiverse();
-  };
+  const handleUpdateUniverse = useCallback(async () => {
+    if (selectedUniverseId && projectId) {
+      await TimelineUseCase.updateTimelineFolder(selectedUniverseId, newUniverse.nombre, projectId);
+      await loadMultiverse();
+    }
+  }, [selectedUniverseId, projectId, newUniverse.nombre, loadMultiverse]);
 
-  const handleDeleteUniverse = async () => {
-    if (!selectedUniverseId) return;
-    setConfirmState({
-      open: true,
-      type: 'universe',
-      id: selectedUniverseId,
-      title: 'Eliminar Universo',
-      message: '¿Estás seguro? Se borrarán todas las líneas y eventos asociados.'
-    });
-  };
-
-  const handleCreateTimeline = async () => {
-    if (!newLine.nombre || !projectId || !selectedUniverseId) return;
-    await TimelineUseCase.createTimeline(newLine.nombre, projectId, selectedUniverseId);
-    setNewLine({ nombre: '', descripcion: '', universoId: null });
-    await loadMultiverse();
-  };
-
-  const handleSaveEvent = async () => {
-    if (!selectedTimelineId || !newEvent.titulo || !projectId) return;
-    if (editingEvent) {
-      await TimelineUseCase.updateEvent(editingEvent.id, { ...newEvent, timeline_id: selectedTimelineId });
-    } else {
-      await TimelineUseCase.createEvent({
-        ...newEvent, project_id: projectId, timeline_id: selectedTimelineId,
-        orden: 0
+  const handleDeleteUniverse = useCallback(async () => {
+    if (selectedUniverseId) {
+      setConfirmState({
+        open: true,
+        type: 'universe',
+        id: selectedUniverseId,
+        title: 'Eliminar Universo',
+        message: '¿Estás seguro? Se borrarán todas las líneas y eventos asociados.'
       });
     }
-    setNewEvent({ titulo: '', descripcion: '', fecha_simulada: '', ordenAbsoluto: events.length + 2 });
-    setEditingEvent(null);
-    if (selectedUniverseId) loadEventsByUniverse(selectedUniverseId);
-  };
+  }, [selectedUniverseId]);
 
-  const startEditEvent = (event: Evento) => {
+  const handleCreateTimeline = useCallback(async () => {
+    if (newLine.nombre && projectId && selectedUniverseId) {
+      await TimelineUseCase.createTimeline(newLine.nombre, projectId, selectedUniverseId);
+      setNewLine({ nombre: '', descripcion: '', universoId: null });
+      await loadMultiverse();
+    }
+  }, [newLine.nombre, projectId, selectedUniverseId, loadMultiverse]);
+
+  const handleSaveEvent = useCallback(async () => {
+    if (selectedTimelineId && newEvent.titulo && projectId) {
+      if (editingEvent) {
+        await TimelineUseCase.updateEvent(editingEvent.id, { ...newEvent, timeline_id: selectedTimelineId });
+      } else {
+        await TimelineUseCase.createEvent({
+          ...newEvent, project_id: projectId, timeline_id: selectedTimelineId,
+          orden: 0
+        });
+      }
+      setNewEvent({ titulo: '', descripcion: '', fecha_simulada: '', ordenAbsoluto: events.length + 2 });
+      setEditingEvent(null);
+      if (selectedUniverseId) loadEventsByUniverse(selectedUniverseId);
+    }
+  }, [selectedTimelineId, newEvent, projectId, editingEvent, events.length, selectedUniverseId, loadEventsByUniverse]);
+
+  const startEditEvent = useCallback((event: Evento) => {
     setEditingEvent(event);
     setSelectedEventId(event.id);
     setNewEvent({
@@ -131,24 +137,25 @@ export const useTimelineView = (projectId: number) => {
     });
     setActiveTab('eventos');
     openPanel('event', event.id, event.titulo);
-  };
+  }, [openPanel]);
 
-  const executeDeletion = async () => {
+  const executeDeletion = useCallback(async () => {
     const { type, id } = confirmState;
-    if (!type || !id) return;
-    if (type === 'TIMELINE') {
-        await TimelineUseCase.deleteTimeline(id);
-        if (selectedTimelineId === id) setSelectedTimelineId(selectedUniverseId);
-    } else if (type === 'EVENT') {
-        await TimelineUseCase.deleteEvent(id);
-        if (selectedUniverseId) loadEventsByUniverse(selectedUniverseId);
-    } else if (type === 'universe') {
-        await TimelineUseCase.deleteUniverse(id);
-        setSelectedUniverseId(null);
+    if (type && id) {
+      if (type === 'TIMELINE') {
+          await TimelineUseCase.deleteTimeline(id);
+          if (selectedTimelineId === id) setSelectedTimelineId(selectedUniverseId);
+      } else if (type === 'EVENT') {
+          await TimelineUseCase.deleteEvent(id);
+          if (selectedUniverseId) loadEventsByUniverse(selectedUniverseId);
+      } else if (type === 'universe') {
+          await TimelineUseCase.deleteUniverse(id);
+          setSelectedUniverseId(null);
+      }
+      await loadMultiverse();
+      setConfirmState(prev => ({ ...prev, open: false }));
     }
-    await loadMultiverse();
-    setConfirmState({ ...confirmState, open: false });
-  };
+  }, [confirmState, selectedTimelineId, selectedUniverseId, loadEventsByUniverse, loadMultiverse]);
 
   return {
     universes,

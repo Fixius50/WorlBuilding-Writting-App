@@ -92,54 +92,55 @@ export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
     };
   }, [loadData]);
 
-  const handleOpenCreateModal = (parentFolder: Carpeta | null = null) => {
+  const handleOpenCreateModal = useCallback((parentFolder: Carpeta | null = null) => {
     setTargetParent(parentFolder);
     setCreationModalOpen(true);
-  };
+  }, []);
 
-  const confirmDeleteEntity = async () => {
-    if (!entityToDelete) return;
-    try {
-      await WorldBibleUseCase.deleteEntity(entityToDelete);
-      window.dispatchEvent(new CustomEvent('entity-update'));
-      setEntityToDelete(null);
-      setDeleteConfirmOpen(false);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleCreateSubmit = async (formData: { nombre: string; tipo: string; descripcion?: string }) => {
-    if (!architectContext?.projectId) return;
-    
-    try {
-      if (isRoot) {
-        await WorldBibleUseCase.createCategory(formData.nombre, architectContext.projectId, 'FOLDER');
-        window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: null } }));
-      } else {
-        const currentFolderId = Number(location.pathname.match(/\/folder\/(\d+)/)?.[1]);
-        if (currentFolderId) {
-          const baseSlug = formData.nombre.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-          await WorldBibleUseCase.createEntity({
-            nombre: formData.nombre,
-            descripcion: formData.descripcion || '',
-            tipo: formData.tipo || 'PERSONAJE',
-            carpeta_id: currentFolderId,
-            project_id: architectContext.projectId,
-            slug: baseSlug,
-            contenido_json: null,
-            folder_slug: null,
-            imagen_url: null
-          } as any);
-          window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: currentFolderId } }));
-          window.dispatchEvent(new CustomEvent('entity-update'));
-        }
+  const confirmDeleteEntity = useCallback(async () => {
+    if (entityToDelete) {
+      try {
+        await WorldBibleUseCase.deleteEntity(entityToDelete);
+        window.dispatchEvent(new CustomEvent('entity-update'));
+        setEntityToDelete(null);
+        setDeleteConfirmOpen(false);
+      } catch (err) {
+        console.error(err);
       }
-    } catch (err) {
-      console.error(err);
     }
-    setCreationModalOpen(false);
-  };
+  }, [entityToDelete]);
+
+  const handleCreateSubmit = useCallback(async (formData: { nombre: string; tipo: string; descripcion?: string }) => {
+    if (architectContext?.projectId) {
+      try {
+        if (isRoot) {
+          await WorldBibleUseCase.createCategory(formData.nombre, architectContext.projectId, 'FOLDER');
+          window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: null } }));
+        } else {
+          const currentFolderId = Number(location.pathname.match(/\/folder\/(\d+)/)?.[1]);
+          if (currentFolderId) {
+            const baseSlug = formData.nombre.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+            await WorldBibleUseCase.createEntity({
+              nombre: formData.nombre,
+              descripcion: formData.descripcion || '',
+              tipo: formData.tipo || 'PERSONAJE',
+              carpeta_id: currentFolderId,
+              project_id: architectContext.projectId,
+              slug: baseSlug,
+              contenido_json: null,
+              folder_slug: null,
+              imagen_url: null
+            } as any);
+            window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: currentFolderId } }));
+            window.dispatchEvent(new CustomEvent('entity-update'));
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+      setCreationModalOpen(false);
+    }
+  }, [architectContext?.projectId, isRoot, location.pathname]);
 
   return {
     viewMode,

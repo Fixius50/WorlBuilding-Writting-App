@@ -38,3 +38,4 @@ Sistema de colaboración sin servidor central basado en **WebRTC**.
 
 ---
 *Nota: Este documento sirve como base técnica para las próximas implementaciones de la Fase 5.*
+*Nota 2: Todas las nuevas funcionalidades, módulos y componentes desarrollados para esta fase deberán adherirse inexcusablemente a las Reglas Maestras de Componentes (uso estricto de Arrow Functions, prohibición de early returns en lógica condicional, y tipado puro sin uso de \`any\`).*

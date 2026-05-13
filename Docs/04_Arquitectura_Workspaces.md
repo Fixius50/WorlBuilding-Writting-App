@@ -31,7 +31,7 @@ Herramienta para crear sistemas de escritura, fonética y diccionarios.
 ## FLUJO DE DATOS (Sandbox & OPFS)
 
 La aplicación corre en un ecosistema híbrido disgregado (Vite Frontend / Java Backend). El flujo es:
-1. **React UI (/frontend):** Capa de `presentation` que captura la entrada del usuario usando Atomic Design.
+1. **React UI (/frontend):** Capa de `presentation` que captura la entrada del usuario usando Atomic Design. Totalmente controlada por *Arrow Functions*, con tipado estricto y flujo de control centralizado (cero *early returns* en condicionales).
 2. **Capa de Aplicación (`/application`):** Los casos de uso (puros) orquestan la lógica de negocio sin conocer detalles técnicos de la UI.
 3. **Capa de Infraestructura (`/infrastructure`):**
    - **SQLocal (`/localDB`):** Las consultas SQL se envían a un Web Worker que ejecuta la base de datos SQLite (WASM).
