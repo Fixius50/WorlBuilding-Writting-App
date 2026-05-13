@@ -76,25 +76,25 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   const handleWheel = (e: KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
     const stage = stageRef.current;
-    if (!stage) return;
-    
-    const scaleBy = 1.1;
-    const oldScale = stage.scaleX();
-    const pointer = stage.getPointerPosition();
-    if (!pointer) return;
-    
-    const mousePointTo = {
-      x: (pointer.x - stage.x()) / oldScale,
-      y: (pointer.y - stage.y()) / oldScale,
-    };
-    
-    const newScale = e.evt.deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;
-    setScale(newScale);
-    
-    setPosition({
-      x: pointer.x - mousePointTo.x * newScale,
-      y: pointer.y - mousePointTo.y * newScale,
-    });
+    if (stage) {
+      const scaleBy = 1.1;
+      const oldScale = stage.scaleX();
+      const pointer = stage.getPointerPosition();
+      if (pointer) {
+        const mousePointTo = {
+          x: (pointer.x - stage.x()) / oldScale,
+          y: (pointer.y - stage.y()) / oldScale,
+        };
+        
+        const newScale = e.evt.deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;
+        setScale(newScale);
+        
+        setPosition({
+          x: pointer.x - mousePointTo.x * newScale,
+          y: pointer.y - mousePointTo.y * newScale,
+        });
+      }
+    }
   };
 
   const handleDragMoveNode = (id: string, e: KonvaEventObject<DragEvent>) => {

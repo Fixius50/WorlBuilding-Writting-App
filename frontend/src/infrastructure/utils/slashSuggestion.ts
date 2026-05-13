@@ -83,22 +83,22 @@ export default {
           component.updateProps(props);
         }
 
-        if (!props.clientRect || !popup) {
-          return;
+        if (props.clientRect && popup) {
+          popup[0].setProps({
+            getReferenceClientRect: props.clientRect as () => DOMRect,
+          });
         }
-
-        popup[0].setProps({
-          getReferenceClientRect: props.clientRect as () => DOMRect,
-        });
       },
 
       onKeyDown(props: { event: KeyboardEvent }) {
+        let result: boolean | undefined = false;
         if (props.event.key === 'Escape') {
           if (popup) popup[0].hide();
-          return true;
+          result = true;
+        } else {
+          result = (component?.ref as { onKeyDown?: (p: unknown) => boolean } | null)?.onKeyDown?.(props);
         }
-
-        return (component?.ref as { onKeyDown?: (p: unknown) => boolean } | null)?.onKeyDown?.(props);
+        return result;
       },
 
       onExit() {

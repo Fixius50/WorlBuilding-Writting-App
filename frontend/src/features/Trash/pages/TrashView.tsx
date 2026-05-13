@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { TrashUseCase, TrashItem } from '@application/useCases/TrashUseCase';
 import { useLanguage } from '@context/LanguageContext';
+import { useTrashManager } from './useTrashManager';
 
 interface OutletContext {
   projectId: number | null;
@@ -11,48 +11,14 @@ interface OutletContext {
 export default function TrashView() {
   const { projectId, projectName } = useOutletContext<OutletContext>();
   const { t } = useLanguage();
-  const [items, setItems] = useState<TrashItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (projectId) {
-      loadItems();
-    }
-  }, [projectId]);
-
-  const loadItems = async () => {
-    if (!projectId) return;
-    try {
-      setLoading(true);
-      const data = await TrashUseCase.getDeletedItems(projectId);
-      setItems(data);
-      setError(null);
-    } catch (err) {
-      // [LOG REMOVED]
-      setError(t("trash.error_loading"));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRestore = async (tipo: string, itemId: number) => {
-    try {
-      await TrashUseCase.restoreItem(tipo, itemId);
-      loadItems(); 
-    } catch (err) {
-      // [LOG REMOVED]
-    }
-  };
-
-  const handleDelete = async (tipo: string, itemId: number) => {
-    try {
-      await TrashUseCase.purgeItem(tipo, itemId);
-      loadItems();
-    } catch (err) {
-      // [LOG REMOVED]
-    }
-  };
+  
+  const {
+    items,
+    loading,
+    error,
+    handleRestore,
+    handleDelete
+  } = useTrashManager(projectId);
 
   if (loading) {
     return (
@@ -169,3 +135,4 @@ export default function TrashView() {
     </div>
   );
 }
+

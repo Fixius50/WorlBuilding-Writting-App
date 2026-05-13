@@ -1,56 +1,27 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { CalendarUseCase } from '@application/useCases/CalendarUseCase';
-import { Calendario } from '@repositories/calendarService';
 import Button from '@atoms/Button';
 import MonolithicPanel from '@atoms/MonolithicPanel';
-import { useLanguage } from '@context/LanguageContext';
+import { useCalendarManager } from './useCalendarManager';
 
 const CalendarManagerView: React.FC = () => {
-  const { t } = useLanguage();
   const { projectId } = useOutletContext<{ projectId: number }>();
-  const [calendars, setCalendars] = useState<Calendario[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [editingCalendar, setEditingCalendar] = useState<Partial<Calendario> | null>(null);
-
-  const loadCalendars = useCallback(async () => {
-    if (!projectId) return;
-    setLoading(true);
-    const data = await CalendarUseCase.getByProject(projectId);
-    setCalendars(data);
-    setLoading(false);
-  }, [projectId]);
-
-  useEffect(() => {
-    loadCalendars();
-  }, [loadCalendars]);
-
-  const handleCreate = () => {
-    setEditingCalendar({
-      nombre: 'Nuevo Calendario',
-      meses_json: JSON.stringify([{ nombre: 'Mes 1', dias: 30 }]),
-      dias_semana_json: JSON.stringify(['Día 1', 'Día 2', 'Día 3']),
-      fecha_inicio_json: JSON.stringify({ anio: 1, mes: 1, dia: 1 })
-    });
-  };
-
-  const handleSave = async () => {
-    if (!editingCalendar || !projectId) return;
-
-    if (editingCalendar.id) {
-        await CalendarUseCase.update(editingCalendar.id, editingCalendar);
-    } else {
-        await CalendarUseCase.create({
-            nombre: editingCalendar.nombre!,
-            project_id: projectId,
-            meses_json: editingCalendar.meses_json!,
-            dias_semana_json: editingCalendar.dias_semana_json!,
-            fecha_inicio_json: editingCalendar.fecha_inicio_json!
-        });
-    }
-    setEditingCalendar(null);
-    loadCalendars();
-  };
+  
+  const {
+    calendars,
+    loading,
+    editingCalendar,
+    setEditingCalendar,
+    handleCreate,
+    handleSave,
+    handleAddMonth,
+    handleRemoveMonth,
+    handleUpdateMonth,
+    handleAddDay,
+    handleRemoveDay,
+    handleUpdateDay,
+    updateEditingCalendar
+  } = useCalendarManager(projectId);
 
   return (
     <div className="h-full w-full p-8 overflow-y-auto no-scrollbar bg-background">
@@ -85,11 +56,11 @@ const CalendarManagerView: React.FC = () => {
                         <div className="space-y-2 pt-4 border-t border-foreground/5">
                             <div className="flex justify-between text-[9px] uppercase font-bold tracking-widest text-foreground/40">
                                 <span>Meses</span>
-                                <span className="text-foreground/60">{JSON.parse(cal.meses_json).length}</span>
+                                <span className="text-foreground/60">{JSON.parse(cal.meses_json || '[]').length}</span>
                             </div>
                             <div className="flex justify-between text-[9px] uppercase font-bold tracking-widest text-foreground/40">
                                 <span>Días/Semana</span>
-                                <span className="text-foreground/60">{JSON.parse(cal.dias_semana_json).length}</span>
+                                <span className="text-foreground/60">{JSON.parse(cal.dias_semana_json || '[]').length}</span>
                             </div>
                         </div>
                     </MonolithicPanel>
@@ -111,7 +82,7 @@ const CalendarManagerView: React.FC = () => {
                             <input 
                                 type="text" 
                                 value={editingCalendar.nombre}
-                                onChange={(e) => setEditingCalendar({ ...editingCalendar, nombre: e.target.value })}
+                                onChange={(e) => updateEditingCalendar({ nombre: e.target.value })}
                                 className="w-full bg-foreground/5 border border-foreground/10 px-4 py-3 text-sm outline-none focus:border-primary/50 transition-colors"
                             />
                         </div>
@@ -122,11 +93,7 @@ const CalendarManagerView: React.FC = () => {
                                 <div className="flex justify-between items-center border-b border-foreground/10 pb-2">
                                     <h4 className="text-[10px] font-black uppercase tracking-widest text-primary">Meses del Año</h4>
                                     <button 
-                                        onClick={() => {
-                                            const months = JSON.parse(editingCalendar.meses_json || '[]');
-                                            months.push({ nombre: `Mes ${months.length + 1}`, dias: 30 });
-                                            setEditingCalendar({ ...editingCalendar, meses_json: JSON.stringify(months) });
-                                        }}
+                                        onClick={handleAddMonth}
                                         className="size-5 bg-primary/20 text-primary rounded-full flex items-center justify-center hover:bg-primary/40 transition-colors"
                                     >
                                         <span className="material-symbols-outlined text-xs">add</span>
@@ -137,28 +104,16 @@ const CalendarManagerView: React.FC = () => {
                                         <div key={idx} className="flex gap-2 items-center bg-foreground/[0.03] p-2 border border-foreground/5">
                                             <input 
                                                 type="text" value={m.nombre}
-                                                onChange={(e) => {
-                                                    const months = JSON.parse(editingCalendar.meses_json!);
-                                                    months[idx].nombre = e.target.value;
-                                                    setEditingCalendar({ ...editingCalendar, meses_json: JSON.stringify(months) });
-                                                }}
+                                                onChange={(e) => handleUpdateMonth(idx, { nombre: e.target.value })}
                                                 className="flex-1 bg-transparent border-none text-[11px] font-bold outline-none"
                                             />
                                             <input 
                                                 type="number" value={m.dias}
-                                                onChange={(e) => {
-                                                    const months = JSON.parse(editingCalendar.meses_json!);
-                                                    months[idx].dias = parseInt(e.target.value) || 0;
-                                                    setEditingCalendar({ ...editingCalendar, meses_json: JSON.stringify(months) });
-                                                }}
+                                                onChange={(e) => handleUpdateMonth(idx, { dias: parseInt(e.target.value) || 0 })}
                                                 className="w-12 bg-foreground/5 text-center text-[10px] font-mono py-1 outline-none"
                                             />
                                             <button 
-                                                onClick={() => {
-                                                    const months = JSON.parse(editingCalendar.meses_json!);
-                                                    months.splice(idx, 1);
-                                                    setEditingCalendar({ ...editingCalendar, meses_json: JSON.stringify(months) });
-                                                }}
+                                                onClick={() => handleRemoveMonth(idx)}
                                                 className="material-symbols-outlined text-xs text-red-400/40 hover:text-red-400 transition-colors"
                                             >
                                                 delete
@@ -173,11 +128,7 @@ const CalendarManagerView: React.FC = () => {
                                 <div className="flex justify-between items-center border-b border-foreground/10 pb-2">
                                     <h4 className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Días de la Semana</h4>
                                     <button 
-                                        onClick={() => {
-                                            const days = JSON.parse(editingCalendar.dias_semana_json || '[]');
-                                            days.push(`Día ${days.length + 1}`);
-                                            setEditingCalendar({ ...editingCalendar, dias_semana_json: JSON.stringify(days) });
-                                        }}
+                                        onClick={handleAddDay}
                                         className="size-5 bg-indigo-500/20 text-indigo-400 rounded-full flex items-center justify-center hover:bg-indigo-500/40 transition-colors"
                                     >
                                         <span className="material-symbols-outlined text-xs">add</span>
@@ -188,19 +139,11 @@ const CalendarManagerView: React.FC = () => {
                                         <div key={idx} className="flex gap-2 items-center bg-foreground/[0.03] p-2 border border-foreground/5">
                                             <input 
                                                 type="text" value={d}
-                                                onChange={(e) => {
-                                                    const days = JSON.parse(editingCalendar.dias_semana_json!);
-                                                    days[idx] = e.target.value;
-                                                    setEditingCalendar({ ...editingCalendar, dias_semana_json: JSON.stringify(days) });
-                                                }}
+                                                onChange={(e) => handleUpdateDay(idx, e.target.value)}
                                                 className="flex-1 bg-transparent border-none text-[11px] font-bold outline-none"
                                             />
                                             <button 
-                                                onClick={() => {
-                                                    const days = JSON.parse(editingCalendar.dias_semana_json!);
-                                                    days.splice(idx, 1);
-                                                    setEditingCalendar({ ...editingCalendar, dias_semana_json: JSON.stringify(days) });
-                                                }}
+                                                onClick={() => handleRemoveDay(idx)}
                                                 className="material-symbols-outlined text-xs text-red-400/40 hover:text-red-400 transition-colors"
                                             >
                                                 delete
@@ -225,3 +168,4 @@ const CalendarManagerView: React.FC = () => {
 };
 
 export default CalendarManagerView;
+

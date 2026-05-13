@@ -69,15 +69,16 @@ const WorkspaceSelector: React.FC = () => {
 
 
   const handleDeleteConfirm = async () => {
-    if (projectToDelete === null) return;
-    try {
-      setLoading(true);
-      await WorkspaceUseCase.deleteProject(projectToDelete);
-      await loadWorkspaces();
-      setProjectToDelete(null);
-    } catch (err) {
-      setError("Error al borrar el cuaderno");
-      setLoading(false);
+    if (projectToDelete !== null) {
+      try {
+        setLoading(true);
+        await WorkspaceUseCase.deleteProject(projectToDelete);
+        await loadWorkspaces();
+        setProjectToDelete(null);
+      } catch (err) {
+        setError("Error al borrar el cuaderno");
+        setLoading(false);
+      }
     }
   };
 
@@ -113,21 +114,21 @@ const WorkspaceSelector: React.FC = () => {
 
   const handleImport = async () => {
     const confirmImport = window.confirm("¿Seguró? Esto sobrescribirá todos tus datos actuales con la versión del servidor.");
-    if (!confirmImport) return;
-
-    try {
-      setLoading(true);
-      const res = await WorkspaceUseCase.importBackup('worldbuilding_master');
-      if (res.success) {
-        alert("Datos restaurados con éxito.");
-        window.location.reload();
-      } else {
-        setError(res.message);
+    if (confirmImport) {
+      try {
+        setLoading(true);
+        const res = await WorkspaceUseCase.importBackup('worldbuilding_master');
+        if (res.success) {
+          alert("Datos restaurados con éxito.");
+          window.location.reload();
+        } else {
+          setError(res.message);
+        }
+      } catch (err) {
+        setError("Error al importar datos.");
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setError("Error al importar datos.");
-    } finally {
-      setLoading(false);
     }
   };
 

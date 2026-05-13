@@ -1,237 +1,44 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { useLanguage } from '@context/LanguageContext';
-import { createPortal } from 'react-dom';
-import { useOutletContext, useParams, useNavigate } from 'react-router-dom';
-import { useRightPanelStore } from '@store/useRightPanelStore';
-import { Cuaderno, Hoja } from '@repositories/notebookService';
-import { WritingUseCase } from '@application/useCases/WritingUseCase';
-import { EntityUseCase } from '@application/useCases/EntityUseCase';
-import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
-import { useSettingsStore } from '@store/useSettingsStore';
 import ZenEditor from '@features/Editor/components/ZenEditor';
 import ConfirmModal from '@organisms/ConfirmModal';
-import MonolithicPanel from '@atoms/MonolithicPanel';
+import { useWritingView } from './useWritingView';
 
 const WritingView = () => {
-  const { notebookId } = useParams();
-  const navigate = useNavigate();
-
-  const { openPanel, setCustomContent } = useRightPanelStore();
   const { t } = useLanguage();
+  const {
+    notebook,
+    pages,
+    currentPageIndex,
+    saving,
+    loading,
+    deleteModalOpen,
+    setDeleteModalOpen,
+    pageToDelete,
+    setPageToDelete,
+    searchTerm,
+    setSearchTerm,
+    snapshots,
+    activeTab,
+    setActiveTab,
+    editingPageId,
+    setEditingPageId,
+    handleContentChange,
+    handleSnapshot,
+    handleMentionClick,
+    handleRestoreSnapshot,
+    handleTitleChangeInternal,
+    handleCreatePage,
+    handleAutoDeletePage,
+    handlePageSelect,
+    confirmDeletePage,
+    setCustomContent
+  } = useWritingView();
 
-  const [notebook, setNotebook] = useState<Cuaderno | null>(null);
-  const [pages, setPages] = useState<Hoja[]>([]);
-  const [currentPageIndex, setCurrentPageIndex] = useState(0);
-  const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [pageToDelete, setPageToDelete] = useState<{ id: number; index: number; error?: string } | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [snapshots, setSnapshots] = useState<{ id: number; timestamp: string; contenido: string }[]>([]);
-  
-  const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pagesRef = useRef(pages);
-  const indexRef = useRef(currentPageIndex);
-  const isMounted = useRef(true);
-
-  // Keep refs synced for unmount saving
-  useEffect(() => { pagesRef.current = pages; }, [pages]);
-  useEffect(() => { indexRef.current = currentPageIndex; }, [currentPageIndex]);
-
-  const [activeTab, setActiveTab] = useState<'index' | 'format'>('index');
-  const [editingPageId, setEditingPageId] = useState<number | null>(null);
-
-  // Update global stats
-  useEffect(() => {
-    /* setStatsData moved to separate store or local logic if needed, 
-       but for now we remove it to clean up ArchitectLayout */
-    return () => {};
-  }, [pages]);
-
-  // Initial Load
-  useEffect(() => {
-    openPanel('custom', 0, 'Archivador');
-    if (notebookId) {
-      loadNotebookAndPages(Number(notebookId));
-    }
-  }, [notebookId]);
-
-  useEffect(() => {
-    setCustomContent(renderRightPanel(), notebook?.titulo || 'Archivador');
-  }, [notebook, pages, activeTab, searchTerm, editingPageId, saving, currentPageIndex]);
-
-  // Cleanup & Save on Unmount
-  useEffect(() => {
-    isMounted.current = true;
-    return () => {
-      isMounted.current = false;
-      if (saveTimeout.current) {
-        clearTimeout(saveTimeout.current);
-        const currentPage = pagesRef.current[indexRef.current];
-        if (currentPage) {
-          WritingUseCase.updatePage(currentPage.id, { 
-            contenido: currentPage.contenido || '',
-            titulo: currentPage.titulo || '' 
-          }).catch(err => { useSettingsStore.getState().addNotification("Error al guardar página", "error"); });
-        }
-      }
-    };
-  }, []);
-
-  const loadNotebookAndPages = async (id: number) => {
-    try {
-      setLoading(true);
-      const nb = await WritingUseCase.getNotebookById(id);
-      setNotebook(nb);
-
-      const pgs = await WritingUseCase.getPages(id);
-      if (pgs && pgs.length > 0) {
-        setPages(pgs);
-        setCurrentPageIndex(0);
-        loadSnapshots(pgs[0].id);
-      } else {
-        const newPage = await WritingUseCase.createPage(id);
-        setPages([newPage]);
-        setCurrentPageIndex(0);
-        loadSnapshots(newPage.id);
-      }
-    } catch (err) {
-      useSettingsStore.getState().addNotification("Error al cargar archivador", "error");
-      navigate(-1);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleContentChange = (newContent: string, index?: number) => {
-    const targetIndex = index !== undefined ? index : currentPageIndex;
-    if (!pages[targetIndex]) return;
-    const updatedPages = [...pages];
-    updatedPages[targetIndex].contenido = newContent;
-    setPages(updatedPages);
-
-    if (saveTimeout.current) clearTimeout(saveTimeout.current);
-    saveTimeout.current = setTimeout(() => {
-      savePage(updatedPages[targetIndex]);
-    }, 800);
-  };
-
-  const handleSnapshot = async (html: string) => {
-    const currentPage = pages[currentPageIndex];
-    if (!currentPage) return;
-    try {
-      await WritingUseCase.createSnapshot(currentPage.id, html);
-      await loadSnapshots(currentPage.id);
-    } catch (err) {
-      useSettingsStore.getState().addNotification("Error al crear instantánea", "error");
-    }
-  };
-
-  const handleMentionClick = async (id: string) => {
-    try {
-      const entity = await EntityUseCase.getById(Number(id));
-      if (entity) {
-        const extra = typeof entity.contenido_json === 'string'
-          ? JSON.parse(entity.contenido_json)
-          : (entity.contenido_json || {});
-        
-        const img = extra.imageUrl || extra.image || extra.avatar || '';
-
-        openPanel('entity', Number(id), entity.nombre);
-      }
-    } catch (err) {
-      useSettingsStore.getState().addNotification("Error al cargar entidad", "error");
-    }
-  };
-
-  const loadSnapshots = async (hojaId: number) => {
-    try {
-      const list = await WritingUseCase.getSnapshots(hojaId);
-      setSnapshots(list);
-    } catch (err) {
-      useSettingsStore.getState().addNotification("Error al cargar instantáneas", "error");
-    }
-  };
-
-  const handleRestoreSnapshot = async (snapshotId: number) => {
-    const snap = snapshots.find(s => s.id === snapshotId);
-    if (!snap) return;
-
-    if (!window.confirm("¿Estás seguro de restaurar esta versión? Se perderá el contenido actual no guardado.")) return;
-
-    const updatedPages = [...pages];
-    updatedPages[currentPageIndex].contenido = snap.contenido;
-    setPages(updatedPages);
-    
-    // Guardar inmediatamente la restauración
-    await savePage(updatedPages[currentPageIndex]);
-    alert("Versión restaurada con éxito.");
-  };
-
-  const handleTitleChangeInternal = (index: number, newTitle: string) => {
-    const updatedPages = [...pages];
-    updatedPages[index] = { ...updatedPages[index], titulo: newTitle };
-    setPages(updatedPages);
-
-    if (saveTimeout.current) clearTimeout(saveTimeout.current);
-    saveTimeout.current = setTimeout(() => {
-      savePage(updatedPages[index]);
-    }, 800);
-  };
-
-  const savePage = async (page: Hoja) => {
-    if (isMounted.current) setSaving(true);
-    try {
-      await WritingUseCase.updatePage(page.id, {
-        contenido: page.contenido || '',
-        titulo: page.titulo || ''
-      });
-    } catch (err) {
-      // [LOG REMOVED]
-    } finally {
-      if (isMounted.current) setSaving(false);
-    }
-  };
-
-  const handleCreatePage = async () => {
-    if (!notebook) return;
-    try {
-      const newPage = await WritingUseCase.createPage(notebook.id);
-      const updatedPages = [...pages, newPage];
-      setPages(updatedPages);
-    } catch (err) {
-      // [LOG REMOVED]
-    }
-  };
-
-  const handleAutoDeletePage = async (index: number) => {
-    // No borramos las 2 primeras páginas (índice 0 y 1)
-    if (index < 2 || !pages[index]) return;
-    
-    try {
-      const pageId = pages[index].id;
-      await WritingUseCase.deletePage(pageId);
-      const newPages = pages.filter((_, i) => i !== index);
-      setPages(newPages);
-      
-      // Si borramos la página en la que estamos, saltamos a la anterior
-      if (currentPageIndex >= index) {
-        setCurrentPageIndex(Math.max(0, index - 1));
-      }
-    } catch (err) {
-      // [LOG REMOVED]
-    }
-  };
-
-  const handlePageSelect = async (index: number) => {
-    if (saveTimeout.current) {
-      clearTimeout(saveTimeout.current);
-      const cp = pages[currentPageIndex];
-      if (cp) await savePage(cp);
-    }
-    setCurrentPageIndex(index);
-    loadSnapshots(pages[index].id);
-  };
+  const filteredPages = pages.filter(p => 
+    (p.titulo || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (p.contenido || '').toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const deletePage = (e: React.MouseEvent, id: number, index: number) => {
     e.stopPropagation();
@@ -244,35 +51,8 @@ const WritingView = () => {
     setDeleteModalOpen(true);
   };
 
-  const confirmDeletePage = async () => {
-    if (!pageToDelete) return;
-    const { id, index } = pageToDelete;
-    try {
-      await WritingUseCase.deletePage(id);
-      const newPages = pages.filter(p => p.id !== id);
-      let nextIndex = currentPageIndex;
-      if (currentPageIndex === index) {
-        nextIndex = Math.max(0, index - 1);
-      } else if (currentPageIndex > index) {
-        nextIndex = currentPageIndex - 1;
-      }
-      setPages(newPages);
-      setCurrentPageIndex(nextIndex);
-    } catch (err) {
-      // [LOG REMOVED]
-    } finally {
-      setDeleteModalOpen(false);
-      setPageToDelete(null);
-    }
-  };
-
-  const filteredPages = pages.filter(p => 
-    (p.titulo || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (p.contenido || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const renderRightPanel = () => {
-    return (
+  useEffect(() => {
+    const renderRightPanel = () => (
       <div className="flex flex-col h-full monolithic-panel/95">
         <div className="p-4 border-b border-foreground/10 flex items-center justify-center bg-background/60 relative">
           <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/60">{notebook?.titulo || 'Archivador'}</h3>
@@ -392,7 +172,6 @@ const WritingView = () => {
                   <div className="flex justify-between items-center p-2 bg-background/20 rounded"><span>Mencionar Entidad</span><kbd>@</kbd></div>
                   <div className="flex justify-between items-center p-2 bg-background/20 rounded"><span>Comandos / Menú</span><kbd>/</kbd></div>
                 </div>
-                
                 <div className="pt-6 border-t border-foreground/5 space-y-3">
                   <p className="text-[10px] text-foreground/40 leading-relaxed italic">
                     Tip: Puedes invocar entidades de tu biblia escribiendo @ y seleccionando el nombre. Usa / para insertar separadores o dar formato avanzado.
@@ -404,7 +183,9 @@ const WritingView = () => {
         </div>
       </div>
     );
-  };
+
+    setCustomContent(renderRightPanel(), notebook?.titulo || 'Archivador');
+  }, [notebook, pages, activeTab, searchTerm, editingPageId, saving, currentPageIndex, handlePageSelect, handleCreatePage, handleTitleChangeInternal, setCustomContent, t, deletePage]);
 
   const currentPage = pages[currentPageIndex];
 
@@ -425,7 +206,7 @@ const WritingView = () => {
                 pages={pages}
                 currentPageIndex={currentPageIndex}
                 onUpdate={handleContentChange} 
-                onTitleChange={(index, newTitle) => handleTitleChangeInternal(index, newTitle)}
+                onTitleChange={handleTitleChangeInternal}
                 onCreatePage={handleCreatePage}
                 onAutoDeletePage={handleAutoDeletePage}
                 onSnapshot={handleSnapshot}
@@ -435,7 +216,6 @@ const WritingView = () => {
              />
           )}
         </main>
-
       </div>
       <ConfirmModal
         isOpen={deleteModalOpen}
@@ -450,5 +230,5 @@ const WritingView = () => {
   );
 };
 
-
 export default WritingView;
+

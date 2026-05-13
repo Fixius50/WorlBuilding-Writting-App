@@ -36,16 +36,16 @@ export const notebookService = {
 
   async update(id: number, updates: Partial<Pick<Cuaderno, 'titulo' | 'genero' | 'image_url'>>): Promise<void> {
     const current = await this.getById(id);
-    if (!current) return;
-
-    await sql`
-      UPDATE cuadernos 
-      SET 
-        titulo = ${updates.titulo !== undefined ? updates.titulo : current.titulo},
-        genero = ${updates.genero !== undefined ? updates.genero : current.genero},
-        image_url = ${updates.image_url !== undefined ? updates.image_url : current.image_url}
-      WHERE id = ${id}
-    `;
+    if (current) {
+      await sql`
+        UPDATE cuadernos 
+        SET 
+          titulo = ${updates.titulo !== undefined ? updates.titulo : current.titulo},
+          genero = ${updates.genero !== undefined ? updates.genero : current.genero},
+          image_url = ${updates.image_url !== undefined ? updates.image_url : current.image_url}
+        WHERE id = ${id}
+      `;
+    }
   },
 
   async delete(id: number): Promise<void> {
@@ -70,16 +70,16 @@ export const notebookService = {
 
   async updatePage(id: number, updates: Partial<Pick<Hoja, 'titulo' | 'contenido' | 'orden'>>): Promise<void> {
     const current = await this.getPageById(id);
-    if (!current) return;
-    
-    await sql`
-      UPDATE hojas 
-      SET 
-        titulo = ${updates.titulo !== undefined ? updates.titulo : current.titulo},
-        contenido = ${updates.contenido !== undefined ? updates.contenido : current.contenido},
-        orden = ${updates.orden !== undefined ? updates.orden : current.orden}
-      WHERE id = ${id}
-    `;
+    if (current) {
+      await sql`
+        UPDATE hojas 
+        SET 
+          titulo = ${updates.titulo !== undefined ? updates.titulo : current.titulo},
+          contenido = ${updates.contenido !== undefined ? updates.contenido : current.contenido},
+          orden = ${updates.orden !== undefined ? updates.orden : current.orden}
+        WHERE id = ${id}
+      `;
+    }
   },
 
   async deletePage(id: number): Promise<void> {

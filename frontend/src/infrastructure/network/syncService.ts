@@ -67,8 +67,7 @@ export const syncService = {
   async listAvailableBackups(): Promise<string[]> {
     try {
       const response = await fetch('/api/db/list');
-      if (!response.ok) return [];
-      return await response.json();
+      return response.ok ? await response.json() : [];
     } catch (error) {
       // [LOG REMOVED]
       return [];

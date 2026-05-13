@@ -1,6 +1,7 @@
 import React from 'react';
 import { Entidad } from '@domain/models/database';
 import { useLanguage } from '@context/LanguageContext';
+import { useEntityPickerModal } from './useEntityPickerModal';
 
 interface EntityPickerModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ const EntityPickerModal: React.FC<EntityPickerModalProps> = ({
   isOpen, onClose, projectEntities, onToggleLink
 }) => {
   const { t } = useLanguage();
+  const { handleToggleSelect } = useEntityPickerModal(onToggleLink, onClose);
 
   if (!isOpen) return null;
 
@@ -33,7 +35,7 @@ const EntityPickerModal: React.FC<EntityPickerModalProps> = ({
              {projectEntities.map(ent => (
                 <button 
                   key={ent.id}
-                  onClick={() => onToggleLink(ent.id)}
+                  onClick={() => handleToggleSelect(ent.id)}
                   className="w-full p-5 bg-[hsl(var(--foreground)/0.02)] border border-[hsl(var(--divider-border))] hover:border-[hsl(var(--primary)/0.5)] flex items-center justify-between group transition-all hover:bg-[hsl(var(--primary)/0.03)]"
                 >
                   <div className="flex items-center gap-5">
@@ -58,3 +60,4 @@ const EntityPickerModal: React.FC<EntityPickerModalProps> = ({
 };
 
 export default EntityPickerModal;
+

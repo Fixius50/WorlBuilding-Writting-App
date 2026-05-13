@@ -94,18 +94,18 @@ const ArchitectLayout: React.FC = () => {
 
   // Auto-backup cada 5 minutos
   useEffect(() => {
-    if (!projectName) return;
-    
-    const interval = setInterval(async () => {
-      const res = await WorkspaceUseCase.exportBackup(projectName);
-      if (res.success) {
-        useSettingsStore.getState().addNotification("Copia de seguridad automática realizada", "success");
-      } else {
-        useSettingsStore.getState().addNotification("Error en copia automática", "error");
-      }
-    }, 5 * 60 * 1000); // 5 minutos
+    if (projectName) {
+      const interval = setInterval(async () => {
+        const res = await WorkspaceUseCase.exportBackup(projectName);
+        if (res.success) {
+          useSettingsStore.getState().addNotification("Copia de seguridad automática realizada", "success");
+        } else {
+          useSettingsStore.getState().addNotification("Error en copia automática", "error");
+        }
+      }, 5 * 60 * 1000); // 5 minutos
 
-    return () => clearInterval(interval);
+      return () => clearInterval(interval);
+    }
   }, [projectName]);
 
   // Reset contextual content on navigation if it was custom
@@ -120,51 +120,52 @@ const ArchitectLayout: React.FC = () => {
 
   // CRUD Handlers
   const handleCreateSimpleFolder = useCallback(async (parentId: number | null = null, type: string = 'FOLDER') => {
-    if (!projectId) {
+    if (projectId) {
+      try {
+        const folderName = type === 'TIMELINE' ? (t('timeline.title') || 'Nueva Dimensión') : (t('bible.new_folder') || 'Nueva Carpeta');
+        const newFolder = await WorkspaceUseCase.createFolder(
+          folderName,
+          projectId,
+          parentId,
+          type as FolderType
+        );
+        // [LOG REMOVED]
+        await loadFolders(projectId);
+        window.dispatchEvent(new CustomEvent('folder-update', {
+          detail: { folderId: parentId, type: 'folder', item: newFolder, expand: !!parentId }
+        }));
+      } catch (err) {
+        useSettingsStore.getState().addNotification("Error al crear carpeta", "error");
+      }
+    } else {
       useSettingsStore.getState().addNotification("Error: Proyecto no identificado", "error");
-      return;
-    }
-    try {
-      const folderName = type === 'TIMELINE' ? (t('timeline.title') || 'Nueva Dimensión') : (t('bible.new_folder') || 'Nueva Carpeta');
-      const newFolder = await WorkspaceUseCase.createFolder(
-        folderName,
-        projectId,
-        parentId,
-        type as FolderType
-      );
-      // [LOG REMOVED]
-      await loadFolders(projectId);
-      window.dispatchEvent(new CustomEvent('folder-update', {
-        detail: { folderId: parentId, type: 'folder', item: newFolder, expand: !!parentId }
-      }));
-    } catch (err) {
-      useSettingsStore.getState().addNotification("Error al crear carpeta", "error");
     }
   }, [projectId, loadFolders, t]);
 
   const handleCreateQuickEntity = useCallback(async (parentId: number, name: string, type: string) => {
-    if (!projectId) return;
-    try {
-      const newEntity = await WorkspaceUseCase.createQuickEntity({
-        nombre: name,
-        tipo: type,
-        slug: name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''),
-        descripcion: '',
-        carpeta_id: parentId,
-        project_id: projectId,
-        contenido_json: JSON.stringify({}),
-        folder_slug: null,
-        imagen_url: null
-      });
-      
-      // Notificar al árbol de carpetas para que refresque el contenido de parentId
-      window.dispatchEvent(new CustomEvent('folder-update', {
-        detail: { folderId: parentId, type: 'entity', item: newEntity }
-      }));
-      
-      return newEntity;
-    } catch (err) {
-      // [LOG REMOVED]
+    if (projectId) {
+      try {
+        const newEntity = await WorkspaceUseCase.createQuickEntity({
+          nombre: name,
+          tipo: type,
+          slug: name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''),
+          descripcion: '',
+          carpeta_id: parentId,
+          project_id: projectId,
+          contenido_json: JSON.stringify({}),
+          folder_slug: null,
+          imagen_url: null
+        });
+        
+        // Notificar al árbol de carpetas para que refresque el contenido de parentId
+        window.dispatchEvent(new CustomEvent('folder-update', {
+          detail: { folderId: parentId, type: 'entity', item: newEntity }
+        }));
+        
+        return newEntity;
+      } catch (err) {
+        // [LOG REMOVED]
+      }
     }
   }, [projectId]);
 
@@ -188,27 +189,28 @@ const ArchitectLayout: React.FC = () => {
   }, []);
 
   const confirmDeletion = async () => {
-    if (!deletionTarget || !projectId) return;
-    const { id, type, parentId } = deletionTarget;
+    if (deletionTarget && projectId) {
+      const { id, type, parentId } = deletionTarget;
 
-    try {
-      if (type === 'folder') {
-        await WorkspaceUseCase.deleteFolder(id);
-        window.dispatchEvent(new CustomEvent('folder-update', {
-          detail: { folderId: parentId, removeId: id, type: 'folder' }
-        }));
-      } else {
-        await WorkspaceUseCase.deleteEntity(id);
-        window.dispatchEvent(new CustomEvent('folder-update', {
-          detail: { folderId: parentId, removeId: id, type: 'entity' }
-        }));
+      try {
+        if (type === 'folder') {
+          await WorkspaceUseCase.deleteFolder(id);
+          window.dispatchEvent(new CustomEvent('folder-update', {
+            detail: { folderId: parentId, removeId: id, type: 'folder' }
+          }));
+        } else {
+          await WorkspaceUseCase.deleteEntity(id);
+          window.dispatchEvent(new CustomEvent('folder-update', {
+            detail: { folderId: parentId, removeId: id, type: 'entity' }
+          }));
+        }
+        await loadFolders(projectId);
+      } catch (err) {
+        // [LOG REMOVED]
+      } finally {
+        setDeletionTarget(null);
+        setConfirmOpen(false);
       }
-      await loadFolders(projectId);
-    } catch (err) {
-      // [LOG REMOVED]
-    } finally {
-      setDeletionTarget(null);
-      setConfirmOpen(false);
     }
   };
 

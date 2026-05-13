@@ -1,19 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { TimelineUseCase } from '@application/useCases/TimelineUseCase';
-import { EntityUseCase } from '@application/useCases/EntityUseCase';
-import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
-import { Evento } from '@domain/models/database';
+import React from 'react';
+import { useMiniTimeline } from './useMiniTimeline';
 
 interface MiniTimelineProps {
   entityId: number;
 }
 
 const MiniTimeline: React.FC<MiniTimelineProps> = ({ entityId }) => {
-  const [events, setEvents] = useState<Evento[]>([]);
-
-  useEffect(() => {
-    TimelineUseCase.getEventsByEntity(entityId).then(setEvents);
-  }, [entityId]);
+  const { events, loading, handleAddEvent } = useMiniTimeline(entityId);
 
   return (
     <div className="flex flex-col gap-6 relative">
@@ -23,7 +16,7 @@ const MiniTimeline: React.FC<MiniTimelineProps> = ({ entityId }) => {
             <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Sucesos Vinculados</span>
          </div>
          <button 
-           onClick={() => window.alert('Abrir modal de creación rápida en desarrollo')}
+           onClick={handleAddEvent}
            className="text-[9px] font-black uppercase tracking-widest text-primary hover:text-foreground transition-colors px-2 py-1 border border-primary/20 hover:bg-primary/10"
          >
            + Añadir
@@ -31,7 +24,11 @@ const MiniTimeline: React.FC<MiniTimelineProps> = ({ entityId }) => {
       </div>
       <div className="absolute left-[3px] top-12 bottom-4 w-px bg-foreground/10" />
       
-      {events.length === 0 ? (
+      {loading ? (
+        <div className="p-8 text-center bg-foreground/5 border border-foreground/5 italic text-[10px] text-foreground/40 animate-pulse">
+          Consultando los registros del tiempo...
+        </div>
+      ) : events.length === 0 ? (
         <div className="p-8 text-center bg-foreground/5 border border-foreground/5 italic text-[10px] text-foreground/40">
           Esta entidad no ha sido partícipe de eventos registrados aún en la gran crónica.
         </div>
@@ -59,3 +56,4 @@ const MiniTimeline: React.FC<MiniTimelineProps> = ({ entityId }) => {
 };
 
 export default MiniTimeline;
+

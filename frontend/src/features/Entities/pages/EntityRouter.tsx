@@ -1,7 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { EntityUseCase } from '@application/useCases/EntityUseCase';
-import { Entidad } from '@domain/models/database';
+import React from 'react';
 import CosmicProfileView from './archetypes/CosmicProfileView';
 import IndividualProfileView from './archetypes/IndividualProfileView';
 import TerritoryProfileView from './archetypes/TerritoryProfileView';
@@ -9,29 +6,10 @@ import CollectiveProfileView from './archetypes/CollectiveProfileView';
 import EventProfileView from './archetypes/EventProfileView';
 import EntityBuilder from './EntityBuilder';
 import InteractiveMapView from '../../Maps/pages/InteractiveMapView';
+import { useEntityRouter } from './useEntityRouter';
 
 const EntityRouter = () => {
-  const { entityId } = useParams();
-  const [entity, setEntity] = useState<Entidad | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (entityId) {
-      loadEntity();
-    }
-  }, [entityId]);
-
-  const loadEntity = async () => {
-    setLoading(true);
-    try {
-      const data = await EntityUseCase.getById(Number(entityId));
-      setEntity(data);
-    } catch (err) {
-      console.error("Error routing entity:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { entity, loading, viewType } = useEntityRouter();
 
   if (loading) return (
     <div className="flex-1 flex items-center justify-center bg-background">
@@ -49,30 +27,20 @@ const EntityRouter = () => {
     </div>
   );
 
-  const tipo = entity.tipo.trim().toUpperCase();
-
-  const cosmicTypes = ['UNIVERSO', 'PLANETA', 'SISTEMA', 'DIMENSION', 'ASTRO', 'UNIVERSE', 'PLANET', 'SYSTEM', 'ASTRO'];
-  const actorTypes = ['PERSONAJE', 'OBJETO', 'RELIQUIA', 'VEHICULO', 'ENTITY', 'ENTIDAD', 'CHARACTER', 'OBJECT', 'ITEM'];
-  const territoryTypes = ['REINO', 'CIUDAD', 'LUGAR', 'CONTINENTE', 'LOCATION', 'PLACE', 'GEOGRAPHY', 'MAP', 'MAPA'];
-  const collectiveTypes = ['FACCION', 'RELIGION', 'RAZA', 'ORGANIZACION', 'FACTION', 'RELIGION', 'RACE', 'ORGANIZATION', 'CONLANG'];
-  const eventTypes = ['EVENTO', 'GUERRA', 'ERA', 'MARCA_TEMPORAL', 'EVENT', 'WAR', 'TIMELINE', 'LINEA_TEMPORAL'];
-  
-  const mapTypes = ['MAP', 'MAPA'];
-
-  switch (true) {
-    case mapTypes.includes(tipo):
+  switch (viewType) {
+    case 'map':
       return <InteractiveMapView map={entity} />;
-    case cosmicTypes.includes(tipo):
+    case 'cosmic':
       return <CosmicProfileView entityId={entity.id} />;
-    case actorTypes.includes(tipo):
+    case 'individual':
       return <IndividualProfileView entityId={entity.id} />;
-    case territoryTypes.includes(tipo):
+    case 'territory':
       return <TerritoryProfileView entityId={entity.id} />;
-    case collectiveTypes.includes(tipo):
+    case 'collective':
       return <CollectiveProfileView entityId={entity.id} />;
-    case eventTypes.includes(tipo):
+    case 'event':
       return <EventProfileView entityId={entity.id} />;
-    case tipo === 'ENTIDAD' || tipo === 'ENTITY':
+    case 'builder':
       return <EntityBuilder mode="edit" />;
     default:
       return <IndividualProfileView entityId={entity.id} />;
@@ -80,3 +48,4 @@ const EntityRouter = () => {
 };
 
 export default EntityRouter;
+

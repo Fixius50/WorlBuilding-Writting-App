@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import UniversalCanvas, { CanvasNode, CanvasEdge } from '@presentation/organisms/editor/UniversalCanvas';
-import { RelationshipUseCase } from '@application/useCases/RelationshipUseCase';
+import React from 'react';
+import UniversalCanvas from '@presentation/organisms/editor/UniversalCanvas';
+import { useMiniGraph } from './useMiniGraph';
 
 interface Props {
   entityId?: number;
@@ -9,56 +9,13 @@ interface Props {
 }
 
 const MiniGraph: React.FC<Props> = ({ entityId }) => {
-  const [nodes, setNodes] = useState<CanvasNode[]>([]);
-  const [edges, setEdges] = useState<CanvasEdge[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { nodes, edges, loading } = useMiniGraph(entityId);
 
-  useEffect(() => {
-    if (!entityId) return;
-
-    RelationshipUseCase.getRelationshipsByEntity(entityId).then(rels => {
-      const nodeMap = new Map<string, CanvasNode>();
-      const newEdges: CanvasEdge[] = [];
-
-      rels.forEach((rel, i) => {
-        const angle = (i / rels.length) * 2 * Math.PI;
-        nodeMap.set(rel.origen_id.toString(), {
-          id: rel.origen_id.toString(),
-          x: 400 + Math.cos(angle) * 150,
-          y: 300 + Math.sin(angle) * 150,
-          label: rel.nombre_origen || 'Desconocido',
-          tipo: 'entidad'
-        });
-
-        nodeMap.set(rel.destino_id.toString(), {
-          id: rel.destino_id.toString(),
-          x: 400 + Math.cos(angle) * 150,
-          y: 300 + Math.sin(angle) * 150,
-          label: rel.nombre_destino || 'Desconocido',
-          tipo: 'entidad'
-        });
-
-        newEdges.push({
-          id: rel.id.toString(),
-          from: rel.origen_id.toString(),
-          to: rel.destino_id.toString()
-        });
-      });
-
-      // Forzar nodo central al medio
-      if (nodeMap.has(entityId.toString())) {
-        const center = nodeMap.get(entityId.toString())!;
-        center.x = 400;
-        center.y = 300;
-      }
-
-      setNodes(Array.from(nodeMap.values()));
-      setEdges(newEdges);
-      setLoading(false);
-    });
-  }, [entityId]);
-
-  if (loading) return <div className="w-full h-64 flex items-center justify-center text-[10px] uppercase font-black tracking-widest text-primary animate-pulse border border-primary/20">Tejiendo Constelación...</div>;
+  if (loading) return (
+    <div className="w-full h-64 flex items-center justify-center text-[10px] uppercase font-black tracking-widest text-primary animate-pulse border border-primary/20">
+      Tejiendo Constelación...
+    </div>
+  );
 
   if (nodes.length === 0) return (
     <div className="w-full h-64 flex flex-col items-center justify-center p-6 text-center border border-foreground/10 bg-foreground/5">
@@ -75,3 +32,4 @@ const MiniGraph: React.FC<Props> = ({ entityId }) => {
 };
 
 export default MiniGraph;
+

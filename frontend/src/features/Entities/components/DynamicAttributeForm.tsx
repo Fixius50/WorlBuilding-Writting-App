@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
-import { Plantilla, Valor, Entidad } from '@domain/models/database';
-// import MonolithicPanel from '@atoms/MonolithicPanel';
+import React from 'react';
 import { useLanguage } from '@context/LanguageContext';
+import { Entidad } from '@domain/models/database';
+import { useDynamicAttributeForm } from './useDynamicAttributeForm';
 
 interface DynamicAttributeFormProps {
   entity: Entidad;
@@ -11,70 +10,16 @@ interface DynamicAttributeFormProps {
 
 const DynamicAttributeForm: React.FC<DynamicAttributeFormProps> = ({ entity, onUpdate }) => {
   const { t } = useLanguage();
-  const [templates, setTemplates] = useState<Plantilla[]>([]);
-  const [values, setValues] = useState<Valor[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [savingId, setSavingId] = useState<number | null>(null);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      // 1. Cargar todas las plantillas del proyecto
-      const allTemplates = await TemplateUseCase.getTemplates(entity.project_id);
-      
-      // 2. Filtrar las que aplican a esta entidad (Globales o por Tipo)
-      const applicable = allTemplates.filter(tpl => 
-        tpl.aplica_a_todo || tpl.tipo_objetivo === entity.tipo
-      );
-      setTemplates(applicable);
-
-      // 3. Cargar valores actuales de la entidad
-      const entityValues = await TemplateUseCase.getEntityValues(entity.id);
-      setValues(entityValues);
-    } catch (err) {
-      // [LOG REMOVED]
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, [entity.id]);
-
-  const handleValueChange = async (templateId: number, newValue: string) => {
-    setSavingId(templateId);
-    try {
-      const existingValue = values.find(v => v.plantilla_id === templateId);
-      
-      if (existingValue) {
-        await TemplateUseCase.updateEntityValue(existingValue.id, newValue);
-      } else {
-        await TemplateUseCase.addEntityValue(entity.id, templateId, newValue);
-      }
-      
-      // Recargar localmente para mostrar el cambio sin parpadeos
-      const updatedValues = await TemplateUseCase.getEntityValues(entity.id);
-      setValues(updatedValues);
-      
-      if (onUpdate) onUpdate();
-    } catch (err) {
-      // [LOG REMOVED]
-    } finally {
-      setSavingId(null);
-    }
-  };
+  const {
+    loading,
+    savingId,
+    categories,
+    values,
+    handleValueChange
+  } = useDynamicAttributeForm(entity, onUpdate);
 
   if (loading) return <div className="p-4 animate-pulse italic opacity-30 text-[10px]">Cargando atributos mágicos...</div>;
-  if (templates.length === 0) return null;
-
-  // Agrupar por categoría
-  const categories = templates.reduce((acc, tpl) => {
-    const cat = tpl.categoria || 'Detalles Técnicos';
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(tpl);
-    return acc;
-  }, {} as Record<string, Plantilla[]>);
+  if (Object.keys(categories).length === 0) return null;
 
   return (
     <div className="space-y-8">
@@ -207,3 +152,4 @@ const DynamicAttributeForm: React.FC<DynamicAttributeFormProps> = ({ entity, onU
 };
 
 export default DynamicAttributeForm;
+

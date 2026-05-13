@@ -33,31 +33,30 @@ const suggestion: Omit<SuggestionOptions, 'editor'> = {
         }
       }
 
-      if (!projectId) {
-        return [];
+      if (projectId) {
+        // 2. Obtener todas las entidades del proyecto desde SQLite
+        const entities = await entityService.getAllByProject(Number(projectId));
+
+        // 3. Filtrar por el query del usuario (case-insensitive)
+        return (entities || [])
+          .filter(item => 
+            item.nombre.toLowerCase().includes(query.toLowerCase())
+          )
+          .slice(0, 10) 
+          .map(item => {
+            const extra = item.contenido_json 
+              ? (typeof item.contenido_json === 'string' ? JSON.parse(item.contenido_json) : item.contenido_json) 
+              : {};
+              
+            return {
+              id: item.id.toString(),
+              label: item.nombre,
+              type: item.tipo || 'Generic',
+              description: item.descripcion || extra.definicion || ''
+            };
+          });
       }
-
-      // 2. Obtener todas las entidades del proyecto desde SQLite
-      const entities = await entityService.getAllByProject(Number(projectId));
-
-      // 3. Filtrar por el query del usuario (case-insensitive)
-      return (entities || [])
-        .filter(item => 
-          item.nombre.toLowerCase().includes(query.toLowerCase())
-        )
-        .slice(0, 10) 
-        .map(item => {
-          const extra = item.contenido_json 
-            ? (typeof item.contenido_json === 'string' ? JSON.parse(item.contenido_json) : item.contenido_json) 
-            : {};
-            
-          return {
-            id: item.id.toString(),
-            label: item.nombre,
-            type: item.tipo || 'Generic',
-            description: item.descripcion || extra.definicion || ''
-          };
-        });
+      return [];
     } catch (err) {
       /* [LOG REMOVED] */
       return [];
@@ -75,19 +74,17 @@ const suggestion: Omit<SuggestionOptions, 'editor'> = {
           editor: props.editor,
         });
 
-        if (!props.clientRect) {
-          return;
+        if (props.clientRect) {
+          popup = tippy('body', {
+            getReferenceClientRect: props.clientRect as () => DOMRect,
+            appendTo: () => document.body,
+            content: component.element,
+            showOnCreate: true,
+            interactive: true,
+            trigger: 'manual',
+            placement: 'bottom-start',
+          }) as unknown as Instance<Props>[];
         }
-
-        popup = tippy('body', {
-          getReferenceClientRect: props.clientRect as () => DOMRect,
-          appendTo: () => document.body,
-          content: component.element,
-          showOnCreate: true,
-          interactive: true,
-          trigger: 'manual',
-          placement: 'bottom-start',
-        }) as unknown as Instance<Props>[];
       },
 
       onUpdate(props: SuggestionProps) {
@@ -95,11 +92,7 @@ const suggestion: Omit<SuggestionOptions, 'editor'> = {
           component.updateProps(props);
         }
 
-        if (!props.clientRect) {
-          return;
-        }
-
-        if (popup) {
+        if (props.clientRect && popup) {
           popup[0].setProps({
             getReferenceClientRect: props.clientRect as () => DOMRect,
           });
@@ -107,12 +100,14 @@ const suggestion: Omit<SuggestionOptions, 'editor'> = {
       },
 
       onKeyDown(props: { event: KeyboardEvent }): boolean {
+        let result = false;
         if (props.event.key === 'Escape') {
           if (popup) popup[0].hide();
-          return true;
+          result = true;
+        } else {
+          result = (component?.ref as { onKeyDown?: (p: unknown) => boolean } | null)?.onKeyDown?.(props) ?? false;
         }
-
-        return (component?.ref as { onKeyDown?: (p: unknown) => boolean } | null)?.onKeyDown?.(props) ?? false;
+        return result;
       },
 
       onExit() {

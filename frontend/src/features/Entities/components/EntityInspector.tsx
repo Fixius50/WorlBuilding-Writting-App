@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { EntityUseCase } from '@application/useCases/EntityUseCase';
-import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
-import { Entidad, Valor } from '@domain/models/database';
+import React from 'react';
 import Avatar from '@atoms/Avatar';
 import { useLanguage } from '@context/LanguageContext';
+import { useEntityInspector } from './useEntityInspector';
 
 interface EntityInspectorProps {
   entityId: number | string;
@@ -11,28 +9,7 @@ interface EntityInspectorProps {
 
 const EntityInspector: React.FC<EntityInspectorProps> = ({ entityId }) => {
   const { t } = useLanguage();
-  const [entity, setEntity] = useState<Entidad | null>(null);
-  const [values, setValues] = useState<Valor[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      try {
-        const data = await EntityUseCase.getById(Number(entityId));
-        if (data) {
-          setEntity(data);
-          const vals = await TemplateUseCase.getEntityValues(data.id);
-          setValues(vals.slice(0, 5)); // Solo los 5 primeros para el inspector rápido
-        }
-      } catch (err) {
-        // [LOG REMOVED]
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadData();
-  }, [entityId]);
+  const { entity, values, loading, handleNavigate } = useEntityInspector(entityId);
 
   if (loading) {
     return (
@@ -95,7 +72,7 @@ const EntityInspector: React.FC<EntityInspectorProps> = ({ entityId }) => {
         <div className="pt-4 flex flex-col gap-2">
            <button 
              className="w-full py-3 bg-foreground text-background text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all"
-             onClick={() => window.dispatchEvent(new CustomEvent('navigate-entity', { detail: entity.id }))}
+             onClick={handleNavigate}
            >
              Ver Perfil Completo
            </button>
@@ -106,3 +83,4 @@ const EntityInspector: React.FC<EntityInspectorProps> = ({ entityId }) => {
 };
 
 export default EntityInspector;
+

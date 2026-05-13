@@ -1,11 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { TimelineUseCase } from '@application/useCases/TimelineUseCase';
-import { Evento, Entidad } from '@domain/models/database';
+import React from 'react';
 import { useLanguage } from '@context/LanguageContext';
 import ZenEditor from '@features/Editor/components/ZenEditor';
-import { WritingUseCase } from '@application/useCases/WritingUseCase';
 import { Hoja as HojaModel } from '@repositories/notebookService';
 import Avatar from '@atoms/Avatar';
+import { useEventInspector } from './useEventInspector';
 
 interface EventInspectorProps {
   eventId: number;
@@ -23,90 +21,18 @@ const EventInspector: React.FC<EventInspectorProps> = ({
   onNavigateToEntity 
 }) => {
   const { t } = useLanguage();
-  const [event, setEvent] = useState<Evento | null>(null);
-  const [linkedEntities, setLinkedEntities] = useState<Entidad[]>([]);
-  const [loading, setLoading] = useState(true);
   
-  // Entity Search State
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState<Entidad[]>([]);
-  const [showResults, setShowResults] = useState(false);
-
-  const loadEventData = useCallback(async () => {
-    try {
-      const [evData, entities] = await Promise.all([
-        TimelineUseCase.getEventById(eventId),
-        TimelineUseCase.getLinkedEntities(eventId)
-      ]);
-      setEvent(evData);
-      setLinkedEntities(entities);
-    } catch (err) {
-      // [LOG REMOVED]
-    }
-  }, [eventId]);
-
-  useEffect(() => {
-    const init = async () => {
-      setLoading(true);
-      await loadEventData();
-      setLoading(false);
-    };
-    init();
-  }, [loadEventData]);
-
-  useEffect(() => {
-    const search = async () => {
-      if (searchTerm.length < 2 || !projectId) {
-        setSearchResults([]);
-        return;
-      }
-      try {
-        const all = await TimelineUseCase.getAllEntities(projectId);
-        const filtered = all.filter(e => 
-          e.nombre.toLowerCase().includes(searchTerm.toLowerCase()) &&
-          !linkedEntities.some(le => le.id === e.id)
-        );
-        setSearchResults(filtered.slice(0, 5));
-      } catch (err) {
-        // [LOG REMOVED]
-      }
-    };
-    const timer = setTimeout(search, 300);
-    return () => clearTimeout(timer);
-  }, [searchTerm, projectId, linkedEntities]);
-
-  const handleLinkEntity = async (entity: Entidad) => {
-    try {
-      await TimelineUseCase.linkEntity(eventId, entity.id);
-      setSearchTerm('');
-      setShowResults(false);
-      await loadEventData();
-      if (onUpdate) onUpdate();
-    } catch (err) {
-      // [LOG REMOVED]
-    }
-  };
-
-  const handleUnlinkEntity = async (e: React.MouseEvent, entityId: number) => {
-    e.stopPropagation();
-    try {
-      await TimelineUseCase.unlinkEntity(eventId, entityId);
-      await loadEventData();
-      if (onUpdate) onUpdate();
-    } catch (err) {
-      // [LOG REMOVED]
-    }
-  };
-
-  const handleNotesUpdate = async (html: string) => {
-    if (!event) return;
-    try {
-      await TimelineUseCase.updateEvent(event.id, { descripcion: html });
-      if (onUpdate) onUpdate();
-    } catch (err) {
-      // [LOG REMOVED]
-    }
-  };
+  const {
+    event,
+    linkedEntities,
+    loading,
+    searchTerm, setSearchTerm,
+    searchResults,
+    showResults, setShowResults,
+    handleLinkEntity,
+    handleUnlinkEntity,
+    handleNotesUpdate
+  } = useEventInspector(eventId, projectId, onUpdate);
 
   if (loading) return (
     <div className="flex-1 flex items-center justify-center p-10">
@@ -124,7 +50,6 @@ const EventInspector: React.FC<EventInspectorProps> = ({
 
   return (
     <div className="flex flex-col h-full bg-background animate-in fade-in duration-500">
-      {/* Header Visual */}
       <div className="p-6 border-b border-foreground/5 bg-gradient-to-b from-primary/5 to-transparent">
         <div className="flex items-center gap-4 mb-4">
           <div className="size-10 bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
@@ -151,7 +76,6 @@ const EventInspector: React.FC<EventInspectorProps> = ({
       </div>
 
       <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
-        {/* Entidades Vinculadas */}
         <section>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-[10px] font-black uppercase tracking-widest text-foreground/40 px-2">
@@ -160,7 +84,6 @@ const EventInspector: React.FC<EventInspectorProps> = ({
             <span className="text-[9px] font-bold text-primary/60">{linkedEntities.length} Vinculados</span>
           </div>
 
-          {/* Search & Link Box */}
           <div className="relative mb-4">
             <div className="flex items-center bg-foreground/[0.03] border border-foreground/10 focus-within:border-primary/40 transition-all">
               <span className="material-symbols-outlined text-lg text-foreground/20 ml-3">person_search</span>
@@ -205,7 +128,7 @@ const EventInspector: React.FC<EventInspectorProps> = ({
                   <span className="text-[9px] font-black uppercase text-foreground/30 tracking-widest">{ent.tipo}</span>
                 </div>
                 <button 
-                  onClick={(e) => handleUnlinkEntity(e, ent.id)}
+                  onClick={(e) => { e.stopPropagation(); handleUnlinkEntity(ent.id); }}
                   className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-red-400/40 hover:text-red-400 transition-all"
                 >
                   <span className="material-symbols-outlined text-sm">link_off</span>
@@ -221,7 +144,6 @@ const EventInspector: React.FC<EventInspectorProps> = ({
           </div>
         </section>
 
-        {/* GM Notes / Private Blog */}
         <section className="flex flex-col h-[450px]">
           <h3 className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-4 px-2">
             Crónica Privada (Notas del GM)
@@ -250,4 +172,5 @@ const EventInspector: React.FC<EventInspectorProps> = ({
 };
 
 export default EventInspector;
+
 

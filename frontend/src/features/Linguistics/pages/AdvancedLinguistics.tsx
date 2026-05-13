@@ -1,35 +1,18 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Button from '@atoms/Button';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 import { useLanguage } from '@context/LanguageContext';
+import { useAdvancedLinguistics } from './useAdvancedLinguistics';
 
 const AdvancedLinguistics: React.FC = () => {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'conjugation' | 'phonetics'>('conjugation');
-  const [inputText, setInputText] = useState('');
-  const [rule, setRule] = useState('-[e]s');
-  const [result, setResult] = useState<string[]>([]);
-
-  const handleGenerate = () => {
-    if (activeTab === 'conjugation') {
-        const words = inputText.split(',').map(w => w.trim());
-        const suffix = rule.startsWith('-') ? rule.substring(1) : rule;
-        
-        const generated = words.map(w => {
-            if (suffix.startsWith('[') && suffix.includes(']')) {
-                const char = suffix.match(/\[(.*?)\]/)?.[1];
-                const rest = suffix.split(']')[1];
-                return w.endsWith(char!) ? w + rest : w + char + rest;
-            }
-            return w + suffix;
-        });
-        setResult(generated);
-    } else {
-        // Simple Phonetic Evolution (Placeholder logic)
-        const evolved = inputText.split(',').map(w => w.trim().replace(/p/g, 'b').replace(/t/g, 'd').replace(/k/g, 'g'));
-        setResult(evolved);
-    }
-  };
+  const {
+    activeTab, setActiveTab,
+    inputText, setInputText,
+    rule, setRule,
+    result,
+    handleGenerate
+  } = useAdvancedLinguistics();
 
   return (
     <div className="h-full w-full p-8 bg-background overflow-y-auto no-scrollbar">
@@ -135,3 +118,4 @@ const AdvancedLinguistics: React.FC = () => {
 };
 
 export default AdvancedLinguistics;
+

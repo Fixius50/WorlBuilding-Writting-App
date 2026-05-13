@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useLanguage } from '@context/LanguageContext';
-import { WorldBibleUseCase } from '@application/useCases/WorldBibleUseCase';
-import { Carpeta, Plantilla } from '@domain/models/database';
+import { Carpeta } from '@domain/models/database';
+import { useCreateMassEntities } from './useCreateMassEntities';
 
 interface CreateMassEntitiesModalProps {
   isOpen: boolean;
@@ -10,11 +10,6 @@ interface CreateMassEntitiesModalProps {
   projectId: number;
   allFolders: Carpeta[];
   handleOpenCreateModal?: (parentFolder?: Carpeta | null) => void;
-}
-
-interface AttributeValue {
-  template: Plantilla;
-  value: string;
 }
 
 const ARQUETIPOS_GROUPS = [
@@ -66,109 +61,28 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
   handleOpenCreateModal
 }) => {
   const { t } = useLanguage();
-  const [nameList, setNameList] = useState<string[]>([]);
-  const [inputValue, setInputValue] = useState('');
-  const [type, setType] = useState('PERSONAJE');
-  const [folderId, setFolderId] = useState<number | null>(null);
-  const [loading, setLoading] = useState(false);
-  
-  // Plantillas disponibles
-  const [availableTemplates, setAvailableTemplates] = useState<Plantilla[]>([]);
-  const [selectedAttributes, setSelectedAttributes] = useState<AttributeValue[]>([]);
-
-  useEffect(() => {
-    if (isOpen) {
-      loadTemplates();
-      setNameList([]);
-      setInputValue('');
-      // Seleccionar la primera carpeta por defecto si existe
-      if (allFolders && allFolders.length > 0) {
-        setFolderId(allFolders[0].id);
-      } else {
-        setFolderId(null);
-      }
-    }
-  }, [isOpen, allFolders]);
-
-  const loadTemplates = async () => {
-    try {
-      const tpls = await WorldBibleUseCase.getTemplates(projectId);
-      setAvailableTemplates(tpls);
-    } catch (err) {
-      // [LOG REMOVED]
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === ' ' || e.key === 'Enter') {
-      e.preventDefault();
-      const val = inputValue.trim();
-      if (val && !nameList.includes(val)) {
-        setNameList(prev => [...prev, val]);
-        setInputValue('');
-      }
-    } else if (e.key === 'Backspace' && !inputValue && nameList.length > 0) {
-      setNameList(prev => prev.slice(0, -1));
-    }
-  };
-
-  const removeName = (nameToRemove: string) => {
-    setNameList(prev => prev.filter(n => n !== nameToRemove));
-  };
-
-  const handleAddAttribute = (templateId: number) => {
-    const tpl = availableTemplates.find(t => t.id === templateId);
-    if (tpl && !selectedAttributes.find(a => a.template.id === templateId)) {
-      setSelectedAttributes(prev => [...prev, { template: tpl, value: tpl.valor_defecto || '' }]);
-    }
-  };
-
-  const handleRemoveAttribute = (templateId: number) => {
-    setSelectedAttributes(prev => prev.filter(a => a.template.id !== templateId));
-  };
-
-  const handleAttributeValueChange = (templateId: number, value: string) => {
-    setSelectedAttributes(prev => prev.map(a => 
-      a.template.id === templateId ? { ...a, value } : a
-    ));
-  };
-
-  const handleSubmit = async () => {
-    if (nameList.length === 0 || !folderId) return;
-
-    setLoading(true);
-    try {
-      for (const name of nameList) {
-        await WorldBibleUseCase.createEntityWithAttributes(
-          {
-            nombre: name,
-            tipo: type,
-            project_id: projectId,
-            carpeta_id: folderId
-          },
-          selectedAttributes
-            .filter(attr => attr.value.trim())
-            .map(attr => ({ templateId: attr.template.id, value: attr.value }))
-        );
-      }
-      onCreated();
-      onClose();
-      // Reset
-      setNameList([]);
-      setSelectedAttributes([]);
-    } catch (err) {
-      // [LOG REMOVED]
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    nameList,
+    inputValue, setInputValue,
+    type, setType,
+    folderId, setFolderId,
+    loading,
+    availableTemplates,
+    selectedAttributes,
+    handleKeyDown,
+    removeName,
+    handleAddAttribute,
+    handleRemoveAttribute,
+    handleAttributeValueChange,
+    handleSubmit
+  } = useCreateMassEntities(isOpen, projectId, allFolders, onCreated, onClose);
 
   if (!isOpen) return null;
 
   const noFolders = !allFolders || allFolders.length === 0;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6  bg-black/80 animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 animate-in fade-in duration-300">
       <div className="w-full max-w-5xl monolithic-panel bg-background border border-white/10 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
         
         {/* Header */}
@@ -401,3 +315,4 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
 };
 
 export default CreateMassEntitiesModal;
+

@@ -1,129 +1,78 @@
-import { EntityUseCase } from '@application/useCases/EntityUseCase';
-import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
-import { Entidad } from '@domain/models/database';
-import { useState, useEffect } from 'react';
+import React from 'react';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
-
-interface CollectiveData extends Partial<Entidad> {
-  cantidadMiembros?: string;
-  comportamiento?: string;
-}
+import { useCollectiveView } from './useCollectiveView';
 
 const CollectiveView = ({ id }: { id: string | number }) => {
- const [entity, setEntity] = useState<Entidad | null>(null);
- const [collective, setCollective] = useState<CollectiveData | null>(null);
- const [loading, setLoading] = useState(true);
- const [isEditing, setIsEditing] = useState(false);
+  const {
+    collective,
+    loading,
+    isEditing,
+    toggleEditing,
+    handleSave,
+    handleChange
+  } = useCollectiveView(id);
 
- useEffect(() => {
- loadCollective();
- }, [id]);
+  if (loading) return <div className="p-20 text-center text-foreground/60 animate-pulse">Gathering intelligence...</div>;
+  if (!collective) return <div className="p-20 text-center text-destructive">Collective not found in the records.</div>;
 
- const loadCollective = async () => {
- setLoading(true);
- try {
- const data = await EntityUseCase.getById(Number(id)); // Changed to entityService
- if (data) {
- setEntity(data); // Set entity state
- const extra = typeof data.contenido_json === 'string'
- ? JSON.parse(data.contenido_json)
- : (data.contenido_json || {});
+  return (
+    <div className="flex h-full overflow-y-auto custom-scrollbar p-8 flex-col gap-8">
+      {/* Header */}
+      <header className="flex justify-center gap-12 text-center items-end">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-xs font-bold text-indigo-400 bg-indigo-400/10 px-2 py-0.5 rounded border border-indigo-400/20">COLLECTIVE</span>
+            <span className="text-xs font-bold text-foreground/60 sunken-panel px-2 py-0.5 rounded border border-foreground/10">{collective.tipo || 'Organization'}</span>
+          </div>
+          <h1 className="text-5xl font-manrope font-black text-foreground tracking-tight">{collective.nombre}</h1>
+          <p className="text-foreground/60 mt-2">{collective.cantidadMiembros || 'Unknown'} members</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="secondary" icon={isEditing ? 'close' : 'edit'} onClick={toggleEditing}>
+            {isEditing ? 'Cancel' : 'Edit Collective'}
+          </Button>
+          {isEditing && <Button variant="primary" icon="save" onClick={handleSave}>Update Dossier</Button>}
+        </div>
+      </header>
 
- setCollective({
- ...data,
- ...extra
- });
- }
- } catch (err) {
- // [LOG REMOVED]
- } finally {
- setLoading(false);
- }
- };
+      <div className="grid grid-cols-3 gap-8">
+        <div className="col-span-1 space-y-6">
+          <MonolithicPanel className="p-6">
+            <h3 className="text-xs font-bold text-foreground/60 uppercase tracking-widest mb-4 flex items-center gap-2">
+              <span className="material-symbols-outlined text-sm">group_work</span> Group Dynamics
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs text-foreground/60 block mb-1">Scale / Members</label>
+                <input type="text" value={collective.cantidadMiembros || ''} onChange={(e) => handleChange('cantidadMiembros', e.target.value)} className="w-full sunken-panel border border-foreground/40 rounded px-3 py-2 text-foreground text-sm" readOnly={!isEditing} />
+              </div>
+              <div>
+                <label className="text-xs text-foreground/60 block mb-1">Behavior / Alignment</label>
+                <input type="text" value={collective.comportamiento || ''} onChange={(e) => handleChange('comportamiento', e.target.value)} className="w-full sunken-panel border border-foreground/40 rounded px-3 py-2 text-foreground text-sm" readOnly={!isEditing} />
+              </div>
+            </div>
+          </MonolithicPanel>
+        </div>
 
- const handleSave = async () => {
-    if (!entity || !collective) return; // Added check for entity and collective
- try {
-      const { nombre, tipo, descripcion, ...extra } = collective; // Destructure collective for update
-
- await EntityUseCase.update(entity.id, { // Changed to EntityUseCase.update
-        nombre,
-        tipo,
-        descripcion,
-        contenido_json: JSON.stringify(extra) // Stringify extra fields
- });
- setIsEditing(false);
- // alert("Changes saved!"); // Removed
- } catch (err) {
- // [LOG REMOVED]
- // alert("Error saving: " + err.message); // Removed
- }
- };
-
-  const handleChange = (field: string, value: string) => {
- setCollective(prev => prev ? ({ ...prev, [field]: value }) : null);
- };
-
- if (loading) return <div className="p-20 text-center text-foreground/60 animate-pulse">Gathering intelligence...</div>;
- if (!collective) return <div className="p-20 text-center text-destructive">Collective not found in the records.</div>;
-
- return (
- <div className="flex h-full overflow-y-auto custom-scrollbar p-8 flex-col gap-8">
- {/* Header */}
- <header className="flex justify-center gap-12 text-center items-end">
- <div>
- <div className="flex items-center gap-3 mb-2">
- <span className="text-xs font-bold text-indigo-400 bg-indigo-400/10 px-2 py-0.5 rounded border border-indigo-400/20">COLLECTIVE</span>
- <span className="text-xs font-bold text-foreground/60 sunken-panel px-2 py-0.5 rounded border border-foreground/10">{collective.tipo || 'Organization'}</span>
- </div>
- <h1 className="text-5xl font-manrope font-black text-foreground tracking-tight">{collective.nombre}</h1>
- <p className="text-foreground/60 mt-2">{collective.cantidadMiembros || 'Unknown'} members</p>
- </div>
- <div className="flex gap-2">
- <Button variant="secondary" icon={isEditing ? 'close' : 'edit'} onClick={() => setIsEditing(!isEditing)}>
- {isEditing ? 'Cancel' : 'Edit Collective'}
- </Button>
- {isEditing && <Button variant="primary" icon="save" onClick={handleSave}>Update Dossier</Button>}
- </div>
- </header>
-
- <div className="grid grid-cols-3 gap-8">
- <div className="col-span-1 space-y-6">
- <MonolithicPanel className="p-6">
- <h3 className="text-xs font-bold text-foreground/60 uppercase tracking-widest mb-4 flex items-center gap-2">
- <span className="material-symbols-outlined text-sm">group_work</span> Group Dynamics
- </h3>
- <div className="space-y-4">
- <div>
- <label className="text-xs text-foreground/60 block mb-1">Scale / Members</label>
- <input type="text" value={collective.cantidadMiembros || ''} onChange={(e) => handleChange('cantidadMiembros', e.target.value)} className="w-full sunken-panel border border-foreground/40 rounded px-3 py-2 text-foreground text-sm" readOnly={!isEditing} />
- </div>
- <div>
- <label className="text-xs text-foreground/60 block mb-1">Behavior / Alignment</label>
- <input type="text" value={collective.comportamiento || ''} onChange={(e) => handleChange('comportamiento', e.target.value)} className="w-full sunken-panel border border-foreground/40 rounded px-3 py-2 text-foreground text-sm" readOnly={!isEditing} />
- </div>
- </div>
- </MonolithicPanel>
- </div>
-
- <div className="col-span-2 space-y-6">
- <MonolithicPanel className="p-8">
- <h3 className="text-xs font-bold text-foreground/60 uppercase tracking-widest mb-4 flex items-center gap-2">
- <span className="material-symbols-outlined text-sm">history_edu</span> Mandate & History
- </h3>
- <textarea
- value={collective.descripcion || ''}
- onChange={(e) => handleChange('descripcion', e.target.value)}
- readOnly={!isEditing}
- className="w-full bg-transparent border-none outline-none text-foreground/60 text-lg leading-relaxed min-h-[400px] resize-none"
- placeholder="Detail the motives, the structure, and the legacy of this group..."
- />
- </MonolithicPanel>
- </div>
- </div>
- </div>
- );
+        <div className="col-span-2 space-y-6">
+          <MonolithicPanel className="p-8">
+            <h3 className="text-xs font-bold text-foreground/60 uppercase tracking-widest mb-4 flex items-center gap-2">
+              <span className="material-symbols-outlined text-sm">history_edu</span> Mandate & History
+            </h3>
+            <textarea
+              value={collective.descripcion || ''}
+              onChange={(e) => handleChange('descripcion', e.target.value)}
+              readOnly={!isEditing}
+              className="w-full bg-transparent border-none outline-none text-foreground/60 text-lg leading-relaxed min-h-[400px] resize-none"
+              placeholder="Detail the motives, the structure, and the legacy of this group..."
+            />
+          </MonolithicPanel>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default CollectiveView;
+

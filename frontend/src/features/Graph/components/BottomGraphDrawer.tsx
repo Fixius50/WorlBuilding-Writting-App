@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React from 'react';
 import GraphView from '../pages/GeneralGraphView'; // Import the graph component to render
+import { useBottomGraphDrawer } from './useBottomGraphDrawer';
 
 interface BottomGraphDrawerProps {
   isOpen: boolean;
@@ -9,41 +10,7 @@ interface BottomGraphDrawerProps {
 }
 
 const BottomGraphDrawer: React.FC<BottomGraphDrawerProps> = ({ isOpen, onClose, projectId, projectName }) => {
-  const [heightVH, setHeightVH] = useState(70); // Default to 70vh
-  const isResizing = useRef(false);
-
-  const startResizing = useCallback(() => {
-    isResizing.current = true;
-    document.body.style.cursor = 'ns-resize';
-    document.body.style.userSelect = 'none';
-  }, []);
-
-  const stopResizing = useCallback(() => {
-    isResizing.current = false;
-    document.body.style.cursor = 'default';
-    document.body.style.userSelect = 'auto';
-  }, []);
-
-  const resize = useCallback((e: MouseEvent) => {
-    if (!isResizing.current) return;
-    
-    const newHeightPx = window.innerHeight - e.clientY;
-    const newHeightVH = (newHeightPx / window.innerHeight) * 100;
-    
-    // Constraints: min 20vh, max 95vh
-    if (newHeightVH > 20 && newHeightVH < 95) {
-      setHeightVH(newHeightVH);
-    }
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener('mousemove', resize);
-    window.addEventListener('mouseup', stopResizing);
-    return () => {
-      window.removeEventListener('mousemove', resize);
-      window.removeEventListener('mouseup', stopResizing);
-    };
-  }, [resize, stopResizing]);
+  const { heightVH, startResizing } = useBottomGraphDrawer();
 
   return (
     <div
@@ -90,3 +57,4 @@ const BottomGraphDrawer: React.FC<BottomGraphDrawerProps> = ({ isOpen, onClose, 
 };
 
 export default BottomGraphDrawer;
+

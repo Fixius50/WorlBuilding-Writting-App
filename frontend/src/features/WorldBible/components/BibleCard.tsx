@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { getHierarchyVisuals } from '@presentation/utils/hierarchyVisuals';
+import { useBibleCard } from './useBibleCard';
 
 interface BibleCardItem {
   id: number | string;
@@ -21,8 +21,7 @@ interface BibleCardProps {
 }
 
 const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu, onDelete, onRename, onMove }) => {
-  const isFolder = type === 'folder';
-  const visuals = getHierarchyVisuals(item.tipo || (isFolder ? 'FOLDER' : 'UNIVERSE'));
+  const { isFolder, visuals, label } = useBibleCard(item, type);
 
   return (
     <Link
@@ -60,9 +59,7 @@ const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu
         <div className="flex flex-col gap-0.5">
           <h3 className="text-md font-black text-foreground tracking-tight group-hover:text-primary transition-colors">{item.nombre}</h3>
           <p className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40 group-hover:text-foreground/60 transition-colors">
-            {isFolder 
-              ? (item.tipo === 'TIMELINE' ? 'Dimensión' : 'Carpeta') 
-              : (item.tipo || 'Entidad')}
+            {label}
           </p>
         </div>
 
@@ -112,3 +109,4 @@ const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu
 };
 
 export default BibleCard;
+

@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useLanguage } from '@context/LanguageContext';
+import React from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { Cuaderno } from '@repositories/notebookService';
-import { WritingUseCase } from '@application/useCases/WritingUseCase';
 import MonolithicPanel from '@atoms/MonolithicPanel';
+import { useWritingHub } from './useWritingHub';
 
 interface WritingOutletContext {
   projectId: number;
@@ -13,111 +11,28 @@ interface WritingOutletContext {
 
 const WritingHub = () => {
   const navigate = useNavigate();
-  const { t } = useLanguage();
   const outlet = useOutletContext<WritingOutletContext>();
   const { setRightPanelTab, baseUrl, projectId } = outlet || { projectId: 1, baseUrl: '' };
-  const numericProjectId: number = projectId ? Number(projectId) : 1;
-
-  const [notebooks, setNotebooks] = useState<Cuaderno[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isCreating, setIsCreating] = useState(false);
-  const [notebookToEdit, setNotebookToEdit] = useState<Cuaderno | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
   
-  // Form states
-  const [title, setTitle] = useState('');
-  const [genre, setGenre] = useState('');
-
-  useEffect(() => {
-    if (setRightPanelTab) setRightPanelTab('NOTEBOOKS');
-    loadNotebooks();
-  }, []);
-
-  const loadNotebooks = async () => {
-    try {
-      setLoading(true);
-      const pid = projectId ? Number(projectId) : 1;
-      const data = await WritingUseCase.getNotebooks(pid);
-      setNotebooks(data || []);
-    } catch (err) {
-      // [LOG REMOVED]
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const openCreateModal = () => {
-    setTitle('');
-    setGenre('');
-    setSubmitError(null);
-    setNotebookToEdit(null);
-    setIsCreating(true);
-  };
-
-  const openEditModal = (e: React.MouseEvent, nb: Cuaderno) => {
-    e.stopPropagation();
-    setNotebookToEdit(nb);
-    setTitle(nb.titulo);
-    setGenre(nb.genero || '');
-    setSubmitError(null);
-    setIsCreating(true);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setSubmitError(null);
-    
-    if (!title.trim()) {
-      setSubmitError('El título es obligatorio');
-      return;
-    }
-    
-    setSaving(true);
-    try {
-      const pid = projectId ? Number(projectId) : 1;
-      // [LOG REMOVED]
-      
-      if (notebookToEdit) {
-        await WritingUseCase.updateNotebook(notebookToEdit.id, title, genre);
-        setNotebooks(prev => prev.map(n => n.id === notebookToEdit.id ? { ...n, titulo: title.trim(), genero: genre } : n));
-      } else {
-        const nuevo = await WritingUseCase.createNotebook(pid, title, genre);
-        // [LOG REMOVED]
-        setNotebooks(prev => [nuevo, ...prev]);
-      }
-      closeModal();
-    } catch (err: unknown) {
-      // [LOG REMOVED]
-      const errorMessage = err instanceof Error ? err.message : 'Error al guardar. Revisa la consola.';
-      setSubmitError(errorMessage);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const closeModal = () => {
-    setIsCreating(false);
-    setNotebookToEdit(null);
-    setTitle('');
-    setGenre('');
-    setSubmitError(null);
-    setSaving(false);
-  };
-
-  const handleDelete = async (e: React.MouseEvent, id: number) => {
-    e.stopPropagation();
-    if (!window.confirm('¿Eliminar este archivador?')) return;
-    try {
-      await WritingUseCase.deleteNotebook(id);
-      setNotebooks(notebooks.filter(n => n.id !== id));
-    } catch (err) {
-      // [LOG REMOVED]
-    }
-  };
-
+  const {
+    notebooks,
+    loading,
+    isCreating,
+    notebookToEdit,
+    searchTerm,
+    setSearchTerm,
+    submitError,
+    saving,
+    title,
+    setTitle,
+    genre,
+    setGenre,
+    openCreateModal,
+    openEditModal,
+    closeModal,
+    handleSubmit,
+    handleDelete
+  } = useWritingHub(Number(projectId), setRightPanelTab);
 
   if (loading) {
     return (
@@ -157,9 +72,6 @@ const WritingHub = () => {
             )}
           </div>
         </div>
-
-        {/* Botón Flotante o Integrado en la cabecera (Opcionalmente movido abajo si se desea, pero el usuario pidió quitar el de la derecha) */}
-        {/* Lo dejamos como una acción secundaria centrada o para más adelante si lo pide, por ahora cumplimos: centrar título y buscador */}
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
@@ -174,9 +86,7 @@ const WritingHub = () => {
           <span className="text-[10px] font-black uppercase tracking-[0.3em] group-hover:text-foreground transition-colors">Nueva Crónica</span>
         </div>
 
-        {notebooks
-          .filter(nb => nb.titulo.toLowerCase().includes(searchTerm.toLowerCase()) || (nb.genero || '').toLowerCase().includes(searchTerm.toLowerCase()))
-          .map((nb) => (
+        {notebooks.map((nb) => (
           <MonolithicPanel
             key={nb.id}
             onClick={() => navigate(`${baseUrl}/writing/${nb.id}`)}
@@ -192,13 +102,13 @@ const WritingHub = () => {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={(e) => openEditModal(e, nb)}
+                    onClick={(e) => { e.stopPropagation(); openEditModal(nb); }}
                     className="p-2 bg-background border border-white/5 text-foreground/40 hover:text-primary hover:border-primary/30 transition-all opacity-0 group-hover:opacity-100"
                   >
                     <span className="material-symbols-outlined text-sm">edit</span>
                   </button>
                   <button
-                    onClick={(e) => handleDelete(e, nb.id)}
+                    onClick={(e) => { e.stopPropagation(); handleDelete(nb.id); }}
                     className="p-2 bg-background border border-white/5 text-foreground/40 hover:text-red-400 hover:border-red-400/30 transition-all opacity-0 group-hover:opacity-100"
                   >
                     <span className="material-symbols-outlined text-sm">delete</span>
@@ -226,7 +136,6 @@ const WritingHub = () => {
             </div>
           </MonolithicPanel>
         ))}
-        
       </div>
 
       {/* Creation/Edit Modal Zen */}
@@ -258,7 +167,7 @@ const WritingHub = () => {
                   placeholder="Ej: Crónicas de Aethelgard"
                   value={title}
                   onChange={e => setTitle(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') handleSubmit(e as unknown as React.FormEvent); }}
+                  onKeyDown={e => { if (e.key === 'Enter') handleSubmit(); }}
                 />
               </div>
 
@@ -291,7 +200,7 @@ const WritingHub = () => {
                 <button
                   type="button"
                   disabled={saving}
-                  onClick={(e) => handleSubmit(e as unknown as React.FormEvent)}
+                  onClick={handleSubmit}
                   className={`flex-[2] py-5 text-foreground font-black uppercase text-[10px] tracking-[0.3em] shadow-2xl shadow-primary/20 transition-all ${saving ? 'bg-primary/40 cursor-wait' : 'bg-primary hover:bg-primary/80 hover:scale-[1.02] active:scale-95'}`}
                 >
                   {saving ? 'Guardando...' : notebookToEdit ? 'Confirmar Cambios' : 'Crear Archivador'}
@@ -306,4 +215,5 @@ const WritingHub = () => {
 };
 
 export default WritingHub;
+
 

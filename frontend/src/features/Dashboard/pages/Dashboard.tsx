@@ -1,20 +1,14 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { ResponsivePie } from '@nivo/pie';
 import { ResponsiveBar } from '@nivo/bar';
 import MonolithicPanel from '@atoms/MonolithicPanel';
-import { useDashboardStore } from '@store/useDashboardStore';
 import { StatCard } from '@components/common/StatCard';
+import { useDashboard } from './useDashboard';
 
 const Dashboard: React.FC = () => {
   const { projectId } = useOutletContext<{ projectId: number }>();
-  const { stats, isLoading, error, loadStats } = useDashboardStore();
-
-  useEffect(() => {
-    if (projectId) {
-      loadStats(projectId);
-    }
-  }, [projectId, loadStats]);
+  const { stats, isLoading, error } = useDashboard(projectId);
 
   if (error) {
     return <div className="p-8 text-red-500">Error cargando el dashboard.</div>;
@@ -133,3 +127,4 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
+

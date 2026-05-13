@@ -1,173 +1,39 @@
-import React, { useState, useMemo } from 'react';
-import { Carpeta } from '@domain/models/database';
+import React from 'react';
 import { useLanguage } from '@context/LanguageContext';
-import { Outlet, useNavigate, useOutletContext, useLocation, useParams } from 'react-router-dom';
+import { Outlet, useOutletContext } from 'react-router-dom';
 import BibleTableView from '../components/BibleTableView';
 import CreateNodeModal from '../components/CreateNodeModal';
-import { FolderType } from '@domain/models/database';
 import { ArchitectContext } from '@domain/models/ui';
-import { WorldBibleUseCase } from '@application/useCases/WorldBibleUseCase';
 import ConfirmationModal from '@organisms/ConfirmationModal';
 import { useRightPanelStore } from '@store/useRightPanelStore';
-
+import { useWorldBibleLayout } from './useWorldBibleLayout';
 
 const WorldBibleLayout: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { projectName } = useParams();
   const { t } = useLanguage();
-  
-  // Consumir el contexto centralizado del ArchitectLayout
   const architectContext = useOutletContext<ArchitectContext>();
-  const { openPanel, closePanel, setActiveTab, setCustomContent } = useRightPanelStore();
-  
-  const [viewMode, setViewMode] = useState<'folders' | 'table'>('folders');
-  const [creationModalOpen, setCreationModalOpen] = useState(false);
-  const [targetParent, setTargetParent] = useState<Carpeta | null>(null);
-  
-  const [localEntities, setLocalEntities] = useState<any[]>([]);
-  const [localFolders, setLocalFolders] = useState<Carpeta[]>([]);
-  const [currentFolder, setCurrentFolder] = useState<Carpeta | null>(null);
+  const { openPanel, closePanel, setActiveTab } = useRightPanelStore();
 
-  // Estados para Modal de Confirmación
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [entityToDelete, setEntityToDelete] = useState<number | null>(null);
-
-  // Determinar si estamos en la raíz o en profundidad
-  const isRoot = useMemo(() => {
-    const path = location.pathname.split('?')[0];
-    return path.endsWith('/bible') || path.endsWith('/bible/');
-  }, [location.pathname]);
-
-  // Determinar si estamos en modo edición (Entidad o Dimensión)
-  const isEditorView = useMemo(() => {
-    return location.pathname.includes('/entity/') || location.pathname.includes('/dimension');
-  }, [location.pathname]);
-
-  // Obtener el título dinámico (Nombre de la carpeta o Biblia del Mundo)
-  const dynamicTitle = useMemo(() => {
-    if (isRoot) return "Biblia del Mundo";
-    
-    // PRIORIDAD 1: Si estamos en una DIMENSIÓN
-    if (location.pathname.includes('/dimension')) {
-       const folderMatch = location.pathname.match(/\/folder\/(\d+)/);
-       if (folderMatch) {
-         const id = Number(folderMatch[1]);
-         const folder = architectContext?.folders?.find(f => f.id === id);
-         return folder ? `Dimensión: ${folder.nombre}` : "Visor de Dimensiones";
-       }
-       return "Visor de Dimensiones";
-    }
-
-    // PRIORIDAD 2: Si estamos en una ENTIDAD
-    if (location.pathname.includes('/entity/')) {
-       return "Ficha de Entidad";
-    }
-
-    // PRIORIDAD 3: Si estamos en una CARPETA
-    const folderMatch = location.pathname.match(/\/folder\/(\d+)/);
-    if (folderMatch) {
-      const id = Number(folderMatch[1]);
-      const folder = architectContext?.folders?.find(f => f.id === id);
-      return folder ? folder.nombre : "Explorador de Archivos";
-    }
-
-    return "Biblia del Mundo";
-  }, [isRoot, location.pathname, architectContext?.folders]);
-
-  // Filtrar carpetas raíz para la vista Grid
-  const rootFolders = useMemo(() => {
-    return (architectContext?.folders || []).filter(f => !f.padre_id);
-  }, [architectContext?.folders]);
-
-  const handleOpenCreateModal = (parentFolder: Carpeta | null = null) => {
-    setTargetParent(parentFolder);
-    setCreationModalOpen(true);
-  };
-
-  React.useEffect(() => {
-    const loadData = async () => {
-      if (!architectContext?.projectId) return;
-      if (isRoot) {
-        const roots = (architectContext.folders || []).filter(f => !f.padre_id);
-        setLocalFolders(roots);
-        setLocalEntities([]);
-        setCurrentFolder(null);
-      } else {
-        const match = location.pathname.match(/\/folder\/(\d+)/);
-        if (match) {
-          const currentFolderId = Number(match[1]);
-          const folder = architectContext.folders?.find(f => f.id === currentFolderId);
-          setCurrentFolder(folder || null);
-          const { entities } = await WorldBibleUseCase.getFolderContent(currentFolderId);
-          setLocalEntities(entities);
-          setLocalFolders([]);
-        }
-      }
-    };
-    loadData();
-    window.addEventListener('folder-update', loadData);
-    window.addEventListener('entity-update', loadData);
-    return () => {
-      window.removeEventListener('folder-update', loadData);
-      window.removeEventListener('entity-update', loadData);
-    };
-  }, [isRoot, location.pathname, architectContext?.projectId, architectContext?.folders]);
-
-  const handleDeleteEntity = (id: number) => {
-    setEntityToDelete(id);
-    setDeleteConfirmOpen(true);
-  };
-
-  const confirmDeleteEntity = async () => {
-    if (!entityToDelete) return;
-    try {
-      await WorldBibleUseCase.deleteEntity(entityToDelete);
-      window.dispatchEvent(new CustomEvent('entity-update'));
-      setEntityToDelete(null);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleCreateSubmit = async (formData: { nombre: string; tipo: string; descripcion?: string }) => {
-    if (!architectContext?.projectId) return;
-    
-    try {
-      if (isRoot) {
-        // Root: Solo creamos carpetas
-        await WorldBibleUseCase.createCategory(
-          formData.nombre,
-          architectContext.projectId,
-          'FOLDER'
-        );
-        window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: null } }));
-      } else {
-        // No root: Solo creamos entidades
-        const currentFolderId = Number(location.pathname.match(/\/folder\/(\d+)/)?.[1]);
-        if (currentFolderId) {
-          const baseSlug = formData.nombre.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-          await WorldBibleUseCase.createEntity({
-            nombre: formData.nombre,
-            descripcion: formData.descripcion || '',
-            tipo: formData.tipo || 'PERSONAJE',
-            carpeta_id: currentFolderId,
-            project_id: architectContext.projectId,
-            slug: baseSlug,
-            contenido_json: null,
-            folder_slug: null,
-            imagen_url: null
-          } as any);
-          window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: currentFolderId } }));
-          window.dispatchEvent(new CustomEvent('entity-update'));
-        }
-      }
-    } catch (err) {
-      console.error(err);
-    }
-    
-    setCreationModalOpen(false);
-  };
+  const {
+    viewMode,
+    setViewMode,
+    creationModalOpen,
+    setCreationModalOpen,
+    targetParent,
+    localEntities,
+    localFolders,
+    currentFolder,
+    deleteConfirmOpen,
+    setDeleteConfirmOpen,
+    setEntityToDelete,
+    isRoot,
+    isEditorView,
+    dynamicTitle,
+    handleOpenCreateModal,
+    confirmDeleteEntity,
+    handleCreateSubmit,
+    projectName,
+    navigate
+  } = useWorldBibleLayout(architectContext);
 
   if (!architectContext) return <div className="p-20 text-center animate-pulse">Cargando contexto raíz...</div>;
 
@@ -175,7 +41,6 @@ const WorldBibleLayout: React.FC = () => {
     <div className="flex h-full w-full bg-background max-w-[1920px] mx-auto overflow-hidden">
       <main className="flex-1 overflow-y-auto custom-scrollbar relative bg-gradient-to-br from-background-dark to-surface-dark/20 text-foreground flex flex-col">
         
-        {/* Encabezado Unificado Centrado - Solo si no estamos en vista de editor */}
         {!isEditorView && (
           <header className="pt-12 pb-8 flex flex-col items-center justify-center text-center px-8 z-[100] shrink-0 animate-in fade-in slide-in-from-top-4 duration-700">
             <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-[hsl(var(--primary))] italic mb-4">
@@ -187,7 +52,6 @@ const WorldBibleLayout: React.FC = () => {
             </h1>
             
             <div className="w-full max-w-xl space-y-6">
-              {/* Buscador y Filtros Unificados */}
               <div className="flex items-center gap-0 bg-[hsl(var(--foreground)/0.02)] border border-[hsl(var(--foreground)/0.1)] focus-within:border-[hsl(var(--primary)/0.5)] transition-all group">
                 <div className="relative flex-1 flex items-center">
                   <span className="absolute left-4 material-symbols-outlined text-[hsl(var(--foreground)/0.2)] group-focus-within:text-[hsl(var(--primary))] transition-colors">search</span>
@@ -218,7 +82,6 @@ const WorldBibleLayout: React.FC = () => {
               </div>
 
               {isRoot ? (
-                /* Switch de Vista Centrado (Solo en Root) */
                 <div className="flex items-center justify-center gap-2 bg-background  border border-[hsl(var(--foreground)/0.1)] p-1 w-fit mx-auto rounded-full shadow-2xl animate-in fade-in zoom-in-95">
                   <button
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); setViewMode('folders'); }}
@@ -244,7 +107,6 @@ const WorldBibleLayout: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                /* Barra de Herramientas Contextual (Cuando estamos en una carpeta) */
                 <div className="flex flex-wrap items-center justify-center gap-3 animate-in fade-in slide-in-from-bottom-2">
                   <button
                     onClick={() => navigate(`/local/${projectName}/bible`)}
@@ -255,17 +117,12 @@ const WorldBibleLayout: React.FC = () => {
                   </button>
 
                   <button
-                    onClick={() => {
-                      const id = Number(location.pathname.match(/\/folder\/(\d+)/)?.[1]);
-                      const folder = architectContext?.folders?.find(f => f.id === id);
-                      handleOpenCreateModal(folder || null);
-                    }}
+                    onClick={() => handleOpenCreateModal(currentFolder)}
                     className="flex items-center gap-3 px-6 py-2.5 bg-primary/10 hover:bg-primary/20 border border-primary/20 text-primary transition-all rounded-full group"
                   >
                     <span className="material-symbols-outlined text-sm">add_circle</span>
                     <span className="text-[10px] font-black uppercase tracking-[0.2em]">Nuevo Nodo</span>
                   </button>
-
                 </div>
               )}
             </div>
@@ -281,8 +138,7 @@ const WorldBibleLayout: React.FC = () => {
               currentFolder,
               allFolders: architectContext.folders || [],
               handleOpenCreateModal: () => handleOpenCreateModal(currentFolder),
-              handleDeleteEntity,
-              // Arreglo para el error de contexto en Profile Views
+              handleDeleteEntity: (id: number) => { setEntityToDelete(id); setDeleteConfirmOpen(true); },
               setRightOpen: (open: boolean) => open ? openPanel('custom') : closePanel(),
               setRightPanelTab: setActiveTab,
               setRightPanelContent: (content: React.ReactNode) => useRightPanelStore.setState({ content, mode: 'custom', isOpen: true }),
@@ -321,3 +177,4 @@ const WorldBibleLayout: React.FC = () => {
 };
 
 export default WorldBibleLayout;
+

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Plantilla } from '@domain/models/database';
-import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
+import React from 'react';
 import ConfirmModal from '@organisms/ConfirmModal';
+import { useEntityBuilderSidebar } from './useEntityBuilderSidebar';
+import { Plantilla } from '@domain/models/database';
 
 interface EntityBuilderSidebarProps {
   templates: Plantilla[];
@@ -16,90 +16,21 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
   onRefresh, 
   projectId = 1
 }) => {
-  const [filter, setFilter] = useState('');
-  const [isCreating, setIsCreating] = useState(false);
-  const [newTpl, setNewTpl] = useState({ nombre: '', tipo: 'text' });
-  const [editingTpl, setEditingTpl] = useState<Plantilla | null>(null);
-  const [deletingId, setDeletingId] = useState<number | null>(null);
-
-  const filteredTemplates = (templates || []).filter(tpl =>
-    tpl.nombre?.toLowerCase().includes(filter.toLowerCase())
-  );
-
-  const handleDragStart = (e: React.DragEvent, template: Plantilla) => {
-    const data = JSON.stringify(template);
-    e.dataTransfer.setData('application/worldbuilder/attribute', data);
-    e.dataTransfer.setData('text/plain', data); // Fallback
-    e.dataTransfer.effectAllowed = 'copy';
-    
-    // Create drag preview ghost - ENHANCED FOR MINIMALISM
-    const ghost = document.createElement('div');
-    ghost.style.position = 'absolute';
-    ghost.style.top = '-1000px'; // Offscreen
-    ghost.className = 'px-3 py-1 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-black uppercase text-[9px] tracking-widest pointer-events-none shadow-2xl skew-x-[-10deg]';
-    ghost.innerText = template.nombre;
-    document.body.appendChild(ghost);
-    e.dataTransfer.setDragImage(ghost, 0, 0);
-    setTimeout(() => { if (document.body.contains(ghost)) document.body.removeChild(ghost); }, 0);
-  };
-
-  const handleDeleteTemplate = async (id: number) => {
-    // Legacy - replaced by custom modal logic
-  };
-
-  const handleCreateTemplate = async () => {
-    if (!newTpl.nombre.trim()) return;
-    try {
-      const created = await TemplateUseCase.createTemplate({
-        nombre: newTpl.nombre,
-        tipo: newTpl.tipo,
-        project_id: projectId, 
-        valor_defecto: '',
-        metadata: null,
-        es_obligatorio: 0,
-        aplica_a_todo: 0,
-        tipo_objetivo: null,
-        categoria: 'General',
-        orden: 0
-      });
-      
-      if (onRefresh) await onRefresh();
-      onAddTemplate(created);
-      setNewTpl({ nombre: '', tipo: 'text' });
-      setIsCreating(false);
-    } catch (err) {
-      // [LOG REMOVED]
-    }
-  };
-
-  const handleUpdateTemplate = async () => {
-    if (!editingTpl || !editingTpl.nombre.trim()) return;
-    try {
-      await TemplateUseCase.updateTemplate(editingTpl.id, {
-        nombre: editingTpl.nombre,
-        tipo: editingTpl.tipo
-      });
-      if (onRefresh) await onRefresh();
-      setEditingTpl(null);
-    } catch (err) {
-      // [LOG REMOVED]
-    }
-  };
-
-  const confirmDelete = async () => {
-    if (!deletingId) return;
-    try {
-      await TemplateUseCase.deleteTemplate(deletingId);
-      if (onRefresh) await onRefresh();
-      setDeletingId(null);
-    } catch (err) {
-      // [LOG REMOVED]
-    }
-  };
+  const {
+    filter, setFilter,
+    isCreating, setIsCreating,
+    newTpl, setNewTpl,
+    editingTpl, setEditingTpl,
+    deletingId, setDeletingId,
+    filteredTemplates,
+    handleDragStart,
+    handleCreateTemplate,
+    handleUpdateTemplate,
+    confirmDelete
+  } = useEntityBuilderSidebar(templates, onAddTemplate, onRefresh, projectId);
 
   return (
     <div className="flex flex-col h-full bg-background w-full">
-      {/* Header */}
       <div className="p-[1.5rem] border-b border-foreground/10 bg-gradient-to-br from-primary/10 to-transparent">
         <div className="flex items-center justify-between mb-[0.5rem]">
           <h3 className="text-[0.75rem] font-black uppercase tracking-[0.15em] text-[hsl(var(--primary))] flex items-center gap-[0.5rem]">
@@ -155,9 +86,6 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
         )}
       </div>
 
-      {/* Removed Atributos Activos section as per user request */}
-
-      {/* List */}
       <div className="flex-1 overflow-y-auto custom-scrollbar space-y-[0.5rem] p-[1rem] pr-[0.5rem]">
         {filteredTemplates.length === 0 ? (
           <div className="text-center py-[2rem] text-foreground/60 text-[0.75rem] italic">
@@ -180,20 +108,14 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
                   <button 
                     title="Borrar de la biblioteca"
                     className="size-[1.5rem] rounded-full flex items-center justify-center hover:bg-red-500/20 text-foreground/20 hover:text-red-500 transition-all"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDeletingId(tpl.id);
-                    }}
+                    onClick={(e) => { e.stopPropagation(); setDeletingId(tpl.id); }}
                   >
                     <span className="material-symbols-outlined text-[0.875rem]">delete</span>
                   </button>
                   <button 
                     title="Editar definición"
                     className="size-[1.5rem] rounded-full flex items-center justify-center hover:bg-[hsl(var(--primary)/0.2)] text-[hsl(var(--foreground)/0.4)] hover:text-[hsl(var(--primary))] transition-all"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditingTpl(tpl);
-                    }}
+                    onClick={(e) => { e.stopPropagation(); setEditingTpl(tpl); }}
                   >
                     <span className="material-symbols-outlined text-[1rem]">edit</span>
                   </button>
@@ -217,7 +139,6 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
         )}
       </div>
 
-      {/* Edit Form Overlay/Section */}
       {editingTpl && (
         <div className="p-[1.5rem] border-t border-[hsl(var(--foreground)/0.1)] bg-[hsl(var(--primary)/0.05)] space-y-[0.75rem] animate-in slide-in-from-bottom duration-300">
           <div className="flex items-center justify-between">
@@ -245,30 +166,16 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
             <option value="select">Selección Única</option>
           </select>
           <div className="flex gap-2">
-            <button
-               onClick={() => setEditingTpl(null)}
-               className="flex-1 py-[0.5rem] bg-[hsl(var(--foreground)/0.05)] text-[hsl(var(--foreground)/0.6)] text-[0.625rem] font-black uppercase tracking-widest hover:bg-[hsl(var(--foreground)/0.1)] transition-all"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={handleUpdateTemplate}
-              className="flex-1 py-[0.5rem] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-[0.625rem] font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all"
-            >
-              Actualizar
-            </button>
+            <button onClick={() => setEditingTpl(null)} className="flex-1 py-[0.5rem] bg-[hsl(var(--foreground)/0.05)] text-[hsl(var(--foreground)/0.6)] text-[0.625rem] font-black uppercase tracking-widest hover:bg-[hsl(var(--foreground)/0.1)] transition-all">Cancelar</button>
+            <button onClick={handleUpdateTemplate} className="flex-1 py-[0.5rem] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-[0.625rem] font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all">Actualizar</button>
           </div>
         </div>
       )}
 
-      {/* Footer Instructions */}
       <div className="p-[1rem] border-t border-[hsl(var(--foreground)/0.1)] text-center bg-[hsl(var(--foreground)/0.02)]">
-        <p className="text-[0.5625rem] font-bold uppercase tracking-[0.15em] text-[hsl(var(--foreground)/0.4)]">
-          Arrastra módulos al centro para añadir
-        </p>
+        <p className="text-[0.5625rem] font-bold uppercase tracking-[0.15em] text-[hsl(var(--foreground)/0.4)]">Arrastra módulos al centro para añadir</p>
       </div>
 
-      {/* Custom Deletion Modal */}
       <ConfirmModal
         isOpen={!!deletingId}
         onClose={() => setDeletingId(null)}
@@ -284,3 +191,4 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
 };
 
 export default EntityBuilderSidebar;
+

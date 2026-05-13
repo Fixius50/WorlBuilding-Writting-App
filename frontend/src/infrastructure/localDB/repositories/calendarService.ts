@@ -33,9 +33,9 @@ export const calendarService = {
     if (calendario.dias_semana_json !== undefined) { fields.push('dias_semana_json = ?'); values.push(calendario.dias_semana_json); }
     if (calendario.fecha_inicio_json !== undefined) { fields.push('fecha_inicio_json = ?'); values.push(calendario.fecha_inicio_json); }
 
-    if (fields.length === 0) return;
-
-    await sql`UPDATE calendarios SET ${sql(fields.join(', '), ...values)} WHERE id = ${id}`;
+    if (fields.length > 0) {
+      await sql`UPDATE calendarios SET ${sql(fields.join(', '), ...values)} WHERE id = ${id}`;
+    }
   },
 
   async delete(id: number): Promise<void> {

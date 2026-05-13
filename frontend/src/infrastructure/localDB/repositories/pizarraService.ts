@@ -39,9 +39,9 @@ export const pizarraService = {
     if (pizarra.aristas_json !== undefined) { fields.push('aristas_json = ?'); values.push(pizarra.aristas_json); }
     if (pizarra.viewport_json !== undefined) { fields.push('viewport_json = ?'); values.push(pizarra.viewport_json); }
 
-    if (fields.length === 0) return;
-
-    await sql`UPDATE pizarras SET ${sql(fields.join(', '), ...values)} WHERE id = ${id}`;
+    if (fields.length > 0) {
+      await sql`UPDATE pizarras SET ${sql(fields.join(', '), ...values)} WHERE id = ${id}`;
+    }
   },
 
   async delete(id: number): Promise<void> {

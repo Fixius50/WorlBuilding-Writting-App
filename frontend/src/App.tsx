@@ -73,8 +73,8 @@ const App = () => {
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="entities/:type/:entityId" element={<EntityRouter />} />
 
-                <Route path="map-editor/create/:folderId" element={<MapEditor mode="create" />} />
-                <Route path="map-editor/edit/:entityId" element={<MapEditor mode="edit" />} />
+                <Route path="map-editor/create/:folderId" element={<MapEditor />} />
+                <Route path="map-editor/edit/:entityId" element={<MapEditor />} />
 
                 <Route path="bible" element={<WorldBibleLayout />}>
                   <Route index element={<BibleGridView />} />

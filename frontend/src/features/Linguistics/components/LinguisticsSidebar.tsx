@@ -1,8 +1,7 @@
 import React from 'react';
 import { useLanguage } from '@context/LanguageContext';
-import MonolithicPanel from '@atoms/MonolithicPanel';
-import Button from '@atoms/Button';
 import { Word } from '@domain/models/database';
+import { useLinguisticsSidebar } from './useLinguisticsSidebar';
 
 export interface GrammarRule {
  id: number | string;
@@ -33,6 +32,7 @@ const LinguisticsSidebar: React.FC<SidebarProps> = ({
  onViewAllGlyphs
 }) => {
  const { t } = useLanguage();
+ const { topGlyphs, getStatusColor, hasRules, hasGlyphs } = useLinguisticsSidebar(glyphs, rules);
 
  return (
  <div className="h-full flex flex-col p-4 space-y-6 animate-in fade-in slide-in-from-right-4 overflow-y-auto custom-scrollbar">
@@ -70,7 +70,7 @@ const LinguisticsSidebar: React.FC<SidebarProps> = ({
  </div>
  <div className="p-4 monolithic-panel rounded-none">
  <div className="grid grid-cols-4 gap-2">
- {glyphs.slice(0, 12).map(g => (
+ {hasGlyphs ? topGlyphs.map(g => (
  <div
  key={g.id}
  onClick={() => onEditGlyph?.(g)}
@@ -79,8 +79,7 @@ const LinguisticsSidebar: React.FC<SidebarProps> = ({
  >
  <span>{g.lema}</span>
  </div>
- ))}
- {glyphs.length === 0 && (
+ )) : (
  <div className="col-span-4 py-8 flex items-center justify-center opacity-20">
  <span className="text-[8px] font-black uppercase font-mono">No Glyphs</span>
  </div>
@@ -103,10 +102,10 @@ const LinguisticsSidebar: React.FC<SidebarProps> = ({
  </button>
  </div>
  <div className="space-y-2">
- {rules.length > 0 ? rules.map(rule => (
+ {hasRules ? rules.map(rule => (
  <div key={rule.id} className="p-3 monolithic-panel rounded-none hover:border-primary/30 transition-all cursor-pointer group">
  <div className="flex items-center gap-2 mb-1">
- <div className={`size-1.5 rounded-full ${rule.status === 'complete' ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
+ <div className={`size-1.5 rounded-full ${getStatusColor(rule.status)}`}></div>
  <span className="text-[10px] font-bold text-foreground group-hover:text-primary transition-colors">{rule.titulo}</span>
  </div>
  <p className="text-[9px] text-foreground/60 leading-tight line-clamp-2">{rule.descripcion}</p>
@@ -123,3 +122,4 @@ const LinguisticsSidebar: React.FC<SidebarProps> = ({
 };
 
 export default LinguisticsSidebar;
+

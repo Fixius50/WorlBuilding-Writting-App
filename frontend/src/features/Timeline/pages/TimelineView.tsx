@@ -1,166 +1,51 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useLanguage } from '@context/LanguageContext';
 import { useOutletContext } from 'react-router-dom';
 import { TimelineUseCase } from '@application/useCases/TimelineUseCase';
-import { Evento, Entidad, DimensionLinea } from '@domain/models/database';
 import ConfirmationModal from '@organisms/ConfirmationModal';
 import Button from '@atoms/Button';
 import TimelineEventCard from '../components/TimelineEventCard';
-import { TimelineLine, UniverseExtended } from '@domain/models/timeline';
 import { useRightPanelStore } from '@store/useRightPanelStore';
-
+import { useTimelineView } from './useTimelineView';
 
 const TimelineView = () => {
   const { t } = useLanguage();
   const { projectId } = useOutletContext<{ projectId: number }>();
-  const { openPanel, setCustomContent } = useRightPanelStore();
+  const { setCustomContent } = useRightPanelStore();
 
-  const [universes, setUniverses] = useState<UniverseExtended[]>([]);
-  const [selectedUniverseId, setSelectedUniverseId] = useState<number | null>(null);
-  const [selectedTimelineId, setSelectedTimelineId] = useState<number | null>(null);
-  const [events, setEvents] = useState<Evento[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    universes,
+    selectedUniverseId,
+    setSelectedUniverseId,
+    selectedTimelineId,
+    setSelectedTimelineId,
+    events,
+    loading,
+    newEvent,
+    setNewEvent,
+    newLine,
+    setNewLine,
+    newUniverse,
+    setNewUniverse,
+    editingEvent,
+    setEditingEvent,
+    editingTimeline,
+    setEditingTimeline,
+    activeTab,
+    setActiveTab,
+    confirmState,
+    setConfirmState,
+    handleCreateUniverse,
+    handleUpdateUniverse,
+    handleDeleteUniverse,
+    handleCreateTimeline,
+    handleSaveEvent,
+    startEditEvent,
+    executeDeletion,
+    loadMultiverse
+  } = useTimelineView(projectId);
 
-  // States for creation/edit
-  const [newEvent, setNewEvent] = useState({ titulo: '', descripcion: '', fecha_simulada: '', ordenAbsoluto: 0 });
-  const [newLine, setNewLine] = useState({ nombre: '', descripcion: '', universoId: null as number | null });
-  const [newUniverse, setNewUniverse] = useState({ nombre: '', descripcion: '' });
-  
-  const [editingEvent, setEditingEvent] = useState<Evento | null>(null);
-  const [editingTimeline, setEditingTimeline] = useState<TimelineLine | null>(null);
-  
-  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState('universo'); // 'universo' | 'linea' | 'eventos'
-
-  const timelineRef = useRef<HTMLDivElement>(null);
-
-  // --- Data Loading ---
-  const loadMultiverse = useCallback(async () => {
-    if (!projectId) return;
-    try {
-      const allFolders = await TimelineUseCase.getUniverses(projectId);
-      const timelineFolders = allFolders.filter(f => f.tipo === 'TIMELINE');
-      const rootUniverses = timelineFolders.filter(f => f.padre_id === null);
-      
-      const extended: UniverseExtended[] = rootUniverses.map(uni => ({
-        ...uni,
-        lineasTemporales: timelineFolders.filter(f => f.padre_id === uni.id) as TimelineLine[]
-      }));
-
-      setUniverses(extended);
-      
-      if (!selectedUniverseId && extended.length > 0) {
-        setSelectedUniverseId(extended[0].id);
-      }
-    } catch (e) { /* [LOG REMOVED] */ }
-    setLoading(false);
-  }, [projectId]);
-
-  const loadEventsByUniverse = useCallback(async (universeId: number) => {
-    try {
-      // Cargamos todos los eventos que pertenecen a este universo (carpeta principal)
-      const data = await TimelineUseCase.getEventsByUniverse(universeId);
-      setEvents(data);
-    } catch (e) { /* [LOG REMOVED] */ }
-  }, []);
-
-  useEffect(() => { loadMultiverse(); }, [loadMultiverse]);
-
-  useEffect(() => {
-    if (selectedUniverseId) loadEventsByUniverse(selectedUniverseId);
-    else setEvents([]);
-  }, [selectedUniverseId, loadEventsByUniverse]);
-
-  // --- Handlers ---
-  const handleCreateUniverse = async () => {
-    if (!newUniverse.nombre || !projectId) return;
-    await TimelineUseCase.createUniverse(newUniverse.nombre, projectId);
-    setNewUniverse({ nombre: '', descripcion: '' });
-    await loadMultiverse();
-  };
-
-  const handleUpdateUniverse = async () => {
-    if (!selectedUniverseId || !projectId) return;
-    await TimelineUseCase.updateTimelineFolder(selectedUniverseId, newUniverse.nombre, projectId);
-    await loadMultiverse();
-  };
-
-  const handleDeleteUniverse = async () => {
-    if (!selectedUniverseId) return;
-    setConfirmState({
-      open: true,
-      type: 'universe',
-      id: selectedUniverseId,
-      title: 'Eliminar Universo',
-      message: '¿Estás seguro? Se borrarán todas las líneas y eventos asociados.'
-    });
-  };
-
-  const handleCreateTimeline = async () => {
-    if (!newLine.nombre || !projectId || !selectedUniverseId) return;
-    await TimelineUseCase.createTimeline(newLine.nombre, projectId, selectedUniverseId);
-    setNewLine({ nombre: '', descripcion: '', universoId: null });
-    await loadMultiverse();
-  };
-
-  const handleSaveEvent = async () => {
-    if (!selectedTimelineId || !newEvent.titulo || !projectId) return;
-    if (editingEvent) {
-      await TimelineUseCase.updateEvent(editingEvent.id, { ...newEvent, timeline_id: selectedTimelineId });
-    } else {
-      await TimelineUseCase.createEvent({
-        ...newEvent, project_id: projectId, timeline_id: selectedTimelineId,
-        orden: 0
-      });
-    }
-    setNewEvent({ titulo: '', descripcion: '', fecha_simulada: '', ordenAbsoluto: events.length + 2 });
-    setEditingEvent(null);
-    if (selectedUniverseId) loadEventsByUniverse(selectedUniverseId);
-  };
-
-  const startEditEvent = (event: Evento) => {
-    setEditingEvent(event);
-    setSelectedEventId(event.id);
-    setNewEvent({
-      titulo: event.titulo,
-      descripcion: event.descripcion || '',
-      fecha_simulada: event.fecha_simulada || '',
-      ordenAbsoluto: 0 
-    });
-    setActiveTab('eventos');
-    openPanel('event', event.id, event.titulo);
-  };
-
-  // --- Deletion Confirmation ---
-  const [confirmState, setConfirmState] = useState<{ open: boolean; type: string | null; id: number | null; title: string; message: string; }>({
-    open: false, type: null, id: null, title: '', message: ''
-  });
-
-  const executeDeletion = async () => {
-    const { type, id } = confirmState;
-    if (!type || !id) return;
-    if (type === 'TIMELINE') {
-        // Borrado en cascada: Eliminar carpeta y eventos asociados a esa rama
-        await TimelineUseCase.deleteTimeline(id);
-        if (selectedTimelineId === id) setSelectedTimelineId(selectedUniverseId);
-    } else if (type === 'EVENT') {
-        await TimelineUseCase.deleteEvent(id);
-        if (selectedUniverseId) loadEventsByUniverse(selectedUniverseId);
-    } else if (type === 'universe') {
-        await TimelineUseCase.deleteUniverse(id);
-        setSelectedUniverseId(null);
-    }
-    await loadMultiverse();
-    setConfirmState({ ...confirmState, open: false });
-  };
-
-  // --- Effect to sync sidebar with store ---
-  useEffect(() => {
-    setCustomContent(sidebarContent, 'Gestión de Multiversos');
-  }, [selectedUniverseId, selectedTimelineId, activeTab, newEvent, newUniverse, universes]);
-
-  // --- Renderers ---
-  const renderUniverseTab = () => (
+  const renderUniverseTab = useCallback(() => (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
       <div className="space-y-2">
         <h3 className="text-[10px] font-black uppercase text-amber-500 tracking-widest mb-3 flex items-center gap-2">
@@ -216,9 +101,9 @@ const TimelineView = () => {
         </div>
       </div>
     </div>
-  );
+  ), [universes, selectedUniverseId, newUniverse, handleCreateUniverse, handleUpdateUniverse, handleDeleteUniverse, setSelectedUniverseId, setNewUniverse]);
 
-  const renderTimelineTab = () => {
+  const renderTimelineTab = useCallback(() => {
     const activeUniverse = universes.find(u => u.id === selectedUniverseId);
     return (
       <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
@@ -234,7 +119,6 @@ const TimelineView = () => {
                 Líneas en "{activeUniverse?.nombre}"
               </h3>
               <div className="grid grid-cols-1 gap-1">
-                {/* Línea Original (Siempre presente) */}
                 <button
                   onClick={() => { setSelectedTimelineId(selectedUniverseId); setEditingTimeline(null); }}
                   className={`text-left p-3 border transition-all flex items-center justify-between group ${selectedTimelineId === selectedUniverseId ? 'bg-amber-500/10 border-amber-500 text-amber-400' : 'bg-foreground/5 border-foreground/10 text-foreground/60 hover:bg-foreground/10'}`}
@@ -246,9 +130,8 @@ const TimelineView = () => {
                   <span className="material-symbols-outlined text-sm opacity-40">{selectedTimelineId === selectedUniverseId ? 'stars' : 'radio_button_checked'}</span>
                 </button>
 
-                <div className="h-4" /> {/* Separador */}
+                <div className="h-4" />
 
-                {/* Ramas secundarias */}
                 {activeUniverse?.lineasTemporales.map(line => (
                   <div key={line.id} className="relative group/item">
                     <button
@@ -306,55 +189,61 @@ const TimelineView = () => {
         )}
       </div>
     );
-  };
+  }, [universes, selectedUniverseId, selectedTimelineId, editingTimeline, newLine, handleCreateTimeline, loadMultiverse, projectId, setSelectedTimelineId, setEditingTimeline, setConfirmState, setNewLine]);
 
-  const sidebarContent = (
-    <>
-      <div className="p-4 border-b border-foreground/10">
-        <div className="flex bg-background/40 p-1 gap-1">
-          {[
-            { id: 'universo', label: 'Multiverso', icon: 'language', color: 'amber' },
-            { id: 'linea', label: 'Línea', icon: 'timeline', color: 'indigo' },
-            { id: 'eventos', label: 'Eventos', icon: 'event', color: 'primary' }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-2 text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === tab.id ? `bg-${tab.color}-500/20 text-${tab.color}-400 border border-${tab.color}-500/40` : 'text-foreground/40 hover:text-foreground/60'}`}
-            >
-              <span className="material-symbols-outlined text-sm">{tab.icon}</span>
-              <span className="hidden sm:inline">{tab.label}</span>
-            </button>
-          ))}
+  useEffect(() => {
+    const sidebarContent = (
+      <>
+        <div className="p-4 border-b border-foreground/10">
+          <div className="flex bg-background/40 p-1 gap-1">
+            {[
+              { id: 'universo', label: 'Multiverso', icon: 'language', color: 'amber' },
+              { id: 'linea', label: 'Línea', icon: 'timeline', color: 'indigo' },
+              { id: 'eventos', label: 'Eventos', icon: 'event', color: 'primary' }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 py-2 text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === tab.id ? `bg-${tab.color}-500/20 text-${tab.color}-400 border border-${tab.color}-500/40` : 'text-foreground/40 hover:text-foreground/60'}`}
+              >
+                <span className="material-symbols-outlined text-sm">{tab.icon}</span>
+                <span className="hidden sm:inline">{tab.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-        {activeTab === 'universo' && renderUniverseTab()}
-        {activeTab === 'linea' && renderTimelineTab()}
-        {activeTab === 'eventos' && (
-           <div className="space-y-6">
-             {!selectedTimelineId ? (
-                <div className="p-10 text-center opacity-30 italic text-[10px] uppercase font-black">Selecciona una línea temporal primero.</div>
-             ) : (
-                <div className="bg-background/20 p-4 border border-foreground/10 space-y-4">
-                  <h3 className="text-[10px] font-black uppercase text-primary flex items-center justify-between">
-                    {editingEvent ? 'Editar Evento' : 'Añadir Hito'}
-                    {editingEvent && <button onClick={() => setEditingEvent(null)} className="text-[8px] uppercase">Cancelar</button>}
-                  </h3>
-                  <input className="w-full bg-background border border-foreground/20 p-2 text-xs outline-none focus:border-primary" value={newEvent.titulo} onChange={e => setNewEvent({...newEvent, titulo: e.target.value})} placeholder="Título..." />
-                  <div className="grid grid-cols-2 gap-2">
-                    <input className="w-full bg-background border border-foreground/20 p-2 text-xs outline-none focus:border-primary" value={newEvent.fecha_simulada} onChange={e => setNewEvent({...newEvent, fecha_simulada: e.target.value})} placeholder="Fecha..." />
-                    <input type="number" className="w-full bg-background border border-foreground/20 p-2 text-xs outline-none focus:border-primary" value={newEvent.ordenAbsoluto} onChange={e => setNewEvent({...newEvent, ordenAbsoluto: parseInt(e.target.value) || 0})} />
+        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+          {activeTab === 'universo' && renderUniverseTab()}
+          {activeTab === 'linea' && renderTimelineTab()}
+          {activeTab === 'eventos' && (
+             <div className="space-y-6">
+               {!selectedTimelineId ? (
+                  <div className="p-10 text-center opacity-30 italic text-[10px] uppercase font-black">Selecciona una línea temporal primero.</div>
+               ) : (
+                  <div className="bg-background/20 p-4 border border-foreground/10 space-y-4">
+                    <h3 className="text-[10px] font-black uppercase text-primary flex items-center justify-between">
+                      {editingEvent ? 'Editar Evento' : 'Añadir Hito'}
+                      {editingEvent && <button onClick={() => setEditingEvent(null)} className="text-[8px] uppercase">Cancelar</button>}
+                    </h3>
+                    <input className="w-full bg-background border border-foreground/20 p-2 text-xs outline-none focus:border-primary" value={newEvent.titulo} onChange={e => setNewEvent({...newEvent, titulo: e.target.value})} placeholder="Título..." />
+                    <div className="grid grid-cols-2 gap-2">
+                      <input className="w-full bg-background border border-foreground/20 p-2 text-xs outline-none focus:border-primary" value={newEvent.fecha_simulada} onChange={e => setNewEvent({...newEvent, fecha_simulada: e.target.value})} placeholder="Fecha..." />
+                      <input type="number" className="w-full bg-background border border-foreground/20 p-2 text-xs outline-none focus:border-primary" value={newEvent.ordenAbsoluto} onChange={e => setNewEvent({...newEvent, ordenAbsoluto: parseInt(e.target.value) || 0})} />
+                    </div>
+                    <textarea className="w-full bg-background border border-foreground/20 p-2 text-xs outline-none focus:border-primary h-24 resize-none" value={newEvent.descripcion} onChange={e => setNewEvent({...newEvent, descripcion: e.target.value})} placeholder="Crónica..." />
+                    <Button variant="primary" onClick={handleSaveEvent} className="w-full justify-center !text-[10px]">Guardar</Button>
                   </div>
-                  <textarea className="w-full bg-background border border-foreground/20 p-2 text-xs outline-none focus:border-primary h-24 resize-none" value={newEvent.descripcion} onChange={e => setNewEvent({...newEvent, descripcion: e.target.value})} placeholder="Crónica..." />
-                  <Button variant="primary" onClick={handleSaveEvent} className="w-full justify-center !text-[10px]">Guardar</Button>
-                </div>
-             )}
-           </div>
-        )}
-      </div>
-    </>
-  );
+               )}
+             </div>
+          )}
+        </div>
+      </>
+    );
+
+    setCustomContent(sidebarContent, 'Gestión de Multiversos');
+  }, [activeTab, renderUniverseTab, renderTimelineTab, selectedTimelineId, editingEvent, newEvent, setEditingEvent, setNewEvent, handleSaveEvent, setActiveTab, setCustomContent]);
+
+  if (loading) return <div className="flex-1 flex items-center justify-center bg-background text-foreground/40 font-black uppercase tracking-[0.5em] animate-pulse">Cargando Multiverso...</div>;
 
   return (
     <div className="flex h-screen bg-background text-foreground overflow-hidden">
@@ -386,7 +275,6 @@ const TimelineView = () => {
             
             return (
               <div className="min-h-full p-10 space-y-12">
-                {/* Render Main Line (Root) */}
                 <div className="relative">
                   <div className="flex items-center gap-4 mb-4">
                     <span className="text-[10px] font-black uppercase text-amber-500 tracking-widest bg-amber-500/10 px-3 py-1">Línea Original</span>
@@ -402,15 +290,15 @@ const TimelineView = () => {
                             .map(event => (
                               <div key={event.id} className="w-[300px] shrink-0">
                                 <TimelineEventCard
-                                event={event}
-                                trackId={null}
+                                  event={event}
+                                  trackId={null}
                                   posX={0}
-                                   posY={0}
-                                   linkedEntities={[]}
-                                   onOpenInspector={() => startEditEvent(event)}
-                                   onEditStart={() => startEditEvent(event)}
-                                   onDeleteRequest={() => {}}
-                                   onLinkRequest={() => {}}
+                                  posY={0}
+                                  linkedEntities={[]}
+                                  onOpenInspector={() => startEditEvent(event)}
+                                  onEditStart={() => startEditEvent(event)}
+                                  onDeleteRequest={() => {}}
+                                  onLinkRequest={() => {}}
                                  />
                               </div>
                             ))
@@ -420,7 +308,6 @@ const TimelineView = () => {
                   </div>
                 </div>
 
-                {/* Render Branches (Subfolders as Lines) */}
                 {branches.map(line => (
                   <div key={line.id} className="relative group">
                     <div className="flex items-center gap-4 mb-4">
@@ -440,15 +327,15 @@ const TimelineView = () => {
                               .map(event => (
                                 <div key={event.id} className="w-[300px] shrink-0">
                                   <TimelineEventCard
-                                  event={event}
-                                  trackId={null}
+                                    event={event}
+                                    trackId={null}
                                     posX={0}
-                                     posY={0}
-                                     linkedEntities={[]}
-                                     onOpenInspector={() => startEditEvent(event)}
-                                     onEditStart={() => startEditEvent(event)}
-                                     onDeleteRequest={() => {}}
-                                     onLinkRequest={() => {}}
+                                    posY={0}
+                                    linkedEntities={[]}
+                                    onOpenInspector={() => startEditEvent(event)}
+                                    onEditStart={() => startEditEvent(event)}
+                                    onDeleteRequest={() => {}}
+                                    onLinkRequest={() => {}}
                                    />
                                 </div>
                               ))
@@ -484,3 +371,4 @@ const TimelineView = () => {
 };
 
 export default TimelineView;
+

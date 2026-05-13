@@ -7,7 +7,7 @@ export const { sql } = sqlocal;
 /**
  * Inicializa el esquema de la base de datos si no existe.
  */
-export async function initializeDatabase() {
+export const initializeDatabase = async () => {
  try {
  // Activar claves foráneas para que ON DELETE CASCADE funcione
  await sql`PRAGMA foreign_keys = ON`;

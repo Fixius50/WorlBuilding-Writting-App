@@ -1,316 +1,52 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useParams, useOutletContext, useNavigate } from 'react-router-dom';
-import { createPortal } from 'react-dom';
-import { useLanguage } from '@context/LanguageContext';
-import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
-import { EntityUseCase } from '@application/useCases/EntityUseCase';
-import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
-import { Entidad, Plantilla } from '@domain/models/database';
+import React from 'react';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
-import Switch from '@atoms/Switch';
-import { useRightPanelStore } from '@store/useRightPanelStore';
 import AttributeField from './AttributeField';
 import Avatar from '@atoms/Avatar';
 import EntityBuilderSidebar from '../components/EntityBuilderSidebar';
-import Breadcrumbs from '@molecules/Breadcrumbs';
-import { Carpeta, Valor } from '@domain/models/database';
 import ConfirmationModal from '@organisms/ConfirmationModal';
 import FamilyTreeAssigner from '../components/FamilyTreeAssigner';
 import TemplateSettingsModal from '@organisms/TemplateSettingsModal';
-
-interface LayoutContext {
-  projectId: number;
-}
-
-interface EntityField {
-  id: number | string;
-  attribute: Plantilla;
-  value: string;
-  isTemp: boolean;
-}
-
-interface EntityExtras {
-  color?: string;
-  tags?: string;
-  iconUrl?: string | null;
-  categoria?: string;
-  appearance?: string;
-  notes?: string;
-  images?: string[];
-}
+import { useEntityBuilder } from './useEntityBuilder';
 
 interface EntityBuilderProps {
   mode: 'creation' | 'edit';
 }
 
 const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
-  const { username, projectName, entityId, folderId, type } = useParams();
-  const navigate = useNavigate();
-  const [isCreation, setIsCreation] = useState(mode === 'creation');
-
-  const { projectId } = useOutletContext<LayoutContext>();
-  const { openPanel, setCustomContent } = useRightPanelStore();
-
-  // Core Data State
-  const [entity, setEntity] = useState<Partial<Entidad>>({
-    nombre: '',
-    tipo: type || 'PERSONAJE',
-    descripcion: '',
-    contenido_json: JSON.stringify({
-      color: '#6366f1',
-      tags: '',
-      iconUrl: null,
-      categoria: 'Individual',
-      appearance: '',
-      notes: '',
-      images: []
-    }),
-    project_id: projectId || 1, 
-    carpeta_id: folderId ? Number(folderId) : null
-  });
-
-  const [path, setPath] = useState<Carpeta[]>([]);
-
-  const [fields, setFields] = useState<EntityField[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [removedFieldIds, setRemovedFieldIds] = useState<number[]>([]);
-  const [availableTemplates, setAvailableTemplatesLocal] = useState<Plantilla[]>([]);
-  const [activeEntityTab, setActiveEntityTab] = useState('identity');
-  const [zoomImage, setZoomImage] = useState<string | null>(null);
-  const [showLibrary, setShowLibrary] = useState<boolean>(false);
-  const [editingTemplate, setEditingTemplate] = useState<Plantilla | null>(null);
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
-
-
-  const [isDraggingOver, setIsDraggingOver] = useState(false);
-
-  // Parse contenido_json safely
-  const getExtra = useCallback((): EntityExtras => {
-    try {
-      return JSON.parse(entity.contenido_json || '{}') as EntityExtras;
-    } catch (e) {
-      return {};
-    }
-  }, [entity.contenido_json]);
-
-  const updateExtra = useCallback((updates: Partial<EntityExtras>) => {
-    const current = getExtra();
-    setEntity(prev => ({
-      ...prev,
-      contenido_json: JSON.stringify({ ...current, ...updates })
-    }));
-  }, [getExtra]);
-
-  // --- INITIALIZATION ---
-  useEffect(() => {
-    openPanel('custom', 0, 'Constructor de Entidad');
-
-
-    return () => {
-    };
-  }, []);
-
-  useEffect(() => {
-    const init = async () => {
-      setLoading(true);
-      try {
-        const templates = await TemplateUseCase.getTemplates(projectId || 1); 
-        setAvailableTemplatesLocal(templates);
-        /* setAddAttributeHandler removed - handled via setCustomContent */
-
-        if (!isCreation && entityId) {
-          const data = await EntityUseCase.getById(Number(entityId));
-          if (data) {
-            setEntity(data);
-            const vals = await TemplateUseCase.getEntityValues(data.id);
-            setFields(vals.map(v => ({
-              id: v.id,
-              attribute: v.plantilla || { id: v.plantilla_id, nombre: 'Unknown', tipo: 'text' } as Plantilla,
-              value: v.valor || '',
-              isTemp: false
-            })));
-          }
-        }
-      } catch (err) {
-        // [LOG REMOVED]
-      } finally {
-        setLoading(false);
-      }
-    };
-    init();
-  }, [entityId, isCreation, projectId]);
-
-  // Sincronizar projectId si llega después de la montura inicial
-  useEffect(() => {
-    if (projectId && entity.project_id !== projectId) {
-      setEntity(prev => ({ ...prev, project_id: projectId }));
-    }
-  }, [projectId]);
-
-
-  useEffect(() => {
-    const loadPath = async () => {
-      if (entity.carpeta_id) {
-        const p = await WorkspaceUseCase.getFolderPath(entity.carpeta_id);
-        setPath(p);
-      }
-    };
-    loadPath();
-  }, [entity.carpeta_id]);
-
-  const refreshTemplates = async () => {
-    try {
-      const templates = await TemplateUseCase.getTemplates(projectId || 1);
-      setAvailableTemplatesLocal(templates);
-      return templates;
-    } catch (err) {
-      return [];
-    }
-  };
-  // --- SIDEBAR SYNC (DESACTIVADO EN FAVOR DE LIBRERÍA LOCAL) ---
-  /* 
-  useEffect(() => {
-    setCustomContent(
-      <EntityBuilderSidebar
-        key={`sidebar-${availableTemplates.length}-${activeEntityTab}`}
-        templates={availableTemplates}
-        onAddTemplate={(tpl) => {
-          setFields(prev => [...prev, {
-            id: `temp-${tpl.id}-${Date.now()}`,
-            attribute: tpl,
-            value: tpl.valor_defecto || '',
-            isTemp: true
-          }]);
-        }}
-        onRefresh={refreshTemplates}
-        projectId={projectId}
-      />,
-      'Gestión de Atributos'
-    );
-  }, [availableTemplates, activeEntityTab, projectId]);
-  */
-
-
-  // --- HANDLERS ---
-  const handleSave = useCallback(async (redirect = true) => {
-    setSaving(true);
-    try {
-      let savedEntity: Entidad;
-      if (isCreation) {
-        savedEntity = await EntityUseCase.create(entity as Omit<Entidad, 'id' | 'fecha_creacion' | 'fecha_actualizacion' | 'borrado'>);
-      } else {
-        await EntityUseCase.update(entity.id!, entity as Partial<Entidad>);
-        const refreshed = await EntityUseCase.getById(entity.id!);
-        savedEntity = refreshed ?? (entity as unknown as Entidad);
-      }
-
-      window.dispatchEvent(new CustomEvent('folder-update', { 
-        detail: { folderId: savedEntity.carpeta_id } 
-      }));
-
-      const updatedFields = [...fields];
-      for (let i = 0; i < updatedFields.length; i++) {
-        const f = updatedFields[i];
-        if (f.isTemp) {
-          await TemplateUseCase.addEntityValue(savedEntity.id, f.attribute.id, f.value);
-        } else {
-          await TemplateUseCase.updateEntityValue(f.id as number, f.value);
-        }
-      }
-
-      for (const rid of removedFieldIds) {
-        if (typeof rid === 'number') {
-          await TemplateUseCase.deleteEntityValue(rid);
-        }
-      }
-
-      if (redirect) {
-        navigate(-1);
-      } else {
-        setEntity(savedEntity);
-        setIsCreation(false);
-        setRemovedFieldIds([]);
-        const freshValues = await TemplateUseCase.getEntityValues(savedEntity.id);
-        setFields(freshValues.map(v => ({
-          id: v.id,
-          attribute: v.plantilla || { id: v.plantilla_id, nombre: 'Unknown', tipo: 'text' } as Plantilla,
-          value: v.valor || '',
-          isTemp: false
-        })));
-      }
-    } catch (err) {
-      // [LOG REMOVED]
-    } finally {
-      setSaving(false);
-    }
-  }, [entity, fields, isCreation, navigate, removedFieldIds, projectId]);
-
-  const handleFieldChange = (fieldId: number | string, value: string) => {
-    setFields(prev => prev.map(f => f.id === fieldId ? { ...f, value } : f));
-  };
-
-  const handleRemoveField = (fieldId: number | string) => {
-    const field = fields.find(f => f.id === fieldId);
-    if (field && !field.isTemp) {
-      setRemovedFieldIds(prev => [...prev, field.id as number]);
-    }
-    setFields(prev => prev.filter(f => f.id !== fieldId));
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-    
-    Array.from(files).forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const current = getExtra();
-        const imgs = [...(current.images || []), reader.result as string];
-        updateExtra({ images: imgs });
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const removeImage = (index: number) => {
-    const current = getExtra();
-    const imgs = (current.images || []).filter((_: string, i: number) => i !== index);
-    updateExtra({ images: imgs });
-  };
-
-  const handleDragOverArea = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
-    setIsDraggingOver(true);
-  };
-
-  const handleDragLeaveArea = () => {
-    setIsDraggingOver(false);
-  };
-
-  const handleDropArea = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDraggingOver(false);
-    try {
-      const data = e.dataTransfer.getData('application/worldbuilder/attribute') || 
-                   e.dataTransfer.getData('text/plain');
-      if (data) {
-        const tpl = JSON.parse(data) as Plantilla;
-        setFields(prev => [...prev, {
-          id: `temp-${tpl.id}-${Date.now()}`,
-          attribute: tpl,
-          value: tpl.valor_defecto || '',
-          isTemp: true
-        }]);
-      }
-    } catch (err) {
-      // [LOG REMOVED]
-    }
-  };
+  const {
+    entity,
+    setEntity,
+    fields,
+    loading,
+    saving,
+    deleteModalOpen,
+    setDeleteModalOpen,
+    availableTemplates,
+    activeEntityTab,
+    setActiveEntityTab,
+    zoomImage,
+    setZoomImage,
+    showLibrary,
+    setShowLibrary,
+    editingTemplate,
+    setEditingTemplate,
+    isDraggingOver,
+    extras,
+    projectId,
+    handleSave,
+    handleFieldChange,
+    handleRemoveField,
+    handleImageUpload,
+    removeImage,
+    handleDragOverArea,
+    handleDragLeaveArea,
+    handleDropArea,
+    handleDeleteEntity,
+    updateExtra,
+    refreshTemplates,
+    navigate
+  } = useEntityBuilder(mode);
 
   if (loading) return (
     <div className="flex items-center justify-center h-full bg-background animate-pulse">
@@ -320,32 +56,21 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
     </div>
   );
 
-  const extras = getExtra();
-
-  const isInBible = location.pathname.includes('/bible');
-
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden relative">
       <ConfirmationModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
-        onConfirm={async () => {
-          if (entity.id) {
-            await EntityUseCase.delete(entity.id);
-            window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: entity.carpeta_id } }));
-            navigate(-1);
-          }
-        }}
+        onConfirm={handleDeleteEntity}
         title="Confirmar Eliminación"
         message="¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer."
         confirmText="Borrar"
         cancelText="Cancelar"
       />
       <div className="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
-                {/* CABECERA UNIFICADA MONOLÍTICA */}
+        {/* CABECERA UNIFICADA MONOLÍTICA */}
         <div className="sticky top-0 z-40 bg-background border-b border-foreground/10 animate-in slide-in-from-top-4 duration-700">
           
-          {/* 1. INFORMACIÓN DE ENTIDAD Y ACCIONES (PARTE SUPERIOR) */}
           <div className="px-8 lg:px-12 py-4 flex items-center justify-between w-full max-w-7xl mx-auto gap-8">
             <div className="flex items-center gap-6 min-w-0">
               <Avatar 
@@ -392,7 +117,6 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
             </div>
           </div>
 
-          {/* 2. NAVEGACIÓN DE PESTAÑAS (PARTE INFERIOR) */}
           <div className="border-t border-foreground/5 bg-foreground/[0.02]">
             <div className="flex items-center justify-center gap-12 max-w-7xl mx-auto">
               {['identity', 'narrative', 'attributes', 'relationships'].map((tab) => (
@@ -492,7 +216,6 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                   </div>
                 </div>
 
-                {/* APARIENCIA Y RASGOS */}
                 <div className="monolithic-panel border border-white/10 bg-black/20 p-8 space-y-6">
                   <header className="flex items-center gap-3 text-[hsl(var(--primary))] border-b border-[hsl(var(--foreground)/0.05)] pb-4">
                     <span className="material-symbols-outlined text-lg">auto_awesome</span>
@@ -508,7 +231,6 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
               </div>
 
               <div className="space-y-12">
-                {/* ARCHIVOS VISUALES */}
                 <div className="monolithic-panel border border-white/10 bg-black/20 p-8 space-y-6">
                   <header className="flex items-center gap-3 text-[hsl(var(--primary))] border-b border-[hsl(var(--foreground)/0.05)] pb-4">
                     <span className="material-symbols-outlined text-lg">photo_library</span>
@@ -537,7 +259,6 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                   </div>
                 </div>
 
-                {/* NOTAS DE DESARROLLADOR */}
                 <div className="monolithic-panel border border-white/10 bg-black/20 p-8 space-y-6">
                   <header className="flex items-center gap-3 text-[hsl(var(--primary))] border-b border-[hsl(var(--foreground)/0.05)] pb-4">
                     <span className="material-symbols-outlined text-lg">edit_note</span>
@@ -594,23 +315,17 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                     {showLibrary ? 'Cerrar Biblioteca' : 'Añadir Módulo'}
                   </button>
 
-                  {/* 
-                      LIBRERÍA FLOTANTE (DROPDOWN LOCAL)
-                      Esta sección sustituye la antigua integración con el panel derecho global.
-                      Se utiliza un posicionamiento absoluto para que flote sobre el contenido sin desplazar el layout.
-                  */}
                   {showLibrary && (
                     <div className="absolute top-full right-0 mt-4 w-[22rem] h-[32rem] z-50 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
                       <div className="h-full border border-foreground/10 bg-background overflow-hidden flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                         <EntityBuilderSidebar
                           templates={availableTemplates}
                           onAddTemplate={(tpl) => {
-                            setFields(prev => [...prev, {
-                              id: `temp-${tpl.id}-${Date.now()}`,
-                              attribute: tpl,
-                              value: tpl.valor_defecto || '',
-                              isTemp: true
-                            }]);
+                            handleDropArea({
+                              preventDefault: () => {},
+                              stopPropagation: () => {},
+                              dataTransfer: { getData: () => JSON.stringify(tpl) }
+                            } as any);
                           }}
                           onRefresh={refreshTemplates}
                           projectId={projectId}
@@ -619,15 +334,8 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                     </div>
                   )}
                 </div>
-
-
               </header>
               
-              {/* 
-                  CONTENEDOR FLEXIBLE DE ATRIBUTOS
-                  Se ha migrado de 'grid' a 'flex-wrap' para permitir que cada módulo (AttributeField)
-                  tenga un ancho variable según su tipo de dato, permitiendo un layout más orgánico.
-              */}
               <div 
                 className={`flex flex-wrap gap-8 p-4 transition-all duration-500 border-2 border-transparent ${isDraggingOver ? 'bg-primary/5 border-dashed border-primary/40 shadow-2xl shadow-primary/5' : ''}`}
                 onDragOver={handleDragOverArea}
@@ -635,7 +343,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                 onDrop={handleDropArea}
               >
                 {fields.length === 0 && !isDraggingOver && (
-                  <div className="col-span-full py-32 border border-dashed border-white/5 flex flex-col items-center justify-center text-foreground/20 bg-background">
+                  <div className="col-span-full py-32 border border-dashed border-white/5 flex flex-col items-center justify-center text-foreground/20 bg-background w-full">
                     <span className="material-symbols-outlined text-5xl mb-6 font-light">inventory_2</span>
                     <p className="text-[10px] font-black uppercase tracking-[0.3em]">Área de Atributos Vacía</p>
                     <p className="text-[9px] mt-4 opacity-50 italic">Arrastra aquí tus módulos desde el lateral derecho</p>
@@ -652,36 +360,26 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                     />
                   </div>
                 ))}
-            </div>
+              </div>
 
-            {editingTemplate && (
-              <TemplateSettingsModal
-                template={editingTemplate}
-                onClose={() => setEditingTemplate(null)}
-                onSave={async () => {
-                  const updatedTemplates = await refreshTemplates();
-                  const updatedTpl = updatedTemplates.find(t => t.id === editingTemplate.id);
-                  
-                  if (updatedTpl) {
-                    setFields(prev => prev.map(f => 
-                      f.attribute.id === updatedTpl.id 
-                      ? { ...f, attribute: updatedTpl } 
-                      : f
-                    ));
-                  }
-                  setEditingTemplate(null);
-                }}
-              />
-            )}
-          </div>
-        )}
+              {editingTemplate && (
+                <TemplateSettingsModal
+                  template={editingTemplate}
+                  onClose={() => setEditingTemplate(null)}
+                  onSave={async () => {
+                    await refreshTemplates();
+                    setEditingTemplate(null);
+                  }}
+                />
+              )}
+            </div>
+          )}
 
           {activeEntityTab === 'relationships' && entity.id && (
             <FamilyTreeAssigner entityId={entity.id} projectId={projectId} />
           )}
         </div>
 
-        {/* Overlays */}
         {zoomImage && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 animate-in fade-in duration-300" onClick={() => setZoomImage(null)}>
             <button className="absolute top-10 right-10 text-white/40 hover:text-white transition-colors" onClick={() => setZoomImage(null)}>
@@ -696,3 +394,4 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
 };
 
 export default EntityBuilder;
+

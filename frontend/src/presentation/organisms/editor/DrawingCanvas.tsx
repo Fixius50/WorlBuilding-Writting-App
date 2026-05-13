@@ -31,14 +31,15 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   useEffect(() => {
     if (tool === 'select' && transformerRef.current && selectedShapeId && !Array.isArray(selectedShapeId)) {
       const stage = stageRef.current;
-      if (!stage) return;
-      const selectedNode = stage.findOne(`#${selectedShapeId}`);
-      if (selectedNode) {
-        transformerRef.current.nodes([selectedNode]);
-        const layer = transformerRef.current.getLayer();
-        if (layer) layer.batchDraw();
-      } else {
-        transformerRef.current.nodes([]);
+      if (stage) {
+        const selectedNode = stage.findOne(`#${selectedShapeId}`);
+        if (selectedNode) {
+          transformerRef.current.nodes([selectedNode]);
+          const layer = transformerRef.current.getLayer();
+          if (layer) layer.batchDraw();
+        } else {
+          transformerRef.current.nodes([]);
+        }
       }
     } else if (transformerRef.current) {
       transformerRef.current.nodes([]);
@@ -51,28 +52,31 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
       if (clickedOnEmpty) {
         onSelectShape(null);
       }
-      return;
+    } else {
+      isDrawing.current = true;
+      const stage = e.target.getStage();
+      if (stage) {
+        const pos = stage.getPointerPosition();
+        if (pos) onDrawEnd('START', { pos });
+      }
     }
-
-    isDrawing.current = true;
-    const stage = e.target.getStage();
-    if (!stage) return;
-    const pos = stage.getPointerPosition();
-    if (pos) onDrawEnd('START', { pos });
   };
 
   const handleMouseMove = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
-    if (!isDrawing.current || tool === 'select') return;
-    const stage = e.target.getStage();
-    if (!stage) return;
-    const pos = stage.getPointerPosition();
-    if (pos) onDrawEnd('MOVE', { pos });
+    if (isDrawing.current && tool !== 'select') {
+      const stage = e.target.getStage();
+      if (stage) {
+        const pos = stage.getPointerPosition();
+        if (pos) onDrawEnd('MOVE', { pos });
+      }
+    }
   };
 
   const handleMouseUp = () => {
-    if (!isDrawing.current || tool === 'select') return;
-    isDrawing.current = false;
-    onDrawEnd('END', {});
+    if (isDrawing.current && tool !== 'select') {
+      isDrawing.current = false;
+      onDrawEnd('END', {});
+    }
   };
 
   const handleShapeClick = (e: KonvaEventObject<MouseEvent | TouchEvent>, shapeId: string) => {

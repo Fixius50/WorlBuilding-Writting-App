@@ -1,76 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
-import Peer, { DataConnection } from 'peerjs';
+import React from 'react';
 import Button from '@atoms/Button';
 import MonolithicPanel from '@atoms/MonolithicPanel';
-import { useLanguage } from '@context/LanguageContext';
+import { useSyncManager } from './useSyncManager';
 
 const SyncView: React.FC = () => {
-  const { t } = useLanguage();
-  const [myPeerId, setMyPeerId] = useState<string>('');
-  const [targetId, setTargetId] = useState<string>('');
-  const [connection, setConnection] = useState<DataConnection | null>(null);
-  const [status, setStatus] = useState<'IDLE' | 'CONNECTING' | 'CONNECTED' | 'SYNCING' | 'DONE'>('IDLE');
-  const [logs, setLogs] = useState<string[]>([]);
-  const peerRef = useRef<Peer | null>(null);
-
-  const addLog = (msg: string) => setLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: ${msg}`]);
-
-  useEffect(() => {
-    const peer = new Peer();
-    peerRef.current = peer;
-
-    peer.on('open', (id) => {
-      setMyPeerId(id);
-      addLog(`Tu ID de sincronización: ${id}`);
-    });
-
-    peer.on('connection', (conn) => {
-      setConnection(conn);
-      setStatus('CONNECTED');
-      addLog(`Conexión recibida de: ${conn.peer}`);
-      
-      conn.on('data', (data: unknown) => {
-          handleIncomingData(data);
-      });
-    });
-
-    return () => {
-      peer.destroy();
-    };
-  }, []);
-
-  const handleConnect = () => {
-    if (!targetId || !peerRef.current) return;
-    setStatus('CONNECTING');
-    const conn = peerRef.current.connect(targetId);
-    
-    conn.on('open', () => {
-      setConnection(conn);
-      setStatus('CONNECTED');
-      addLog(`Conectado a: ${targetId}`);
-    });
-
-    conn.on('data', (data: unknown) => {
-        handleIncomingData(data);
-    });
-  };
-
-  const handleIncomingData = (data: unknown) => {
-      const d = data as { type?: string };
-      addLog(`Datos recibidos: ${d.type}`);
-      if (d.type === 'SYNC_REQUEST') {
-          // Responder con datos
-          addLog('Enviando datos locales...');
-          connection?.send({ type: 'SYNC_DATA', payload: { entities: [] } }); // Placeholder
-      }
-  };
-
-  const startSync = () => {
-      if (!connection) return;
-      setStatus('SYNCING');
-      addLog('Solicitando sincronización...');
-      connection.send({ type: 'SYNC_REQUEST' });
-  };
+  const {
+    myPeerId,
+    targetId,
+    setTargetId,
+    status,
+    logs,
+    handleConnect,
+    startSync
+  } = useSyncManager();
 
   return (
     <div className="h-full w-full p-8 bg-background overflow-y-auto no-scrollbar">
@@ -169,3 +111,4 @@ const SyncView: React.FC = () => {
 };
 
 export default SyncView;
+

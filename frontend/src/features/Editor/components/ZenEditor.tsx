@@ -1,9 +1,8 @@
-import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react'
-import React, { useEffect, useRef } from 'react'
-import { getZenExtensions } from '@utils/TiptapExtensions'
+import { EditorContent, BubbleMenu } from '@tiptap/react'
+import React from 'react'
 import EditorTopBar from './EditorTopBar'
-import { WritingUseCase } from '@application/useCases/WritingUseCase';
 import { Hoja as HojaModel } from '@repositories/notebookService';
+import { useZenEditor, usePageEditor } from './useZenEditor';
 
 interface PageEditorProps {
   content: string;
@@ -18,100 +17,8 @@ interface PageEditorProps {
   autoFocus?: boolean;
 }
 
-const PageEditor: React.FC<PageEditorProps> = ({ 
-  content, 
-  onUpdate, 
-  numero, 
-  lado, 
-  isLastPage, 
-  onNearEnd, 
-  onJumpNext,
-  onJumpBack,
-  onAutoDelete,
-  autoFocus = false
-}) => {
-  const lastHeightRef = useRef(0);
-  const isDeletingRef = useRef(false);
-
-  const editor = useEditor({
-    extensions: getZenExtensions('Empieza a escribir esta página...'),
-    content: content,
-    onUpdate: ({ editor }) => {
-      onUpdate(editor.getHTML());
-      
-      // Solo creamos página si estamos CRECIENDO y es la última página
-      if (isLastPage && !isDeletingRef.current) {
-        const height = editor.view.dom.scrollHeight;
-        if (height > 900 && height > lastHeightRef.current) {
-          onNearEnd();
-        }
-        lastHeightRef.current = height;
-      }
-    },
-    onCreate: ({ editor }) => {
-      if (autoFocus) {
-        setTimeout(() => editor.commands.focus('start'), 10);
-      }
-    },
-    editorProps: {
-      attributes: {
-        class: `prose prose-invert max-w-none focus:outline-none text-foreground/90 leading-relaxed text-lg`,
-        style: `font-family: "Cormorant Garamond", serif; font-size: 18px;`,
-      },
-      handleKeyDown: (view, event) => {
-        const { selection } = view.state;
-        const isAtStart = selection.$from.pos <= 1;
-        const isAtEnd = selection.$to.pos === view.state.doc.content.size;
-        
-        // Marcamos si estamos borrando para evitar disparar la creación de página por error
-        if (event.key === 'Backspace') {
-          isDeletingRef.current = true;
-          setTimeout(() => { isDeletingRef.current = false; }, 100);
-        } else {
-          isDeletingRef.current = false;
-        }
-
-        // SALTO ADELANTE (Tab / Enter al final)
-        if (event.key === 'Tab' || event.key === 'Enter') {
-          const height = view.dom.scrollHeight;
-          if (height > 950 && isAtEnd && onJumpNext) {
-            event.preventDefault();
-            onJumpNext();
-            return true;
-          }
-        }
-
-        // SALTO ATRÁS / BORRADO AUTO (Backspace al inicio)
-        if (event.key === 'Backspace' && isAtStart) {
-          const isEmpty = view.state.doc.textContent.trim().length === 0;
-          if (isEmpty && onAutoDelete) {
-            event.preventDefault();
-            onAutoDelete();
-            return true;
-          } else if (onJumpBack) {
-            event.preventDefault();
-            onJumpBack();
-            return true;
-          }
-        }
-        return false;
-      }
-    },
-  });
-
-  useEffect(() => {
-    if (editor && content !== editor.getHTML()) {
-      if (!editor.isFocused) {
-        editor.commands.setContent(content, false);
-      }
-    }
-  }, [content, editor]);
-
-  useEffect(() => {
-    if (autoFocus && editor && !editor.isFocused) {
-      editor.commands.focus('start');
-    }
-  }, [autoFocus, editor]);
+const PageEditor: React.FC<PageEditorProps> = (props) => {
+  const { editor } = usePageEditor(props);
 
   return (
     <div 
@@ -135,8 +42,8 @@ const PageEditor: React.FC<PageEditorProps> = ({
       </div>
 
       <div className={`h-[100px] flex items-center px-16 border-t border-white/5 opacity-30`}>
-        <div className={`w-full flex ${lado === 'izq' ? 'justify-start' : 'justify-end'}`}>
-          <span className="text-[11px] font-mono font-bold tracking-[0.5em]">PAGE {numero}</span>
+        <div className={`w-full flex ${props.lado === 'izq' ? 'justify-start' : 'justify-end'}`}>
+          <span className="text-[11px] font-mono font-bold tracking-[0.5em]">PAGE {props.numero}</span>
         </div>
       </div>
       
@@ -148,7 +55,6 @@ const PageEditor: React.FC<PageEditorProps> = ({
            outline: none !important;
            text-align: justify;
         }
-        /* Corregimos para que el placeholder no afecte a la altura visual */
         .prose-editor .ProseMirror p.is-editor-empty:first-child::before {
           content: attr(data-placeholder);
           float: left;
@@ -187,36 +93,13 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
   onRestoreSnapshot = () => {},
   minimal = false
 }) => {
-  const [focusedPageIndex, setFocusedPageIndex] = React.useState<number | null>(null);
-  const isCreatingPageRef = useRef(false);
-
-  // Evitamos creaciones múltiples en ráfaga
-  const handleAutoCreate = () => {
-    if (isCreatingPageRef.current) return;
-    isCreatingPageRef.current = true;
-    onCreatePage();
-    setTimeout(() => { isCreatingPageRef.current = false; }, 1000);
-  };
-
-  const pagePairs: HojaModel[][] = [];
-  for (let i = 0; i < pages.length; i += 2) {
-    pagePairs.push(pages.slice(i, i + 2));
-  }
-
-  const handleJumpNext = (currentIndex: number) => {
-    if (currentIndex < pages.length - 1) {
-      setFocusedPageIndex(currentIndex + 1);
-    } else {
-      handleAutoCreate();
-      setFocusedPageIndex(currentIndex + 1);
-    }
-  };
-
-  const handleJumpBack = (currentIndex: number) => {
-    if (currentIndex > 0) {
-      setFocusedPageIndex(currentIndex - 1);
-    }
-  };
+  const {
+    focusedPageIndex,
+    handleAutoCreate,
+    pagePairs,
+    handleJumpNext,
+    handleJumpBack
+  } = useZenEditor({ pages, onCreatePage });
 
   const currentPage = pages[currentPageIndex];
 
@@ -271,4 +154,5 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
   )
 }
 
-export default ZenEditor
+export default ZenEditor;
+

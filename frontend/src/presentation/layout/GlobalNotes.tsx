@@ -23,21 +23,21 @@ const GlobalNotes: React.FC<GlobalNotesProps> = ({ projectName, storageKey }) =>
  useEffect(() => {
   const loadNotes = async () => {
     const key = getStorageKey();
-    if (!key) return;
-
-    const saved = await WorkspaceUseCase.getSetting(key);
-    if (saved) {
-      setNotes(JSON.parse(saved));
-    } else if (!storageKey) {
-      // Migration from old single string if exists (ONLY for global project notes)
-      // Since we are moving to SQLite, we check if there's anything in localStorage to migrate once
-      const oldNotes = localStorage.getItem(`notes_${projectName}`);
-      if (oldNotes) {
-        const initialNote = { id: Date.now(), title: 'Nota General', content: oldNotes };
-        const newNotes = [initialNote];
-        setNotes(newNotes);
-        await WorkspaceUseCase.saveSetting(key, JSON.stringify(newNotes));
-        localStorage.removeItem(`notes_${projectName}`); // Cleanup
+    if (key) {
+      const saved = await WorkspaceUseCase.getSetting(key);
+      if (saved) {
+        setNotes(JSON.parse(saved));
+      } else if (!storageKey) {
+        // Migration from old single string if exists (ONLY for global project notes)
+        // Since we are moving to SQLite, we check if there's anything in localStorage to migrate once
+        const oldNotes = localStorage.getItem(`notes_${projectName}`);
+        if (oldNotes) {
+          const initialNote = { id: Date.now(), title: 'Nota General', content: oldNotes };
+          const newNotes = [initialNote];
+          setNotes(newNotes);
+          await WorkspaceUseCase.saveSetting(key, JSON.stringify(newNotes));
+          localStorage.removeItem(`notes_${projectName}`); // Cleanup
+        }
       }
     }
   };
@@ -70,9 +70,10 @@ const GlobalNotes: React.FC<GlobalNotesProps> = ({ projectName, storageKey }) =>
  };
 
  const confirmDeleteAction = () => {
- if (!confirmDeleteId) return;
+ if (confirmDeleteId) {
  saveNotes(notes.filter(n => n.id !== confirmDeleteId));
  setConfirmDeleteId(null);
+ }
  };
 
  const updateNote = (id: number, field: keyof Note, value: string) => {

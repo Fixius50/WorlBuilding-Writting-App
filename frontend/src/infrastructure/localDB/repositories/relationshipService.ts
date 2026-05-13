@@ -55,8 +55,8 @@ export const relationshipService = {
     if (updates.origen_handle !== undefined) { fields.push(`origen_handle = ${updates.origen_handle}`); }
     if (updates.destino_handle !== undefined) { fields.push(`destino_handle = ${updates.destino_handle}`); }
     
-    if (fields.length === 0) return;
-    
-    await sql`UPDATE relaciones SET ${fields.join(', ')} WHERE id = ${id}`;
+    if (fields.length > 0) {
+      await sql`UPDATE relaciones SET ${fields.join(', ')} WHERE id = ${id}`;
+    }
   }
 };

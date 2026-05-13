@@ -1,236 +1,73 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useOutletContext, useParams } from 'react-router-dom';
+import React from 'react';
+import { useParams } from 'react-router-dom';
 import { useLanguage } from '@context/LanguageContext';
-import { Entidad, Word } from '@domain/models/database';
+import { Word } from '@domain/models/database';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
 import DrawingCanvas from '@presentation/organisms/editor/DrawingCanvas';
 import ConfirmModal from '@organisms/ConfirmModal';
-import { useRightPanelStore } from '@store/useRightPanelStore';
-import { LogEntry, WRITING_SYSTEM_TYPES } from '@domain/models/linguistics';
-
-// Custom Hooks
-import { useLexiconManager } from '../hooks/useLexiconManager';
-import { useDrawingCanvas } from '../hooks/useDrawingCanvas';
-import { useFontExporter } from '../hooks/useFontExporter';
-
-interface OutletContext {
-  projectId: number;
-}
+import { useLinguisticsHub } from './useLinguisticsHub';
 
 interface LinguisticsHubProps {
   onOpenAdvanced?: () => void;
   onOpenEditor?: (word: unknown) => void;
 }
 
-const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenAdvanced, onOpenEditor }) => {
+const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenAdvanced }) => {
   const { t } = useLanguage();
   const { projectName: projectParam } = useParams();
-  const { openPanel, closePanel } = useRightPanelStore();
 
-  // Lexicon Logic
-  const { 
-    lexicon, rules, activeLangId, langName, stats, foundryGlyphs, 
-    loadData, saveWord, deleteWord 
-  } = useLexiconManager(projectParam);
-
-  // Drawing Logic
   const {
-    layers, setLayers, activeLayerId, setActiveLayerId,
-    selectedShapeId, setSelectedShapeId,
-    tool, setTool, strokeWidth, setStrokeWidth,
-    color, setColor, opacity, setOpacity,
-    lineCap, setLineCap, strokeStyle, setStrokeStyle,
-    stageRef, undo, redo, handleDrawEnd, handleChangeShape,
-    openEditor, generateSVGAndCenteredLayers
-  } = useDrawingCanvas();
-
-  // Font Logic
-  const [fontName, setFontName] = useState('CHRONOS_ATLAS_V1');
-  const { exportFont } = useFontExporter(fontName);
-
-  // Local UI State
-  const [centerView, setCenterView] = useState('lexicon');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isMeaningModalOpen, setIsMeaningModalOpen] = useState(false);
-  const [editingWord, setEditingWord] = useState<Word | null>(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [wordToDelete, setWordToDelete] = useState<number | string | null>(null);
-  const [editorMode, setEditorMode] = useState(false);
-  
-  const [logs, setLogs] = useState<LogEntry[]>([
-    { msg: 'Inicializando Repositorio de Glifos...', type: 'info' },
-    { msg: 'Diccionario Vinculado Completamente', type: 'success' }
-  ]);
-
-  const addLog = (msg: string, type: LogEntry['type'] = 'info') => {
-    setLogs(prev => [...prev.slice(-4), { msg, type }]);
-  };
-
-  const [writingSystem, setWritingSystem] = useState<string>(WRITING_SYSTEM_TYPES.ALPHABET.id);
-  const [composerText, setComposerText] = useState('');
-  const [composerGlyphs, setComposerGlyphs] = useState<Partial<Word>[]>([]);
-  const [sourceText, setSourceText] = useState('');
-  const [renderOutput, setRenderOutput] = useState('');
-  
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    openPanel('bulk', 0, 'Lingüística');
-  }, [openPanel]);
-
-  // Handlers
-  const handleOpenMeaningEditor = (word: Word) => {
-    setEditingWord(word);
-    setIsMeaningModalOpen(true);
-  };
-
-  const handleCloseEditor = () => {
-    setEditorMode(false);
-    setSelectedShapeId(null);
-  };
-
-  const handleSaveCurrentGlyph = async () => {
-    const result = generateSVGAndCenteredLayers();
-    if (!result) {
-      addLog('No hay trazos para guardar', 'warning');
-      return;
-    }
-
-    const { svgPath, centeredLayers } = result;
-    const existingWord = lexicon.find((w: Word) => w.id === editingWord?.id);
-
-    try {
-      const wordToSave: Word & { isNew?: boolean } = {
-        ...(existingWord || ({} as Word)),
-        lema: existingWord?.lema || 'Nuevo Glifo',
-        nombre: existingWord?.lema || 'Nuevo Glifo',
-        categoriaGramatical: 'GLYPH',
-        svgPathData: svgPath,
-        rawEditorData: JSON.stringify(centeredLayers),
-        definicion: existingWord?.definicion || '',
-        descripcion: existingWord?.descripcion || '',
-        project_id: existingWord?.project_id || 0,
-        carpeta_id: existingWord?.carpeta_id || activeLangId || 0,
-        slug: existingWord?.slug || '',
-        folder_slug: existingWord?.folder_slug || null,
-        imagen_url: existingWord?.imagen_url || null,
-        fecha_creacion: existingWord?.fecha_creacion || new Date().toISOString(),
-        fecha_actualizacion: new Date().toISOString(),
-        borrado: existingWord?.borrado || 0,
-        tipo: 'Word',
-        isNew: !existingWord
-      };
-
-      await saveWord(wordToSave, editingWord?.id);
-      addLog('Glifo guardado localmente', 'success');
-      handleCloseEditor();
-    } catch (err) {
-      addLog('Error al guardar glifo', 'error');
-    }
-  };
-
-  const handleSaveMeaning = async (updatedData: Word & { isNew?: boolean }) => {
-    try {
-      await saveWord(updatedData, editingWord?.id);
-      addLog('Cambios guardados localmente', 'success');
-      setIsMeaningModalOpen(false);
-      setEditingWord(null);
-    } catch (err) {
-      addLog('Error al guardar cambios', 'error');
-    }
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!wordToDelete) return;
-    try {
-      await deleteWord(wordToDelete);
-      addLog('Palabra eliminada localmente', 'success');
-      setIsDeleteModalOpen(false);
-      setWordToDelete(null);
-    } catch (err) {
-      addLog('Error al eliminar palabra', 'error');
-    }
-  };
-
-  const handleCreateNewGlyph = () => {
-    const tempWord: Word = {
-      id: Date.now(),
-      lema: 'Nuevo Glifo',
-      nombre: 'Nuevo Glifo',
-      categoriaGramatical: 'GLYPH',
-      definicion: '',
-      descripcion: '',
-      project_id: 0,
-      carpeta_id: activeLangId || 0,
-      slug: '',
-      folder_slug: null,
-      imagen_url: null,
-      contenido_json: '{}',
-      fecha_creacion: new Date().toISOString(),
-      fecha_actualizacion: new Date().toISOString(),
-      borrado: 0,
-      tipo: 'Word'
-    };
-    setEditingWord(tempWord);
-    openEditor(tempWord);
-    setEditorMode(true);
-  };
-
-  const handleTranslate = (text: string) => {
-    setSourceText(text);
-    // Simple mock logic for translation output
-    setRenderOutput(text.split('').map(c => c === ' ' ? ' ' : 'φ').join(''));
-  };
-
-  const handleComposerChange = (text: string) => {
-    setComposerText(text);
-    // Mocking finding glyphs for characters
-    const glyphs = text.split('').map(char => {
-      const found = foundryGlyphs.find(g => g.lema.toLowerCase() === char.toLowerCase());
-      return found || { lema: char, placeholder: true };
-    });
-    setComposerGlyphs(glyphs);
-  };
-
-  const handleSaveComposedWord = async () => {
-    if (!composerText || !activeLangId) return;
-    const newWord: Word & { isNew?: boolean } = {
-      id: Date.now(),
-      lema: composerText,
-      nombre: composerText,
-      definicion: 'Palabra compuesta',
-      descripcion: 'Palabra compuesta',
-      categoriaGramatical: 'Noun',
-      project_id: 0,
-      carpeta_id: activeLangId,
-      slug: composerText.toLowerCase().replace(/\s+/g, '-'),
-      folder_slug: null,
-      imagen_url: null,
-      contenido_json: JSON.stringify({ source: 'composer' }),
-      fecha_creacion: new Date().toISOString(),
-      fecha_actualizacion: new Date().toISOString(),
-      borrado: 0,
-      tipo: 'Word',
-      isNew: true
-    };
-    await saveWord(newWord);
-    setComposerText('');
-    setComposerGlyphs([]);
-    addLog('Palabra compuesta guardada', 'success');
-  };
+    lexicon,
+    stats,
+    foundryGlyphs,
+    layers,
+    selectedShapeId,
+    tool,
+    color,
+    strokeWidth,
+    stageRef,
+    centerView,
+    setCenterView,
+    searchTerm,
+    setSearchTerm,
+    isMeaningModalOpen,
+    setIsMeaningModalOpen,
+    editingWord,
+    setEditingWord,
+    isDeleteModalOpen,
+    setIsDeleteModalOpen,
+    setWordToDelete,
+    editorMode,
+    setEditorMode,
+    composerText,
+    composerGlyphs,
+    sourceText,
+    renderOutput,
+    fileInputRef,
+    handleCloseEditor,
+    handleSaveCurrentGlyph,
+    handleSaveMeaning,
+    handleConfirmDelete,
+    handleCreateNewGlyph,
+    handleTranslate,
+    handleComposerChange,
+    handleSaveComposedWord,
+    exportFont,
+    openEditor,
+    setSelectedShapeId,
+    handleChangeShape,
+    handleDrawEnd
+  } = useLinguisticsHub(projectParam);
 
   const handleImportGlyphClick = () => fileInputRef.current?.click();
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    addLog(`Importando ${file.name}...`, 'info');
     // Mocking SVG import logic
-    setTimeout(() => addLog('Importación exitosa (Mock)', 'success'), 1000);
   };
 
-  // Filter Lexicon
   const filteredLexicon = lexicon.filter(item => {
     const search = searchTerm.toLowerCase();
     const lema = (item.lema || '').toLowerCase();
@@ -242,7 +79,6 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenAdvanced, onOpenE
     <div className="flex-1 flex flex-col h-full bg-background text-foreground/60 font-sans overflow-hidden">
       <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".svg" className="hidden" />
 
-      {/* Minimal Navigation Bar */}
       <div className="h-16 border-b border-foreground/10 flex items-center justify-between px-8 bg-background/40">
         <div className="flex items-center gap-4"></div>
 
@@ -337,7 +173,7 @@ const LinguisticsHub: React.FC<LinguisticsHubProps> = ({ onOpenAdvanced, onOpenE
                       type={item.categoriaGramatical}
                       gender={item.genero}
                       def={item.definicion || item.traduccionEspanol || ''}
-                      onEdit={() => handleOpenMeaningEditor(item)}
+                      onEdit={() => { setEditingWord(item); setIsMeaningModalOpen(true); }}
                       onDelete={() => { setWordToDelete(item.id); setIsDeleteModalOpen(true); }}
                     />
                   ))}
@@ -523,7 +359,7 @@ const MeaningEditorModal: React.FC<{
   onDelete?: () => void;
   onEditSymbol: (word: Word) => void;
 }> = ({ word, onClose, onSave, onDelete, onEditSymbol }) => {
-  const [data, setData] = useState({
+  const [data, setData] = React.useState({
     lema: word?.lema || '',
     definicion: word?.definicion || '',
     categoriaGramatical: word?.categoriaGramatical || 'Noun',

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Entidad } from '@domain/models/database';
 import { useLanguage } from '@context/LanguageContext';
+import { useDimensionImportModal } from './useDimensionImportModal';
 
 interface DimensionImportModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ const DimensionImportModal: React.FC<DimensionImportModalProps> = ({
   isOpen, onClose, availableDimensions, onImport
 }) => {
   const { t } = useLanguage();
+  const { handleImportSelect } = useDimensionImportModal(onImport, onClose);
 
   if (!isOpen) return null;
 
@@ -27,7 +29,7 @@ const DimensionImportModal: React.FC<DimensionImportModalProps> = ({
              {availableDimensions.map(dim => (
                 <button 
                   key={dim.id}
-                  onClick={() => onImport(dim)}
+                  onClick={() => handleImportSelect(dim)}
                   className="w-full p-5 bg-[hsl(var(--foreground)/0.02)] border border-[hsl(var(--divider-border))] hover:border-[hsl(var(--primary)/0.5)] flex items-center justify-between group transition-all"
                 >
                   <div className="text-left">
@@ -50,3 +52,4 @@ const DimensionImportModal: React.FC<DimensionImportModalProps> = ({
 };
 
 export default DimensionImportModal;
+

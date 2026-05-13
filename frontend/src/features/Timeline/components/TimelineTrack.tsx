@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLanguage } from '@context/LanguageContext';
+import { useTimelineTrack } from './useTimelineTrack';
 
 interface TimelineTrackProps {
   entityId: number | null;
@@ -19,6 +20,9 @@ const TimelineTrack: React.FC<TimelineTrackProps> = ({
   eventsCount, firstEventDate, lastEventDate
 }) => {
   const { t } = useLanguage();
+  const { handleAdd, handleRemove, rangeStyle } = useTimelineTrack(
+    entityId, onAddEvent, onRemoveDimension, firstEventDate, lastEventDate, calculateX, eventsCount
+  );
 
   return (
     <div className="flex flex-row min-h-[450px] last:border-0 group/row bg-transparent overflow-hidden relative" id={`track-${entityId || 'main'}`}>
@@ -34,7 +38,7 @@ const TimelineTrack: React.FC<TimelineTrackProps> = ({
                  </h2>
                  {!isMain && (
                    <div className="flex gap-2 opacity-0 group-hover/branch:opacity-100 transition-opacity">
-                      <button onClick={(e) => { e.stopPropagation(); onRemoveDimension(entityId!); }} className="material-symbols-outlined text-xs text-[hsl(var(--foreground)/0.4)] hover:text-rose-500">logout</button>
+                      <button onClick={handleRemove} className="material-symbols-outlined text-xs text-[hsl(var(--foreground)/0.4)] hover:text-rose-500">logout</button>
                    </div>
                  )}
                </div>
@@ -46,7 +50,7 @@ const TimelineTrack: React.FC<TimelineTrackProps> = ({
          
          <div className="flex-1 flex items-center w-full">
            <button 
-             onClick={() => onAddEvent(isMain ? null : entityId)}
+             onClick={handleAdd}
              className="px-6 py-2 bg-[hsl(var(--primary)/0.05)] hover:bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))] text-[10px] font-black uppercase tracking-widest border border-[hsl(var(--primary)/0.2)] transition-all flex items-center justify-center gap-2 group/btn rounded-full whitespace-nowrap"
            >
              <span className="material-symbols-outlined text-sm group-hover/btn:scale-125 transition-transform">add_circle</span>
@@ -58,13 +62,10 @@ const TimelineTrack: React.FC<TimelineTrackProps> = ({
       <div className="flex-1 flex flex-col relative overflow-x-auto custom-scrollbar-h min-w-0 bg-[hsl(var(--foreground)/0.01)]">
          <div className={`h-full relative flex items-end p-0 ${isExpanded ? 'w-[4000px]' : 'w-full'}`}>
             <div className="absolute top-1/2 left-0 right-0 h-px bg-gradient-to-r from-[hsl(var(--primary)/0.4)] via-[hsl(var(--primary)/0.1)] to-transparent pointer-events-none z-10 -translate-y-1/2" />
-            {eventsCount > 1 && firstEventDate && lastEventDate && (
+            {rangeStyle && (
               <div 
                 className="absolute top-1/2 h-px border-b border-dashed border-[hsl(var(--primary)/0.6)] pointer-events-none transition-all duration-700 z-10 -translate-y-1/2"
-                style={{ 
-                  left: `${calculateX(firstEventDate)}%`,
-                  right: `${100 - calculateX(lastEventDate)}%`
-                }}
+                style={rangeStyle}
               />
             )}
             <div className="w-full h-full relative" />
@@ -75,3 +76,4 @@ const TimelineTrack: React.FC<TimelineTrackProps> = ({
 };
 
 export default TimelineTrack;
+

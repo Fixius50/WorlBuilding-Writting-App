@@ -111,18 +111,7 @@ const MapRouter = () => {
   };
 
   const MapEditorWrapper = () => {
-    const { mapId } = useParams();
-    return (
-      <MapEditor
-        mode="edit"
-        entityId={mapId}
-        onBack={() => navigate('../..')}
-        onSave={async () => {
-          await loadMaps();
-          navigate('../..');
-        }}
-      />
-    );
+    return <MapEditor />;
   };
 
   return (
@@ -139,7 +128,7 @@ const MapRouter = () => {
           />
         } />
         <Route path="viewer/:mapId" element={<MapViewerWrapper />} />
-        <Route path="editor/:mapId" element={<MapEditorWrapper />} />
+        <Route path="editor/:entityId" element={<MapEditorWrapper />} />
         <Route path="wizard" element={<MapCreationWizard onCancel={() => navigate('..')} onCreate={handleCreateMap} />} />
       </Routes>
 

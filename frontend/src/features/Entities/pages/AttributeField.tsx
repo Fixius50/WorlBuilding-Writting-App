@@ -1,6 +1,7 @@
 import React from 'react';
-import { Plantilla, Entidad, Valor } from '@domain/models/database';
+import { Plantilla, Entidad } from '@domain/models/database';
 import '@assets/attributes.css';
+import { useAttributeField } from './useAttributeField';
 
 interface AttributeFieldProps {
   attribute: Plantilla | { plantilla: Plantilla };
@@ -19,7 +20,13 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
   onEditTemplate,
   linkableEntities = [] 
 }) => {
-  const plantilla = 'plantilla' in attribute ? attribute.plantilla : attribute;
+  const {
+    plantilla,
+    metadata,
+    multiSelectValues,
+    toggleMultiSelectOption,
+    layoutClass
+  } = useAttributeField(attribute, value, onChange);
 
   const renderInput = () => {
     switch (plantilla.tipo) {
@@ -64,13 +71,7 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
           </div>
         );
       case 'select':
-        let options: string[] = [];
-        try {
-          const meta = typeof plantilla.metadata === 'string'
-            ? JSON.parse(plantilla.metadata || '{}')
-            : (plantilla.metadata || {});
-          options = meta.options || [];
-        } catch (e) { }
+        const options = metadata.options || [];
         return (
           <div className="relative">
             <select
@@ -79,7 +80,7 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
               onChange={(e) => onChange(e.target.value)}
             >
               <option value="" className="bg-background text-foreground/50">Select an option...</option>
-              {options.map((opt, i) => (
+              {options.map((opt: string, i: number) => (
                 <option key={i} value={opt} className="bg-background text-foreground py-4">
                   {opt}
                 </option>
@@ -91,44 +92,22 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
           </div>
         );
       case 'multi_select':
-        let multiOptions: string[] = [];
-        try {
-          const meta = typeof plantilla.metadata === 'string'
-            ? JSON.parse(plantilla.metadata || '{}')
-            : (plantilla.metadata || {});
-          multiOptions = meta.options || [];
-        } catch (e) { }
-
-        let selectedValues: string[] = [];
-        try {
-          selectedValues = value ? JSON.parse(value) : [];
-          if (!Array.isArray(selectedValues)) selectedValues = [];
-        } catch (e) {
-          // [LOG REMOVED]
-        }
-
-        const toggleOption = (opt: string) => {
-          const newValues = selectedValues.includes(opt)
-            ? selectedValues.filter(v => v !== opt)
-            : [...selectedValues, opt];
-          onChange(JSON.stringify(newValues));
-        };
-
+        const multiOptions = metadata.options || [];
         return (
           <div className="bg-foreground/[0.03] border border-foreground/10 rounded-none p-2 space-y-1 min-h-[40px] overflow-y-visible">
-            {multiOptions.map((opt, i) => (
+            {multiOptions.map((opt: string, i: number) => (
               <label
                 key={i}
                 onClick={(e) => {
                   e.preventDefault();
-                  toggleOption(opt);
+                  toggleMultiSelectOption(opt);
                 }}
                 className="flex items-center gap-3 p-2 hover:bg-foreground/5 rounded-none cursor-pointer group transition-colors"
               >
-                <div className={`size-4 rounded border flex items-center justify-center transition-all ${selectedValues.includes(opt) ? 'bg-primary border-primary' : 'border-foreground/40 group-hover:border-foreground/40'}`}>
-                  {selectedValues.includes(opt) && <span className="material-symbols-outlined text-[10px] text-foreground">check</span>}
+                <div className={`size-4 rounded border flex items-center justify-center transition-all ${multiSelectValues.includes(opt) ? 'bg-primary border-primary' : 'border-foreground/40 group-hover:border-foreground/40'}`}>
+                  {multiSelectValues.includes(opt) && <span className="material-symbols-outlined text-[10px] text-foreground">check</span>}
                 </div>
-                <span className={`text-xs font-medium ${selectedValues.includes(opt) ? 'text-foreground' : 'text-foreground/80 group-hover:text-foreground'}`}>{opt}</span>
+                <span className={`text-xs font-medium ${multiSelectValues.includes(opt) ? 'text-foreground' : 'text-foreground/80 group-hover:text-foreground'}`}>{opt}</span>
               </label>
             ))}
             {multiOptions.length === 0 && <div className="text-xs text-foreground p-2 italic">No options defined.</div>}
@@ -213,24 +192,8 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
     }
   };
 
-  const getLayoutClass = () => {
-    switch (plantilla.tipo) {
-      case 'text':
-      case 'table':
-      case 'image':
-        return 'attr-full';
-      case 'number':
-      case 'boolean':
-      case 'date':
-      case 'short_text':
-        return 'attr-compact';
-      default:
-        return 'attr-compact';
-    }
-  };
-
   return (
-    <div className={`attr-field-container ${getLayoutClass()}`}>
+    <div className={`attr-field-container ${layoutClass}`}>
       <label className="attr-label-wrapper">
         <div className="flex items-center gap-2">
           <span className="material-symbols-outlined text-xs opacity-50">label</span>
@@ -274,3 +237,4 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
 };
 
 export default AttributeField;
+

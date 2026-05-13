@@ -1,33 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { EntityUseCase } from '@application/useCases/EntityUseCase';
-import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
-import { Entidad } from '@domain/models/database';
+import React from 'react';
 import EntityBuilder from '@features/Entities/pages/EntityBuilder';
 import CosmicCanvasEditor from '@features/Entities/pages/CosmicCanvasEditor';
+import { useEntityEditRouter } from './useEntityEditRouter';
 
 const EntityEditRouter = () => {
-  const { entityId } = useParams();
-  const [entity, setEntity] = useState<Entidad | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (entityId) {
-      loadEntity();
-    }
-  }, [entityId]);
-
-  const loadEntity = async () => {
-    setLoading(true);
-    try {
-      const data = await EntityUseCase.getById(Number(entityId));
-      setEntity(data);
-    } catch (err) {
-      console.error("Error routing entity edit:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { entity, loading, isCosmic } = useEntityEditRouter();
 
   if (loading) return (
     <div className="flex-1 flex items-center justify-center bg-black">
@@ -45,16 +22,7 @@ const EntityEditRouter = () => {
     </div>
   );
 
-  const tipo = entity.tipo.trim().toUpperCase();
-  const cosmicTypes = [
-    'UNIVERSO', 'UNIVERSE', 'UNIVERSES',
-    'GALAXIA', 'GALAXY', 'GALAXIES',
-    'SISTEMA', 'SYSTEM', 'SYSTEMS',
-    'PLANETA', 'PLANET', 'PLANETS',
-    'DIMENSION', 'DIMENSIÓN', 'DIMENSIONS'
-  ];
-
-  if (cosmicTypes.includes(tipo)) {
+  if (isCosmic) {
     return <CosmicCanvasEditor entityId={entity.id} />;
   }
 
@@ -62,3 +30,4 @@ const EntityEditRouter = () => {
 };
 
 export default EntityEditRouter;
+

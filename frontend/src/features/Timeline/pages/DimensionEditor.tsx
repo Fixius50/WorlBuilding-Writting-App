@@ -1,13 +1,14 @@
-import React, { useState, useCallback, useMemo } from 'react';
-import { useParams, useNavigate, useOutletContext, useLocation } from 'react-router-dom';
+import React from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '@context/LanguageContext';
-import { Evento, Entidad } from '@domain/models/database';
+import { Evento } from '@domain/models/database';
 import ConfirmationModal from '@organisms/ConfirmationModal';
 import EventInspector from '../components/EventInspector';
 import { useRightPanelStore } from '@store/useRightPanelStore';
 
 // Custom Hooks & Components
 import { useTimelineManager } from '../hooks/useTimelineManager';
+import { useDimensionEditor } from './useDimensionEditor';
 import TimelineTrack from '../components/TimelineTrack';
 import TimelineEventCard from '../components/TimelineEventCard';
 import DimensionImportModal from '../components/DimensionImportModal';
@@ -30,16 +31,26 @@ const DimensionEditor: React.FC = () => {
     involvedEntities, loadData
   } = useTimelineManager(folderId);
 
-  // UI States
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editTitle, setEditTitle] = useState('');
-  const [editDesc, setEditDesc] = useState('');
-  const [editDate, setEditDate] = useState('');
-  const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [isEntityPickerOpen, setIsEntityPickerOpen] = useState(false);
-  const [currentEventForLinking, setCurrentEventForLinking] = useState<number | null>(null);
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
+  // UI Logic Hook
+  const {
+    editingId, setEditingId,
+    editTitle, setEditTitle,
+    editDesc, setEditDesc,
+    editDate, setEditDate,
+    deletingId, setDeletingId,
+    isEntityPickerOpen, setIsEntityPickerOpen,
+    currentEventForLinking, setCurrentEventForLinking,
+    isImportModalOpen, setIsImportModalOpen,
+    isExpanded,
+    onEditStart,
+    handleSaveEdit,
+    handleConfirmDelete,
+    handleAddEventAndEdit,
+    getConnections
+  } = useDimensionEditor({
+    t, events, linkedEntities, lines, involvedEntities,
+    handleSaveEvent, handleDeleteEvent, handleAddEvent
+  });
 
   // Handlers
   const handleOpenInspector = (event: Evento) => {
@@ -55,35 +66,6 @@ const DimensionEditor: React.FC = () => {
     );
   };
 
-  const onEditStart = (event: Evento) => {
-    setEditingId(event.id);
-    setEditTitle(event.titulo);
-    setEditDesc(event.descripcion || '');
-    setEditDate(event.fecha_simulada || '');
-  };
-
-  const handleSaveEdit = async () => {
-    if (editingId === null) return;
-    await handleSaveEvent(editingId, {
-      titulo: editTitle.trim() || t('timeline.milestone'),
-      descripcion: editDesc.trim(),
-      fecha_simulada: editDate.trim() || '?'
-    });
-    setEditingId(null);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (deletingId === null) return;
-    await handleDeleteEvent(deletingId);
-    setDeletingId(null);
-  };
-
-  const handleAddEventAndEdit = async (lineId: number | null) => {
-    const newEvent = await handleAddEvent(lineId);
-    if (newEvent) onEditStart(newEvent);
-  };
-
-  // Render Helpers
   const renderTrack = (entityId: number | null, title: string, isMain: boolean = false) => {
     const lineEvents = isMain 
       ? events.filter(ev => ev.linea_id === null)
@@ -152,33 +134,13 @@ const DimensionEditor: React.FC = () => {
          {/* Connections Layer (SVG) */}
          <div className={`absolute top-0 left-0 right-0 pointer-events-none z-15 ${isExpanded ? 'w-[4000px]' : 'w-full'}`} style={{ minHeight: '100%' }}>
             <svg className="w-full h-full absolute inset-0">
-               {events.map(event => {
-                  const linkedIds = linkedEntities[event.id]?.map(e => e.id) || [];
-                  const involvedInTracks = [
-                    ...(event.linea_id !== undefined && event.linea_id !== null ? [event.linea_id] : [null]),
-                    ...linkedIds
-                  ].filter((id, index, self) => self.indexOf(id) === index);
+               {getConnections.map(conn => {
+                  if (!conn) return null;
+                  const x = calculateX(conn.date);
+                  const yStart = (conn.minIdx * 450) + 225;
+                  const yEnd = (conn.maxIdx * 450) + 225;
 
-                  if (involvedInTracks.length < 2) return null;
-
-                  const trackIndices = involvedInTracks.map(id => {
-                     if (id === null) return 0;
-                     const lineIdx = lines.findIndex(l => l.id === id);
-                     if (lineIdx !== -1) return lineIdx + 1;
-                     const invIdx = involvedEntities.findIndex(e => e.id === id);
-                     if (invIdx !== -1) return lines.length + invIdx + 1;
-                     return -1;
-                  }).filter(idx => idx !== -1);
-
-                  if (trackIndices.length < 2) return null;
-                  const minIdx = Math.min(...trackIndices);
-                  const maxIdx = Math.max(...trackIndices);
-                  
-                  const x = calculateX(event.fecha_simulada);
-                  const yStart = (minIdx * 450) + 225;
-                  const yEnd = (maxIdx * 450) + 225;
-
-                  return <line key={`conn-${event.id}`} x1={`${x}%`} y1={yStart} x2={`${x}%`} y2={yEnd} stroke="hsl(var(--primary) / 0.2)" strokeWidth="2" strokeDasharray="4 4" />;
+                  return <line key={`conn-${conn.eventId}`} x1={`${x}%`} y1={yStart} x2={`${x}%`} y2={yEnd} stroke="hsl(var(--primary) / 0.2)" strokeWidth="2" strokeDasharray="4 4" />;
                })}
             </svg>
          </div>
@@ -252,10 +214,10 @@ const DimensionEditor: React.FC = () => {
         onToggleLink={(entId) => { handleToggleLinkEntity(currentEventForLinking!, entId); setIsEntityPickerOpen(false); }}
       />
 
-      {/* Inline Editor Overlay (Simple for now, can be moved to component if needed) */}
+      {/* Inline Editor Overlay */}
       {editingId !== null && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-full max-w-md monolithic-panel p-8 bg-[hsl(var(--background))] border border-[hsl(var(--primary)/0.3)] shadow-2xl">
+          <div className="w-full max-md monolithic-panel p-8 bg-[hsl(var(--background))] border border-[hsl(var(--primary)/0.3)] shadow-2xl">
             <h3 className="text-xl font-black mb-6 uppercase italic">Editar Hito</h3>
             <div className="space-y-4">
               <input value={editTitle} onChange={e => setEditTitle(e.target.value)} placeholder="Título" className="w-full monolithic-panel p-4" />
@@ -274,3 +236,4 @@ const DimensionEditor: React.FC = () => {
 };
 
 export default DimensionEditor;
+

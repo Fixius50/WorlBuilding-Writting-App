@@ -1,27 +1,14 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 import { motion } from 'framer-motion';
 import { useOutletContext } from 'react-router-dom';
-import { useDashboardStore } from '@store/useDashboardStore';
 import { ResponsivePie } from '@nivo/pie';
 import StatCard from '../components/StatCard';
+import { useAnalyticsDashboard } from './useAnalyticsDashboard';
 
 const AnalyticsDashboard = () => {
   const { projectId } = useOutletContext<{ projectId: number }>();
-  const { stats, isLoading, loadStats } = useDashboardStore();
-
-  useEffect(() => {
-    if (projectId) {
-      loadStats(projectId);
-    }
-  }, [projectId, loadStats]);
-
-  const cards = [
-    { label: 'Palabras Totales', value: stats.wordCount.toLocaleString(), icon: 'description', color: 'text-primary' },
-    { label: 'Entidades Creadas', value: stats.entityCount, icon: 'account_tree', color: 'text-purple-400' },
-    { label: 'Hojas de Archivador', value: stats.pageCount, icon: 'auto_stories', color: 'text-amber-400' },
-    { label: 'Archivadores Activos', value: stats.notebookCount, icon: 'folder_open', color: 'text-emerald-400' },
-  ];
+  const { stats, isLoading, cards, progress } = useAnalyticsDashboard(projectId);
 
   return (
     <div className="flex-1 p-8 lg:p-12 max-w-7xl mx-auto w-full animate-in fade-in duration-700 overflow-y-auto custom-scrollbar">
@@ -93,12 +80,12 @@ const AnalyticsDashboard = () => {
                 <div>
                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-2">
                       <span>Progreso del Códice</span>
-                      <span>{Math.min(100, Math.round((stats.entityCount / 50) * 100))}%</span>
+                      <span>{progress.codex}%</span>
                    </div>
                    <div className="h-1 w-full bg-foreground/5 rounded-full overflow-hidden">
                       <motion.div 
                          initial={{ width: 0 }}
-                         animate={{ width: `${Math.min(100, (stats.entityCount / 50) * 100)}%` }}
+                         animate={{ width: `${progress.codex}%` }}
                          className="h-full bg-primary"
                       />
                    </div>
@@ -107,12 +94,12 @@ const AnalyticsDashboard = () => {
                 <div>
                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-foreground/40 mb-2">
                       <span>Volumen de Crónicas</span>
-                      <span>{Math.min(100, Math.round((stats.wordCount / 10000) * 100))}% de la meta</span>
+                      <span>{progress.chronicles}% de la meta</span>
                    </div>
                    <div className="h-1 w-full bg-foreground/5 rounded-full overflow-hidden">
                       <motion.div 
                          initial={{ width: 0 }}
-                         animate={{ width: `${Math.min(100, (stats.wordCount / 10000) * 100)}%` }}
+                         animate={{ width: `${progress.chronicles}%` }}
                          className="h-full bg-amber-500"
                       />
                    </div>
@@ -142,3 +129,4 @@ const AnalyticsDashboard = () => {
 };
 
 export default AnalyticsDashboard;
+

@@ -6,6 +6,11 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
 
 ### MAYO 2026
 
+- **2026-05-13: Normalización Hook-View y Corrección de Tipos en Mapas/Grafo**
+  - **Patrón Hook-View Consolidado**: Refactorización de componentes complejos delegando todo el estado y lógica a hooks especializados (`useBottomGraphDrawer`, `useControlPanel`, `useInGraphNodeWindow`, `useBibleGridView`).
+  - **Componentes Visuales Puros**: Las vistas ahora se limitan exclusivamente al renderizado y mapeo de UI, aislando la lógica de fetching, filtrado y orquestación de eventos.
+  - **Resolución TS2322/TS2353/TS2345**: Corrección de deuda técnica en `MapEditor.tsx`, `MapLibreView.tsx` y `MapRouter.tsx`. Se removió el envío de props inválidas (`mode`, `antialias`) y se estabilizó la integración con MapLibre (parámetro `projection` de deck.gl y tipos de `RefObject`).
+
 - **2026-05-11: Consolidación de Clean Architecture (Use Cases)**
   - **Capa de Aplicación (`application/useCases`)**: Implementación de Casos de Uso para encapsular la lógica de negocio y prohibir el acceso directo a repositorios desde React.
   - **Nuevos Casos de Uso Creados**: `TrashUseCase`, `WorldBibleUseCase` (con normalización transaccional EAV), `TimelineUseCase`, `MapUseCase`, `RelationshipUseCase`, `TemplateUseCase` y `WorkspaceUseCase`.

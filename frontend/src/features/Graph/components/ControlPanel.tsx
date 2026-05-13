@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import GraphView from '../pages/GeneralGraphView';
+import React from 'react';
 import EntityDatabase from './EntityDatabase';
 import NotebookManager from '@features/Writing/components/NotebookManager';
 import { ResponsiveBar } from '@nivo/bar';
 import { useDashboardStore } from '@store/useDashboardStore';
+import { useControlPanel } from './useControlPanel';
 
 // --- Subcomponente de Gráficos (Movido para uso interno) ---
 function WritingStatsChart({ pages }: { pages: { contenido?: string }[] }) {
@@ -83,49 +83,15 @@ const SECTIONS: { id: PanelSection; icon: string; label: string }[] = [
 ];
 
 const ControlPanel: React.FC<ControlPanelProps> = ({ isOpen, onToggle, projectId, projectName, statsData }) => {
-  const [heightVH, setHeightVH] = useState(65);
-  const [activeSection, setActiveSection] = useState<PanelSection>('database');
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const { 
+    heightVH, 
+    activeSection, 
+    setActiveSection, 
+    currentTime, 
+    startResizing 
+  } = useControlPanel();
   
   const { stats } = useDashboardStore();
-
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-  const isResizing = useRef(false);
-
-  const startResizing = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    isResizing.current = true;
-    document.body.style.cursor = 'ns-resize';
-    document.body.style.userSelect = 'none';
-  }, []);
-
-  const stopResizing = useCallback(() => {
-    if (!isResizing.current) return;
-    isResizing.current = false;
-    document.body.style.cursor = 'default';
-    document.body.style.userSelect = 'auto';
-  }, []);
-
-  const resize = useCallback((e: MouseEvent) => {
-    if (!isResizing.current) return;
-    const newHeightPx = window.innerHeight - e.clientY;
-    const newHeightVH = (newHeightPx / window.innerHeight) * 100;
-    if (newHeightVH > 20 && newHeightVH < 90) {
-      setHeightVH(newHeightVH);
-    }
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener('mousemove', resize);
-    window.addEventListener('mouseup', stopResizing);
-    return () => {
-      window.removeEventListener('mousemove', resize);
-      window.removeEventListener('mouseup', stopResizing);
-    };
-  }, [resize, stopResizing]);
 
   return (
     <>
@@ -306,3 +272,4 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ isOpen, onToggle, projectId
 };
 
 export default ControlPanel;
+

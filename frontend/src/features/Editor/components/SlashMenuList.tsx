@@ -1,4 +1,5 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import React, { forwardRef } from 'react';
+import { useSlashMenuList } from './useSlashMenuList';
 
 interface SlashMenuItem {
   title: string;
@@ -12,36 +13,7 @@ interface SlashMenuListProps {
 }
 
 const SlashMenuList = forwardRef((props: SlashMenuListProps, ref) => {
-  const [selectedIndex, setSelectedIndex] = useState(0);
-
-  const selectItem = (index: number) => {
-    const item = props.items[index];
-    if (item) {
-      props.command(item);
-    }
-  };
-
-  useEffect(() => setSelectedIndex(0), [props.items]);
-
-  useImperativeHandle(ref, () => ({
-    onKeyDown: ({ event }: { event: KeyboardEvent }) => {
-      if (event.key === 'ArrowUp') {
-        setSelectedIndex((selectedIndex + props.items.length - 1) % props.items.length);
-        return true;
-      }
-      if (event.key === 'ArrowDown') {
-        setSelectedIndex((selectedIndex + 1) % props.items.length);
-        return true;
-      }
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        event.stopPropagation();
-        selectItem(selectedIndex);
-        return true;
-      }
-      return false;
-    },
-  }));
+  const { selectedIndex, selectItem } = useSlashMenuList(props.items, props.command, ref);
 
   return (
     <div className="bg-background border border-foreground/10 shadow-2xl p-1 w-64 animate-in fade-in zoom-in-95 duration-200">
@@ -75,3 +47,4 @@ const SlashMenuList = forwardRef((props: SlashMenuListProps, ref) => {
 SlashMenuList.displayName = 'SlashMenuList';
 
 export default SlashMenuList;
+

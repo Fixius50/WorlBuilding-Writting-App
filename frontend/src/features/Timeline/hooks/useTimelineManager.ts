@@ -82,8 +82,8 @@ export const useTimelineManager = (folderId: string | undefined) => {
     return 8 + (rawPercent * 0.84);
   }, [timelineBounds]);
 
-  const handleAddEvent = async (lineId: number | null) => {
-    if (!folder || !folderId) return;
+  const handleAddEvent = async (lineId: number | null): Promise<Evento | null> => {
+    if (!folder || !folderId) return null;
     try {
       const newEvent = await TimelineUseCase.create({
         titulo: t('timeline.milestone'),
@@ -98,8 +98,10 @@ export const useTimelineManager = (folderId: string | undefined) => {
       return newEvent;
     } catch (err) {
       // [LOG REMOVED]
+      return null;
     }
   };
+
 
   const handleDeleteEvent = async (id: number) => {
     try {

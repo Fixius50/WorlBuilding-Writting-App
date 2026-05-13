@@ -1,61 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useLanguage } from '@context/LanguageContext';
-import { useSettingsStore } from '@store/useSettingsStore';
+import React from 'react';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
 import ComingSoonWrapper from '@molecules/ComingSoonWrapper';
+import { useSettings } from './useSettings';
 
 const Settings = () => {
-  const navigate = useNavigate();
-  const { language, changeLanguage } = useLanguage();
-  const [activeTab, setActiveTab] = useState('general');
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-
   const {
     user,
     projects,
     selectedProjects,
     settings,
-    initialize,
+    activeTab,
+    setActiveTab,
+    language,
+    changeLanguage,
+    fileInputRef,
+    handleAvatarChange,
+    handleImport,
+    handleDownloadBackup,
     updateSetting,
     toggleProjectSelection,
     updateProfile,
-    setAvatar,
-    handleDownloadBackup,
-    handleImportDatabase
-  } = useSettingsStore();
-
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
-
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 1024 * 1024) {
-      useSettingsStore.getState().addNotification("Imagen demasiado grande (máx 1MB)", "error");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (ev: ProgressEvent<FileReader>) => {
-      const newAvatar = ev.target?.result as string;
-      setAvatar(newAvatar);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const success = await handleImportDatabase(file);
-    if (success) {
-      setTimeout(() => window.location.reload(), 1500);
-    }
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
+    goBack
+  } = useSettings();
 
   const tabs = [
     { id: 'general', label: 'General / Sincro', icon: 'person' },
@@ -64,7 +31,7 @@ const Settings = () => {
 
   const themes = [
     { id: 'deep_space', label: 'Deep Space', color: '#0f172a' },
-    { id: 'nebula', label: 'Nebula', color: '#7c3aed' } // Changed to a more vibrant purple
+    { id: 'nebula', label: 'Nebula', color: '#7c3aed' }
   ];
 
   return (
@@ -74,7 +41,6 @@ const Settings = () => {
         <div className="absolute -bottom-[10%] -right-[10%] size-[40%] bg-primary/5 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
       </div>
       
-
       {/* TOP NAVIGATION BAR */}
       <header className="h-20 flex-none flex items-center justify-center gap-12 text-center px-12 border-b border-foreground/10 bg-background z-30">
         <div className="flex items-center gap-8">
@@ -103,7 +69,7 @@ const Settings = () => {
         </div>
 
         <button
-          onClick={() => navigate(-1)}
+          onClick={goBack}
           className="flex items-center gap-2 px-6 py-2.5 bg-foreground/5 hover:monolithic-panel rounded-none transition-all text-xs font-bold text-foreground/60 hover:text-foreground"
         >
           <span className="material-symbols-outlined text-sm">arrow_back</span>
@@ -405,3 +371,4 @@ const Settings = () => {
 };
 
 export default Settings;
+

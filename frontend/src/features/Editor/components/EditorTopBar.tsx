@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useEditorTopBar } from './useEditorTopBar';
 
 interface EditorTopBarProps {
   title: string;
@@ -24,8 +25,15 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
   onRestoreSnapshot,
   minimal = false,
 }) => {
-  const progress = Math.min((wordCount / wordGoal) * 100, 100);
-  const [showSnapshots, setShowSnapshots] = React.useState(false);
+  const {
+    progress,
+    showSnapshots,
+    setShowSnapshots,
+    toggleSnapshots,
+    handleManualSnapshot,
+    handleRestoreSnapshot,
+    handleBack
+  } = useEditorTopBar(wordCount, wordGoal, onManualSnapshot, onRestoreSnapshot);
 
   return (
     <header className={`${minimal ? 'h-12 px-4' : 'h-16 px-8'} flex items-center justify-between bg-background/40 border-b border-foreground/10  select-none shrink-0 z-50`}>
@@ -78,7 +86,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
             <div className="flex items-center gap-2">
               <div className="relative">
                 <button
-                  onClick={() => setShowSnapshots(!showSnapshots)}
+                  onClick={toggleSnapshots}
                   className="flex items-center gap-2 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 border border-foreground/10 transition-all text-[9px] font-black uppercase tracking-widest text-foreground/40 hover:text-primary group"
                 >
                   <span className="material-symbols-outlined text-sm">history</span>
@@ -93,7 +101,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                       <div className="p-3 border-b border-foreground/5 flex justify-between items-center mb-2">
                         <span className="text-[9px] font-black uppercase tracking-widest text-foreground/40">Versiones Disponibles</span>
                         <button 
-                          onClick={() => { onManualSnapshot(); setShowSnapshots(false); }}
+                          onClick={handleManualSnapshot}
                           className="text-primary hover:text-primary/80 transition-colors"
                           title="Crear Snapshot ahora"
                         >
@@ -107,7 +115,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                           snapshots.map((snap) => (
                             <button
                               key={snap.id}
-                              onClick={() => { onRestoreSnapshot(snap.id); setShowSnapshots(false); }}
+                              onClick={() => handleRestoreSnapshot(snap.id)}
                               className="w-full text-left p-3 hover:bg-primary/10 transition-colors flex items-center justify-between group"
                             >
                               <div className="flex flex-col">
@@ -126,7 +134,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
 
               {/* BOTÓN VOLVER ATRÁS */}
               <button
-                onClick={() => window.history.back()}
+                onClick={handleBack}
                 className="flex items-center gap-2 px-3 py-1.5 bg-foreground/5 hover:bg-red-500/10 border border-foreground/10 hover:border-red-500/30 transition-all text-[9px] font-black uppercase tracking-widest text-foreground/40 hover:text-red-400 group"
               >
                 <span className="material-symbols-outlined text-sm">arrow_back</span>
@@ -173,3 +181,4 @@ function Clock() {
 }
 
 export default EditorTopBar;
+

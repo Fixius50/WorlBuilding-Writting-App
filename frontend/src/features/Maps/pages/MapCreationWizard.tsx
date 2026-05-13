@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
+import { useMapCreationWizard } from './useMapCreationWizard';
 
 interface MapCreationWizardProps {
   onCancel: () => void;
@@ -11,51 +12,19 @@ interface MapCreationWizardProps {
 }
 
 const MapCreationWizard: React.FC<MapCreationWizardProps> = ({ onCancel, onCreate }) => {
-  const [mapType, setMapType] = useState('TERRITORY');
-  const [canvasSource, setCanvasSource] = useState('url');
-  const [bgImageUrl, setBgImageUrl] = useState('');
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [mapName, setMapName] = useState('');
-  const [description, setDescription] = useState('');
-  const [parentId, setParentId] = useState<number | undefined>(undefined);
-  const [is3D, setIs3D] = useState(false);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      setUploadedFile(file);
-      setCanvasSource('upload');
-    }
-  };
-
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleCreate = () => {
-    if (canvasSource === 'upload' && uploadedFile) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        onCreate(mapName, {
-          bgImage: e.target?.result as string,
-          mapType,
-          description,
-          parentId,
-          is3D
-        });
-      };
-      reader.readAsDataURL(uploadedFile);
-    } else {
-      onCreate(mapName, {
-        bgImage: canvasSource === 'url' ? bgImageUrl : 'placeholder-map.png',
-        mapType,
-        description,
-        parentId,
-        is3D
-      });
-    }
-  };
+  const {
+    mapType, setMapType,
+    canvasSource, setCanvasSource,
+    bgImageUrl, setBgImageUrl,
+    uploadedFile,
+    mapName, setMapName,
+    description, setDescription,
+    is3D,
+    fileInputRef,
+    handleFileSelect,
+    handleUploadClick,
+    handleCreate
+  } = useMapCreationWizard(onCreate);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-6">
@@ -101,6 +70,18 @@ const MapCreationWizard: React.FC<MapCreationWizardProps> = ({ onCancel, onCreat
               <SourceCard active={canvasSource === 'upload'} onClick={handleUploadClick} icon="cloud_upload" label={uploadedFile ? uploadedFile.name : "Archivo Local"} desc="Subir desde tu equipo" subdesc="MAX 5MB" />
               <SourceCard active={canvasSource === 'blank'} onClick={() => setCanvasSource('blank')} icon="brush" label="Lienzo Blanco" desc="Dibujar desde cero" subdesc="4096 px" />
             </div>
+            {canvasSource === 'url' && (
+              <div className="mt-6 space-y-2 animate-in fade-in slide-in-from-top-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-primary">URL de la Imagen</label>
+                <input 
+                  type="text" 
+                  value={bgImageUrl} 
+                  onChange={e => setBgImageUrl(e.target.value)} 
+                  className="w-full bg-foreground/5 border border-foreground/10 p-4 text-xs font-mono text-foreground outline-none focus:border-primary transition-all" 
+                  placeholder="https://..." 
+                />
+              </div>
+            )}
           </section>
         </div>
 
@@ -144,3 +125,4 @@ const SourceCard: React.FC<{ active: boolean; onClick: () => void; icon: string;
 );
 
 export default MapCreationWizard;
+

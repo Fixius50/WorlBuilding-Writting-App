@@ -36,7 +36,7 @@ const TemplateSettingsModal: React.FC<TemplateSettingsModalProps> = ({ template,
     const updatedMeta = { ...initialMeta, options };
     await templateService.update(template.id, {
       nombre,
-      tipo: tipo as any,
+      tipo: tipo as unknown as Plantilla['tipo'],
       metadata: JSON.stringify(updatedMeta)
     });
     onSave();

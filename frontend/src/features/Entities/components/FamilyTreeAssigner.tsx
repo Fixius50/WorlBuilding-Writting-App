@@ -1,140 +1,27 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { EntityUseCase } from '@application/useCases/EntityUseCase';
-import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
-import { RelationshipUseCase } from '@application/useCases/RelationshipUseCase';
-import { Relacion } from '@domain/models/database';
-import { Entidad } from '@domain/models/database';
+import React from 'react';
 import Avatar from '@atoms/Avatar';
 import MonolithicPanel from '@atoms/MonolithicPanel';
-import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
+import { useFamilyTreeAssigner, DEFAULT_RELATIONSHIP_TYPES } from './useFamilyTreeAssigner';
 
 interface FamilyTreeAssignerProps {
   entityId: number;
   projectId: number;
 }
 
-interface RelacionExtendida extends Relacion {
-  nombre_origen?: string;
-  nombre_destino?: string;
-}
-
-const DEFAULT_RELATIONSHIP_TYPES = [
-  "PADRE",
-  "MADRE",
-  "HIJO",
-  "HIJA",
-  "HERMANO/A",
-  "PAREJA/CÓNYUGE"
-];
-
 const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({ entityId, projectId }) => {
-  const [relationships, setRelationships] = useState<RelacionExtendida[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<Entidad[]>([]);
-  const [selectedRelative, setSelectedRelative] = useState<Entidad | null>(null);
-  const [selectedType, setSelectedType] = useState(DEFAULT_RELATIONSHIP_TYPES[0]);
-  const [customType, setCustomType] = useState('');
-  const [availableTypes, setAvailableTypes] = useState<string[]>(DEFAULT_RELATIONSHIP_TYPES);
-  const [loading, setLoading] = useState(true);
-  const [isAddingCustom, setIsAddingCustom] = useState(false);
-
-  const SETTINGS_KEY = `CUSTOM_REL_TYPES_${projectId}`;
-
-  const loadRelationships = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await RelationshipUseCase.getRelationshipsByEntity(entityId);
-      setRelationships(data as RelacionExtendida[]);
-      
-      // Cargar tipos personalizados del proyecto
-      const storedTypes = await WorkspaceUseCase.getSetting(SETTINGS_KEY);
-      if (storedTypes) {
-        const parsed = JSON.parse(storedTypes);
-        setAvailableTypes([...DEFAULT_RELATIONSHIP_TYPES, ...parsed]);
-      }
-    } catch (err) {
-      console.error("Error loading relationships", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [entityId, projectId, SETTINGS_KEY]);
-
-  useEffect(() => {
-    loadRelationships();
-  }, [loadRelationships]);
-
-  // Configuración de alcance de búsqueda:
-  // true = Busca en todo el proyecto / false = Podría limitarse a la carpeta actual en el futuro
-  const GLOBAL_PROJECT_SEARCH = true;
-
-  useEffect(() => {
-    const search = async () => {
-      if (searchQuery.length < 2) {
-        setSearchResults([]);
-        return;
-      }
-      try {
-        // Obtenemos todas las entidades del proyecto (Búsqueda Global)
-        const all = await EntityUseCase.getAllByProject(projectId);
-        
-        const filtered = all.filter(e => {
-          const matchesQuery = e.nombre.toLowerCase().includes(searchQuery.toLowerCase());
-          const isNotCurrent = e.id !== entityId;
-          
-          // Si GLOBAL_PROJECT_SEARCH es true, no filtramos por carpeta_id
-          return matchesQuery && isNotCurrent;
-        });
-
-        setSearchResults(filtered);
-      } catch (err) {
-        console.error("Search error", err);
-      }
-    };
-    const timer = setTimeout(search, 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery, projectId, entityId, GLOBAL_PROJECT_SEARCH]);
-
-  const handleAddRelationship = async () => {
-    if (!selectedRelative) return;
-    const finalType = isAddingCustom ? customType.trim().toUpperCase() : selectedType;
-    if (!finalType) return;
-
-    try {
-      await RelationshipUseCase.createRelationship({
-        origen_id: entityId,
-        destino_id: selectedRelative.id,
-        tipo: finalType,
-        descripcion: '',
-        project_id: projectId
-      });
-
-      // Si es un tipo nuevo, lo guardamos para el proyecto
-      if (!availableTypes.includes(finalType)) {
-        const customOnly = availableTypes.filter(t => !DEFAULT_RELATIONSHIP_TYPES.includes(t));
-        const updatedCustom = [...customOnly, finalType];
-        await WorkspaceUseCase.saveSetting(SETTINGS_KEY, JSON.stringify(updatedCustom));
-        setAvailableTypes([...DEFAULT_RELATIONSHIP_TYPES, ...updatedCustom]);
-      }
-
-      setSelectedRelative(null);
-      setSearchQuery('');
-      setCustomType('');
-      setIsAddingCustom(false);
-      loadRelationships();
-    } catch (err) {
-      console.error("Error creating relationship", err);
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    if (!confirm('¿Eliminar este vínculo genealógico?')) return;
-    try {
-      await RelationshipUseCase.deleteRelationship(id);
-      loadRelationships();
-    } catch (err) {
-      console.error("Error deleting relationship", err);
-    }
-  };
+  const {
+    relationships,
+    searchQuery, setSearchQuery,
+    searchResults,
+    selectedRelative, setSelectedRelative,
+    selectedType, setSelectedType,
+    customType, setCustomType,
+    availableTypes,
+    loading,
+    isAddingCustom, setIsAddingCustom,
+    handleAddRelationship,
+    handleDelete
+  } = useFamilyTreeAssigner(entityId, projectId);
 
   return (
     <div className="space-y-8">
@@ -145,11 +32,8 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({ entityId, proje
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Formulario de Adición */}
           <div className="space-y-4">
-            <label className="text-[9px] font-black uppercase text-foreground/40 tracking-[0.2em] block px-1">
-              Buscar Familiar
-            </label>
+            <label className="text-[9px] font-black uppercase text-foreground/40 tracking-[0.2em] block px-1">Buscar Familiar</label>
             <div className="relative">
               <input
                 type="text"
@@ -166,7 +50,6 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({ entityId, proje
                       onClick={() => {
                         setSelectedRelative(res);
                         setSearchQuery(res.nombre);
-                        setSearchResults([]);
                       }}
                       className="p-3 hover:bg-primary/10 flex items-center gap-3 cursor-pointer"
                     >
@@ -181,9 +64,7 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({ entityId, proje
 
           <div className="space-y-4">
             <div className="flex items-center justify-between px-1">
-              <label className="text-[9px] font-black uppercase text-foreground/40 tracking-[0.2em] block">
-                Tipo de Vínculo
-              </label>
+              <label className="text-[9px] font-black uppercase text-foreground/40 tracking-[0.2em] block">Tipo de Vínculo</label>
             </div>
             <div className="flex gap-2">
               {isAddingCustom ? (
@@ -224,7 +105,7 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({ entityId, proje
               <button
                 onClick={handleAddRelationship}
                 disabled={!selectedRelative || (isAddingCustom && !customType)}
-                className={`px-6 bg-primary text-primary-foreground font-black text-[9px] uppercase tracking-widest disabled:opacity-30 disabled:grayscale`}
+                className="px-6 bg-primary text-primary-foreground font-black text-[9px] uppercase tracking-widest disabled:opacity-30 disabled:grayscale"
               >
                 Vincular
               </button>
@@ -233,17 +114,13 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({ entityId, proje
         </div>
       </MonolithicPanel>
 
-      {/* Lista de Relaciones */}
       <div className="space-y-4">
         <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-foreground/30 px-2 flex items-center gap-2">
-          <span className="material-symbols-outlined text-sm">groups</span>
-          Familiares Registrados
+          <span className="material-symbols-outlined text-sm">groups</span> Familiares Registrados
         </h3>
 
         {loading ? (
-          <div className="py-12 text-center text-[9px] font-black uppercase tracking-widest text-primary/40">
-            Sincronizando registros genealógicos...
-          </div>
+          <div className="py-12 text-center text-[9px] font-black uppercase tracking-widest text-primary/40">Sincronizando registros genealógicos...</div>
         ) : relationships.length === 0 ? (
           <div className="py-20 border-2 border-dashed border-foreground/5 flex flex-col items-center justify-center text-foreground/20">
             <span className="material-symbols-outlined text-4xl mb-4 opacity-20">family_history</span>
@@ -254,31 +131,19 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({ entityId, proje
             {relationships.map(rel => {
               const isOrigen = rel.origen_id === entityId;
               const familiarNombre = isOrigen ? rel.nombre_destino : rel.nombre_origen;
-              
               return (
-                <div 
-                  key={rel.id}
-                  className="group relative bg-foreground/[0.02] border border-foreground/10 p-4 flex items-center justify-between hover:border-primary/30 hover:bg-foreground/[0.04]"
-                >
+                <div key={rel.id} className="group relative bg-foreground/[0.02] border border-foreground/10 p-4 flex items-center justify-between hover:border-primary/30 hover:bg-foreground/[0.04]">
                   <div className="flex items-center gap-4">
                     <Avatar name={familiarNombre || '?'} size="sm" />
                     <div className="space-y-1">
                       <div className="text-[10px] font-black uppercase tracking-tight text-foreground/80">{familiarNombre}</div>
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 bg-primary/10 border border-primary/20 text-primary text-[8px] font-black uppercase tracking-widest">
-                          {rel.tipo}
-                        </span>
-                        {!isOrigen && (
-                          <span className="text-[8px] text-foreground/30 italic">(Inverso)</span>
-                        )}
+                        <span className="px-2 py-0.5 bg-primary/10 border border-primary/20 text-primary text-[8px] font-black uppercase tracking-widest">{rel.tipo}</span>
+                        {!isOrigen && <span className="text-[8px] text-foreground/30 italic">(Inverso)</span>}
                       </div>
                     </div>
                   </div>
-
-                  <button
-                    onClick={() => handleDelete(rel.id)}
-                    className="size-8 flex items-center justify-center text-foreground/10 hover:text-red-400 hover:bg-red-400/5 opacity-0 group-hover:opacity-100"
-                  >
+                  <button onClick={() => handleDelete(rel.id)} className="size-8 flex items-center justify-center text-foreground/10 hover:text-red-400 hover:bg-red-400/5 opacity-0 group-hover:opacity-100">
                     <span className="material-symbols-outlined text-base">delete</span>
                   </button>
                 </div>
@@ -292,3 +157,4 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({ entityId, proje
 };
 
 export default FamilyTreeAssigner;
+
