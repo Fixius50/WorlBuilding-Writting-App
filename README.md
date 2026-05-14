@@ -56,7 +56,7 @@ Gestión de líneas temporales paralelas y eventos históricos vinculados a enti
 
 ## 🛠️ Stack Tecnológico
 - **Frontend:** React 18, TypeScript, Vite.
-- **Estilo:** Vanilla CSS (Technical Zen / Dark Glassmorphism).
+- **Estilo:** Vanilla CSS (Technical Zen / Monolithic).
 - **Estado:** Zustand (Async Orchestration).
 - **Persistencia:** SQLite WASM (SQLocal) + OPFS.
 - **Backend:** Spring Boot 3 (Java 21) para servicios de exportación y backup.

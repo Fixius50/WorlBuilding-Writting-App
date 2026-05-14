@@ -8,7 +8,7 @@ Este proyecto requiere un altísimo nivel de consistencia, documentación y cali
 1. **Doble Verificación:** Antes de escribir cualquier código, verifica la estructura actual y la lógica existente.
 2. **Documentación Continua:** Cada cambio significativo debe registrarse en la `05_Bitacora_Dev.md` o en la `05_Bitacora_Sistematica.md`.
 3. **Modularidad:** Sigue estrictamente la arquitectura modular definida. No mezcles responsabilidades.
-4. **Estética "World Building":** El frontend debe tener una estética técnica, arquitectónica y monolítica (Technical Zen, paneles sólidos, tipografía académica). Prohibido el uso de glassmorphism ad-hoc o transparencias arbitrarias.
+4. **Estética "World Building":** El frontend debe tener una estética técnica, arquitectónica y monolítica (Technical Zen, paneles sólidos, tipografía académica).
 5. **Estado Centralizado:** El panel derecho se gestiona exclusivamente a través de `useRightPanelStore`. Prohibido el uso de portales manuales (`createPortal`) para el layout global.
 
 ## FLUJO DE TRABAJO

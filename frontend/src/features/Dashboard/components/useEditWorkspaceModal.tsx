@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Proyecto } from '@domain/models/database';
 
-const GENRES = ['FANTASÍA', 'SCI-FI', 'HORROR', 'LORE', 'MISTERIO', 'HISTÓRICO', 'CYBERPUNK', 'STEAMPUNK'];
+const GENRES = ['FANTASÍA', 'SCI-FI', 'HORROR', 'LORE', 'MISTERIO', 'HISTÓRICO', 'STEAMPUNK'];
 
 /**
  * 🧠 useEditWorkspaceModal

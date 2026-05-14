@@ -38,7 +38,7 @@ const EditWorkspaceModal: React.FC<EditWorkspaceModalProps> = ({ isOpen, onClose
           />
           <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black to-transparent">
             <h4 className="text-foreground font-black text-xl leading-none">{formData.nombre || "Untitled"}</h4>
-            <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mt-2 block">{formData.tag}</span>
+            <span className="text-[10px] font-bold text-primary uppercase tracking-widest mt-2 block">{formData.tag}</span>
           </div>
         </div>
 
@@ -49,27 +49,27 @@ const EditWorkspaceModal: React.FC<EditWorkspaceModalProps> = ({ isOpen, onClose
 
             {/* Title */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-[#94a3b8]">Título del Proyecto</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-foreground/50">Título del Proyecto</label>
               <input
                 type="text"
                 name="nombre"
                 value={formData.nombre}
                 onChange={(e) => handleFieldChange('nombre', e.target.value)}
-                className="w-full monolithic-panel rounded-none px-4 py-3 text-foreground text-sm focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 outline-none transition-all"
+                className="w-full monolithic-panel rounded-none px-4 py-3 text-foreground text-sm focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all"
                 autoFocus
               />
             </div>
 
             {/* Genre */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-[#94a3b8]">Género</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-foreground/50">Género</label>
               <div className="grid grid-cols-2 gap-2">
                 {GENRES.slice(0, 4).map(g => (
                   <button
                     key={g}
                     type="button"
                     onClick={() => handleFieldChange('tag', g)}
-                    className={`px-3 py-2 rounded-none text-[10px] font-bold border transition-all ${formData.tag === g ? 'bg-indigo-500 text-foreground border-indigo-500' : 'bg-[#13141f] border-foreground/40 text-[#94a3b8] hover:border-foreground/40'}`}
+                    className={`px-3 py-2 rounded-none text-[10px] font-bold border transition-all ${formData.tag === g ? 'bg-primary text-primary-foreground border-primary' : 'bg-background border-foreground/10 text-foreground/60 hover:border-foreground/40'}`}
                   >
                     {g}
                   </button>
@@ -79,12 +79,12 @@ const EditWorkspaceModal: React.FC<EditWorkspaceModalProps> = ({ isOpen, onClose
 
             {/* Image URL */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-[#94a3b8]">Imagen de Portada (URL)</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-foreground/50">Imagen de Portada (URL)</label>
               <input
                 type="text"
                 value={formData.image_url}
                 onChange={(e) => handleImageUrlChange(e.target.value)}
-                className="w-full monolithic-panel rounded-none px-4 py-3 text-foreground text-xs focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 outline-none transition-all truncate"
+                className="w-full monolithic-panel rounded-none px-4 py-3 text-foreground text-xs focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all truncate"
               />
             </div>
 
@@ -92,13 +92,13 @@ const EditWorkspaceModal: React.FC<EditWorkspaceModalProps> = ({ isOpen, onClose
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-3 bg-[#13141f] hover:monolithic-panel rounded-none text-xs font-bold text-[#94a3b8] transition-all"
+                className="flex-1 px-4 py-3 bg-foreground/5 hover:bg-foreground/10 border border-foreground/10 rounded-none text-xs font-bold text-foreground/60 transition-all"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-3 bg-indigo-500 hover:bg-indigo-400 text-foreground rounded-none text-xs font-bold transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-none text-xs font-bold transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
               >
                 <span className="material-symbols-outlined text-sm">save</span>
                 Guardar Cambios

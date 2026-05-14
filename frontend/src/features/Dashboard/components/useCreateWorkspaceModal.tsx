@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 
-const GENRES = ['FANTASÍA', 'SCI-FI', 'HORROR', 'LORE', 'MISTERIO', 'HISTÓRICO', 'CYBERPUNK', 'STEAMPUNK'];
+const GENRES = ['FANTASÍA', 'SCI-FI', 'HORROR', 'LORE', 'MISTERIO', 'HISTÓRICO', 'STEAMPUNK'];
 
 /**
  * 🧠 useCreateWorkspaceModal

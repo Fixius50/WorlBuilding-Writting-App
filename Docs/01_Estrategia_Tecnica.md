@@ -12,7 +12,7 @@ El proyecto adopta un "Mapa de Carpetas Definitivo" con separación física tota
     * **Regla de ORO (Componentes y Control de Flujo):** Obligatorio el uso de sintaxis Arrow Function (`const = () => {}`) y prohibición estricta de `early returns` dentro de bloques `if` en favor de condicionales envolventes. Tipado fuerte sin `any`.
   * Estado: Zustand (Manejador de Estado Global centralizado para UI y Paneles). Context API reservado exclusivamente para datos de proyecto/idioma inmutables en el render.
   * Routing: React Router Dom.
-  * Estilos: Technical Zen (Monolithic) basado en variables CSS (`foreground/X`). Prohibido glassmorphism legacy.
+  * Estilos: Technical Zen (Monolithic) basado en variables CSS (`foreground/X`).
   * Aliasing de rutas configurado (ej. `@application`, `@components`, `@features`, `@database`, `@assets`).
 * **Persistencia (BBDD Local-First):** SQLite WASM (`sqlocal`) sobre OPFS.
   * Almacenamiento absoluto de datos en el navegador del cliente. Cero latencia de red.

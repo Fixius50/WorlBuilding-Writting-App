@@ -21,7 +21,7 @@ El servidor Vite arranca en `http://localhost:5173`. Hot Module Replacement (HMR
 Todo el código vive bajo `src/`:
 
 - **`src/features/`** — Módulos por dominio (Maps, Entities, Linguistics, Timeline, Writing…)
-- **`src/components/`** — Componentes comunes reutilizables (Button, GlassPanel, ConfirmationModal…)
+- **`src/components/`** — Componentes comunes reutilizables (Button, MonolithicPanel, ConfirmationModal…)
 - **`src/database/`** — Servicios de persistencia (`entityService`, `folderService`, `projectService`…)
 - **`src/types/`** — Interfaces TypeScript compartidas (`maps.ts`, etc.)
 - **`src/context/`** — Contextos React (LanguageContext…)

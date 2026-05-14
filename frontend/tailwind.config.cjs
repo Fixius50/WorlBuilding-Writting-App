@@ -58,8 +58,6 @@ module.exports = {
                 "background-dark": "hsl(var(--background) / <alpha-value>)",
                 "surface-dark": "hsl(var(--background) / 0.95)",
                 "surface-light": "hsl(var(--foreground) / 0.05)",
-                "glass": "hsl(var(--background) / 0.6)",
-                "glass-border": "hsl(var(--foreground) / 0.1)",
                 "text-main": "hsl(var(--foreground) / <alpha-value>)",
                 "text-muted": "hsl(var(--foreground) / 0.6)",
             },

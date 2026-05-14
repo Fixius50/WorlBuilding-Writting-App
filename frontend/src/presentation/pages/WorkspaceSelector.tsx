@@ -140,7 +140,7 @@ const WorkspaceSelector: React.FC = () => {
     <div className="h-screen w-full bg-background text-foreground flex flex-col items-center font-sans selection:bg-indigo-500/30 overflow-hidden">
       <div className="w-full max-w-6xl flex-1 flex flex-col overflow-y-auto custom-scrollbar p-8">
 
-        <header className="w-full mt-24 mb-12 flex flex-col lg:flex-row lg:items-end justify-center gap-12 text-center gap-8 flex-shrink-0">
+        <header className="w-full mb-12 flex flex-col lg:flex-row lg:items-end justify-center text-center gap-8 flex-shrink-0">
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <h1 className="text-6xl font-black tracking-tighter leading-none">
