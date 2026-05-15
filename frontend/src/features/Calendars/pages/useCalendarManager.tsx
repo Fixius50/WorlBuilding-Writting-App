@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { CalendarUseCase } from '@application/useCases/CalendarUseCase';
-import { Calendario } from '@repositories/calendarService';
+import { Calendario } from '@domain/models/database';
 
 /**
  * 🧠 useCalendarManager

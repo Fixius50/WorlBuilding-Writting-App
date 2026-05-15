@@ -1,5 +1,6 @@
 import { entityService } from '@repositories/entityService';
-import { relationshipService, Relacion, RelacionEnriquecida } from '@repositories/relationshipService';
+import { relationshipService } from '@repositories/relationshipService';
+import { Relacion, RelacionEnriquecida } from '@domain/models/database';
 import { folderService } from '@repositories/folderService';
 import { Entidad, Carpeta } from '@domain/models/database';
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { HIERARCHY_DEFINITIONS, HierarchyTypeId } from '@domain/models/hierarchy';
+import { HierarchyTypeId, HIERARCHY_DEFINITIONS } from '../types';
 import { useCreateNodeModal } from './useCreateNodeModal';
 
 interface CreateNodeModalProps {
@@ -7,9 +7,10 @@ interface CreateNodeModalProps {
   onClose: () => void;
   onCreate: (data: { nombre: string; tipo: string; descripcion?: string }) => void;
   parentFolder?: { id: number; nombre: string } | null;
+  forceEntityMode?: boolean;
 }
 
-const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCreate, parentFolder }) => {
+const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCreate, parentFolder, forceEntityMode }) => {
   const {
     isRoot,
     formData,
@@ -19,7 +20,7 @@ const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCr
     handleSubmit,
     ARQUETIPOS_GROUPS,
     getFullType
-  } = useCreateNodeModal(isOpen, parentFolder, onClose, onCreate);
+  } = useCreateNodeModal(isOpen, parentFolder, onClose, onCreate, forceEntityMode);
 
   if (!isOpen) return null;
 
@@ -35,7 +36,7 @@ const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCr
             </div>
             <div>
               <h2 className="text-xl font-black text-foreground tracking-tight leading-none mb-1">
-                {parentFolder ? 'Omni-Constructor' : 'Crear Nueva Carpeta'}
+                {(parentFolder || forceEntityMode) ? 'Omni-Constructor' : 'Crear Nueva Carpeta'}
               </h2>
               <div className="flex items-center gap-2 text-[10px] font-black text-foreground/20 uppercase tracking-widest">
                 <span className="material-symbols-outlined text-[12px] opacity-20">location_on</span>
@@ -95,7 +96,7 @@ const CreateNodeModal: React.FC<CreateNodeModalProps> = ({ isOpen, onClose, onCr
             </div>
 
             {/* Columna Derecha: Configuración (Oculto en Raíz) */}
-            {!isRoot && (
+            {(!isRoot || forceEntityMode) && (
               <div className="space-y-8">
                 <div>
                   <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-6 italic">Naturaleza del Nodo (Arquetipos)</h3>

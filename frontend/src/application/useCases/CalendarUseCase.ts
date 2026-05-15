@@ -1,4 +1,5 @@
-import { calendarService, Calendario } from '@repositories/calendarService';
+import { calendarService } from '@repositories/calendarService';
+import { Calendario } from '@domain/models/database';
 
 export class CalendarUseCase {
   static async getByProject(projectId: number): Promise<Calendario[]> {

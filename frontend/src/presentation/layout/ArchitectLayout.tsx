@@ -109,6 +109,15 @@ const ArchitectLayout: React.FC = () => {
     }
   }, [projectName]);
 
+  // Listener para actualizaciones de carpetas desde otros componentes
+  useEffect(() => {
+    const handleUpdate = () => {
+      if (projectId) loadFolders(projectId);
+    };
+    window.addEventListener('folder-update', handleUpdate);
+    return () => window.removeEventListener('folder-update', handleUpdate);
+  }, [projectId, loadFolders]);
+
   // Reset contextual content on navigation if it was custom
   const { mode, reset } = useRightPanelStore();
   useEffect(() => {

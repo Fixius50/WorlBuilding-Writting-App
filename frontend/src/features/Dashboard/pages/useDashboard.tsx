@@ -1,27 +1,27 @@
-import { useEffect, useCallback } from 'react';
-import { useDashboardStore } from '@store/useDashboardStore';
+import { useDashboardData } from '../hooks/useDashboardData';
 
 /**
  * 🧠 useDashboard
  * Logic for managing dashboard statistics, loading states, and activity logs.
+ * Now powered by TanStack Query for instant caching and performance.
  */
 export const useDashboard = (projectId: number) => {
-  const { stats, isLoading, error, loadStats } = useDashboardStore();
+  const { data: stats, isLoading, error, refetch } = useDashboardData(projectId);
 
-  const reloadStats = useCallback(() => {
-    if (projectId) {
-      loadStats(projectId);
-    }
-  }, [projectId, loadStats]);
-
-  useEffect(() => {
-    reloadStats();
-  }, [reloadStats]);
+  const defaultStats = {
+    entityCount: 0,
+    folderCount: 0,
+    entitiesByType: [],
+    recentActivity: [],
+    wordCount: 0,
+    pageCount: 0,
+    notebookCount: 0
+  };
 
   return {
-    stats,
+    stats: stats || defaultStats,
     isLoading,
     error,
-    reloadStats
+    reloadStats: refetch
   };
 };

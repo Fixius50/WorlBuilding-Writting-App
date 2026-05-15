@@ -5,24 +5,24 @@
  */
 
 export type HierarchyTypeId = 
-  | 'UNIVERSE' 
-  | 'PLANET' 
-  | 'GEOGRAPHY' 
-  | 'ENTITIES' 
-  | 'MAGIC' 
-  | 'FACTIONS' 
-  | 'ITEMS' 
-  | 'FOLDER' 
-  | 'DIMENSION'
-  | 'MAP'
-  | 'TIMELINE'
-  | 'PERSONAJE'
-  | 'LUGAR'
-  | 'ORGANIZACION'
-  | 'OBJETO'
-  | 'EVENTO'
-  | 'ENTIDAD'
-  | 'CONLANG';
+  | 'universe' 
+  | 'planet' 
+  | 'geography' 
+  | 'entities' 
+  | 'magic' 
+  | 'factions' 
+  | 'items' 
+  | 'folder' 
+  | 'dimension'
+  | 'map'
+  | 'timeline'
+  | 'personaje'
+  | 'lugar'
+  | 'organizacion'
+  | 'objeto'
+  | 'evento'
+  | 'entidad'
+  | 'conlang';
 
 export interface HierarchyTypeDefinition {
   id: HierarchyTypeId;
@@ -31,93 +31,93 @@ export interface HierarchyTypeDefinition {
 }
 
 export const HIERARCHY_DEFINITIONS: Record<HierarchyTypeId, HierarchyTypeDefinition> = {
-  UNIVERSE: {
-    id: 'UNIVERSE',
+  universe: {
+    id: 'universe',
     label: 'Universo / Proyecto',
     description: 'El contenedor raíz de toda la creación.',
   },
-  PLANET: {
-    id: 'PLANET',
+  planet: {
+    id: 'planet',
     label: 'Planeta / Mundo',
     description: 'Cuerpo celeste o plano de existencia principal.',
   },
-  GEOGRAPHY: { 
-    id: 'GEOGRAPHY', 
+  geography: { 
+    id: 'geography', 
     label: 'Geografía', 
     description: 'Accidentes geográficos, regiones y mapas.' 
   },
-  ENTITIES: { 
-    id: 'ENTITIES', 
+  entities: { 
+    id: 'entities', 
     label: 'Entidades', 
     description: 'Personajes, razas y criaturas.' 
   },
-  MAGIC: { 
-    id: 'MAGIC', 
+  magic: { 
+    id: 'magic', 
     label: 'Magia', 
     description: 'Sistemas de energía, hechizos y lo arcano.' 
   },
-  FACTIONS: { 
-    id: 'FACTIONS', 
+  factions: { 
+    id: 'factions', 
     label: 'Facciones', 
     description: 'Organizaciones, reinos y religiones.' 
   },
-  ITEMS: { 
-    id: 'ITEMS', 
+  items: { 
+    id: 'items', 
     label: 'Objetos', 
     description: 'Reliquias, armas y objetos de valor.' 
   },
-  FOLDER: { 
-    id: 'FOLDER', 
+  folder: { 
+    id: 'folder', 
     label: 'Carpeta', 
     description: 'Contenedor genérico para organización.' 
   },
-  DIMENSION: { 
-    id: 'DIMENSION', 
+  dimension: { 
+    id: 'dimension', 
     label: 'Dimensión / Plano Cósmico', 
     description: 'Realidades paralelas o planos superiores.' 
   },
-  MAP: {
-    id: 'MAP',
+  map: {
+    id: 'map',
     label: 'Mapa Interactivo',
     description: 'Cartografía digital y puntos de interés.'
   },
-  TIMELINE: {
-    id: 'TIMELINE',
+  timeline: {
+    id: 'timeline',
     label: 'Línea de Tiempo',
     description: 'Cronología de eventos y eras.'
   },
-  PERSONAJE: {
-    id: 'PERSONAJE',
+  personaje: {
+    id: 'personaje',
     label: 'Personaje',
     description: 'Individuos con historia y atributos.'
   },
-  LUGAR: {
-    id: 'LUGAR',
+  lugar: {
+    id: 'lugar',
     label: 'Lugar / Ubicación',
     description: 'Puntos específicos dentro de la geografía.'
   },
-  ORGANIZACION: {
-    id: 'ORGANIZACION',
+  organizacion: {
+    id: 'organizacion',
     label: 'Facción / Organización',
     description: 'Grupos, reinos o instituciones.'
   },
-  OBJETO: {
-    id: 'OBJETO',
+  objeto: {
+    id: 'objeto',
     label: 'Objeto / Reliquia',
     description: 'Artefactos y objetos de importancia.'
   },
-  EVENTO: {
-    id: 'EVENTO',
+  evento: {
+    id: 'evento',
     label: 'Evento Histórico',
     description: 'Hitos importantes en la cronología.'
   },
-  CONLANG: {
-    id: 'CONLANG',
+  conlang: {
+    id: 'conlang',
     label: 'Lengua Construida',
     description: 'Sistemas lingüísticos y glifos.'
   },
-  ENTIDAD: {
-    id: 'ENTIDAD',
+  entidad: {
+    id: 'entidad',
     label: 'Constructor Directo',
     description: 'Nodo modular con acceso total al constructor.'
   }

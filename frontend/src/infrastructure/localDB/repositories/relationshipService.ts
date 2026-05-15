@@ -1,20 +1,5 @@
 import { sql } from '../client';
-
-export interface Relacion {
-  id: number;
-  origen_id: number;
-  destino_id: number;
-  tipo: string;
-  descripcion: string | null;
-  project_id: number;
-  origen_handle?: string | null;
-  destino_handle?: string | null;
-}
-
-export interface RelacionEnriquecida extends Relacion {
-  nombre_origen?: string;
-  nombre_destino?: string;
-}
+import { Relacion, RelacionEnriquecida } from '@domain/models/database';
 
 export const relationshipService = {
   async getByProject(projectId: number): Promise<Relacion[]> {
@@ -33,10 +18,10 @@ export const relationshipService = {
     `;
   },
 
-  async create(rel: Omit<Relacion, 'id'>): Promise<Relacion> {
+  async create(rel: Omit<Relacion, 'id' | 'created_at'>): Promise<Relacion> {
     const results = await sql<Relacion>`
-      INSERT INTO relaciones (origen_id, destino_id, tipo, descripcion, project_id, origen_handle, destino_handle)
-      VALUES (${rel.origen_id}, ${rel.destino_id}, ${rel.tipo}, ${rel.descripcion || ''}, ${rel.project_id}, ${rel.origen_handle || null}, ${rel.destino_handle || null})
+      INSERT INTO relaciones (origen_id, destino_id, tipo, descripcion, project_id, origen_handle, destino_handle, created_at)
+      VALUES (${rel.origen_id}, ${rel.destino_id}, ${rel.tipo}, ${rel.descripcion || ''}, ${rel.project_id}, ${rel.origen_handle || null}, ${rel.destino_handle || null}, CURRENT_TIMESTAMP)
       RETURNING *
     `;
     return results[0];

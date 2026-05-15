@@ -2,7 +2,7 @@ import React from 'react';
 import ConfirmationModal from '@organisms/ConfirmationModal';
 import { Notebook } from '@domain/models/writing';
 import ZenEditor from '@features/Editor/components/ZenEditor';
-import { Hoja as HojaModel } from '@repositories/notebookService';
+import { Hoja as HojaModel } from '@domain/models/database';
 import { useNotebookManager } from './useNotebookManager';
 
 interface NotebookManagerProps {

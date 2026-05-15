@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLanguage } from '@context/LanguageContext';
 import ZenEditor from '@features/Editor/components/ZenEditor';
-import { Hoja as HojaModel } from '@repositories/notebookService';
+import { Hoja as HojaModel } from '@domain/models/database';
 import Avatar from '@atoms/Avatar';
 import { useEventInspector } from './useEventInspector';
 

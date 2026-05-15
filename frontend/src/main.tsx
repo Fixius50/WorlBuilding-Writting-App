@@ -5,6 +5,19 @@ import '@assets/index.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { initializeDatabase } from '@database';
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// --- TanStack Query Configuration ---
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 30,     // 30 segundos de datos "frescos"
+      gcTime: 1000 * 60 * 30,    // Mantener en memoria 30 min para navegación rápida
+      retry: false,             // En LocalDB no tiene sentido reintentar si falla
+      refetchOnWindowFocus: false // Evitar parpadeos al volver a la pestaña
+    },
+  },
+});
 
 // --- Global Handlers ---
 const reportError = (source: string, message: string, _stack?: string) => {
@@ -61,7 +74,9 @@ if (rootElement) {
             FallbackComponent={GlobalErrorFallback}
             onError={(error, info) => reportError('React ErrorBoundary', error instanceof Error ? error.message : String(error), info.componentStack ?? undefined)}
           >
-            <App />
+            <QueryClientProvider client={queryClient}>
+              <App />
+            </QueryClientProvider>
           </ErrorBoundary>
         </React.StrictMode>
       );

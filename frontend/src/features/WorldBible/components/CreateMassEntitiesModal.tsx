@@ -10,6 +10,7 @@ interface CreateMassEntitiesModalProps {
   projectId: number;
   allFolders: Carpeta[];
   handleOpenCreateModal?: (parentFolder?: Carpeta | null) => void;
+  initialFolderId?: number | null;
 }
 
 const ARQUETIPOS_GROUPS = [
@@ -58,7 +59,8 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
   onCreated, 
   projectId, 
   allFolders,
-  handleOpenCreateModal
+  handleOpenCreateModal,
+  initialFolderId
 }) => {
   const { t } = useLanguage();
   const {
@@ -75,7 +77,7 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
     handleRemoveAttribute,
     handleAttributeValueChange,
     handleSubmit
-  } = useCreateMassEntities(isOpen, projectId, allFolders, onCreated, onClose);
+  } = useCreateMassEntities(isOpen, projectId, allFolders, onCreated, onClose, initialFolderId);
 
   if (!isOpen) return null;
 

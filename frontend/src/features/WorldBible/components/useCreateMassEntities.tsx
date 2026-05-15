@@ -16,7 +16,8 @@ export const useCreateMassEntities = (
   projectId: number,
   allFolders: Carpeta[],
   onCreated: () => void,
-  onClose: () => void
+  onClose: () => void,
+  initialFolderId?: number | null
 ) => {
   const [nameList, setNameList] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -31,13 +32,16 @@ export const useCreateMassEntities = (
       loadTemplates();
       setNameList([]);
       setInputValue('');
-      if (allFolders && allFolders.length > 0) {
+      
+      if (initialFolderId) {
+        setFolderId(initialFolderId);
+      } else if (allFolders && allFolders.length > 0) {
         setFolderId(allFolders[0].id);
       } else {
         setFolderId(null);
       }
     }
-  }, [isOpen, allFolders]);
+  }, [isOpen, allFolders, initialFolderId]);
 
   const loadTemplates = async () => {
     try {

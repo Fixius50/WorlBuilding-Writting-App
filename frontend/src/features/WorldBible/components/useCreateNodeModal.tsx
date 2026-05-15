@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { HIERARCHY_DEFINITIONS, HierarchyTypeId } from '@domain/models/hierarchy';
+import { HierarchyTypeId, HIERARCHY_DEFINITIONS } from '../types';
 import { getHierarchyVisuals } from '@presentation/utils/hierarchyVisuals';
 
 /**
@@ -10,38 +10,39 @@ export const useCreateNodeModal = (
   isOpen: boolean,
   parentFolder: { id: number; nombre: string } | null | undefined,
   onClose: () => void,
-  onCreate: (data: { nombre: string; tipo: string; descripcion?: string }) => void
+  onCreate: (data: { nombre: string; tipo: string; descripcion?: string }) => void,
+  forceEntityMode?: boolean
 ) => {
-  const isRoot = !parentFolder;
+  const isRoot = !parentFolder && !forceEntityMode;
 
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
-    tipo: 'FOLDER' as HierarchyTypeId,
-    canvasType: 'BLANK'
+    tipo: 'folder' as HierarchyTypeId,
+    canvasType: 'blank'
   });
 
   // Definición de tipos disponibles para el Omni-Constructor agrupados por Arquetipo
   const ARQUETIPOS_GROUPS = [
     {
       name: 'ARQUETIPO CÓSMICO',
-      ids: ['UNIVERSE', 'PLANET', 'DIMENSION'] as HierarchyTypeId[]
+      ids: ['universe', 'planet', 'dimension'] as HierarchyTypeId[]
     },
     {
       name: 'ARQUETIPO INDIVIDUAL',
-      ids: ['PERSONAJE', 'OBJETO', 'ENTIDAD'] as HierarchyTypeId[]
+      ids: ['personaje', 'objeto', 'entidad'] as HierarchyTypeId[]
     },
     {
       name: 'ARQUETIPO TERRITORIAL',
-      ids: ['LUGAR', 'MAP'] as HierarchyTypeId[]
+      ids: ['lugar', 'map'] as HierarchyTypeId[]
     },
     {
       name: 'ARQUETIPO COLECTIVO',
-      ids: ['ORGANIZACION', 'CONLANG'] as HierarchyTypeId[]
+      ids: ['organizacion', 'conlang'] as HierarchyTypeId[]
     },
     {
       name: 'ARQUETIPO CRONOLÓGICO',
-      ids: ['EVENTO', 'TIMELINE'] as HierarchyTypeId[]
+      ids: ['evento', 'timeline'] as HierarchyTypeId[]
     }
   ];
 
@@ -52,19 +53,20 @@ export const useCreateNodeModal = (
 
   useEffect(() => {
     if (isOpen) {
-      const defaultType: HierarchyTypeId = parentFolder ? 'PERSONAJE' : 'FOLDER';
+      const defaultType: HierarchyTypeId = (parentFolder || forceEntityMode) ? 'personaje' : 'folder';
       setFormData({
         nombre: '',
         descripcion: '',
         tipo: defaultType,
-        canvasType: 'BLANK'
+        canvasType: 'blank'
       });
     }
   }, [isOpen, parentFolder]);
 
   const handleSubmit = useCallback(() => {
-    const finalTipo = isRoot ? 'FOLDER' : formData.tipo;
-    const finalData = { ...formData, tipo: finalTipo };
+    // Normalizamos a minúsculas para el dominio
+    const finalTipo = isRoot ? 'folder' : (formData.tipo || 'personaje');
+    const finalData = { ...formData, tipo: finalTipo.toLowerCase() };
     
     onCreate(finalData);
     onClose();

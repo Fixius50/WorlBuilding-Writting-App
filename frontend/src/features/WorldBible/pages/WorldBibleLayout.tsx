@@ -2,7 +2,7 @@ import React from 'react';
 import { useLanguage } from '@context/LanguageContext';
 import { Outlet, useOutletContext } from 'react-router-dom';
 import BibleTableView from '../components/BibleTableView';
-import CreateNodeModal from '../components/CreateNodeModal';
+import CreateMassEntitiesModal from '../components/CreateMassEntitiesModal';
 import { ArchitectContext } from '@domain/models/ui';
 import ConfirmationModal from '@organisms/ConfirmationModal';
 import { useRightPanelStore } from '@store/useRightPanelStore';
@@ -34,7 +34,11 @@ const WorldBibleLayout: React.FC = () => {
     confirmDeleteEntity,
     handleCreateSubmit,
     projectName,
-    navigate
+    navigate,
+    projectId,
+    currentFolderId,
+    setTargetParent,
+    entityId
   } = useWorldBibleLayout(architectContext);
 
   if (!architectContext) return <div className="p-20 text-center animate-pulse">Cargando contexto raíz...</div>;
@@ -118,6 +122,16 @@ const WorldBibleLayout: React.FC = () => {
                     <span className="text-[10px] font-black uppercase tracking-[0.2em]">Volver</span>
                   </button>
 
+                  {entityId && (
+                    <button
+                      onClick={() => navigate(`/local/${projectName}/bible/entity/${entityId}/edit`)}
+                      className="flex items-center gap-3 px-6 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-amber-500 transition-all rounded-full group"
+                    >
+                      <span className="material-symbols-outlined text-sm">edit</span>
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em]">Editar Registro</span>
+                    </button>
+                  )}
+
                   <button
                     onClick={() => handleOpenCreateModal(currentFolder)}
                     className="flex items-center gap-3 px-6 py-2.5 bg-primary/10 hover:bg-primary/20 border border-primary/20 text-primary transition-all rounded-full group"
@@ -131,21 +145,21 @@ const WorldBibleLayout: React.FC = () => {
           </header>
         )}
 
-        <div className="flex-1 overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
           {(!isRoot || viewMode === 'folders') ? (
-            <Outlet context={React.useMemo(() => ({
+            <Outlet context={{
               ...architectContext,
               folders: localFolders,
               entities: localEntities,
               currentFolder,
               allFolders: architectContext.folders || [],
-              handleOpenCreateModal: () => handleOpenCreateModal(currentFolder),
+              handleOpenCreateModal: (folder?: any) => handleOpenCreateModal(folder || currentFolder),
               handleDeleteEntity: (id: number) => { setEntityToDelete(id); setDeleteConfirmOpen(true); },
               setRightOpen: (open: boolean) => open ? openPanel('custom') : closePanel(),
               setRightPanelTab: setActiveTab,
               setRightPanelContent: (content: React.ReactNode) => useRightPanelStore.setState({ content, mode: 'custom', isOpen: true }),
               setRightPanelTitle: (title: React.ReactNode) => useRightPanelStore.setState({ title }),
-            }), [architectContext, localFolders, localEntities, currentFolder, handleOpenCreateModal, setEntityToDelete, setDeleteConfirmOpen, openPanel, closePanel, setActiveTab])} />
+            }} />
           ) : (
             <BibleTableView 
               projectId={architectContext.projectId}
@@ -158,11 +172,21 @@ const WorldBibleLayout: React.FC = () => {
         </div>
       </main>
 
-      <CreateNodeModal
+      <CreateMassEntitiesModal
         isOpen={creationModalOpen}
         onClose={() => setCreationModalOpen(false)}
-        onCreate={handleCreateSubmit}
-        parentFolder={targetParent}
+        onCreated={() => {
+          setCreationModalOpen(false);
+          // Opcional: refetch de datos si es necesario, aunque TanStack Query lo hará solo
+        }}
+        projectId={projectId || 0}
+        allFolders={architectContext.folders || []}
+        initialFolderId={currentFolderId}
+        handleOpenCreateModal={() => {
+           // Si el modal masivo pide crear una carpeta, usamos nuestra lógica
+           setTargetParent(null);
+           // Aquí podríamos abrir un modal de carpeta simple si existiera
+        }}
       />
 
       <ConfirmationModal

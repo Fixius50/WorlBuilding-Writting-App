@@ -13,92 +13,92 @@ export interface HierarchyVisuals {
 }
 
 export const HIERARCHY_VISUALS: Record<HierarchyTypeId, HierarchyVisuals> = {
-  UNIVERSE: { 
+  universe: { 
     icon: 'auto_awesome', 
     color: 'text-primary', 
     bgColor: 'bg-primary/10' 
   },
-  PLANET: { 
+  planet: { 
     icon: 'public', 
     color: 'text-emerald-400', 
     bgColor: 'bg-emerald-900/20' 
   },
-  GEOGRAPHY: { 
+  geography: { 
     icon: 'map', 
     color: 'text-green-300', 
     bgColor: 'bg-green-900/20' 
   },
-  ENTITIES: { 
+  entities: { 
     icon: 'groups', 
     color: 'text-blue-300', 
     bgColor: 'bg-blue-900/20' 
   },
-  MAGIC: { 
+  magic: { 
     icon: 'auto_fix_high', 
     color: 'text-pink-300', 
     bgColor: 'bg-pink-900/20' 
   },
-  FACTIONS: { 
+  factions: { 
     icon: 'security', 
     color: 'text-red-300', 
     bgColor: 'bg-red-900/20' 
   },
-  ITEMS: { 
+  items: { 
     icon: 'inventory_2', 
     color: 'text-gray-300', 
     bgColor: 'bg-gray-900/20' 
   },
-  FOLDER: { 
+  folder: { 
     icon: 'folder', 
     color: 'text-gray-400', 
     bgColor: 'bg-gray-900/10' 
   },
-  DIMENSION: { 
+  dimension: { 
     icon: 'lan', 
     color: 'text-orange-400', 
     bgColor: 'bg-orange-900/20' 
   },
-  MAP: { 
+  map: { 
     icon: 'map', 
     color: 'text-green-400', 
     bgColor: 'bg-green-900/20' 
   },
-  TIMELINE: { 
+  timeline: { 
     icon: 'timeline', 
     color: 'text-purple-400', 
     bgColor: 'bg-purple-900/20' 
   },
-  PERSONAJE: { 
+  personaje: { 
     icon: 'person', 
     color: 'text-blue-400', 
     bgColor: 'bg-blue-900/20' 
   },
-  LUGAR: { 
+  lugar: { 
     icon: 'location_on', 
     color: 'text-orange-400', 
     bgColor: 'bg-orange-900/20' 
   },
-  ORGANIZACION: { 
+  organizacion: { 
     icon: 'diversity_3', 
     color: 'text-red-400', 
     bgColor: 'bg-red-900/20' 
   },
-  OBJETO: { 
+  objeto: { 
     icon: 'diamond', 
     color: 'text-yellow-400', 
     bgColor: 'bg-yellow-900/20' 
   },
-  EVENTO: { 
+  evento: { 
     icon: 'history_edu', 
     color: 'text-teal-400', 
     bgColor: 'bg-teal-900/20' 
   },
-  CONLANG: { 
+  conlang: { 
     icon: 'translate', 
     color: 'text-indigo-400', 
     bgColor: 'bg-indigo-900/20' 
   },
-  ENTIDAD: { 
+  entidad: { 
     icon: 'token', 
     color: 'text-primary', 
     bgColor: 'bg-primary/10' 
@@ -109,5 +109,6 @@ export const HIERARCHY_VISUALS: Record<HierarchyTypeId, HierarchyVisuals> = {
  * Helper para obtener la configuración visual de un tipo de forma segura.
  */
 export const getHierarchyVisuals = (typeId: string): HierarchyVisuals => {
-  return HIERARCHY_VISUALS[typeId as HierarchyTypeId] || HIERARCHY_VISUALS.FOLDER;
+  const normalizedId = (typeId || 'folder').toLowerCase() as HierarchyTypeId;
+  return HIERARCHY_VISUALS[normalizedId] || HIERARCHY_VISUALS.folder;
 };

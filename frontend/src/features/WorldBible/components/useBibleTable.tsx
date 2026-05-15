@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -7,52 +7,44 @@ import {
 import { Entidad } from '@domain/models/database';
 import { WorldBibleUseCase } from '@application/useCases/WorldBibleUseCase';
 import { useRightPanelStore } from '@store/useRightPanelStore';
+import { useWorldBibleData } from '../hooks/useWorldBibleData';
+import { useWorldBibleMutations } from '../hooks/useWorldBibleMutations';
 
 /**
  * 🧠 useBibleTable
  * Logic for managing the world bible table, including filtering, selection, and bulk actions.
+ * Powered by TanStack Query + Optimistic UI.
  */
 export const useBibleTable = (
   projectId: number,
   searchTerm: string,
   filterType: string = 'ALL'
 ) => {
-  const [entities, setEntities] = useState<Entidad[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: entities = [], isLoading: loading, refetch: loadEntities } = useWorldBibleData(projectId);
+  const { createEntity, bulkDelete, isCreating } = useWorldBibleMutations(projectId);
+
   const [rowSelection, setRowSelection] = useState({});
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isMassCreateOpen, setIsMassCreateOpen] = useState(false);
   const [newEntityName, setNewEntityName] = useState('');
-  const [newEntityType, setNewEntityType] = useState('PERSONAJE');
+  const [newEntityType, setNewEntityType] = useState('personaje');
   const [newEntityFolderId, setNewEntityFolderId] = useState<number | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
 
   const { openPanel, closePanel, isOpen: isPanelOpen } = useRightPanelStore();
 
-  const loadEntities = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await WorldBibleUseCase.getRootEntities(projectId);
-      setEntities(data);
-    } catch (err) { } finally {
-      setLoading(false);
-    }
-  }, [projectId]);
-
-  useEffect(() => {
-    loadEntities();
-  }, [loadEntities]);
-
   const filteredData = useMemo(() => {
     return entities.filter(e => {
+      const matchesSearch = e.nombre.toLowerCase().includes(searchTerm.toLowerCase());
+      if (!matchesSearch) return false;
+
       if (filterType === 'ALL') return true;
       if (filterType === 'SPACES') return false; 
-      if (filterType === 'ENTITIES') return !['MAPA', 'TIMELINE', 'MAP', 'LINEA_TEMPORAL'].includes(e.tipo);
-      if (filterType === 'MAPS') return ['MAPA', 'MAP'].includes(e.tipo);
-      if (filterType === 'TIMELINES') return ['TIMELINE', 'LINEA_TEMPORAL'].includes(e.tipo);
+      if (filterType === 'ENTITIES') return !['mapa', 'timeline', 'map', 'linea_temporal'].includes(e.tipo.toLowerCase());
+      if (filterType === 'MAPS') return ['mapa', 'map'].includes(e.tipo.toLowerCase());
+      if (filterType === 'TIMELINES') return ['timeline', 'linea_temporal'].includes(e.tipo.toLowerCase());
       return true;
     });
-  }, [entities, filterType]);
+  }, [entities, filterType, searchTerm]);
 
   const confirmBulkDelete = async () => {
     const selectedIds = Object.keys(rowSelection).map(idx => {
@@ -63,39 +55,36 @@ export const useBibleTable = (
     if (!selectedIds.length) return;
     
     try {
-      await WorldBibleUseCase.bulkDeleteEntities(selectedIds);
+      await bulkDelete(selectedIds);
       setRowSelection({});
-      await loadEntities();
     } catch (err) { }
   };
 
   const handleUpdateField = async (id: number, field: string, value: any) => {
     try {
       await WorldBibleUseCase.quickUpdateEntity(id, field, value);
-      await loadEntities();
+      loadEntities();
     } catch (err) { }
   };
 
   const handleGhostCreate = async (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && newEntityName.trim() && !isCreating) {
-      setIsCreating(true);
+      const name = newEntityName.trim();
+      setNewEntityName('');
+      
       try {
-        await WorldBibleUseCase.createEntity({
-          nombre: newEntityName.trim(),
+        await createEntity({
+          nombre: name,
           tipo: newEntityType,
           project_id: projectId,
           carpeta_id: newEntityFolderId,
           descripcion: '',
-          slug: newEntityName.trim().toLowerCase().replace(/\s+/g, '-'),
+          slug: name.toLowerCase().replace(/\s+/g, '-'),
           contenido_json: null,
           folder_slug: null,
           imagen_url: null
         } as any);
-        setNewEntityName('');
-        await loadEntities();
-      } catch (err) { } finally {
-        setIsCreating(false);
-      }
+      } catch (err) { }
     }
   };
 
