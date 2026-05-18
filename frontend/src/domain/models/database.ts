@@ -103,6 +103,31 @@ export interface Relacion {
   descripcion: string | null;
   project_id: number;
   created_at: string;
+  origen_handle?: string | null;
+  destino_handle?: string | null;
+}
+
+export interface RelacionEnriquecida extends Relacion {
+  nombre_origen?: string;
+  nombre_destino?: string;
+}
+
+export interface Cuaderno {
+  id: number;
+  titulo: string;
+  genero: string | null;
+  image_url: string | null;
+  project_id: number;
+  created_at: string;
+}
+
+export interface Hoja {
+  id: number;
+  titulo: string | null;
+  contenido: string | null;
+  cuaderno_id: number;
+  orden: number;
+  created_at: string;
 }
 
 export interface DimensionLinea {
@@ -119,4 +144,14 @@ export interface EventoEntidad {
   entidad_id: number;
   // Virtual field
   entidad?: Entidad;
+}
+
+export interface Calendario {
+  id: number;
+  nombre: string;
+  project_id: number;
+  meses_json: string;
+  dias_semana_json: string;
+  fecha_inicio_json: string;
+  borrado: number;
 }

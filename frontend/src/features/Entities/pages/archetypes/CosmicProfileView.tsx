@@ -68,6 +68,13 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({ entityId:
             </button>
 
             <button 
+              onClick={() => navigate(`/local/${projectName}/bible/entity/${entity.id}/edit`)}
+              className="px-4 py-2 border border-foreground/10 text-foreground text-[9px] font-black uppercase tracking-widest hover:bg-foreground hover:text-background transition-all"
+            >
+               EDITAR
+            </button>
+
+            <button 
               onClick={() => navigate(`/${username || 'local'}/${projectName}/bible`)}
               className="px-4 py-2 bg-foreground text-background text-[9px] font-black uppercase tracking-widest hover:bg-primary transition-all"
             >
@@ -87,7 +94,7 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({ entityId:
 
       <SecondaryTabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} className="bg-foreground/[0.01] border-b border-foreground/5 shrink-0" />
 
-      <div className={`flex-1 relative ${activeTab === 'CARTOGRAFÍA' ? 'overflow-hidden' : 'overflow-y-auto no-scrollbar'}`}>
+      <div className={`flex-1 relative ${activeTab === 'CARTOGRAFÍA' ? 'overflow-hidden' : 'overflow-y-auto custom-scrollbar'}`}>
         
         {activeTab === 'REGISTRO' && (
           <main className="p-12 lg:p-24 space-y-24 max-w-6xl mx-auto w-full">

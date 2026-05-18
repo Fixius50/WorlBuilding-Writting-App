@@ -28,6 +28,11 @@ export class WorldBibleUseCase {
     return await entityService.getAllByProject(projectId); // Temporal: la UI suele filtrar si tienen carpeta
   }
 
+  /** Obtiene una carpeta específica por su ID */
+  static async getFolderById(folderId: number): Promise<Carpeta | null> {
+    return await folderService.getById(folderId);
+  }
+
   /** Obtiene el contenido de una carpeta (subcarpetas y entidades) */
   static async getFolderContent(folderId: number): Promise<{ folders: Carpeta[], entities: Entidad[] }> {
     const [folders, entities] = await Promise.all([

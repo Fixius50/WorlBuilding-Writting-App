@@ -33,6 +33,7 @@ export interface UniversalCanvasProps {
   initialNodes?: CanvasNode[];
   initialEdges?: CanvasEdge[];
   onNodeClick?: (id: string) => void;
+  onEdgeClick?: (id: string) => void;
   backgroundColor?: string;
 }
 
@@ -40,6 +41,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   initialNodes = defaultNodes,
   initialEdges = defaultEdges,
   onNodeClick,
+  onEdgeClick,
   backgroundColor
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -175,6 +177,26 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
                 stroke="hsl(var(--primary))"
                 strokeWidth={2}
                 opacity={0.8}
+                onClick={() => onEdgeClick && onEdgeClick(edge.id)}
+                onTap={() => onEdgeClick && onEdgeClick(edge.id)}
+                onMouseEnter={(e) => {
+                  const stage = e.target.getStage();
+                  if (stage) {
+                    stage.container().style.cursor = 'pointer';
+                  }
+                  const line = e.target as Konva.Line;
+                  line.setAttr('strokeWidth', 4);
+                  e.target.getLayer()?.draw();
+                }}
+                onMouseLeave={(e) => {
+                  const stage = e.target.getStage();
+                  if (stage) {
+                    stage.container().style.cursor = 'default';
+                  }
+                  const line = e.target as Konva.Line;
+                  line.setAttr('strokeWidth', 2);
+                  e.target.getLayer()?.draw();
+                }}
               />
             );
           })}

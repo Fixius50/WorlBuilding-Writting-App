@@ -2,6 +2,7 @@ import React from 'react';
 import { useRightPanelStore } from '@store/useRightPanelStore';
 import EventInspector from '@features/Timeline/components/EventInspector';
 import EntityInspector from '@features/Entities/components/EntityInspector';
+import RelationshipInspector from '@features/Relationships/components/RelationshipInspector';
 
 const UniversalInspector: React.FC = () => {
   const { mode, activeId, content } = useRightPanelStore();
@@ -17,6 +18,9 @@ const UniversalInspector: React.FC = () => {
     case 'event':
       return activeId ? <EventInspector eventId={Number(activeId)} /> : null;
 
+    case 'relationship':
+      return activeId ? <RelationshipInspector relationshipId={Number(activeId)} /> : null;
+
     case 'bulk':
       return (
         <div className="p-6 space-y-4">
@@ -30,7 +34,8 @@ const UniversalInspector: React.FC = () => {
       );
 
     case 'custom':
-      return <div className="p-6">{content}</div>;
+      return <div className="h-full w-full flex flex-col overflow-hidden">{content}</div>;
+
 
     default:
       return (

@@ -1,0 +1,48 @@
+import { useQuery } from '@tanstack/react-query';
+import { WorldBibleUseCase } from '@application/useCases/WorldBibleUseCase';
+import { Entidad } from '@domain/models/database';
+
+export const BIBLE_KEYS = {
+  all: (projectId: number) => ['world-bible', projectId] as const,
+  root: (projectId: number) => [...BIBLE_KEYS.all(projectId), 'root'] as const,
+  folder: (projectId: number, folderId: number) => [...BIBLE_KEYS.all(projectId), 'folder', folderId] as const,
+};
+
+/**
+ * 📖 useWorldBibleData
+ * Gestiona la carga de entidades de la Biblia del Mundo con TanStack Query.
+ */
+export const useWorldBibleData = (projectId: number) => {
+  return useQuery<Entidad[]>({
+    queryKey: BIBLE_KEYS.root(projectId),
+    queryFn: () => WorldBibleUseCase.getRootEntities(projectId),
+    enabled: projectId !== undefined && projectId !== null && projectId !== 0,
+  });
+};
+
+/**
+ * 📁 useWorldBibleFolderData
+ * Carga el contenido de una carpeta específica (entidades y subcarpetas).
+ */
+export const useWorldBibleFolderData = (projectId: number, folderId: number | null) => {
+  return useQuery({
+    queryKey: folderId !== null ? BIBLE_KEYS.folder(projectId, folderId) : BIBLE_KEYS.root(projectId),
+    queryFn: async () => {
+      if (folderId === null) return { entities: [], folders: [] };
+      return WorldBibleUseCase.getFolderContent(folderId);
+    },
+    enabled: (projectId !== undefined && projectId !== null && projectId !== 0) && folderId !== null,
+  });
+};
+
+/**
+ * ℹ️ useWorldBibleFolderDetails
+ * Carga los detalles (nombre, etc) de una carpeta específica.
+ */
+export const useWorldBibleFolderDetails = (folderId: number | null) => {
+  return useQuery({
+    queryKey: ['world-bible', 'folder-details', folderId],
+    queryFn: () => folderId ? WorldBibleUseCase.getFolderById(folderId) : null,
+    enabled: !!folderId,
+  });
+};

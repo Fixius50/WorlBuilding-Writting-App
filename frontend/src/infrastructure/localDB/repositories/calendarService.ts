@@ -1,14 +1,5 @@
 import { sql } from '../client';
-
-export interface Calendario {
-  id: number;
-  nombre: string;
-  project_id: number;
-  meses_json: string;
-  dias_semana_json: string;
-  fecha_inicio_json: string;
-  borrado: number;
-}
+import { Calendario } from '@domain/models/database';
 
 export const calendarService = {
   async getByProject(projectId: number): Promise<Calendario[]> {

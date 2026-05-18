@@ -4,6 +4,7 @@ import { EntityUseCase } from '@application/useCases/EntityUseCase';
 import { Entidad } from '@domain/models/database';
 import { MapMarker, MapLayer, MapConnection, MapAttributes } from '@domain/models/maps';
 import { useRightPanelStore } from '@store/useRightPanelStore';
+import { RelationshipUseCase } from '@application/useCases/RelationshipUseCase';
 
 /**
  * 🧠 useInteractiveMapView
@@ -14,6 +15,7 @@ export const useInteractiveMapView = (map: Entidad) => {
   const navigate = useNavigate();
   const [selectedMarker, setSelectedMarker] = useState<MapMarker | null>(null);
   const [availableEntities, setAvailableEntities] = useState<Entidad[]>([]);
+  const [markerCharacters, setMarkerCharacters] = useState<Entidad[]>([]);
   const { openPanel, setCustomContent } = useRightPanelStore();
   
   const [atlasFilters, setAtlasFilters] = useState({
@@ -29,6 +31,33 @@ export const useInteractiveMapView = (map: Entidad) => {
       setAvailableEntities(entities.filter(e => e.tipo !== 'Map' && e.tipo !== 'Mapa'));
     });
   }, [map.project_id]);
+
+  const loadMarkerCharacters = useCallback(async (entityId: number) => {
+    try {
+      const rels = await RelationshipUseCase.getRelationshipsByEntity(entityId);
+      const characterIds = rels.map(r => r.origen_id === entityId ? r.destino_id : r.origen_id);
+      const chars = availableEntities.filter(e => {
+        const isMatched = characterIds.includes(e.id);
+        const tipoUpper = e.tipo ? e.tipo.toUpperCase() : '';
+        const isChar = tipoUpper === 'PERSONAJE' || tipoUpper === 'INDIVIDUAL' || tipoUpper === 'COLECTIVO';
+        return isMatched && isChar;
+      });
+      setMarkerCharacters(chars);
+    } catch (e) {
+      console.error(e);
+    }
+  }, [availableEntities]);
+
+  useEffect(() => {
+    switch (!!selectedMarker && !!selectedMarker.entityId) {
+      case true:
+        loadMarkerCharacters(Number(selectedMarker!.entityId));
+        break;
+      default:
+        setMarkerCharacters([]);
+        break;
+    }
+  }, [selectedMarker, loadMarkerCharacters]);
 
   const mapAttributes = useMemo<MapAttributes>(() => {
     try {
@@ -68,7 +97,7 @@ export const useInteractiveMapView = (map: Entidad) => {
 
   const handleMarkerClick = useCallback((marker: MapMarker) => {
     setSelectedMarker(marker);
-    openPanel('bulk', Number(marker.id), marker.label || 'Marcador');
+    openPanel('custom', Number(marker.id), marker.label || 'Marcador');
   }, [openPanel]);
 
   return {
@@ -77,6 +106,7 @@ export const useInteractiveMapView = (map: Entidad) => {
     selectedMarker,
     setSelectedMarker,
     availableEntities,
+    markerCharacters,
     atlasFilters,
     setAtlasFilters,
     searchQuery,

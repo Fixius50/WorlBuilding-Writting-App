@@ -1,22 +1,5 @@
 import { sql } from '../client';
-
-export interface Cuaderno {
-  id: number;
-  titulo: string;
-  genero: string | null;
-  image_url: string | null;
-  project_id: number;
-  created_at: string;
-}
-
-export interface Hoja {
-  id: number;
-  titulo: string | null;
-  contenido: string | null;
-  cuaderno_id: number;
-  orden: number;
-  created_at: string;
-}
+import { Cuaderno, Hoja } from '@domain/models/database';
 
 export const notebookService = {
   async getAllByProject(projectId: number): Promise<Cuaderno[]> {

@@ -27,5 +27,6 @@ export const HIERARCHY_TYPES: Record<string, HierarchyType> = Object.keys(HIERAR
 }, {} as Record<string, HierarchyType>);
 
 export const getHierarchyType = (typeId: string): HierarchyType => {
-    return HIERARCHY_TYPES[typeId] || HIERARCHY_TYPES.FOLDER;
+    const normalizedId = (typeId || 'folder').toLowerCase();
+    return HIERARCHY_TYPES[normalizedId] || HIERARCHY_TYPES.folder;
 };

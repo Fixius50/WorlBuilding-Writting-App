@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useRightPanelStore } from '@store/useRightPanelStore';
-import { Cuaderno, Hoja } from '@repositories/notebookService';
+import { Cuaderno, Hoja } from '@domain/models/database';
 import { WritingUseCase } from '@application/useCases/WritingUseCase';
 import { EntityUseCase } from '@application/useCases/EntityUseCase';
 import { useSettingsStore } from '@store/useSettingsStore';

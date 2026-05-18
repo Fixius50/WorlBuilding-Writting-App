@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Cuaderno } from '@repositories/notebookService';
+import { Cuaderno } from '@domain/models/database';
 import { WritingUseCase } from '@application/useCases/WritingUseCase';
 
 /**

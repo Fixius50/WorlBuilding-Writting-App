@@ -16,6 +16,7 @@ const InteractiveMapView: React.FC<{
     selectedMarker,
     setSelectedMarker,
     availableEntities,
+    markerCharacters,
     atlasFilters,
     setAtlasFilters,
     setSearchQuery,
@@ -81,6 +82,44 @@ const InteractiveMapView: React.FC<{
               </div>
             )}
 
+            {markerCharacters.length > 0 && (
+              <div className="space-y-3">
+                <div className="text-[9px] font-black uppercase tracking-widest text-foreground/40 px-1">Personajes Presentes</div>
+                <div className="space-y-2">
+                  {markerCharacters.map(char => {
+                    let charImg = '';
+                    try {
+                      const cAttrs = typeof char.contenido_json === 'string'
+                        ? JSON.parse(char.contenido_json)
+                        : (char.contenido_json || {});
+                      charImg = cAttrs.imageUrl || cAttrs.image || cAttrs.avatar || '';
+                    } catch {}
+
+                    return (
+                      <div 
+                        key={char.id}
+                        className="flex items-center gap-3 p-3 bg-foreground/5 border border-foreground/10 hover:border-primary/20 cursor-pointer transition-all"
+                        onClick={() => navigate(`/local/${projectName}/bible/folder/${char.carpeta_id}/entity/${char.id}`)}
+                      >
+                        {charImg ? (
+                          <img src={charImg} alt={char.nombre} className="size-8 object-cover rounded-none border border-foreground/10" />
+                        ) : (
+                          <div className="size-8 bg-primary/10 border border-primary/20 flex items-center justify-center">
+                            <span className="material-symbols-outlined text-sm text-primary">person</span>
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[11px] font-bold text-foreground truncate">{char.nombre}</div>
+                          <div className="text-[9px] text-foreground/40 uppercase font-bold tracking-widest">{char.tipo}</div>
+                        </div>
+                        <span className="material-symbols-outlined text-xs text-foreground/30">chevron_right</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div className="text-[9px] font-mono text-foreground/30">
               Lat: {selectedMarker.lat?.toFixed(4)} · Lng: {selectedMarker.lng?.toFixed(4)}
             </div>
@@ -143,7 +182,7 @@ const InteractiveMapView: React.FC<{
     };
 
     setCustomContent(renderSidebarContent());
-  }, [selectedMarker, markers, layers, availableEntities, onBack, setCustomContent, handleMarkerClick, navigate, projectName, setSelectedMarker]);
+  }, [selectedMarker, markers, layers, availableEntities, markerCharacters, onBack, setCustomContent, handleMarkerClick, navigate, projectName, setSelectedMarker]);
 
   return (
     <div className="flex-1 flex overflow-hidden bg-background relative">
