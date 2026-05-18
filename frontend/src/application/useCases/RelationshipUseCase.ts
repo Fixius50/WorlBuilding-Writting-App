@@ -47,6 +47,31 @@ export class RelationshipUseCase {
   // GESTIÓN DE RELACIONES ESPECÍFICAS
   // ==========================================
 
+  /** Obtiene los detalles de una relación enriquecida por su ID sin usar return en if */
+  static async getRelationshipDetails(id: number): Promise<RelacionEnriquecida | null> {
+    const rel = await relationshipService.getById(id);
+    let result: RelacionEnriquecida | null = null;
+    
+    switch (!!rel) {
+      case true: {
+        const [origen, destino] = await Promise.all([
+          entityService.getById(rel!.origen_id),
+          entityService.getById(rel!.destino_id)
+        ]);
+        result = {
+          ...rel!,
+          nombre_origen: origen?.nombre || 'Desconocido',
+          nombre_destino: destino?.nombre || 'Desconocido'
+        };
+        break;
+      }
+      default:
+        break;
+    }
+    
+    return result;
+  }
+
   /** Obtiene las relaciones directas de una única entidad */
   static async getRelationshipsByEntity(entityId: number): Promise<RelacionEnriquecida[]> {
     return await relationshipService.getByEntity(entityId);

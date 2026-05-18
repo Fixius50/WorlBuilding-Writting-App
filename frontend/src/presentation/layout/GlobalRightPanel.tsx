@@ -53,19 +53,22 @@ const GlobalRightPanel: React.FC<GlobalRightPanelProps> = ({
         )}
 
         {/* Header (Título dinámico) */}
-        <div className="flex items-center justify-between px-[1.5rem] py-[1rem] border-b border-foreground/10 bg-foreground/[0.02]">
-          <div className="flex flex-col">
-            <span className="text-[0.6rem] font-black uppercase tracking-[0.2em] text-primary mb-0.5">
-              {mode === 'bulk' ? 'Editor Masivo' : 'Inspector Central'}
-            </span>
-            <div className="text-[0.875rem] font-bold text-foreground tracking-tight truncate max-w-[15rem]">
-              {title || (mode === 'bulk' ? 'Operaciones de Lote' : 'Detalles de Entidad')}
+        {mode !== 'custom' && (
+          <div className="flex items-center justify-between px-[1.5rem] py-[1rem] border-b border-foreground/10 bg-foreground/[0.02]">
+            <div className="flex flex-col">
+              <span className="text-[0.6rem] font-black uppercase tracking-[0.2em] text-primary mb-0.5">
+                {mode === 'bulk' ? 'Editor Masivo' : 'Inspector Central'}
+              </span>
+              <div className="text-[0.875rem] font-bold text-foreground tracking-tight truncate max-w-[15rem]">
+                {title || (mode === 'bulk' ? 'Operaciones de Lote' : 'Detalles de Entidad')}
+              </div>
             </div>
+            <button onClick={closePanel} className="text-foreground/20 hover:text-foreground transition-colors">
+              <span className="material-symbols-outlined text-sm">close</span>
+            </button>
           </div>
-          <button onClick={closePanel} className="text-foreground/20 hover:text-foreground transition-colors">
-            <span className="material-symbols-outlined text-sm">close</span>
-          </button>
-        </div>
+        )}
+
 
         {/* Área de contenido */}
         <div className="flex-1 overflow-hidden relative" style={{ backgroundColor: 'hsl(var(--background))' }}>

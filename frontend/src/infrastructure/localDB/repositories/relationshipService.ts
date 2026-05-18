@@ -6,6 +6,12 @@ export const relationshipService = {
     return await sql<Relacion>`SELECT * FROM relaciones WHERE project_id = ${projectId}`;
   },
 
+  async getById(id: number): Promise<Relacion | null> {
+    const results = await sql<Relacion>`SELECT * FROM relaciones WHERE id = ${id}`;
+    const result = results.length > 0 ? results[0] : null;
+    return result;
+  },
+
   async getByEntity(entityId: number): Promise<RelacionEnriquecida[]> {
     return await sql<RelacionEnriquecida>`
       SELECT r.*, 

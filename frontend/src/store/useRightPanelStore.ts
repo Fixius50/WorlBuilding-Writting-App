@@ -1,18 +1,19 @@
 import { create } from 'zustand';
 import { ReactNode } from 'react';
 
-export type RightPanelMode = 'entity' | 'event' | 'notes' | 'bulk' | 'dictionary' | 'custom' | null;
+export type RightPanelMode = 'entity' | 'event' | 'notes' | 'bulk' | 'dictionary' | 'custom' | 'relationship' | null;
 
 interface RightPanelState {
   isOpen: boolean;
   mode: RightPanelMode;
   activeId: number | string | null;
+  payload: unknown | null;
   content: ReactNode | null;
   title: ReactNode | null;
   activeTab: string;
 
   // Acciones
-  openPanel: (mode: RightPanelMode, activeId?: number | string | null, title?: ReactNode | null) => void;
+  openPanel: (mode: RightPanelMode, activeId?: number | string | null, title?: ReactNode | null, payload?: unknown | null) => void;
   setCustomContent: (content: ReactNode, title?: ReactNode | null) => void;
   closePanel: () => void;
   togglePanel: () => void;
@@ -24,40 +25,56 @@ export const useRightPanelStore = create<RightPanelState>((set) => ({
   isOpen: false,
   mode: null,
   activeId: null,
+  payload: null,
   content: null,
   title: null,
   activeTab: 'CONTEXT',
 
-  openPanel: (mode, activeId = null, title = null) => set({
-    isOpen: true,
-    mode,
-    activeId,
-    title,
-    content: null, // Limpiar contenido custom al cambiar de modo
-    activeTab: 'CONTEXT'
-  }),
+  openPanel: (mode, activeId = null, title = null, payload = null) => {
+    set({
+      isOpen: true,
+      mode,
+      activeId,
+      title,
+      payload,
+      content: null, // Limpiar contenido custom al cambiar de modo
+      activeTab: 'CONTEXT'
+    });
+  },
 
-  setCustomContent: (content, title = null) => set({
-    isOpen: true,
-    mode: 'custom',
-    content,
-    title,
-    activeId: null,
-    activeTab: 'CONTEXT'
-  }),
+  setCustomContent: (content, title = null) => {
+    set({
+      isOpen: true,
+      mode: 'custom',
+      content,
+      title,
+      activeId: null,
+      payload: null,
+      activeTab: 'CONTEXT'
+    });
+  },
 
-  closePanel: () => set({ isOpen: false }),
+  closePanel: () => {
+    set({ isOpen: false });
+  },
   
-  togglePanel: () => set((state) => ({ isOpen: !state.isOpen })),
+  togglePanel: () => {
+    set((state) => ({ isOpen: !state.isOpen }));
+  },
 
-  setActiveTab: (activeTab) => set({ activeTab }),
+  setActiveTab: (activeTab) => {
+    set({ activeTab });
+  },
 
-  reset: () => set({
-    isOpen: false,
-    mode: null,
-    activeId: null,
-    content: null,
-    title: null,
-    activeTab: 'CONTEXT'
-  })
+  reset: () => {
+    set({
+      isOpen: false,
+      mode: null,
+      activeId: null,
+      payload: null,
+      content: null,
+      title: null,
+      activeTab: 'CONTEXT'
+    });
+  }
 }));
