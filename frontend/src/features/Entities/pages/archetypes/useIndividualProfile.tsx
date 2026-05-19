@@ -24,7 +24,7 @@ export interface SpecificEntityData extends Entidad {
  * Handles data fetching, side panel synchronization, and business actions.
  */
 export const useIndividualProfile = (propEntityId?: string | number) => {
-  const { username, entityId: paramEntityId, projectName } = useParams();
+  const { entityId: paramEntityId, projectName } = useParams();
   const entityId = propEntityId || paramEntityId;
   const navigate = useNavigate();
   const { setRightOpen, setRightPanelTab, setRightPanelContent, setRightPanelTitle } = useOutletContext<ProfileOutletContext>();
@@ -93,7 +93,7 @@ export const useIndividualProfile = (propEntityId?: string | number) => {
               subNodes.map(node => (
                 <div 
                   key={node.id} 
-                  onClick={() => navigate(`/${username || 'local'}/${projectName}/bible/entity/${node.id}`)}
+                  onClick={() => navigate(`/local/${projectName}/bible/entity/${node.id}`)}
                   className="p-6 bg-background border-b border-foreground/5 hover:bg-foreground/[0.02] cursor-pointer group flex items-center justify-between transition-all"
                 >
                   <div className="flex flex-col">
@@ -115,7 +115,7 @@ export const useIndividualProfile = (propEntityId?: string | number) => {
         </div>
       );
     }
-  }, [entity, subNodes, username, projectName, navigate, setRightOpen, setRightPanelTab, setRightPanelTitle, setRightPanelContent]);
+  }, [entity, subNodes, projectName, navigate, setRightOpen, setRightPanelTab, setRightPanelTitle, setRightPanelContent]);
 
   // --- Actions ---
   const handleDelete = async () => {
@@ -126,7 +126,7 @@ export const useIndividualProfile = (propEntityId?: string | number) => {
     }
     try {
       await EntityUseCase.delete(Number(entityId));
-      navigate(`/${username || 'local'}/${projectName}/bible`);
+      navigate(`/local/${projectName}/bible`);
     } catch (err) {
       console.error("Error deleting entity:", err);
     }
@@ -141,7 +141,6 @@ export const useIndividualProfile = (propEntityId?: string | number) => {
     setActiveTab,
     handleDelete,
     projectName,
-    username,
     navigate,
     entityId
   };

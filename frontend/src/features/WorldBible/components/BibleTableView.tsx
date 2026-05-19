@@ -28,7 +28,7 @@ const columnHelper = createColumnHelper<Entidad>();
 
 const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searchTerm, filterType = 'ALL', handleOpenCreateModal }) => {
   const { t } = useLanguage();
-  const { username, projectName } = useParams();
+  const { projectName } = useParams();
 
   const {
     loading,
@@ -72,7 +72,7 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
       header: () => <span className="uppercase tracking-widest text-[10px] font-black">{t('common.name')}</span>,
       cell: info => (
         <Link 
-          to={`/${username || 'local'}/${projectName}/bible/entity/${info.row.original.id}`}
+          to={`/local/${projectName}/bible/entity/${info.row.original.id}`}
           onClick={(e) => e.stopPropagation()}
           className="text-primary hover:text-primary-light font-bold transition-colors"
         >
@@ -101,7 +101,7 @@ const BibleTableView: React.FC<TableViewProps> = ({ projectId, allFolders, searc
       header: () => <span className="uppercase tracking-widest text-[10px] font-black">{t('common.created_at')}</span>,
       cell: info => <span className="text-[10px] text-foreground/30 font-mono">{new Date(info.getValue() as string).toLocaleDateString()}</span>,
     }),
-  ], [allFolders, t, username, projectName, handleUpdateField]);
+  ], [allFolders, t, projectName, handleUpdateField]);
 
   const table = useReactTable({
     data: filteredData,

@@ -12,7 +12,6 @@ const TerritoryProfileView: React.FC<{ entityId?: string | number }> = ({ entity
     setActiveTab,
     handleDelete,
     projectName,
-    username,
     navigate,
     entityId
   } = useTerritoryProfile(propEntityId);
@@ -65,7 +64,7 @@ const TerritoryProfileView: React.FC<{ entityId?: string | number }> = ({ entity
              </button>
 
              <button 
-               onClick={() => navigate(`/${username || 'local'}/${projectName}/bible`)}
+               onClick={() => navigate(`/local/${projectName}/bible`)}
                className="px-4 py-2 bg-foreground text-background text-[9px] font-black uppercase tracking-widest hover:bg-primary transition-all"
              >
                 GUARDAR

@@ -2,8 +2,8 @@ import React from 'react';
 import { NavLink, useParams } from 'react-router-dom';
 
 const BottomDock = () => {
- const { username, projectName } = useParams();
- const baseUrl = `/${username}/${projectName}`;
+ const { projectName } = useParams();
+ const baseUrl = `/local/${projectName}`;
 
  const navItems = [
  { icon: 'home', label: 'Home', to: baseUrl },

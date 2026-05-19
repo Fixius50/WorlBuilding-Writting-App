@@ -23,10 +23,9 @@ const getIconForType = (type?: string) => {
   }
 };
 
-const getEntityRoute = (username: string, projectName: string, entity: Entidad, folderId: number) => {
+const getEntityRoute = (projectName: string, entity: Entidad, folderId: number) => {
   const id = entity.id;
-  const actualUsername = username || 'local';
-  return `/${actualUsername}/${projectName}/bible/folder/${folderId}/entity/${id}`;
+  return `/local/${projectName}/bible/folder/${folderId}/entity/${id}`;
 };
 
 interface FolderItemProps {
@@ -60,7 +59,7 @@ const FolderItem: React.FC<FolderItemProps> = ({
   filterType,
   className
 }) => {
-  const { username, projectName } = useParams<{ username: string; projectName: string }>();
+  const { projectName } = useParams<{ projectName: string }>();
   const navigate = useNavigate();
 
   const {
@@ -76,7 +75,7 @@ const FolderItem: React.FC<FolderItemProps> = ({
     handleDrop
   } = useFolderItem(folder, searchTerm, filterType, onMoveEntity);
 
-  const navigateToFolder = () => navigate(`/${username || 'local'}/${projectName}/bible/folder/${folder.id}`);
+  const navigateToFolder = () => navigate(`/local/${projectName}/bible/folder/${folder.id}`);
 
   const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.add('bg-indigo-500/20'); };
   const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.remove('bg-indigo-500/20'); };
@@ -186,7 +185,7 @@ const FolderItem: React.FC<FolderItemProps> = ({
             .map(ent => (
               <Link
                 key={ent.id}
-                to={getEntityRoute(username!, projectName!, ent, folder.id)}
+                to={getEntityRoute(projectName!, ent, folder.id)}
                 onContextMenu={(e) => handleContextMenu(e, 'entity', ent.id, ent.nombre)}
                 className="flex items-center gap-3 px-3 py-2 rounded-none text-[11px] font-medium text-foreground/60 hover:text-indigo-400 hover:bg-indigo-400/5 transition-all group cursor-grab active:cursor-grabbing"
                 draggable

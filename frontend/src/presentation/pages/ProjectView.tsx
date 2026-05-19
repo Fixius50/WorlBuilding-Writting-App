@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLanguage } from '@context/LanguageContext';
-import { useOutletContext, useNavigate, useParams } from 'react-router-dom';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import { useAppStore } from '@store/useAppStore';
 
 interface ActionCardProps {
@@ -35,11 +35,10 @@ const ProjectView: React.FC = () => {
  // projectName comes from the Outlet context in ArchitectLayout
  const { projectName, projectId } = useOutletContext<{ projectName: string; projectId: number | null }>();
  const navigate = useNavigate();
- const { username } = useParams<{ username: string }>();
  const { t } = useLanguage();
  const user = useAppStore(state => state.user);
 
- const baseUrl = `/${username}/${projectName}`;
+ const baseUrl = `/local/${projectName}`;
 
  return (
  <div className="flex-1 flex flex-col h-screen overflow-hidden bg-background">

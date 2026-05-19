@@ -35,7 +35,7 @@ export interface EntityExtras {
  * image gallery, and path synchronization.
  */
 export const useEntityBuilder = (mode: 'creation' | 'edit') => {
-  const { username, projectName, entityId, folderId, type } = useParams();
+  const { projectName, entityId, folderId, type } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const [isCreation, setIsCreation] = useState(mode === 'creation');

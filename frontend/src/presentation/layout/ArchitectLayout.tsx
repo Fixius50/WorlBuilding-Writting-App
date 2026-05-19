@@ -39,7 +39,7 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, collapsed, end }) =>
 );
 
 const ArchitectLayout: React.FC = () => {
-  const { username, projectName } = useParams<{ username: string; projectName: string }>();
+  const { projectName } = useParams<{ projectName: string }>();
   const navigate = useNavigate();
   const { t } = useLanguage();
   const location = useLocation();
@@ -68,8 +68,7 @@ const ArchitectLayout: React.FC = () => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deletionTarget, setDeletionTarget] = useState<{ id: number; type: 'folder' | 'entity'; parentId?: number | null } | null>(null);
 
-  const actualUsername = username || 'local';
-  const baseUrl = `/${actualUsername}/${projectName}`;
+  const baseUrl = `/local/${projectName}`;
 
   const loadFolders = useCallback(async (pId: number) => {
     const rootFolders = await WorkspaceUseCase.getRootFolders(pId);

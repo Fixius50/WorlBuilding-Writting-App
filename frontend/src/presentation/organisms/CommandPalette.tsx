@@ -28,8 +28,8 @@ const CommandPalette = ({ folders = [], entities = [] }: CommandPaletteProps) =>
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
-  const { username, projectName } = useParams();
-  const base = `/${username || 'local'}/${projectName}`;
+  const { projectName } = useParams();
+  const base = `/local/${projectName}`;
 
   // Activar con Ctrl+K / Cmd+K
   useEffect(() => {

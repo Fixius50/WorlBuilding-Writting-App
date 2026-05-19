@@ -13,7 +13,6 @@ const IndividualProfileView: React.FC<{ entityId?: string | number }> = ({ entit
     setActiveTab,
     handleDelete,
     projectName,
-    username,
     navigate
   } = useIndividualProfile(propEntityId);
 
@@ -65,7 +64,7 @@ const IndividualProfileView: React.FC<{ entityId?: string | number }> = ({ entit
              </button>
 
              <button 
-               onClick={() => navigate(`/${username || 'local'}/${projectName}/bible`)}
+               onClick={() => navigate(`/local/${projectName}/bible`)}
                className="px-4 py-2 bg-foreground text-background text-[9px] font-black uppercase tracking-widest hover:bg-primary transition-all"
              >
                 GUARDAR

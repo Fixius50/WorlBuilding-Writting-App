@@ -12,7 +12,6 @@ const CollectiveProfileView: React.FC<{ entityId?: string | number }> = ({ entit
     setActiveTab,
     handleDelete,
     projectName,
-    username,
     navigate,
     entityId
   } = useCollectiveProfile(propEntityId);
@@ -58,7 +57,7 @@ const CollectiveProfileView: React.FC<{ entityId?: string | number }> = ({ entit
             </button>
 
             <button 
-              onClick={() => navigate(`/${username || 'local'}/${projectName}/bible/entity/${entityId}/edit`)} 
+              onClick={() => navigate(`/local/${projectName}/bible/entity/${entityId}/edit`)} 
               className="px-4 py-2 border border-foreground/10 text-foreground/60 text-[9px] font-black uppercase tracking-widest hover:bg-primary hover:text-background transition-all"
             >
                EDITAR
@@ -72,7 +71,7 @@ const CollectiveProfileView: React.FC<{ entityId?: string | number }> = ({ entit
              </button>
 
              <button 
-               onClick={() => navigate(`/${username || 'local'}/${projectName}/bible`)}
+               onClick={() => navigate(`/local/${projectName}/bible`)}
                className="px-4 py-2 bg-foreground text-background text-[9px] font-black uppercase tracking-widest hover:bg-primary transition-all"
              >
                 GUARDAR

@@ -30,7 +30,6 @@ const BibleGridView = () => {
   const { t } = useLanguage();
   
   const {
-    username,
     projectName,
     isInsideFolder,
     filteredFolders,
@@ -87,8 +86,8 @@ const BibleGridView = () => {
               item={folder}
               type="folder"
               linkTo={folder.tipo === 'TIMELINE' 
-                ? `/${username}/${projectName}/bible/dimension/${folder.id}`
-                : `/${username}/${projectName}/bible/folder/${folder.id}`}
+                ? `/local/${projectName}/bible/dimension/${folder.id}`
+                : `/local/${projectName}/bible/folder/${folder.id}`}
               onDelete={() => handleDeleteFolder(folder.id)}
               onRename={() => startRenaming(folder)}
             />
@@ -100,7 +99,7 @@ const BibleGridView = () => {
             key={`ent-${entity.id}`}
             item={entity}
             type="entity"
-            linkTo={`/${username}/${projectName}/bible/folder/${entity.carpeta_id}/entity/${entity.id}`}
+            linkTo={`/local/${projectName}/bible/folder/${entity.carpeta_id}/entity/${entity.id}`}
             onDelete={() => handleDeleteEntity(entity.id)}
           />
         ))}

@@ -13,7 +13,6 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({ entityId:
     setActiveTab,
     handleDelete,
     projectName,
-    username,
     navigate,
     nodes,
     edges,
@@ -61,7 +60,7 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({ entityId:
             </button>
 
             <button 
-              onClick={() => navigate(`/${username || 'local'}/${projectName}/bible/entity/${entityId}/edit`)} 
+              onClick={() => navigate(`/local/${projectName}/bible/entity/${entityId}/edit`)} 
               className="px-4 py-2 border border-foreground/10 text-foreground/60 text-[9px] font-black uppercase tracking-widest hover:bg-primary hover:text-background transition-all"
             >
                EDITAR
@@ -75,7 +74,7 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({ entityId:
             </button>
 
             <button 
-              onClick={() => navigate(`/${username || 'local'}/${projectName}/bible`)}
+              onClick={() => navigate(`/local/${projectName}/bible`)}
               className="px-4 py-2 bg-foreground text-background text-[9px] font-black uppercase tracking-widest hover:bg-primary transition-all"
             >
                GUARDAR
@@ -137,7 +136,7 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({ entityId:
             <UniversalCanvas 
               initialNodes={nodes} 
               initialEdges={edges} 
-              onNodeClick={(id) => navigate(`/${username || 'local'}/${projectName}/bible/entity/${id}`)} 
+              onNodeClick={(id) => navigate(`/local/${projectName}/bible/entity/${id}`)} 
             />
           </div>
         )}

@@ -20,10 +20,8 @@ interface BibleContext {
  * Hook to handle filtering of folders and entities, renaming logic, and navigation context for the Bible Grid view.
  */
 export const useBibleGridView = (context: BibleContext) => {
-  const { username: urlUsername, projectName, folderId } = useParams();
+  const { projectName, folderId } = useParams();
   const navigate = useNavigate();
-  
-  const username = urlUsername || 'local';
   const isInsideFolder = !!folderId;
 
   const {
@@ -67,7 +65,6 @@ export const useBibleGridView = (context: BibleContext) => {
   }, []);
 
   return {
-    username,
     projectName,
     isInsideFolder,
     filteredFolders,

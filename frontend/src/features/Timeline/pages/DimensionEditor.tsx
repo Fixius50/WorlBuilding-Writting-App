@@ -15,7 +15,7 @@ import DimensionImportModal from '../components/DimensionImportModal';
 import EntityPickerModal from '../components/EntityPickerModal';
 
 const DimensionEditor: React.FC = () => {
-  const { projectName, folderId } = useParams<{ username: string; projectName: string; folderId: string }>();
+  const { projectName, folderId } = useParams<{ projectName: string; folderId: string }>();
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { openPanel, setCustomContent, closePanel } = useRightPanelStore();
