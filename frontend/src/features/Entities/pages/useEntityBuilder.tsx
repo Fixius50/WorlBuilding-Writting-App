@@ -1,10 +1,15 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useParams, useOutletContext, useNavigate, useLocation } from 'react-router-dom';
-import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
-import { EntityUseCase } from '@application/useCases/EntityUseCase';
-import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
-import { Entidad, Plantilla, Carpeta, Valor } from '@domain/models/database';
-import { useRightPanelStore } from '@store/useRightPanelStore';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import {
+  useParams,
+  useOutletContext,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
+import { WorkspaceUseCase } from "@application/useCases/WorkspaceUseCase";
+import { EntityUseCase } from "@application/useCases/EntityUseCase";
+import { TemplateUseCase } from "@application/useCases/TemplateUseCase";
+import { Entidad, Plantilla, Carpeta, Valor } from "@domain/models/database";
+import { useRightPanelStore } from "@store/useRightPanelStore";
 
 // --- Interfaces ---
 export interface LayoutContext {
@@ -31,34 +36,34 @@ export interface EntityExtras {
 /**
  * 🧠 useEntityBuilder
  * The master brain behind EntityBuilder.tsx.
- * Orchestrates entity lifecycle (creation/edit), attribute management, 
+ * Orchestrates entity lifecycle (creation/edit), attribute management,
  * image gallery, and path synchronization.
  */
-export const useEntityBuilder = (mode: 'creation' | 'edit') => {
+export const useEntityBuilder = (mode: "creation" | "edit") => {
   const { username, projectName, entityId, folderId, type } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isCreation, setIsCreation] = useState(mode === 'creation');
+  const [isCreation, setIsCreation] = useState(mode === "creation");
 
   const { projectId } = useOutletContext<LayoutContext>();
   const { openPanel } = useRightPanelStore();
 
   // --- Core Data State ---
   const [entity, setEntity] = useState<Partial<Entidad>>({
-    nombre: '',
-    tipo: type || 'PERSONAJE',
-    descripcion: '',
+    nombre: "",
+    tipo: type || "PERSONAJE",
+    descripcion: "",
     contenido_json: JSON.stringify({
-      color: '#6366f1',
-      tags: '',
+      color: "#6366f1",
+      tags: "",
       iconUrl: null,
-      categoria: 'Individual',
-      appearance: '',
-      notes: '',
-      images: []
+      categoria: "Individual",
+      appearance: "",
+      notes: "",
+      images: [],
     }),
-    project_id: projectId || 1, 
-    carpeta_id: folderId ? Number(folderId) : null
+    project_id: projectId || 1,
+    carpeta_id: folderId ? Number(folderId) : null,
   });
 
   const [path, setPath] = useState<Carpeta[]>([]);
@@ -67,29 +72,36 @@ export const useEntityBuilder = (mode: 'creation' | 'edit') => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [removedFieldIds, setRemovedFieldIds] = useState<number[]>([]);
-  const [availableTemplates, setAvailableTemplatesLocal] = useState<Plantilla[]>([]);
-  const [activeEntityTab, setActiveEntityTab] = useState('identity');
+  const [availableTemplates, setAvailableTemplatesLocal] = useState<
+    Plantilla[]
+  >([]);
+  const [activeEntityTab, setActiveEntityTab] = useState("identity");
   const [zoomImage, setZoomImage] = useState<string | null>(null);
   const [showLibrary, setShowLibrary] = useState<boolean>(false);
-  const [editingTemplate, setEditingTemplate] = useState<Plantilla | null>(null);
+  const [editingTemplate, setEditingTemplate] = useState<Plantilla | null>(
+    null,
+  );
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
   // --- Safe Extra Management ---
   const getExtra = useCallback((): EntityExtras => {
     try {
-      return JSON.parse(entity.contenido_json || '{}') as EntityExtras;
+      return JSON.parse(entity.contenido_json || "{}") as EntityExtras;
     } catch (e) {
       return {};
     }
   }, [entity.contenido_json]);
 
-  const updateExtra = useCallback((updates: Partial<EntityExtras>) => {
-    const current = getExtra();
-    setEntity(prev => ({
-      ...prev,
-      contenido_json: JSON.stringify({ ...current, ...updates })
-    }));
-  }, [getExtra]);
+  const updateExtra = useCallback(
+    (updates: Partial<EntityExtras>) => {
+      const current = getExtra();
+      setEntity((prev) => ({
+        ...prev,
+        contenido_json: JSON.stringify({ ...current, ...updates }),
+      }));
+    },
+    [getExtra],
+  );
 
   // --- Initialization & Data Fetching ---
   const refreshTemplates = useCallback(async () => {
@@ -106,7 +118,7 @@ export const useEntityBuilder = (mode: 'creation' | 'edit') => {
   const loadEntityData = useCallback(async () => {
     setLoading(true);
     try {
-      const templates = await TemplateUseCase.getTemplates(projectId || 1); 
+      const templates = await TemplateUseCase.getTemplates(projectId || 1);
       setAvailableTemplatesLocal(templates);
 
       if (!isCreation && entityId) {
@@ -114,12 +126,20 @@ export const useEntityBuilder = (mode: 'creation' | 'edit') => {
         if (data) {
           setEntity(data);
           const vals = await TemplateUseCase.getEntityValues(data.id);
-          setFields(vals.map(v => ({
-            id: v.id,
-            attribute: v.plantilla || { id: v.plantilla_id, nombre: 'Unknown', tipo: 'text' } as Plantilla,
-            value: v.valor || '',
-            isTemp: false
-          })));
+          setFields(
+            vals.map((v) => ({
+              id: v.id,
+              attribute:
+                v.plantilla ||
+                ({
+                  id: v.plantilla_id,
+                  nombre: "Unknown",
+                  tipo: "text",
+                } as Plantilla),
+              value: v.valor || "",
+              isTemp: false,
+            })),
+          );
         }
       }
     } catch (err) {
@@ -130,14 +150,14 @@ export const useEntityBuilder = (mode: 'creation' | 'edit') => {
   }, [entityId, isCreation, projectId]);
 
   useEffect(() => {
-    openPanel('custom', 0, 'Constructor de Entidad');
+    openPanel("custom", 0, "Constructor de Entidad");
     loadEntityData();
   }, [openPanel, loadEntityData]);
 
   // Sync projectId
   useEffect(() => {
     if (projectId && entity.project_id !== projectId) {
-      setEntity(prev => ({ ...prev, project_id: projectId }));
+      setEntity((prev) => ({ ...prev, project_id: projectId }));
     }
   }, [projectId, entity.project_id]);
 
@@ -153,92 +173,135 @@ export const useEntityBuilder = (mode: 'creation' | 'edit') => {
   }, [entity.carpeta_id]);
 
   // --- Handlers ---
-  const handleSave = useCallback(async (redirect = true) => {
-    setSaving(true);
-    try {
-      let savedEntity: Entidad;
-      if (isCreation) {
-        savedEntity = await EntityUseCase.create(entity as Omit<Entidad, 'id' | 'fecha_creacion' | 'fecha_actualizacion' | 'borrado'>);
-      } else {
-        await EntityUseCase.update(entity.id!, entity as Partial<Entidad>);
-        const refreshed = await EntityUseCase.getById(entity.id!);
-        savedEntity = refreshed ?? (entity as unknown as Entidad);
-      }
-
-      window.dispatchEvent(new CustomEvent('folder-update', { 
-        detail: { folderId: savedEntity.carpeta_id } 
-      }));
-
-      for (const f of fields) {
-        if (f.isTemp) {
-          await TemplateUseCase.addEntityValue(savedEntity.id, f.attribute.id, f.value);
+  const handleSave = useCallback(
+    async (redirect = true) => {
+      setSaving(true);
+      try {
+        let savedEntity: Entidad;
+        if (isCreation) {
+          savedEntity = await EntityUseCase.create(
+            entity as Omit<
+              Entidad,
+              "id" | "fecha_creacion" | "fecha_actualizacion" | "borrado"
+            >,
+          );
         } else {
-          await TemplateUseCase.updateEntityValue(f.id as number, f.value);
+          await EntityUseCase.update(entity.id!, entity as Partial<Entidad>);
+          const refreshed = await EntityUseCase.getById(entity.id!);
+          savedEntity = refreshed ?? (entity as unknown as Entidad);
         }
-      }
 
-      for (const rid of removedFieldIds) {
-        await TemplateUseCase.deleteEntityValue(rid);
-      }
+        window.dispatchEvent(
+          new CustomEvent("folder-update", {
+            detail: { folderId: savedEntity.carpeta_id },
+          }),
+        );
 
-      if (redirect) {
-        navigate(-1);
-      } else {
-        setEntity(savedEntity);
-        setIsCreation(false);
-        setRemovedFieldIds([]);
-        const freshValues = await TemplateUseCase.getEntityValues(savedEntity.id);
-        setFields(freshValues.map(v => ({
-          id: v.id,
-          attribute: v.plantilla || { id: v.plantilla_id, nombre: 'Unknown', tipo: 'text' } as Plantilla,
-          value: v.valor || '',
-          isTemp: false
-        })));
+        for (const f of fields) {
+          if (f.isTemp) {
+            await TemplateUseCase.addEntityValue(
+              savedEntity.id,
+              f.attribute.id,
+              f.value,
+            );
+          } else {
+            await TemplateUseCase.updateEntityValue(f.id as number, f.value);
+          }
+        }
+
+        for (const rid of removedFieldIds) {
+          await TemplateUseCase.deleteEntityValue(rid);
+        }
+
+        if (redirect) {
+          navigate(-1);
+        } else {
+          setEntity(savedEntity);
+          setIsCreation(false);
+          setRemovedFieldIds([]);
+          const freshValues = await TemplateUseCase.getEntityValues(
+            savedEntity.id,
+          );
+          setFields(
+            freshValues.map((v) => ({
+              id: v.id,
+              attribute:
+                v.plantilla ||
+                ({
+                  id: v.plantilla_id,
+                  nombre: "Unknown",
+                  tipo: "text",
+                } as Plantilla),
+              value: v.valor || "",
+              isTemp: false,
+            })),
+          );
+        }
+      } catch (err) {
+        console.error("Error saving entity:", err);
+      } finally {
+        setSaving(false);
       }
-    } catch (err) {
-      console.error("Error saving entity:", err);
-    } finally {
-      setSaving(false);
-    }
-  }, [entity, fields, isCreation, navigate, removedFieldIds]);
+    },
+    [entity, fields, isCreation, navigate, removedFieldIds],
+  );
 
   const handleFieldChange = (fieldId: number | string, value: string) => {
-    setFields(prev => prev.map(f => f.id === fieldId ? { ...f, value } : f));
+    setFields((prev) =>
+      prev.map((f) => (f.id === fieldId ? { ...f, value } : f)),
+    );
   };
 
   const handleRemoveField = (fieldId: number | string) => {
-    const field = fields.find(f => f.id === fieldId);
+    const field = fields.find((f) => f.id === fieldId);
     if (field && !field.isTemp) {
-      setRemovedFieldIds(prev => [...prev, field.id as number]);
+      setRemovedFieldIds((prev) => [...prev, field.id as number]);
     }
-    setFields(prev => prev.filter(f => f.id !== fieldId));
+    setFields((prev) => prev.filter((f) => f.id !== fieldId));
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files) return;
-    
-    Array.from(files).forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const current = getExtra();
-        const imgs = [...(current.images || []), reader.result as string];
-        updateExtra({ images: imgs });
-      };
-      reader.readAsDataURL(file);
-    });
+    if (!files || files.length === 0) return;
+
+    const readAsDataUrl = (file: File) =>
+      new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+
+    try {
+      const uploadedImages = await Promise.all(
+        Array.from(files).map((file) => readAsDataUrl(file)),
+      );
+
+      const current = getExtra();
+      const mergedImages = [
+        ...(current.images || []),
+        ...uploadedImages,
+      ].filter((img) => !!img);
+      updateExtra({ images: mergedImages });
+    } catch (err) {
+      console.error("Error uploading images:", err);
+    } finally {
+      e.target.value = "";
+    }
   };
 
   const removeImage = (index: number) => {
     const current = getExtra();
-    const imgs = (current.images || []).filter((_: string, i: number) => i !== index);
+    const imgs = (current.images || []).filter(
+      (_: string, i: number) => i !== index,
+    );
     updateExtra({ images: imgs });
   };
 
   // --- Drag & Drop ---
   const handleDragOverArea = (e: React.DragEvent) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
+    e.dataTransfer.dropEffect = "copy";
     setIsDraggingOver(true);
   };
 
@@ -251,16 +314,20 @@ export const useEntityBuilder = (mode: 'creation' | 'edit') => {
     e.stopPropagation();
     setIsDraggingOver(false);
     try {
-      const data = e.dataTransfer.getData('application/worldbuilder/attribute') || 
-                   e.dataTransfer.getData('text/plain');
+      const data =
+        e.dataTransfer.getData("application/worldbuilder/attribute") ||
+        e.dataTransfer.getData("text/plain");
       if (data) {
         const tpl = JSON.parse(data) as Plantilla;
-        setFields(prev => [...prev, {
-          id: `temp-${tpl.id}-${Date.now()}`,
-          attribute: tpl,
-          value: tpl.valor_defecto || '',
-          isTemp: true
-        }]);
+        setFields((prev) => [
+          ...prev,
+          {
+            id: `temp-${tpl.id}-${Date.now()}`,
+            attribute: tpl,
+            value: tpl.valor_defecto || "",
+            isTemp: true,
+          },
+        ]);
       }
     } catch (err) {
       console.error("Error dropping attribute:", err);
@@ -270,12 +337,16 @@ export const useEntityBuilder = (mode: 'creation' | 'edit') => {
   const handleDeleteEntity = async () => {
     if (entity.id) {
       await EntityUseCase.delete(entity.id);
-      window.dispatchEvent(new CustomEvent('folder-update', { detail: { folderId: entity.carpeta_id } }));
+      window.dispatchEvent(
+        new CustomEvent("folder-update", {
+          detail: { folderId: entity.carpeta_id },
+        }),
+      );
       navigate(-1);
     }
   };
 
-  const isInBible = location.pathname.includes('/bible');
+  const isInBible = location.pathname.includes("/bible");
 
   return {
     // States
@@ -296,12 +367,12 @@ export const useEntityBuilder = (mode: 'creation' | 'edit') => {
     editingTemplate,
     setEditingTemplate,
     isDraggingOver,
-    
+
     // Computed
     extras: getExtra(),
     projectName,
     projectId,
-    
+
     // Handlers
     handleSave,
     handleFieldChange,
@@ -314,6 +385,6 @@ export const useEntityBuilder = (mode: 'creation' | 'edit') => {
     handleDeleteEntity,
     updateExtra,
     refreshTemplates,
-    navigate
+    navigate,
   };
 };
