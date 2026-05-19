@@ -14,7 +14,7 @@ export const useCreateArchetypeModal = (
     nombre: string;
     tipo: string;
     descripcion?: string;
-  }) => void,
+  }) => void | Promise<void>,
   forceEntityMode?: boolean,
 ) => {
   const isRoot = !parentFolder && !forceEntityMode;

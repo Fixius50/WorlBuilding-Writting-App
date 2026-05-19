@@ -1,5 +1,6 @@
-import { sql } from '../client';
-import { Cuaderno, Hoja } from '@domain/models/database';
+import { sql } from "../client";
+import { Cuaderno, Hoja } from "@domain/models/database";
+import { emitUIRefresh } from "@utils/uiRefresh";
 
 export const notebookService = {
   async getAllByProject(projectId: number): Promise<Cuaderno[]> {
@@ -7,17 +8,27 @@ export const notebookService = {
   },
 
   async getById(id: number): Promise<Cuaderno | null> {
-    const results = await sql<Cuaderno>`SELECT * FROM cuadernos WHERE id = ${id}`;
+    const results =
+      await sql<Cuaderno>`SELECT * FROM cuadernos WHERE id = ${id}`;
     return results.length > 0 ? results[0] : null;
   },
 
-  async create(projectId: number, titulo: string, genero: string = 'Fantasy', imageUrl: string = ''): Promise<Cuaderno> {
+  async create(
+    projectId: number,
+    titulo: string,
+    genero: string = "Fantasy",
+    imageUrl: string = "",
+  ): Promise<Cuaderno> {
     await sql`INSERT INTO cuadernos (titulo, genero, image_url, project_id) VALUES (${titulo}, ${genero}, ${imageUrl}, ${projectId})`;
-    const results = await sql<Cuaderno>`SELECT * FROM cuadernos WHERE project_id = ${projectId} ORDER BY id DESC LIMIT 1`;
+    const results =
+      await sql<Cuaderno>`SELECT * FROM cuadernos WHERE project_id = ${projectId} ORDER BY id DESC LIMIT 1`;
     return results[0];
   },
 
-  async update(id: number, updates: Partial<Pick<Cuaderno, 'titulo' | 'genero' | 'image_url'>>): Promise<void> {
+  async update(
+    id: number,
+    updates: Partial<Pick<Cuaderno, "titulo" | "genero" | "image_url">>,
+  ): Promise<void> {
     const current = await this.getById(id);
     if (current) {
       await sql`
@@ -33,6 +44,7 @@ export const notebookService = {
 
   async delete(id: number): Promise<void> {
     await sql`DELETE FROM cuadernos WHERE id = ${id}`;
+    emitUIRefresh({ operation: "delete", scope: "notebook", id });
   },
 
   // --- Hojas ---
@@ -45,13 +57,21 @@ export const notebookService = {
     return results.length > 0 ? results[0] : null;
   },
 
-  async createPage(notebookId: number, titulo: string = '', contenido: string = ''): Promise<Hoja> {
+  async createPage(
+    notebookId: number,
+    titulo: string = "",
+    contenido: string = "",
+  ): Promise<Hoja> {
     await sql`INSERT INTO hojas (cuaderno_id, titulo, contenido) VALUES (${notebookId}, ${titulo}, ${contenido})`;
-    const results = await sql<Hoja>`SELECT * FROM hojas WHERE cuaderno_id = ${notebookId} ORDER BY id DESC LIMIT 1`;
+    const results =
+      await sql<Hoja>`SELECT * FROM hojas WHERE cuaderno_id = ${notebookId} ORDER BY id DESC LIMIT 1`;
     return results[0];
   },
 
-  async updatePage(id: number, updates: Partial<Pick<Hoja, 'titulo' | 'contenido' | 'orden'>>): Promise<void> {
+  async updatePage(
+    id: number,
+    updates: Partial<Pick<Hoja, "titulo" | "contenido" | "orden">>,
+  ): Promise<void> {
     const current = await this.getPageById(id);
     if (current) {
       await sql`
@@ -67,6 +87,7 @@ export const notebookService = {
 
   async deletePage(id: number): Promise<void> {
     await sql`DELETE FROM hojas WHERE id = ${id}`;
+    emitUIRefresh({ operation: "delete", scope: "page", id });
   },
 
   // --- Snapshots ---
@@ -74,23 +95,46 @@ export const notebookService = {
     await sql`INSERT INTO hojas_snapshots (hoja_id, contenido) VALUES (${hojaId}, ${contenido})`;
   },
 
-  async getSnapshots(hojaId: number): Promise<{ id: number; timestamp: string; contenido: string }[]> {
-    const results = await sql<{ id: number; fecha_creacion: string; contenido: string }>`
+  async getSnapshots(
+    hojaId: number,
+  ): Promise<{ id: number; timestamp: string; contenido: string }[]> {
+    const results = await sql<{
+      id: number;
+      fecha_creacion: string;
+      contenido: string;
+    }>`
       SELECT id, fecha_creacion, contenido FROM hojas_snapshots 
       WHERE hoja_id = ${hojaId} 
       ORDER BY fecha_creacion DESC 
       LIMIT 20
     `;
-    return results.map(r => ({
+    return results.map((r) => ({
       id: r.id,
       timestamp: r.fecha_creacion,
-      contenido: r.contenido
+      contenido: r.contenido,
     }));
   },
-  
+
   // --- Backlinks / Apariciones ---
-  async getMentions(projectId: number, query: string): Promise<{ hoja_id: number; hoja_titulo: string; cuaderno_titulo: string; cuaderno_id: number; snippet: string }[]> {
-    type MentionRow = { hoja_id: number; hoja_titulo: string | null; content: string | null; cuaderno_titulo: string; cuaderno_id: number };
+  async getMentions(
+    projectId: number,
+    query: string,
+  ): Promise<
+    {
+      hoja_id: number;
+      hoja_titulo: string;
+      cuaderno_titulo: string;
+      cuaderno_id: number;
+      snippet: string;
+    }[]
+  > {
+    type MentionRow = {
+      hoja_id: number;
+      hoja_titulo: string | null;
+      content: string | null;
+      cuaderno_titulo: string;
+      cuaderno_id: number;
+    };
     const results = await sql<MentionRow>`
       SELECT 
         h.id as hoja_id, 
@@ -101,29 +145,33 @@ export const notebookService = {
       FROM hojas h
       JOIN cuadernos c ON h.cuaderno_id = c.id
       WHERE c.project_id = ${projectId}
-      AND (h.contenido LIKE ${'%' + query + '%'} OR h.titulo LIKE ${'%' + query + '%'})
+      AND (h.contenido LIKE ${"%" + query + "%"} OR h.titulo LIKE ${"%" + query + "%"})
       LIMIT 50
     `;
-    return results.map(r => {
-      const content = r.content || '';
+    return results.map((r) => {
+      const content = r.content || "";
       const queryIdx = content.toLowerCase().indexOf(query.toLowerCase());
-      let snippet = 'Sin contenido';
-      
+      let snippet = "Sin contenido";
+
       if (queryIdx !== -1) {
         const start = Math.max(0, queryIdx - 60);
         const end = Math.min(content.length, queryIdx + query.length + 60);
-        snippet = (start > 0 ? '...' : '') + content.substring(start, end) + (end < content.length ? '...' : '');
+        snippet =
+          (start > 0 ? "..." : "") +
+          content.substring(start, end) +
+          (end < content.length ? "..." : "");
       } else if (content) {
-        snippet = content.substring(0, 120) + (content.length > 120 ? '...' : '');
+        snippet =
+          content.substring(0, 120) + (content.length > 120 ? "..." : "");
       }
 
       return {
         hoja_id: r.hoja_id,
-        hoja_titulo: r.hoja_titulo || 'Sin título',
+        hoja_titulo: r.hoja_titulo || "Sin título",
         cuaderno_titulo: r.cuaderno_titulo,
         cuaderno_id: r.cuaderno_id,
-        snippet
+        snippet,
       };
     });
-  }
+  },
 };

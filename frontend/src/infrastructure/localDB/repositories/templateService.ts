@@ -1,5 +1,6 @@
-import { sql } from '../client';
-import { Plantilla, Valor } from '@domain/models/database';
+import { sql } from "../client";
+import { Plantilla, Valor } from "@domain/models/database";
+import { emitUIRefresh } from "@utils/uiRefresh";
 
 export const templateService = {
   async getAll(projectId: number): Promise<Plantilla[]> {
@@ -11,11 +12,14 @@ export const templateService = {
   },
 
   async getById(id: number): Promise<Plantilla | null> {
-    const result = await sql<Plantilla>`SELECT * FROM plantillas WHERE id = ${id} LIMIT 1`;
+    const result =
+      await sql<Plantilla>`SELECT * FROM plantillas WHERE id = ${id} LIMIT 1`;
     return result[0] || null;
   },
 
-  async create(template: Omit<Plantilla, 'id' | 'created_at'>): Promise<Plantilla> {
+  async create(
+    template: Omit<Plantilla, "id" | "created_at">,
+  ): Promise<Plantilla> {
     await sql`
       INSERT INTO plantillas (nombre, tipo, valor_defecto, metadata, es_obligatorio, project_id, aplica_a_todo, tipo_objetivo, categoria, orden)
       VALUES (
@@ -27,11 +31,12 @@ export const templateService = {
         ${template.project_id},
         ${template.aplica_a_todo ? 1 : 0},
         ${template.tipo_objetivo || null},
-        ${template.categoria || 'General'},
+        ${template.categoria || "General"},
         ${template.orden || 0}
       )
     `;
-    const result = await sql<Plantilla>`SELECT * FROM plantillas WHERE project_id = ${template.project_id} ORDER BY id DESC LIMIT 1`;
+    const result =
+      await sql<Plantilla>`SELECT * FROM plantillas WHERE project_id = ${template.project_id} ORDER BY id DESC LIMIT 1`;
     return result[0];
   },
 
@@ -53,5 +58,6 @@ export const templateService = {
 
   async delete(id: number): Promise<void> {
     await sql`DELETE FROM plantillas WHERE id = ${id}`;
-  }
+    emitUIRefresh({ operation: "delete", scope: "template", id });
+  },
 };

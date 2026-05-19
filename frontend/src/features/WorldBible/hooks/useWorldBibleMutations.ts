@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { WorldBibleUseCase } from '@application/useCases/WorldBibleUseCase';
-import { Entidad } from '@domain/models/database';
-import { BIBLE_KEYS } from './useWorldBibleData';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { WorldBibleUseCase } from "@application/useCases/WorldBibleUseCase";
+import { Entidad } from "@domain/models/database";
+import { BIBLE_KEYS } from "./useWorldBibleData";
 
 /**
  * 🛠️ useWorldBibleMutations
@@ -25,13 +25,13 @@ export const useWorldBibleMutations = (projectId: number) => {
       // Actualizar la caché optimísticamente
       if (previousEntities) {
         queryClient.setQueryData<Entidad[]>(queryKey, [
-          { 
-            ...newEntity, 
+          {
+            ...newEntity,
             id: Date.now(), // ID temporal
             fecha_creacion: new Date().toISOString(),
-            borrado: 0 
+            borrado: 0,
           } as Entidad,
-          ...previousEntities
+          ...previousEntities,
         ]);
       }
 
@@ -47,8 +47,8 @@ export const useWorldBibleMutations = (projectId: number) => {
       // Sincronizar con la DB real al terminar (éxito o fallo)
       queryClient.invalidateQueries({ queryKey: BIBLE_KEYS.all(projectId) });
       // Disparar evento para que ArchitectLayout (contexto antiguo) se actualice
-      window.dispatchEvent(new CustomEvent('entity-update'));
-      window.dispatchEvent(new CustomEvent('folder-update'));
+      window.dispatchEvent(new CustomEvent("entity-update"));
+      window.dispatchEvent(new CustomEvent("folder-update"));
     },
   });
 
@@ -62,9 +62,45 @@ export const useWorldBibleMutations = (projectId: number) => {
       if (previousEntities) {
         queryClient.setQueryData<Entidad[]>(
           queryKey,
-          previousEntities.filter(e => !ids.includes(e.id))
+          previousEntities.filter((e) => !ids.includes(e.id)),
         );
       }
+
+      // Limpiar optimísticamente todas las queries de World Bible (incluidas carpetas abiertas)
+      queryClient.setQueriesData(
+        { queryKey: BIBLE_KEYS.all(projectId) },
+        (oldData: unknown) => {
+          if (Array.isArray(oldData)) {
+            return oldData.filter((item: unknown) => {
+              if (typeof item === "object" && item !== null && "id" in item) {
+                const maybeId = (item as { id: number }).id;
+                return !ids.includes(maybeId);
+              }
+              return true;
+            });
+          }
+
+          if (
+            typeof oldData === "object" &&
+            oldData !== null &&
+            "entities" in oldData &&
+            Array.isArray((oldData as { entities: unknown[] }).entities)
+          ) {
+            const casted = oldData as {
+              entities: Array<{ id: number }>;
+              folders?: unknown[];
+            };
+            return {
+              ...casted,
+              entities: casted.entities.filter(
+                (entity) => !ids.includes(entity.id),
+              ),
+            };
+          }
+
+          return oldData;
+        },
+      );
 
       return { previousEntities };
     },
@@ -75,18 +111,20 @@ export const useWorldBibleMutations = (projectId: number) => {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: BIBLE_KEYS.all(projectId) });
-      window.dispatchEvent(new CustomEvent('entity-update'));
-      window.dispatchEvent(new CustomEvent('folder-update'));
+      window.dispatchEvent(new CustomEvent("entity-update"));
+      window.dispatchEvent(new CustomEvent("folder-update"));
     },
   });
 
   // 3. Mutación para crear categorías (carpetas)
   const createCategoryMutation = useMutation({
-    mutationFn: (data: { nombre: string; type: any; projectId: number }) => 
+    mutationFn: (data: { nombre: string; type: any; projectId: number }) =>
       WorldBibleUseCase.createCategory(data.nombre, data.projectId, data.type),
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: BIBLE_KEYS.all(variables.projectId) });
-      window.dispatchEvent(new CustomEvent('folder-update'));
+      queryClient.invalidateQueries({
+        queryKey: BIBLE_KEYS.all(variables.projectId),
+      });
+      window.dispatchEvent(new CustomEvent("folder-update"));
     },
   });
 

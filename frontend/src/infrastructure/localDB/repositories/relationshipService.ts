@@ -1,5 +1,6 @@
-import { sql } from '../client';
-import { Relacion, RelacionEnriquecida } from '@domain/models/database';
+import { sql } from "../client";
+import { Relacion, RelacionEnriquecida } from "@domain/models/database";
+import { emitUIRefresh } from "@utils/uiRefresh";
 
 export const relationshipService = {
   async getByProject(projectId: number): Promise<Relacion[]> {
@@ -7,7 +8,8 @@ export const relationshipService = {
   },
 
   async getById(id: number): Promise<Relacion | null> {
-    const results = await sql<Relacion>`SELECT * FROM relaciones WHERE id = ${id}`;
+    const results =
+      await sql<Relacion>`SELECT * FROM relaciones WHERE id = ${id}`;
     const result = results.length > 0 ? results[0] : null;
     return result;
   },
@@ -24,10 +26,10 @@ export const relationshipService = {
     `;
   },
 
-  async create(rel: Omit<Relacion, 'id' | 'created_at'>): Promise<Relacion> {
+  async create(rel: Omit<Relacion, "id" | "created_at">): Promise<Relacion> {
     const results = await sql<Relacion>`
       INSERT INTO relaciones (origen_id, destino_id, tipo, descripcion, project_id, origen_handle, destino_handle, created_at)
-      VALUES (${rel.origen_id}, ${rel.destino_id}, ${rel.tipo}, ${rel.descripcion || ''}, ${rel.project_id}, ${rel.origen_handle || null}, ${rel.destino_handle || null}, CURRENT_TIMESTAMP)
+      VALUES (${rel.origen_id}, ${rel.destino_id}, ${rel.tipo}, ${rel.descripcion || ""}, ${rel.project_id}, ${rel.origen_handle || null}, ${rel.destino_handle || null}, CURRENT_TIMESTAMP)
       RETURNING *
     `;
     return results[0];
@@ -35,19 +37,28 @@ export const relationshipService = {
 
   async delete(id: number): Promise<void> {
     await sql`DELETE FROM relaciones WHERE id = ${id}`;
+    emitUIRefresh({ operation: "delete", scope: "relationship", id });
   },
 
   async update(id: number, updates: Partial<Relacion>): Promise<void> {
     const fields: string[] = [];
     const vals: unknown[] = [];
-    
-    if (updates.tipo) { fields.push(`tipo = ${updates.tipo}`); }
-    if (updates.descripcion !== undefined) { fields.push(`descripcion = ${updates.descripcion}`); }
-    if (updates.origen_handle !== undefined) { fields.push(`origen_handle = ${updates.origen_handle}`); }
-    if (updates.destino_handle !== undefined) { fields.push(`destino_handle = ${updates.destino_handle}`); }
-    
-    if (fields.length > 0) {
-      await sql`UPDATE relaciones SET ${fields.join(', ')} WHERE id = ${id}`;
+
+    if (updates.tipo) {
+      fields.push(`tipo = ${updates.tipo}`);
     }
-  }
+    if (updates.descripcion !== undefined) {
+      fields.push(`descripcion = ${updates.descripcion}`);
+    }
+    if (updates.origen_handle !== undefined) {
+      fields.push(`origen_handle = ${updates.origen_handle}`);
+    }
+    if (updates.destino_handle !== undefined) {
+      fields.push(`destino_handle = ${updates.destino_handle}`);
+    }
+
+    if (fields.length > 0) {
+      await sql`UPDATE relaciones SET ${fields.join(", ")} WHERE id = ${id}`;
+    }
+  },
 };

@@ -1,5 +1,6 @@
-import { sql } from '../client';
-import { Carpeta, FolderType } from '@domain/models/database';
+import { sql } from "../client";
+import { Carpeta, FolderType } from "@domain/models/database";
+import { emitUIRefresh } from "@utils/uiRefresh";
 
 export const folderService = {
   async getByProject(projectId: number): Promise<Carpeta[]> {
@@ -12,13 +13,22 @@ export const folderService = {
       ORDER BY c.nombre ASC`;
   },
 
-  async create(nombre: string, projectId: number, padreId: number | null = null, tipo: FolderType = 'FOLDER'): Promise<Carpeta> {
-    const baseSlug = nombre.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  async create(
+    nombre: string,
+    projectId: number,
+    padreId: number | null = null,
+    tipo: FolderType = "FOLDER",
+  ): Promise<Carpeta> {
+    const baseSlug = nombre
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
     let slug = baseSlug;
     let counter = 1;
 
     while (true) {
-      const existing = await sql`SELECT id FROM carpetas WHERE project_id = ${projectId} AND slug = ${slug} LIMIT 1`;
+      const existing =
+        await sql`SELECT id FROM carpetas WHERE project_id = ${projectId} AND slug = ${slug} LIMIT 1`;
       if (existing.length === 0) break;
       slug = `${baseSlug}-${counter++}`;
     }
@@ -27,18 +37,23 @@ export const folderService = {
        INSERT INTO carpetas (nombre, project_id, padre_id, tipo, slug)
        VALUES (${nombre}, ${projectId}, ${padreId}, ${tipo}, ${slug})
      `;
-    const result = await sql<Carpeta>`SELECT * FROM carpetas WHERE project_id = ${projectId} AND slug = ${slug} LIMIT 1`;
+    const result =
+      await sql<Carpeta>`SELECT * FROM carpetas WHERE project_id = ${projectId} AND slug = ${slug} LIMIT 1`;
     return result[0];
   },
 
   async update(id: number, nombre: string, projectId: number): Promise<void> {
-    const baseSlug = nombre.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    const baseSlug = nombre
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
     let slug = baseSlug;
     let counter = 1;
 
     // Verificar unicidad del slug en el proyecto (excluyendo la carpeta actual)
     while (true) {
-      const existing = await sql`SELECT id FROM carpetas WHERE project_id = ${projectId} AND slug = ${slug} AND id != ${id} LIMIT 1`;
+      const existing =
+        await sql`SELECT id FROM carpetas WHERE project_id = ${projectId} AND slug = ${slug} AND id != ${id} LIMIT 1`;
       if (existing.length === 0) break;
       slug = `${baseSlug}-${counter++}`;
     }
@@ -46,25 +61,32 @@ export const folderService = {
     await sql`UPDATE carpetas SET nombre = ${nombre}, slug = ${slug} WHERE id = ${id}`;
   },
 
-  async delete(id: number): Promise<void> {
+  async delete(id: number, silent: boolean = false): Promise<void> {
     // 1. Soft Delete de la propia carpeta
     await sql`UPDATE carpetas SET borrado = 1 WHERE id = ${id}`;
-    
+
     // 2. Soft Delete de todas las entidades contenidas
     await sql`UPDATE entidades SET borrado = 1 WHERE carpeta_id = ${id}`;
 
     // 3. Obtener subcarpetas para borrar recursivamente
-    const subs = await sql<{ id: number }>`SELECT id FROM carpetas WHERE padre_id = ${id}`;
+    const subs = await sql<{
+      id: number;
+    }>`SELECT id FROM carpetas WHERE padre_id = ${id}`;
     for (const sub of subs) {
-      await this.delete(sub.id);
+      await this.delete(sub.id, true);
     }
-    
+
     // 4. Si la carpeta es una cronología/dimensión, marcar sus eventos
     await sql`UPDATE eventos SET borrado = 1 WHERE timeline_id = ${id}`;
+
+    if (!silent) {
+      emitUIRefresh({ operation: "delete", scope: "folder", id });
+    }
   },
 
   async getBySlug(projectId: number, slug: string): Promise<Carpeta | null> {
-    const result = await sql<Carpeta>`SELECT * FROM carpetas WHERE project_id = ${projectId} AND slug = ${slug} AND borrado = 0 LIMIT 1`;
+    const result =
+      await sql<Carpeta>`SELECT * FROM carpetas WHERE project_id = ${projectId} AND slug = ${slug} AND borrado = 0 LIMIT 1`;
     return result[0] || null;
   },
 
@@ -83,7 +105,8 @@ export const folderService = {
     let currentId: number | null = folderId;
 
     while (currentId !== null) {
-      const results: Carpeta[] = await sql<Carpeta>`SELECT * FROM carpetas WHERE id = ${currentId} LIMIT 1`;
+      const results: Carpeta[] =
+        await sql<Carpeta>`SELECT * FROM carpetas WHERE id = ${currentId} LIMIT 1`;
       if (results.length === 0) break;
       const folder: Carpeta = results[0];
       path.push(folder);
@@ -94,11 +117,12 @@ export const folderService = {
   },
 
   async getById(id: number): Promise<Carpeta | null> {
-    const result = await sql<Carpeta>`SELECT * FROM carpetas WHERE id = ${id} AND borrado = 0 LIMIT 1`;
+    const result =
+      await sql<Carpeta>`SELECT * FROM carpetas WHERE id = ${id} AND borrado = 0 LIMIT 1`;
     return result[0] || null;
   },
 
   async move(id: number, targetPadreId: number | null): Promise<void> {
     await sql`UPDATE carpetas SET padre_id = ${targetPadreId} WHERE id = ${id}`;
-  }
+  },
 };

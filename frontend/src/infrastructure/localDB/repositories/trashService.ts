@@ -1,5 +1,6 @@
-import { sql } from '../client';
-import { Entidad, Carpeta } from '@domain/models/database';
+import { sql } from "../client";
+import { Entidad, Carpeta } from "@domain/models/database";
+import { emitUIRefresh } from "@utils/uiRefresh";
 
 export const trashService = {
   async getItems(projectId: number): Promise<unknown[]> {
@@ -17,18 +18,20 @@ export const trashService = {
   },
 
   async restore(type: string, id: number): Promise<void> {
-    if (type === 'FOLDER') {
+    if (type === "FOLDER") {
       await sql`UPDATE carpetas SET borrado = 0 WHERE id = ${id}`;
     } else {
       await sql`UPDATE entidades SET borrado = 0 WHERE id = ${id}`;
     }
+    emitUIRefresh({ operation: "restore", scope: type.toLowerCase(), id });
   },
 
   async permanentlyDelete(type: string, id: number): Promise<void> {
-    if (type === 'FOLDER') {
+    if (type === "FOLDER") {
       await sql`DELETE FROM carpetas WHERE id = ${id}`;
     } else {
       await sql`DELETE FROM entidades WHERE id = ${id}`;
     }
-  }
+    emitUIRefresh({ operation: "purge", scope: type.toLowerCase(), id });
+  },
 };

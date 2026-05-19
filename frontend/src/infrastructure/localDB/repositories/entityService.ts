@@ -1,5 +1,6 @@
-import { sql } from '../client';
-import { Entidad, Valor } from '@domain/models/database';
+import { sql } from "../client";
+import { Entidad, Valor } from "@domain/models/database";
+import { emitUIRefresh } from "@utils/uiRefresh";
 
 // interface EntityValueQueryResult is an interface that is used to query the database for values of an entity and return them as an array of objects
 // each object has the following properties:
@@ -21,23 +22,23 @@ import { Entidad, Valor } from '@domain/models/database';
 // - p_orden: number - the order of the plant
 // - p_created_at: string - the created at timestamp
 interface EntityValueQueryResult {
-  id: number,
-  entidad_id: number,
-  plantilla_id: number,
-  valor: string,
-  updated_at: string,
-  p_id: number,
-  p_nombre: string,
-  p_tipo: string,
-  p_valor_defecto: string | null,
-  p_metadata: string | null,
-  p_es_obligatorio: number | boolean,
-  p_project_id: number,
-  p_aplica_a_todo: number | boolean,
-  p_tipo_objetivo: string | null,
-  p_categoria: string | null,
-  p_orden: number,
-  p_created_at: string
+  id: number;
+  entidad_id: number;
+  plantilla_id: number;
+  valor: string;
+  updated_at: string;
+  p_id: number;
+  p_nombre: string;
+  p_tipo: string;
+  p_valor_defecto: string | null;
+  p_metadata: string | null;
+  p_es_obligatorio: number | boolean;
+  p_project_id: number;
+  p_aplica_a_todo: number | boolean;
+  p_tipo_objetivo: string | null;
+  p_categoria: string | null;
+  p_orden: number;
+  p_created_at: string;
 }
 
 export const entityService = {
@@ -50,30 +51,38 @@ export const entityService = {
   },
 
   async getById(id: number): Promise<Entidad | null> {
-    const result = await sql<Entidad>`SELECT * FROM entidades WHERE id = ${id} AND borrado = 0 LIMIT 1`;
+    const result =
+      await sql<Entidad>`SELECT * FROM entidades WHERE id = ${id} AND borrado = 0 LIMIT 1`;
     return result[0] || null;
   },
 
   async getBySlug(projectId: number, slug: string): Promise<Entidad | null> {
-    const result = await sql<Entidad>`SELECT * FROM entidades WHERE project_id = ${projectId} AND (slug = ${slug} OR id = ${slug}) AND borrado = 0 LIMIT 1`;
+    const result =
+      await sql<Entidad>`SELECT * FROM entidades WHERE project_id = ${projectId} AND (slug = ${slug} OR id = ${slug}) AND borrado = 0 LIMIT 1`;
     return result[0] || null;
   },
 
-  async create(entity: Omit<Entidad, 'id' | 'fecha_creacion' | 'fecha_actualizacion' | 'borrado'>): Promise<Entidad> {
+  async create(
+    entity: Omit<
+      Entidad,
+      "id" | "fecha_creacion" | "fecha_actualizacion" | "borrado"
+    >,
+  ): Promise<Entidad> {
     await sql`
       INSERT INTO entidades (nombre, tipo, descripcion, contenido_json, project_id, carpeta_id)
       VALUES (
         ${entity.nombre}, 
         ${entity.tipo}, 
-        ${entity.descripcion || ''}, 
-        ${entity.contenido_json ? (typeof entity.contenido_json === 'string' ? entity.contenido_json : JSON.stringify(entity.contenido_json)) : null}, 
+        ${entity.descripcion || ""}, 
+        ${entity.contenido_json ? (typeof entity.contenido_json === "string" ? entity.contenido_json : JSON.stringify(entity.contenido_json)) : null}, 
         ${entity.project_id}, 
         ${entity.carpeta_id}
       )
     `;
-    
+
     // Recuperar la última entidad creada
-    const result = await sql<Entidad>`SELECT * FROM entidades WHERE project_id = ${entity.project_id} ORDER BY id DESC LIMIT 1`;
+    const result =
+      await sql<Entidad>`SELECT * FROM entidades WHERE project_id = ${entity.project_id} ORDER BY id DESC LIMIT 1`;
     return result[0];
   },
 
@@ -82,12 +91,17 @@ export const entityService = {
 
     if (entity.nombre !== undefined) fields.push(`nombre = ${entity.nombre}`);
     if (entity.tipo !== undefined) fields.push(`tipo = ${entity.tipo}`);
-    if (entity.descripcion !== undefined) fields.push(`descripcion = ${entity.descripcion}`);
+    if (entity.descripcion !== undefined)
+      fields.push(`descripcion = ${entity.descripcion}`);
     if (entity.contenido_json !== undefined) {
-      const jsonStr = typeof entity.contenido_json === 'string' ? entity.contenido_json : JSON.stringify(entity.contenido_json);
+      const jsonStr =
+        typeof entity.contenido_json === "string"
+          ? entity.contenido_json
+          : JSON.stringify(entity.contenido_json);
       fields.push(`contenido_json = ${jsonStr}`);
     }
-    if (entity.carpeta_id !== undefined) fields.push(`carpeta_id = ${entity.carpeta_id}`);
+    if (entity.carpeta_id !== undefined)
+      fields.push(`carpeta_id = ${entity.carpeta_id}`);
 
     if (fields.length > 0) {
       // Usando sintaxis segura de SQLocal con COALESCE para evitar sobrescribir con null si no se desea
@@ -96,7 +110,7 @@ export const entityService = {
           nombre = COALESCE(${entity.nombre}, nombre),
           tipo = COALESCE(${entity.tipo}, tipo),
           descripcion = COALESCE(${entity.descripcion}, descripcion),
-          contenido_json = COALESCE(${entity.contenido_json ? (typeof entity.contenido_json === 'string' ? entity.contenido_json : JSON.stringify(entity.contenido_json)) : null}, contenido_json),
+          contenido_json = COALESCE(${entity.contenido_json ? (typeof entity.contenido_json === "string" ? entity.contenido_json : JSON.stringify(entity.contenido_json)) : null}, contenido_json),
           carpeta_id = COALESCE(${entity.carpeta_id}, carpeta_id)
         WHERE id = ${id}
       `;
@@ -109,13 +123,17 @@ export const entityService = {
   async delete(id: number): Promise<void> {
     // Soft Delete: Marcar como borrado
     await sql`UPDATE entidades SET borrado = 1 WHERE id = ${id}`;
+    emitUIRefresh({ operation: "delete", scope: "entity", id });
   },
 
   async move(id: number, targetCarpetaId: number | null): Promise<void> {
     await sql`UPDATE entidades SET carpeta_id = ${targetCarpetaId} WHERE id = ${id}`;
   },
 
-  async getAllByProjectAndType(projectId: number, type: string): Promise<Entidad[]> {
+  async getAllByProjectAndType(
+    projectId: number,
+    type: string,
+  ): Promise<Entidad[]> {
     return await sql<Entidad>`SELECT * FROM entidades WHERE project_id = ${projectId} AND tipo = ${type} AND borrado = 0 ORDER BY nombre ASC`;
   },
 
@@ -132,7 +150,7 @@ export const entityService = {
       JOIN plantillas p ON v.plantilla_id = p.id
       WHERE v.entidad_id = ${entityId}
     `;
-    return rows.map(r => ({
+    return rows.map((r) => ({
       id: r.id,
       entidad_id: r.entidad_id,
       plantilla_id: r.plantilla_id,
@@ -150,12 +168,16 @@ export const entityService = {
         tipo_objetivo: r.p_tipo_objetivo,
         categoria: r.p_categoria,
         orden: r.p_orden,
-        created_at: r.p_created_at
-      }
+        created_at: r.p_created_at,
+      },
     }));
   },
 
-  async addValue(entityId: number, templateId: number, value: string): Promise<void> {
+  async addValue(
+    entityId: number,
+    templateId: number,
+    value: string,
+  ): Promise<void> {
     await sql`INSERT INTO valores (entidad_id, plantilla_id, valor) VALUES (${entityId}, ${templateId}, ${value})`;
   },
 
@@ -165,5 +187,5 @@ export const entityService = {
 
   async deleteValue(valueId: number): Promise<void> {
     await sql`DELETE FROM valores WHERE id = ${valueId}`;
-  }
+  },
 };

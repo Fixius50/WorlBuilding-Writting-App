@@ -1,11 +1,17 @@
-import { useState, useMemo, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Carpeta, Entidad } from '@domain/models/database';
+import { useState, useMemo, useCallback } from "react";
+import { useParams } from "react-router-dom";
+import { Carpeta, Entidad } from "@domain/models/database";
 
 interface BibleContext {
-  handleOpenCreateModal: () => void;
+  handleOpenCreateModal: (
+    parentId: string | number | null,
+    type: string,
+  ) => void;
   handleDeleteFolder: (id: string | number) => void;
-  handleCreateSimpleFolder: (parentId: string | number | null, type: string) => void;
+  handleCreateSimpleFolder: (
+    parentId: string | number | null,
+    type: string,
+  ) => void;
   handleRenameFolder: (id: string | number, name: string) => void;
   handleDeleteEntity: (id: number) => void;
   folders: Carpeta[];
@@ -21,49 +27,60 @@ interface BibleContext {
  */
 export const useBibleGridView = (context: BibleContext) => {
   const { username: urlUsername, projectName, folderId } = useParams();
-  const navigate = useNavigate();
-  
-  const username = urlUsername || 'local';
+
+  const username = urlUsername || "local";
   const isInsideFolder = !!folderId;
 
   const {
     folders = [],
     entities = [],
-    searchTerm = '',
-    filterType = 'ALL',
-    handleRenameFolder
+    searchTerm = "",
+    filterType = "ALL",
+    handleRenameFolder,
   } = context;
 
   // Logic: Filter content based on Search and Type
   const filteredFolders = useMemo(() => {
-    return folders.filter(f => 
-      f.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+    return folders.filter((f) =>
+      f.nombre.toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }, [folders, searchTerm]);
 
   const filteredEntities = useMemo(() => {
-    return entities.filter(e => {
-      const matchesSearch = e.nombre.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesType = filterType === 'ALL' || e.tipo === filterType;
+    return entities.filter((e) => {
+      const matchesSearch = e.nombre
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const matchesType = filterType === "ALL" || e.tipo === filterType;
       return matchesSearch && matchesType;
     });
   }, [entities, searchTerm, filterType]);
 
   // Rename State
-  const [renamingFolderId, setRenamingFolderId] = useState<string | number | null>(null);
-  const [renameValue, setRenameValue] = useState('');
+  const [renamingFolderId, setRenamingFolderId] = useState<
+    string | number | null
+  >(null);
+  const [renameValue, setRenameValue] = useState<string>("");
 
-  const handleRenameSubmit = useCallback(async (id: string | number, name: string = '') => {
-    if (name && name.trim() && handleRenameFolder) {
-      await handleRenameFolder(Number(id), name.trim());
-    }
-    setRenamingFolderId(null);
-    setRenameValue('');
-  }, [handleRenameFolder]);
+  // Additional logic based on route context
+  const isNodeType = isInsideFolder;
+
+  // Rename Submit Logic
+  const handleRenameSubmit = useCallback(
+    (id: string | number, newName: string) => {
+      if (!newName.trim()) {
+        setRenamingFolderId(null); // Cancel renaming if name is empty
+        return;
+      }
+      handleRenameFolder(id, newName.trim());
+      setRenamingFolderId(null);
+    },
+    [handleRenameFolder],
+  );
 
   const startRenaming = useCallback((folder: Carpeta) => {
     setRenamingFolderId(folder.id);
-    setRenameValue(folder.nombre);
+    setRenameValue(folder.nombre || "");
   }, []);
 
   return {
@@ -75,7 +92,10 @@ export const useBibleGridView = (context: BibleContext) => {
     renamingFolderId,
     renameValue,
     setRenameValue,
-    handleRenameSubmit,
-    startRenaming
+    setRenamingFolderId,
+    isNodeType, // Expose the type for conditional rendering
+    handleRenameFolder,
+    handleRenameSubmit, // Add handleRenameSubmit to the return object
+    startRenaming,
   };
 };

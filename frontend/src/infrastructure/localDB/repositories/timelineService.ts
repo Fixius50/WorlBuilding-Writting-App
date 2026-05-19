@@ -1,55 +1,74 @@
-import { sql } from '../client';
-import { Evento, DimensionLinea, Entidad } from '@domain/models/database';
+import { sql } from "../client";
+import { Evento, DimensionLinea, Entidad } from "@domain/models/database";
+import { emitUIRefresh } from "@utils/uiRefresh";
 
 export const timelineService = {
   async getByProject(projectId: number): Promise<Evento[]> {
-    return await sql`SELECT * FROM eventos WHERE project_id = ${projectId} AND borrado = 0 ORDER BY fecha_simulada ASC` as Evento[];
+    return (await sql`SELECT * FROM eventos WHERE project_id = ${projectId} AND borrado = 0 ORDER BY fecha_simulada ASC`) as Evento[];
   },
 
   async getByTimeline(timelineId: number): Promise<Evento[]> {
-    return await sql`SELECT * FROM eventos WHERE timeline_id = ${timelineId} AND borrado = 0 ORDER BY fecha_simulada ASC` as Evento[];
+    return (await sql`SELECT * FROM eventos WHERE timeline_id = ${timelineId} AND borrado = 0 ORDER BY fecha_simulada ASC`) as Evento[];
   },
 
   async getById(id: number): Promise<Evento | null> {
-    const results = await sql`SELECT * FROM eventos WHERE id = ${id} AND borrado = 0` as Evento[];
+    const results =
+      (await sql`SELECT * FROM eventos WHERE id = ${id} AND borrado = 0`) as Evento[];
     return results.length > 0 ? results[0] : null;
   },
 
-  async create(event: Omit<Evento, 'id' | 'borrado' | 'created_at'>): Promise<Evento> {
-    const results = await sql`
+  async create(
+    event: Omit<Evento, "id" | "borrado" | "created_at">,
+  ): Promise<Evento> {
+    const results = (await sql`
       INSERT INTO eventos (titulo, descripcion, fecha_simulada, project_id, timeline_id, linea_id)
-      VALUES (${event.titulo}, ${event.descripcion || ''}, ${event.fecha_simulada || ''}, ${event.project_id}, ${event.timeline_id || null}, ${event.linea_id || null})
+      VALUES (${event.titulo}, ${event.descripcion || ""}, ${event.fecha_simulada || ""}, ${event.project_id}, ${event.timeline_id || null}, ${event.linea_id || null})
       RETURNING *
-    ` as Evento[];
+    `) as Evento[];
     return results[0];
   },
 
-  async update(id: number, updates: Partial<Omit<Evento, 'id' | 'project_id' | 'borrado' | 'created_at'>>): Promise<void> {
-    if (updates.titulo) await sql`UPDATE eventos SET titulo = ${updates.titulo} WHERE id = ${id}`;
-    if (updates.descripcion !== undefined) await sql`UPDATE eventos SET descripcion = ${updates.descripcion} WHERE id = ${id}`;
-    if (updates.fecha_simulada !== undefined) await sql`UPDATE eventos SET fecha_simulada = ${updates.fecha_simulada} WHERE id = ${id}`;
-    if (updates.timeline_id !== undefined) await sql`UPDATE eventos SET timeline_id = ${updates.timeline_id} WHERE id = ${id}`;
-    if (updates.linea_id !== undefined) await sql`UPDATE eventos SET linea_id = ${updates.linea_id} WHERE id = ${id}`;
+  async update(
+    id: number,
+    updates: Partial<
+      Omit<Evento, "id" | "project_id" | "borrado" | "created_at">
+    >,
+  ): Promise<void> {
+    if (updates.titulo)
+      await sql`UPDATE eventos SET titulo = ${updates.titulo} WHERE id = ${id}`;
+    if (updates.descripcion !== undefined)
+      await sql`UPDATE eventos SET descripcion = ${updates.descripcion} WHERE id = ${id}`;
+    if (updates.fecha_simulada !== undefined)
+      await sql`UPDATE eventos SET fecha_simulada = ${updates.fecha_simulada} WHERE id = ${id}`;
+    if (updates.timeline_id !== undefined)
+      await sql`UPDATE eventos SET timeline_id = ${updates.timeline_id} WHERE id = ${id}`;
+    if (updates.linea_id !== undefined)
+      await sql`UPDATE eventos SET linea_id = ${updates.linea_id} WHERE id = ${id}`;
   },
 
   async delete(id: number): Promise<void> {
     // Soft Delete: Marcar como borrado
     await sql`UPDATE eventos SET borrado = 1 WHERE id = ${id}`;
+    emitUIRefresh({ operation: "delete", scope: "timeline-event", id });
   },
 
   // --- MÉTODOS DE MULTIVERSO (LÍNEAS) ---
-  
+
   async getLinesByFolder(folderId: number): Promise<Entidad[]> {
-    return await sql`SELECT * FROM entidades WHERE carpeta_id = ${folderId} AND tipo = 'DIMENSION' AND borrado = 0` as Entidad[];
+    return (await sql`SELECT * FROM entidades WHERE carpeta_id = ${folderId} AND tipo = 'DIMENSION' AND borrado = 0`) as Entidad[];
   },
 
-  async createLine(line: { nombre: string, carpeta_id: number, project_id: number }): Promise<Entidad> {
+  async createLine(line: {
+    nombre: string;
+    carpeta_id: number;
+    project_id: number;
+  }): Promise<Entidad> {
     // En el nuevo modelo, crear una línea es crear una entidad de tipo DIMENSION
-    const res = await sql`
+    const res = (await sql`
       INSERT INTO entidades (nombre, tipo, project_id, carpeta_id)
       VALUES (${line.nombre}, 'DIMENSION', ${line.project_id}, ${line.carpeta_id})
       RETURNING *
-    ` as Entidad[];
+    `) as Entidad[];
     return res[0];
   },
 
@@ -58,11 +77,17 @@ export const timelineService = {
     await sql`UPDATE eventos SET borrado = 1 WHERE linea_id = ${id}`;
     // Eliminar la línea físicamente
     await sql`DELETE FROM dimension_lineas WHERE id = ${id}`;
+    emitUIRefresh({ operation: "delete", scope: "timeline-line", id });
   },
 
-  async updateLine(id: number, updates: Partial<Pick<DimensionLinea, 'nombre' | 'color'>>): Promise<void> {
-    if (updates.nombre) await sql`UPDATE dimension_lineas SET nombre = ${updates.nombre} WHERE id = ${id}`;
-    if (updates.color !== undefined) await sql`UPDATE dimension_lineas SET color = ${updates.color} WHERE id = ${id}`;
+  async updateLine(
+    id: number,
+    updates: Partial<Pick<DimensionLinea, "nombre" | "color">>,
+  ): Promise<void> {
+    if (updates.nombre)
+      await sql`UPDATE dimension_lineas SET nombre = ${updates.nombre} WHERE id = ${id}`;
+    if (updates.color !== undefined)
+      await sql`UPDATE dimension_lineas SET color = ${updates.color} WHERE id = ${id}`;
   },
 
   // --- MÉTODOS DE VINCULACIÓN DE ENTIDADES ---
@@ -76,21 +101,21 @@ export const timelineService = {
   },
 
   async getLinkedEntities(eventId: number): Promise<Entidad[]> {
-    return await sql`
+    return (await sql`
       SELECT e.* 
       FROM entidades e
       JOIN eventos_entidades ee ON e.id = ee.entidad_id
       WHERE ee.evento_id = ${eventId} AND e.borrado = 0
-    ` as Entidad[];
+    `) as Entidad[];
   },
 
   async getByEntity(entityId: number): Promise<Evento[]> {
-    return await sql`
+    return (await sql`
       SELECT ev.* 
       FROM eventos ev
       JOIN eventos_entidades ee ON ev.id = ee.evento_id
       WHERE ee.entidad_id = ${entityId} AND ev.borrado = 0
       ORDER BY ev.fecha_simulada ASC
-    ` as Evento[];
-  }
+    `) as Evento[];
+  },
 };

@@ -1,11 +1,21 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { useLocation, useParams, useNavigate } from 'react-router-dom';
-import { WorldBibleUseCase } from '@application/useCases/WorldBibleUseCase';
-import { Carpeta } from '@domain/models/database';
-import { ArchitectContext } from '@domain/models/ui';
-import { useRightPanelStore } from '@store/useRightPanelStore';
-import { useWorldBibleData, useWorldBibleFolderData, useWorldBibleFolderDetails } from '../hooks/useWorldBibleData';
-import { useWorldBibleMutations } from '../hooks/useWorldBibleMutations';
+import React, { useState, useMemo, useCallback } from "react";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
+import { WorldBibleUseCase } from "@application/useCases/WorldBibleUseCase";
+import { Carpeta } from "@domain/models/database";
+import { ArchitectContext } from "@domain/models/ui";
+import { useRightPanelStore } from "@store/useRightPanelStore";
+import {
+  useWorldBibleData,
+  useWorldBibleFolderData,
+  useWorldBibleFolderDetails,
+} from "../hooks/useWorldBibleData";
+import { useWorldBibleMutations } from "../hooks/useWorldBibleMutations";
+
+type CreateModalTargetParent = {
+  id: number;
+  nombre: string;
+  type: "node" | "folder";
+};
 
 export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
   const navigate = useNavigate();
@@ -13,13 +23,14 @@ export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
   const { projectName, folderId: folderIdParam, entityId } = useParams();
   const projectId = architectContext?.projectId;
 
-  const openPanel = useRightPanelStore(state => state.openPanel);
-  const closePanel = useRightPanelStore(state => state.closePanel);
-  const setActiveTab = useRightPanelStore(state => state.setActiveTab);
-  
-  const [viewMode, setViewMode] = useState<'folders' | 'table'>('folders');
+  const openPanel = useRightPanelStore((state) => state.openPanel);
+  const closePanel = useRightPanelStore((state) => state.closePanel);
+  const setActiveTab = useRightPanelStore((state) => state.setActiveTab);
+
+  const [viewMode, setViewMode] = useState<"folders" | "table">("folders");
   const [creationModalOpen, setCreationModalOpen] = useState(false);
-  const [targetParent, setTargetParent] = useState<Carpeta | null>(null);
+  const [targetParent, setTargetParent] =
+    useState<CreateModalTargetParent | null>(null);
 
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [entityToDelete, setEntityToDelete] = useState<number | null>(null);
@@ -35,64 +46,81 @@ export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
 
   // Queries
   const { data: rootEntities = [] } = useWorldBibleData(projectId || 0);
-  const { data: folderContent } = useWorldBibleFolderData(projectId || 0, currentFolderId);
-  const { createEntity, createCategory, bulkDelete } = useWorldBibleMutations(projectId || 0);
+  const { data: folderContent } = useWorldBibleFolderData(
+    projectId || 0,
+    currentFolderId,
+  );
+  const { createEntity, createCategory, bulkDelete } = useWorldBibleMutations(
+    projectId || 0,
+  );
   const { data: folderDetails } = useWorldBibleFolderDetails(currentFolderId);
 
   const localEntities = useMemo(() => {
     const safeEntities = Array.isArray(rootEntities) ? rootEntities : [];
     if (isRoot) {
       // En la raíz, mostramos las entidades que NO tienen carpeta_id
-      return safeEntities.filter(e => !e.carpeta_id);
+      return safeEntities.filter((e) => !e.carpeta_id);
     }
     return folderContent?.entities || [];
   }, [isRoot, rootEntities, folderContent]);
 
   const localFolders = useMemo(() => {
     if (isRoot) {
-      return (architectContext.folders || []).filter(f => !f.padre_id);
+      return (architectContext.folders || []).filter((f) => !f.padre_id);
     }
-    return folderContent?.folders || []; 
+    return folderContent?.folders || [];
   }, [isRoot, architectContext.folders, folderContent]);
 
   const currentFolder = useMemo(() => {
     if (isRoot) return null;
     // Prioridad: 1. Detalles cargados por ID, 2. Búsqueda en el contexto global, 3. Fallback
-    return folderDetails || (architectContext.folders || []).find(f => f.id === currentFolderId) || null;
+    return (
+      folderDetails ||
+      (architectContext.folders || []).find((f) => f.id === currentFolderId) ||
+      null
+    );
   }, [isRoot, folderDetails, architectContext.folders, currentFolderId]);
 
   const isEditorView = useMemo(() => {
-    return location.pathname.includes('/entity/') || location.pathname.includes('/dimension');
+    return (
+      location.pathname.includes("/entity/") ||
+      location.pathname.includes("/dimension")
+    );
   }, [location.pathname]);
 
   const dynamicTitle = useMemo(() => {
     if (isRoot) return "Biblia del Mundo";
-    
-    if (location.pathname.includes('/dimension')) {
-       return currentFolder ? `Dimensión: ${currentFolder.nombre}` : "Visor de Dimensiones";
+
+    if (location.pathname.includes("/dimension")) {
+      return currentFolder
+        ? `Dimensión: ${currentFolder.nombre}`
+        : "Visor de Dimensiones";
     }
 
-    if (location.pathname.includes('/entity/')) {
-       return "Ficha de Entidad";
+    if (location.pathname.includes("/entity/")) {
+      return "Ficha de Entidad";
     }
 
     return currentFolder ? currentFolder.nombre : "Explorador de Archivos";
   }, [isRoot, location.pathname, currentFolder]);
 
-  const handleOpenCreateModal = useCallback((folder: Carpeta | null = null) => {
-    // Si estamos en una ruta de carpeta, FORZAMOS que el padre no sea null usando el ID de la URL
-    const effectiveParentId = folder?.id || currentFolderId;
-    
-    if (effectiveParentId) {
-      setTargetParent({ 
-        id: Number(effectiveParentId), 
-        nombre: folder?.nombre || folderDetails?.nombre || '...' 
-      } as Carpeta);
-    } else {
-      setTargetParent(null);
-    }
-    setCreationModalOpen(true);
-  }, [currentFolderId, folderDetails, currentFolder]);
+  const handleOpenCreateModal = useCallback(
+    (folder: Carpeta | null = null, type: "node" | "folder" = "node") => {
+      const effectiveParentId = folder?.id || currentFolderId;
+
+      if (effectiveParentId) {
+        setTargetParent({
+          id: Number(effectiveParentId),
+          nombre: folder?.nombre || folderDetails?.nombre || "...",
+          type,
+        });
+      } else {
+        setTargetParent(null);
+      }
+      setCreationModalOpen(true);
+    },
+    [currentFolderId, folderDetails],
+  );
 
   const confirmDeleteEntity = useCallback(async () => {
     if (entityToDelete) {
@@ -106,33 +134,77 @@ export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
     }
   }, [entityToDelete, bulkDelete]);
 
-  const handleCreateSubmit = useCallback(async (formData: { nombre: string; tipo: string; descripcion?: string }) => {
-    if (!projectId) {
-      console.warn("No se puede crear: Project ID no encontrado");
-      return;
-    }
+  const handleCreateSubmit = useCallback(
+    async (
+      formData: {
+        nombre: string;
+        tipo: string;
+        descripcion?: string;
+      },
+      shouldOpenEditor = false,
+    ) => {
+      let createdEntityId: number | null = null;
 
-    try {
-      if (isRoot) {
-        await createCategory({ 
-          nombre: formData.nombre, 
-          type: 'folder',
-          projectId: projectId 
-        });
-      } else if (currentFolderId) {
-        await createEntity({
-          nombre: formData.nombre,
-          descripcion: formData.descripcion || '',
-          tipo: formData.tipo || 'personaje',
-          carpeta_id: currentFolderId,
-          project_id: projectId,
-        });
+      if (!projectId) {
+        console.warn("No se puede crear: Project ID no encontrado");
+      } else {
+        try {
+          if (isRoot) {
+            await createCategory({
+              nombre: formData.nombre,
+              type: "folder",
+              projectId: projectId,
+            });
+          } else if (currentFolderId) {
+            const createdEntity = await createEntity({
+              nombre: formData.nombre,
+              descripcion: formData.descripcion || "",
+              tipo: formData.tipo || "personaje",
+              carpeta_id: currentFolderId,
+              project_id: projectId,
+            });
+
+            createdEntityId = createdEntity?.id || null;
+          }
+        } catch (err) {
+          console.error(err);
+        }
       }
-    } catch (err) {
-      console.error(err);
-    }
-    setCreationModalOpen(false);
-  }, [projectId, isRoot, currentFolderId, createCategory, createEntity]);
+
+      setCreationModalOpen(false);
+
+      if (
+        shouldOpenEditor &&
+        createdEntityId &&
+        currentFolderId &&
+        projectName
+      ) {
+        navigate(
+          `/local/${projectName}/bible/folder/${currentFolderId}/entity/${createdEntityId}/edit`,
+        );
+      }
+    },
+    [
+      projectId,
+      isRoot,
+      currentFolderId,
+      createCategory,
+      createEntity,
+      navigate,
+      projectName,
+    ],
+  );
+
+  const handleCreateSubmitAndEdit = useCallback(
+    async (formData: {
+      nombre: string;
+      tipo: string;
+      descripcion?: string;
+    }) => {
+      await handleCreateSubmit(formData, true);
+    },
+    [handleCreateSubmit],
+  );
 
   return {
     viewMode,
@@ -152,6 +224,7 @@ export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
     handleOpenCreateModal,
     confirmDeleteEntity,
     handleCreateSubmit,
+    handleCreateSubmitAndEdit,
     projectName,
     projectId,
     navigate,
@@ -160,6 +233,6 @@ export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
     setActiveTab,
     currentFolderId,
     setTargetParent,
-    entityId
+    entityId,
   };
 };

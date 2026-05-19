@@ -1,6 +1,6 @@
 import React from "react";
 import { HierarchyTypeId, HIERARCHY_DEFINITIONS } from "../types";
-import { useCreateArchetypeModal } from "./useCreateNodeModal";
+import { useCreateArchetypeModal } from "./useCreateArchetypeModal";
 
 interface CreateArchetypeModalProps {
   isOpen: boolean;
@@ -9,7 +9,12 @@ interface CreateArchetypeModalProps {
     nombre: string;
     tipo: string;
     descripcion?: string;
-  }) => void;
+  }) => void | Promise<void>;
+  onCreateAndEdit?: (data: {
+    nombre: string;
+    tipo: string;
+    descripcion?: string;
+  }) => void | Promise<void>;
   parentFolder?: {
     id: number;
     nombre: string;
@@ -22,6 +27,7 @@ const CreateArchetypeModal: React.FC<CreateArchetypeModalProps> = ({
   isOpen,
   onClose,
   onCreate,
+  onCreateAndEdit,
   parentFolder,
   forceEntityMode,
 }) => {
@@ -44,6 +50,17 @@ const CreateArchetypeModal: React.FC<CreateArchetypeModalProps> = ({
   if (!isOpen) return null;
 
   const isCreatingFolder = parentFolder?.type === "folder"; // Determinar si es carpeta o nodo
+
+  const handleCreateAndEdit = async () => {
+    if (!onCreateAndEdit || !formData.nombre) {
+      return;
+    }
+
+    const finalTipo = isRoot ? "folder" : formData.tipo || "personaje";
+    const finalData = { ...formData, tipo: finalTipo.toLowerCase() };
+    await onCreateAndEdit(finalData);
+    onClose();
+  };
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4">
@@ -72,6 +89,17 @@ const CreateArchetypeModal: React.FC<CreateArchetypeModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            {!isCreatingFolder && (
+              <button
+                onClick={handleCreateAndEdit}
+                disabled={!formData.nombre}
+                className="px-5 py-2.5 rounded-none bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-30 disabled:pointer-events-none flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-sm">edit</span>
+                <span>Crear y Editar</span>
+              </button>
+            )}
+
             <button
               onClick={onClose}
               className="px-5 py-2.5 rounded-none text-[10px] font-black uppercase tracking-widest text-foreground/40 hover:text-foreground hover:bg-white/5 transition-all"

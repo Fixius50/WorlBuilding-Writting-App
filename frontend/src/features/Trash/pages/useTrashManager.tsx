@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { TrashUseCase, TrashItem } from '@application/useCases/TrashUseCase';
-import { useLanguage } from '@context/LanguageContext';
+import { useState, useEffect, useCallback } from "react";
+import { TrashUseCase, TrashItem } from "@application/useCases/TrashUseCase";
+import { useLanguage } from "@context/LanguageContext";
 
 /**
  * 🧠 useTrashManager
@@ -31,24 +31,45 @@ export const useTrashManager = (projectId: number | null) => {
     loadItems();
   }, [loadItems]);
 
-  const handleRestore = useCallback(async (tipo: string, itemId: number) => {
-    try {
-      await TrashUseCase.restoreItem(tipo, itemId);
-      await loadItems(); 
-    } catch (err) {
-      console.error("Error restoring item:", err);
-    }
+  useEffect(() => {
+    const handleDataChange = () => {
+      loadItems();
+    };
+
+    window.addEventListener("app-data-changed", handleDataChange);
+    return () =>
+      window.removeEventListener("app-data-changed", handleDataChange);
   }, [loadItems]);
 
-  const handleDelete = useCallback(async (tipo: string, itemId: number) => {
-    if (!confirm(t("trash.confirm_purge") || "¿Estás seguro de purgar este elemento?")) return;
-    try {
-      await TrashUseCase.purgeItem(tipo, itemId);
-      await loadItems();
-    } catch (err) {
-      console.error("Error purging item:", err);
-    }
-  }, [loadItems, t]);
+  const handleRestore = useCallback(
+    async (tipo: string, itemId: number) => {
+      try {
+        await TrashUseCase.restoreItem(tipo, itemId);
+        await loadItems();
+      } catch (err) {
+        console.error("Error restoring item:", err);
+      }
+    },
+    [loadItems],
+  );
+
+  const handleDelete = useCallback(
+    async (tipo: string, itemId: number) => {
+      if (
+        !confirm(
+          t("trash.confirm_purge") || "¿Estás seguro de purgar este elemento?",
+        )
+      )
+        return;
+      try {
+        await TrashUseCase.purgeItem(tipo, itemId);
+        await loadItems();
+      } catch (err) {
+        console.error("Error purging item:", err);
+      }
+    },
+    [loadItems, t],
+  );
 
   return {
     items,
@@ -56,6 +77,6 @@ export const useTrashManager = (projectId: number | null) => {
     error,
     handleRestore,
     handleDelete,
-    reload: loadItems
+    reload: loadItems,
   };
 };
