@@ -7,6 +7,34 @@ import { useQuery } from "@tanstack/react-query";
 export const entityRouterQueryKey = (entityId: number) =>
   ["entity-router", entityId] as const;
 
+const normalizeType = (typeValue: string): string => {
+  return typeValue
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Z0-9]+/gi, " ")
+    .trim()
+    .toUpperCase();
+};
+
+const matchesAliases = (normalizedType: string, aliases: string[]): boolean => {
+  const words = normalizedType.split(/\s+/).filter(Boolean);
+
+  return aliases.some((alias) => {
+    const normalizedAlias = normalizeType(alias);
+
+    switch (true) {
+      case normalizedType === normalizedAlias:
+        return true;
+      case normalizedType.includes(normalizedAlias):
+        return true;
+      case words.includes(normalizedAlias):
+        return true;
+      default:
+        return false;
+    }
+  });
+};
+
 /**
  * 🧠 useEntityRouter
  * Hook to handle entity routing logic, determining which profile view or specialized view to display based on entity type.
@@ -25,7 +53,7 @@ export const useEntityRouter = () => {
 
   const viewType = useMemo(() => {
     if (!entity) return "none";
-    const tipo = entity.tipo.trim().toUpperCase();
+    const tipo = normalizeType(entity.tipo || "");
 
     const cosmicTypes = [
       "UNIVERSO",
@@ -40,9 +68,15 @@ export const useEntityRouter = () => {
     ];
     const actorTypes = [
       "PERSONAJE",
+      "ENTIDADINDIVIDUAL",
+      "INDIVIDUAL",
       "OBJETO",
       "RELIQUIA",
       "VEHICULO",
+      "MAGIA",
+      "MAGIAINDIVIDUAL",
+      "HECHIZO",
+      "SPELL",
       "ENTITY",
       "ENTIDAD",
       "CHARACTER",
@@ -61,13 +95,22 @@ export const useEntityRouter = () => {
       "MAPA",
     ];
     const collectiveTypes = [
+      "ENTIDADCOLECTIVA",
+      "COLECTIVO",
+      "COLLECTIVE",
       "FACCION",
       "RELIGION",
       "RAZA",
+      "CLASE",
+      "PROFESION",
+      "CLASE PROFESION",
+      "CLASEPROFESION",
       "ORGANIZACION",
       "FACTION",
       "RELIGION",
       "RACE",
+      "CLASS",
+      "PROFESSION",
       "ORGANIZATION",
       "CONLANG",
     ];
@@ -83,13 +126,13 @@ export const useEntityRouter = () => {
     ];
     const mapTypes = ["MAP", "MAPA"];
 
-    if (mapTypes.includes(tipo)) return "map";
-    if (cosmicTypes.includes(tipo)) return "cosmic";
-    if (actorTypes.includes(tipo)) return "individual";
-    if (territoryTypes.includes(tipo)) return "territory";
-    if (collectiveTypes.includes(tipo)) return "collective";
-    if (eventTypes.includes(tipo)) return "event";
-    if (tipo === "ENTIDAD" || tipo === "ENTITY") return "builder";
+    if (matchesAliases(tipo, mapTypes)) return "map";
+    if (matchesAliases(tipo, cosmicTypes)) return "cosmic";
+    if (matchesAliases(tipo, actorTypes)) return "individual";
+    if (matchesAliases(tipo, territoryTypes)) return "territory";
+    if (matchesAliases(tipo, collectiveTypes)) return "collective";
+    if (matchesAliases(tipo, eventTypes)) return "event";
+    if (matchesAliases(tipo, ["ENTIDAD", "ENTITY"])) return "builder";
 
     return "individual"; // Default fallback
   }, [entity]);

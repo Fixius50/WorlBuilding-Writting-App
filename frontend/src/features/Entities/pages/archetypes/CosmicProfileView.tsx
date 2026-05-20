@@ -5,6 +5,10 @@ import UniversalCanvas from "@presentation/organisms/editor/UniversalCanvas";
 import DynamicAttributeForm from "@features/Entities/components/DynamicAttributeForm";
 import NarrativeRichText from "@features/Entities/components/NarrativeRichText";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  getPresetTabsByEntityType,
+  mergeTabs,
+} from "@features/Entities/utils/entityPresetTabs";
 
 const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
   entityId: propEntityId,
@@ -27,11 +31,15 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
     entityId,
   } = useCosmicProfile(propEntityId);
 
-  const tabs = [
+  const baseTabs = [
     { id: "REGISTRO", label: "REGISTRO", icon: "menu_book" },
     { id: "CARTOGRAFÍA", label: "CARTOGRAFÍA", icon: "map" },
     { id: "TELEMETRÍA", label: "TELEMETRÍA", icon: "bar_chart" },
   ];
+  const presetTabs = getPresetTabsByEntityType(entity?.tipo || "");
+  const tabs = mergeTabs(baseTabs, presetTabs);
+  const presetTabIds = presetTabs.map((tab) => tab.id);
+  const isPresetTechnicalTab = presetTabIds.includes(activeTab);
 
   const narrativeContentRaw = entity?.appearance || entity?.descripcion || "";
   const narrativeStoryRaw = entity?.descripcion || "";
@@ -213,7 +221,7 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
           </div>
         )}
 
-        {activeTab === "TELEMETRÍA" && (
+        {(activeTab === "TELEMETRÍA" || isPresetTechnicalTab) && (
           <div className="p-12 lg:p-24 max-w-5xl mx-auto space-y-16">
             <div className="pt-0">
               <DynamicAttributeForm

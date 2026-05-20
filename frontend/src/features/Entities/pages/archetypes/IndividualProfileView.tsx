@@ -4,6 +4,10 @@ import SecondaryTabs from "@presentation/molecules/SecondaryTabs";
 import DynamicAttributeForm from "@features/Entities/components/DynamicAttributeForm";
 import MiniGraph from "@features/Entities/components/MiniGraph";
 import NarrativeRichText from "@features/Entities/components/NarrativeRichText";
+import {
+  getPresetTabsByEntityType,
+  mergeTabs,
+} from "@features/Entities/utils/entityPresetTabs";
 
 const IndividualProfileView: React.FC<{ entityId?: string | number }> = ({
   entityId: propEntityId,
@@ -22,11 +26,15 @@ const IndividualProfileView: React.FC<{ entityId?: string | number }> = ({
     navigate,
   } = useIndividualProfile(propEntityId);
 
-  const tabs = [
+  const baseTabs = [
     { id: "REGISTRO", label: "REGISTRO", icon: "menu_book" },
     { id: "RED_DE_CONTACTOS", label: "RED DE CONTACTOS / LINAJE", icon: "hub" },
     { id: "DATOS_TÉCNICOS", label: "DATOS TÉCNICOS", icon: "bar_chart" },
   ];
+  const presetTabs = getPresetTabsByEntityType(entity?.tipo || "");
+  const tabs = mergeTabs(baseTabs, presetTabs);
+  const presetTabIds = presetTabs.map((tab) => tab.id);
+  const isPresetTechnicalTab = presetTabIds.includes(activeTab);
 
   const narrativeContent = String(
     entity?.appearance || entity?.descripcion || "",
@@ -187,7 +195,7 @@ const IndividualProfileView: React.FC<{ entityId?: string | number }> = ({
           </div>
         )}
 
-        {activeTab === "DATOS_TÉCNICOS" && (
+        {(activeTab === "DATOS_TÉCNICOS" || isPresetTechnicalTab) && (
           <div className="p-12 lg:p-24 max-w-5xl mx-auto">
             <DynamicAttributeForm
               key={`dynamic-attributes-${entity.project_id}-${entity.id}`}

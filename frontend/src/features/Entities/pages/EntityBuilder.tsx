@@ -8,6 +8,7 @@ import ConfirmationModal from "@organisms/ConfirmationModal";
 import FamilyTreeAssigner from "../components/FamilyTreeAssigner";
 import TemplateSettingsModal from "@organisms/TemplateSettingsModal";
 import { useEntityBuilder } from "./useEntityBuilder";
+import { getPresetTabsByEntityType } from "@features/Entities/utils/entityPresetTabs";
 
 interface EntityBuilderProps {
   mode: "creation" | "edit";
@@ -49,6 +50,32 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
   } = useEntityBuilder(mode);
 
   const galleryImages = extras.images || [];
+  const baseEditorTabs = [
+    { id: "identity", label: "Identidad" },
+    { id: "narrative", label: "Narrativa" },
+    { id: "attributes", label: "Atributos" },
+    { id: "relationships", label: "Linaje" },
+  ];
+  const presetEditorTabs = getPresetTabsByEntityType(entity.tipo || "").map(
+    (tab) => ({
+      id: `preset-${tab.id}`,
+      label: tab.label,
+      icon: tab.icon,
+    }),
+  );
+  const editorTabs = [...baseEditorTabs];
+  presetEditorTabs.forEach((tab) => {
+    const exists = editorTabs.some((editorTab) => editorTab.id === tab.id);
+    switch (exists) {
+      case false:
+        editorTabs.push(tab);
+        break;
+      default:
+        break;
+    }
+  });
+  const presetEditorTabIds = presetEditorTabs.map((tab) => tab.id);
+  const isPresetEditorTab = presetEditorTabIds.includes(activeEntityTab);
   const primaryImage = galleryImages[0] || null;
   const secondaryPool = galleryImages.slice(1);
   const [secondaryPage, setSecondaryPage] = React.useState(0);
@@ -617,28 +644,22 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
           </div>
 
           <div className="border-t border-foreground/5 bg-foreground/[0.02]">
-            <div className="flex items-center justify-center gap-12 max-w-7xl mx-auto">
-              {["identity", "narrative", "attributes", "relationships"].map(
-                (tab) => (
+            <div className="max-w-7xl mx-auto overflow-x-auto overflow-y-hidden custom-scrollbar">
+              <div className="flex items-center justify-start gap-8 min-w-max px-4">
+                {editorTabs.map((tab) => (
                   <button
-                    key={tab}
-                    onClick={() => setActiveEntityTab(tab)}
-                    className={`py-4 text-[9px] font-black uppercase tracking-[0.3em] border-b-2 transition-all duration-500 ${
-                      activeEntityTab === tab
+                    key={tab.id}
+                    onClick={() => setActiveEntityTab(tab.id)}
+                    className={`shrink-0 py-4 text-[9px] font-black uppercase tracking-[0.3em] border-b-2 transition-all duration-500 ${
+                      activeEntityTab === tab.id
                         ? "border-primary text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.4)]"
                         : "border-transparent text-foreground/30 hover:text-foreground"
                     }`}
                   >
-                    {tab === "identity"
-                      ? "Identidad"
-                      : tab === "narrative"
-                        ? "Narrativa"
-                        : tab === "attributes"
-                          ? "Atributos"
-                          : "Linaje"}
+                    {tab.label}
                   </button>
-                ),
-              )}
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -689,6 +710,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                             }
                           >
                             <option value="PERSONAJE">👤 Personaje</option>
+                            <option value="MAGIA">✨ Magia</option>
                             <option value="LUGAR">📍 Ubicación</option>
                             <option value="OBJETO">⚔️ Artefacto</option>
                             <option value="CONCEPTO">💡 Filosofía</option>
@@ -1074,7 +1096,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
             </div>
           )}
 
-          {activeEntityTab === "attributes" && (
+          {(activeEntityTab === "attributes" || isPresetEditorTab) && (
             <div className="space-y-12 min-h-[60vh]">
               <header className="flex items-center justify-between border-b border-white/10 pb-8">
                 <div className="flex items-center gap-4">

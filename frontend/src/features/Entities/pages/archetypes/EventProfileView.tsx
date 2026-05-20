@@ -5,6 +5,10 @@ import DynamicAttributeForm from "@features/Entities/components/DynamicAttribute
 import MiniTimeline from "@features/Entities/components/MiniTimeline";
 import SectionErrorBoundary from "@organisms/SectionErrorBoundary";
 import NarrativeRichText from "@features/Entities/components/NarrativeRichText";
+import {
+  getPresetTabsByEntityType,
+  mergeTabs,
+} from "@features/Entities/utils/entityPresetTabs";
 
 const EventProfileView: React.FC<{ entityId?: string | number }> = ({
   entityId: propEntityId,
@@ -24,11 +28,15 @@ const EventProfileView: React.FC<{ entityId?: string | number }> = ({
     entityId,
   } = useEventProfile(propEntityId);
 
-  const tabs = [
+  const baseTabs = [
     { id: "REGISTRO", label: "REGISTRO", icon: "menu_book" },
     { id: "CRONOGRAMA", label: "CRONOGRAMA", icon: "history" },
     { id: "DATOS_TÉCNICOS", label: "DATOS TÉCNICOS", icon: "bar_chart" },
   ];
+  const presetTabs = getPresetTabsByEntityType(entity?.tipo || "");
+  const tabs = mergeTabs(baseTabs, presetTabs);
+  const presetTabIds = presetTabs.map((tab) => tab.id);
+  const isPresetTechnicalTab = presetTabIds.includes(activeTab);
 
   const narrativeContent = (
     entity?.appearance ||
@@ -206,7 +214,7 @@ const EventProfileView: React.FC<{ entityId?: string | number }> = ({
           </div>
         )}
 
-        {activeTab === "DATOS_TÉCNICOS" && (
+        {(activeTab === "DATOS_TÉCNICOS" || isPresetTechnicalTab) && (
           <div className="p-12 lg:p-24 max-w-5xl mx-auto">
             <SectionErrorBoundary sectorName="DATOS TÉCNICOS">
               <DynamicAttributeForm

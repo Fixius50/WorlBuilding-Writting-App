@@ -3,6 +3,10 @@ import { useCollectiveProfile } from "./useCollectiveProfile";
 import SecondaryTabs from "@presentation/molecules/SecondaryTabs";
 import DynamicAttributeForm from "@features/Entities/components/DynamicAttributeForm";
 import NarrativeRichText from "@features/Entities/components/NarrativeRichText";
+import {
+  getPresetTabsByEntityType,
+  mergeTabs,
+} from "@features/Entities/utils/entityPresetTabs";
 
 const CollectiveProfileView: React.FC<{ entityId?: string | number }> = ({
   entityId: propEntityId,
@@ -22,18 +26,22 @@ const CollectiveProfileView: React.FC<{ entityId?: string | number }> = ({
     entityId,
   } = useCollectiveProfile(propEntityId);
 
-  const tabs = [
+  const baseTabs = [
     { id: "REGISTRO", label: "REGISTRO", icon: "menu_book" },
     { id: "DIPLOMACIA", label: "PANEL DE DIPLOMACIA", icon: "handshake" },
     { id: "DATOS_TÉCNICOS", label: "DATOS TÉCNICOS", icon: "bar_chart" },
   ];
+  const presetTabs = getPresetTabsByEntityType(entity?.tipo || "");
+  const tabs = mergeTabs(baseTabs, presetTabs);
+  const presetTabIds = presetTabs.map((tab) => tab.id);
+  const isPresetTechnicalTab = presetTabIds.includes(activeTab);
 
-  const narrativeContent = (
-    entity?.appearance ||
-    entity?.descripcion ||
-    ""
-  ).trim();
-  const narrativeStory = (entity?.descripcion || "").trim();
+  const narrativeContentRaw = entity?.appearance || entity?.descripcion || "";
+  const narrativeStoryRaw = entity?.descripcion || "";
+  const narrativeContent =
+    typeof narrativeContentRaw === "string" ? narrativeContentRaw.trim() : "";
+  const narrativeStory =
+    typeof narrativeStoryRaw === "string" ? narrativeStoryRaw.trim() : "";
   const narrativeLength = narrativeContent.length;
   const narrativeGrowth = Math.min(560, Math.floor(narrativeLength / 3));
   const panelMinHeight = 360 + narrativeGrowth;
@@ -202,7 +210,7 @@ const CollectiveProfileView: React.FC<{ entityId?: string | number }> = ({
           </div>
         )}
 
-        {activeTab === "DATOS_TÉCNICOS" && (
+        {(activeTab === "DATOS_TÉCNICOS" || isPresetTechnicalTab) && (
           <div className="p-12 lg:p-24 max-w-5xl mx-auto">
             <DynamicAttributeForm
               key={`dynamic-attributes-${entity.project_id}-${entity.id}`}
