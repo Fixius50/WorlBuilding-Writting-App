@@ -10,6 +10,7 @@ import { EntityUseCase } from "@application/useCases/EntityUseCase";
 import { TemplateUseCase } from "@application/useCases/TemplateUseCase";
 import { Entidad, Plantilla, Carpeta, Valor } from "@domain/models/database";
 import { useRightPanelStore } from "@store/useRightPanelStore";
+import { useQuery } from "@tanstack/react-query";
 
 // --- Interfaces ---
 export interface LayoutContext {
@@ -68,7 +69,6 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
 
   const [path, setPath] = useState<Carpeta[]>([]);
   const [fields, setFields] = useState<EntityField[]>([]);
-  const [loading, setLoading] = useState(true);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [removedFieldIds, setRemovedFieldIds] = useState<number[]>([]);
@@ -82,6 +82,13 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
     null,
   );
   const [isDraggingOver, setIsDraggingOver] = useState(false);
+
+  const entityBuilderQueryKey = [
+    "entity-builder-init",
+    projectId || 1,
+    isCreation,
+    entityId ? Number(entityId) : 0,
+  ] as const;
 
   // --- Safe Extra Management ---
   const getExtra = useCallback((): EntityExtras => {
@@ -104,30 +111,27 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
   );
 
   // --- Initialization & Data Fetching ---
-  const refreshTemplates = useCallback(async () => {
-    try {
+  const {
+    data: builderInitData,
+    isLoading: loading,
+    refetch: refetchBuilderInit,
+  } = useQuery({
+    queryKey: entityBuilderQueryKey,
+    enabled: Number.isFinite(projectId || 1),
+    refetchOnWindowFocus: false,
+    queryFn: async (): Promise<{
+      templates: Plantilla[];
+      loadedEntity: Partial<Entidad> | null;
+      loadedFields: EntityField[];
+    }> => {
       const templates = await TemplateUseCase.getTemplates(projectId || 1);
-      setAvailableTemplatesLocal(templates);
-      return templates;
-    } catch (err) {
-      console.error("Error refreshing templates:", err);
-      return [];
-    }
-  }, [projectId]);
 
-  const loadEntityData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const templates = await TemplateUseCase.getTemplates(projectId || 1);
-      setAvailableTemplatesLocal(templates);
-
-      if (!isCreation && entityId) {
-        const data = await EntityUseCase.getById(Number(entityId));
-        if (data) {
-          setEntity(data);
-          const vals = await TemplateUseCase.getEntityValues(data.id);
-          setFields(
-            vals.map((v) => ({
+      switch (true) {
+        case !isCreation && !!entityId: {
+          const data = await EntityUseCase.getById(Number(entityId));
+          if (data) {
+            const vals = await TemplateUseCase.getEntityValues(data.id);
+            const loadedFields: EntityField[] = vals.map((v) => ({
               id: v.id,
               attribute:
                 v.plantilla ||
@@ -138,21 +142,56 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
                 } as Plantilla),
               value: v.valor || "",
               isTemp: false,
-            })),
-          );
+            }));
+
+            return {
+              templates,
+              loadedEntity: data,
+              loadedFields,
+            };
+          }
+          break;
         }
+        default:
+          break;
       }
+
+      return {
+        templates,
+        loadedEntity: null,
+        loadedFields: [],
+      };
+    },
+  });
+
+  const refreshTemplates = useCallback(async () => {
+    try {
+      const result = await refetchBuilderInit();
+      const templates = result.data?.templates || [];
+      setAvailableTemplatesLocal(templates);
+      return templates;
     } catch (err) {
-      console.error("Error initializing EntityBuilder:", err);
-    } finally {
-      setLoading(false);
+      console.error("Error refreshing templates:", err);
+      return [];
     }
-  }, [entityId, isCreation, projectId]);
+  }, [refetchBuilderInit]);
 
   useEffect(() => {
     openPanel("custom", 0, "Constructor de Entidad");
-    loadEntityData();
-  }, [openPanel, loadEntityData]);
+  }, [openPanel]);
+
+  useEffect(() => {
+    if (!builderInitData) {
+      return;
+    }
+
+    setAvailableTemplatesLocal(builderInitData.templates || []);
+
+    if (!isCreation && builderInitData.loadedEntity) {
+      setEntity(builderInitData.loadedEntity);
+      setFields(builderInitData.loadedFields || []);
+    }
+  }, [builderInitData, isCreation]);
 
   // Sync projectId
   useEffect(() => {

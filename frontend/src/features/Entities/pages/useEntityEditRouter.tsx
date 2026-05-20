@@ -1,7 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
-import { EntityUseCase } from '@application/useCases/EntityUseCase';
-import { Entidad } from '@domain/models/database';
+import { useMemo } from "react";
+import { useParams } from "react-router-dom";
+import { EntityUseCase } from "@application/useCases/EntityUseCase";
+import { Entidad } from "@domain/models/database";
+import { useQuery } from "@tanstack/react-query";
+
+export const entityEditRouterQueryKey = (entityId: number) =>
+  ["entity-edit-router", entityId] as const;
 
 /**
  * 🧠 useEntityEditRouter
@@ -9,36 +13,35 @@ import { Entidad } from '@domain/models/database';
  */
 export const useEntityEditRouter = () => {
   const { entityId } = useParams();
-  const [entity, setEntity] = useState<Entidad | null>(null);
-  const [loading, setLoading] = useState(true);
+  const numericEntityId = Number(entityId);
 
-  useEffect(() => {
-    if (entityId) {
-      loadEntity();
-    }
-  }, [entityId]);
-
-  const loadEntity = async () => {
-    setLoading(true);
-    try {
-      const data = await EntityUseCase.getById(Number(entityId));
-      setEntity(data);
-    } catch (err) {
-      console.error("Error routing entity edit:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: entity, isLoading: loading } = useQuery<Entidad | null>({
+    queryKey: entityEditRouterQueryKey(numericEntityId),
+    enabled: Number.isFinite(numericEntityId) && numericEntityId > 0,
+    queryFn: async () => {
+      return await EntityUseCase.getById(numericEntityId);
+    },
+  });
 
   const isCosmic = useMemo(() => {
     if (!entity) return false;
     const tipo = entity.tipo.trim().toUpperCase();
     const cosmicTypes = [
-      'UNIVERSO', 'UNIVERSE', 'UNIVERSES',
-      'GALAXIA', 'GALAXY', 'GALAXIES',
-      'SISTEMA', 'SYSTEM', 'SYSTEMS',
-      'PLANETA', 'PLANET', 'PLANETS',
-      'DIMENSION', 'DIMENSIÓN', 'DIMENSIONS'
+      "UNIVERSO",
+      "UNIVERSE",
+      "UNIVERSES",
+      "GALAXIA",
+      "GALAXY",
+      "GALAXIES",
+      "SISTEMA",
+      "SYSTEM",
+      "SYSTEMS",
+      "PLANETA",
+      "PLANET",
+      "PLANETS",
+      "DIMENSION",
+      "DIMENSIÓN",
+      "DIMENSIONS",
     ];
     return cosmicTypes.includes(tipo);
   }, [entity]);
@@ -46,6 +49,6 @@ export const useEntityEditRouter = () => {
   return {
     entity,
     loading,
-    isCosmic
+    isCosmic,
   };
 };

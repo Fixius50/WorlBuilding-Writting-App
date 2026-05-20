@@ -209,7 +209,10 @@ const EventProfileView: React.FC<{ entityId?: string | number }> = ({
         {activeTab === "DATOS_TÉCNICOS" && (
           <div className="p-12 lg:p-24 max-w-5xl mx-auto">
             <SectionErrorBoundary sectorName="DATOS TÉCNICOS">
-              <DynamicAttributeForm entity={entity} />
+              <DynamicAttributeForm
+                key={`dynamic-attributes-${entity.project_id}-${entity.id}`}
+                entity={entity}
+              />
             </SectionErrorBoundary>
           </div>
         )}

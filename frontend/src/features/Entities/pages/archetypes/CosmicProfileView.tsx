@@ -217,6 +217,7 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
           <div className="p-12 lg:p-24 max-w-5xl mx-auto space-y-16">
             <div className="pt-0">
               <DynamicAttributeForm
+                key={`dynamic-attributes-${entity.project_id}-${entity.id}`}
                 entity={entity}
                 onUpdate={() => {
                   queryClient.invalidateQueries({

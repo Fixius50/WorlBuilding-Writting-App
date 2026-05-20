@@ -54,8 +54,15 @@ export const useDynamicAttributeForm = (
       });
 
       const entityValues = await TemplateUseCase.getEntityValues(entity.id);
+      const valueTemplateIds = new Set(
+        entityValues.map((value) => value.plantilla_id),
+      );
+      const templatesWithEntityValue = applicable.filter((tpl) =>
+        valueTemplateIds.has(tpl.id),
+      );
+
       return {
-        templates: applicable,
+        templates: templatesWithEntityValue,
         values: entityValues,
       };
     },
