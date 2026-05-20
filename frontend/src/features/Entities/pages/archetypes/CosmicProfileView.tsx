@@ -1,14 +1,16 @@
 import React from "react";
-import { useCosmicProfile } from "./useCosmicProfile";
+import { cosmicEntityQueryKey, useCosmicProfile } from "./useCosmicProfile";
 import SecondaryTabs from "@presentation/molecules/SecondaryTabs";
 import UniversalCanvas from "@presentation/organisms/editor/UniversalCanvas";
 import DynamicAttributeForm from "@features/Entities/components/DynamicAttributeForm";
 import NarrativeRichText from "@features/Entities/components/NarrativeRichText";
+import { useQueryClient } from "@tanstack/react-query";
 
 const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
   entityId: propEntityId,
 }) => {
   const [zoomImage, setZoomImage] = React.useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const {
     entity,
@@ -31,12 +33,12 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
     { id: "TELEMETRÍA", label: "TELEMETRÍA", icon: "bar_chart" },
   ];
 
-  const narrativeContent = (
-    entity?.appearance ||
-    entity?.descripcion ||
-    ""
-  ).trim();
-  const narrativeStory = (entity?.descripcion || "").trim();
+  const narrativeContentRaw = entity?.appearance || entity?.descripcion || "";
+  const narrativeStoryRaw = entity?.descripcion || "";
+  const narrativeContent =
+    typeof narrativeContentRaw === "string" ? narrativeContentRaw.trim() : "";
+  const narrativeStory =
+    typeof narrativeStoryRaw === "string" ? narrativeStoryRaw.trim() : "";
   const narrativeLength = narrativeContent.length;
   const narrativeGrowth = Math.min(560, Math.floor(narrativeLength / 3));
   const panelMinHeight = 360 + narrativeGrowth;
@@ -214,7 +216,14 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
         {activeTab === "TELEMETRÍA" && (
           <div className="p-12 lg:p-24 max-w-5xl mx-auto space-y-16">
             <div className="pt-0">
-              <DynamicAttributeForm entity={entity} />
+              <DynamicAttributeForm
+                entity={entity}
+                onUpdate={() => {
+                  queryClient.invalidateQueries({
+                    queryKey: cosmicEntityQueryKey(Number(entityId)),
+                  });
+                }}
+              />
             </div>
           </div>
         )}
