@@ -123,7 +123,7 @@ export const useCosmicProfile = (propEntityId?: string | number) => {
       }));
 
       return {
-        entity: { ...cosmicEntity, ...extra },
+        entity: { ...extra, ...cosmicEntity },
         nodes: newNodes,
         edges: newEdges,
         subNodes: children,
