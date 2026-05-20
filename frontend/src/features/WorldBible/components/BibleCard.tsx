@@ -1,6 +1,6 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useBibleCard } from './useBibleCard';
+import React from "react";
+import { Link } from "react-router-dom";
+import { useBibleCard } from "./useBibleCard";
 
 interface BibleCardItem {
   id: number | string;
@@ -12,7 +12,7 @@ interface BibleCardItem {
 
 interface BibleCardProps {
   item: BibleCardItem;
-  type: 'entity' | 'folder';
+  type: "entity" | "folder";
   linkTo: string;
   onContextMenu?: (e: React.MouseEvent) => void;
   onDelete: (item: BibleCardItem) => void;
@@ -20,7 +20,15 @@ interface BibleCardProps {
   onMove?: (item: BibleCardItem) => void;
 }
 
-const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu, onDelete, onRename, onMove }) => {
+const BibleCard: React.FC<BibleCardProps> = ({
+  item,
+  type,
+  linkTo,
+  onContextMenu,
+  onDelete,
+  onRename,
+  onMove,
+}) => {
   const { isFolder, visuals, label } = useBibleCard(item, type);
 
   return (
@@ -44,20 +52,30 @@ const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu
       )}
 
       <div className="relative z-10">
-        <div className={`
-          size-14 rounded-none flex items-center justify-center text-2xl transition-all duration-500
-          ${isFolder ? 'bg-primary/5 border border-primary/10' : 'bg-foreground/[0.03] border border-foreground/10'}
+        <div
+          className={`
+          size-14 rounded-none flex items-center justify-center text-2xl transition-all duration-500 overflow-hidden
+          ${isFolder ? "bg-primary/5 border border-primary/10" : "bg-foreground/[0.03] border border-foreground/10"}
           ${visuals.color}
-        `}>
-          <span className="material-symbols-outlined">
-            {visuals.icon}
-          </span>
+        `}
+        >
+          {item.iconUrl ? (
+            <img
+              src={item.iconUrl}
+              alt=""
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="material-symbols-outlined">{visuals.icon}</span>
+          )}
         </div>
       </div>
 
       <div className="relative z-10 mt-auto flex justify-between items-end">
         <div className="flex flex-col gap-0.5">
-          <h3 className="text-md font-black text-foreground tracking-tight group-hover:text-primary transition-colors">{item.nombre}</h3>
+          <h3 className="text-md font-black text-foreground tracking-tight group-hover:text-primary transition-colors">
+            {item.nombre}
+          </h3>
           <p className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40 group-hover:text-foreground/60 transition-colors">
             {label}
           </p>
@@ -75,7 +93,11 @@ const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu
       <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         {onRename && (
           <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRename(item); }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onRename(item);
+            }}
             className="p-1.5 rounded-none bg-indigo-500/10 hover:bg-indigo-500 text-indigo-400 hover:text-foreground transition-all border border-indigo-500/20 shadow-lg shadow-indigo-500/5"
             title="Rename"
           >
@@ -84,16 +106,26 @@ const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu
         )}
         {onMove && (
           <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onMove(item); }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onMove(item);
+            }}
             className="p-1.5 rounded-none bg-indigo-500/10 hover:bg-indigo-500 text-indigo-400 hover:text-foreground transition-all border border-indigo-500/20 shadow-lg shadow-indigo-500/5"
             title="Move"
           >
-            <span className="material-symbols-outlined text-sm">drive_file_move</span>
+            <span className="material-symbols-outlined text-sm">
+              drive_file_move
+            </span>
           </button>
         )}
         {onDelete && (
           <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(item); }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onDelete(item);
+            }}
             className="p-1.5 rounded-none bg-red-500/10 hover:bg-red-500 text-destructive hover:text-foreground transition-all border border-red-500/20 shadow-lg shadow-red-500/5 group/del "
             title="Delete"
           >
@@ -101,7 +133,9 @@ const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu
           </button>
         )}
         <div className="ml-1 flex items-center justify-center size-7 bg-foreground/5 border border-foreground/10 text-indigo-400">
-          <span className="material-symbols-outlined text-sm transform group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+          <span className="material-symbols-outlined text-sm transform group-hover:translate-x-0.5 transition-transform">
+            arrow_forward
+          </span>
         </div>
       </div>
     </Link>
@@ -109,4 +143,3 @@ const BibleCard: React.FC<BibleCardProps> = ({ item, type, linkTo, onContextMenu
 };
 
 export default BibleCard;
-
