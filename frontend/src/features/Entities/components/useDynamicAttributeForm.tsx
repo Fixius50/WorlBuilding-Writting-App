@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
-import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
-import { Plantilla, Valor, Entidad } from '@domain/models/database';
+import { useState, useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { TemplateUseCase } from "@application/useCases/TemplateUseCase";
+import { Plantilla, Valor, Entidad } from "@domain/models/database";
 
 /**
  * 🧠 useDynamicAttributeForm
@@ -8,57 +9,94 @@ import { Plantilla, Valor, Entidad } from '@domain/models/database';
  */
 export const useDynamicAttributeForm = (
   entity: Entidad,
-  onUpdate?: () => void
+  onUpdate?: () => void,
 ) => {
-  const [templates, setTemplates] = useState<Plantilla[]>([]);
-  const [values, setValues] = useState<Valor[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [savingId, setSavingId] = useState<number | null>(null);
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const allTemplates = await TemplateUseCase.getTemplates(entity.project_id);
-      const applicable = allTemplates.filter(tpl => 
-        tpl.aplica_a_todo || tpl.tipo_objetivo === entity.tipo
+  const attributesQueryKey = [
+    "entity-dynamic-attributes",
+    entity.project_id,
+    entity.id,
+    entity.tipo || "",
+  ] as const;
+
+  const {
+    data,
+    isLoading: loading,
+    refetch,
+  } = useQuery({
+    queryKey: attributesQueryKey,
+    enabled: Number.isFinite(entity.id) && Number.isFinite(entity.project_id),
+    queryFn: async (): Promise<{ templates: Plantilla[]; values: Valor[] }> => {
+      const allTemplates = await TemplateUseCase.getTemplates(
+        entity.project_id,
       );
-      setTemplates(applicable);
+      const normalizedEntityType = (entity.tipo || "").trim().toUpperCase();
+      const applicable = allTemplates.filter((tpl) => {
+        const appliesToAll =
+          tpl.aplica_a_todo === true || tpl.aplica_a_todo === 1;
+        const targetType =
+          typeof tpl.tipo_objetivo === "string"
+            ? tpl.tipo_objetivo.trim().toUpperCase()
+            : "";
+        const hasNoSpecificTarget = targetType.length === 0;
+        const matchesEntityType = targetType === normalizedEntityType;
+
+        switch (true) {
+          case appliesToAll:
+          case hasNoSpecificTarget:
+          case matchesEntityType:
+            return true;
+          default:
+            return false;
+        }
+      });
+
       const entityValues = await TemplateUseCase.getEntityValues(entity.id);
-      setValues(entityValues);
-    } catch (err) { }
-    finally {
-      setLoading(false);
-    }
-  }, [entity.id, entity.project_id, entity.tipo]);
+      return {
+        templates: applicable,
+        values: entityValues,
+      };
+    },
+  });
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  const templates = data?.templates || [];
+  const values = data?.values || [];
 
-  const handleValueChange = async (templateId: number, newValue: string) => {
-    setSavingId(templateId);
-    try {
-      const existingValue = values.find(v => v.plantilla_id === templateId);
-      if (existingValue) {
-        await TemplateUseCase.updateEntityValue(existingValue.id, newValue);
-      } else {
-        await TemplateUseCase.addEntityValue(entity.id, templateId, newValue);
+  const loadData = useCallback(async () => {
+    await refetch();
+  }, [refetch]);
+
+  const handleValueChange = useCallback(
+    async (templateId: number, newValue: string) => {
+      setSavingId(templateId);
+      try {
+        const existingValue = values.find((v) => v.plantilla_id === templateId);
+        if (existingValue) {
+          await TemplateUseCase.updateEntityValue(existingValue.id, newValue);
+        } else {
+          await TemplateUseCase.addEntityValue(entity.id, templateId, newValue);
+        }
+        await queryClient.invalidateQueries({ queryKey: attributesQueryKey });
+        if (onUpdate) onUpdate();
+      } catch (err) {
+      } finally {
+        setSavingId(null);
       }
-      const updatedValues = await TemplateUseCase.getEntityValues(entity.id);
-      setValues(updatedValues);
-      if (onUpdate) onUpdate();
-    } catch (err) { }
-    finally {
-      setSavingId(null);
-    }
-  };
+    },
+    [values, entity.id, onUpdate, queryClient, attributesQueryKey],
+  );
 
-  const categories = templates.reduce((acc, tpl) => {
-    const cat = tpl.categoria || 'Detalles Técnicos';
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(tpl);
-    return acc;
-  }, {} as Record<string, Plantilla[]>);
+  const categories = templates.reduce(
+    (acc, tpl) => {
+      const cat = tpl.categoria || "Detalles Técnicos";
+      if (!acc[cat]) acc[cat] = [];
+      acc[cat].push(tpl);
+      return acc;
+    },
+    {} as Record<string, Plantilla[]>,
+  );
 
   return {
     templates,
@@ -67,6 +105,6 @@ export const useDynamicAttributeForm = (
     savingId,
     categories,
     handleValueChange,
-    loadData
+    loadData,
   };
 };
