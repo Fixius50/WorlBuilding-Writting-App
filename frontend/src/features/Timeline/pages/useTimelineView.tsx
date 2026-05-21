@@ -190,21 +190,18 @@ export const useTimelineView = (projectId: number) => {
     loadEventsByUniverse,
   ]);
 
-  const startEditEvent = useCallback(
-    (event: Evento) => {
-      setEditingEvent(event);
-      setSelectedEventId(event.id);
-      setNewEvent({
-        titulo: event.titulo,
-        descripcion: event.descripcion || "",
-        fecha_simulada: event.fecha_simulada || "",
-        ordenAbsoluto: 0,
-      });
-      setActiveTab("eventos");
-      // Panel derecho eliminado: antes abría inspector de evento.
-    },
-    [],
-  );
+  const startEditEvent = useCallback((event: Evento) => {
+    setEditingEvent(event);
+    setSelectedEventId(event.id);
+    setNewEvent({
+      titulo: event.titulo,
+      descripcion: event.descripcion || "",
+      fecha_simulada: event.fecha_simulada || "",
+      ordenAbsoluto: 0,
+    });
+    setActiveTab("eventos");
+    // Panel derecho eliminado: antes abría inspector de evento.
+  }, []);
 
   const executeDeletion = useCallback(async () => {
     const { type, id } = confirmState;

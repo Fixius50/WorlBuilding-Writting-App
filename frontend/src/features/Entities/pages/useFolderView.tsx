@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useParams, useOutletContext, useNavigate } from 'react-router-dom';
-import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
-import { EntityUseCase } from '@application/useCases/EntityUseCase';
-import { Entidad, Carpeta } from '@domain/models/database';
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useParams, useOutletContext, useNavigate } from "react-router-dom";
+import { WorkspaceUseCase } from "@application/useCases/WorkspaceUseCase";
+import { EntityUseCase } from "@application/useCases/EntityUseCase";
+import { Entidad, Carpeta } from "@domain/models/database";
 
 // --- Interfaces ---
 export interface FolderViewContext {
@@ -23,11 +23,11 @@ export interface FolderViewContext {
 export const useFolderView = () => {
   const { folderId } = useParams();
   const navigate = useNavigate();
-  
+
   const {
     searchTerm: folderSearchTerm,
     filterType: folderFilterType,
-    projectName
+    projectName,
   } = useOutletContext<FolderViewContext>();
 
   const [entities, setEntities] = useState<Entidad[]>([]);
@@ -53,7 +53,7 @@ export const useFolderView = () => {
       const [ents, subs, pth] = await Promise.all([
         EntityUseCase.getByFolder(id),
         WorkspaceUseCase.getSubfolders(id),
-        WorkspaceUseCase.getFolderPath(id)
+        WorkspaceUseCase.getFolderPath(id),
       ]);
       setEntities(ents);
       setSubfolders(subs);
@@ -69,44 +69,52 @@ export const useFolderView = () => {
     loadContent();
 
     const handleUpdate = (e: Event) => {
-      const { folderId: updatedFolderId } = (e as CustomEvent<{ folderId: number }>).detail || {};
+      const { folderId: updatedFolderId } =
+        (e as CustomEvent<{ folderId: number }>).detail || {};
       if (Number(updatedFolderId) === Number(folderId)) {
         loadContent();
       }
     };
 
-    window.addEventListener('folder-update', handleUpdate);
-    return () => window.removeEventListener('folder-update', handleUpdate);
+    window.addEventListener("folder-update", handleUpdate);
+    return () => window.removeEventListener("folder-update", handleUpdate);
   }, [folderId, loadContent]);
 
   // --- Filtering ---
   const filteredContent = useMemo(() => {
-    const searchTermLower = (folderSearchTerm || '').toLowerCase();
-    
-    const fFolders = subfolders.filter(f => 
-      f.nombre.toLowerCase().includes(searchTermLower)
+    const searchTermLower = (folderSearchTerm || "").toLowerCase();
+
+    const fFolders = subfolders.filter((f) =>
+      f.nombre.toLowerCase().includes(searchTermLower),
     );
-    
-    const fEntities = entities.filter(e => {
+
+    const fEntities = entities.filter((e) => {
       const matchesSearch = e.nombre.toLowerCase().includes(searchTermLower);
-      const matchesFilter = folderFilterType === 'ALL' || e.tipo === folderFilterType;
+      const matchesFilter =
+        folderFilterType === "ALL" || e.tipo === folderFilterType;
       return matchesSearch && matchesFilter;
     });
 
     let finalFolders = fFolders;
     let finalEntities = fEntities;
 
-    if (folderFilterType === 'SPACES') {
+    if (folderFilterType === "SPACES") {
       finalEntities = [];
-    } else if (folderFilterType === 'ENTITIES') {
+    } else if (folderFilterType === "ENTITIES") {
       finalFolders = [];
-      finalEntities = fEntities.filter(e => e.tipo !== 'MAPA' && e.tipo !== 'TIMELINE');
-    } else if (folderFilterType === 'MAPS') {
+      finalEntities = fEntities.filter(
+        (e) => e.tipo !== "MAPA" && e.tipo !== "TIMELINE",
+      );
+    } else if (folderFilterType === "MAPS") {
       finalFolders = [];
-      finalEntities = fEntities.filter(e => e.tipo === 'MAPA' || e.tipo === 'MAP');
-    } else if (folderFilterType === 'TIMELINES') {
+      finalEntities = fEntities.filter(
+        (e) => e.tipo === "MAPA" || e.tipo === "MAP",
+      );
+    } else if (folderFilterType === "TIMELINES") {
       finalFolders = [];
-      finalEntities = fEntities.filter(e => e.tipo === 'TIMELINE' || e.tipo === 'LINEA_TEMPORAL');
+      finalEntities = fEntities.filter(
+        (e) => e.tipo === "TIMELINE" || e.tipo === "LINEA_TEMPORAL",
+      );
     }
 
     return { folders: finalFolders, entities: finalEntities };
@@ -119,6 +127,6 @@ export const useFolderView = () => {
     filteredContent,
     navigate,
     currentFolder,
-    path
+    path,
   };
 };

@@ -1,7 +1,7 @@
-import React, { useCallback } from 'react';
-import { useOutletContext } from 'react-router-dom';
-import UniversalCanvas from '@presentation/organisms/editor/UniversalCanvas';
-import { useGeneralGraph } from './useGeneralGraph';
+import React, { useCallback } from "react";
+import { useOutletContext } from "react-router-dom";
+import UniversalCanvas from "@presentation/organisms/editor/UniversalCanvas";
+import { useGeneralGraph } from "./useGeneralGraph";
 
 interface GraphViewProps {
   projectId?: number;
@@ -9,7 +9,10 @@ interface GraphViewProps {
 }
 
 const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
-  const outletCtx = useOutletContext<{ projectId?: number; projectName?: string } | null>();
+  const outletCtx = useOutletContext<{
+    projectId?: number;
+    projectName?: string;
+  } | null>();
   const projectId: number | undefined = props.projectId ?? outletCtx?.projectId;
 
   const { loading, canvasNodes, canvasEdges } = useGeneralGraph(projectId);
@@ -23,14 +26,18 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
   }, []);
 
   if (loading) {
-    return <div className="p-8 text-foreground/50">Cargando motor Konva Canvas...</div>;
+    return (
+      <div className="p-8 text-foreground/50">
+        Cargando motor Konva Canvas...
+      </div>
+    );
   }
 
   return (
     <div className="w-full h-full relative">
-      <UniversalCanvas 
-        initialNodes={canvasNodes} 
-        initialEdges={canvasEdges} 
+      <UniversalCanvas
+        initialNodes={canvasNodes}
+        initialEdges={canvasEdges}
         onNodeClick={handleNodeClick}
         onEdgeClick={handleEdgeClick}
       />
@@ -39,4 +46,3 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
 };
 
 export default GeneralGraphView;
-
