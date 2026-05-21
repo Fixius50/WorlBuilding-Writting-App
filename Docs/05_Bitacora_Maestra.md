@@ -6,11 +6,17 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
 
 ### MAYO 2026
 
+- **2026-05-21: Retirada total del Panel Derecho Global (Arquitectura Contextual por Feature)**
+  - **Eliminación Estructural**: Retirados `GlobalRightPanel.tsx` y `UniversalInspector.tsx` del layout principal.
+  - **Desacoplamiento de Vistas**: Neutralizadas dependencias directas de `useRightPanelStore` en módulos de Graph, Entities, Linguistics, Timeline, Maps, Writing y WorldBible.
+  - **Regla Operativa Nueva**: La inspección contextual se resuelve con navegación por rutas, modales locales o paneles internos de cada feature.
+  - **Trazabilidad**: Se conservan comentarios puntuales en módulos intervenidos indicando el uso histórico del panel lateral.
+
 - **2026-05-13: Normalización Hook-View y Corrección de Tipos en Mapas/Grafo**
   - **Patrón Hook-View Consolidado**: Refactorización de componentes complejos delegando todo el estado y lógica a hooks especializados (`useBottomGraphDrawer`, `useControlPanel`, `useInGraphNodeWindow`, `useBibleGridView`).
   - **Componentes Visuales Puros**: Las vistas ahora se limitan exclusivamente al renderizado y mapeo de UI, aislando la lógica de fetching, filtrado y orquestación de eventos.
   - **Resolución TS2322/TS2353/TS2345**: Corrección de deuda técnica en `MapEditor.tsx`, `MapLibreView.tsx` y `MapRouter.tsx`. Se removió el envío de props inválidas (`mode`, `antialias`) y se estabilizó la integración con MapLibre (parámetro `projection` de deck.gl y tipos de `RefObject`).
-  - **Saneamiento Arquitectónico Estricto**: Auditoría profunda de las capas `/infrastructure` y `/presentation`. Se forzó el uso exclusivo de *Arrow Functions*, se prohibieron los `early returns` dentro de sentencias `if`, centralizando el flujo de control, y se erradicó el uso de `any` a favor de tipado riguroso. Reglas actualizadas formalmente en `00_Reglas_Maestras.md`.
+  - **Saneamiento Arquitectónico Estricto**: Auditoría profunda de las capas `/infrastructure` y `/presentation`. Se forzó el uso exclusivo de _Arrow Functions_, se prohibieron los `early returns` dentro de sentencias `if`, centralizando el flujo de control, y se erradicó el uso de `any` a favor de tipado riguroso. Reglas actualizadas formalmente en `00_Reglas_Maestras.md`.
 
 - **2026-05-11: Consolidación de Clean Architecture (Use Cases)**
   - **Capa de Aplicación (`application/useCases`)**: Implementación de Casos de Uso para encapsular la lógica de negocio y prohibir el acceso directo a repositorios desde React.
@@ -25,7 +31,7 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
   - **Limpieza de Deuda**: Eliminación de librerías obsoletas (`quill.mention.js`) y archivos legacy (`suggestion.js`, `TiptapExtensions.js`).
   - **Tipado Estricto**: Saneamiento de múltiples instancias de `any` en `useAppStore`, `useSettingsStore` y componentes del editor.
 
-- **2026-05-05: Unificación Monolítica Zen y Chameleon Inspector**
+- **2026-05-05: Unificación Monolítica Zen y Chameleon Inspector** _(hito histórico, supersedido por la retirada total del panel derecho en 2026-05-21)_
   - **Migración Arquitectónica**: Eliminación total del `ArchitectContext` legacy en favor de `useRightPanelStore` (Zustand).
   - **Chameleon Inspector**: Implementación del `UniversalInspector` como punto único de entrada para el panel derecho. Eliminación de portales manuales (`createPortal`) en `EntityBuilder` y `WritingView`.
   - **Simplificación UI**: Eliminación de la pestaña "Notas" en el panel derecho. El panel ahora se centra exclusivamente en el contexto (Inspector).
@@ -111,7 +117,7 @@ Este documento consolida el registro sistemático y de desarrollo de Worldbuildi
 
 ### Patrones Establecidos
 
-- **Panel Derecho (GlobalRightPanel):** Reducido exclusivamente a la pestaña de **CONTEXTO**. Solo inyecta contenido contextual relevante a la vista activa. Los componentes deben inyectar contenido vía `setRightPanelContent()` del OutletContext (método preferido) y **limpiar obligatoriamente** con `setRightPanelContent(null)` al desmontar.
+- **Inspección Contextual (Sin Panel Derecho Global):** El flujo lateral unificado queda deprecado. La UI debe resolver inspección con rutas, modales locales o paneles embebidos por módulo. Evitar nuevas integraciones con `useRightPanelStore` en vistas.
 - **Panel de Control Inferior (ControlPanel):** Hub central para herramientas globales (Grafo, Base de Datos, Notas). El botón de toggle es fijo y persistente. Admite redimensionado manual sin animaciones de transición para máxima fluidez.
 - **MapAttributes `[key: string]: unknown`:** Los campos extra de `MapAttributes` son `unknown`. Siempre castear explícitamente: `as string`, `as number`, etc.
 - **MapMarker.entityId:** El campo de vínculo con entidades es `entityId` (no `entidadId`). No confundir entre versiones.

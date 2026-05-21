@@ -11,6 +11,7 @@ El sistema se apoya en tres pilares fundamentales dentro de `localDB`:
 ### A) Tabla `plantillas` (Definición de Atributos)
 
 Define qué tipo de datos se pueden recolectar.
+
 - `id`: Identificador único.
 - `nombre`: Etiqueta del campo (ej: "Nivel de Magia").
 - `tipo`: Tipo de input (`text`, `number`, `date`, `boolean`, `long_text`).
@@ -22,6 +23,7 @@ Define qué tipo de datos se pueden recolectar.
 ### B) Tabla `valores` (Instanciación)
 
 Almacena los datos específicos de cada entidad.
+
 - `entidad_id`: FK a la entidad.
 - `plantilla_id`: FK a la definición del atributo.
 - `valor`: El dato almacenado (serializado como string).
@@ -33,23 +35,25 @@ Almacena los datos específicos de cada entidad.
 ### El Taller (`ArchetypeManager`)
 
 Es el panel de control administrativo. Permite al usuario "esculpir" la estructura de su mundo.
+
 - **Acceso**: `/workshop`.
 - **Funcionalidad**: CRUD de plantillas con previsualización de tipos de datos.
 
 ### Gestor Masivo (`BibleTableView`)
 
 Una interfaz de alto rendimiento para usuarios avanzados.
+
 - **Tecnología**: `@tanstack/react-table`.
 - **Ráfaga de Creación**: Permite poblar la Biblia del Mundo mediante una fila de inserción rápida que mantiene el foco, ideal para sesiones de "brainstorming" masivo.
 - **Layout**: Integrado en `WorldBibleLayout` mediante un conmutador de vista flotante.
 
-### Visualización Unificada (`UniversalInspector`)
+### Visualización Contextual por Feature
 
-A partir de Mayo 2026, el motor EAV se consume a través del sistema de **Inspector Central**.
+Desde Mayo 2026, el motor EAV se consume sin inspector global.
 
-- **Reactividad**: Al seleccionar una entidad, el `UniversalInspector` detecta su ID y tipo, solicitando al `entityService` los valores dinámicos.
-- **Renderizado Adaptativo**: El inspector utiliza el `DynamicAttributeForm` (componente UI estricto Arrow Function sin *early returns* ocultos) para pintar solo los campos relevantes del arquetipo activo, eliminando el ruido visual de atributos no aplicables.
-- **Sin Portales**: La ficha de entidad ya no usa portales; se inyecta directamente en el flujo de estado de `useRightPanelStore`.
+- **Reactividad**: Al seleccionar una entidad, la vista activa (ruta o modal local) solicita al `entityService` los valores dinámicos.
+- **Renderizado Adaptativo**: `DynamicAttributeForm` (componente UI estricto Arrow Function sin _early returns_ ocultos) pinta solo los campos relevantes del arquetipo activo, eliminando ruido visual.
+- **Sin Acoplamiento Global**: La ficha de entidad evita dependencias a un panel lateral único y se integra en el flujo local del módulo.
 
 ---
 
@@ -81,7 +85,7 @@ Los arquetipos no son clases rígidas, sino conjuntos de atributos. Esto permite
 
 ## 4. Próximos Pasos (Evolución)
 
-*Nota de Arquitectura: Todo desarrollo futuro sobre el motor EAV debe acatar la Regla Maestra de Componentes (Arrow Functions obligatorias, sin early returns condicionales y cero `any`).*
+_Nota de Arquitectura: Todo desarrollo futuro sobre el motor EAV debe acatar la Regla Maestra de Componentes (Arrow Functions obligatorias, sin early returns condicionales y cero `any`)._
 
 1. **Campos de Referencia**: Atributos que permitan seleccionar otra entidad (ej: "Padre", "Localización Actual").
 2. **Validaciones Avanzadas**: Regex personalizados para atributos de tipo texto.
