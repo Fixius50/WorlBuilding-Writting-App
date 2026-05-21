@@ -1,5 +1,4 @@
 import Button from '@atoms/Button';
-import MonolithicPanel from '@atoms/MonolithicPanel';
 import { ModalProps } from '@domain/models/ui';
 
 interface ConfirmModalProps extends ModalProps {

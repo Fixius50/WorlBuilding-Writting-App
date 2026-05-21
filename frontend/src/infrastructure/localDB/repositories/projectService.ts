@@ -40,6 +40,7 @@ export const projectService = {
       const result =
         await sql<Proyecto>`SELECT * FROM proyectos WHERE nombre = ${name} LIMIT 1`;
       // [LOG REMOVED]
+      emitUIRefresh({ operation: "create", scope: "project", id: result[0].id });
       return result[0];
     } catch (err) {
       // [LOG REMOVED]
@@ -65,5 +66,6 @@ export const projectService = {
     if (data.descripcion) {
       await sql`UPDATE proyectos SET descripcion = ${data.descripcion}, ultima_modificacion = CURRENT_TIMESTAMP WHERE id = ${id}`;
     }
+    emitUIRefresh({ operation: "update", scope: "project", id });
   },
 };

@@ -25,6 +25,7 @@ export const timelineService = {
       VALUES (${event.titulo}, ${event.descripcion || ""}, ${event.fecha_simulada || ""}, ${event.project_id}, ${event.timeline_id || null}, ${event.linea_id || null})
       RETURNING *
     `) as Evento[];
+    emitUIRefresh({ operation: "create", scope: "timeline-event", id: results[0].id });
     return results[0];
   },
 
@@ -44,6 +45,7 @@ export const timelineService = {
       await sql`UPDATE eventos SET timeline_id = ${updates.timeline_id} WHERE id = ${id}`;
     if (updates.linea_id !== undefined)
       await sql`UPDATE eventos SET linea_id = ${updates.linea_id} WHERE id = ${id}`;
+    emitUIRefresh({ operation: "update", scope: "timeline-event", id });
   },
 
   async delete(id: number): Promise<void> {
@@ -69,6 +71,7 @@ export const timelineService = {
       VALUES (${line.nombre}, 'DIMENSION', ${line.project_id}, ${line.carpeta_id})
       RETURNING *
     `) as Entidad[];
+    emitUIRefresh({ operation: "create", scope: "timeline-line", id: res[0].id });
     return res[0];
   },
 
@@ -88,6 +91,7 @@ export const timelineService = {
       await sql`UPDATE dimension_lineas SET nombre = ${updates.nombre} WHERE id = ${id}`;
     if (updates.color !== undefined)
       await sql`UPDATE dimension_lineas SET color = ${updates.color} WHERE id = ${id}`;
+    emitUIRefresh({ operation: "update", scope: "timeline-line", id });
   },
 
   // --- MÉTODOS DE VINCULACIÓN DE ENTIDADES ---

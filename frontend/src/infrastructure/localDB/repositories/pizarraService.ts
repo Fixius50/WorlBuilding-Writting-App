@@ -31,7 +31,9 @@ export const pizarraService = {
       INSERT INTO pizarras (titulo, project_id, carpeta_id, nodos_json, aristas_json, viewport_json)
       VALUES (${pizarra.titulo}, ${pizarra.project_id}, ${pizarra.carpeta_id}, ${pizarra.nodos_json}, ${pizarra.aristas_json}, ${pizarra.viewport_json})
     `;
-    return (result as unknown as { insertId: number }).insertId;
+    const insertId = (result as unknown as { insertId: number }).insertId;
+    emitUIRefresh({ operation: "create", scope: "planning-board", id: insertId });
+    return insertId;
   },
 
   async update(id: number, pizarra: Partial<Pizarra>): Promise<void> {
@@ -57,6 +59,7 @@ export const pizarraService = {
 
     if (fields.length > 0) {
       await sql`UPDATE pizarras SET ${sql(fields.join(", "), ...values)} WHERE id = ${id}`;
+      emitUIRefresh({ operation: "update", scope: "planning-board", id });
     }
   },
 

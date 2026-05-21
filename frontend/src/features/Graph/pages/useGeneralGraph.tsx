@@ -51,6 +51,17 @@ export const useGeneralGraph = (projectId: number | undefined) => {
     loadGraph();
   }, [loadGraph]);
 
+  // Reactividad en tiempo real ante cualquier cambio en los datos del proyecto
+  useEffect(() => {
+    const handleDataChange = (): void => {
+      loadGraph();
+    };
+    window.addEventListener("app-data-changed", handleDataChange);
+    return () => {
+      window.removeEventListener("app-data-changed", handleDataChange);
+    };
+  }, [loadGraph]);
+
   return {
     loading,
     canvasNodes,

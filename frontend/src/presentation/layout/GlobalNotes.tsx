@@ -1,86 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
+import React from 'react';
 import ConfirmationModal from '@organisms/ConfirmationModal';
-
-interface Note {
- id: number;
- title: string;
- content: string;
-}
+import { useGlobalNotes } from './useGlobalNotes';
 
 interface GlobalNotesProps {
- projectName: string;
- storageKey?: string;
+  projectName: string;
+  storageKey?: string;
 }
 
 const GlobalNotes: React.FC<GlobalNotesProps> = ({ projectName, storageKey }) => {
- const [notes, setNotes] = useState<Note[]>([]);
- const [isFullscreen, setIsFullscreen] = useState(false);
- const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
-
- const getStorageKey = () => storageKey || `notes_v2_${projectName}`;
-
- useEffect(() => {
-  const loadNotes = async () => {
-    const key = getStorageKey();
-    if (key) {
-      const saved = await WorkspaceUseCase.getSetting(key);
-      if (saved) {
-        setNotes(JSON.parse(saved));
-      } else if (!storageKey) {
-        // Migration from old single string if exists (ONLY for global project notes)
-        // Since we are moving to SQLite, we check if there's anything in localStorage to migrate once
-        const oldNotes = localStorage.getItem(`notes_${projectName}`);
-        if (oldNotes) {
-          const initialNote = { id: Date.now(), title: 'Nota General', content: oldNotes };
-          const newNotes = [initialNote];
-          setNotes(newNotes);
-          await WorkspaceUseCase.saveSetting(key, JSON.stringify(newNotes));
-          localStorage.removeItem(`notes_${projectName}`); // Cleanup
-        }
-      }
-    }
-  };
-  loadNotes();
- }, [projectName, storageKey]);
-
- const saveNotes = async (newNotes: Note[]) => {
-  setNotes(newNotes);
-  const key = getStorageKey();
-  if (key) {
-    await WorkspaceUseCase.saveSetting(key, JSON.stringify(newNotes));
-  }
- };
-
- const addNote = () => {
- const newNote = {
- id: Date.now(),
- title: 'Nueva Nota',
- content: ''
- };
- saveNotes([...notes, newNote]);
- setEditingNoteId(newNote.id);
- };
-
- // Modal State
- const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
-
- const deleteNote = (id: number) => {
- setConfirmDeleteId(id);
- };
-
- const confirmDeleteAction = () => {
- if (confirmDeleteId) {
- saveNotes(notes.filter(n => n.id !== confirmDeleteId));
- setConfirmDeleteId(null);
- }
- };
-
- const updateNote = (id: number, field: keyof Note, value: string) => {
- saveNotes(notes.map(n => n.id === id ? { ...n, [field]: value } : n));
- };
-
- const toggleFullscreen = () => setIsFullscreen(!isFullscreen);
+  const {
+    notes,
+    isFullscreen,
+    confirmDeleteId,
+    setConfirmDeleteId,
+    addNote,
+    deleteNote,
+    confirmDeleteAction,
+    updateNote,
+    toggleFullscreen
+  } = useGlobalNotes({ projectName, storageKey });
 
  const Content = () => (
  <div className={`flex flex-col h-full monolithic-panel/40 ${!isFullscreen ? 'max-h-[25vh]' : ''}`}>

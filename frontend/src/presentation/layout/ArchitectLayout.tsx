@@ -1,16 +1,75 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Outlet, useParams, useNavigate, useLocation, NavLink, useSearchParams } from 'react-router-dom';
+import React from 'react';
+import { Outlet, NavLink, Link } from 'react-router-dom';
 import { useLanguage } from '@context/LanguageContext';
-import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
-import { Carpeta, Proyecto, Plantilla, FolderType } from '@domain/models/database';
 import GlobalRightPanel from './GlobalRightPanel';
 import ConfirmationModal from '@organisms/ConfirmationModal';
 import CommandPalette from '@organisms/CommandPalette';
-import { useSettingsStore } from '@store/useSettingsStore';
-import ControlPanel from '@features/Graph/components/ControlPanel';
-// Sync Service handled by UseCase
-import { useAppStore } from '@store/useAppStore';
-import { useRightPanelStore } from '@store/useRightPanelStore';
+import EntityDatabase from '@features/Graph/components/EntityDatabase';
+import NotebookManager from '@features/Writing/components/NotebookManager';
+import { SyncView } from '@features/Sync';
+import { ResponsiveBar } from '@nivo/bar';
+import { useArchitectLayout } from './useArchitectLayout';
+
+// --- Subcomponente de Gráficos para el Modal Central ---
+const WritingStatsChart: React.FC<{ pages: { contenido?: string }[] }> = ({ pages }) => {
+  const data = pages.map((p, i) => ({
+    hoja: `H${i + 1}`,
+    palabras: p.contenido?.replace(/<[^>]+>/g, '').trim().split(/\s+/).filter(Boolean).length || 0,
+  }));
+
+  return (
+    <div className="w-full h-full">
+      <ResponsiveBar
+        data={data}
+        keys={['palabras']}
+        indexBy="hoja"
+        margin={{ top: 20, right: 30, bottom: 50, left: 60 }}
+        padding={0.3}
+        valueScale={{ type: 'linear' }}
+        indexScale={{ type: 'band', round: true }}
+        colors={['hsl(var(--primary))']}
+        enableLabel={false}
+        theme={{
+          text: { fontSize: 8, fontWeight: 900, fontFamily: 'monospace' },
+          axis: {
+            domain: { line: { stroke: 'hsl(var(--foreground) / 0.1)' } },
+            ticks: { line: { stroke: 'hsl(var(--foreground) / 0.1)' }, text: { fill: 'hsl(var(--foreground) / 0.3)' } },
+            legend: { text: { fill: 'hsl(var(--foreground) / 0.2)', textTransform: 'uppercase', letterSpacing: '1px' } }
+          },
+          grid: { line: { stroke: 'hsl(var(--foreground) / 0.05)' } },
+          tooltip: {
+            container: {
+              background: 'hsl(var(--background))',
+              color: 'hsl(var(--foreground))',
+              fontSize: '10px',
+              borderRadius: '0px',
+              border: '1px solid hsl(var(--foreground) / 0.1)'
+            }
+          }
+        }}
+        axisTop={null}
+        axisRight={null}
+        axisBottom={{
+          tickSize: 5,
+          tickPadding: 5,
+          tickRotation: 0,
+          legend: 'Hojas',
+          legendPosition: 'middle',
+          legendOffset: 40,
+        }}
+        axisLeft={{
+          tickSize: 5,
+          tickPadding: 5,
+          tickRotation: 0,
+          legend: 'Palabras',
+          legendPosition: 'middle',
+          legendOffset: -50,
+        }}
+        role="application"
+      />
+    </div>
+  );
+};
 
 interface NavItemProps {
   to: string;
@@ -39,228 +98,41 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, collapsed, end }) =>
 );
 
 const ArchitectLayout: React.FC = () => {
-  const { username, projectName } = useParams<{ username: string; projectName: string }>();
-  const navigate = useNavigate();
   const { t } = useLanguage();
-  const location = useLocation();
-  const [searchParams] = useSearchParams();
-  const hideSidebarParam = searchParams.get('hideSidebar') === 'true';
+  const {
+    projectName,
+    baseUrl,
+    leftOpen,
+    loadedProject,
+    projectId,
+    panelMode,
+    notifications,
+    activeDropdown,
+    activeModal,
+    stats,
+    currentTime,
+    confirmOpen,
+    folders,
+    rightOpen,
+    hideSidebarParam,
+    outletContextValue,
+    navigate,
 
-  // Layout State
-  const [leftOpen, setLeftOpen] = useState(true);
-  const [loadedProject, setLoadedProject] = useState<Proyecto | null>(null);
-  const [projectId, setProjectId] = useState<number | null>(null);
+    setLeftOpen,
+    setActiveModal,
+    setActiveDropdown,
+    setConfirmOpen,
 
-  // Bottom Graph Panel State
-  const [bottomGraphOpen, setBottomGraphOpen] = useState(false);
-
-  // General Settings State
-  const panelMode = useAppStore(state => state.panelMode);
-  const notifications = useSettingsStore(state => state.notifications);
-
-
-  // Bible Explorer State
-  const [folders, setFolders] = useState<Carpeta[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('ALL');
-
-  // CRUD Modal State
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [deletionTarget, setDeletionTarget] = useState<{ id: number; type: 'folder' | 'entity'; parentId?: number | null } | null>(null);
-
-  const actualUsername = username || 'local';
-  const baseUrl = `/${actualUsername}/${projectName}`;
-
-  const loadFolders = useCallback(async (pId: number) => {
-    const rootFolders = await WorkspaceUseCase.getRootFolders(pId);
-    setFolders(rootFolders);
-  }, []);
-
-  // Load project and folders
-  useEffect(() => {
-    const init = async () => {
-      if (projectName) {
-        const project = await WorkspaceUseCase.getProjectByName(projectName);
-        if (project) {
-          setLoadedProject(project);
-          setProjectId(project.id);
-          // Actualizar el store global para que las menciones y sugerencias sepan en qué proyecto están
-          await useAppStore.getState().setLastProjectId(project.id);
-          await loadFolders(project.id);
-        }
-      }
-    };
-    init();
-  }, [projectName]);
-
-  // Auto-backup cada 5 minutos
-  useEffect(() => {
-    if (projectName) {
-      const interval = setInterval(async () => {
-        const res = await WorkspaceUseCase.exportBackup(projectName);
-        if (res.success) {
-          useSettingsStore.getState().addNotification("Copia de seguridad automática realizada", "success");
-        } else {
-          useSettingsStore.getState().addNotification("Error en copia automática", "error");
-        }
-      }, 5 * 60 * 1000); // 5 minutos
-
-      return () => clearInterval(interval);
-    }
-  }, [projectName]);
-
-  // Listener para actualizaciones de carpetas desde otros componentes
-  useEffect(() => {
-    const handleUpdate = () => {
-      if (projectId) loadFolders(projectId);
-    };
-    window.addEventListener('folder-update', handleUpdate);
-    return () => window.removeEventListener('folder-update', handleUpdate);
-  }, [projectId, loadFolders]);
-
-  // Reset contextual content on navigation if it was custom
-  const { mode, reset } = useRightPanelStore();
-  useEffect(() => {
-    if (mode === 'custom') {
-       reset();
-    }
-  }, [location.pathname, mode, reset]);
-
-  const { isOpen: rightOpen, togglePanel: toggleRightPanel, closePanel, openPanel } = useRightPanelStore();
-
-  // CRUD Handlers
-  const handleCreateSimpleFolder = useCallback(async (parentId: number | null = null, type: string = 'FOLDER') => {
-    if (projectId) {
-      try {
-        const folderName = type === 'TIMELINE' ? (t('timeline.title') || 'Nueva Dimensión') : (t('bible.new_folder') || 'Nueva Carpeta');
-        const newFolder = await WorkspaceUseCase.createFolder(
-          folderName,
-          projectId,
-          parentId,
-          type as FolderType
-        );
-        // [LOG REMOVED]
-        await loadFolders(projectId);
-        window.dispatchEvent(new CustomEvent('folder-update', {
-          detail: { folderId: parentId, type: 'folder', item: newFolder, expand: !!parentId }
-        }));
-      } catch (err) {
-        useSettingsStore.getState().addNotification("Error al crear carpeta", "error");
-      }
-    } else {
-      useSettingsStore.getState().addNotification("Error: Proyecto no identificado", "error");
-    }
-  }, [projectId, loadFolders, t]);
-
-  const handleCreateQuickEntity = useCallback(async (parentId: number, name: string, type: string) => {
-    if (projectId) {
-      try {
-        const newEntity = await WorkspaceUseCase.createQuickEntity({
-          nombre: name,
-          tipo: type,
-          slug: name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''),
-          descripcion: '',
-          carpeta_id: parentId,
-          project_id: projectId,
-          contenido_json: JSON.stringify({}),
-          folder_slug: null,
-          imagen_url: null
-        });
-        
-        // Notificar al árbol de carpetas para que refresque el contenido de parentId
-        window.dispatchEvent(new CustomEvent('folder-update', {
-          detail: { folderId: parentId, type: 'entity', item: newEntity }
-        }));
-        
-        return newEntity;
-      } catch (err) {
-        // [LOG REMOVED]
-      }
-    }
-  }, [projectId]);
-
-  const handleRenameFolder = useCallback(async (folderId: number, newName: string) => {
-    try {
-      await WorkspaceUseCase.renameFolder(folderId, newName, projectId!);
-      if (projectId) await loadFolders(projectId);
-    } catch (err) {
-      // [LOG REMOVED]
-    }
-  }, [projectId, loadFolders]);
-
-  const handleDeleteFolder = useCallback((folderId: number, parentId: number | null = null) => {
-    setDeletionTarget({ id: folderId, type: 'folder', parentId });
-    setConfirmOpen(true);
-  }, []);
-
-  const handleDeleteEntity = useCallback((entityId: number, folderId: number) => {
-    setDeletionTarget({ id: entityId, type: 'entity', parentId: folderId });
-    setConfirmOpen(true);
-  }, []);
-
-  const confirmDeletion = async () => {
-    if (deletionTarget && projectId) {
-      const { id, type, parentId } = deletionTarget;
-
-      try {
-        if (type === 'folder') {
-          await WorkspaceUseCase.deleteFolder(id);
-          window.dispatchEvent(new CustomEvent('folder-update', {
-            detail: { folderId: parentId, removeId: id, type: 'folder' }
-          }));
-        } else {
-          await WorkspaceUseCase.deleteEntity(id);
-          window.dispatchEvent(new CustomEvent('folder-update', {
-            detail: { folderId: parentId, removeId: id, type: 'entity' }
-          }));
-        }
-        await loadFolders(projectId);
-      } catch (err) {
-        // [LOG REMOVED]
-      } finally {
-        setDeletionTarget(null);
-        setConfirmOpen(false);
-      }
-    }
-  };
-
-  const handleCreateEntity = useCallback((folderId: number | string, specialType: string = 'entidadindividual') => {
-    const targetSlug = folderId;
-    navigate(`${baseUrl}/bible/folder/${targetSlug}/entity/new/${specialType}`);
-  }, [baseUrl, navigate]);
-
-  const outletContextValue = useMemo(() => ({
+    toggleDropdown,
+    handleDropdownMouseEnter,
+    handleDropdownNav,
+    getPageName,
+    handleOtrosAction,
+    confirmDeletion,
     toggleRightPanel,
-    projectId,
-    projectName,
-    baseUrl,
-    handleCreateSimpleFolder,
-    handleCreateQuickEntity,
-
-    handleDeleteFolder,
-    handleRenameFolder,
-    handleCreateEntity,
-    handleDeleteEntity,
-    folders,
-    searchTerm,
-    setSearchTerm,
-    filterType,
-    setFilterType
-  }), [
-    projectId,
-    projectName,
-    baseUrl,
-    handleCreateSimpleFolder,
-    handleDeleteFolder,
-    handleRenameFolder,
-    handleCreateEntity,
-    handleDeleteEntity,
-    folders,
-    searchTerm,
-    filterType,
-    setSearchTerm,
-    setFilterType
-  ]);
+    closePanel,
+    openPanel
+  } = useArchitectLayout();
 
   if (hideSidebarParam) {
     return (
@@ -271,11 +143,224 @@ const ArchitectLayout: React.FC = () => {
   }
 
   const sidebarClasses = panelMode === 'floating'
-    ? `fixed top-[2vh] left-[2vw] h-[96vh] rounded-none border border-foreground/10 shadow-2xl z-[200] transition-all duration-300 flex flex-col monolithic-panel ${leftOpen ? 'w-64 opacity-100 translate-y-0' : 'w-64 opacity-0 -translate-y-4 pointer-events-none'}`
-    : `fixed top-0 left-0 h-full monolithic-panel border-y-0 border-l-0 shadow-2xl z-[200] ${panelMode === 'binder' ? '' : 'transition-all duration-500'} flex flex-col rounded-none ${leftOpen ? (panelMode === 'binder' && rightOpen ? 'w-0 -translate-x-full' : 'w-64 translate-x-0') : 'w-64 -translate-x-full'}`;
+    ? `fixed top-[calc(4.5vh+1.5vh)] left-[2vw] h-[calc(100vh-7.5vh)] rounded-none border border-foreground/10 shadow-2xl z-[200] transition-all duration-300 flex flex-col monolithic-panel ${leftOpen ? 'w-64 opacity-100 translate-y-0' : 'w-64 opacity-0 -translate-y-4 pointer-events-none'}`
+    : `fixed top-[4.5vh] left-0 h-[calc(100vh-4.5vh)] monolithic-panel border-y-0 border-l-0 shadow-2xl z-[200] ${panelMode === 'binder' ? '' : 'transition-all duration-500'} flex flex-col rounded-none ${leftOpen ? (panelMode === 'binder' && rightOpen ? 'w-0 -translate-x-full' : 'w-64 translate-x-0') : 'w-64 -translate-x-full'}`;
 
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden bg-background text-foreground font-sans selection:bg-primary/30">
+      {/* MICROHEADER GLOBAL STYLE VSCODE */}
+      <header className="h-[4.5vh] flex-shrink-0 bg-background border-b border-border flex items-center justify-between px-4 text-[11px] tracking-wide select-none z-[250] text-foreground/80 font-sans font-bold">
+        {/* Left Section: Menús desplegables */}
+        <div className="flex items-center gap-1.5 h-full">
+          {/* Botón Home / Panel de Control */}
+          <Link
+            to={baseUrl}
+            onClick={() => {
+              setActiveDropdown(null);
+            }}
+            className="px-2 h-full flex items-center justify-center hover:bg-foreground/5 hover:text-primary transition-colors text-foreground/80"
+            title="Panel de Control"
+          >
+            <span className="material-symbols-outlined text-[15px] font-bold">home</span>
+          </Link>
+
+          {/* Dropdown Constructor */}
+          <div className="relative h-full flex items-center">
+            <button
+              onClick={(e) => toggleDropdown('constructor', e)}
+              onMouseEnter={() => handleDropdownMouseEnter('constructor')}
+              className={`px-2.5 h-full flex items-center transition-colors duration-150 rounded-none hover:bg-foreground/5 hover:text-primary font-bold ${activeDropdown === 'constructor' ? 'bg-foreground/5 text-primary' : ''}`}
+            >
+              <span className="font-bold">Constructor</span>
+              <span className="material-symbols-outlined text-[11px] ml-0.5 opacity-60 font-bold">keyboard_arrow_down</span>
+            </button>
+            
+            {activeDropdown === 'constructor' && (
+              <div 
+                className="absolute top-[4.5vh] left-0 w-48 bg-background border border-border py-1 shadow-2xl z-[300] flex flex-col font-bold"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Link
+                  to={`${baseUrl}/bible`}
+                  onClick={() => handleDropdownNav(`${baseUrl}/bible`)}
+                  className="flex items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-foreground/5 transition-colors text-foreground/85 font-bold"
+                >
+                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">menu_book</span>
+                  <span className="font-bold">Biblia del Mundo</span>
+                </Link>
+                <Link
+                  to={`${baseUrl}/planning`}
+                  onClick={() => handleDropdownNav(`${baseUrl}/planning`)}
+                  className="flex items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-foreground/5 transition-colors text-foreground/85 font-bold"
+                >
+                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">dashboard_customize</span>
+                  <span className="font-bold">Centro Planificación</span>
+                </Link>
+                <Link
+                  to={`${baseUrl}/writing`}
+                  onClick={() => handleDropdownNav(`${baseUrl}/writing`)}
+                  className="flex items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-foreground/5 transition-colors text-foreground/85 font-bold"
+                >
+                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">edit_note</span>
+                  <span className="font-bold">Escritura creativa</span>
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Dropdown Gestor */}
+          <div className="relative h-full flex items-center">
+            <button
+              onClick={(e) => toggleDropdown('gestor', e)}
+              onMouseEnter={() => handleDropdownMouseEnter('gestor')}
+              className={`px-2.5 h-full flex items-center transition-colors duration-150 rounded-none hover:bg-foreground/5 hover:text-primary font-bold ${activeDropdown === 'gestor' ? 'bg-foreground/5 text-primary' : ''}`}
+            >
+              <span className="font-bold">Gestor</span>
+              <span className="material-symbols-outlined text-[11px] ml-0.5 opacity-60 font-bold">keyboard_arrow_down</span>
+            </button>
+            
+            {activeDropdown === 'gestor' && (
+              <div 
+                className="absolute top-[4.5vh] left-0 w-44 bg-background border border-border py-1 shadow-2xl z-[300] flex flex-col font-bold"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Link
+                  to={`${baseUrl}/map`}
+                  onClick={() => handleDropdownNav(`${baseUrl}/map`)}
+                  className="flex items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-foreground/5 transition-colors text-foreground/85 font-bold"
+                >
+                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">map</span>
+                  <span className="font-bold">Atlas y Mapas</span>
+                </Link>
+                <Link
+                  to={`${baseUrl}/timeline`}
+                  onClick={() => handleDropdownNav(`${baseUrl}/timeline`)}
+                  className="flex items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-foreground/5 transition-colors text-foreground/85 font-bold"
+                >
+                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">calendar_month</span>
+                  <span className="font-bold">Dimensiones (Timeline)</span>
+                </Link>
+                <Link
+                  to={`${baseUrl}/time`}
+                  onClick={() => handleDropdownNav(`${baseUrl}/time`)}
+                  className="flex items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-foreground/5 transition-colors text-foreground/85 font-bold"
+                >
+                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">schedule</span>
+                  <span className="font-bold">Calendarios</span>
+                </Link>
+                <Link
+                  to={`${baseUrl}/languages`}
+                  onClick={() => handleDropdownNav(`${baseUrl}/languages`)}
+                  className="flex items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-foreground/5 transition-colors text-foreground/85 font-bold"
+                >
+                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">translate</span>
+                  <span className="font-bold">Lingüística</span>
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Dropdown Otros */}
+          <div className="relative h-full flex items-center">
+            <button
+              onClick={(e) => toggleDropdown('otros', e)}
+              onMouseEnter={() => handleDropdownMouseEnter('otros')}
+              className={`px-2.5 h-full flex items-center transition-colors duration-150 rounded-none hover:bg-foreground/5 hover:text-primary font-bold ${activeDropdown === 'otros' ? 'bg-foreground/5 text-primary' : ''}`}
+            >
+              <span className="font-bold">Otros</span>
+              <span className="material-symbols-outlined text-[11px] ml-0.5 opacity-60 font-bold">keyboard_arrow_down</span>
+            </button>
+            
+            {activeDropdown === 'otros' && (
+              <div 
+                className="absolute top-[4.5vh] left-0 w-44 bg-background border border-border py-1 shadow-2xl z-[300] flex flex-col font-bold"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  onClick={() => handleOtrosAction('database')}
+                  className="flex items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-foreground/5 transition-colors text-foreground/85 font-bold"
+                >
+                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">table_chart</span>
+                  <span className="font-bold">Explorador de Datos</span>
+                </button>
+                <button
+                  onClick={() => handleOtrosAction('notes')}
+                  className="flex items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-foreground/5 transition-colors text-foreground/85 font-bold"
+                >
+                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">sticky_note_2</span>
+                  <span className="font-bold">Notas rápidas</span>
+                </button>
+                <button
+                  onClick={() => handleOtrosAction('stats')}
+                  className="flex items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-foreground/5 transition-colors text-foreground/85 font-bold"
+                >
+                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">analytics</span>
+                  <span className="font-bold">Estadísticas</span>
+                </button>
+                <button
+                  onClick={() => handleOtrosAction('sync')}
+                  className="flex items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-foreground/5 transition-colors text-foreground/85 font-bold"
+                >
+                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">sync</span>
+                  <span className="font-bold">Sincronizar</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Center Section: Proyecto › Página */}
+        <div className="font-mono text-foreground/45 flex items-center gap-1.5 truncate max-w-[40vw] font-bold">
+          <span className="hover:text-foreground/70 transition-colors duration-150 cursor-default text-[10px] font-bold">{projectName}</span>
+          <span className="text-[9px] opacity-40 font-bold">›</span>
+          <span className="text-foreground/75 font-semibold font-sans truncate cursor-default text-[11px] font-bold">{getPageName()}</span>
+        </div>
+
+        {/* Right Section: Ayuda (Enlace Directo), Papelera, Ajustes, Salir (Iconos Directos) */}
+        <div className="flex items-center gap-0.5 h-full font-bold">
+          {/* Enlace Ayuda (Manual de Usuario) */}
+          <a
+            href="/manual/Guia_Usuario.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-2.5 h-full flex items-center hover:bg-foreground/5 hover:text-primary transition-colors text-foreground/80 gap-1 no-underline font-bold"
+            title="Manual de Usuario"
+          >
+            <span className="material-symbols-outlined text-[14px] font-bold">help</span>
+            <span className="font-bold">Ayuda</span>
+          </a>
+
+          <div className="h-4 w-px bg-foreground/10 mx-1"></div>
+
+          {/* Botón Papelera */}
+          <Link
+            to={`${baseUrl}/trash`}
+            className="px-2.5 h-full flex items-center justify-center hover:bg-foreground/5 hover:text-primary transition-colors text-foreground/80"
+            title="Papelera de Reciclaje"
+          >
+            <span className="material-symbols-outlined text-[15px] font-bold">delete</span>
+          </Link>
+
+          {/* Botón Ajustes */}
+          <Link
+            to={`${baseUrl}/settings`}
+            className="px-2.5 h-full flex items-center justify-center hover:bg-foreground/5 hover:text-primary transition-colors text-foreground/80"
+            title="Ajustes del Sistema"
+          >
+            <span className="material-symbols-outlined text-[15px] font-bold">settings</span>
+          </Link>
+
+          {/* Botón Salir */}
+          <Link
+            to="/"
+            className="px-2.5 h-full flex items-center justify-center hover:bg-foreground/5 hover:text-red-400 transition-colors text-foreground/80"
+            title="Salir del Proyecto"
+          >
+            <span className="material-symbols-outlined text-[15px] font-bold">logout</span>
+          </Link>
+        </div>
+      </header>
+
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <aside className={sidebarClasses}>
@@ -306,8 +391,10 @@ const ArchitectLayout: React.FC = () => {
             </div>
 
             <div className="p-3 border-t bg-background mt-auto" >
+              {/*
               <NavItem to={`${baseUrl}/analytics`} icon="analytics" label={t('project.analytics_title')} collapsed={false} />
               <NavItem to={`${baseUrl}/sync`} icon="sync" label="Sincronizar" collapsed={false} />
+              */}
               <div className="h-px bg-foreground/10 my-2 mx-2 opacity-50"></div>
               <NavItem to={`${baseUrl}/trash`} icon="delete" label={t('nav.trash')} collapsed={false} />
               <NavItem to={`${baseUrl}/settings`} icon="settings" label={t('nav.settings')} collapsed={false} />
@@ -368,6 +455,7 @@ const ArchitectLayout: React.FC = () => {
               <div className="absolute inset-y-0 left-0 w-1 bg-current opacity-20"></div>
               <span className="material-symbols-outlined text-xl">map</span>
             </button>
+            {/* 
             <button
               onClick={() => {
                 if (leftOpen && rightOpen) {
@@ -384,6 +472,7 @@ const ArchitectLayout: React.FC = () => {
               <div className="absolute inset-y-0 left-0 w-1 bg-current opacity-20"></div>
               <span className="material-symbols-outlined text-xl">folder_special</span>
             </button>
+            */}
           </div>
         )}
 
@@ -399,6 +488,7 @@ const ArchitectLayout: React.FC = () => {
               <span className="material-symbols-outlined">{leftOpen ? 'close' : 'menu'}</span>
             </button>
 
+            {/*
             <button
               id="floating-right-toggle"
               onClick={toggleRightPanel}
@@ -407,6 +497,7 @@ const ArchitectLayout: React.FC = () => {
             >
               <span className="material-symbols-outlined">{rightOpen ? 'close' : 'folder_special'}</span>
             </button>
+            */}
           </div>
         )}
 
@@ -422,14 +513,120 @@ const ArchitectLayout: React.FC = () => {
             panelMode={panelMode}
           />
 
+          {/*
           <ControlPanel
             isOpen={bottomGraphOpen}
             onToggle={() => setBottomGraphOpen(prev => !prev)}
             projectId={projectId ?? undefined}
             projectName={projectName}
           />
+          */}
         </main>
       </div>
+
+      {/* MODAL CENTRAL FLOTANTE PARA "OTROS" */}
+      {activeModal && (
+        <div 
+          className="fixed inset-0 z-[400] bg-black/40 backdrop-blur-[1px] flex items-center justify-center animate-in fade-in duration-200"
+          onClick={() => setActiveModal(null)}
+        >
+          <div 
+            className="w-[70vw] max-w-4xl h-[70vh] max-h-[72vh] bg-background border border-border shadow-2xl flex flex-col overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header del Modal */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-background shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[1.2rem]">
+                  {activeModal === 'database' && 'table_chart'}
+                  {activeModal === 'notes' && 'sticky_note_2'}
+                  {activeModal === 'stats' && 'analytics'}
+                  {activeModal === 'sync' && 'sync'}
+                </span>
+                <span className="text-xs font-black uppercase tracking-widest text-foreground/80">
+                  {activeModal === 'database' && 'Explorador de Datos'}
+                  {activeModal === 'notes' && 'Notas rápidas'}
+                  {activeModal === 'stats' && 'Estadísticas del Proyecto'}
+                  {activeModal === 'sync' && 'Sincronizar'}
+                </span>
+              </div>
+              <button 
+                onClick={() => setActiveModal(null)}
+                className="text-foreground/40 hover:text-foreground/80 hover:bg-foreground/5 p-1 transition-all rounded-none flex items-center justify-center"
+                title="Cerrar modal"
+              >
+                <span className="material-symbols-outlined text-[1.2rem]">close</span>
+              </button>
+            </div>
+
+            {/* Contenido del Modal */}
+            <div className="flex-1 overflow-hidden relative">
+              {activeModal === 'database' && (
+                <EntityDatabase projectId={projectId ?? undefined} />
+              )}
+              {activeModal === 'notes' && (
+                <NotebookManager projectId={projectId ?? null} />
+              )}
+              {activeModal === 'stats' && (
+                <div className="flex flex-col h-full bg-[#0a0a0a] p-8 overflow-y-auto no-scrollbar">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
+                    
+                    {/* Columna Reloj y Estado */}
+                    <div className="flex flex-col space-y-6">
+                      <div className="p-8 bg-foreground/[0.03] border border-foreground/10 flex flex-col items-center justify-center space-y-2">
+                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Hora Actual</span>
+                        <span className="text-5xl font-black tracking-tighter text-foreground tabular-nums">
+                          {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </span>
+                        <span className="text-[9px] font-bold text-foreground/30 uppercase tracking-widest pt-2">
+                          {currentTime.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-4 bg-foreground/[0.02] border border-foreground/5 flex flex-col space-y-1">
+                          <span className="text-[8px] font-black uppercase text-foreground/40 tracking-widest">Palabras Totales</span>
+                          <span className="text-xl font-black text-foreground tabular-nums">{stats.wordCount.toLocaleString()}</span>
+                        </div>
+                        <div className="p-4 bg-foreground/[0.02] border border-foreground/5 flex flex-col space-y-1">
+                          <span className="text-[8px] font-black uppercase text-foreground/40 tracking-widest">Páginas Totales</span>
+                          <span className="text-xl font-black text-foreground tabular-nums">{stats.pageCount}</span>
+                        </div>
+                      </div>
+
+                      <div className="p-4 bg-primary/5 border border-primary/20 flex items-center gap-3">
+                        <div className="size-2 rounded-full bg-primary animate-pulse"></div>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-primary">Sesión de Escritura Activa</span>
+                      </div>
+                    </div>
+
+                    {/* Columna Gráfica Distribución */}
+                    <div className="lg:col-span-2 flex flex-col space-y-4">
+                      <div className="flex items-center justify-between px-2">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/60 flex items-center gap-2">
+                          <span className="material-symbols-outlined text-sm">bar_chart</span>
+                          Distribución por Hojas
+                        </h3>
+                        <span className="text-[9px] font-bold text-foreground/30 font-mono">PROYECTO: {projectName}</span>
+                      </div>
+                      
+                      <div className="flex-1 bg-foreground/[0.01] border border-foreground/5 p-4 min-h-[300px]">
+                        <div className="w-full h-full flex flex-col items-center justify-center text-foreground/20 space-y-2">
+                          <span className="material-symbols-outlined text-4xl">edit_note</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest italic">Abre un cuaderno para ver analíticas</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {activeModal === 'sync' && (
+                <SyncView />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <ConfirmationModal
         isOpen={confirmOpen}

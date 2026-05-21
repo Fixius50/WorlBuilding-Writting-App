@@ -32,6 +32,7 @@ export const relationshipService = {
       VALUES (${rel.origen_id}, ${rel.destino_id}, ${rel.tipo}, ${rel.descripcion || ""}, ${rel.project_id}, ${rel.origen_handle || null}, ${rel.destino_handle || null}, CURRENT_TIMESTAMP)
       RETURNING *
     `;
+    emitUIRefresh({ operation: "create", scope: "relationship", id: results[0].id });
     return results[0];
   },
 
@@ -59,6 +60,7 @@ export const relationshipService = {
 
     if (fields.length > 0) {
       await sql`UPDATE relaciones SET ${fields.join(", ")} WHERE id = ${id}`;
+      emitUIRefresh({ operation: "update", scope: "relationship", id });
     }
   },
 };

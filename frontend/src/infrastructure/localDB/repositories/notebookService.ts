@@ -22,6 +22,7 @@ export const notebookService = {
     await sql`INSERT INTO cuadernos (titulo, genero, image_url, project_id) VALUES (${titulo}, ${genero}, ${imageUrl}, ${projectId})`;
     const results =
       await sql<Cuaderno>`SELECT * FROM cuadernos WHERE project_id = ${projectId} ORDER BY id DESC LIMIT 1`;
+    emitUIRefresh({ operation: "create", scope: "notebook", id: results[0].id });
     return results[0];
   },
 
@@ -39,6 +40,7 @@ export const notebookService = {
           image_url = ${updates.image_url !== undefined ? updates.image_url : current.image_url}
         WHERE id = ${id}
       `;
+      emitUIRefresh({ operation: "update", scope: "notebook", id });
     }
   },
 
@@ -65,6 +67,7 @@ export const notebookService = {
     await sql`INSERT INTO hojas (cuaderno_id, titulo, contenido) VALUES (${notebookId}, ${titulo}, ${contenido})`;
     const results =
       await sql<Hoja>`SELECT * FROM hojas WHERE cuaderno_id = ${notebookId} ORDER BY id DESC LIMIT 1`;
+    emitUIRefresh({ operation: "create", scope: "page", id: results[0].id });
     return results[0];
   },
 
@@ -82,6 +85,7 @@ export const notebookService = {
           orden = ${updates.orden !== undefined ? updates.orden : current.orden}
         WHERE id = ${id}
       `;
+      emitUIRefresh({ operation: "update", scope: "page", id });
     }
   },
 

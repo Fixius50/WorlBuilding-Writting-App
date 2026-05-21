@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import MonolithicPanel from '@atoms/MonolithicPanel';
-import Button from '@atoms/Button';
 import { Carpeta } from '@domain/models/database';
 
 interface MoveModalProps {

@@ -39,6 +39,7 @@ export const folderService = {
      `;
     const result =
       await sql<Carpeta>`SELECT * FROM carpetas WHERE project_id = ${projectId} AND slug = ${slug} LIMIT 1`;
+    emitUIRefresh({ operation: "create", scope: "folder", id: result[0].id });
     return result[0];
   },
 
@@ -59,6 +60,7 @@ export const folderService = {
     }
 
     await sql`UPDATE carpetas SET nombre = ${nombre}, slug = ${slug} WHERE id = ${id}`;
+    emitUIRefresh({ operation: "update", scope: "folder", id });
   },
 
   async delete(id: number, silent: boolean = false): Promise<void> {
@@ -124,5 +126,6 @@ export const folderService = {
 
   async move(id: number, targetPadreId: number | null): Promise<void> {
     await sql`UPDATE carpetas SET padre_id = ${targetPadreId} WHERE id = ${id}`;
+    emitUIRefresh({ operation: "update", scope: "folder", id });
   },
 };

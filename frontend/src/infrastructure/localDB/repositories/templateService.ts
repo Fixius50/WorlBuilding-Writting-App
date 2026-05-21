@@ -37,6 +37,7 @@ export const templateService = {
     `;
     const result =
       await sql<Plantilla>`SELECT * FROM plantillas WHERE project_id = ${template.project_id} ORDER BY id DESC LIMIT 1`;
+    emitUIRefresh({ operation: "create", scope: "template", id: result[0].id });
     return result[0];
   },
 
@@ -54,6 +55,7 @@ export const templateService = {
         orden = COALESCE(${template.orden}, orden)
       WHERE id = ${id}
     `;
+    emitUIRefresh({ operation: "update", scope: "template", id });
   },
 
   async delete(id: number): Promise<void> {

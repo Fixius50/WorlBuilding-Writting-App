@@ -93,6 +93,20 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ isOpen, onToggle, projectId
   
   const { stats } = useDashboardStore();
 
+  // Escuchar evento personalizado para cambiar la sección activa desde el microheader
+  React.useEffect(() => {
+    const handleSectionChange = (e: Event) => {
+      const customEvent = e as CustomEvent<string>;
+      if (customEvent.detail) {
+        setActiveSection(customEvent.detail as any);
+      }
+    };
+    window.addEventListener('change-control-panel-section', handleSectionChange);
+    return () => {
+      window.removeEventListener('change-control-panel-section', handleSectionChange);
+    };
+  }, [setActiveSection]);
+
   return (
     <>
       {/* ── Toggle button — siempre visible, flotante en la misma posición ── */}

@@ -83,6 +83,7 @@ export const entityService = {
     // Recuperar la última entidad creada
     const result =
       await sql<Entidad>`SELECT * FROM entidades WHERE project_id = ${entity.project_id} ORDER BY id DESC LIMIT 1`;
+    emitUIRefresh({ operation: "create", scope: "entity", id: result[0].id });
     return result[0];
   },
 
@@ -117,6 +118,7 @@ export const entityService = {
     }
 
     const result = await sql<Entidad>`SELECT * FROM entidades WHERE id = ${id}`;
+    emitUIRefresh({ operation: "update", scope: "entity", id });
     return result[0];
   },
 
@@ -128,6 +130,7 @@ export const entityService = {
 
   async move(id: number, targetCarpetaId: number | null): Promise<void> {
     await sql`UPDATE entidades SET carpeta_id = ${targetCarpetaId} WHERE id = ${id}`;
+    emitUIRefresh({ operation: "update", scope: "entity", id });
   },
 
   async getAllByProjectAndType(
@@ -179,13 +182,32 @@ export const entityService = {
     value: string,
   ): Promise<void> {
     await sql`INSERT INTO valores (entidad_id, plantilla_id, valor) VALUES (${entityId}, ${templateId}, ${value})`;
+    emitUIRefresh({ operation: "update", scope: "entity", id: entityId });
   },
 
   async updateValue(valueId: number, value: string): Promise<void> {
+    const rows = await sql<{ entidad_id: number }>`SELECT entidad_id FROM valores WHERE id = ${valueId} LIMIT 1`;
     await sql`UPDATE valores SET valor = ${value}, updated_at = CURRENT_TIMESTAMP WHERE id = ${valueId}`;
+    const hasRow = rows.length > 0;
+    switch (hasRow) {
+      case true:
+        emitUIRefresh({ operation: "update", scope: "entity", id: rows[0].entidad_id });
+        break;
+      default:
+        break;
+    }
   },
 
   async deleteValue(valueId: number): Promise<void> {
+    const rows = await sql<{ entidad_id: number }>`SELECT entidad_id FROM valores WHERE id = ${valueId} LIMIT 1`;
     await sql`DELETE FROM valores WHERE id = ${valueId}`;
+    const hasRow = rows.length > 0;
+    switch (hasRow) {
+      case true:
+        emitUIRefresh({ operation: "update", scope: "entity", id: rows[0].entidad_id });
+        break;
+      default:
+        break;
+    }
   },
 };
