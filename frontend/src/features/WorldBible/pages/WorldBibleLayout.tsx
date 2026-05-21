@@ -5,15 +5,11 @@ import BibleTableView from "../components/BibleTableView";
 import CreateArchetypeModal from "../components/CreateArchetypeModal";
 import { ArchitectContext } from "@domain/models/ui";
 import ConfirmationModal from "@organisms/ConfirmationModal";
-import { useRightPanelStore } from "@store/useRightPanelStore";
 import { useWorldBibleLayout } from "./useWorldBibleLayout";
 
 const WorldBibleLayout: React.FC = () => {
   const { t } = useLanguage();
   const architectContext = useOutletContext<ArchitectContext>();
-  const openPanel = useRightPanelStore((state) => state.openPanel);
-  const closePanel = useRightPanelStore((state) => state.closePanel);
-  const setActiveTab = useRightPanelStore((state) => state.setActiveTab);
 
   const {
     viewMode,
@@ -207,17 +203,18 @@ const WorldBibleLayout: React.FC = () => {
                   setEntityToDelete(id);
                   setDeleteConfirmOpen(true);
                 },
-                setRightOpen: (open: boolean) =>
-                  open ? openPanel("custom") : closePanel(),
-                setRightPanelTab: setActiveTab,
-                setRightPanelContent: (content: React.ReactNode) =>
-                  useRightPanelStore.setState({
-                    content,
-                    mode: "custom",
-                    isOpen: true,
-                  }),
-                setRightPanelTitle: (title: React.ReactNode) =>
-                  useRightPanelStore.setState({ title }),
+                setRightOpen: (_open: boolean) => {
+                  // Panel derecho eliminado: antes abría/cerraba panel contextual desde Biblia.
+                },
+                setRightPanelTab: (_tab: unknown) => {
+                  // Panel derecho eliminado: antes sincronizaba pestaña activa del panel.
+                },
+                setRightPanelContent: (_content: React.ReactNode) => {
+                  // Panel derecho eliminado: antes inyectaba contenido custom del panel.
+                },
+                setRightPanelTitle: (_title: React.ReactNode) => {
+                  // Panel derecho eliminado: antes definía título del panel contextual.
+                },
               }}
             />
           ) : (

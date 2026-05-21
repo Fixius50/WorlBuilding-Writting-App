@@ -8,6 +8,7 @@ import ConfirmationModal from "@organisms/ConfirmationModal";
 import FamilyTreeAssigner from "../components/FamilyTreeAssigner";
 import TemplateSettingsModal from "@organisms/TemplateSettingsModal";
 import { useEntityBuilder } from "./useEntityBuilder";
+import { getPresetTabsByEntityType } from "@features/Entities/utils/entityPresetTabs";
 
 interface EntityBuilderProps {
   mode: "creation" | "edit";
@@ -49,6 +50,32 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
   } = useEntityBuilder(mode);
 
   const galleryImages = extras.images || [];
+  const baseEditorTabs = [
+    { id: "identity", label: "Identidad" },
+    { id: "narrative", label: "Narrativa" },
+    { id: "attributes", label: "Atributos" },
+    { id: "relationships", label: "Linaje" },
+  ];
+  const presetEditorTabs = getPresetTabsByEntityType(entity.tipo || "").map(
+    (tab) => ({
+      id: `preset-${tab.id}`,
+      label: tab.label,
+      icon: tab.icon,
+    }),
+  );
+  const editorTabs = [...baseEditorTabs];
+  presetEditorTabs.forEach((tab) => {
+    const exists = editorTabs.some((editorTab) => editorTab.id === tab.id);
+    switch (exists) {
+      case false:
+        editorTabs.push(tab);
+        break;
+      default:
+        break;
+    }
+  });
+  const presetEditorTabIds = presetEditorTabs.map((tab) => tab.id);
+  const isPresetEditorTab = presetEditorTabIds.includes(activeEntityTab);
   const primaryImage = galleryImages[0] || null;
   const secondaryPool = galleryImages.slice(1);
   const [secondaryPage, setSecondaryPage] = React.useState(0);
@@ -70,6 +97,471 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
     secondaryStart + secondaryPageSize,
   );
   const hasMoreImages = secondaryPool.length > secondaryPageSize;
+  const appearanceTextareaRef = React.useRef<HTMLTextAreaElement | null>(null);
+  const appearanceHistoryRef = React.useRef<string[]>([]);
+  const appearanceHistoryIndexRef = React.useRef<number>(-1);
+  const narrativeTextareaRef = React.useRef<HTMLTextAreaElement | null>(null);
+  const narrativeHistoryRef = React.useRef<string[]>([]);
+  const narrativeHistoryIndexRef = React.useRef<number>(-1);
+
+  const setAppearanceValue = React.useCallback(
+    (nextValue: string, registerHistory = true) => {
+      switch (registerHistory) {
+        case true: {
+          const history = appearanceHistoryRef.current;
+          const currentIndex = appearanceHistoryIndexRef.current;
+          const currentValue =
+            currentIndex >= 0 ? history[currentIndex] : undefined;
+
+          switch (currentValue !== nextValue) {
+            case true: {
+              const truncatedHistory =
+                currentIndex >= 0 ? history.slice(0, currentIndex + 1) : [];
+              truncatedHistory.push(nextValue);
+
+              appearanceHistoryRef.current = truncatedHistory;
+              appearanceHistoryIndexRef.current = truncatedHistory.length - 1;
+              break;
+            }
+            default:
+              break;
+          }
+          break;
+        }
+        default:
+          break;
+      }
+
+      updateExtra({ appearance: nextValue });
+    },
+    [updateExtra],
+  );
+
+  const handleAppearanceUndo = React.useCallback(() => {
+    const history = appearanceHistoryRef.current;
+    const currentIndex = appearanceHistoryIndexRef.current;
+
+    switch (currentIndex > 0) {
+      case true: {
+        const nextIndex = currentIndex - 1;
+        appearanceHistoryIndexRef.current = nextIndex;
+        setAppearanceValue(history[nextIndex], false);
+
+        requestAnimationFrame(() => {
+          const textarea = appearanceTextareaRef.current;
+          if (!textarea) {
+            return;
+          }
+          textarea.focus();
+          const cursor = textarea.value.length;
+          textarea.setSelectionRange(cursor, cursor);
+        });
+        break;
+      }
+      default:
+        break;
+    }
+  }, [setAppearanceValue]);
+
+  const handleAppearanceRedo = React.useCallback(() => {
+    const history = appearanceHistoryRef.current;
+    const currentIndex = appearanceHistoryIndexRef.current;
+
+    switch (currentIndex < history.length - 1) {
+      case true: {
+        const nextIndex = currentIndex + 1;
+        appearanceHistoryIndexRef.current = nextIndex;
+        setAppearanceValue(history[nextIndex], false);
+
+        requestAnimationFrame(() => {
+          const textarea = appearanceTextareaRef.current;
+          if (!textarea) {
+            return;
+          }
+          textarea.focus();
+          const cursor = textarea.value.length;
+          textarea.setSelectionRange(cursor, cursor);
+        });
+        break;
+      }
+      default:
+        break;
+    }
+  }, [setAppearanceValue]);
+
+  React.useEffect(() => {
+    const currentAppearance = extras.appearance || "";
+    appearanceHistoryRef.current = [currentAppearance];
+    appearanceHistoryIndexRef.current = 0;
+  }, [entity.id]);
+
+  const setNarrativeValue = React.useCallback(
+    (nextValue: string, registerHistory = true) => {
+      switch (registerHistory) {
+        case true: {
+          const history = narrativeHistoryRef.current;
+          const currentIndex = narrativeHistoryIndexRef.current;
+          const currentValue =
+            currentIndex >= 0 ? history[currentIndex] : undefined;
+
+          switch (currentValue !== nextValue) {
+            case true: {
+              const truncatedHistory =
+                currentIndex >= 0 ? history.slice(0, currentIndex + 1) : [];
+              truncatedHistory.push(nextValue);
+
+              narrativeHistoryRef.current = truncatedHistory;
+              narrativeHistoryIndexRef.current = truncatedHistory.length - 1;
+              break;
+            }
+            default:
+              break;
+          }
+          break;
+        }
+        default:
+          break;
+      }
+
+      setEntity((prev) => ({ ...prev, descripcion: nextValue }));
+    },
+    [setEntity],
+  );
+
+  const handleNarrativeUndo = React.useCallback(() => {
+    const history = narrativeHistoryRef.current;
+    const currentIndex = narrativeHistoryIndexRef.current;
+
+    switch (currentIndex > 0) {
+      case true: {
+        const nextIndex = currentIndex - 1;
+        narrativeHistoryIndexRef.current = nextIndex;
+        setNarrativeValue(history[nextIndex], false);
+
+        requestAnimationFrame(() => {
+          const textarea = narrativeTextareaRef.current;
+          if (!textarea) {
+            return;
+          }
+          textarea.focus();
+          const cursor = textarea.value.length;
+          textarea.setSelectionRange(cursor, cursor);
+        });
+        break;
+      }
+      default:
+        break;
+    }
+  }, [setNarrativeValue]);
+
+  const handleNarrativeRedo = React.useCallback(() => {
+    const history = narrativeHistoryRef.current;
+    const currentIndex = narrativeHistoryIndexRef.current;
+
+    switch (currentIndex < history.length - 1) {
+      case true: {
+        const nextIndex = currentIndex + 1;
+        narrativeHistoryIndexRef.current = nextIndex;
+        setNarrativeValue(history[nextIndex], false);
+
+        requestAnimationFrame(() => {
+          const textarea = narrativeTextareaRef.current;
+          if (!textarea) {
+            return;
+          }
+          textarea.focus();
+          const cursor = textarea.value.length;
+          textarea.setSelectionRange(cursor, cursor);
+        });
+        break;
+      }
+      default:
+        break;
+    }
+  }, [setNarrativeValue]);
+
+  const applyNarrativeWrapFormatting = React.useCallback(
+    (wrapper: "**" | "*") => {
+      const textarea = narrativeTextareaRef.current;
+
+      if (!textarea) {
+        return;
+      }
+
+      const currentValue = entity.descripcion || "";
+      const start = textarea.selectionStart ?? currentValue.length;
+      const end = textarea.selectionEnd ?? currentValue.length;
+      const selectedText = currentValue.slice(start, end);
+      const wrappedText = `${wrapper}${selectedText}${wrapper}`;
+      const nextValue =
+        currentValue.slice(0, start) + wrappedText + currentValue.slice(end);
+
+      setNarrativeValue(nextValue);
+
+      requestAnimationFrame(() => {
+        const updatedTextarea = narrativeTextareaRef.current;
+        if (!updatedTextarea) {
+          return;
+        }
+
+        updatedTextarea.focus();
+        const selectionStart = start + wrapper.length;
+        const selectionEnd = selectionStart + selectedText.length;
+        updatedTextarea.setSelectionRange(selectionStart, selectionEnd);
+      });
+    },
+    [entity.descripcion, setNarrativeValue],
+  );
+
+  const applyNarrativeTabIndent = React.useCallback(() => {
+    const textarea = narrativeTextareaRef.current;
+
+    if (!textarea) {
+      return;
+    }
+
+    const currentValue = entity.descripcion || "";
+    const start = textarea.selectionStart ?? currentValue.length;
+    const end = textarea.selectionEnd ?? currentValue.length;
+    const selectedText = currentValue.slice(start, end);
+    const hasSelection = end > start;
+
+    switch (hasSelection) {
+      case true: {
+        const indentedSelection = selectedText
+          .split("\n")
+          .map((line) => `\t${line}`)
+          .join("\n");
+
+        const nextValue =
+          currentValue.slice(0, start) +
+          indentedSelection +
+          currentValue.slice(end);
+
+        setNarrativeValue(nextValue);
+
+        requestAnimationFrame(() => {
+          const updatedTextarea = narrativeTextareaRef.current;
+          if (!updatedTextarea) {
+            return;
+          }
+
+          updatedTextarea.focus();
+          updatedTextarea.setSelectionRange(
+            start,
+            start + indentedSelection.length,
+          );
+        });
+        break;
+      }
+      default: {
+        const nextValue =
+          currentValue.slice(0, start) + "\t" + currentValue.slice(end);
+
+        setNarrativeValue(nextValue);
+
+        requestAnimationFrame(() => {
+          const updatedTextarea = narrativeTextareaRef.current;
+          if (!updatedTextarea) {
+            return;
+          }
+
+          updatedTextarea.focus();
+          const cursorPosition = start + 1;
+          updatedTextarea.setSelectionRange(cursorPosition, cursorPosition);
+        });
+        break;
+      }
+    }
+  }, [entity.descripcion, setNarrativeValue]);
+
+  const handleNarrativeKeyDown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      const hasCommandModifier = event.ctrlKey || event.metaKey;
+
+      switch (true) {
+        case hasCommandModifier && event.key.toLowerCase() === "b":
+          event.preventDefault();
+          applyNarrativeWrapFormatting("**");
+          break;
+        case hasCommandModifier && event.key.toLowerCase() === "i":
+          event.preventDefault();
+          applyNarrativeWrapFormatting("*");
+          break;
+        case hasCommandModifier &&
+          event.shiftKey &&
+          event.key.toLowerCase() === "z":
+          event.preventDefault();
+          handleNarrativeRedo();
+          break;
+        case hasCommandModifier && event.key.toLowerCase() === "z":
+          event.preventDefault();
+          handleNarrativeUndo();
+          break;
+        case hasCommandModifier && event.key.toLowerCase() === "y":
+          event.preventDefault();
+          handleNarrativeRedo();
+          break;
+        case event.key === "Tab":
+          event.preventDefault();
+          applyNarrativeTabIndent();
+          break;
+        default:
+          break;
+      }
+    },
+    [
+      applyNarrativeTabIndent,
+      applyNarrativeWrapFormatting,
+      handleNarrativeRedo,
+      handleNarrativeUndo,
+    ],
+  );
+
+  React.useEffect(() => {
+    const currentNarrative = entity.descripcion || "";
+    narrativeHistoryRef.current = [currentNarrative];
+    narrativeHistoryIndexRef.current = 0;
+  }, [entity.id]);
+
+  const applyWrapFormatting = React.useCallback(
+    (wrapper: "**" | "*") => {
+      const textarea = appearanceTextareaRef.current;
+
+      if (!textarea) {
+        return;
+      }
+
+      const currentValue = extras.appearance || "";
+      const start = textarea.selectionStart ?? currentValue.length;
+      const end = textarea.selectionEnd ?? currentValue.length;
+      const selectedText = currentValue.slice(start, end);
+      const wrappedText = `${wrapper}${selectedText}${wrapper}`;
+      const nextValue =
+        currentValue.slice(0, start) + wrappedText + currentValue.slice(end);
+
+      setAppearanceValue(nextValue);
+
+      requestAnimationFrame(() => {
+        const updatedTextarea = appearanceTextareaRef.current;
+        if (!updatedTextarea) {
+          return;
+        }
+
+        updatedTextarea.focus();
+        const selectionStart = start + wrapper.length;
+        const selectionEnd = selectionStart + selectedText.length;
+        updatedTextarea.setSelectionRange(selectionStart, selectionEnd);
+      });
+    },
+    [extras.appearance, setAppearanceValue],
+  );
+
+  const applyTabIndent = React.useCallback(() => {
+    const textarea = appearanceTextareaRef.current;
+
+    if (!textarea) {
+      return;
+    }
+
+    const currentValue = extras.appearance || "";
+    const start = textarea.selectionStart ?? currentValue.length;
+    const end = textarea.selectionEnd ?? currentValue.length;
+    const selectedText = currentValue.slice(start, end);
+    const hasSelection = end > start;
+
+    switch (hasSelection) {
+      case true: {
+        const indentedSelection = selectedText
+          .split("\n")
+          .map((line) => `\t${line}`)
+          .join("\n");
+
+        const nextValue =
+          currentValue.slice(0, start) +
+          indentedSelection +
+          currentValue.slice(end);
+
+        setAppearanceValue(nextValue);
+
+        requestAnimationFrame(() => {
+          const updatedTextarea = appearanceTextareaRef.current;
+          if (!updatedTextarea) {
+            return;
+          }
+
+          updatedTextarea.focus();
+          updatedTextarea.setSelectionRange(
+            start,
+            start + indentedSelection.length,
+          );
+        });
+        break;
+      }
+      default: {
+        const nextValue =
+          currentValue.slice(0, start) + "\t" + currentValue.slice(end);
+
+        setAppearanceValue(nextValue);
+
+        requestAnimationFrame(() => {
+          const updatedTextarea = appearanceTextareaRef.current;
+          if (!updatedTextarea) {
+            return;
+          }
+
+          updatedTextarea.focus();
+          const cursorPosition = start + 1;
+          updatedTextarea.setSelectionRange(cursorPosition, cursorPosition);
+        });
+        break;
+      }
+    }
+  }, [extras.appearance, setAppearanceValue]);
+
+  const handleAppearanceKeyDown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      const hasCommandModifier = event.ctrlKey || event.metaKey;
+
+      switch (true) {
+        case hasCommandModifier && event.key.toLowerCase() === "b":
+          event.preventDefault();
+          applyWrapFormatting("**");
+          break;
+        case hasCommandModifier && event.key.toLowerCase() === "i":
+          event.preventDefault();
+          applyWrapFormatting("*");
+          break;
+        case hasCommandModifier &&
+          event.shiftKey &&
+          event.key.toLowerCase() === "z":
+          event.preventDefault();
+          handleAppearanceRedo();
+          break;
+        case hasCommandModifier && event.key.toLowerCase() === "z":
+          event.preventDefault();
+          handleAppearanceUndo();
+          break;
+        case hasCommandModifier && event.key.toLowerCase() === "y":
+          event.preventDefault();
+          handleAppearanceRedo();
+          break;
+        case event.key === "Tab":
+          event.preventDefault();
+          applyTabIndent();
+          break;
+        default:
+          break;
+      }
+    },
+    [
+      applyTabIndent,
+      applyWrapFormatting,
+      handleAppearanceRedo,
+      handleAppearanceUndo,
+    ],
+  );
+
   const narrativeLength = (entity.descripcion || "").length;
   const narrativeGrowth = Math.min(560, Math.floor(narrativeLength / 3));
   const narrativeMinHeight = 360 + narrativeGrowth;
@@ -152,28 +644,22 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
           </div>
 
           <div className="border-t border-foreground/5 bg-foreground/[0.02]">
-            <div className="flex items-center justify-center gap-12 max-w-7xl mx-auto">
-              {["identity", "narrative", "attributes", "relationships"].map(
-                (tab) => (
+            <div className="max-w-7xl mx-auto overflow-x-auto overflow-y-hidden custom-scrollbar">
+              <div className="flex items-center justify-start gap-8 min-w-max px-4">
+                {editorTabs.map((tab) => (
                   <button
-                    key={tab}
-                    onClick={() => setActiveEntityTab(tab)}
-                    className={`py-4 text-[9px] font-black uppercase tracking-[0.3em] border-b-2 transition-all duration-500 ${
-                      activeEntityTab === tab
+                    key={tab.id}
+                    onClick={() => setActiveEntityTab(tab.id)}
+                    className={`shrink-0 py-4 text-[9px] font-black uppercase tracking-[0.3em] border-b-2 transition-all duration-500 ${
+                      activeEntityTab === tab.id
                         ? "border-primary text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.4)]"
                         : "border-transparent text-foreground/30 hover:text-foreground"
                     }`}
                   >
-                    {tab === "identity"
-                      ? "Identidad"
-                      : tab === "narrative"
-                        ? "Narrativa"
-                        : tab === "attributes"
-                          ? "Atributos"
-                          : "Linaje"}
+                    {tab.label}
                   </button>
-                ),
-              )}
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -224,6 +710,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                             }
                           >
                             <option value="PERSONAJE">👤 Personaje</option>
+                            <option value="MAGIA">✨ Magia</option>
                             <option value="LUGAR">📍 Ubicación</option>
                             <option value="OBJETO">⚔️ Artefacto</option>
                             <option value="CONCEPTO">💡 Filosofía</option>
@@ -279,13 +766,62 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                       Apariencia y Rasgos
                     </h3>
                   </header>
+
+                  <div className="flex items-center gap-2 border border-foreground/10 bg-foreground/[0.02] p-2">
+                    <button
+                      type="button"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={handleAppearanceUndo}
+                      className="px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] border border-foreground/10 hover:border-primary/40 hover:text-primary transition-all"
+                      title="Deshacer (Ctrl+Z)"
+                    >
+                      ↶
+                    </button>
+                    <button
+                      type="button"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={handleAppearanceRedo}
+                      className="px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] border border-foreground/10 hover:border-primary/40 hover:text-primary transition-all"
+                      title="Rehacer (Ctrl+Y / Ctrl+Shift+Z)"
+                    >
+                      ↷
+                    </button>
+                    <button
+                      type="button"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => applyWrapFormatting("**")}
+                      className="px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] border border-foreground/10 hover:border-primary/40 hover:text-primary transition-all"
+                      title="Negrita (Ctrl+B)"
+                    >
+                      B
+                    </button>
+                    <button
+                      type="button"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => applyWrapFormatting("*")}
+                      className="px-3 py-1 text-[10px] italic font-black uppercase tracking-[0.2em] border border-foreground/10 hover:border-primary/40 hover:text-primary transition-all"
+                      title="Cursiva (Ctrl+I)"
+                    >
+                      I
+                    </button>
+                    <button
+                      type="button"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={applyTabIndent}
+                      className="px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] border border-foreground/10 hover:border-primary/40 hover:text-primary transition-all"
+                      title="Tabulación"
+                    >
+                      TAB
+                    </button>
+                  </div>
+
                   <textarea
+                    ref={appearanceTextareaRef}
                     className="w-full bg-foreground/[0.03] border border-foreground/20 rounded-none p-6 text-[13px] text-foreground/90 leading-relaxed min-h-[20rem] outline-none focus:border-primary/50 transition-all resize-none custom-scrollbar shadow-inner placeholder:italic placeholder:text-foreground/20"
                     placeholder="Describe visualmente esta entidad..."
                     value={extras.appearance}
-                    onChange={(e) =>
-                      updateExtra({ appearance: e.target.value })
-                    }
+                    onKeyDown={handleAppearanceKeyDown}
+                    onChange={(e) => setAppearanceValue(e.target.value)}
                   />
                 </div>
               </div>
@@ -460,13 +996,62 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                       </span>
                     </div>
                   </header>
+
+                  <div className="flex items-center gap-2 border border-foreground/10 bg-foreground/[0.02] p-2 mb-6">
+                    <button
+                      type="button"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={handleNarrativeUndo}
+                      className="px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] border border-foreground/10 hover:border-primary/40 hover:text-primary transition-all"
+                      title="Deshacer (Ctrl+Z)"
+                    >
+                      ↶
+                    </button>
+                    <button
+                      type="button"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={handleNarrativeRedo}
+                      className="px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] border border-foreground/10 hover:border-primary/40 hover:text-primary transition-all"
+                      title="Rehacer (Ctrl+Y / Ctrl+Shift+Z)"
+                    >
+                      ↷
+                    </button>
+                    <button
+                      type="button"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => applyNarrativeWrapFormatting("**")}
+                      className="px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] border border-foreground/10 hover:border-primary/40 hover:text-primary transition-all"
+                      title="Negrita (Ctrl+B)"
+                    >
+                      B
+                    </button>
+                    <button
+                      type="button"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => applyNarrativeWrapFormatting("*")}
+                      className="px-3 py-1 text-[10px] italic font-black uppercase tracking-[0.2em] border border-foreground/10 hover:border-primary/40 hover:text-primary transition-all"
+                      title="Cursiva (Ctrl+I)"
+                    >
+                      I
+                    </button>
+                    <button
+                      type="button"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={applyNarrativeTabIndent}
+                      className="px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] border border-foreground/10 hover:border-primary/40 hover:text-primary transition-all"
+                      title="Tabulación"
+                    >
+                      TAB
+                    </button>
+                  </div>
+
                   <textarea
+                    ref={narrativeTextareaRef}
                     className="flex-1 w-full bg-transparent border-none outline-none text-xl text-foreground font-medium leading-relaxed resize-none custom-scrollbar placeholder:text-foreground/20 italic"
                     placeholder="Escribe la historia, leyendas y mitos corporativos..."
                     value={entity.descripcion || ""}
-                    onChange={(e) =>
-                      setEntity({ ...entity, descripcion: e.target.value })
-                    }
+                    onKeyDown={handleNarrativeKeyDown}
+                    onChange={(e) => setNarrativeValue(e.target.value)}
                   />
                 </div>
 
@@ -511,7 +1096,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
             </div>
           )}
 
-          {activeEntityTab === "attributes" && (
+          {(activeEntityTab === "attributes" || isPresetEditorTab) && (
             <div className="space-y-12 min-h-[60vh]">
               <header className="flex items-center justify-between border-b border-white/10 pb-8">
                 <div className="flex items-center gap-4">

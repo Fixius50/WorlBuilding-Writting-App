@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React from "react";
+import { motion } from "framer-motion";
 
 interface TabOption {
   id: string;
@@ -14,28 +14,39 @@ interface SecondaryTabsProps {
   className?: string;
 }
 
-const SecondaryTabs: React.FC<SecondaryTabsProps> = ({ tabs, activeTab, onChange, className = "" }) => {
+const SecondaryTabs: React.FC<SecondaryTabsProps> = ({
+  tabs,
+  activeTab,
+  onChange,
+  className = "",
+}) => {
   return (
-    <div className={`flex items-center gap-1 border-b border-foreground/10 ${className}`}>
+    <div
+      className={`flex items-center justify-start gap-1 border-b border-foreground/10 overflow-x-auto overflow-y-hidden custom-scrollbar ${className}`}
+    >
       {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => onChange(tab.id)}
-          className={`group relative flex items-center gap-2 px-6 py-4 transition-all ${
-            activeTab === tab.id ? 'text-primary' : 'text-foreground/40 hover:text-foreground/60'
+          className={`group relative shrink-0 flex items-center gap-2 px-6 py-4 transition-all ${
+            activeTab === tab.id
+              ? "text-primary"
+              : "text-foreground/40 hover:text-foreground/60"
           }`}
         >
           {tab.icon && (
-            <span className={`material-symbols-outlined text-lg transition-transform duration-300 ${
-              activeTab === tab.id ? 'scale-110' : 'group-hover:scale-105'
-            }`}>
+            <span
+              className={`material-symbols-outlined text-lg transition-transform duration-300 ${
+                activeTab === tab.id ? "scale-110" : "group-hover:scale-105"
+              }`}
+            >
               {tab.icon}
             </span>
           )}
           <span className="text-[10px] font-black uppercase tracking-[0.2em]">
             {tab.label}
           </span>
-          
+
           {activeTab === tab.id && (
             <motion.div
               layoutId="activeTabUnderline"

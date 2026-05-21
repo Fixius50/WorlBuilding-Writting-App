@@ -6,7 +6,6 @@ import {
 } from "@tanstack/react-table";
 import { Entidad } from "@domain/models/database";
 import { WorldBibleUseCase } from "@application/useCases/WorldBibleUseCase";
-import { useRightPanelStore } from "@store/useRightPanelStore";
 import { useWorldBibleData } from "../hooks/useWorldBibleData";
 import { useWorldBibleMutations } from "../hooks/useWorldBibleMutations";
 
@@ -37,7 +36,13 @@ export const useBibleTable = (
     null,
   );
 
-  const { openPanel, closePanel, isOpen: isPanelOpen } = useRightPanelStore();
+  const openPanel = (_mode: string, _id?: number, _title?: string) => {
+    // Panel derecho eliminado: antes abría inspección contextual desde tabla.
+  };
+  const closePanel = () => {
+    // Panel derecho eliminado: antes cerraba inspección contextual desde tabla.
+  };
+  const isPanelOpen = false;
 
   const filteredData = useMemo(() => {
     const safeEntities = Array.isArray(entities) ? entities : [];

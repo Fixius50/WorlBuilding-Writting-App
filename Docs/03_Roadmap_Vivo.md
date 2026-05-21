@@ -33,7 +33,7 @@
 - [x] **Integridad:** Saneamiento de entidades huérfanas y claves foráneas en SQLite.
 - [x] **Tipado Estricto:** Refactorización continua hacia TypeScript estricto.
 - [x] **Estética Inviolable:** Consolidación total del paradigma "Technical Zen / Monolithic" (Mayo 2026 ✅).
-- [x] **Limpieza del Panel Derecho:** Eliminación de pestañas (Notes, Explorer). Transición total al **Chameleon Inspector** unificado (Zustand-based). (Mayo 2026 ✅).
+- [x] **Retirada del Panel Derecho Global:** Eliminación completa del flujo lateral unificado (incluyendo `GlobalRightPanel` y `UniversalInspector`) y migración a inspección contextual por rutas/modales locales. (Mayo 2026 ✅).
 - [x] **Saneamiento Arquitectónico Estricto:** Eliminación total de _early returns_ en la UI, consolidación de Arrow Functions y eliminación de tipos `any`. (Mayo 2026 ✅).
 - [x] **Arquitectura Híbrida Definitiva:** Separación física `/frontend` (Vite + Clean Arch) y `/backend` (Java + DDD).
 - [x] **Mapas Multicapa (MapEditor) — Completado ✅**

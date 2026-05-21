@@ -79,21 +79,35 @@ interface NavItemProps {
   end?: boolean;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ to, icon, label, collapsed, end }) => (
+const NavItem: React.FC<NavItemProps> = ({
+  to,
+  icon,
+  label,
+  collapsed,
+  end,
+}) => (
   <NavLink
     to={to}
     end={end}
     className={({ isActive }) => `
       flex items-center gap-3 px-3 py-2 border-l-[0.2rem] transition-all duration-200 group
-      ${isActive
-        ? 'border-primary text-primary bg-primary/10'
-        : 'border-transparent text-foreground/60 hover:text-primary hover:bg-foreground/5'}
-      ${collapsed ? 'justify-center px-0' : ''}
+      ${
+        isActive
+          ? "border-primary text-primary bg-primary/10"
+          : "border-transparent text-foreground/60 hover:text-primary hover:bg-foreground/5"
+      }
+      ${collapsed ? "justify-center px-0" : ""}
     `}
-    title={collapsed ? label : ''}
+    title={collapsed ? label : ""}
   >
-    <span className="material-symbols-outlined text-[1.2rem] transition-transform group-hover:scale-110">{icon}</span>
-    {!collapsed && <span className="text-[0.8rem] font-sans tracking-wide font-medium">{label}</span>}
+    <span className="material-symbols-outlined text-[1.2rem] transition-transform group-hover:scale-110">
+      {icon}
+    </span>
+    {!collapsed && (
+      <span className="text-[0.8rem] font-sans tracking-wide font-medium">
+        {label}
+      </span>
+    )}
   </NavLink>
 );
 
@@ -365,10 +379,12 @@ const ArchitectLayout: React.FC = () => {
         {/* Sidebar */}
         <aside className={sidebarClasses}>
           <div className="w-full h-full flex flex-col overflow-hidden">
-            <div className="h-16 flex items-center justify-center border-b relative bg-foreground/[0.02]" >
+            <div className="h-16 flex items-center justify-center border-b relative bg-foreground/[0.02]">
               <div className="flex items-center gap-2">
                 <div className="size-8 rounded-none bg-indigo-500/20 flex items-center justify-center text-indigo-400 shadow-inner">
-                  <span className="material-symbols-outlined text-sm">auto_stories</span>
+                  <span className="material-symbols-outlined text-sm">
+                    auto_stories
+                  </span>
                 </div>
                 <h2 className="text-sm font-black uppercase tracking-widest text-foreground truncate max-w-[10rem]">
                   {loadedProject?.nombre || projectName}
@@ -378,15 +394,56 @@ const ArchitectLayout: React.FC = () => {
 
             <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col">
               <div className="p-3 space-y-1">
-                <NavItem to={baseUrl} icon="home" label={t('nav.dashboard')} collapsed={false} end />
-                <NavItem to={`${baseUrl}/bible`} icon="menu_book" label={t('nav.bible')} collapsed={false} />
-                <NavItem to={`${baseUrl}/map`} icon="map" label={t('nav.atlas')} collapsed={false} />
-                <NavItem to={`${baseUrl}/timeline`} icon="calendar_month" label={t('nav.chronology')} collapsed={false} />
-                <NavItem to={`${baseUrl}/time`} icon="schedule" label="Calendarios" collapsed={false} />
-                <NavItem to={`${baseUrl}/languages`} icon="translate" label={t('nav.languages')} collapsed={false} />
-                <NavItem to={`${baseUrl}/planning`} icon="dashboard_customize" label="Centro de Planificación" collapsed={false} />
+                <NavItem
+                  to={baseUrl}
+                  icon="home"
+                  label={t("nav.dashboard")}
+                  collapsed={false}
+                  end
+                />
+                <NavItem
+                  to={`${baseUrl}/bible`}
+                  icon="menu_book"
+                  label={t("nav.bible")}
+                  collapsed={false}
+                />
+                <NavItem
+                  to={`${baseUrl}/map`}
+                  icon="map"
+                  label={t("nav.atlas")}
+                  collapsed={false}
+                />
+                <NavItem
+                  to={`${baseUrl}/timeline`}
+                  icon="calendar_month"
+                  label={t("nav.chronology")}
+                  collapsed={false}
+                />
+                <NavItem
+                  to={`${baseUrl}/time`}
+                  icon="schedule"
+                  label="Calendarios"
+                  collapsed={false}
+                />
+                <NavItem
+                  to={`${baseUrl}/languages`}
+                  icon="translate"
+                  label={t("nav.languages")}
+                  collapsed={false}
+                />
+                <NavItem
+                  to={`${baseUrl}/planning`}
+                  icon="dashboard_customize"
+                  label="Centro de Planificación"
+                  collapsed={false}
+                />
                 <div className="h-px bg-foreground/10 my-2 mx-2 opacity-50"></div>
-                <NavItem to={`${baseUrl}/writing`} icon="edit_note" label={t('nav.writing')} collapsed={false} />
+                <NavItem
+                  to={`${baseUrl}/writing`}
+                  icon="edit_note"
+                  label={t("nav.writing")}
+                  collapsed={false}
+                />
               </div>
             </div>
 
@@ -396,60 +453,72 @@ const ArchitectLayout: React.FC = () => {
               <NavItem to={`${baseUrl}/sync`} icon="sync" label="Sincronizar" collapsed={false} />
               */}
               <div className="h-px bg-foreground/10 my-2 mx-2 opacity-50"></div>
-              <NavItem to={`${baseUrl}/trash`} icon="delete" label={t('nav.trash')} collapsed={false} />
-              <NavItem to={`${baseUrl}/settings`} icon="settings" label={t('nav.settings')} collapsed={false} />
-              <NavItem to="/" icon="logout" label={t('nav.logout')} collapsed={false} />
+              <NavItem
+                to={`${baseUrl}/trash`}
+                icon="delete"
+                label={t("nav.trash")}
+                collapsed={false}
+              />
+              <NavItem
+                to={`${baseUrl}/settings`}
+                icon="settings"
+                label={t("nav.settings")}
+                collapsed={false}
+              />
+              <NavItem
+                to="/"
+                icon="logout"
+                label={t("nav.logout")}
+                collapsed={false}
+              />
             </div>
           </div>
 
           {/* STANDARDIZED LEFT COLLAPSE BUTTON - FOR CLASSIC & BINDER MODES */}
-          {(panelMode === 'classic' || panelMode === 'binder') && (
-          <button
-            onClick={() => {
-              if (panelMode === 'binder' && !leftOpen) {
-                // Si está cerrado en binder, abrimos por defecto la navegación
-                setLeftOpen(true);
-                closePanel();
-              } else {
+          {(panelMode === "classic" || panelMode === "binder") && (
+            <button
+              onClick={() => {
                 setLeftOpen(!leftOpen);
-              }
-            }}
-            className={`
+              }}
+              className={`
               absolute top-1/2 -translate-y-1/2 -right-10 w-10 h-24 
               bg-background border border-foreground/10 border-l-0
               rounded-none flex flex-col items-center justify-center gap-1
               transition-all duration-300 group
               hover:bg-indigo-500/10 hover:border-indigo-500/30
-              ${leftOpen ? 'text-indigo-500 shadow-[4px_0_15px_-5px_rgba(99,102,241,0.3)] border-l-transparent' : 'text-foreground/60'}
+              ${leftOpen ? "text-indigo-500 shadow-[4px_0_15px_-5px_rgba(99,102,241,0.3)] border-l-transparent" : "text-foreground/60"}
             `}
-            style={{
-              borderLeftColor: leftOpen ? 'transparent' : undefined,
-              right: panelMode === 'binder' && rightOpen ? '-40px' : '-40px' // Se mantiene a la derecha del panel activo
-            }}
-            title={leftOpen ? t('common.close_panel') : t('common.open_panel')}
-          >
-            <div className={`w-1 h-3 bg-current opacity-20 transition-all duration-500 ${leftOpen ? 'h-6 opacity-40' : ''}`}></div>
-            <span className={`material-symbols-outlined text-lg transition-transform duration-500 ${!leftOpen ? 'rotate-180' : ''}`}>
-              side_navigation
-            </span>
-            <div className={`w-1 h-3 bg-current opacity-20 transition-all duration-500 ${leftOpen ? 'h-6 opacity-40' : ''}`}></div>
-          </button>
+              style={{
+                borderLeftColor: leftOpen ? "transparent" : undefined,
+                right: "-40px",
+              }}
+              title={
+                leftOpen ? t("common.close_panel") : t("common.open_panel")
+              }
+            >
+              <div
+                className={`w-1 h-3 bg-current opacity-20 transition-all duration-500 ${leftOpen ? "h-6 opacity-40" : ""}`}
+              ></div>
+              <span
+                className={`material-symbols-outlined text-lg transition-transform duration-500 ${!leftOpen ? "rotate-180" : ""}`}
+              >
+                side_navigation
+              </span>
+              <div
+                className={`w-1 h-3 bg-current opacity-20 transition-all duration-500 ${leftOpen ? "h-6 opacity-40" : ""}`}
+              ></div>
+            </button>
           )}
         </aside>
 
         {/* BINDER MODE TABS */}
-        {panelMode === 'binder' && leftOpen && (
-          <div className={`fixed top-32 z-[60] flex flex-col gap-2 ${rightOpen ? 'left-96' : 'left-64'}`}>
+        {panelMode === "binder" && leftOpen && (
+          <div className="fixed top-32 z-[60] flex flex-col gap-2 left-64">
             <button
               onClick={() => {
-                if (leftOpen && !rightOpen) {
-                  setLeftOpen(false);
-                } else {
-                  setLeftOpen(true);
-                  closePanel();
-                }
+                setLeftOpen(!leftOpen);
               }}
-              className={`w-10 py-5 bg-background border border-foreground/10 border-l-0 rounded-r-md flex justify-center text-foreground/60 hover:text-indigo-400 group relative ${leftOpen && !rightOpen ? 'bg-indigo-500/10 text-indigo-500 border-indigo-500/50 shadow-[4px_0_15px_-5px_rgba(99,102,241,0.3)] border-l-transparent' : ''}`}
+              className={`w-10 py-5 bg-background border border-foreground/10 border-l-0 rounded-r-md flex justify-center text-foreground/60 hover:text-indigo-400 group relative ${leftOpen ? "bg-indigo-500/10 text-indigo-500 border-indigo-500/50 shadow-[4px_0_15px_-5px_rgba(99,102,241,0.3)] border-l-transparent" : ""}`}
               title="Navegación"
             >
               <div className="absolute inset-y-0 left-0 w-1 bg-current opacity-20"></div>
@@ -477,15 +546,17 @@ const ArchitectLayout: React.FC = () => {
         )}
 
         {/* FLOATING MODE TOGGLES (2vw / 2vh) */}
-        {panelMode === 'floating' && (
+        {panelMode === "floating" && (
           <div className="contents">
             <button
               id="floating-left-toggle"
               onClick={() => setLeftOpen(!leftOpen)}
-              className={`fixed top-[2vh] left-[2vw] z-[70] size-12 rounded-none bg-background border transition-all flex items-center justify-center shadow-2xl ${leftOpen ? 'border-indigo-500 text-indigo-400 bg-indigo-500/10' : 'border-foreground/10 text-foreground/60 hover:text-foreground hover:border-foreground/30'}`}
+              className={`fixed top-[2vh] left-[2vw] z-[70] size-12 rounded-none bg-background border transition-all flex items-center justify-center shadow-2xl ${leftOpen ? "border-indigo-500 text-indigo-400 bg-indigo-500/10" : "border-foreground/10 text-foreground/60 hover:text-foreground hover:border-foreground/30"}`}
               title="Menú Navegación"
             >
-              <span className="material-symbols-outlined">{leftOpen ? 'close' : 'menu'}</span>
+              <span className="material-symbols-outlined">
+                {leftOpen ? "close" : "menu"}
+              </span>
             </button>
 
             {/*
@@ -502,9 +573,7 @@ const ArchitectLayout: React.FC = () => {
         )}
 
         {/* Main Content */}
-        <main 
-          className="flex-1 flex flex-col min-w-0 bg-background relative transition-all duration-500"
-        >
+        <main className="flex-1 flex flex-col min-w-0 bg-background relative transition-all duration-500">
           <div className="flex-1 flex flex-col min-w-0 bg-background relative overflow-hidden">
             <Outlet context={outletContextValue} />
           </div>
@@ -516,7 +585,7 @@ const ArchitectLayout: React.FC = () => {
           {/*
           <ControlPanel
             isOpen={bottomGraphOpen}
-            onToggle={() => setBottomGraphOpen(prev => !prev)}
+            onToggle={() => setBottomGraphOpen((prev) => !prev)}
             projectId={projectId ?? undefined}
             projectName={projectName}
           />
@@ -632,17 +701,26 @@ const ArchitectLayout: React.FC = () => {
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         onConfirm={confirmDeletion}
-        title={t('common.confirm_deletion')}
-        message={t('common.are_you_sure_delete')}
-        confirmText={t('common.delete')}
+        title={t("common.confirm_deletion")}
+        message={t("common.are_you_sure_delete")}
+        confirmText={t("common.delete")}
         type="danger"
       />
       {/* TOAST NOTIFICATIONS */}
       <div className="fixed top-24 right-8 z-[100] flex flex-col gap-3 pointer-events-none">
-        {notifications.map(n => (
-          <div key={n.id} className="flex items-center gap-3 px-6 py-4 monolithic-panel border border-foreground/40 rounded-none shadow-2xl animate-slide-in-right pointer-events-auto">
-            <span className={`material-symbols-outlined ${n.type === 'success' ? 'text-emerald-400' : n.type === 'error' ? 'text-red-500' : 'text-primary'}`}>
-              {n.type === 'success' ? 'check_circle' : n.type === 'error' ? 'report' : 'info'}
+        {notifications.map((n) => (
+          <div
+            key={n.id}
+            className="flex items-center gap-3 px-6 py-4 monolithic-panel border border-foreground/40 rounded-none shadow-2xl animate-slide-in-right pointer-events-auto"
+          >
+            <span
+              className={`material-symbols-outlined ${n.type === "success" ? "text-emerald-400" : n.type === "error" ? "text-red-500" : "text-primary"}`}
+            >
+              {n.type === "success"
+                ? "check_circle"
+                : n.type === "error"
+                  ? "report"
+                  : "info"}
             </span>
             <span className="text-sm font-bold">{n.message}</span>
           </div>

@@ -1,6 +1,17 @@
-import { useState, useEffect } from 'react';
-import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
-import { Plantilla } from '@domain/models/database';
+import { useState, useEffect, useCallback } from "react";
+import { TemplateUseCase } from "@application/useCases/TemplateUseCase";
+import { Plantilla } from "@domain/models/database";
+import { useQuery } from "@tanstack/react-query";
+
+export const globalTemplatesQueryKey = [
+  "template-manager",
+  "global-templates",
+] as const;
+export const templateFoldersQueryKey = [
+  "template-manager",
+  "project-folders",
+  1,
+] as const;
 
 export interface TemplateField {
   label: string;
@@ -15,34 +26,39 @@ export interface TemplateField {
  */
 export const useTemplateManager = () => {
   const [rootFolderId, setRootFolderId] = useState<number | null>(null);
-  const [templates, setTemplates] = useState<Plantilla[]>([]);
-  const [loading, setLoading] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
+  const { data: folders = [] } = useQuery({
+    queryKey: templateFoldersQueryKey,
+    queryFn: async () => {
+      return await TemplateUseCase.getProjectFolders(1);
+    },
+  });
+
+  const {
+    data: templates = [],
+    isLoading: loading,
+    refetch: refetchGlobalTemplates,
+  } = useQuery<Plantilla[]>({
+    queryKey: globalTemplatesQueryKey,
+    queryFn: async () => {
+      return await TemplateUseCase.getTemplates(0);
+    },
+  });
+
   useEffect(() => {
-    initialize();
-  }, []);
-
-  const initialize = async () => {
-    try {
-      const folders = await TemplateUseCase.getProjectFolders(1);
-      if (folders.length > 0) {
+    switch (true) {
+      case folders.length > 0:
         setRootFolderId(folders[0].id);
-      }
-      loadGlobalTemplates();
-    } catch (err) { }
-  };
-
-  const loadGlobalTemplates = async () => {
-    setLoading(true);
-    try {
-      const data = await TemplateUseCase.getTemplates(0);
-      setTemplates(data);
-    } catch (err) { }
-    finally {
-      setLoading(false);
+        break;
+      default:
+        break;
     }
-  };
+  }, [folders]);
+
+  const loadGlobalTemplates = useCallback(async () => {
+    await refetchGlobalTemplates();
+  }, [refetchGlobalTemplates]);
 
   const handleCreateTemplate = async (newField: TemplateField) => {
     try {
@@ -56,19 +72,19 @@ export const useTemplateManager = () => {
         aplica_a_todo: 1,
         tipo_objetivo: null,
         categoria: null,
-        orden: 0
+        orden: 0,
       });
-      loadGlobalTemplates();
-    } catch (err) { }
+      await loadGlobalTemplates();
+    } catch (err) {}
   };
 
   const confirmDeleteAction = async () => {
     if (!confirmDeleteId) return;
     try {
       await TemplateUseCase.deleteTemplate(confirmDeleteId);
-      setTemplates(prev => prev.filter(t => t.id !== confirmDeleteId));
-    } catch (err) { }
-    finally {
+      await loadGlobalTemplates();
+    } catch (err) {
+    } finally {
       setConfirmDeleteId(null);
     }
   };
@@ -79,7 +95,7 @@ export const useTemplateManager = () => {
     confirmDeleteId,
     setConfirmDeleteId,
     handleCreateTemplate,
-    confirmDeleteAction
+    confirmDeleteAction,
   };
 };
 
@@ -88,13 +104,14 @@ export const useTemplateManager = () => {
  * Logic for the new attribute form.
  */
 export const useNewFieldForm = (onAdd: (field: TemplateField) => void) => {
-  const [label, setLabel] = useState('');
-  const [type, setType] = useState('text');
+  const [label, setLabel] = useState("");
+  const [type, setType] = useState("text");
   const [required, setRequired] = useState(false);
-  const [options, setOptions] = useState(['']);
+  const [options, setOptions] = useState([""]);
 
-  const handleAddOption = () => setOptions([...options, '']);
-  const handleRemoveOption = (idx: number) => setOptions(options.filter((_, i) => i !== idx));
+  const handleAddOption = () => setOptions([...options, ""]);
+  const handleRemoveOption = (idx: number) =>
+    setOptions(options.filter((_, i) => i !== idx));
   const handleOptionChange = (idx: number, val: string) => {
     const newOpts = [...options];
     newOpts[idx] = val;
@@ -104,22 +121,25 @@ export const useNewFieldForm = (onAdd: (field: TemplateField) => void) => {
   const handleSubmit = () => {
     if (!label) return;
     let metadata = null;
-    if (['select', 'multi_select'].includes(type)) {
-      metadata = { options: options.filter(o => o.trim()) };
+    if (["select", "multi_select"].includes(type)) {
+      metadata = { options: options.filter((o) => o.trim()) };
     }
     onAdd({ label, type, required, metadata });
-    setLabel('');
-    setOptions(['']);
+    setLabel("");
+    setOptions([""]);
   };
 
   return {
-    label, setLabel,
-    type, setType,
-    required, setRequired,
+    label,
+    setLabel,
+    type,
+    setType,
+    required,
+    setRequired,
     options,
     handleAddOption,
     handleRemoveOption,
     handleOptionChange,
-    handleSubmit
+    handleSubmit,
   };
 };

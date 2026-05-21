@@ -28,9 +28,10 @@ Todo el código vive bajo `src/`:
 - **`src/presentation/utils/`** — Utilidades visuales y mapeos de Atomic Design (iconos, colores).
 
 **Reglas de código (Clean Code):**
+
 - Todos los archivos nuevos deben ser `.ts` / `.tsx`. No crear `.js` / `.jsx`.
 - **Sintaxis Reactiva:** Obligatorio utilizar exclusivamente **Arrow Functions** (`const Component = () => {}`). Queda terminantemente prohibida la palabra reservada `function`.
-- **Flujo de Control Estricto:** Está prohibido el uso de *early returns* dentro de condicionales (ej. `if (!x) return;`). Las lógicas deben estar envueltas en condicionales `if/else` completos para asegurar un punto de salida predecible.
+- **Flujo de Control Estricto:** Está prohibido el uso de _early returns_ dentro de condicionales (ej. `if (!x) return;`). Las lógicas deben estar envueltas en condicionales `if/else` completos para asegurar un punto de salida predecible.
 - TypeScript en modo estricto. **Cero `any`.** Usar `unknown` para tipos dinámicos.
 - Castear explícitamente valores `unknown` que vengan de `contenido_json` o index signatures.
 
@@ -39,6 +40,7 @@ Todo el código vive bajo `src/`:
 ## 2.1 Gestión de Jerarquías (DDD + Atomic)
 
 Para añadir un nuevo tipo de entidad o categoría al sistema:
+
 1. **Dominio:** Añade el ID y la descripción en `src/domain/models/hierarchy.ts`.
 2. **Presentación:** Asocia el icono y color en `src/presentation/utils/hierarchyVisuals.ts`.
 3. **Consumo:** Usa el hook/helper `getHierarchyVisuals(typeId)` en los componentes de Atomic Design.
@@ -57,24 +59,23 @@ La base de datos reside en el navegador (WebWorker) y persiste en OPFS.
 
 ---
 
-## 4. Panel Derecho Global (`GlobalRightPanel`)
+## 4. Inspección Contextual (Sin Panel Derecho Global)
 
-Tras la refactorización de abril de 2026, el panel derecho se ha simplificado para reducir el ruido visual.
+Desde mayo de 2026, el panel derecho global fue retirado de la arquitectura.
 
-**Regla de Oro:** Solo existe la pestaña de **CONTEXTO**. Las Notas y el Explorador se han movido al **Panel de Control** inferior.
+**Regla de Oro:** La inspección se resuelve por módulo usando rutas, modales locales o paneles embebidos en la vista activa.
 
-### Mecanismo de inyección (setRightPanelContent)
-Este es el método preferido para inyectar contenido dinámico desde las páginas o features:
+### Patrones recomendados
 
 ```tsx
-const { setRightPanelContent } = useOutletContext<ArchitectContext>();
+// 1) Navegación contextual por ruta
+navigate(`/local/${projectName}/bible/entity/${entityId}`);
 
-useEffect(() => {
-  setRightPanelContent(<MiContenido />);
-  
-  // ⚠️ OBLIGATORIO: limpiar al desmontar
-  return () => setRightPanelContent(null);
-}, [deps]);
+// 2) Modal local del módulo
+setInspectorModalOpen(true);
+
+// 3) Panel embebido en la propia vista
+setSelectedItem(item);
 ```
 
 ---
@@ -93,16 +94,28 @@ Es el hub central de herramientas de apoyo (drawer inferior).
 ## 6. MapEditor — Patrones Clave
 
 ### Guardar un mapa (siempre incluir snapshotUrl)
+
 ```tsx
-const baseImageLayer = layers.find(l => l.type === 'image' && l.url && l.visible);
-const snapshotUrl = baseImageLayer?.url || '';
-const updatedContent = { ...currentContent, markers, layers, features, snapshotUrl, bgImage: snapshotUrl };
+const baseImageLayer = layers.find(
+  (l) => l.type === "image" && l.url && l.visible,
+);
+const snapshotUrl = baseImageLayer?.url || "";
+const updatedContent = {
+  ...currentContent,
+  markers,
+  layers,
+  features,
+  snapshotUrl,
+  bgImage: snapshotUrl,
+};
 ```
 
 ### Vinculación de marcadores con entidades
+
 El campo de vínculo en `MapMarker` es `entityId` (no `entidadId`).
 
 ### Modales dentro del MapEditor
+
 Los modales deben estar **fuera** del componente `<Map>` de MapLibre para no interferir con los eventos del canvas.
 
 ---
@@ -110,6 +123,7 @@ Los modales deben estar **fuera** del componente `<Map>` de MapLibre para no int
 ## 6. FolderView — Nueva Creación
 
 La tarjeta `+` en la vista de carpetas muestra un menú con tres opciones:
+
 - **Entidad** → navega a `bible/folder/:id/entity/new/entidadindividual`
 - **Mapa** → navega a `map-editor/create/:folderId`
 - **Línea de Tiempo** → crea carpeta tipo `TIMELINE`
@@ -122,7 +136,7 @@ Las `BibleCard` de tipo `Map` navegan al Atlas (`/local/:project/map`), no al En
 
 ```typescript
 // Para actualizar tema/idioma sin recargar
-window.dispatchEvent(new Event('storage_update'));
+window.dispatchEvent(new Event("storage_update"));
 ```
 
 Usar clases Tailwind basadas en variables (`bg-background`, `text-foreground`, `bg-primary/20`) en lugar de colores hex fijos.
@@ -134,6 +148,7 @@ Usar clases Tailwind basadas en variables (`bg-background`, `text-foreground`, `
 Para evitar re-renders en cascada y asegurar que la UI sea fluida (especialmente en el Atlas y Grafo), se deben seguir estos patrones:
 
 ### A) Memoización de Contexto y Props
+
 Cualquier objeto o array pasado a un Context.Provider o a un `Outlet context` debe estar envuelto en `useMemo`. Las funciones deben usar `useCallback`.
 
 ```tsx
@@ -146,18 +161,20 @@ return <Outlet context={outletContextValue} />;
 ```
 
 ### B) Estabilidad en Effects (Patrón de Refs)
-Para llamar a funciones del contexto (como `setRightOpen`) dentro de un `useEffect` sin disparar re-renders infinitos, se deben asignar a una `ref` en el cuerpo del componente.
+
+Para llamar a funciones inestables dentro de un `useEffect` sin disparar re-renders infinitos, se deben asignar a una `ref` en el cuerpo del componente.
 
 ```tsx
-const setRightOpenRef = useRef(setRightOpen);
-setRightOpenRef.current = setRightOpen;
+const handlerRef = useRef(handler);
+handlerRef.current = handler;
 
 useEffect(() => {
-  setRightOpenRef.current(true);
+  handlerRef.current();
 }, []); // Sin dependencias molestas
 ```
 
 ### C) Prevención de Fugas de Datos
+
 Al crear entidades, desestructurar `useParams` usando los nombres exactos de la ruta (`folderId`, `entityId`). Nunca asumir nombres como `folderSlug` si la ruta no los define así, ya que resultará en datos guardados en la raíz por error.
 
 ---
@@ -177,18 +194,19 @@ Genera los archivos en `dist/`. El ejecutable nativo se empaqueta con el proceso
 Implementado en mayo de 2026 para permitir una flexibilidad total en la definición de atributos.
 
 ### A) El Taller (ArchetypeManager)
+
 - Permite crear `Plantilla` (atributos dinámicos).
 - **Alcance**: Los atributos pueden ser **Globales** (aparecen en todas las entidades) o **Específicos** (solo para un tipo, ej: `PERSONAJE`).
 - **Ubicación**: Accesible en `/workshop`.
 
 ### B) Fórmularios Dinámicos (DynamicAttributeForm)
+
 - Se inyecta en la pestaña `METADATA` de `EntityProfile`.
 - Carga las plantillas aplicables a la entidad y sus valores guardados.
 - **Persistencia**: Los valores se guardan en la tabla `valores`. El guardado es automático (onChange).
 
 ### C) Gestor Masivo (BibleTableView)
+
 - Utiliza `@tanstack/react-table`.
 - **Ráfaga de Creación**: Fila superior para crear múltiples entidades rápidamente.
 - **Scroll Horizontal**: La tabla debe estar envuelta en un contenedor con `overflow-x-auto` para respetar la barra lateral y no romper el layout.
-
-

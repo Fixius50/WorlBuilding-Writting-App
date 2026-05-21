@@ -1,10 +1,10 @@
 /**
  * 📚 COMPONENTE: RelationshipInspector
- * 
+ *
  * 📌 PROPÓSITO:
  * Este componente actúa como el panel lateral interactivo (Inspector) dedicado a la visualización,
  * edición y disolución de relaciones (aristas) entre las entidades de la biblia del proyecto.
- * 
+ *
  * 🎮 ESCENARIOS DE USO Y FLUJO FRONT-TO-BACK:
  * 1. 🖲️ Lienzo Interactivo (Konva Canvas):
  *    Al hacer clic sobre una arista/línea de conexión en el canvas global (`UniversalCanvas.tsx`),
@@ -13,13 +13,13 @@
  * 2. 🔀 Enrutador Central (`UniversalInspector.tsx`):
  *    Recibe el modo `'relationship'` y monta dinámicamente este componente pasándole el ID de la relación.
  * 3. 💾 Base de Datos SQLite y Reactividad:
- *    - Al cargar, solicita a la capa de aplicación (`RelationshipUseCase.getRelationshipDetails`) los 
+ *    - Al cargar, solicita a la capa de aplicación (`RelationshipUseCase.getRelationshipDetails`) los
  *      datos de la relación enriquecidos asíncronamente con los nombres legibles de origen y destino.
  *    - Al guardar cambios (Tipo de vínculo o descripción), persiste en SQLite a través del repositorio.
- *    - Despacha el evento global `window.dispatchEvent(new CustomEvent('relationships-update'))` para que 
+ *    - Despacha el evento global `window.dispatchEvent(new CustomEvent('relationships-update'))` para que
  *      cualquier componente reactivo (ej. el canvas) se redespeje e incorpore los cambios al instante.
  *    - Al eliminar el vínculo, invoca a la capa de servicio, despacha el evento de actualización y cierra el panel.
- * 
+ *
  * ⚙️ ESTÁNDARES Y DIRECTIVAS DE CALIDAD CUMPLIDOS:
  * - 🎯 Tipado estricto: Uso de interfaces y modelos estrictamente tipados.
  * - 🔀 Flujo de control: Prohibición de declaraciones 'return' dentro de bloques 'if' en el código nuevo;
@@ -27,14 +27,12 @@
  * - ⚡ Exclusividad Lambda: Uso estricto de funciones arrow para las operaciones y manejadores de eventos.
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useLanguage } from '@context/LanguageContext';
-import { RelationshipUseCase } from '@application/useCases/RelationshipUseCase';
-import { RelacionEnriquecida } from '@domain/models/database';
-import { useRightPanelStore } from '@store/useRightPanelStore';
-import Button from '@atoms/Button';
-import ConfirmationModal from '@organisms/ConfirmationModal';
-
+import React, { useState, useEffect, useCallback } from "react";
+import { useLanguage } from "@context/LanguageContext";
+import { RelationshipUseCase } from "@application/useCases/RelationshipUseCase";
+import { RelacionEnriquecida } from "@domain/models/database";
+import Button from "@atoms/Button";
+import ConfirmationModal from "@organisms/ConfirmationModal";
 
 interface RelationshipInspectorProps {
   relationshipId: number;
@@ -45,18 +43,20 @@ interface RelationshipInspectorProps {
 const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({
   relationshipId,
   onUpdate,
-  onClose
+  onClose,
 }) => {
   const { t } = useLanguage();
-  const closePanel = useRightPanelStore((state) => state.closePanel);
+  const closePanel = () => {
+    // Panel derecho eliminado: antes cerraba el inspector lateral de relación.
+  };
 
   const [rel, setRel] = useState<RelacionEnriquecida | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
 
   // Estados de edición
-  const [tipo, setTipo] = useState<string>('');
-  const [descripcion, setDescripcion] = useState<string>('');
+  const [tipo, setTipo] = useState<string>("");
+  const [descripcion, setDescripcion] = useState<string>("");
 
   // Modal de confirmación
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState<boolean>(false);
@@ -64,19 +64,20 @@ const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({
   const loadRelationship = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await RelationshipUseCase.getRelationshipDetails(relationshipId);
+      const data =
+        await RelationshipUseCase.getRelationshipDetails(relationshipId);
       switch (!!data) {
         case true:
           setRel(data);
-          setTipo(data!.tipo || '');
-          setDescripcion(data!.descripcion || '');
+          setTipo(data!.tipo || "");
+          setDescripcion(data!.descripcion || "");
           break;
         default:
           setRel(null);
           break;
       }
     } catch (error) {
-      console.error('Error al cargar la relación:', error);
+      console.error("Error al cargar la relación:", error);
     } finally {
       setLoading(false);
     }
@@ -94,15 +95,15 @@ const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({
     try {
       await RelationshipUseCase.updateRelationship(relationshipId, {
         tipo: tipo.trim(),
-        descripcion: descripcion.trim()
+        descripcion: descripcion.trim(),
       });
       if (onUpdate) {
         onUpdate();
       }
       // Emitir evento para actualizar el canvas
-      window.dispatchEvent(new CustomEvent('relationships-update'));
+      window.dispatchEvent(new CustomEvent("relationships-update"));
     } catch (error) {
-      console.error('Error al guardar la relación:', error);
+      console.error("Error al guardar la relación:", error);
     } finally {
       setSaving(false);
     }
@@ -116,14 +117,14 @@ const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({
         onUpdate();
       }
       // Emitir evento para actualizar el canvas
-      window.dispatchEvent(new CustomEvent('relationships-update'));
+      window.dispatchEvent(new CustomEvent("relationships-update"));
       if (onClose) {
         onClose();
       } else {
         closePanel();
       }
     } catch (error) {
-      console.error('Error al eliminar la relación:', error);
+      console.error("Error al eliminar la relación:", error);
     }
   }, [relationshipId, onUpdate, onClose, closePanel]);
 
@@ -199,10 +200,14 @@ const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({
           </h3>
           <div className="flex items-center justify-between p-4 bg-foreground/[0.02] border border-foreground/5 relative overflow-hidden">
             <div className="flex flex-col max-w-[40%]">
-              <span className="text-[8px] font-black uppercase tracking-wider text-primary/60 mb-1">Origen</span>
-              <span className="text-xs font-bold text-foreground truncate">{rel!.nombre_origen}</span>
+              <span className="text-[8px] font-black uppercase tracking-wider text-primary/60 mb-1">
+                Origen
+              </span>
+              <span className="text-xs font-bold text-foreground truncate">
+                {rel!.nombre_origen}
+              </span>
             </div>
-            
+
             <div className="flex-1 flex items-center justify-center px-2">
               <div className="w-full flex items-center justify-center relative">
                 <div className="w-full h-[1px] bg-foreground/10 border-t border-dashed" />
@@ -213,8 +218,12 @@ const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({
             </div>
 
             <div className="flex flex-col max-w-[40%] text-right">
-              <span className="text-[8px] font-black uppercase tracking-wider text-primary/60 mb-1">Destino</span>
-              <span className="text-xs font-bold text-foreground truncate">{rel!.nombre_destino}</span>
+              <span className="text-[8px] font-black uppercase tracking-wider text-primary/60 mb-1">
+                Destino
+              </span>
+              <span className="text-xs font-bold text-foreground truncate">
+                {rel!.nombre_destino}
+              </span>
             </div>
           </div>
         </section>
@@ -256,7 +265,9 @@ const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({
           className="w-full py-3 bg-primary hover:bg-primary-hover text-background font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-xl shadow-primary/10 disabled:opacity-50 disabled:scale-100"
         >
           {saving ? (
-            <span className="material-symbols-outlined text-sm animate-spin">sync</span>
+            <span className="material-symbols-outlined text-sm animate-spin">
+              sync
+            </span>
           ) : (
             <span className="material-symbols-outlined text-sm">save</span>
           )}

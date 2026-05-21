@@ -3,6 +3,11 @@ import { useIndividualProfile } from "./useIndividualProfile";
 import SecondaryTabs from "@presentation/molecules/SecondaryTabs";
 import DynamicAttributeForm from "@features/Entities/components/DynamicAttributeForm";
 import MiniGraph from "@features/Entities/components/MiniGraph";
+import NarrativeRichText from "@features/Entities/components/NarrativeRichText";
+import {
+  getPresetTabsByEntityType,
+  mergeTabs,
+} from "@features/Entities/utils/entityPresetTabs";
 
 const IndividualProfileView: React.FC<{ entityId?: string | number }> = ({
   entityId: propEntityId,
@@ -21,13 +26,21 @@ const IndividualProfileView: React.FC<{ entityId?: string | number }> = ({
     navigate,
   } = useIndividualProfile(propEntityId);
 
-  const tabs = [
+  const baseTabs = [
     { id: "REGISTRO", label: "REGISTRO", icon: "menu_book" },
     { id: "RED_DE_CONTACTOS", label: "RED DE CONTACTOS / LINAJE", icon: "hub" },
     { id: "DATOS_TÉCNICOS", label: "DATOS TÉCNICOS", icon: "bar_chart" },
   ];
+  const presetTabs = getPresetTabsByEntityType(entity?.tipo || "");
+  const tabs = mergeTabs(baseTabs, presetTabs);
+  const presetTabIds = presetTabs.map((tab) => tab.id);
+  const isPresetTechnicalTab = presetTabIds.includes(activeTab);
 
-  const narrativeLength = (entity?.descripcion || "").length;
+  const narrativeContent = String(
+    entity?.appearance || entity?.descripcion || "",
+  ).trim();
+  const narrativeStory = (entity?.descripcion || "").trim();
+  const narrativeLength = narrativeContent.length;
   const narrativeGrowth = Math.min(560, Math.floor(narrativeLength / 3));
   const panelMinHeight = 360 + narrativeGrowth;
 
@@ -104,7 +117,7 @@ const IndividualProfileView: React.FC<{ entityId?: string | number }> = ({
         {activeTab === "REGISTRO" && (
           <main className="p-12 lg:p-24 space-y-24 max-w-6xl mx-auto w-full">
             <section>
-              <div className="grid grid-cols-1 gap-8 items-start">
+              <div className="grid grid-cols-2 gap-8 items-start">
                 <div
                   className="border border-foreground/10 bg-foreground/[0.02] p-8"
                   style={{ minHeight: `${panelMinHeight}px` }}
@@ -115,15 +128,16 @@ const IndividualProfileView: React.FC<{ entityId?: string | number }> = ({
                     </h3>
                   </div>
                   <div className="max-w-4xl mx-auto">
-                    <div className="text-lg text-foreground/80 leading-relaxed font-light italic">
-                      {entity.descripcion || "Sin descripción."}
-                    </div>
+                    <NarrativeRichText content={narrativeContent} />
                   </div>
                 </div>
 
                 <div
                   className="border border-foreground/10 bg-foreground/[0.02] p-8 flex flex-col"
-                  style={{ minHeight: `${panelMinHeight}px` }}
+                  style={{
+                    minHeight: `${panelMinHeight}px`,
+                    maxHeight: `${panelMinHeight}px`,
+                  }}
                 >
                   <div className="flex flex-col items-center gap-4 mb-6">
                     <h3 className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.4em]">
@@ -157,6 +171,21 @@ const IndividualProfileView: React.FC<{ entityId?: string | number }> = ({
                 </div>
               </div>
             </section>
+
+            <section>
+              <div className="border border-foreground/10 bg-foreground/[0.02] p-8">
+                <div className="flex flex-col items-center gap-4 mb-8">
+                  <h3 className="text-[10px] font-black text-foreground uppercase tracking-[0.4em] border-b border-primary/40 pb-2">
+                    NARRATIVA
+                  </h3>
+                </div>
+                <div className="max-w-4xl mx-auto">
+                  <NarrativeRichText
+                    content={narrativeStory || "Sin narrativa."}
+                  />
+                </div>
+              </div>
+            </section>
           </main>
         )}
 
@@ -166,9 +195,12 @@ const IndividualProfileView: React.FC<{ entityId?: string | number }> = ({
           </div>
         )}
 
-        {activeTab === "DATOS_TÉCNICOS" && (
+        {(activeTab === "DATOS_TÉCNICOS" || isPresetTechnicalTab) && (
           <div className="p-12 lg:p-24 max-w-5xl mx-auto">
-            <DynamicAttributeForm entity={entity} />
+            <DynamicAttributeForm
+              key={`dynamic-attributes-${entity.project_id}-${entity.id}`}
+              entity={entity}
+            />
           </div>
         )}
 

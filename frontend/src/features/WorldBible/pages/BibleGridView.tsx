@@ -56,6 +56,64 @@ const BibleGridView = () => {
       </div>
     );
 
+  const getEntityFirstImage = (targetEntity: Entidad): string | undefined => {
+    const parseJsonPayload = (
+      payload: unknown,
+    ): Record<string, unknown> | null => {
+      let parsedPayload: unknown = null;
+
+      switch (typeof payload) {
+        case "string": {
+          try {
+            parsedPayload = JSON.parse(payload);
+          } catch {
+            parsedPayload = null;
+          }
+          break;
+        }
+        default: {
+          parsedPayload = payload;
+          break;
+        }
+      }
+
+      switch (
+        typeof parsedPayload === "object" &&
+        parsedPayload !== null &&
+        !Array.isArray(parsedPayload)
+      ) {
+        case true:
+          return parsedPayload as Record<string, unknown>;
+        default:
+          return null;
+      }
+    };
+
+    const parsedPayload = parseJsonPayload(targetEntity.contenido_json);
+    const payloadImages = parsedPayload?.images;
+
+    switch (
+      Array.isArray(payloadImages) &&
+      typeof payloadImages[0] === "string" &&
+      payloadImages[0].trim().length > 0
+    ) {
+      case true:
+        return payloadImages[0] as string;
+      default:
+        break;
+    }
+
+    switch (
+      typeof targetEntity.imagen_url === "string" &&
+      targetEntity.imagen_url.trim().length > 0
+    ) {
+      case true:
+        return targetEntity.imagen_url;
+      default:
+        return undefined;
+    }
+  };
+
   return (
     <div className="flex-1 p-8 pt-0 max-w-[1600px] mx-auto w-full h-full overflow-y-auto custom-scrollbar">
       {/* Content Grid */}
@@ -115,22 +173,26 @@ const BibleGridView = () => {
           ),
         )}
 
-        {filteredEntities.map((entity) => (
-          <BibleCard
-            key={`ent-${entity.id}`}
-            item={entity}
-            type="entity"
-            linkTo={`/${username}/${projectName}/bible/folder/${entity.carpeta_id}/entity/${entity.id}`}
-            onDelete={() => handleDeleteEntity(entity.id)}
-            onRename={() =>
-              navigate(
-                entity.carpeta_id
-                  ? `/${username}/${projectName}/bible/folder/${entity.carpeta_id}/entity/${entity.id}/edit`
-                  : `/${username}/${projectName}/bible/entity/${entity.id}/edit`,
-              )
-            }
-          />
-        ))}
+        {filteredEntities.map((entity) => {
+          const entityIconUrl = getEntityFirstImage(entity);
+
+          return (
+            <BibleCard
+              key={`ent-${entity.id}`}
+              item={{ ...entity, iconUrl: entityIconUrl }}
+              type="entity"
+              linkTo={`/${username}/${projectName}/bible/folder/${entity.carpeta_id}/entity/${entity.id}`}
+              onDelete={() => handleDeleteEntity(entity.id)}
+              onRename={() =>
+                navigate(
+                  entity.carpeta_id
+                    ? `/${username}/${projectName}/bible/folder/${entity.carpeta_id}/entity/${entity.id}/edit`
+                    : `/${username}/${projectName}/bible/entity/${entity.id}/edit`,
+                )
+              }
+            />
+          );
+        })}
       </div>
 
       {/* Empty State */}

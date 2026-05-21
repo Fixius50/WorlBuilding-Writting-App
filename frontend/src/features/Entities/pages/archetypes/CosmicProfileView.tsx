@@ -1,13 +1,20 @@
 import React from "react";
-import { useCosmicProfile } from "./useCosmicProfile";
+import { cosmicEntityQueryKey, useCosmicProfile } from "./useCosmicProfile";
 import SecondaryTabs from "@presentation/molecules/SecondaryTabs";
 import UniversalCanvas from "@presentation/organisms/editor/UniversalCanvas";
 import DynamicAttributeForm from "@features/Entities/components/DynamicAttributeForm";
+import NarrativeRichText from "@features/Entities/components/NarrativeRichText";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  getPresetTabsByEntityType,
+  mergeTabs,
+} from "@features/Entities/utils/entityPresetTabs";
 
 const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
   entityId: propEntityId,
 }) => {
   const [zoomImage, setZoomImage] = React.useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const {
     entity,
@@ -24,13 +31,23 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
     entityId,
   } = useCosmicProfile(propEntityId);
 
-  const tabs = [
+  const baseTabs = [
     { id: "REGISTRO", label: "REGISTRO", icon: "menu_book" },
     { id: "CARTOGRAFÍA", label: "CARTOGRAFÍA", icon: "map" },
     { id: "TELEMETRÍA", label: "TELEMETRÍA", icon: "bar_chart" },
   ];
+  const presetTabs = getPresetTabsByEntityType(entity?.tipo || "");
+  const tabs = mergeTabs(baseTabs, presetTabs);
+  const presetTabIds = presetTabs.map((tab) => tab.id);
+  const isPresetTechnicalTab = presetTabIds.includes(activeTab);
 
-  const narrativeLength = (entity?.descripcion || "").length;
+  const narrativeContentRaw = entity?.appearance || entity?.descripcion || "";
+  const narrativeStoryRaw = entity?.descripcion || "";
+  const narrativeContent =
+    typeof narrativeContentRaw === "string" ? narrativeContentRaw.trim() : "";
+  const narrativeStory =
+    typeof narrativeStoryRaw === "string" ? narrativeStoryRaw.trim() : "";
+  const narrativeLength = narrativeContent.length;
   const narrativeGrowth = Math.min(560, Math.floor(narrativeLength / 3));
   const panelMinHeight = 360 + narrativeGrowth;
 
@@ -118,7 +135,7 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
         {activeTab === "REGISTRO" && (
           <main className="p-12 lg:p-24 space-y-24 max-w-6xl mx-auto w-full">
             <section>
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
+              <div className="grid grid-cols-2 gap-8 items-start">
                 <div
                   className="border border-foreground/10 bg-foreground/[0.02] p-8"
                   style={{ minHeight: `${panelMinHeight}px` }}
@@ -129,15 +146,16 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
                     </h3>
                   </div>
                   <div className="max-w-4xl mx-auto">
-                    <div className="text-lg text-foreground/80 leading-relaxed font-light italic">
-                      {entity.descripcion || "Sin descripción."}
-                    </div>
+                    <NarrativeRichText content={narrativeContent} />
                   </div>
                 </div>
 
                 <div
                   className="border border-foreground/10 bg-foreground/[0.02] p-8 flex flex-col"
-                  style={{ minHeight: `${panelMinHeight}px` }}
+                  style={{
+                    minHeight: `${panelMinHeight}px`,
+                    maxHeight: `${panelMinHeight}px`,
+                  }}
                 >
                   <div className="flex flex-col items-center gap-4 mb-6">
                     <h3 className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.4em]">
@@ -171,6 +189,21 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
                 </div>
               </div>
             </section>
+
+            <section>
+              <div className="border border-foreground/10 bg-foreground/[0.02] p-8">
+                <div className="flex flex-col items-center gap-4 mb-8">
+                  <h3 className="text-[10px] font-black text-foreground uppercase tracking-[0.4em] border-b border-primary/40 pb-2">
+                    NARRATIVA
+                  </h3>
+                </div>
+                <div className="max-w-4xl mx-auto">
+                  <NarrativeRichText
+                    content={narrativeStory || "Sin narrativa."}
+                  />
+                </div>
+              </div>
+            </section>
           </main>
         )}
 
@@ -188,10 +221,18 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
           </div>
         )}
 
-        {activeTab === "TELEMETRÍA" && (
+        {(activeTab === "TELEMETRÍA" || isPresetTechnicalTab) && (
           <div className="p-12 lg:p-24 max-w-5xl mx-auto space-y-16">
             <div className="pt-0">
-              <DynamicAttributeForm entity={entity} />
+              <DynamicAttributeForm
+                key={`dynamic-attributes-${entity.project_id}-${entity.id}`}
+                entity={entity}
+                onUpdate={() => {
+                  queryClient.invalidateQueries({
+                    queryKey: cosmicEntityQueryKey(Number(entityId)),
+                  });
+                }}
+              />
             </div>
           </div>
         )}

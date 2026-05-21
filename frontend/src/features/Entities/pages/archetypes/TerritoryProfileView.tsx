@@ -2,10 +2,17 @@ import React from "react";
 import { useTerritoryProfile } from "./useTerritoryProfile";
 import SecondaryTabs from "@presentation/molecules/SecondaryTabs";
 import DynamicAttributeForm from "@features/Entities/components/DynamicAttributeForm";
+import NarrativeRichText from "@features/Entities/components/NarrativeRichText";
+import {
+  getPresetTabsByEntityType,
+  mergeTabs,
+} from "@features/Entities/utils/entityPresetTabs";
 
 const TerritoryProfileView: React.FC<{ entityId?: string | number }> = ({
   entityId: propEntityId,
 }) => {
+  const [zoomImage, setZoomImage] = React.useState<string | null>(null);
+
   const {
     entity,
     loading,
@@ -19,11 +26,25 @@ const TerritoryProfileView: React.FC<{ entityId?: string | number }> = ({
     entityId,
   } = useTerritoryProfile(propEntityId);
 
-  const tabs = [
+  const baseTabs = [
     { id: "REGISTRO", label: "REGISTRO", icon: "menu_book" },
     { id: "MAPA_TACTICO", label: "MAPA TÁCTICO", icon: "map" },
     { id: "DATOS_TÉCNICOS", label: "DATOS TÉCNICOS", icon: "bar_chart" },
   ];
+  const presetTabs = getPresetTabsByEntityType(entity?.tipo || "");
+  const tabs = mergeTabs(baseTabs, presetTabs);
+  const presetTabIds = presetTabs.map((tab) => tab.id);
+  const isPresetTechnicalTab = presetTabIds.includes(activeTab);
+
+  const narrativeContent = (
+    entity?.appearance ||
+    entity?.descripcion ||
+    ""
+  ).trim();
+  const narrativeStory = (entity?.descripcion || "").trim();
+  const narrativeLength = narrativeContent.length;
+  const narrativeGrowth = Math.min(560, Math.floor(narrativeLength / 3));
+  const panelMinHeight = 360 + narrativeGrowth;
 
   if (loading)
     return (
@@ -97,15 +118,73 @@ const TerritoryProfileView: React.FC<{ entityId?: string | number }> = ({
       >
         {activeTab === "REGISTRO" && (
           <main className="p-12 lg:p-24 space-y-24 max-w-6xl mx-auto w-full">
-            <section className="space-y-12">
-              <div className="flex flex-col items-center gap-4">
-                <h3 className="text-[10px] font-black text-foreground uppercase tracking-[0.4em] border-b border-primary/40 pb-2">
-                  CRÓNICA TERRITORIAL
-                </h3>
+            <section>
+              <div className="grid grid-cols-2 gap-8 items-start">
+                <div
+                  className="border border-foreground/10 bg-foreground/[0.02] p-8"
+                  style={{ minHeight: `${panelMinHeight}px` }}
+                >
+                  <div className="flex flex-col items-center gap-4 mb-8">
+                    <h3 className="text-[10px] font-black text-foreground uppercase tracking-[0.4em] border-b border-primary/40 pb-2">
+                      CRÓNICA TERRITORIAL
+                    </h3>
+                  </div>
+                  <div className="max-w-4xl mx-auto">
+                    <NarrativeRichText content={narrativeContent} />
+                  </div>
+                </div>
+
+                <div
+                  className="border border-foreground/10 bg-foreground/[0.02] p-8 flex flex-col"
+                  style={{
+                    minHeight: `${panelMinHeight}px`,
+                    maxHeight: `${panelMinHeight}px`,
+                  }}
+                >
+                  <div className="flex flex-col items-center gap-4 mb-6">
+                    <h3 className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.4em]">
+                      REGISTROS VISUALES
+                    </h3>
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
+                    {entity.images && entity.images.length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                        {entity.images.map((img, idx) => (
+                          <div
+                            key={idx}
+                            className="aspect-video bg-foreground/[0.02] border border-foreground/5 overflow-hidden group transition-all cursor-zoom-in"
+                            onClick={() => setZoomImage(img)}
+                          >
+                            <img
+                              src={img}
+                              alt={`Territory View ${idx}`}
+                              className="w-full h-full object-cover opacity-60 group-hover:opacity-100 grayscale group-hover:grayscale-0 transition-all duration-700"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="h-full min-h-[12rem] flex items-center justify-center border border-dashed border-foreground/10 text-foreground/30 text-[10px] font-black uppercase tracking-[0.2em]">
+                        Sin imágenes en galería
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div className="max-w-4xl mx-auto">
-                <div className="text-lg text-foreground/80 leading-relaxed font-light italic">
-                  {entity.descripcion || "Sin descripción."}
+            </section>
+
+            <section>
+              <div className="border border-foreground/10 bg-foreground/[0.02] p-8">
+                <div className="flex flex-col items-center gap-4 mb-8">
+                  <h3 className="text-[10px] font-black text-foreground uppercase tracking-[0.4em] border-b border-primary/40 pb-2">
+                    NARRATIVA
+                  </h3>
+                </div>
+                <div className="max-w-4xl mx-auto">
+                  <NarrativeRichText
+                    content={narrativeStory || "Sin narrativa."}
+                  />
                 </div>
               </div>
             </section>
@@ -126,9 +205,31 @@ const TerritoryProfileView: React.FC<{ entityId?: string | number }> = ({
           </div>
         )}
 
-        {activeTab === "DATOS_TÉCNICOS" && (
+        {(activeTab === "DATOS_TÉCNICOS" || isPresetTechnicalTab) && (
           <div className="p-12 lg:p-24 max-w-5xl mx-auto">
-            <DynamicAttributeForm entity={entity} />
+            <DynamicAttributeForm
+              key={`dynamic-attributes-${entity.project_id}-${entity.id}`}
+              entity={entity}
+            />
+          </div>
+        )}
+
+        {zoomImage && (
+          <div
+            className="fixed inset-0 z-[120] flex items-center justify-center bg-black/95 animate-in fade-in duration-300"
+            onClick={() => setZoomImage(null)}
+          >
+            <button
+              className="absolute top-10 right-10 text-white/40 hover:text-white transition-colors"
+              onClick={() => setZoomImage(null)}
+            >
+              <span className="material-symbols-outlined text-4xl">close</span>
+            </button>
+            <img
+              src={zoomImage}
+              className="max-w-[90vw] max-h-[85vh] object-contain border border-white/10 shadow-2xl"
+              alt="Zoom"
+            />
           </div>
         )}
       </div>
