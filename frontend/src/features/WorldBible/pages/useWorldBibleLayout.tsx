@@ -3,7 +3,6 @@ import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { WorldBibleUseCase } from "@application/useCases/WorldBibleUseCase";
 import { Carpeta } from "@domain/models/database";
 import { ArchitectContext } from "@domain/models/ui";
-import { useRightPanelStore } from "@store/useRightPanelStore";
 import {
   useWorldBibleData,
   useWorldBibleFolderData,
@@ -22,10 +21,6 @@ export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
   const location = useLocation();
   const { projectName, folderId: folderIdParam, entityId } = useParams();
   const projectId = architectContext?.projectId;
-
-  const openPanel = useRightPanelStore((state) => state.openPanel);
-  const closePanel = useRightPanelStore((state) => state.closePanel);
-  const setActiveTab = useRightPanelStore((state) => state.setActiveTab);
 
   const [viewMode, setViewMode] = useState<"folders" | "table">("folders");
   const [creationModalOpen, setCreationModalOpen] = useState(false);
@@ -228,9 +223,6 @@ export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
     projectName,
     projectId,
     navigate,
-    openPanel,
-    closePanel,
-    setActiveTab,
     currentFolderId,
     setTargetParent,
     entityId,

@@ -31,7 +31,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '@context/LanguageContext';
 import { RelationshipUseCase } from '@application/useCases/RelationshipUseCase';
 import { RelacionEnriquecida } from '@domain/models/database';
-import { useRightPanelStore } from '@store/useRightPanelStore';
 import Button from '@atoms/Button';
 import ConfirmationModal from '@organisms/ConfirmationModal';
 
@@ -48,7 +47,9 @@ const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({
   onClose
 }) => {
   const { t } = useLanguage();
-  const closePanel = useRightPanelStore((state) => state.closePanel);
+  const closePanel = () => {
+    // Panel derecho eliminado: antes cerraba el inspector lateral de relación.
+  };
 
   const [rel, setRel] = useState<RelacionEnriquecida | null>(null);
   const [loading, setLoading] = useState<boolean>(true);

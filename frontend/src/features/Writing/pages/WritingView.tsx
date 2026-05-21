@@ -3,12 +3,11 @@ import { useLanguage } from '@context/LanguageContext';
 import ZenEditor from '@features/Editor/components/ZenEditor';
 import ConfirmModal from '@organisms/ConfirmModal';
 import { useWritingView } from './useWritingView';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import GlobalNotes from '@presentation/layout/GlobalNotes';
 import { EntityUseCase } from '@application/useCases/EntityUseCase';
 import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
 import { Entidad } from '@domain/models/database';
-import { useRightPanelStore } from '@store/useRightPanelStore';
 
 const WritingView = () => {
   const { t } = useLanguage();
@@ -42,7 +41,7 @@ const WritingView = () => {
   } = useWritingView();
 
   const { projectName } = useParams();
-  const openPanel = useRightPanelStore((state) => state.openPanel);
+  const navigate = useNavigate();
   const [panelTab, setPanelTab] = useState<'index' | 'notes' | 'bible' | 'metadata'>('index');
   const [entities, setEntities] = useState<Entidad[]>([]);
   const [bibleSearch, setBibleSearch] = useState<string>('');
@@ -292,7 +291,10 @@ const WritingView = () => {
                                   )}
                                   <p className="text-[10px] text-foreground/75 leading-relaxed font-serif">{entDesc}</p>
                                   <button 
-                                    onClick={() => openPanel('entity', ent.id, ent.nombre)}
+                                    onClick={() => {
+                                      // Panel derecho eliminado: antes abría perfil en inspector lateral.
+                                      navigate(`/local/${projectName}/bible/entity/${ent.id}`);
+                                    }}
                                     className="w-full py-1.5 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary text-[8px] font-black uppercase tracking-widest transition-all"
                                   >
                                     Ver Perfil Completo

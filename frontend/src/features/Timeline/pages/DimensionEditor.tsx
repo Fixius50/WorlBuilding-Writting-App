@@ -3,8 +3,6 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '@context/LanguageContext';
 import { Evento } from '@domain/models/database';
 import ConfirmationModal from '@organisms/ConfirmationModal';
-import EventInspector from '../components/EventInspector';
-import { useRightPanelStore } from '@store/useRightPanelStore';
 
 // Custom Hooks & Components
 import { useTimelineManager } from '../hooks/useTimelineManager';
@@ -18,7 +16,6 @@ const DimensionEditor: React.FC = () => {
   const { projectName, folderId } = useParams<{ username: string; projectName: string; folderId: string }>();
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { openPanel, setCustomContent, closePanel } = useRightPanelStore();
   const location = useLocation();
   const isInBible = location.pathname.includes('/bible');
 
@@ -28,7 +25,7 @@ const DimensionEditor: React.FC = () => {
     calculateX, getYear,
     handleAddEvent, handleDeleteEvent, handleSaveEvent,
     handleToggleLinkEntity, handleImportDimension, handleRemoveDimension,
-    involvedEntities, loadData
+    involvedEntities
   } = useTimelineManager(folderId);
 
   // UI Logic Hook
@@ -54,16 +51,8 @@ const DimensionEditor: React.FC = () => {
 
   // Handlers
   const handleOpenInspector = (event: Evento) => {
-    openPanel('bulk', event.id, event.titulo);
-    setCustomContent(
-      <EventInspector 
-        eventId={event.id} 
-        projectId={folder?.project_id}
-        onUpdate={loadData} 
-        onClose={closePanel}
-        onNavigateToEntity={(id, fId) => navigate(`/local/${projectName}/bible/folder/${fId}/entity/${id}`)}
-      />
-    );
+    // Panel derecho eliminado: antes montaba EventInspector para el evento seleccionado.
+    navigate(`/local/${projectName}/bible/folder/${folderId}/dimension/event/${event.id}`);
   };
 
   const renderTrack = (entityId: number | null, title: string, isMain: boolean = false) => {

@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useRightPanelStore } from '@store/useRightPanelStore';
 import { EntityUseCase } from '@application/useCases/EntityUseCase';
 import { Entidad } from '@domain/models/database';
 
@@ -8,7 +7,12 @@ import { Entidad } from '@domain/models/database';
  * Handles map filtering, preview generation, and attribute updates.
  */
 export const useMapManager = (maps: Entidad[]) => {
-  const { openPanel, setCustomContent } = useRightPanelStore();
+  const openPanel = (_mode: string, _id?: number, _title?: string) => {
+    // Panel derecho eliminado: antes abría vista contextual de mapas.
+  };
+  const setCustomContent = (_content: unknown, _title?: unknown) => {
+    // Panel derecho eliminado: antes inyectaba inspector personalizado de mapas.
+  };
   const [searchTerm, setSearchTerm] = useState('');
   const [spatialFilter, setSpatialFilter] = useState('ALL');
   const [selectedMapId, setSelectedMapId] = useState<number | null>(null);

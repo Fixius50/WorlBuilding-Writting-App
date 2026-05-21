@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useRightPanelStore } from '@store/useRightPanelStore';
 import { Cuaderno, Hoja } from '@domain/models/database';
 import { WritingUseCase } from '@application/useCases/WritingUseCase';
 import { EntityUseCase } from '@application/useCases/EntityUseCase';
@@ -15,8 +14,12 @@ export const useWritingView = () => {
   const { notebookId } = useParams();
   const navigate = useNavigate();
 
-  const openPanel = useRightPanelStore(state => state.openPanel);
-  const setCustomContent = useRightPanelStore(state => state.setCustomContent);
+  const openPanel = (_mode: string, _id?: number, _title?: string) => {
+    // Panel derecho eliminado: antes abría entidad o contenedor contextual de archivador.
+  };
+  const setCustomContent = (_content: unknown, _title?: unknown) => {
+    // Panel derecho eliminado: antes inyectaba UI lateral de archivador.
+  };
 
   const [notebook, setNotebook] = useState<Cuaderno | null>(null);
   const [pages, setPages] = useState<Hoja[]>([]);
@@ -74,11 +77,11 @@ export const useWritingView = () => {
   }, [navigate, loadSnapshots]);
 
   useEffect(() => {
-    openPanel('custom', 0, 'Archivador');
+    // Panel derecho eliminado: antes abría pestaña contextual "Archivador".
     if (notebookId) {
       loadNotebookAndPages(Number(notebookId));
     }
-  }, [notebookId, loadNotebookAndPages, openPanel]);
+  }, [notebookId, loadNotebookAndPages]);
 
   const savePage = useCallback(async (page: Hoja) => {
     if (isMounted.current) setSaving(true);

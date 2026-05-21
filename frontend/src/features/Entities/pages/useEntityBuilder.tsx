@@ -9,7 +9,6 @@ import { WorkspaceUseCase } from "@application/useCases/WorkspaceUseCase";
 import { EntityUseCase } from "@application/useCases/EntityUseCase";
 import { TemplateUseCase } from "@application/useCases/TemplateUseCase";
 import { Entidad, Plantilla, Carpeta, Valor } from "@domain/models/database";
-import { useRightPanelStore } from "@store/useRightPanelStore";
 import { useQuery } from "@tanstack/react-query";
 
 // --- Interfaces ---
@@ -47,7 +46,6 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
   const [isCreation, setIsCreation] = useState(mode === "creation");
 
   const { projectId } = useOutletContext<LayoutContext>();
-  const { openPanel } = useRightPanelStore();
 
   // --- Core Data State ---
   const [entity, setEntity] = useState<Partial<Entidad>>({
@@ -177,8 +175,8 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
   }, [refetchBuilderInit]);
 
   useEffect(() => {
-    openPanel("custom", 0, "Constructor de Entidad");
-  }, [openPanel]);
+    // Panel derecho eliminado: antes se publicaba "Constructor de Entidad" en panel contextual.
+  }, []);
 
   useEffect(() => {
     if (!builderInitData) {

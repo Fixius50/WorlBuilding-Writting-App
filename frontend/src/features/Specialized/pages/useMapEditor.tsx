@@ -4,7 +4,6 @@ import { MapRef, MapMouseEvent } from 'react-map-gl/maplibre';
 import { MapUseCase } from '@application/useCases/MapUseCase';
 import { Entidad } from '@domain/models/database';
 import { MapMarker, MapLayer, MapAttributes } from '@domain/models/maps';
-import { useRightPanelStore } from '@store/useRightPanelStore';
 
 export type DrawMode = 'none' | 'spray' | 'line' | 'marker' | 'eraser';
 
@@ -72,7 +71,15 @@ export const useMapEditor = (
   const [processingLayers, setProcessingLayers] = useState<Set<string>>(new Set());
   const [errorLayers, setErrorLayers] = useState<Set<string>>(new Set());
 
-  const { openPanel, setCustomContent, closePanel } = useRightPanelStore();
+  const openPanel = (_mode: string, _id?: number, _title?: string) => {
+    // Panel derecho eliminado: antes abría inspector contextual del mapa.
+  };
+  const setCustomContent = (_content: unknown, _title?: unknown) => {
+    // Panel derecho eliminado: antes inyectaba herramientas contextuales.
+  };
+  const closePanel = () => {
+    // Panel derecho eliminado: antes cerraba herramientas contextuales.
+  };
   const mapRef = useRef<MapRef>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 

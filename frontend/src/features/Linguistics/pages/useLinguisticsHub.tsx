@@ -4,15 +4,12 @@ import { useDrawingCanvas } from '../hooks/useDrawingCanvas';
 import { useFontExporter } from '../hooks/useFontExporter';
 import { Word } from '@domain/models/database';
 import { LogEntry, WRITING_SYSTEM_TYPES } from '@domain/models/linguistics';
-import { useRightPanelStore } from '@store/useRightPanelStore';
 
 /**
  * 🧠 useLinguisticsHub
  * Logic for managing lexicon, drawing glyphs, and font exporting.
  */
 export const useLinguisticsHub = (projectParam?: string) => {
-  const { openPanel } = useRightPanelStore();
-
   const { 
     lexicon, rules, activeLangId, langName, stats, foundryGlyphs, 
     loadData, saveWord, deleteWord 
@@ -57,8 +54,8 @@ export const useLinguisticsHub = (projectParam?: string) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    openPanel('bulk', 0, 'Lingüística');
-  }, [openPanel]);
+    // Panel derecho eliminado: antes abría "Lingüística" en modo bulk.
+  }, []);
 
   const handleCloseEditor = useCallback(() => {
     setEditorMode(false);

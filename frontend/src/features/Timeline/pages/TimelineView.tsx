@@ -5,13 +5,14 @@ import { TimelineUseCase } from '@application/useCases/TimelineUseCase';
 import ConfirmationModal from '@organisms/ConfirmationModal';
 import Button from '@atoms/Button';
 import TimelineEventCard from '../components/TimelineEventCard';
-import { useRightPanelStore } from '@store/useRightPanelStore';
 import { useTimelineView } from './useTimelineView';
 
 const TimelineView = () => {
   const { t } = useLanguage();
   const { projectId } = useOutletContext<{ projectId: number }>();
-  const setCustomContent = useRightPanelStore(state => state.setCustomContent);
+  const setCustomContent = (_content: React.ReactNode, _title?: React.ReactNode | null) => {
+    // Panel derecho eliminado: antes publicaba la UI de gestión de multiversos en el inspector lateral.
+  };
 
   const {
     universes,

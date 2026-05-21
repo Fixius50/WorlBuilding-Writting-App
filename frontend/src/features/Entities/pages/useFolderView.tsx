@@ -3,7 +3,6 @@ import { useParams, useOutletContext, useNavigate } from 'react-router-dom';
 import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
 import { EntityUseCase } from '@application/useCases/EntityUseCase';
 import { Entidad, Carpeta } from '@domain/models/database';
-import { useRightPanelStore } from '@store/useRightPanelStore';
 
 // --- Interfaces ---
 export interface FolderViewContext {
@@ -31,8 +30,6 @@ export const useFolderView = () => {
     projectName
   } = useOutletContext<FolderViewContext>();
 
-  const { openPanel } = useRightPanelStore();
-
   const [entities, setEntities] = useState<Entidad[]>([]);
   const [subfolders, setSubfolders] = useState<Carpeta[]>([]);
   const [currentFolder, setCurrentFolder] = useState<Carpeta | null>(null);
@@ -41,8 +38,8 @@ export const useFolderView = () => {
 
   // --- Right Panel ---
   useEffect(() => {
-    openPanel('bulk', 0, 'Explorador');
-  }, [openPanel]);
+    // Panel derecho eliminado: antes abría "Explorador" en modo bulk.
+  }, []);
 
   // --- Data Loading ---
   const loadContent = useCallback(async () => {

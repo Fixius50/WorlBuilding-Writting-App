@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { EntityUseCase } from '@application/useCases/EntityUseCase';
 import { Entidad } from '@domain/models/database';
 import { MapMarker, MapLayer, MapConnection, MapAttributes } from '@domain/models/maps';
-import { useRightPanelStore } from '@store/useRightPanelStore';
 import { RelationshipUseCase } from '@application/useCases/RelationshipUseCase';
 
 /**
@@ -16,7 +15,9 @@ export const useInteractiveMapView = (map: Entidad) => {
   const [selectedMarker, setSelectedMarker] = useState<MapMarker | null>(null);
   const [availableEntities, setAvailableEntities] = useState<Entidad[]>([]);
   const [markerCharacters, setMarkerCharacters] = useState<Entidad[]>([]);
-  const { openPanel, setCustomContent } = useRightPanelStore();
+  const setCustomContent = (_content: unknown, _title?: unknown) => {
+    // Panel derecho eliminado: antes inyectaba ficha de marcador/atlas.
+  };
   
   const [atlasFilters, setAtlasFilters] = useState({
     cities: true,
@@ -97,8 +98,8 @@ export const useInteractiveMapView = (map: Entidad) => {
 
   const handleMarkerClick = useCallback((marker: MapMarker) => {
     setSelectedMarker(marker);
-    openPanel('custom', Number(marker.id), marker.label || 'Marcador');
-  }, [openPanel]);
+    // Panel derecho eliminado: antes abría el detalle de marcador.
+  }, []);
 
   return {
     projectName,

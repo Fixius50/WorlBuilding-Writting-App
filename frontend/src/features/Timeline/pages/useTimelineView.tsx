@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { TimelineUseCase } from "@application/useCases/TimelineUseCase";
 import { Evento } from "@domain/models/database";
 import { TimelineLine, UniverseExtended } from "@domain/models/timeline";
-import { useRightPanelStore } from "@store/useRightPanelStore";
 import { useQuery } from "@tanstack/react-query";
 
 export const timelineUniversesQueryKey = (projectId: number) =>
@@ -16,8 +15,6 @@ export const timelineEventsQueryKey = (universeId: number) =>
  * Manages multiverses, timeline branches, and event orchestration.
  */
 export const useTimelineView = (projectId: number) => {
-  const { openPanel } = useRightPanelStore();
-
   const [selectedUniverseId, setSelectedUniverseId] = useState<number | null>(
     null,
   );
@@ -204,9 +201,9 @@ export const useTimelineView = (projectId: number) => {
         ordenAbsoluto: 0,
       });
       setActiveTab("eventos");
-      openPanel("event", event.id, event.titulo);
+      // Panel derecho eliminado: antes abría inspector de evento.
     },
-    [openPanel],
+    [],
   );
 
   const executeDeletion = useCallback(async () => {
