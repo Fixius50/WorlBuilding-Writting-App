@@ -1,67 +1,106 @@
 # REGLAS MAESTRAS DE WORLD BUILDING APP
 
-Eres un experto desarrollador Senior Full-Stack encargado de la creación de un ecosistema de aplicaciones para World Building.
-Este proyecto requiere un altísimo nivel de consistencia, documentación y calidad de código.
+Este documento es la puerta de entrada y gobierno documental del proyecto.
+Su objetivo es evitar duplicidades y definir con precisión qué archivo consultar según cada necesidad.
 
-## PRINCIPIOS FUNDAMENTALES (INVIOLABLES)
+## 1) Principios Inviolables
 
-1. **Doble Verificación:** Antes de escribir cualquier código, verifica la estructura actual y la lógica existente.
-2. **Documentación Continua:** Cada cambio significativo debe registrarse en la `05_Bitacora_Dev.md` o en la `05_Bitacora_Sistematica.md`.
-3. **Modularidad:** Sigue estrictamente la arquitectura modular definida. No mezcles responsabilidades.
-4. **Estética "World Building":** El frontend debe tener una estética técnica, arquitectónica y monolítica (Technical Zen, paneles sólidos, tipografía académica).
-5. **Inspección Contextual Desacoplada:** No existe panel derecho global. La inspección se resuelve por rutas, modales locales y paneles internos de cada feature. Prohibido reintroducir `useRightPanelStore` como dependencia de vistas.
+1. **Fuente Única por Tema:** Las reglas detalladas viven en su documento especializado. Este archivo no debe duplicar especificaciones técnicas extensas.
+2. **Consistencia Documental:** Si cambia una arquitectura o flujo, se actualiza el documento especializado correspondiente y su trazabilidad en bitácora.
+3. **Doble Verificación:** Antes de implementar, validar estado real del código y documento fuente aplicable.
+4. **Modularidad:** Mantener separación de responsabilidades por capas y por features.
 
-## FLUJO DE TRABAJO
+## 2) Mapa de Referencias por Caso de Uso
 
-1. **Análisis:** Lee el archivo `banco.txt` y los documentos de diseño en `Docs/`.
-2. **Propuesta:** Genera un plan antes de actuar.
-3. **Ejecución:** Implementa paso a paso, verificando errores en cada fase.
-4. **Registro:** Actualiza la bitácora con lo realizado.
+### A) Arquitectura, stack y reglas técnicas base
 
-## 🛡️ ESTÁNDARES TÉCNICOS INVIOLABLES (EXTENDIDO)
+- Leer: `01_Estrategia_Tecnica.md`
+- Cubre: arquitectura híbrida, Clean Architecture, reglas de integración y estado técnico general.
 
-1. **Tipado Estricto:** Todo código nuevo DEBE ser TypeScript. Prohibido usar `any`.
-2. **Estabilidad de React (CRÍTICO):**
-   - **useMemo / useCallback:** Obligatorios para cualquier objeto de contexto o función pasada como prop a componentes hijos.
-   - **Gestión de Efectos:** Usar `useRef` para funciones o handlers que se necesiten dentro de un `useEffect` (patrón de estabilidad).
-   - **Evitar Cascada:** No usar `setState` en bucles de dependencias que afecten al layout global.
-3. **Local-First (Flexible):** La persistencia base usa SQLite WASM.
-4. **Arquitectura Híbrida:** Separación física estricta entre `/frontend` (Vite, Clean Architecture) y `/backend` (Java Spring Boot, DDD).
-5. **Diseño:** Seguir el estándar "Technical Zen (Monolithic)" definido en `02_Diseño_UI_UX.md`.
-6. **Idioma:** Código e interfaz en Español (Nombres de variables en Inglés por convención).
+### B) Diseño visual, estética y UX
 
-## CREACIÓN Y GESTIÓN DE COMPONENTES
+- Leer: `02_Diseño_UI_UX.md`
+- Cubre: lineamientos visuales, lenguaje estético y comportamiento de interfaz.
 
-1. **Sintaxis Exclusiva (Arrow Functions):**
-   - Se debe utilizar obligatoriamente la sintaxis de funciones flecha (`const Component = () => {}`) para la declaración de todos los componentes, servicios y funciones. Queda **ESTRICTAMENTE PROHIBIDO** el uso de la palabra reservada `function` para declaraciones estándar.
-2. **Flujo de Control (Prohibido Early Return en Ifs):**
-   - Las validaciones y lógicas de escape NO pueden estar sueltas o ejecutarse mediante `return` dentro de sentencias `if` (ej. `if (!condition) return;` está **prohibido**).
-   - Se debe envolver la lógica en bloques condicionales (ej. `if (condition) { ... }`) para garantizar un flujo de control predecible. Priorizar sentencias `switch` y operadores ternarios.
-3. **Tipado Estricto:**
-   - Prohibido el uso de `any`. Si un tipo no es determinable, se debe usar `unknown`. Todo componente React debe tipar sus `props` mediante `interface`.
-4. **Preservación de Código (Comentarios):**
-   - El código antiguo con valor histórico NO debe borrarse de inmediato. Si se reemplaza lógica compleja, debe comentarse para mantener la trazabilidad.
+### C) Prioridades y planificación
 
-## RESPONSABILIDAD POR CAPAS (CLEAN ARCHITECTURE / DDD)
+- Leer: `03_Roadmap_Vivo.md`
+- Cubre: estado de fases, entregables completados y próximos objetivos.
 
-El proyecto está dividido en un ecosistema robusto. El Frontend respeta las siguientes responsabilidades estrictas:
+### D) Estructura de workspaces y navegación macro
 
-- **`/domain` (Capa de Dominio):**
-  - **Dedicado a:** Modelos de datos puros y definiciones de tipos estáticos.
-  - **Reglas:** No debe tener dependencias de ninguna otra capa de la aplicación ni de librerías de UI (React).
-- **`/application` (Capa de Aplicación):**
-  - **Dedicado a:** Casos de uso (`useCases`) que orquestan los flujos del usuario y la lógica de negocio.
-  - **Reglas:** Actúa como puente. No renderiza componentes visuales ni ejecuta peticiones directas de bajo nivel.
-- **`/infrastructure` (Capa de Infraestructura):**
-  - **Dedicado a:** Repositorios de acceso a datos locales (`sqlocal`/SQLite) o remotos, clientes HTTP y utilidades técnicas.
-  - **Reglas:** Es la _única_ capa autorizada para tener contacto directo con sentencias SQL o fetch/axios.
-- **`/presentation` (Capa de Presentación / UI):**
-  - **Dedicado a:** El ecosistema de React ordenado bajo Atomic Design (`atoms`, `molecules`, `organisms`, `pages`, `layout`).
-  - **Reglas:** Exclusivamente para el renderizado. Consume funciones de `application` y estado global (`stores`). **Cero** lógica pesada de persistencia de datos.
-- **`/features` (Módulos Funcionales):**
-  - **Dedicado a:** Módulos altamente especializados (Graph, Mapas, Timeline) agrupados verticalmente.
-  - **Reglas:** Para características pesadas, se debe implementar el **Patrón Hook-View** (Desacoplar la lógica compleja en un custom hook como `useFeatureLogic.tsx` y dejar el archivo base como `.tsx` de solo renderizado visual).
+- Leer: `04_Arquitectura_Workspaces.md`
+- Cubre: organización del espacio de trabajo, distribución de áreas y flujo de datos.
 
-## PRIORIDAD ACTUAL
+### E) Historial de decisiones y cambios ejecutados
 
-Consultar `03_Roadmap_Vivo.md`.
+- Leer: `03_Roadmap_Vivo.md`
+- Cubre: cronología técnica y justificación de cambios.
+
+### F) Empaquetado y distribución
+
+- Leer: este mismo documento (Sección 5).
+- Cubre: comandos operativos, build y distribución del ejecutable.
+
+## 3) Regla de Precedencia (Cuando haya conflicto)
+
+1. Este documento define **gobierno y enrutamiento documental**.
+2. El documento especializado manda sobre su tema.
+3. La bitácora registra cambios históricos, pero no reemplaza especificaciones técnicas vigentes.
+4. Ante contradicción entre documentos especializados, prevalece el más reciente que esté alineado con el estado real del código.
+
+## 4) Protocolo de Actualización Cruzada
+
+Cuando se realice un cambio estructural relevante:
+
+1. Actualizar primero el documento especializado afectado.
+2. Registrar fecha e impacto en `03_Roadmap_Vivo.md`.
+3. Revisar este documento (`00_Reglas_Maestras.md`) solo si cambia el enrutamiento de referencias o la precedencia.
+4. Verificar que `03_Roadmap_Vivo.md` refleje el estado del hito.
+
+## 5) Operación y Empaquetado
+
+### Comandos rápidos
+
+Desarrollo local:
+
+```powershell
+run-app.bat
+```
+
+Alternativa manual:
+
+```powershell
+npm run dev
+```
+
+Build frontend:
+
+```powershell
+npm run build
+```
+
+Build backend auxiliar:
+
+```powershell
+mvn clean package
+```
+
+### Naturaleza del paquete
+
+La aplicación se distribuye como stack híbrido local-first:
+
+1. UI Vite (frontend).
+2. Servidor auxiliar Java (bridge de sistema/archivos).
+
+### Estrategia de lanzamiento
+
+Actualmente `run-app.bat` orquesta:
+
+1. Inicio del servidor Java local.
+2. Inicio de frontend.
+3. Apertura de la interfaz en entorno local.
+
+### Distribución final
+
+Se distribuye como instalador/ejecutable de escritorio (`.exe`) para uso local sin configuración manual del usuario final.

@@ -56,7 +56,46 @@
 ## FASE 5: EL ECOSISTEMA CONECTADO Y ESPECIALIZACIÓN PROFESIONAL (Futuro 🚀)
 
 - [ ] **Módulo de Planificación Visual (Whiteboards):** Lienzo infinito para planificación desestructurada.
+  - [ ] Post-its, imágenes de referencia e hilos conectores.
+  - [ ] Gestor de arcos narrativos con diagramas de flujo (planteamiento, nudo, clímax).
 - [ ] **Especialización de Entidades Pro:** Módulos para Árboles Genealógicos y Sistemas de Magia.
+  - [ ] Árboles genealógicos con linajes, sucesiones y parentescos complejos.
+  - [ ] Sistemas de magia/religión con reglas, costes, limitaciones y jerarquías.
 - [ ] **Líneas Temporales de Segunda Generación:** Motor de calendarios fantásticos personalizables.
+  - [ ] Meses inventados, múltiples lunas y ciclos personalizados.
 - [ ] **Motor Lingüístico Avanzado:** Autogeneración de conjugaciones y evolución fonética.
+  - [ ] Composer de palabras por reglas silábicas y diccionario relacional expandido.
+  - [ ] Motor de glifos con importación SVG, transliteración en tiempo real y exportación `.ttf`.
 - [ ] **Compilación Editorial:** Exportación nativa a `.EPUB` y `.PDF`.
+  - [ ] Compilación de manuscritos y generación de índice.
+  - [ ] Exportación adicional a `.DOCX` y wiki offline HTML.
+- [ ] **Colaboración P2P (WebRTC):** coautoría local sin servidor central.
+  - [ ] Flujo: generar código de invitación -> conexión de coautor -> sincronización silenciosa.
+  - [ ] Resolución de conflictos: conservar local, aceptar remoto o fusión manual asistida.
+
+## CRONOLOGÍA DE HITOS (CONSOLIDADO)
+
+### MAYO 2026
+
+- **2026-05-21:** Retirada total del panel derecho global y transición a inspección contextual por feature.
+- **2026-05-13:** Normalización Hook-View y corrección de tipos en mapas/grafo.
+- **2026-05-11:** Consolidación de Clean Architecture mediante `application/useCases`.
+- **2026-05-06:** Refactorización DDD de jerarquías y menciones dinámicas reales.
+- **2026-05-05:** Hito histórico de Chameleon Inspector (supersedido por el cambio del 2026-05-21).
+- **2026-05-01:** Consolidación funcional del motor EAV (plantillas/valores, taller de arquetipos y gestión masiva tabular).
+
+### ABRIL 2026
+
+- **2026-04-25:** Escritura avanzada (snapshots), preview inline y consolidación del panel de control global.
+- **2026-04-17:** Migración a arquitectura híbrida (`/frontend` + `/backend`) con Clean Architecture y DDD.
+
+### MARZO 2026
+
+- **2026-03-31:** Estabilización de MapEditor multicapa y navegación asociada.
+- **2026-03-30:** Refinamiento Zen y saneamiento de datos con integridad local-first.
+- **2026-03-22:** Eliminación de legado de red y consolidación del bridge local.
+- **2026-03-22:** Sistema de atributos globales con mejoras de UX de arrastre y edición.
+- **2026-03-21:** Refactorización estética del Entity Builder.
+- **2026-03-15:** Refactorización de navegación, reactividad y notas rápidas.
+- **2026-03-14:** Refactorización del módulo lingüístico y tipado estricto.
+- **2026-03-12:** Pivot final a Local-First con SQLite WASM + TypeScript.

@@ -7,18 +7,60 @@ Este documento define las decisiones arquitectónicas clave del proyecto tras la
 El proyecto adopta un "Mapa de Carpetas Definitivo" con separación física total:
 
 - **Frontend (UI y Lógica Core) en `/frontend`:** React 19.2.4 con Vite.
-  - Arquitectura Interna: **Clean Architecture** (`domain`, `application/useCases`, `infrastructure`, `presentation`) + **Atomic Design** (`presentation`: `atoms`, `molecules`, `organisms`, `templates`, `pages`).
-    - **Regla de ORO (DDD):** Prohibido el acceso directo a repositorios (`*Service`) desde la capa de UI. Todo acceso debe pasar por la capa `application/useCases/` (Ej. `WorldBibleUseCase`, `MapUseCase`).
-    - **Regla de ORO (Componentes y Control de Flujo):** Obligatorio el uso de sintaxis Arrow Function (`const = () => {}`) y prohibición estricta de `early returns` dentro de bloques `if` en favor de condicionales envolventes. Tipado fuerte sin `any`.
-  - Estado: Zustand (Manejador de Estado Global centralizado para UI y Paneles). Context API reservado exclusivamente para datos de proyecto/idioma inmutables en el render.
+  - Arquitectura Interna: **Clean Architecture** (`domain`, `application/useCases`, `infrastructure`, `presentation`).
+  - **Alcance de Atomic Design:** se aplica exclusivamente dentro de `src/presentation/` (`atoms`, `molecules`, `organisms`, `templates`, `pages`).
+  - Estado: Zustand para estado global de UI y stores de feature; Context API reservado para datos transversales estables (idioma/proyecto).
   - Routing: React Router Dom.
-  - Estilos: Technical Zen (Monolithic) basado en variables CSS (`foreground/X`).
-  - Aliasing de rutas configurado (ej. `@application`, `@components`, `@features`, `@database`, `@assets`).
+  - Aliasing de rutas configurado (ej. `@application`, `@features`, `@domain`, `@infrastructure`, `@presentation`).
 - **Persistencia (BBDD Local-First):** SQLite WASM (`sqlocal`) sobre OPFS.
   - Almacenamiento absoluto de datos en el navegador del cliente. Cero latencia de red.
   - Aislamiento: Requiere cabeceras COOP/COEP inyectadas por el servidor auxiliar.
+- **Backend Auxiliar (Helper) en `/backend`:** Java 21 + Spring Web / Jetty.
+  - Arquitectura Interna: Domain-Driven Design (DDD) por subdominios (`worldbible`, `mapeditor`, `linguistics`, etc.).
+  - Responsabilidad: bridge de sistema de archivos, snapshots en disco y utilidades de entorno.
 
-## ARQUITECTURA DE JERARQUÍAS (DDD + ATOMIC)
+## ZONA DE APIS Y CONTRATOS DEL PROYECTO
+
+Esta sección centraliza las APIs que usa el sistema para evitar dispersión en otros bloques.
+
+### 1) APIs de Aplicación (Frontend)
+
+Punto de entrada obligatorio para la UI: `src/application/useCases/`.
+
+- `WorldBibleUseCase`
+- `EntityUseCase`
+- `TemplateUseCase`
+- `RelationshipUseCase`
+- `TimelineUseCase`
+- `MapUseCase`
+- `WritingUseCase`
+- `WorkspaceUseCase`
+- `DashboardUseCase`
+- `SettingsUseCase`
+- `TrashUseCase`
+
+### 2) APIs de Infraestructura (Frontend)
+
+Implementadas en `src/infrastructure/` y consumidas por Application:
+
+- Local DB sobre SQLite WASM/OPFS (repositorios y utilidades de persistencia).
+- Cliente de red para llamadas al backend auxiliar cuando aplica (snapshots, operaciones de sistema).
+
+### 3) APIs del Backend Auxiliar (Java)
+
+Expuestas por `/backend` para funciones de soporte de entorno:
+
+- Endpoints de respaldo/sincronización local.
+- Endpoints de utilidades de archivos para empaquetado y snapshots.
+- Inyección de cabeceras requeridas para el aislamiento de SQLite WASM.
+
+### 4) APIs de Plataforma (Navegador)
+
+- OPFS (persistencia binaria local).
+- Web Workers (ejecución aislada de SQLite WASM).
+- Event APIs para sincronización reactiva de UI cuando corresponde.
+
+## ARQUITECTURA DE JERARQUÍAS
 
 Para garantizar un código mantenible y escalable, las jerarquías del sistema (Mundos, Personajes, Mapas, etc.) siguen un patrón de desacoplamiento total:
 
@@ -26,28 +68,22 @@ Para garantizar un código mantenible y escalable, las jerarquías del sistema (
 2. **Capa de Presentación (`src/presentation/utils/hierarchyVisuals.ts`):** Define el **"Cómo se ve"**. Mapea los IDs de dominio a iconos (_Material Symbols_) y colores (_Tailwind Classes_).
 3. **Desacoplamiento:** El dominio no conoce la existencia de Tailwind ni de iconos específicos, protegiendo la lógica de negocio de cambios estéticos.
 
-- **Backend Auxiliar (Helper) en `/backend`:** Java 21 + Spring Web / Jetty.
-  - Arquitectura Interna: **Domain-Driven Design (DDD)** con subpaquetes como `worldbible`, `mapeditor` y `linguistics` bajo el namespace `com.worldbuilding`.
-  - Responsabilidad: Gestión de archivos del sistema, OPFS bridge, snapshots en disco y utilidades de entorno.
-
 ## ARQUITECTURA DE INSPECCIÓN CONTEXTUAL (SIN PANEL DERECHO GLOBAL)
 
 1. **Sin Inspector Global:** Se elimina el contenedor lateral único. Cada feature gestiona su inspección en su propio contexto de UI.
 2. **Patrones Permitidos:** Navegación por rutas, modales locales, drawers locales de feature y paneles embebidos en la vista activa.
-3. **Regla de Integración:** Se prohíbe acoplar vistas al store `useRightPanelStore`. La comunicación entre módulos se realiza por casos de uso, navegación o estado local.
+3. **Regla de Integración:** Evitar acoplamiento de vistas a stores de panel global legacy. La comunicación entre módulos se realiza por casos de uso, navegación o estado local.
 
-## HISTORIAL DE TRANSICIÓN
+## PATRONES OPERATIVOS TRANSVERSALES
 
-El proyecto ha **completado con éxito** la transición a la **Arquitectura Monolítica Zen (Mayo 2026)**, eliminando la deuda técnica de portales manuales y retirando el panel derecho global para simplificar la navegación contextual por feature. El **Backend Auxiliar (Java)** se mantiene exclusivamente como un facilitador de sistema para persistencia en disco (Snapshots) y utilidades de entorno.
+1. **Estabilidad de render:** Contextos y props derivados deben estabilizarse con `useMemo`/`useCallback`.
+2. **Efectos reactivos estables:** Para handlers inestables en `useEffect`, priorizar patrón con `useRef`.
+3. **Persistencia dinámica:** Valores `unknown` provenientes de `contenido_json` deben castearse explícitamente en capa de presentación.
+4. **Contratos de mapas:** `MapMarker.entityId` se mantiene como clave canónica de vínculo y `snapshotUrl`/`bgImage` deben persistirse en guardado de mapas.
 
-### DEUDA TÉCNICA Y REFACTORIZACIONES PENDIENTES
+## REFERENCIAS CRUZADAS (EVITAR DUPLICIDAD)
 
-Actualmente, los módulos de Configuración (Settings), Vistas Globales, Grafos, Genealogía, y Relaciones han sido migrados a sus respectivos UseCases (TemplateUseCase, WorkspaceUseCase, RelationshipUseCase).
-Aún **existe deuda técnica masiva** por refactorizar (uso directo de \*Service en la capa de presentación) en los siguientes módulos, que deben extraerse a la capa de Aplicación:
-
-- **Módulo Entities (Editor y Vistas):** CharacterEditor.tsx, EntityBuilder.tsx, FolderView.tsx, EntityInspector.tsx, FamilyTreeAssigner.tsx, CosmicCanvasEditor.tsx, etc.
-- **Módulo Writing:** NotebookManager.tsx, WritingHub.tsx, WritingView.tsx, ZenEditor.tsx.
-- **Módulo Maps:** InteractiveMapView.tsx, MapCreationWizard.tsx, MapManager.tsx, MapMarkerEditor.tsx, MapSearchBox.tsx, MapRouter.tsx.
-- **Módulo Timeline:** useTimelineManager.ts, EventInspector.tsx.
-- **Módulo Linguistics:** LinguisticsRouter.tsx, useLexiconManager.ts.
-- **Módulo Calendars:** CalendarManagerView.tsx.
+- Lineamientos visuales y de estilos: `02_Diseño_UI_UX.md`
+- Gobernanza documental y precedencia de fuentes: `00_Reglas_Maestras.md`
+- Build y distribución operativa: `00_Reglas_Maestras.md` (Sección 5)
+- Historial y trazabilidad de cambios: `03_Roadmap_Vivo.md`
