@@ -446,13 +446,13 @@ const TimelineView = () => {
       <main className="flex-1 relative flex flex-col h-full overflow-hidden bg-background">
         <div className="h-20 border-b border-foreground/10 bg-background/80  flex items-center justify-center px-10 z-20 shrink-0 relative">
           <div className="text-center">
-            <h1 className="text-2xl font-black uppercase tracking-tighter flex items-center justify-center gap-3">
+            <div className="text-2xl font-black uppercase tracking-tighter flex items-center justify-center gap-3">
               <span className="material-symbols-outlined text-amber-500">
                 lan
               </span>
               {universes.find((u) => u.id === selectedUniverseId)?.nombre ||
                 "Multiverso"}
-            </h1>
+            </div>
             <p className="text-[10px] uppercase font-bold opacity-30 tracking-[0.3em]">
               Explorador de Ramas Temporales
             </p>

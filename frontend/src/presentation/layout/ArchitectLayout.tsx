@@ -1,51 +1,67 @@
-import React from 'react';
-import { Outlet, NavLink, Link } from 'react-router-dom';
-import { useLanguage } from '@context/LanguageContext';
-import GlobalRightPanel from './GlobalRightPanel';
-import ConfirmationModal from '@organisms/ConfirmationModal';
-import CommandPalette from '@organisms/CommandPalette';
-import EntityDatabase from '@features/Graph/components/EntityDatabase';
-import NotebookManager from '@features/Writing/components/NotebookManager';
-import { SyncView } from '@features/Sync';
-import { ResponsiveBar } from '@nivo/bar';
-import { useArchitectLayout } from './useArchitectLayout';
+import React, { useEffect, useState } from "react";
+import { Outlet, NavLink, Link } from "react-router-dom";
+import { useLanguage } from "@context/LanguageContext";
+import GlobalRightPanel from "./GlobalRightPanel";
+import ConfirmationModal from "@organisms/ConfirmationModal";
+import CommandPalette from "@organisms/CommandPalette";
+import EntityDatabase from "@features/Graph/components/EntityDatabase";
+import NotebookManager from "@features/Writing/components/NotebookManager";
+import { SyncView } from "@features/Sync";
+import { ResponsiveBar } from "@nivo/bar";
+import { useArchitectLayout } from "./useArchitectLayout";
 
 // --- Subcomponente de Gráficos para el Modal Central ---
-const WritingStatsChart: React.FC<{ pages: { contenido?: string }[] }> = ({ pages }) => {
+const WritingStatsChart: React.FC<{ pages: { contenido?: string }[] }> = ({
+  pages,
+}) => {
   const data = pages.map((p, i) => ({
     hoja: `H${i + 1}`,
-    palabras: p.contenido?.replace(/<[^>]+>/g, '').trim().split(/\s+/).filter(Boolean).length || 0,
+    palabras:
+      p.contenido
+        ?.replace(/<[^>]+>/g, "")
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean).length || 0,
   }));
 
   return (
     <div className="w-full h-full">
       <ResponsiveBar
         data={data}
-        keys={['palabras']}
+        keys={["palabras"]}
         indexBy="hoja"
         margin={{ top: 20, right: 30, bottom: 50, left: 60 }}
         padding={0.3}
-        valueScale={{ type: 'linear' }}
-        indexScale={{ type: 'band', round: true }}
-        colors={['hsl(var(--primary))']}
+        valueScale={{ type: "linear" }}
+        indexScale={{ type: "band", round: true }}
+        colors={["hsl(var(--primary))"]}
         enableLabel={false}
         theme={{
-          text: { fontSize: 8, fontWeight: 900, fontFamily: 'monospace' },
+          text: { fontSize: 8, fontWeight: 900, fontFamily: "monospace" },
           axis: {
-            domain: { line: { stroke: 'hsl(var(--foreground) / 0.1)' } },
-            ticks: { line: { stroke: 'hsl(var(--foreground) / 0.1)' }, text: { fill: 'hsl(var(--foreground) / 0.3)' } },
-            legend: { text: { fill: 'hsl(var(--foreground) / 0.2)', textTransform: 'uppercase', letterSpacing: '1px' } }
+            domain: { line: { stroke: "hsl(var(--foreground) / 0.1)" } },
+            ticks: {
+              line: { stroke: "hsl(var(--foreground) / 0.1)" },
+              text: { fill: "hsl(var(--foreground) / 0.3)" },
+            },
+            legend: {
+              text: {
+                fill: "hsl(var(--foreground) / 0.2)",
+                textTransform: "uppercase",
+                letterSpacing: "1px",
+              },
+            },
           },
-          grid: { line: { stroke: 'hsl(var(--foreground) / 0.05)' } },
+          grid: { line: { stroke: "hsl(var(--foreground) / 0.05)" } },
           tooltip: {
             container: {
-              background: 'hsl(var(--background))',
-              color: 'hsl(var(--foreground))',
-              fontSize: '10px',
-              borderRadius: '0px',
-              border: '1px solid hsl(var(--foreground) / 0.1)'
-            }
-          }
+              background: "hsl(var(--background))",
+              color: "hsl(var(--foreground))",
+              fontSize: "10px",
+              borderRadius: "0px",
+              border: "1px solid hsl(var(--foreground) / 0.1)",
+            },
+          },
         }}
         axisTop={null}
         axisRight={null}
@@ -53,16 +69,16 @@ const WritingStatsChart: React.FC<{ pages: { contenido?: string }[] }> = ({ page
           tickSize: 5,
           tickPadding: 5,
           tickRotation: 0,
-          legend: 'Hojas',
-          legendPosition: 'middle',
+          legend: "Hojas",
+          legendPosition: "middle",
           legendOffset: 40,
         }}
         axisLeft={{
           tickSize: 5,
           tickPadding: 5,
           tickRotation: 0,
-          legend: 'Palabras',
-          legendPosition: 'middle',
+          legend: "Palabras",
+          legendPosition: "middle",
           legendOffset: -50,
         }}
         role="application"
@@ -75,7 +91,7 @@ interface NavItemProps {
   to: string;
   icon: string;
   label: string;
-  collapsed: boolean;
+  level?: 0 | 1;
   end?: boolean;
 }
 
@@ -83,32 +99,90 @@ const NavItem: React.FC<NavItemProps> = ({
   to,
   icon,
   label,
-  collapsed,
+  level = 1,
   end,
 }) => (
   <NavLink
     to={to}
     end={end}
     className={({ isActive }) => `
-      flex items-center gap-3 px-3 py-2 border-l-[0.2rem] transition-all duration-200 group
+      flex items-center gap-2.5 px-2 py-1.5 border-l transition-all duration-200 group
       ${
         isActive
           ? "border-primary text-primary bg-primary/10"
-          : "border-transparent text-foreground/60 hover:text-primary hover:bg-foreground/5"
+          : "border-transparent text-foreground/65 hover:text-primary hover:bg-foreground/5"
       }
-      ${collapsed ? "justify-center px-0" : ""}
+      ${level === 1 ? "ml-4 border-dashed" : ""}
     `}
-    title={collapsed ? label : ""}
+    title={label}
   >
-    <span className="material-symbols-outlined text-[1.2rem] transition-transform group-hover:scale-110">
+    <span className="material-symbols-outlined text-[1rem] transition-transform group-hover:scale-105">
       {icon}
     </span>
-    {!collapsed && (
-      <span className="text-[0.8rem] font-sans tracking-wide font-medium">
-        {label}
-      </span>
-    )}
+    <span className="text-[0.74rem] font-sans tracking-wide font-medium leading-none">
+      {label}
+    </span>
   </NavLink>
+);
+
+interface DirectoryActionItemProps {
+  icon: string;
+  label: string;
+  onClick: () => void;
+}
+
+type SidebarSectionKey = "constructor" | "gestor" | "otros" | "sistema";
+
+type SidebarSectionsState = Record<SidebarSectionKey, boolean>;
+
+const DEFAULT_SIDEBAR_SECTIONS: SidebarSectionsState = {
+  constructor: true,
+  gestor: true,
+  otros: true,
+  sistema: true,
+};
+
+interface DirectorySectionHeaderProps {
+  label: string;
+  isOpen: boolean;
+  onToggle: () => void;
+}
+
+const DirectorySectionHeader: React.FC<DirectorySectionHeaderProps> = ({
+  label,
+  isOpen,
+  onToggle,
+}) => (
+  <button
+    onClick={onToggle}
+    className="w-full px-2 py-1 flex items-center justify-between text-foreground/40 hover:text-foreground/70 text-[0.62rem] uppercase tracking-[0.22em] font-black transition-colors"
+  >
+    <span className="flex items-center gap-2">
+      <span className="material-symbols-outlined text-[0.86rem]">
+        folder_open
+      </span>
+      {label}
+    </span>
+    <span className="material-symbols-outlined text-[0.82rem]">
+      {isOpen ? "expand_more" : "chevron_right"}
+    </span>
+  </button>
+);
+
+const DirectoryActionItem: React.FC<DirectoryActionItemProps> = ({
+  icon,
+  label,
+  onClick,
+}) => (
+  <button
+    onClick={onClick}
+    className="w-full flex items-center gap-2.5 px-2 py-1.5 ml-4 border-l border-dashed border-transparent text-foreground/65 hover:text-primary hover:bg-foreground/5 transition-all duration-200 text-left"
+  >
+    <span className="material-symbols-outlined text-[1rem]">{icon}</span>
+    <span className="text-[0.74rem] font-sans tracking-wide font-medium leading-none">
+      {label}
+    </span>
+  </button>
 );
 
 const ArchitectLayout: React.FC = () => {
@@ -117,7 +191,6 @@ const ArchitectLayout: React.FC = () => {
     projectName,
     baseUrl,
     leftOpen,
-    loadedProject,
     projectId,
     panelMode,
     notifications,
@@ -145,8 +218,51 @@ const ArchitectLayout: React.FC = () => {
     confirmDeletion,
     toggleRightPanel,
     closePanel,
-    openPanel
+    openPanel,
   } = useArchitectLayout();
+
+  const sidebarSectionsStorageKey = `architect.sidebar.sections:${projectName}`;
+  const [sidebarSections, setSidebarSections] = useState<SidebarSectionsState>(
+    DEFAULT_SIDEBAR_SECTIONS,
+  );
+
+  useEffect(() => {
+    const raw = window.localStorage.getItem(sidebarSectionsStorageKey);
+    switch (!!raw) {
+      case true:
+        try {
+          const parsed = JSON.parse(
+            raw as string,
+          ) as Partial<SidebarSectionsState>;
+          setSidebarSections({
+            constructor: parsed.constructor ?? true,
+            gestor: parsed.gestor ?? true,
+            otros: parsed.otros ?? true,
+            sistema: parsed.sistema ?? true,
+          });
+        } catch (_error) {
+          setSidebarSections(DEFAULT_SIDEBAR_SECTIONS);
+        }
+        break;
+      default:
+        setSidebarSections(DEFAULT_SIDEBAR_SECTIONS);
+        break;
+    }
+  }, [sidebarSectionsStorageKey]);
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      sidebarSectionsStorageKey,
+      JSON.stringify(sidebarSections),
+    );
+  }, [sidebarSections, sidebarSectionsStorageKey]);
+
+  const toggleSidebarSection = (section: SidebarSectionKey) => {
+    setSidebarSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
 
   if (hideSidebarParam) {
     return (
@@ -156,9 +272,10 @@ const ArchitectLayout: React.FC = () => {
     );
   }
 
-  const sidebarClasses = panelMode === 'floating'
-    ? `fixed top-[calc(4.5vh+1.5vh)] left-[2vw] h-[calc(100vh-7.5vh)] rounded-none border border-foreground/10 shadow-2xl z-[200] transition-all duration-300 flex flex-col monolithic-panel ${leftOpen ? 'w-64 opacity-100 translate-y-0' : 'w-64 opacity-0 -translate-y-4 pointer-events-none'}`
-    : `fixed top-[4.5vh] left-0 h-[calc(100vh-4.5vh)] monolithic-panel border-y-0 border-l-0 shadow-2xl z-[200] ${panelMode === 'binder' ? '' : 'transition-all duration-500'} flex flex-col rounded-none ${leftOpen ? (panelMode === 'binder' && rightOpen ? 'w-0 -translate-x-full' : 'w-64 translate-x-0') : 'w-64 -translate-x-full'}`;
+  const sidebarClasses =
+    panelMode === "floating"
+      ? `fixed top-[calc(4.5vh+1.5vh)] left-[2vw] h-[calc(100vh-7.5vh)] rounded-none border border-foreground/10 shadow-2xl z-[200] transition-all duration-300 flex flex-col monolithic-panel ${leftOpen ? "w-64 opacity-100 translate-y-0" : "w-64 opacity-0 -translate-y-4 pointer-events-none"}`
+      : `fixed top-[4.5vh] left-0 h-[calc(100vh-4.5vh)] monolithic-panel border-y-0 border-l-0 shadow-2xl z-[200] ${panelMode === "binder" ? "" : "transition-all duration-500"} flex flex-col rounded-none ${leftOpen ? (panelMode === "binder" && rightOpen ? "w-0 -translate-x-full" : "w-64 translate-x-0") : "w-64 -translate-x-full"}`;
 
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden bg-background text-foreground font-sans selection:bg-primary/30">
@@ -175,22 +292,26 @@ const ArchitectLayout: React.FC = () => {
             className="px-2 h-full flex items-center justify-center hover:bg-foreground/5 hover:text-primary transition-colors text-foreground/80"
             title="Panel de Control"
           >
-            <span className="material-symbols-outlined text-[15px] font-bold">home</span>
+            <span className="material-symbols-outlined text-[15px] font-bold">
+              home
+            </span>
           </Link>
 
           {/* Dropdown Constructor */}
           <div className="relative h-full flex items-center">
             <button
-              onClick={(e) => toggleDropdown('constructor', e)}
-              onMouseEnter={() => handleDropdownMouseEnter('constructor')}
-              className={`px-2.5 h-full flex items-center transition-colors duration-150 rounded-none hover:bg-foreground/5 hover:text-primary font-bold ${activeDropdown === 'constructor' ? 'bg-foreground/5 text-primary' : ''}`}
+              onClick={(e) => toggleDropdown("constructor", e)}
+              onMouseEnter={() => handleDropdownMouseEnter("constructor")}
+              className={`px-2.5 h-full flex items-center transition-colors duration-150 rounded-none hover:bg-foreground/5 hover:text-primary font-bold ${activeDropdown === "constructor" ? "bg-foreground/5 text-primary" : ""}`}
             >
               <span className="font-bold">Constructor</span>
-              <span className="material-symbols-outlined text-[11px] ml-0.5 opacity-60 font-bold">keyboard_arrow_down</span>
+              <span className="material-symbols-outlined text-[11px] ml-0.5 opacity-60 font-bold">
+                keyboard_arrow_down
+              </span>
             </button>
-            
-            {activeDropdown === 'constructor' && (
-              <div 
+
+            {activeDropdown === "constructor" && (
+              <div
                 className="absolute top-[4.5vh] left-0 w-48 bg-background border border-border py-1 shadow-2xl z-[300] flex flex-col font-bold"
                 onClick={(e) => e.stopPropagation()}
               >
@@ -199,7 +320,9 @@ const ArchitectLayout: React.FC = () => {
                   onClick={() => handleDropdownNav(`${baseUrl}/bible`)}
                   className="flex items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-foreground/5 transition-colors text-foreground/85 font-bold"
                 >
-                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">menu_book</span>
+                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">
+                    menu_book
+                  </span>
                   <span className="font-bold">Biblia del Mundo</span>
                 </Link>
                 <Link
@@ -207,7 +330,9 @@ const ArchitectLayout: React.FC = () => {
                   onClick={() => handleDropdownNav(`${baseUrl}/planning`)}
                   className="flex items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-foreground/5 transition-colors text-foreground/85 font-bold"
                 >
-                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">dashboard_customize</span>
+                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">
+                    dashboard_customize
+                  </span>
                   <span className="font-bold">Centro Planificación</span>
                 </Link>
                 <Link
@@ -215,7 +340,9 @@ const ArchitectLayout: React.FC = () => {
                   onClick={() => handleDropdownNav(`${baseUrl}/writing`)}
                   className="flex items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-foreground/5 transition-colors text-foreground/85 font-bold"
                 >
-                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">edit_note</span>
+                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">
+                    edit_note
+                  </span>
                   <span className="font-bold">Escritura creativa</span>
                 </Link>
               </div>
@@ -225,16 +352,18 @@ const ArchitectLayout: React.FC = () => {
           {/* Dropdown Gestor */}
           <div className="relative h-full flex items-center">
             <button
-              onClick={(e) => toggleDropdown('gestor', e)}
-              onMouseEnter={() => handleDropdownMouseEnter('gestor')}
-              className={`px-2.5 h-full flex items-center transition-colors duration-150 rounded-none hover:bg-foreground/5 hover:text-primary font-bold ${activeDropdown === 'gestor' ? 'bg-foreground/5 text-primary' : ''}`}
+              onClick={(e) => toggleDropdown("gestor", e)}
+              onMouseEnter={() => handleDropdownMouseEnter("gestor")}
+              className={`px-2.5 h-full flex items-center transition-colors duration-150 rounded-none hover:bg-foreground/5 hover:text-primary font-bold ${activeDropdown === "gestor" ? "bg-foreground/5 text-primary" : ""}`}
             >
               <span className="font-bold">Gestor</span>
-              <span className="material-symbols-outlined text-[11px] ml-0.5 opacity-60 font-bold">keyboard_arrow_down</span>
+              <span className="material-symbols-outlined text-[11px] ml-0.5 opacity-60 font-bold">
+                keyboard_arrow_down
+              </span>
             </button>
-            
-            {activeDropdown === 'gestor' && (
-              <div 
+
+            {activeDropdown === "gestor" && (
+              <div
                 className="absolute top-[4.5vh] left-0 w-44 bg-background border border-border py-1 shadow-2xl z-[300] flex flex-col font-bold"
                 onClick={(e) => e.stopPropagation()}
               >
@@ -243,7 +372,9 @@ const ArchitectLayout: React.FC = () => {
                   onClick={() => handleDropdownNav(`${baseUrl}/map`)}
                   className="flex items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-foreground/5 transition-colors text-foreground/85 font-bold"
                 >
-                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">map</span>
+                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">
+                    map
+                  </span>
                   <span className="font-bold">Atlas y Mapas</span>
                 </Link>
                 <Link
@@ -251,7 +382,9 @@ const ArchitectLayout: React.FC = () => {
                   onClick={() => handleDropdownNav(`${baseUrl}/timeline`)}
                   className="flex items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-foreground/5 transition-colors text-foreground/85 font-bold"
                 >
-                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">calendar_month</span>
+                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">
+                    calendar_month
+                  </span>
                   <span className="font-bold">Dimensiones (Timeline)</span>
                 </Link>
                 <Link
@@ -259,7 +392,9 @@ const ArchitectLayout: React.FC = () => {
                   onClick={() => handleDropdownNav(`${baseUrl}/time`)}
                   className="flex items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-foreground/5 transition-colors text-foreground/85 font-bold"
                 >
-                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">schedule</span>
+                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">
+                    schedule
+                  </span>
                   <span className="font-bold">Calendarios</span>
                 </Link>
                 <Link
@@ -267,7 +402,9 @@ const ArchitectLayout: React.FC = () => {
                   onClick={() => handleDropdownNav(`${baseUrl}/languages`)}
                   className="flex items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-foreground/5 transition-colors text-foreground/85 font-bold"
                 >
-                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">translate</span>
+                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">
+                    translate
+                  </span>
                   <span className="font-bold">Lingüística</span>
                 </Link>
               </div>
@@ -277,45 +414,55 @@ const ArchitectLayout: React.FC = () => {
           {/* Dropdown Otros */}
           <div className="relative h-full flex items-center">
             <button
-              onClick={(e) => toggleDropdown('otros', e)}
-              onMouseEnter={() => handleDropdownMouseEnter('otros')}
-              className={`px-2.5 h-full flex items-center transition-colors duration-150 rounded-none hover:bg-foreground/5 hover:text-primary font-bold ${activeDropdown === 'otros' ? 'bg-foreground/5 text-primary' : ''}`}
+              onClick={(e) => toggleDropdown("otros", e)}
+              onMouseEnter={() => handleDropdownMouseEnter("otros")}
+              className={`px-2.5 h-full flex items-center transition-colors duration-150 rounded-none hover:bg-foreground/5 hover:text-primary font-bold ${activeDropdown === "otros" ? "bg-foreground/5 text-primary" : ""}`}
             >
               <span className="font-bold">Otros</span>
-              <span className="material-symbols-outlined text-[11px] ml-0.5 opacity-60 font-bold">keyboard_arrow_down</span>
+              <span className="material-symbols-outlined text-[11px] ml-0.5 opacity-60 font-bold">
+                keyboard_arrow_down
+              </span>
             </button>
-            
-            {activeDropdown === 'otros' && (
-              <div 
+
+            {activeDropdown === "otros" && (
+              <div
                 className="absolute top-[4.5vh] left-0 w-44 bg-background border border-border py-1 shadow-2xl z-[300] flex flex-col font-bold"
                 onClick={(e) => e.stopPropagation()}
               >
                 <button
-                  onClick={() => handleOtrosAction('database')}
+                  onClick={() => handleOtrosAction("database")}
                   className="flex items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-foreground/5 transition-colors text-foreground/85 font-bold"
                 >
-                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">table_chart</span>
+                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">
+                    table_chart
+                  </span>
                   <span className="font-bold">Explorador de Datos</span>
                 </button>
                 <button
-                  onClick={() => handleOtrosAction('notes')}
+                  onClick={() => handleOtrosAction("notes")}
                   className="flex items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-foreground/5 transition-colors text-foreground/85 font-bold"
                 >
-                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">sticky_note_2</span>
+                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">
+                    sticky_note_2
+                  </span>
                   <span className="font-bold">Notas rápidas</span>
                 </button>
                 <button
-                  onClick={() => handleOtrosAction('stats')}
+                  onClick={() => handleOtrosAction("stats")}
                   className="flex items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-foreground/5 transition-colors text-foreground/85 font-bold"
                 >
-                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">analytics</span>
+                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">
+                    analytics
+                  </span>
                   <span className="font-bold">Estadísticas</span>
                 </button>
                 <button
-                  onClick={() => handleOtrosAction('sync')}
+                  onClick={() => handleOtrosAction("sync")}
                   className="flex items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-foreground/5 transition-colors text-foreground/85 font-bold"
                 >
-                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">sync</span>
+                  <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">
+                    sync
+                  </span>
                   <span className="font-bold">Sincronizar</span>
                 </button>
               </div>
@@ -325,9 +472,13 @@ const ArchitectLayout: React.FC = () => {
 
         {/* Center Section: Proyecto › Página */}
         <div className="font-mono text-foreground/45 flex items-center gap-1.5 truncate max-w-[40vw] font-bold">
-          <span className="hover:text-foreground/70 transition-colors duration-150 cursor-default text-[10px] font-bold">{projectName}</span>
+          <span className="hover:text-foreground/70 transition-colors duration-150 cursor-default text-[10px] font-bold">
+            {projectName}
+          </span>
           <span className="text-[9px] opacity-40 font-bold">›</span>
-          <span className="text-foreground/75 font-semibold font-sans truncate cursor-default text-[11px] font-bold">{getPageName()}</span>
+          <span className="text-foreground/75 font-semibold font-sans truncate cursor-default text-[11px] font-bold">
+            {getPageName()}
+          </span>
         </div>
 
         {/* Right Section: Ayuda (Enlace Directo), Papelera, Ajustes, Salir (Iconos Directos) */}
@@ -340,7 +491,9 @@ const ArchitectLayout: React.FC = () => {
             className="px-2.5 h-full flex items-center hover:bg-foreground/5 hover:text-primary transition-colors text-foreground/80 gap-1 no-underline font-bold"
             title="Manual de Usuario"
           >
-            <span className="material-symbols-outlined text-[14px] font-bold">help</span>
+            <span className="material-symbols-outlined text-[14px] font-bold">
+              help
+            </span>
             <span className="font-bold">Ayuda</span>
           </a>
 
@@ -352,7 +505,9 @@ const ArchitectLayout: React.FC = () => {
             className="px-2.5 h-full flex items-center justify-center hover:bg-foreground/5 hover:text-primary transition-colors text-foreground/80"
             title="Papelera de Reciclaje"
           >
-            <span className="material-symbols-outlined text-[15px] font-bold">delete</span>
+            <span className="material-symbols-outlined text-[15px] font-bold">
+              delete
+            </span>
           </Link>
 
           {/* Botón Ajustes */}
@@ -361,7 +516,9 @@ const ArchitectLayout: React.FC = () => {
             className="px-2.5 h-full flex items-center justify-center hover:bg-foreground/5 hover:text-primary transition-colors text-foreground/80"
             title="Ajustes del Sistema"
           >
-            <span className="material-symbols-outlined text-[15px] font-bold">settings</span>
+            <span className="material-symbols-outlined text-[15px] font-bold">
+              settings
+            </span>
           </Link>
 
           {/* Botón Salir */}
@@ -370,7 +527,9 @@ const ArchitectLayout: React.FC = () => {
             className="px-2.5 h-full flex items-center justify-center hover:bg-foreground/5 hover:text-red-400 transition-colors text-foreground/80"
             title="Salir del Proyecto"
           >
-            <span className="material-symbols-outlined text-[15px] font-bold">logout</span>
+            <span className="material-symbols-outlined text-[15px] font-bold">
+              logout
+            </span>
           </Link>
         </div>
       </header>
@@ -379,98 +538,164 @@ const ArchitectLayout: React.FC = () => {
         {/* Sidebar */}
         <aside className={sidebarClasses}>
           <div className="w-full h-full flex flex-col overflow-hidden">
-            <div className="h-16 flex items-center justify-center border-b relative bg-foreground/[0.02]">
-              <div className="flex items-center gap-2">
-                <div className="size-8 rounded-none bg-indigo-500/20 flex items-center justify-center text-indigo-400 shadow-inner">
+            <div className="h-14 flex items-center border-b relative bg-foreground/[0.02] px-3">
+              <div className="flex items-center gap-2 w-full">
+                <div className="size-7 rounded-none bg-indigo-500/20 flex items-center justify-center text-indigo-400 shadow-inner">
                   <span className="material-symbols-outlined text-sm">
-                    auto_stories
+                    folder_managed
                   </span>
                 </div>
-                <h2 className="text-sm font-black uppercase tracking-widest text-foreground truncate max-w-[10rem]">
-                  {loadedProject?.nombre || projectName}
-                </h2>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[0.62rem] font-black uppercase tracking-[0.18em] text-foreground/45">
+                    Estructura
+                  </span>
+                  <span className="text-[0.78rem] font-bold tracking-wide text-foreground/85 truncate">
+                    Directorio
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col">
-              <div className="p-3 space-y-1">
+            <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
+              <div className="p-2.5 space-y-2">
                 <NavItem
                   to={baseUrl}
-                  icon="home"
-                  label={t("nav.dashboard")}
-                  collapsed={false}
+                  icon="folder"
+                  label="Inicio"
+                  level={0}
                   end
                 />
-                <NavItem
-                  to={`${baseUrl}/bible`}
-                  icon="menu_book"
-                  label={t("nav.bible")}
-                  collapsed={false}
-                />
-                <NavItem
-                  to={`${baseUrl}/map`}
-                  icon="map"
-                  label={t("nav.atlas")}
-                  collapsed={false}
-                />
-                <NavItem
-                  to={`${baseUrl}/timeline`}
-                  icon="calendar_month"
-                  label={t("nav.chronology")}
-                  collapsed={false}
-                />
-                <NavItem
-                  to={`${baseUrl}/time`}
-                  icon="schedule"
-                  label="Calendarios"
-                  collapsed={false}
-                />
-                <NavItem
-                  to={`${baseUrl}/languages`}
-                  icon="translate"
-                  label={t("nav.languages")}
-                  collapsed={false}
-                />
-                <NavItem
-                  to={`${baseUrl}/planning`}
-                  icon="dashboard_customize"
-                  label="Centro de Planificación"
-                  collapsed={false}
-                />
-                <div className="h-px bg-foreground/10 my-2 mx-2 opacity-50"></div>
-                <NavItem
-                  to={`${baseUrl}/writing`}
-                  icon="edit_note"
-                  label={t("nav.writing")}
-                  collapsed={false}
-                />
-              </div>
-            </div>
 
-            <div className="p-3 border-t bg-background mt-auto" >
-              {/*
-              <NavItem to={`${baseUrl}/analytics`} icon="analytics" label={t('project.analytics_title')} collapsed={false} />
-              <NavItem to={`${baseUrl}/sync`} icon="sync" label="Sincronizar" collapsed={false} />
-              */}
-              <div className="h-px bg-foreground/10 my-2 mx-2 opacity-50"></div>
-              <NavItem
-                to={`${baseUrl}/trash`}
-                icon="delete"
-                label={t("nav.trash")}
-                collapsed={false}
-              />
-              <NavItem
-                to={`${baseUrl}/settings`}
-                icon="settings"
-                label={t("nav.settings")}
-                collapsed={false}
-              />
-              <NavItem
-                to="/"
-                icon="logout"
-                label={t("nav.logout")}
-                collapsed={false}
-              />
+                <div className="space-y-0.5">
+                  <DirectorySectionHeader
+                    label="Constructor"
+                    isOpen={sidebarSections.constructor}
+                    onToggle={() => toggleSidebarSection("constructor")}
+                  />
+                  {sidebarSections.constructor && (
+                    <>
+                      <NavItem
+                        to={`${baseUrl}/bible`}
+                        icon="menu_book"
+                        label={t("nav.bible")}
+                        level={1}
+                      />
+                      <NavItem
+                        to={`${baseUrl}/planning`}
+                        icon="dashboard_customize"
+                        label="Centro de Planificación"
+                        level={1}
+                      />
+                      <NavItem
+                        to={`${baseUrl}/writing`}
+                        icon="edit_note"
+                        label={t("nav.writing")}
+                        level={1}
+                      />
+                    </>
+                  )}
+                </div>
+
+                <div className="space-y-0.5">
+                  <DirectorySectionHeader
+                    label="Gestor"
+                    isOpen={sidebarSections.gestor}
+                    onToggle={() => toggleSidebarSection("gestor")}
+                  />
+                  {sidebarSections.gestor && (
+                    <>
+                      <NavItem
+                        to={`${baseUrl}/map`}
+                        icon="map"
+                        label={t("nav.atlas")}
+                        level={1}
+                      />
+                      <NavItem
+                        to={`${baseUrl}/timeline`}
+                        icon="calendar_month"
+                        label={t("nav.chronology")}
+                        level={1}
+                      />
+                      <NavItem
+                        to={`${baseUrl}/time`}
+                        icon="schedule"
+                        label="Calendarios"
+                        level={1}
+                      />
+                      <NavItem
+                        to={`${baseUrl}/languages`}
+                        icon="translate"
+                        label={t("nav.languages")}
+                        level={1}
+                      />
+                    </>
+                  )}
+                </div>
+
+                <div className="space-y-0.5">
+                  <DirectorySectionHeader
+                    label="Otros"
+                    isOpen={sidebarSections.otros}
+                    onToggle={() => toggleSidebarSection("otros")}
+                  />
+                  {sidebarSections.otros && (
+                    <>
+                      <DirectoryActionItem
+                        icon="table_chart"
+                        label="Explorador de Datos"
+                        onClick={() => handleOtrosAction("database")}
+                      />
+                      <DirectoryActionItem
+                        icon="sticky_note_2"
+                        label="Notas rápidas"
+                        onClick={() => handleOtrosAction("notes")}
+                      />
+                      <DirectoryActionItem
+                        icon="analytics"
+                        label="Estadísticas"
+                        onClick={() => handleOtrosAction("stats")}
+                      />
+                      <DirectoryActionItem
+                        icon="sync"
+                        label="Sincronizar"
+                        onClick={() => handleOtrosAction("sync")}
+                      />
+                    </>
+                  )}
+                </div>
+
+                <div className="h-px bg-foreground/10 my-2 mx-2 opacity-50"></div>
+
+                <div className="space-y-0.5">
+                  <DirectorySectionHeader
+                    label="Sistema"
+                    isOpen={sidebarSections.sistema}
+                    onToggle={() => toggleSidebarSection("sistema")}
+                  />
+                  {sidebarSections.sistema && (
+                    <>
+                      <NavItem
+                        to={`${baseUrl}/trash`}
+                        icon="delete"
+                        label={t("nav.trash")}
+                        level={1}
+                      />
+                      <NavItem
+                        to={`${baseUrl}/settings`}
+                        icon="settings"
+                        label={t("nav.settings")}
+                        level={1}
+                      />
+                      <NavItem
+                        to="/"
+                        icon="logout"
+                        label={t("nav.logout")}
+                        level={1}
+                      />
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -578,9 +803,7 @@ const ArchitectLayout: React.FC = () => {
             <Outlet context={outletContextValue} />
           </div>
 
-          <GlobalRightPanel
-            panelMode={panelMode}
-          />
+          <GlobalRightPanel panelMode={panelMode} />
 
           {/*
           <ControlPanel
@@ -595,11 +818,11 @@ const ArchitectLayout: React.FC = () => {
 
       {/* MODAL CENTRAL FLOTANTE PARA "OTROS" */}
       {activeModal && (
-        <div 
+        <div
           className="fixed inset-0 z-[400] bg-black/40 backdrop-blur-[1px] flex items-center justify-center animate-in fade-in duration-200"
           onClick={() => setActiveModal(null)}
         >
-          <div 
+          <div
             className="w-[70vw] max-w-4xl h-[70vh] max-h-[72vh] bg-background border border-border shadow-2xl flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
@@ -607,65 +830,86 @@ const ArchitectLayout: React.FC = () => {
             <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-background shrink-0">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[1.2rem]">
-                  {activeModal === 'database' && 'table_chart'}
-                  {activeModal === 'notes' && 'sticky_note_2'}
-                  {activeModal === 'stats' && 'analytics'}
-                  {activeModal === 'sync' && 'sync'}
+                  {activeModal === "database" && "table_chart"}
+                  {activeModal === "notes" && "sticky_note_2"}
+                  {activeModal === "stats" && "analytics"}
+                  {activeModal === "sync" && "sync"}
                 </span>
                 <span className="text-xs font-black uppercase tracking-widest text-foreground/80">
-                  {activeModal === 'database' && 'Explorador de Datos'}
-                  {activeModal === 'notes' && 'Notas rápidas'}
-                  {activeModal === 'stats' && 'Estadísticas del Proyecto'}
-                  {activeModal === 'sync' && 'Sincronizar'}
+                  {activeModal === "database" && "Explorador de Datos"}
+                  {activeModal === "notes" && "Notas rápidas"}
+                  {activeModal === "stats" && "Estadísticas del Proyecto"}
+                  {activeModal === "sync" && "Sincronizar"}
                 </span>
               </div>
-              <button 
+              <button
                 onClick={() => setActiveModal(null)}
                 className="text-foreground/40 hover:text-foreground/80 hover:bg-foreground/5 p-1 transition-all rounded-none flex items-center justify-center"
                 title="Cerrar modal"
               >
-                <span className="material-symbols-outlined text-[1.2rem]">close</span>
+                <span className="material-symbols-outlined text-[1.2rem]">
+                  close
+                </span>
               </button>
             </div>
 
             {/* Contenido del Modal */}
             <div className="flex-1 overflow-hidden relative">
-              {activeModal === 'database' && (
+              {activeModal === "database" && (
                 <EntityDatabase projectId={projectId ?? undefined} />
               )}
-              {activeModal === 'notes' && (
+              {activeModal === "notes" && (
                 <NotebookManager projectId={projectId ?? null} />
               )}
-              {activeModal === 'stats' && (
+              {activeModal === "stats" && (
                 <div className="flex flex-col h-full bg-[#0a0a0a] p-8 overflow-y-auto no-scrollbar">
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
-                    
                     {/* Columna Reloj y Estado */}
                     <div className="flex flex-col space-y-6">
                       <div className="p-8 bg-foreground/[0.03] border border-foreground/10 flex flex-col items-center justify-center space-y-2">
-                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Hora Actual</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">
+                          Hora Actual
+                        </span>
                         <span className="text-5xl font-black tracking-tighter text-foreground tabular-nums">
-                          {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                          {currentTime.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                          })}
                         </span>
                         <span className="text-[9px] font-bold text-foreground/30 uppercase tracking-widest pt-2">
-                          {currentTime.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+                          {currentTime.toLocaleDateString("es-ES", {
+                            weekday: "long",
+                            day: "numeric",
+                            month: "long",
+                          })}
                         </span>
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
                         <div className="p-4 bg-foreground/[0.02] border border-foreground/5 flex flex-col space-y-1">
-                          <span className="text-[8px] font-black uppercase text-foreground/40 tracking-widest">Palabras Totales</span>
-                          <span className="text-xl font-black text-foreground tabular-nums">{stats.wordCount.toLocaleString()}</span>
+                          <span className="text-[8px] font-black uppercase text-foreground/40 tracking-widest">
+                            Palabras Totales
+                          </span>
+                          <span className="text-xl font-black text-foreground tabular-nums">
+                            {stats.wordCount.toLocaleString()}
+                          </span>
                         </div>
                         <div className="p-4 bg-foreground/[0.02] border border-foreground/5 flex flex-col space-y-1">
-                          <span className="text-[8px] font-black uppercase text-foreground/40 tracking-widest">Páginas Totales</span>
-                          <span className="text-xl font-black text-foreground tabular-nums">{stats.pageCount}</span>
+                          <span className="text-[8px] font-black uppercase text-foreground/40 tracking-widest">
+                            Páginas Totales
+                          </span>
+                          <span className="text-xl font-black text-foreground tabular-nums">
+                            {stats.pageCount}
+                          </span>
                         </div>
                       </div>
 
                       <div className="p-4 bg-primary/5 border border-primary/20 flex items-center gap-3">
                         <div className="size-2 rounded-full bg-primary animate-pulse"></div>
-                        <span className="text-[9px] font-black uppercase tracking-widest text-primary">Sesión de Escritura Activa</span>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-primary">
+                          Sesión de Escritura Activa
+                        </span>
                       </div>
                     </div>
 
@@ -673,25 +917,31 @@ const ArchitectLayout: React.FC = () => {
                     <div className="lg:col-span-2 flex flex-col space-y-4">
                       <div className="flex items-center justify-between px-2">
                         <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/60 flex items-center gap-2">
-                          <span className="material-symbols-outlined text-sm">bar_chart</span>
+                          <span className="material-symbols-outlined text-sm">
+                            bar_chart
+                          </span>
                           Distribución por Hojas
                         </h3>
-                        <span className="text-[9px] font-bold text-foreground/30 font-mono">PROYECTO: {projectName}</span>
+                        <span className="text-[9px] font-bold text-foreground/30 font-mono">
+                          PROYECTO: {projectName}
+                        </span>
                       </div>
-                      
+
                       <div className="flex-1 bg-foreground/[0.01] border border-foreground/5 p-4 min-h-[300px]">
                         <div className="w-full h-full flex flex-col items-center justify-center text-foreground/20 space-y-2">
-                          <span className="material-symbols-outlined text-4xl">edit_note</span>
-                          <span className="text-[10px] font-black uppercase tracking-widest italic">Abre un cuaderno para ver analíticas</span>
+                          <span className="material-symbols-outlined text-4xl">
+                            edit_note
+                          </span>
+                          <span className="text-[10px] font-black uppercase tracking-widest italic">
+                            Abre un cuaderno para ver analíticas
+                          </span>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               )}
-              {activeModal === 'sync' && (
-                <SyncView />
-              )}
+              {activeModal === "sync" && <SyncView />}
             </div>
           </div>
         </div>

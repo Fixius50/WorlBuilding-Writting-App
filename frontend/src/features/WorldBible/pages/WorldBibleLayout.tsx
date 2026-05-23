@@ -56,10 +56,6 @@ const WorldBibleLayout: React.FC = () => {
               </span>
               {t("nav.bible")}
             </div>
-            <h1 className="text-5xl font-black text-[hsl(var(--foreground))] tracking-tighter mb-6 drop-shadow-2xl">
-              {dynamicTitle}
-            </h1>
-
             <div className="w-full max-w-xl space-y-6">
               <div className="flex items-center gap-0 bg-[hsl(var(--foreground)/0.02)] border border-[hsl(var(--foreground)/0.1)] focus-within:border-[hsl(var(--primary)/0.5)] transition-all group">
                 <div className="relative flex-1 flex items-center">

@@ -138,9 +138,9 @@ const DimensionEditor: React.FC = () => {
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-4 mb-2">
-                <h1 className="text-3xl font-black tracking-[-0.04em] text-[hsl(var(--foreground))] uppercase">
+                <div className="text-3xl font-black tracking-[-0.04em] text-[hsl(var(--foreground))] uppercase">
                   {folder?.nombre}
-                </h1>
+                </div>
                 <div className="px-4 py-1 bg-[hsl(var(--primary)/0.1)] border border-[hsl(var(--primary)/0.3)] text-[hsl(var(--primary))] text-[10px] font-black uppercase tracking-widest rounded-full">
                   {t("timeline.multiverse_tag")}
                 </div>

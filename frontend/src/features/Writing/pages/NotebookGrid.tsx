@@ -1,8 +1,8 @@
-import React from 'react';
-import ConfirmModal from '@organisms/ConfirmModal';
-import InputModal from '@organisms/InputModal';
-import { Notebook } from '@domain/models/writing';
-import { useNotebookGrid } from './useNotebookGrid';
+import React from "react";
+import ConfirmModal from "@organisms/ConfirmModal";
+import InputModal from "@organisms/InputModal";
+import { Notebook } from "@domain/models/writing";
+import { useNotebookGrid } from "./useNotebookGrid";
 
 interface NotebookGridProps {
   notebooks: Notebook[];
@@ -10,17 +10,31 @@ interface NotebookGridProps {
   onSelectNotebook: (notebook: Notebook) => void;
   onCreateNotebook: (title: string) => void;
   onDeleteNotebook: (id: string | number) => void;
-  onUpdateNotebook: (id: string | number, title: string, description?: string) => void;
+  onUpdateNotebook: (
+    id: string | number,
+    title: string,
+    description?: string,
+  ) => void;
 }
 
-const NotebookGrid: React.FC<NotebookGridProps> = ({ notebooks, loading, onSelectNotebook, onCreateNotebook, onDeleteNotebook, onUpdateNotebook }) => {
+const NotebookGrid: React.FC<NotebookGridProps> = ({
+  notebooks,
+  loading,
+  onSelectNotebook,
+  onCreateNotebook,
+  onDeleteNotebook,
+  onUpdateNotebook,
+}) => {
   const {
-    isCreateModalOpen, setIsCreateModalOpen,
-    notebookToDelete, setNotebookToDelete,
-    notebookToEdit, setNotebookToEdit,
+    isCreateModalOpen,
+    setIsCreateModalOpen,
+    notebookToDelete,
+    setNotebookToDelete,
+    notebookToEdit,
+    setNotebookToEdit,
     handleCreateSubmit,
     handleDeleteConfirm,
-    handleEditSubmit
+    handleEditSubmit,
   } = useNotebookGrid(onCreateNotebook, onDeleteNotebook, onUpdateNotebook);
 
   return (
@@ -28,15 +42,18 @@ const NotebookGrid: React.FC<NotebookGridProps> = ({ notebooks, loading, onSelec
       <div className="max-w-7xl mx-auto">
         <header className="flex justify-center gap-12 text-center items-center mb-12">
           <div>
-            <h1 className="text-4xl font-serif text-foreground/60 mb-2">Your Notebooks</h1>
-            <p className="text-foreground/60 font-mono text-sm">Select a chronicle to begin writing</p>
+            <p className="text-foreground/60 font-mono text-sm">
+              Select a chronicle to begin writing
+            </p>
           </div>
           <button
             onClick={() => setIsCreateModalOpen(true)}
             className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-foreground rounded-none transition-all shadow-lg shadow-indigo-500/20"
           >
             <span className="material-symbols-outlined">add</span>
-            <span className="font-bold tracking-wide text-sm">NEW NOTEBOOK</span>
+            <span className="font-bold tracking-wide text-sm">
+              NEW NOTEBOOK
+            </span>
           </button>
         </header>
 
@@ -44,7 +61,7 @@ const NotebookGrid: React.FC<NotebookGridProps> = ({ notebooks, loading, onSelec
           <div className="text-foreground/60">Loading chronicles...</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {notebooks.map(notebook => (
+            {notebooks.map((notebook) => (
               <div
                 key={notebook.id}
                 onClick={() => onSelectNotebook(notebook)}
@@ -53,7 +70,9 @@ const NotebookGrid: React.FC<NotebookGridProps> = ({ notebooks, loading, onSelec
                 <div className="flex-1 relative">
                   <div className="flex justify-between items-start">
                     <div className="w-12 h-12 rounded-none bg-foreground/5 flex items-center justify-center text-foreground/60 group-hover:bg-indigo-500/10 group-hover:text-indigo-400 transition-colors mb-6">
-                      <span className="material-symbols-outlined text-2xl">menu_book</span>
+                      <span className="material-symbols-outlined text-2xl">
+                        menu_book
+                      </span>
                     </div>
 
                     <div className="flex items-center gap-1 transition-opacity duration-200">
@@ -66,7 +85,9 @@ const NotebookGrid: React.FC<NotebookGridProps> = ({ notebooks, loading, onSelec
                         className="p-2 text-foreground/60 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-none transition-all"
                         title="Rename Notebook"
                       >
-                        <span className="material-symbols-outlined text-xl">edit</span>
+                        <span className="material-symbols-outlined text-xl">
+                          edit
+                        </span>
                       </button>
 
                       {/* Delete Button */}
@@ -78,7 +99,9 @@ const NotebookGrid: React.FC<NotebookGridProps> = ({ notebooks, loading, onSelec
                         className="p-2 text-foreground/60 hover:text-destructive hover:bg-red-500/10 rounded-none transition-all"
                         title="Delete Notebook"
                       >
-                        <span className="material-symbols-outlined text-xl">delete</span>
+                        <span className="material-symbols-outlined text-xl">
+                          delete
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -91,8 +114,12 @@ const NotebookGrid: React.FC<NotebookGridProps> = ({ notebooks, loading, onSelec
                   </p>
                 </div>
                 <div className="mt-4 pt-4 border-t border-foreground/10 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="text-xs font-mono text-foreground/60">OPEN CHRONICLE</span>
-                  <span className="material-symbols-outlined text-foreground/60 text-sm">arrow_forward</span>
+                  <span className="text-xs font-mono text-foreground/60">
+                    OPEN CHRONICLE
+                  </span>
+                  <span className="material-symbols-outlined text-foreground/60 text-sm">
+                    arrow_forward
+                  </span>
                 </div>
               </div>
             ))}
@@ -103,7 +130,9 @@ const NotebookGrid: React.FC<NotebookGridProps> = ({ notebooks, loading, onSelec
               className="border-2 border-dashed border-foreground/10 rounded-none p-6 h-64 flex flex-col items-center justify-center gap-4 text-foreground/60 hover:text-foreground/60 hover:border-foreground/40 transition-all"
             >
               <span className="material-symbols-outlined text-4xl">add</span>
-              <span className="font-mono text-xs uppercase tracking-widest">Create New</span>
+              <span className="font-mono text-xs uppercase tracking-widest">
+                Create New
+              </span>
             </button>
           </div>
         )}
@@ -144,4 +173,3 @@ const NotebookGrid: React.FC<NotebookGridProps> = ({ notebooks, loading, onSelec
 };
 
 export default NotebookGrid;
-
