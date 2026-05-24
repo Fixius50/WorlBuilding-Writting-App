@@ -76,7 +76,7 @@ const DynamicAttributeForm: React.FC<DynamicAttributeFormProps> = ({
                               }
                               className={`flex items-center gap-2 px-4 py-2 border transition-all text-[10px] font-black uppercase tracking-widest ${
                                 currentValue === "true"
-                                  ? "bg-primary border-primary text-white"
+                                  ? "bg-primary border-primary text-primary-foreground"
                                   : "bg-foreground/5 border-foreground/10 text-foreground/40"
                               }`}
                             >

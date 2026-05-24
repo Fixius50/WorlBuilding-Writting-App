@@ -48,7 +48,7 @@ const NotebookGrid: React.FC<NotebookGridProps> = ({
           </div>
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-foreground rounded-none transition-all shadow-lg shadow-indigo-500/20"
+            className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/80 text-foreground rounded-none transition-all shadow-lg shadow-primary/20"
           >
             <span className="material-symbols-outlined">add</span>
             <span className="font-bold tracking-wide text-sm">
@@ -65,11 +65,11 @@ const NotebookGrid: React.FC<NotebookGridProps> = ({
               <div
                 key={notebook.id}
                 onClick={() => onSelectNotebook(notebook)}
-                className="group relative monolithic-panel rounded-none p-6 cursor-pointer hover:border-indigo-500/50 hover:shadow-2xl hover:shadow-indigo-900/10 transition-all duration-300 h-64 flex flex-col"
+                className="group relative monolithic-panel rounded-none p-6 cursor-pointer hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 h-64 flex flex-col"
               >
                 <div className="flex-1 relative">
                   <div className="flex justify-between items-start">
-                    <div className="w-12 h-12 rounded-none bg-foreground/5 flex items-center justify-center text-foreground/60 group-hover:bg-indigo-500/10 group-hover:text-indigo-400 transition-colors mb-6">
+                    <div className="w-12 h-12 rounded-none bg-foreground/5 flex items-center justify-center text-foreground/60 group-hover:bg-primary/10 group-hover:text-primary transition-colors mb-6">
                       <span className="material-symbols-outlined text-2xl">
                         menu_book
                       </span>
@@ -82,7 +82,7 @@ const NotebookGrid: React.FC<NotebookGridProps> = ({
                           e.stopPropagation();
                           setNotebookToEdit(notebook);
                         }}
-                        className="p-2 text-foreground/60 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-none transition-all"
+                        className="p-2 text-foreground/60 hover:text-primary hover:bg-primary/10 rounded-none transition-all"
                         title="Rename Notebook"
                       >
                         <span className="material-symbols-outlined text-xl">

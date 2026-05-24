@@ -1,8 +1,8 @@
-import React from 'react';
-import UniversalCanvas from '@presentation/organisms/editor/UniversalCanvas';
-import DynamicAttributeForm from '../components/DynamicAttributeForm';
-import ConfirmationModal from '@organisms/ConfirmationModal';
-import { useCosmicCanvasEditor } from './useCosmicCanvasEditor';
+import React from "react";
+import UniversalCanvas from "@presentation/organisms/editor/UniversalCanvas";
+import DynamicAttributeForm from "../components/DynamicAttributeForm";
+import ConfirmationModal from "@organisms/ConfirmationModal";
+import { useCosmicCanvasEditor } from "./useCosmicCanvasEditor";
 
 const CosmicCanvasEditor: React.FC<{ entityId: number }> = ({ entityId }) => {
   const {
@@ -20,14 +20,13 @@ const CosmicCanvasEditor: React.FC<{ entityId: number }> = ({ entityId }) => {
     onNodeClick,
     addEntityToCanvas,
     handleDeleteConfirm,
-    navigate
+    navigate,
   } = useCosmicCanvasEditor(entityId);
 
   if (loading || !entity) return null;
 
   return (
     <div className="flex h-screen w-full bg-white overflow-hidden font-mono text-black">
-      
       {/* ZONA IZQUIERDA: Inyector de Entidades */}
       <aside className="w-[280px] border-r border-black/10 bg-white flex flex-col z-20 text-black">
         <div className="p-6 border-b border-black/10 bg-black/5">
@@ -36,7 +35,7 @@ const CosmicCanvasEditor: React.FC<{ entityId: number }> = ({ entityId }) => {
             Inyector de Nodos
           </h2>
           <div className="relative">
-            <input 
+            <input
               type="text"
               placeholder="BUSCAR_ENTIDAD..."
               value={searchQuery}
@@ -47,16 +46,20 @@ const CosmicCanvasEditor: React.FC<{ entityId: number }> = ({ entityId }) => {
         </div>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
-          {filteredEntities.map(e => (
-            <div 
+          {filteredEntities.map((e) => (
+            <div
               key={e.id}
               className="group p-3 border border-transparent hover:border-foreground/10 hover:bg-foreground/[0.02] flex items-center justify-between"
             >
               <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-foreground/80 truncate max-w-[150px] uppercase">{e.nombre}</span>
-                <span className="text-[8px] text-foreground/30 uppercase">{e.tipo}</span>
+                <span className="text-[10px] font-bold text-foreground/80 truncate max-w-[150px] uppercase">
+                  {e.nombre}
+                </span>
+                <span className="text-[8px] text-foreground/30 uppercase">
+                  {e.tipo}
+                </span>
               </div>
-              <button 
+              <button
                 onClick={() => addEntityToCanvas(e)}
                 className="size-8 flex items-center justify-center bg-foreground/5 hover:bg-primary hover:text-black transition-all"
               >
@@ -67,45 +70,52 @@ const CosmicCanvasEditor: React.FC<{ entityId: number }> = ({ entityId }) => {
         </div>
 
         <div className="p-4 bg-primary/5 border-t border-primary/10">
-           <button 
-             onClick={() => navigate(-1)}
-             className="w-full h-10 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary hover:text-black transition-colors"
-           >
-             <span className="material-symbols-outlined text-sm">keyboard_return</span>
-             SALIR_EDITOR
-           </button>
+          <button
+            onClick={() => navigate(-1)}
+            className="w-full h-10 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+          >
+            <span className="material-symbols-outlined text-sm">
+              keyboard_return
+            </span>
+            SALIR_EDITOR
+          </button>
         </div>
       </aside>
 
       {/* ZONA CENTRAL: Canvas Visual */}
-      <main className="flex-1 relative bg-white">
-        <UniversalCanvas 
-          initialNodes={nodes} 
-          initialEdges={edges} 
+      <main className="flex-1 relative bg-background">
+        <UniversalCanvas
+          initialNodes={nodes}
+          initialEdges={edges}
           onNodeClick={onNodeClick}
-          backgroundColor="#ffffff"
+          backgroundColor="hsl(var(--background))"
         />
         <div className="absolute top-4 px-6 w-full pointer-events-none flex justify-center">
-            <div className="px-6 py-2 bg-white/80 border border-primary/30 text-primary font-black text-[10px] uppercase tracking-[0.4em] backdrop-blur-md">
-              MODO_DISEÑO_COSMICO: {entity.nombre}
-            </div>
+          <div className="px-6 py-2 bg-background/80 border border-primary/30 text-primary font-black text-[10px] uppercase tracking-[0.4em] backdrop-blur-md">
+            MODO_DISEÑO_COSMICO: {entity.nombre}
+          </div>
         </div>
       </main>
 
       {/* ZONA DERECHA: Atributos Flotantes */}
-      <aside className="w-[320px] border-l border-black/10 bg-white flex flex-col z-20 text-black">
+      <aside className="w-[320px] border-l border-foreground/10 bg-background flex flex-col z-20 text-foreground">
         {selectedEntity ? (
           <>
-            <div className="p-6 border-b border-black/10 bg-black/5 flex justify-between items-center">
+            <div className="p-6 border-b border-foreground/10 bg-foreground/5 flex justify-between items-center">
               <div className="min-w-0">
                 <span className="text-[8px] font-black uppercase tracking-[0.4em] text-primary/50 mb-2 block">
                   NODO_SELECCIONADO // {selectedEntity.tipo}
                 </span>
-                <h2 className="text-xl font-black text-black truncate uppercase">{selectedEntity.nombre}</h2>
+                <h2 className="text-xl font-black text-foreground truncate uppercase">
+                  {selectedEntity.nombre}
+                </h2>
               </div>
-              <button 
-                onClick={() => { setEntityToDelete(selectedEntity.id); setIsDeleteModalOpen(true); }}
-                className="size-10 flex items-center justify-center bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all border border-red-500/20"
+              <button
+                onClick={() => {
+                  setEntityToDelete(selectedEntity.id);
+                  setIsDeleteModalOpen(true);
+                }}
+                className="size-10 flex items-center justify-center bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-primary-foreground transition-all border border-red-500/20"
                 title="Eliminar Entidad"
               >
                 <span className="material-symbols-outlined">delete</span>
@@ -137,4 +147,3 @@ const CosmicCanvasEditor: React.FC<{ entityId: number }> = ({ entityId }) => {
 };
 
 export default CosmicCanvasEditor;
-

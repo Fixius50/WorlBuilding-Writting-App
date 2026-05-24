@@ -22,7 +22,13 @@
     "notes": "Quick Notes",
     "explorer": "Explorer",
     "error": "Error",
-    "ok": "OK"
+    "ok": "OK",
+    "confirm_deletion": "Confirm Deletion",
+    "are_you_sure_delete": "Are you sure you want to delete this item? This action cannot be undone.",
+    "name": "Name",
+    "type": "Type",
+    "folder": "Folder",
+    "created_at": "Creation Date"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -82,6 +88,11 @@
     "placeholder_title": "The Chronicles of the Void...",
     "create_and_open": "Create and Open",
     "expansion": "Library Expansion",
+    "new_archivador_title": "New Quick Note",
+    "library_expansion": "Quick Notes",
+    "book_title_label": "Note Title",
+    "create_and_open_btn": "Create and Open",
+    "cancel_btn": "Cancel",
     "delete_confirm": "Are you sure you want to delete this archivador? All its pages will be lost.",
     "chapter": "Chapter",
     "page": "Page",
@@ -186,7 +197,8 @@
     "rename_branch_prompt": "New name for the branch:",
     "position_year": "Year / Position",
     "expand_timeline": "Expand Timeline",
-    "compress_timeline": "Compress Timeline"
+    "compress_timeline": "Compress Timeline",
+    "multiverse_bifurcation": "Multiverse Bifurcation"
   },
   "linguistics": {
     "title": "Linguistics",

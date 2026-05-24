@@ -278,7 +278,7 @@ const WritingView = () => {
                         <input
                           type="text"
                           placeholder="Buscar en la Biblia..."
-                          className="w-full bg-foreground/5 border border-foreground/10 py-2.5 pl-9 pr-4 text-[10px] font-mono outline-none focus:border-primary/50 transition-all text-white placeholder:text-foreground/30"
+                          className="w-full bg-foreground/5 border border-foreground/10 py-2.5 pl-9 pr-4 text-[10px] font-mono outline-none focus:border-primary/50 transition-all text-foreground placeholder:text-foreground/30"
                           value={bibleSearch}
                           onChange={(e) => setBibleSearch(e.target.value)}
                         />
@@ -419,7 +419,7 @@ const WritingView = () => {
                                 sceneDate,
                               );
                             }}
-                            className="w-full bg-[#1e1e1e] border border-foreground/10 py-2.5 px-3 text-[10px] font-mono outline-none focus:border-primary/50 transition-all text-white"
+                            className="w-full bg-editor-elevated border border-foreground/10 py-2.5 px-3 text-[10px] font-mono outline-none focus:border-primary/50 transition-all text-foreground"
                           >
                             <option value="" className="text-foreground/40">
                               Seleccionar personaje...
@@ -447,7 +447,7 @@ const WritingView = () => {
                                 sceneDate,
                               );
                             }}
-                            className="w-full bg-[#1e1e1e] border border-foreground/10 py-2.5 px-3 text-[10px] font-mono outline-none focus:border-primary/50 transition-all text-white"
+                            className="w-full bg-editor-elevated border border-foreground/10 py-2.5 px-3 text-[10px] font-mono outline-none focus:border-primary/50 transition-all text-foreground"
                           >
                             <option value="" className="text-foreground/40">
                               Seleccionar ubicación...
@@ -477,7 +477,7 @@ const WritingView = () => {
                                 e.target.value,
                               );
                             }}
-                            className="w-full bg-[#1e1e1e] border border-foreground/10 py-2.5 px-3 text-[10px] font-mono outline-none focus:border-primary/50 transition-all text-white placeholder:text-foreground/20"
+                            className="w-full bg-editor-elevated border border-foreground/10 py-2.5 px-3 text-[10px] font-mono outline-none focus:border-primary/50 transition-all text-foreground placeholder:text-foreground/20"
                           />
                         </div>
 
@@ -528,7 +528,7 @@ const WritingView = () => {
                               <input
                                 type="text"
                                 placeholder="Buscar..."
-                                className="w-full bg-foreground/5 border border-foreground/10 py-2 pl-9 pr-4 text-[10px] font-mono outline-none focus:border-primary/50 transition-all text-white placeholder:text-foreground/30 select-text"
+                                className="w-full bg-foreground/5 border border-foreground/10 py-2 pl-9 pr-4 text-[10px] font-mono outline-none focus:border-primary/50 transition-all text-foreground placeholder:text-foreground/30 select-text"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                               />
@@ -561,7 +561,7 @@ const WritingView = () => {
                                             e.stopPropagation();
                                           }}
                                           onClick={(e) => e.stopPropagation()}
-                                          className={`bg-[#1e1e1e] border-b border-primary font-serif font-bold text-sm outline-none w-full px-1 ${isSelected ? "text-primary" : "text-foreground/80"}`}
+                                          className={`bg-editor-elevated border-b border-primary font-serif font-bold text-sm outline-none w-full px-1 ${isSelected ? "text-primary" : "text-foreground/80"}`}
                                           value={page.titulo || ""}
                                           onChange={(e) =>
                                             handleTitleChangeInternal(
@@ -715,9 +715,9 @@ const WritingView = () => {
   }
 
   return (
-    <div className="flex-1 flex w-full h-full bg-[#111] relative font-sans text-foreground/60">
+    <div className="flex-1 flex w-full h-full bg-editor-base relative font-sans text-foreground/60">
       <div className="flex-1 flex flex-col relative z-10">
-        <main className="flex-1 flex flex-col relative bg-[#1e1e1e]">
+        <main className="flex-1 flex flex-col relative bg-editor-elevated">
           {currentPage && (
             <ZenEditor
               pages={pages}

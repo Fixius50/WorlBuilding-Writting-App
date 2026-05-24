@@ -79,8 +79,8 @@ const CollectiveProfileView: React.FC<{ entityId?: string | number }> = ({
             onClick={handleDelete}
             className={`px-4 py-2 border transition-all text-[9px] font-black uppercase tracking-widest ${
               confirmDelete
-                ? "bg-destructive text-white border-destructive animate-pulse"
-                : "border-destructive/20 text-destructive/40 hover:bg-destructive hover:text-white"
+                ? "bg-destructive text-primary-foreground border-destructive animate-pulse"
+                : "border-destructive/20 text-destructive/40 hover:bg-destructive hover:text-primary-foreground"
             }`}
           >
             {confirmDelete ? "¿CONFIRMAR?" : "ELIMINAR"}
@@ -225,14 +225,14 @@ const CollectiveProfileView: React.FC<{ entityId?: string | number }> = ({
             onClick={() => setZoomImage(null)}
           >
             <button
-              className="absolute top-10 right-10 text-white/40 hover:text-white transition-colors"
+              className="absolute top-10 right-10 text-foreground/40 hover:text-foreground transition-colors"
               onClick={() => setZoomImage(null)}
             >
               <span className="material-symbols-outlined text-4xl">close</span>
             </button>
             <img
               src={zoomImage}
-              className="max-w-[90vw] max-h-[85vh] object-contain border border-white/10 shadow-2xl"
+              className="max-w-[90vw] max-h-[85vh] object-contain border border-foreground/10 shadow-2xl"
               alt="Zoom"
             />
           </div>

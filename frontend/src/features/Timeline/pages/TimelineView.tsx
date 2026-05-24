@@ -170,7 +170,7 @@ const TimelineView = () => {
         ) : (
           <>
             <div className="space-y-2">
-              <h3 className="text-[10px] font-black uppercase text-indigo-500 tracking-widest mb-3 flex items-center justify-between">
+              <h3 className="text-[10px] font-black uppercase text-primary tracking-widest mb-3 flex items-center justify-between">
                 Líneas en "{activeUniverse?.nombre}"
               </h3>
               <div className="grid grid-cols-1 gap-1">
@@ -205,7 +205,7 @@ const TimelineView = () => {
                         setSelectedTimelineId(line.id);
                         setEditingTimeline(line);
                       }}
-                      className={`w-full text-left p-3 border transition-all flex items-center justify-between ${selectedTimelineId === line.id ? "bg-indigo-500/10 border-indigo-500 text-indigo-400" : "bg-foreground/5 border-foreground/10 text-foreground/60 hover:bg-foreground/10"}`}
+                      className={`w-full text-left p-3 border transition-all flex items-center justify-between ${selectedTimelineId === line.id ? "bg-primary/10 border-primary text-primary" : "bg-foreground/5 border-foreground/10 text-foreground/60 hover:bg-foreground/10"}`}
                     >
                       <span className="text-xs font-bold uppercase">
                         {line.nombre}
@@ -245,11 +245,11 @@ const TimelineView = () => {
               </div>
             </div>
             <div className="bg-background/20 p-4 border border-foreground/10 space-y-4">
-              <h4 className="text-[10px] font-black uppercase text-indigo-500/60">
+              <h4 className="text-[10px] font-black uppercase text-primary/60">
                 {editingTimeline ? "Editar Línea" : "Nueva Línea"}
               </h4>
               <input
-                className="w-full bg-background border border-foreground/20 p-2 text-xs outline-none focus:border-indigo-500"
+                className="w-full bg-background border border-foreground/20 p-2 text-xs outline-none focus:border-primary"
                 placeholder="Nombre de la línea..."
                 value={editingTimeline?.nombre || newLine.nombre}
                 onChange={(e) => {
@@ -465,7 +465,7 @@ const TimelineView = () => {
               </span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 bg-foreground/5 border border-foreground/10">
-              <div className="size-2 bg-indigo-500 rounded-full" />
+              <div className="size-2 bg-primary rounded-full" />
               <span className="text-[10px] font-black uppercase opacity-60">
                 Bifurcaciones
               </span>
@@ -534,12 +534,12 @@ const TimelineView = () => {
                 {branches.map((line) => (
                   <div key={line.id} className="relative group">
                     <div className="flex items-center gap-4 mb-4">
-                      <span className="text-[10px] font-black uppercase text-indigo-400 tracking-widest bg-indigo-500/10 px-3 py-1 border border-indigo-500/20">
+                      <span className="text-[10px] font-black uppercase text-primary tracking-widest bg-primary/10 px-3 py-1 border border-primary/20">
                         Rama: {line.nombre}
                       </span>
-                      <div className="h-px flex-1 bg-gradient-to-r from-indigo-500/20 to-transparent" />
+                      <div className="h-px flex-1 bg-gradient-to-r from-primary/20 to-transparent" />
                     </div>
-                    <div className="visual-timeline-wrapper !p-0 !min-h-0 border-l-2 border-indigo-500/20 ml-4 pl-8 group-hover:border-indigo-500/40 transition-colors">
+                    <div className="visual-timeline-wrapper !p-0 !min-h-0 border-l-2 border-primary/20 ml-4 pl-8 group-hover:border-primary/40 transition-colors">
                       <div className="visual-timeline-container !overflow-visible !p-0">
                         <div className="events-track !static !flex !flex-row !gap-6 !flex-wrap">
                           {events.filter((ev) => ev.linea_id === line.id)

@@ -39,7 +39,7 @@ const WritingHub = () => {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-[#0a0a0c]">
+      <div className="flex-1 flex items-center justify-center bg-editor-base">
         <div className="animate-spin text-primary material-symbols-outlined text-4xl">
           sync
         </div>
@@ -48,7 +48,7 @@ const WritingHub = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-[#0a0a0c] overflow-y-auto custom-scrollbar p-12">
+    <div className="flex-1 flex flex-col bg-editor-base overflow-y-auto custom-scrollbar p-12">
       <header className="mb-16 flex flex-col items-center text-center animate-in fade-in slide-in-from-top-4 duration-700">
         <div className="mb-8">
           <p className="text-foreground/40 font-serif italic text-xl opacity-80 uppercase tracking-[0.1em]">
@@ -174,7 +174,7 @@ const WritingHub = () => {
       {/* Creation/Edit Modal Zen */}
       {isCreating && (
         <div
-          className="fixed inset-0 z-[100] bg-[#0a0a0c]/90 flex items-center justify-center p-4 "
+          className="fixed inset-0 z-[100] bg-background/90 flex items-center justify-center p-4 "
           onClick={(e) => {
             if (e.target === e.currentTarget) closeModal();
           }}

@@ -116,7 +116,7 @@ const Dashboard: React.FC = () => {
               padding={0.4}
               valueScale={{ type: "linear" }}
               indexScale={{ type: "band", round: true }}
-              colors="#6366f1"
+              colors="hsl(var(--primary))"
               borderRadius={6}
               axisBottom={{
                 tickSize: 0,

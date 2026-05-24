@@ -304,7 +304,7 @@ const MapManager: React.FC<MapManagerProps> = ({
                             e.stopPropagation();
                             onDeleteMap(map);
                           }}
-                          className="p-2 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white rounded-none border border-red-500/20 shadow-xl transition-all"
+                          className="p-2 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-primary-foreground rounded-none border border-red-500/20 shadow-xl transition-all"
                           title="Eliminar Mapa"
                         >
                           <span className="material-symbols-outlined text-sm">

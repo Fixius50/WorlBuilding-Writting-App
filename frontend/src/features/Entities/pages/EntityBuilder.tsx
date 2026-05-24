@@ -9,6 +9,7 @@ import FamilyTreeAssigner from "../components/FamilyTreeAssigner";
 import TemplateSettingsModal from "@organisms/TemplateSettingsModal";
 import { useEntityBuilder } from "./useEntityBuilder";
 import { getPresetTabsByEntityType } from "@features/Entities/utils/entityPresetTabs";
+import { getThemePrimaryHex } from "@infrastructure/utils/themeColor";
 
 interface EntityBuilderProps {
   mode: "creation" | "edit";
@@ -48,6 +49,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
     refreshTemplates,
     navigate,
   } = useEntityBuilder(mode);
+  const defaultEntityColor = getThemePrimaryHex();
 
   const galleryImages = extras.images || [];
   const baseEditorTabs = [
@@ -698,7 +700,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
 
                     <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-4">
-                        <label className="text-[9px] font-black uppercase text-white/40 tracking-[0.2em] block px-1">
+                        <label className="text-[9px] font-black uppercase text-foreground/40 tracking-[0.2em] block px-1">
                           Categoría de Sistema
                         </label>
                         <div className="relative group">
@@ -723,27 +725,27 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                       </div>
 
                       <div className="space-y-4">
-                        <label className="text-[9px] font-black uppercase text-white/40 tracking-[0.2em] block px-1">
+                        <label className="text-[9px] font-black uppercase text-foreground/40 tracking-[0.2em] block px-1">
                           Color de Identificación
                         </label>
                         <div className="flex items-center gap-4 bg-[hsl(var(--foreground)/0.02)] border border-[hsl(var(--foreground)/0.1)] p-3">
                           <input
                             type="color"
                             className="size-10 bg-transparent border-none cursor-pointer"
-                            value={extras.color || "#6366f1"}
+                            value={extras.color || defaultEntityColor}
                             onChange={(e) =>
                               updateExtra({ color: e.target.value })
                             }
                           />
                           <span className="text-[10px] font-mono text-foreground/40 uppercase">
-                            {extras.color || "#6366F1"}
+                            {extras.color || defaultEntityColor}
                           </span>
                         </div>
                       </div>
                     </div>
 
                     <div className="space-y-4">
-                      <label className="text-[9px] font-black uppercase text-white/40 tracking-[0.2em] block px-1">
+                      <label className="text-[9px] font-black uppercase text-foreground/40 tracking-[0.2em] block px-1">
                         Etiquetas (Tags)
                       </label>
                       <input
@@ -757,7 +759,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                   </div>
                 </div>
 
-                <div className="monolithic-panel border border-white/10 bg-black/20 p-8 space-y-6">
+                <div className="monolithic-panel border border-foreground/10 bg-background/20 p-8 space-y-6">
                   <header className="flex items-center gap-3 text-[hsl(var(--primary))] border-b border-[hsl(var(--foreground)/0.05)] pb-4">
                     <span className="material-symbols-outlined text-lg">
                       auto_awesome
@@ -827,7 +829,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
               </div>
 
               <div className="space-y-12">
-                <div className="monolithic-panel border border-white/10 bg-black/20 p-8 space-y-6">
+                <div className="monolithic-panel border border-foreground/10 bg-background/20 p-8 space-y-6">
                   <header className="flex items-center gap-3 text-[hsl(var(--primary))] border-b border-[hsl(var(--foreground)/0.05)] pb-4">
                     <span className="material-symbols-outlined text-lg">
                       photo_library
@@ -854,7 +856,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                               e.stopPropagation();
                               removeImage(0);
                             }}
-                            className="absolute top-2 right-2 size-8 bg-rose-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-2xl"
+                            className="absolute top-2 right-2 size-8 bg-destructive text-primary-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-2xl"
                           >
                             <span className="material-symbols-outlined text-xs">
                               close
@@ -862,7 +864,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                           </button>
                         </div>
                       ) : (
-                        <label className="aspect-[16/10] border-2 border-dashed border-white/5 flex flex-col items-center justify-center gap-4 hover:bg-background hover:border-primary/30 transition-all cursor-pointer group">
+                        <label className="aspect-[16/10] border-2 border-dashed border-foreground/5 flex flex-col items-center justify-center gap-4 hover:bg-background hover:border-primary/30 transition-all cursor-pointer group">
                           <div className="size-12 rounded-full bg-primary/5 flex items-center justify-center border border-primary/10 group-hover:bg-primary/20 group-hover:scale-110 transition-all">
                             <span className="material-symbols-outlined text-primary/40 group-hover:text-primary text-xl">
                               add_a_photo
@@ -939,7 +941,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                                 e.stopPropagation();
                                 removeImage(originalIndex);
                               }}
-                              className="absolute top-1 right-1 size-6 bg-rose-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
+                              className="absolute top-1 right-1 size-6 bg-destructive text-primary-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
                             >
                               <span className="material-symbols-outlined text-[10px]">
                                 close
@@ -951,7 +953,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                     </div>
                   </div>
 
-                  <label className="border-2 border-dashed border-white/5 flex items-center justify-center gap-3 py-4 hover:bg-background hover:border-primary/30 transition-all cursor-pointer group">
+                  <label className="border-2 border-dashed border-foreground/5 flex items-center justify-center gap-3 py-4 hover:bg-background hover:border-primary/30 transition-all cursor-pointer group">
                     <span className="material-symbols-outlined text-primary/40 group-hover:text-primary text-xl">
                       add_a_photo
                     </span>
@@ -975,7 +977,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
             <div className="space-y-12">
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
                 <div
-                  className="monolithic-panel border border-white/10 bg-black/20 p-12 flex flex-col"
+                  className="monolithic-panel border border-foreground/10 bg-background/20 p-12 flex flex-col"
                   style={{ minHeight: `${narrativeMinHeight}px` }}
                 >
                   <header className="flex items-center justify-between mb-8 border-b border-white/5 pb-6">
@@ -1056,10 +1058,10 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                 </div>
 
                 <div
-                  className="monolithic-panel border border-white/10 bg-black/20 p-8 flex flex-col"
+                  className="monolithic-panel border border-foreground/10 bg-background/20 p-8 flex flex-col"
                   style={{ minHeight: `${narrativeMinHeight}px` }}
                 >
-                  <header className="flex items-center gap-3 mb-6 border-b border-white/5 pb-4">
+                  <header className="flex items-center gap-3 mb-6 border-b border-foreground/5 pb-4">
                     <span className="material-symbols-outlined text-primary/60 text-lg">
                       photo_library
                     </span>
@@ -1098,7 +1100,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
 
           {(activeEntityTab === "attributes" || isPresetEditorTab) && (
             <div className="space-y-12 min-h-[60vh]">
-              <header className="flex items-center justify-between border-b border-white/10 pb-8">
+              <header className="flex items-center justify-between border-b border-foreground/10 pb-8">
                 <div className="flex items-center gap-4">
                   <span className="material-symbols-outlined text-primary/60">
                     layers
@@ -1201,14 +1203,14 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
             onClick={() => setZoomImage(null)}
           >
             <button
-              className="absolute top-10 right-10 text-white/40 hover:text-white transition-colors"
+              className="absolute top-10 right-10 text-foreground/40 hover:text-foreground transition-colors"
               onClick={() => setZoomImage(null)}
             >
               <span className="material-symbols-outlined text-4xl">close</span>
             </button>
             <img
               src={zoomImage}
-              className="max-w-[90vw] max-h-[85vh] object-contain border border-white/10 shadow-2xl"
+              className="max-w-[90vw] max-h-[85vh] object-contain border border-foreground/10 shadow-2xl"
               alt="Zoom"
             />
           </div>

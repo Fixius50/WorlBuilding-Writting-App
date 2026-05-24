@@ -42,9 +42,13 @@
   --divider-border: hsl(var(--foreground) / 0.1);
   --sunken-border: hsl(var(--foreground) / 0.2);
   --sunken-shadow: hsl(var(--foreground) / 0.1);
+  --editor-base-bg: hsl(var(--background));
+  --editor-elevated-bg: hsl(var(--background) / 0.92);
+  --editor-placeholder: hsl(var(--foreground) / 0.45);
 }
 
-.dark, .theme-dark {
+.dark,
+.theme-dark {
   --background: 240 10% 4%;
   --foreground: 0 0% 98%;
   --primary: 243 75% 59%;

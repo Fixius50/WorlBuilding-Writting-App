@@ -10,6 +10,7 @@ import { EntityUseCase } from "@application/useCases/EntityUseCase";
 import { TemplateUseCase } from "@application/useCases/TemplateUseCase";
 import { Entidad, Plantilla, Carpeta, Valor } from "@domain/models/database";
 import { useQuery } from "@tanstack/react-query";
+import { getThemePrimaryHex } from "@infrastructure/utils/themeColor";
 
 // --- Interfaces ---
 export interface LayoutContext {
@@ -47,13 +48,15 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
 
   const { projectId } = useOutletContext<LayoutContext>();
 
+  const primaryHex = getThemePrimaryHex();
+
   // --- Core Data State ---
   const [entity, setEntity] = useState<Partial<Entidad>>({
     nombre: "",
     tipo: type || "PERSONAJE",
     descripcion: "",
     contenido_json: JSON.stringify({
-      color: "#6366f1",
+      color: primaryHex,
       tags: "",
       iconUrl: null,
       categoria: "Individual",

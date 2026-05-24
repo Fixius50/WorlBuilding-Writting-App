@@ -331,7 +331,7 @@ const DimensionEditor: React.FC = () => {
                 </button>
                 <button
                   onClick={handleSaveEdit}
-                  className="flex-1 py-3 bg-[hsl(var(--primary))] text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20"
+                  className="flex-1 py-3 bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20"
                 >
                   Guardar
                 </button>
