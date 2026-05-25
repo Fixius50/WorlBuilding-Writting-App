@@ -1,5 +1,6 @@
 import React from "react";
 import ConfirmationModal from "@organisms/ConfirmationModal";
+import InputModal from "@organisms/InputModal";
 import { Notebook } from "@domain/models/writing";
 import ZenEditor from "@features/Editor/components/ZenEditor";
 import { Hoja as HojaModel } from "@domain/models/database";
@@ -10,6 +11,10 @@ interface NotebookManagerProps {
 }
 
 const NotebookManager: React.FC<NotebookManagerProps> = ({ projectId }) => {
+  const [isCreateModalOpen, setIsCreateModalOpen] =
+    React.useState<boolean>(false);
+  const [createTitleAlertOpen, setCreateTitleAlertOpen] =
+    React.useState<boolean>(false);
   const {
     notebooks,
     isLoading,
@@ -23,6 +28,18 @@ const NotebookManager: React.FC<NotebookManagerProps> = ({ projectId }) => {
     updateNotebook,
     deleteNotebook,
   } = useNotebookManager(projectId);
+
+  const handleCreateNotebook = (title: string): void => {
+    switch (!!title.trim()) {
+      case true:
+        createNotebook(title);
+        setIsCreateModalOpen(false);
+        break;
+      default:
+        setCreateTitleAlertOpen(true);
+        break;
+    }
+  };
 
   if (isLoading)
     return (
@@ -101,7 +118,7 @@ const NotebookManager: React.FC<NotebookManagerProps> = ({ projectId }) => {
           Tus Notas Rápidas
         </h3>
         <button
-          onClick={createNotebook}
+          onClick={() => setIsCreateModalOpen(true)}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-none bg-primary/20 text-primary hover:bg-primary/30 transition-all text-[10px] font-bold uppercase tracking-wide border border-primary/20"
         >
           <span className="material-symbols-outlined text-sm">add</span>
@@ -178,6 +195,27 @@ const NotebookManager: React.FC<NotebookManagerProps> = ({ projectId }) => {
         message="¿Estás seguro? Esta acción no se puede deshacer."
         confirmText="Eliminar"
         type="danger"
+      />
+
+      <InputModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onConfirm={handleCreateNotebook}
+        title="Nueva Nota"
+        message="Escribe el nombre de la nota rápida."
+        placeholder="Ej: Ideas del capítulo 1"
+        confirmText="Crear"
+      />
+
+      <ConfirmationModal
+        isOpen={createTitleAlertOpen}
+        onClose={() => setCreateTitleAlertOpen(false)}
+        onConfirm={() => setCreateTitleAlertOpen(false)}
+        title="Título requerido"
+        message="Debes escribir un nombre para crear el cuaderno."
+        confirmText="Entendido"
+        cancelText="Cerrar"
+        type="warning"
       />
     </div>
   );

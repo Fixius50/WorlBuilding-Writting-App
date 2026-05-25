@@ -174,6 +174,7 @@ const BibleTableView: React.FC<TableViewProps> = ({
     getFilteredRowModel: getFilteredRowModel(),
     enableRowSelection: true,
   });
+  const columnCount = table.getVisibleLeafColumns().length;
 
   const tableScrollRef = useRef<HTMLDivElement>(null);
 
@@ -204,33 +205,43 @@ const BibleTableView: React.FC<TableViewProps> = ({
   }
 
   return (
-    <div className="flex-1 flex flex-col p-8 pt-0 overflow-hidden relative">
-      <div className="max-w-6xl w-full mx-auto flex-1 flex flex-col monolithic-panel border border-foreground/5 bg-foreground/[0.02] overflow-hidden">
-        <div className="flex items-center justify-start gap-3 p-6 bg-background border-b border-foreground/10 h-[72px]">
-          {selectedCount > 0 && (
+    <div className="flex flex-col p-8 pt-0 relative">
+      <div className="max-w-6xl w-full mx-auto flex flex-col monolithic-panel border border-foreground/10 bg-background overflow-hidden">
+        <div className="flex items-center justify-between gap-3 p-5 bg-foreground/[0.02] border-b border-foreground/10 min-h-[72px]">
+          <div className="flex items-center gap-3">
+            {selectedCount > 0 && (
+              <button
+                onClick={() => setIsDeleteModalOpen(true)}
+                className="flex items-center gap-2 px-4 h-9 bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all shadow-lg shadow-red-500/10 shrink-0"
+              >
+                <span className="material-symbols-outlined text-sm">
+                  delete_sweep
+                </span>
+                Borrar {selectedCount}
+              </button>
+            )}
             <button
-              onClick={() => setIsDeleteModalOpen(true)}
-              className="flex items-center gap-2 px-4 h-9 bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all shadow-lg shadow-red-500/10 shrink-0"
+              onClick={() => setIsMassCreateOpen(true)}
+              className="flex items-center gap-2 px-4 h-9 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20 shrink-0 border border-transparent"
             >
               <span className="material-symbols-outlined text-sm">
-                delete_sweep
-              </span>{" "}
-              Borrar {selectedCount}
+                add_circle
+              </span>
+              Crear en Serie
             </button>
-          )}
-          <button
-            onClick={() => setIsMassCreateOpen(true)}
-            className="flex items-center gap-2 px-4 h-9 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20 shrink-0 border border-transparent"
-          >
-            <span className="material-symbols-outlined text-sm">
-              add_circle
-            </span>{" "}
-            Crear en Serie
-          </button>
+          </div>
+
+          <div className="flex items-center gap-2 px-3 py-1.5 border border-foreground/10 bg-background text-foreground/50 text-[10px] font-black uppercase tracking-[0.2em]">
+            <span className="material-symbols-outlined text-sm text-primary/80">
+              table_rows
+            </span>
+            {filteredData.length} registros
+          </div>
         </div>
+
         <div
           ref={tableScrollRef}
-          className="overflow-auto custom-scrollbar flex-1"
+          className="overflow-auto custom-scrollbar h-auto bg-background"
         >
           <table className="w-full text-left border-collapse">
             <thead className="sticky top-0 bg-background z-10">
@@ -240,7 +251,10 @@ const BibleTableView: React.FC<TableViewProps> = ({
                   className="border-b border-foreground/10"
                 >
                   {headerGroup.headers.map((header) => (
-                    <th key={header.id} className="p-4 bg-background">
+                    <th
+                      key={header.id}
+                      className="px-4 py-3 bg-background text-foreground/70"
+                    >
                       {flexRender(
                         header.column.columnDef.header,
                         header.getContext(),
@@ -251,15 +265,15 @@ const BibleTableView: React.FC<TableViewProps> = ({
               ))}
             </thead>
             <tbody>
-              <tr className="bg-background group/ghost">
-                <td className="p-3 border-b border-foreground/10">
+              <tr className="bg-foreground/[0.015] group/ghost border-b border-foreground/10">
+                <td className="px-4 py-3">
                   <div className="size-4 border border-foreground/20 rounded-none bg-foreground/5 flex items-center justify-center">
                     <span className="material-symbols-outlined text-[10px] text-primary/40">
                       add
                     </span>
                   </div>
                 </td>
-                <td className="p-2 border-b border-foreground/10">
+                <td className="px-3 py-2">
                   <input
                     type="text"
                     placeholder={
@@ -271,16 +285,16 @@ const BibleTableView: React.FC<TableViewProps> = ({
                     onChange={(e) => setNewEntityName(e.target.value)}
                     onKeyDown={handleGhostCreate}
                     disabled={isCreating || !hasFolders}
-                    className="w-full bg-transparent border-none outline-none text-xs text-primary font-bold placeholder:text-foreground/20"
+                    className="w-full bg-transparent border border-foreground/10 px-3 py-2 outline-none text-xs text-primary font-bold placeholder:text-foreground/30 focus:border-primary/40"
                     autoFocus
                   />
                 </td>
-                <td className="p-2 border-b border-foreground/10">
+                <td className="px-3 py-2">
                   <select
                     value={newEntityType}
                     onChange={(e) => setNewEntityType(e.target.value)}
                     disabled={!hasFolders}
-                    className="bg-transparent border-none text-foreground/40 text-[10px] italic outline-none focus:text-primary cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="w-full bg-transparent border border-foreground/10 px-3 py-2 text-foreground/60 text-[10px] italic outline-none focus:text-primary focus:border-primary/40 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <option value="PERSONAJE">Personaje</option>
                     <option value="LUGAR">Lugar</option>
@@ -291,7 +305,7 @@ const BibleTableView: React.FC<TableViewProps> = ({
                     <option value="TIMELINE">Línea Temporal</option>
                   </select>
                 </td>
-                <td className="p-2 border-b border-foreground/10">
+                <td className="px-3 py-2">
                   <select
                     value={newEntityFolderId || ""}
                     onChange={(e) => {
@@ -303,7 +317,7 @@ const BibleTableView: React.FC<TableViewProps> = ({
                         e.target.value ? Number(e.target.value) : null,
                       );
                     }}
-                    className="bg-transparent border-none text-foreground/40 text-[10px] italic outline-none focus:text-primary cursor-pointer"
+                    className="w-full bg-transparent border border-foreground/10 px-3 py-2 text-foreground/60 text-[10px] italic outline-none focus:text-primary focus:border-primary/40 cursor-pointer"
                   >
                     <option value="" disabled>
                       Selecciona carpeta
@@ -322,7 +336,7 @@ const BibleTableView: React.FC<TableViewProps> = ({
               {/* Padding superior para filas no renderizadas */}
               {paddingTop > 0 && (
                 <tr style={{ height: paddingTop }}>
-                  <td />
+                  <td colSpan={columnCount} />
                 </tr>
               )}
               {/* Solo las filas visibles en pantalla */}
@@ -332,10 +346,10 @@ const BibleTableView: React.FC<TableViewProps> = ({
                   <tr
                     key={row.id}
                     data-index={virtualRow.index}
-                    className={`border-b border-foreground/[0.03] hover:bg-background transition-colors group ${row.getIsSelected() ? "bg-primary/10" : ""}`}
+                    className={`border-b border-foreground/[0.04] hover:bg-foreground/[0.02] transition-colors group ${row.getIsSelected() ? "bg-primary/10" : ""}`}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="p-4">
+                      <td key={cell.id} className="px-4 py-3 align-middle">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext(),
@@ -348,7 +362,7 @@ const BibleTableView: React.FC<TableViewProps> = ({
               {/* Padding inferior para filas no renderizadas */}
               {paddingBottom > 0 && (
                 <tr style={{ height: paddingBottom }}>
-                  <td />
+                  <td colSpan={columnCount} />
                 </tr>
               )}
             </tbody>

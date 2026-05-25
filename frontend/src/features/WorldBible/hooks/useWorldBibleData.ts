@@ -26,9 +26,16 @@ export const useWorldBibleData = (projectId: number) => {
       queryClient.invalidateQueries({ queryKey: BIBLE_KEYS.all(projectId) });
     };
 
-    window.addEventListener("app-data-changed", handleDataChange);
-    return () =>
-      window.removeEventListener("app-data-changed", handleDataChange);
+    const events = ["app-data-changed", "entity-update", "folder-update"];
+    events.forEach((eventName) => {
+      window.addEventListener(eventName, handleDataChange);
+    });
+
+    return () => {
+      events.forEach((eventName) => {
+        window.removeEventListener(eventName, handleDataChange);
+      });
+    };
   }, [projectId, queryClient]);
 
   return useQuery<Entidad[]>({

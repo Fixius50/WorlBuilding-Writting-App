@@ -6,6 +6,7 @@ import CreateWorkspaceModal from "@features/Dashboard/components/CreateWorkspace
 import EditWorkspaceModal from "@features/Dashboard/components/EditWorkspaceModal";
 import { sqlocal } from "@database";
 import ConfirmModal from "@organisms/ConfirmModal";
+import ConfirmationModal from "@organisms/ConfirmationModal";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 // Sync Service handled by UseCase
 
@@ -20,6 +21,11 @@ const WorkspaceSelector: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [importConfirmOpen, setImportConfirmOpen] = useState(false);
+  const [statusModal, setStatusModal] = useState<{
+    title: string;
+    message: string;
+  } | null>(null);
 
   // CRUD State
   const [projectToDelete, setProjectToDelete] = useState<number | null>(null);
@@ -111,10 +117,17 @@ const WorkspaceSelector: React.FC = () => {
     try {
       setActionLoading(true);
       const res = await WorkspaceUseCase.exportBackup("worldbuilding_master");
-      if (res.success) {
-        alert("Copia de seguridad guardada con éxito en el servidor local.");
-      } else {
-        setError(res.message);
+      switch (res.success) {
+        case true:
+          setStatusModal({
+            title: "Exportación completada",
+            message:
+              "La copia de seguridad se guardó correctamente en el servidor local.",
+          });
+          break;
+        default:
+          setError(res.message);
+          break;
       }
     } catch (err) {
       setError("Fallo en la sincronización.");
@@ -123,26 +136,42 @@ const WorkspaceSelector: React.FC = () => {
     }
   };
 
-  const handleImport = async () => {
-    const confirmImport = window.confirm(
-      "¿Seguró? Esto sobrescribirá todos tus datos actuales con la versión del servidor.",
-    );
-    if (confirmImport) {
-      try {
-        setActionLoading(true);
-        const res = await WorkspaceUseCase.importBackup("worldbuilding_master");
-        if (res.success) {
-          alert("Datos restaurados con éxito.");
-          window.location.reload();
-        } else {
+  const executeImport = async () => {
+    try {
+      setActionLoading(true);
+      const res = await WorkspaceUseCase.importBackup("worldbuilding_master");
+      switch (res.success) {
+        case true:
+          setStatusModal({
+            title: "Importación completada",
+            message:
+              "Los datos se restauraron correctamente. La aplicación se recargará para aplicar los cambios.",
+          });
+          break;
+        default:
           setError(res.message);
-        }
-      } catch (err) {
-        setError("Error al importar datos.");
-      } finally {
-        setActionLoading(false);
-      }
+          break;
     }
+    } catch (err) {
+      setError("Error al importar datos.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleImport = async () => {
+    setImportConfirmOpen(true);
+  };
+
+  const handleStatusAcknowledge = (): void => {
+    switch (statusModal?.title) {
+      case "Importación completada":
+        setStatusModal(null);
+        window.location.reload();
+        break;
+      default:
+        setStatusModal(null);
+        break;
   };
 
   const filteredWorkspaces = workspaces.filter((w) =>
@@ -372,6 +401,31 @@ const WorkspaceSelector: React.FC = () => {
         message={`Estás a punto de borrar este cuaderno y todo su contenido permanentemente. Esta acción no se puede deshacer.`}
         confirmText="Eliminar Universo"
         isDestructive={true}
+      />
+
+      <ConfirmModal
+        isOpen={importConfirmOpen}
+        onClose={() => setImportConfirmOpen(false)}
+        onConfirm={() => {
+          setImportConfirmOpen(false);
+          executeImport();
+        }}
+        title="¿Importar respaldo del servidor?"
+        message="Esto sobrescribirá los datos actuales del universo con la versión respaldada."
+        confirmText="Sí, importar"
+        cancelText="Cancelar"
+        isDestructive={true}
+      />
+
+      <ConfirmationModal
+        isOpen={statusModal !== null}
+        onClose={() => setStatusModal(null)}
+        onConfirm={handleStatusAcknowledge}
+        title={statusModal?.title || "Operación completada"}
+        message={statusModal?.message || ""}
+        confirmText="Aceptar"
+        cancelText="Cerrar"
+        type="warning"
       />
     </div>
   );

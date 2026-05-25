@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import MonolithicPanel from "@atoms/MonolithicPanel";
+import ConfirmationModal from "@organisms/ConfirmationModal";
 import { useWritingHub } from "./useWritingHub";
 
 interface WritingOutletContext {
@@ -11,6 +12,7 @@ interface WritingOutletContext {
 
 const WritingHub = () => {
   const navigate = useNavigate();
+  const [titleAlertOpen, setTitleAlertOpen] = React.useState<boolean>(false);
   const outlet = useOutletContext<WritingOutletContext>();
   const { setRightPanelTab, baseUrl, projectId } = outlet || {
     projectId: 1,
@@ -36,6 +38,17 @@ const WritingHub = () => {
     handleSubmit,
     handleDelete,
   } = useWritingHub(Number(projectId), setRightPanelTab);
+
+  const handleSubmitWithValidation = (): void => {
+    switch (!!title.trim()) {
+      case true:
+        handleSubmit();
+        break;
+      default:
+        setTitleAlertOpen(true);
+        break;
+    }
+  };
 
   if (loading) {
     return (
@@ -210,7 +223,13 @@ const WritingHub = () => {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") handleSubmit();
+                    switch (e.key === "Enter") {
+                      case true:
+                        handleSubmitWithValidation();
+                        break;
+                      default:
+                        break;
+                    }
                   }}
                 />
               </div>
@@ -248,7 +267,7 @@ const WritingHub = () => {
                 <button
                   type="button"
                   disabled={saving}
-                  onClick={handleSubmit}
+                  onClick={handleSubmitWithValidation}
                   className={`flex-[2] py-5 text-foreground font-black uppercase text-[10px] tracking-[0.3em] shadow-2xl shadow-primary/20 transition-all ${saving ? "bg-primary/40 cursor-wait" : "bg-primary hover:bg-primary/80 hover:scale-[1.02] active:scale-95"}`}
                 >
                   {saving
@@ -262,6 +281,17 @@ const WritingHub = () => {
           </MonolithicPanel>
         </div>
       )}
+
+      <ConfirmationModal
+        isOpen={titleAlertOpen}
+        onClose={() => setTitleAlertOpen(false)}
+        onConfirm={() => setTitleAlertOpen(false)}
+        title="Título requerido"
+        message="Debes escribir un nombre para guardar el cuaderno."
+        confirmText="Entendido"
+        cancelText="Cerrar"
+        type="warning"
+      />
     </div>
   );
 };

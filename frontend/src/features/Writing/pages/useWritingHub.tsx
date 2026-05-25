@@ -1,23 +1,26 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Cuaderno } from '@domain/models/database';
-import { WritingUseCase } from '@application/useCases/WritingUseCase';
+import { useState, useEffect, useCallback } from "react";
+import { Cuaderno } from "@domain/models/database";
+import { WritingUseCase } from "@application/useCases/WritingUseCase";
 
 /**
  * 🧠 useWritingHub
  * Logic for managing the library of notebooks, including creation, editing, and searching.
  */
-export const useWritingHub = (projectId: number, setRightPanelTab?: (tab: string) => void) => {
+export const useWritingHub = (
+  projectId: number,
+  setRightPanelTab?: (tab: string) => void,
+) => {
   const [notebooks, setNotebooks] = useState<Cuaderno[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [notebookToEdit, setNotebookToEdit] = useState<Cuaderno | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  
+
   // Form states
-  const [title, setTitle] = useState('');
-  const [genre, setGenre] = useState('');
+  const [title, setTitle] = useState("");
+  const [genre, setGenre] = useState("");
 
   const loadNotebooks = useCallback(async () => {
     try {
@@ -32,13 +35,13 @@ export const useWritingHub = (projectId: number, setRightPanelTab?: (tab: string
   }, [projectId]);
 
   useEffect(() => {
-    if (setRightPanelTab) setRightPanelTab('NOTEBOOKS');
+    if (setRightPanelTab) setRightPanelTab("NOTEBOOKS");
     loadNotebooks();
   }, [setRightPanelTab, loadNotebooks]);
 
   const openCreateModal = useCallback(() => {
-    setTitle('');
-    setGenre('');
+    setTitle("");
+    setGenre("");
     setSubmitError(null);
     setNotebookToEdit(null);
     setIsCreating(true);
@@ -47,7 +50,7 @@ export const useWritingHub = (projectId: number, setRightPanelTab?: (tab: string
   const openEditModal = useCallback((nb: Cuaderno) => {
     setNotebookToEdit(nb);
     setTitle(nb.titulo);
-    setGenre(nb.genero || '');
+    setGenre(nb.genero || "");
     setSubmitError(null);
     setIsCreating(true);
   }, []);
@@ -55,30 +58,43 @@ export const useWritingHub = (projectId: number, setRightPanelTab?: (tab: string
   const closeModal = useCallback(() => {
     setIsCreating(false);
     setNotebookToEdit(null);
-    setTitle('');
-    setGenre('');
+    setTitle("");
+    setGenre("");
     setSubmitError(null);
     setSaving(false);
   }, []);
 
   const handleSubmit = useCallback(async () => {
     if (!title.trim()) {
-      setSubmitError('El título es obligatorio');
+      setSubmitError("Debes escribir un nombre para guardar el cuaderno.");
       return;
     }
-    
+
     setSaving(true);
     try {
       if (notebookToEdit) {
         await WritingUseCase.updateNotebook(notebookToEdit.id, title, genre);
-        setNotebooks(prev => prev.map(n => n.id === notebookToEdit.id ? { ...n, titulo: title.trim(), genero: genre } : n));
+        setNotebooks((prev) =>
+          prev.map((n) =>
+            n.id === notebookToEdit.id
+              ? { ...n, titulo: title.trim(), genero: genre }
+              : n,
+          ),
+        );
       } else {
-        const nuevo = await WritingUseCase.createNotebook(projectId, title, genre);
-        setNotebooks(prev => [nuevo, ...prev]);
+        const nuevo = await WritingUseCase.createNotebook(
+          projectId,
+          title,
+          genre,
+        );
+        setNotebooks((prev) => [nuevo, ...prev]);
       }
       closeModal();
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al guardar. Revisa la consola.';
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Error al guardar. Revisa la consola.";
       setSubmitError(errorMessage);
     } finally {
       setSaving(false);
@@ -86,18 +102,19 @@ export const useWritingHub = (projectId: number, setRightPanelTab?: (tab: string
   }, [projectId, title, genre, notebookToEdit, closeModal]);
 
   const handleDelete = useCallback(async (id: number) => {
-    if (!window.confirm('¿Eliminar este archivador?')) return;
+    if (!window.confirm("¿Eliminar este archivador?")) return;
     try {
       await WritingUseCase.deleteNotebook(id);
-      setNotebooks(prev => prev.filter(n => n.id !== id));
+      setNotebooks((prev) => prev.filter((n) => n.id !== id));
     } catch (err) {
       console.error("Error deleting notebook:", err);
     }
   }, []);
 
-  const filteredNotebooks = notebooks.filter(nb => 
-    nb.titulo.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    (nb.genero || '').toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredNotebooks = notebooks.filter(
+    (nb) =>
+      nb.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (nb.genero || "").toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return {
@@ -117,6 +134,6 @@ export const useWritingHub = (projectId: number, setRightPanelTab?: (tab: string
     openEditModal,
     closeModal,
     handleSubmit,
-    handleDelete
+    handleDelete,
   };
 };

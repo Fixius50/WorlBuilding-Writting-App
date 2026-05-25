@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Notebook } from '@domain/models/writing';
-import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
+import { useState, useEffect, useCallback } from "react";
+import { Notebook } from "@domain/models/writing";
+import { WorkspaceUseCase } from "@application/useCases/WorkspaceUseCase";
 
 /**
  * 🧠 useNotebookManager
@@ -13,7 +13,7 @@ export const useNotebookManager = (projectId: number | string | null) => {
   const [editingTitleId, setEditingTitleId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  const key = `notebooks_v2_${projectId || 'global'}`;
+  const key = `notebooks_v2_${projectId || "global"}`;
 
   const loadNotebooks = useCallback(async () => {
     setIsLoading(true);
@@ -41,39 +41,55 @@ export const useNotebookManager = (projectId: number | string | null) => {
     loadNotebooks();
   }, [loadNotebooks]);
 
-  const saveNotebooks = useCallback(async (newNotebooks: Notebook[]) => {
-    setNotebooks(newNotebooks);
-    await WorkspaceUseCase.saveSetting(key, JSON.stringify(newNotebooks));
-  }, [key]);
+  const saveNotebooks = useCallback(
+    async (newNotebooks: Notebook[]) => {
+      setNotebooks(newNotebooks);
+      await WorkspaceUseCase.saveSetting(key, JSON.stringify(newNotebooks));
+    },
+    [key],
+  );
 
-  const createNotebook = useCallback(() => {
-    const newNotebook: Notebook = {
-      id: Date.now().toString(),
-      titulo: 'Nueva Nota',
-      contenido: '',
-      updatedAt: new Date().toISOString()
-    };
-    const updated = [newNotebook, ...notebooks];
-    saveNotebooks(updated);
-    setEditingTitleId(newNotebook.id.toString());
-  }, [notebooks, saveNotebooks]);
+  const createNotebook = useCallback(
+    (title?: string) => {
+      const cleanTitle = title?.trim() || "";
+      const notebookTitle = cleanTitle || "Nueva Nota";
 
-  const updateNotebook = useCallback((id: string | number, field: keyof Notebook, value: string) => {
-    const updated = notebooks.map(nb =>
-      nb.id === id ? { ...nb, [field]: value, updatedAt: new Date().toISOString() } : nb
-    );
-    saveNotebooks(updated);
+      const newNotebook: Notebook = {
+        id: Date.now().toString(),
+        titulo: notebookTitle,
+        contenido: "",
+        updatedAt: new Date().toISOString(),
+      };
+      const updated = [newNotebook, ...notebooks];
+      saveNotebooks(updated);
+      setEditingTitleId(newNotebook.id.toString());
+    },
+    [notebooks, saveNotebooks],
+  );
 
-    if (activeNotebook && activeNotebook.id === id) {
-      setActiveNotebook(prev => prev ? { ...prev, [field]: value } : null);
-    }
-  }, [notebooks, activeNotebook, saveNotebooks]);
+  const updateNotebook = useCallback(
+    (id: string | number, field: keyof Notebook, value: string) => {
+      const updated = notebooks.map((nb) =>
+        nb.id === id
+          ? { ...nb, [field]: value, updatedAt: new Date().toISOString() }
+          : nb,
+      );
+      saveNotebooks(updated);
+
+      if (activeNotebook && activeNotebook.id === id) {
+        setActiveNotebook((prev) =>
+          prev ? { ...prev, [field]: value } : null,
+        );
+      }
+    },
+    [notebooks, activeNotebook, saveNotebooks],
+  );
 
   const deleteNotebook = useCallback(async () => {
     if (!confirmDeleteId) return;
-    const updated = notebooks.filter(nb => nb.id !== confirmDeleteId);
+    const updated = notebooks.filter((nb) => nb.id !== confirmDeleteId);
     await saveNotebooks(updated);
-    
+
     if (activeNotebook && activeNotebook.id === confirmDeleteId) {
       setActiveNotebook(null);
     }
@@ -91,6 +107,6 @@ export const useNotebookManager = (projectId: number | string | null) => {
     setConfirmDeleteId,
     createNotebook,
     updateNotebook,
-    deleteNotebook
+    deleteNotebook,
   };
 };

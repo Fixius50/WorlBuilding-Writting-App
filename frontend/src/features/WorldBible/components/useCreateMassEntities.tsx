@@ -1,10 +1,15 @@
-import { useState, useEffect } from 'react';
-import { WorldBibleUseCase } from '@application/useCases/WorldBibleUseCase';
-import { Carpeta, Plantilla } from '@domain/models/database';
+import { useState, useEffect } from "react";
+import { WorldBibleUseCase } from "@application/useCases/WorldBibleUseCase";
+import { Carpeta, Plantilla } from "@domain/models/database";
 
 interface AttributeValue {
   template: Plantilla;
   value: string;
+}
+
+interface PendingEntity {
+  name: string;
+  type: string;
 }
 
 /**
@@ -17,22 +22,24 @@ export const useCreateMassEntities = (
   allFolders: Carpeta[],
   onCreated: () => void,
   onClose: () => void,
-  initialFolderId?: number | null
+  initialFolderId?: number | null,
 ) => {
-  const [nameList, setNameList] = useState<string[]>([]);
-  const [inputValue, setInputValue] = useState('');
-  const [type, setType] = useState('PERSONAJE');
+  const [nameEntries, setNameEntries] = useState<PendingEntity[]>([]);
+  const [inputValue, setInputValue] = useState("");
+  const [type, setType] = useState("PERSONAJE");
   const [folderId, setFolderId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [availableTemplates, setAvailableTemplates] = useState<Plantilla[]>([]);
-  const [selectedAttributes, setSelectedAttributes] = useState<AttributeValue[]>([]);
+  const [selectedAttributes, setSelectedAttributes] = useState<
+    AttributeValue[]
+  >([]);
 
   useEffect(() => {
     if (isOpen) {
       loadTemplates();
-      setNameList([]);
-      setInputValue('');
-      
+      setNameEntries([]);
+      setInputValue("");
+
       if (initialFolderId) {
         setFolderId(initialFolderId);
       } else if (allFolders && allFolders.length > 0) {
@@ -47,82 +54,121 @@ export const useCreateMassEntities = (
     try {
       const tpls = await WorldBibleUseCase.getTemplates(projectId);
       setAvailableTemplates(tpls);
-    } catch (err) { }
+    } catch (err) {}
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === ' ' || e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       const val = inputValue.trim();
-      if (val && !nameList.includes(val)) {
-        setNameList(prev => [...prev, val]);
-        setInputValue('');
+      if (val) {
+        setNameEntries((prev) => [...prev, { name: val, type }]);
+        setInputValue("");
       }
-    } else if (e.key === 'Backspace' && !inputValue && nameList.length > 0) {
-      setNameList(prev => prev.slice(0, -1));
+    } else if (e.key === "Backspace" && !inputValue && nameEntries.length > 0) {
+      setNameEntries((prev) => prev.slice(0, -1));
     }
   };
 
-  const removeName = (nameToRemove: string) => {
-    setNameList(prev => prev.filter(n => n !== nameToRemove));
+  const removeNameAt = (indexToRemove: number) => {
+    setNameEntries((prev) =>
+      prev.filter((_, index) => index !== indexToRemove),
+    );
+  };
+
+  const updateNameType = (name: string, newType: string) => {
+    setNameEntries((prev) =>
+      prev.map((entry) =>
+        entry.name === name ? { ...entry, type: newType } : entry,
+      ),
+    );
   };
 
   const handleAddAttribute = (templateId: number) => {
-    const tpl = availableTemplates.find(t => t.id === templateId);
-    if (tpl && !selectedAttributes.find(a => a.template.id === templateId)) {
-      setSelectedAttributes(prev => [...prev, { template: tpl, value: tpl.valor_defecto || '' }]);
+    const tpl = availableTemplates.find((t) => t.id === templateId);
+    if (tpl && !selectedAttributes.find((a) => a.template.id === templateId)) {
+      setSelectedAttributes((prev) => [
+        ...prev,
+        { template: tpl, value: tpl.valor_defecto || "" },
+      ]);
     }
   };
 
   const handleRemoveAttribute = (templateId: number) => {
-    setSelectedAttributes(prev => prev.filter(a => a.template.id !== templateId));
+    setSelectedAttributes((prev) =>
+      prev.filter((a) => a.template.id !== templateId),
+    );
   };
 
   const handleAttributeValueChange = (templateId: number, value: string) => {
-    setSelectedAttributes(prev => prev.map(a => 
-      a.template.id === templateId ? { ...a, value } : a
-    ));
+    setSelectedAttributes((prev) =>
+      prev.map((a) => (a.template.id === templateId ? { ...a, value } : a)),
+    );
   };
 
-  const handleSubmit = async () => {
-    if (nameList.length === 0 || !folderId) return;
+  const handleSubmit = async (
+    typeSequence?: string[],
+    folderSequence?: number[],
+  ) => {
+    const hasFolderSequence = !!folderSequence && folderSequence.length > 0;
+    if (nameEntries.length === 0 || (!folderId && !hasFolderSequence)) return;
     setLoading(true);
     try {
-      for (const name of nameList) {
+      for (let index = 0; index < nameEntries.length; index += 1) {
+        const entry = nameEntries[index];
+        const resolvedType =
+          typeSequence && typeSequence.length > 0
+            ? typeSequence[Math.min(index, typeSequence.length - 1)]
+            : entry.type;
+        const resolvedFolderId =
+          folderSequence && folderSequence.length > 0
+            ? folderSequence[Math.min(index, folderSequence.length - 1)]
+            : folderId;
+        if (!resolvedFolderId) {
+          continue;
+        }
         await WorldBibleUseCase.createEntityWithAttributes(
           {
-            nombre: name,
-            tipo: type,
+            nombre: entry.name,
+            tipo: resolvedType,
             project_id: projectId,
-            carpeta_id: folderId
+            carpeta_id: resolvedFolderId,
           },
           selectedAttributes
-            .filter(attr => attr.value.trim())
-            .map(attr => ({ templateId: attr.template.id, value: attr.value }))
+            .filter((attr) => attr.value.trim())
+            .map((attr) => ({
+              templateId: attr.template.id,
+              value: attr.value,
+            })),
         );
       }
       onCreated();
       onClose();
-      setNameList([]);
+      setNameEntries([]);
       setSelectedAttributes([]);
-    } catch (err) { } finally {
+    } catch (err) {
+    } finally {
       setLoading(false);
     }
   };
 
   return {
-    nameList, setNameList,
-    inputValue, setInputValue,
-    type, setType,
-    folderId, setFolderId,
+    nameEntries,
+    inputValue,
+    setInputValue,
+    type,
+    setType,
+    folderId,
+    setFolderId,
     loading,
     availableTemplates,
     selectedAttributes,
     handleKeyDown,
-    removeName,
+    removeNameAt,
+    updateNameType,
     handleAddAttribute,
     handleRemoveAttribute,
     handleAttributeValueChange,
-    handleSubmit
+    handleSubmit,
   };
 };
