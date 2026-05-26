@@ -1,9 +1,9 @@
-import React, { useRef, useEffect } from 'react';
-import { Stage, Layer, Line, Rect, Circle, Transformer } from 'react-konva';
-import Konva from 'konva';
-import { KonvaEventObject } from 'konva/lib/Node';
-import { Shape, LayerData } from '@domain/models/canvas';
-import SectionErrorBoundary from '@organisms/SectionErrorBoundary';
+import React, { useRef, useEffect } from "react";
+import { Stage, Layer, Line, Rect, Circle, Transformer } from "react-konva";
+import Konva from "konva";
+import { KonvaEventObject } from "konva/lib/Node";
+import { Shape, LayerData } from "@domain/models/canvas";
+import SectionErrorBoundary from "@organisms/SectionErrorBoundary";
 
 interface DrawingCanvasProps {
   stageRef: React.RefObject<Konva.Stage | null>;
@@ -14,7 +14,10 @@ interface DrawingCanvasProps {
   tool: string;
   color: string;
   strokeWidth: number;
-  onDrawEnd: (phase: 'START' | 'MOVE' | 'END', data: { pos?: { x: number, y: number } }) => void;
+  onDrawEnd: (
+    phase: "START" | "MOVE" | "END",
+    data: { pos?: { x: number; y: number } },
+  ) => void;
 }
 
 const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
@@ -24,13 +27,32 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   onSelectShape,
   onChangeShape,
   tool,
-  onDrawEnd
+  onDrawEnd,
 }) => {
   const isDrawing = useRef(false);
   const transformerRef = useRef<Konva.Transformer>(null);
 
+  const readHslToken = (tokenName: string, fallback: string): string => {
+    if (typeof window === "undefined") return `hsl(${fallback})`;
+    const cssValue = getComputedStyle(document.documentElement)
+      .getPropertyValue(tokenName)
+      .trim();
+    return cssValue.length > 0 ? `hsl(${cssValue})` : `hsl(${fallback})`;
+  };
+
+  const themeCanvasBackground = readHslToken("--canvas-bg", "0 0% 100%");
+  const themeDrawingStroke = readHslToken(
+    "--canvas-drawing-stroke",
+    "240 10% 3.9%",
+  );
+
   useEffect(() => {
-    if (tool === 'select' && transformerRef.current && selectedShapeId && !Array.isArray(selectedShapeId)) {
+    if (
+      tool === "select" &&
+      transformerRef.current &&
+      selectedShapeId &&
+      !Array.isArray(selectedShapeId)
+    ) {
       const stage = stageRef.current;
       if (stage) {
         const selectedNode = stage.findOne(`#${selectedShapeId}`);
@@ -48,7 +70,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   }, [selectedShapeId, tool, layers]);
 
   const handleMouseDown = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
-    if (tool === 'select') {
+    if (tool === "select") {
       const clickedOnEmpty = e.target === e.target.getStage();
       if (clickedOnEmpty) {
         onSelectShape(null);
@@ -58,37 +80,44 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
       const stage = e.target.getStage();
       if (stage) {
         const pos = stage.getPointerPosition();
-        if (pos) onDrawEnd('START', { pos });
+        if (pos) onDrawEnd("START", { pos });
       }
     }
   };
 
   const handleMouseMove = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
-    if (isDrawing.current && tool !== 'select') {
+    if (isDrawing.current && tool !== "select") {
       const stage = e.target.getStage();
       if (stage) {
         const pos = stage.getPointerPosition();
-        if (pos) onDrawEnd('MOVE', { pos });
+        if (pos) onDrawEnd("MOVE", { pos });
       }
     }
   };
 
   const handleMouseUp = () => {
-    if (isDrawing.current && tool !== 'select') {
+    if (isDrawing.current && tool !== "select") {
       isDrawing.current = false;
-      onDrawEnd('END', {});
+      onDrawEnd("END", {});
     }
   };
 
-  const handleShapeClick = (e: KonvaEventObject<MouseEvent | TouchEvent>, shapeId: string) => {
-    if (tool === 'select') {
+  const handleShapeClick = (
+    e: KonvaEventObject<MouseEvent | TouchEvent>,
+    shapeId: string,
+  ) => {
+    if (tool === "select") {
       onSelectShape(shapeId);
       e.cancelBubble = true;
     }
   };
 
   return (
-    <div className="w-full h-full cursor-crosshair relative bg-white" id="canvas-container">
+    <div
+      className="w-full h-full cursor-crosshair relative"
+      id="canvas-container"
+      style={{ backgroundColor: themeCanvasBackground }}
+    >
       <Stage
         width={1000}
         height={800}
@@ -105,21 +134,23 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
             {layer.shapes.map((shape) => {
               const shapeProps: Record<string, unknown> = {
                 id: shape.id,
-                onClick: (e: KonvaEventObject<MouseEvent>) => handleShapeClick(e, shape.id),
-                onTap: (e: KonvaEventObject<TouchEvent>) => handleShapeClick(e, shape.id),
-                stroke: shape.stroke || '#ffffff',
+                onClick: (e: KonvaEventObject<MouseEvent>) =>
+                  handleShapeClick(e, shape.id),
+                onTap: (e: KonvaEventObject<TouchEvent>) =>
+                  handleShapeClick(e, shape.id),
+                stroke: shape.stroke || themeDrawingStroke,
                 strokeWidth: shape.strokeWidth || 4,
                 opacity: shape.opacity || 1,
-                lineCap: shape.lineCap || 'round',
-                lineJoin: shape.lineJoin || 'round',
+                lineCap: shape.lineCap || "round",
+                lineJoin: shape.lineJoin || "round",
                 dash: shape.dash,
                 tension: shape.tension,
                 globalCompositeOperation: shape.globalCompositeOperation,
-                draggable: tool === 'select' && selectedShapeId === shape.id,
+                draggable: tool === "select" && selectedShapeId === shape.id,
                 onDragEnd: (e: KonvaEventObject<DragEvent>) => {
                   onChangeShape(shape.id, {
                     x: e.target.x(),
-                    y: e.target.y()
+                    y: e.target.y(),
                   });
                 },
                 onTransformEnd: (e: KonvaEventObject<Event>) => {
@@ -129,30 +160,58 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
                     y: node.y(),
                     scaleX: node.scaleX(),
                     scaleY: node.scaleY(),
-                    rotation: node.rotation()
+                    rotation: node.rotation(),
                   });
-                }
+                },
               };
 
-              if (shape.type === 'brush' || shape.type === 'eraser' || shape.type === 'line') {
-                return <Line key={shape.id} points={shape.points || []} {...shapeProps} />;
+              if (
+                shape.type === "brush" ||
+                shape.type === "eraser" ||
+                shape.type === "line"
+              ) {
+                return (
+                  <Line
+                    key={shape.id}
+                    points={shape.points || []}
+                    {...shapeProps}
+                  />
+                );
               }
-              if (shape.type === 'rect') {
-                return <Rect key={shape.id} x={shape.x} y={shape.y} width={shape.width} height={shape.height} {...shapeProps} />;
+              if (shape.type === "rect") {
+                return (
+                  <Rect
+                    key={shape.id}
+                    x={shape.x}
+                    y={shape.y}
+                    width={shape.width}
+                    height={shape.height}
+                    {...shapeProps}
+                  />
+                );
               }
-              if (shape.type === 'circle') {
-                return <Circle key={shape.id} x={shape.x} y={shape.y} radius={shape.radius} {...shapeProps} />;
+              if (shape.type === "circle") {
+                return (
+                  <Circle
+                    key={shape.id}
+                    x={shape.x}
+                    y={shape.y}
+                    radius={shape.radius}
+                    {...shapeProps}
+                  />
+                );
               }
               return null;
             })}
           </Layer>
         ))}
-        {tool === 'select' && (
+        {tool === "select" && (
           <Layer>
             <Transformer
               ref={transformerRef}
               boundBoxFunc={(oldBox, newBox) => {
-                if (Math.abs(newBox.width) < 5 || Math.abs(newBox.height) < 5) return oldBox;
+                if (Math.abs(newBox.width) < 5 || Math.abs(newBox.height) < 5)
+                  return oldBox;
                 return newBox;
               }}
             />
@@ -164,4 +223,3 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
 };
 
 export default DrawingCanvas;
-

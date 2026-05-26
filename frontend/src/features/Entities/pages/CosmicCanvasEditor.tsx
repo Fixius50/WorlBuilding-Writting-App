@@ -26,10 +26,10 @@ const CosmicCanvasEditor: React.FC<{ entityId: number }> = ({ entityId }) => {
   if (loading || !entity) return null;
 
   return (
-    <div className="flex h-screen w-full bg-white overflow-hidden font-mono text-black">
+    <div className="flex h-screen w-full bg-background overflow-hidden font-mono text-foreground">
       {/* ZONA IZQUIERDA: Inyector de Entidades */}
-      <aside className="w-[280px] border-r border-black/10 bg-white flex flex-col z-20 text-black">
-        <div className="p-6 border-b border-black/10 bg-black/5">
+      <aside className="w-[280px] border-r border-foreground/10 bg-background flex flex-col z-20 text-foreground">
+        <div className="p-6 border-b border-foreground/10 bg-foreground/5">
           <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-4 flex items-center gap-2">
             <span className="material-symbols-outlined text-sm">database</span>
             Inyector de Nodos
@@ -40,7 +40,7 @@ const CosmicCanvasEditor: React.FC<{ entityId: number }> = ({ entityId }) => {
               placeholder="BUSCAR_ENTIDAD..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-black border border-foreground/20 p-3 text-[10px] text-foreground outline-none focus:border-primary transition-colors"
+              className="w-full bg-background border border-foreground/20 p-3 text-[10px] text-foreground outline-none focus:border-primary transition-colors"
             />
           </div>
         </div>
@@ -61,7 +61,7 @@ const CosmicCanvasEditor: React.FC<{ entityId: number }> = ({ entityId }) => {
               </div>
               <button
                 onClick={() => addEntityToCanvas(e)}
-                className="size-8 flex items-center justify-center bg-foreground/5 hover:bg-primary hover:text-black transition-all"
+                className="size-8 flex items-center justify-center bg-foreground/5 hover:bg-primary hover:text-primary-foreground transition-all"
               >
                 <span className="material-symbols-outlined text-sm">add</span>
               </button>

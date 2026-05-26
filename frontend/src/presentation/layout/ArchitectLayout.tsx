@@ -280,7 +280,7 @@ const ArchitectLayout: React.FC = () => {
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden bg-background text-foreground font-sans selection:bg-primary/30">
       {/* MICROHEADER GLOBAL STYLE VSCODE */}
-      <header className="h-[4.5vh] flex-shrink-0 bg-background border-b border-border flex items-center justify-between px-4 text-[11px] tracking-wide select-none z-[250] text-foreground/80 font-sans font-bold">
+      <header className="h-[4.5vh] flex-shrink-0 bg-background border-b border-border flex items-center justify-between px-0 text-[11px] tracking-wide select-none z-[250] text-foreground/80 font-sans font-bold">
         {/* Left Section: Menús desplegables */}
         <div className="flex items-center gap-1.5 h-full">
           {/* Botón Home / Panel de Control */}

@@ -34,7 +34,7 @@ const DEFAULT_LAYERS: MapLayer[] = [
     visible: true,
     opacity: 0.8,
     type: "spray",
-    color: "#10b981",
+    color: "hsl(var(--color-emerald))",
   },
   {
     id: "fronteras",
@@ -42,7 +42,7 @@ const DEFAULT_LAYERS: MapLayer[] = [
     visible: true,
     opacity: 1.0,
     type: "vector",
-    color: "#ef4444",
+    color: "hsl(var(--color-red))",
   },
 ];
 
@@ -77,7 +77,7 @@ export const useMapEditor = (
   const [drawMode, setDrawMode] = useState<DrawMode>("none");
   const [isDrawing, setIsDrawing] = useState(false);
   const [spacebarPanning, setSpacebarPanning] = useState(false);
-  const [mapBgColor, setMapBgColor] = useState("#ffffff");
+  const [mapBgColor, setMapBgColor] = useState("hsl(var(--background))");
   const [is3D, setIs3D] = useState(false);
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
   const [brushSize, setBrushSize] = useState(20);

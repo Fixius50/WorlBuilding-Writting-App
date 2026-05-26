@@ -58,6 +58,19 @@
   --bible-card-action-hover-bg: hsl(var(--foreground));
   --bible-card-action-hover-fg: hsl(var(--background));
   --bible-card-image-blend: normal;
+
+  /* Canvas Tokens (raw HSL channels for JS/Konva usage) */
+  --canvas-bg: var(--background);
+  --canvas-grid: var(--foreground);
+  --canvas-node-fill: var(--background);
+  --canvas-node-stroke: var(--primary);
+  --canvas-edge: var(--primary);
+  --canvas-label: var(--foreground);
+  --canvas-drawing-stroke: var(--foreground);
+  --canvas-popup-bg: var(--background);
+  --canvas-popup-fg: var(--foreground);
+  --canvas-popup-border: var(--foreground);
+  --canvas-popup-shadow: var(--foreground);
 }
 
 .dark,

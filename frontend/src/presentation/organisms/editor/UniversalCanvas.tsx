@@ -1,8 +1,17 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { Stage, Layer, Line, Circle, Text, Group, RegularPolygon, Rect } from 'react-konva';
-import Konva from 'konva';
-import { KonvaEventObject } from 'konva/lib/Node';
-import SectionErrorBoundary from '@organisms/SectionErrorBoundary';
+import React, { useRef, useState, useEffect } from "react";
+import {
+  Stage,
+  Layer,
+  Line,
+  Circle,
+  Text,
+  Group,
+  RegularPolygon,
+  Rect,
+} from "react-konva";
+import Konva from "konva";
+import { KonvaEventObject } from "konva/lib/Node";
+import SectionErrorBoundary from "@organisms/SectionErrorBoundary";
 
 export interface CanvasNode {
   id: string;
@@ -19,14 +28,14 @@ export interface CanvasEdge {
 }
 
 const defaultNodes: CanvasNode[] = [
-  { id: '1', x: 400, y: 300, label: 'El Sol Rojo', tipo: 'estrella' },
-  { id: '2', x: 200, y: 150, label: 'Planeta Alpha', tipo: 'planeta' },
-  { id: '3', x: 600, y: 450, label: 'Planeta Omega', tipo: 'planeta' },
+  { id: "1", x: 400, y: 300, label: "El Sol Rojo", tipo: "estrella" },
+  { id: "2", x: 200, y: 150, label: "Planeta Alpha", tipo: "planeta" },
+  { id: "3", x: 600, y: 450, label: "Planeta Omega", tipo: "planeta" },
 ];
 
 const defaultEdges: CanvasEdge[] = [
-  { id: 'e1-2', from: '1', to: '2' },
-  { id: 'e1-3', from: '1', to: '3' },
+  { id: "e1-2", from: "1", to: "2" },
+  { id: "e1-3", from: "1", to: "3" },
 ];
 
 export interface UniversalCanvasProps {
@@ -42,11 +51,11 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   initialEdges = defaultEdges,
   onNodeClick,
   onEdgeClick,
-  backgroundColor
+  backgroundColor,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<Konva.Stage>(null);
-  
+
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [nodes, setNodes] = useState<CanvasNode[]>(initialNodes);
   const [edges, setEdges] = useState<CanvasEdge[]>(initialEdges);
@@ -58,22 +67,38 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   useEffect(() => {
     setEdges(initialEdges);
   }, [initialEdges]);
-  
+
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  const readHslToken = (tokenName: string, fallback: string): string => {
+    if (typeof window === "undefined") return `hsl(${fallback})`;
+    const cssValue = getComputedStyle(document.documentElement)
+      .getPropertyValue(tokenName)
+      .trim();
+    return cssValue.length > 0 ? `hsl(${cssValue})` : `hsl(${fallback})`;
+  };
+
+  const themeCanvasBackground =
+    backgroundColor || readHslToken("--canvas-bg", "0 0% 100%");
+  const themeGridColor = readHslToken("--canvas-grid", "240 10% 3.9%");
+  const themeNodeFill = readHslToken("--canvas-node-fill", "0 0% 100%");
+  const themeNodeStroke = readHslToken("--canvas-node-stroke", "142 70% 45%");
+  const themeEdgeColor = readHslToken("--canvas-edge", "142 70% 45%");
+  const themeLabelColor = readHslToken("--canvas-label", "240 10% 3.9%");
 
   useEffect(() => {
     const handleResize = () => {
       if (containerRef.current) {
         setDimensions({
           width: containerRef.current.offsetWidth,
-          height: containerRef.current.offsetHeight
+          height: containerRef.current.offsetHeight,
         });
       }
     };
     handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const handleWheel = (e: KonvaEventObject<WheelEvent>) => {
@@ -88,10 +113,11 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
           x: (pointer.x - stage.x()) / oldScale,
           y: (pointer.y - stage.y()) / oldScale,
         };
-        
-        const newScale = e.evt.deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;
+
+        const newScale =
+          e.evt.deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;
         setScale(newScale);
-        
+
         setPosition({
           x: pointer.x - mousePointTo.x * newScale,
           y: pointer.y - mousePointTo.y * newScale,
@@ -101,7 +127,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   };
 
   const handleDragMoveNode = (id: string, e: KonvaEventObject<DragEvent>) => {
-    const newNodes = nodes.map(n => {
+    const newNodes = nodes.map((n) => {
       if (n.id === id) {
         return { ...n, x: e.target.x(), y: e.target.y() };
       }
@@ -113,23 +139,33 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   // Cálculo para grid infinito simulado
   const BACKGROUND_GRID_SIZE = 50;
   // Aumentamos el margen de renderizado de la grid basándonos en la escala y posición
-  const startX = Math.floor((-position.x / scale) / BACKGROUND_GRID_SIZE) * BACKGROUND_GRID_SIZE - BACKGROUND_GRID_SIZE * 10;
-  const endX = startX + (dimensions.width / scale) + BACKGROUND_GRID_SIZE * 20;
-  const startY = Math.floor((-position.y / scale) / BACKGROUND_GRID_SIZE) * BACKGROUND_GRID_SIZE - BACKGROUND_GRID_SIZE * 10;
-  const endY = startY + (dimensions.height / scale) + BACKGROUND_GRID_SIZE * 20;
+  const startX =
+    Math.floor(-position.x / scale / BACKGROUND_GRID_SIZE) *
+      BACKGROUND_GRID_SIZE -
+    BACKGROUND_GRID_SIZE * 10;
+  const endX = startX + dimensions.width / scale + BACKGROUND_GRID_SIZE * 20;
+  const startY =
+    Math.floor(-position.y / scale / BACKGROUND_GRID_SIZE) *
+      BACKGROUND_GRID_SIZE -
+    BACKGROUND_GRID_SIZE * 10;
+  const endY = startY + dimensions.height / scale + BACKGROUND_GRID_SIZE * 20;
 
   const verticalLines = [];
   for (let x = startX; x < endX; x += BACKGROUND_GRID_SIZE) {
     verticalLines.push(x);
   }
-  
+
   const horizontalLines = [];
   for (let y = startY; y < endY; y += BACKGROUND_GRID_SIZE) {
     horizontalLines.push(y);
   }
 
   return (
-    <div ref={containerRef} className="w-full h-full overflow-hidden relative" style={{ backgroundColor: backgroundColor || '#0a0a0a' }}>
+    <div
+      ref={containerRef}
+      className="w-full h-full overflow-hidden relative"
+      style={{ backgroundColor: themeCanvasBackground }}
+    >
       <Stage
         width={dimensions.width}
         height={dimensions.height}
@@ -151,7 +187,8 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
             <Line
               key={`v-${i}`}
               points={[x, startY - 1000, x, endY + 1000]}
-              stroke="rgba(0, 255, 255, 0.05)"
+              stroke={themeGridColor}
+              opacity={0.08}
               strokeWidth={1 / scale}
             />
           ))}
@@ -159,22 +196,23 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
             <Line
               key={`h-${i}`}
               points={[startX - 1000, y, endX + 1000, y]}
-              stroke={backgroundColor === '#ffffff' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(0, 255, 255, 0.05)'}
+              stroke={themeGridColor}
+              opacity={0.08}
               strokeWidth={1 / scale}
             />
           ))}
         </Layer>
-        
+
         <Layer id="edges">
-          {edges.map(edge => {
-            const fromNode = nodes.find(n => n.id === edge.from);
-            const toNode = nodes.find(n => n.id === edge.to);
+          {edges.map((edge) => {
+            const fromNode = nodes.find((n) => n.id === edge.from);
+            const toNode = nodes.find((n) => n.id === edge.to);
             if (!fromNode || !toNode) return null;
             return (
               <Line
                 key={edge.id}
                 points={[fromNode.x, fromNode.y, toNode.x, toNode.y]}
-                stroke="hsl(var(--primary))"
+                stroke={themeEdgeColor}
                 strokeWidth={2}
                 opacity={0.8}
                 onClick={() => onEdgeClick && onEdgeClick(edge.id)}
@@ -182,52 +220,126 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
                 onMouseEnter={(e) => {
                   const stage = e.target.getStage();
                   if (stage) {
-                    stage.container().style.cursor = 'pointer';
+                    stage.container().style.cursor = "pointer";
                   }
                   const line = e.target as Konva.Line;
-                  line.setAttr('strokeWidth', 4);
+                  line.setAttr("strokeWidth", 4);
                   e.target.getLayer()?.draw();
                 }}
                 onMouseLeave={(e) => {
                   const stage = e.target.getStage();
                   if (stage) {
-                    stage.container().style.cursor = 'default';
+                    stage.container().style.cursor = "default";
                   }
                   const line = e.target as Konva.Line;
-                  line.setAttr('strokeWidth', 2);
+                  line.setAttr("strokeWidth", 2);
                   e.target.getLayer()?.draw();
                 }}
               />
             );
           })}
         </Layer>
-        
+
         <Layer id="nodes">
-          {nodes.map(node => {
-            const tipo = node.tipo ? node.tipo.toUpperCase() : '';
-            let shape = <Circle radius={25} fill="#0a0a0a" stroke="#00ffcc" strokeWidth={2} />;
-            
-            const isActor = ['PERSONAJE', 'OBJETO', 'RELIQUIA', 'VEHICULO'].includes(tipo);
-            const isCosmic = ['UNIVERSO', 'PLANETA', 'SISTEMA', 'DIMENSION', 'ASTRO'].includes(tipo);
-            const isTerritory = ['REINO', 'CIUDAD', 'LUGAR', 'CONTINENTE'].includes(tipo);
-            const isCollective = ['FACCION', 'RELIGION', 'RAZA', 'ORGANIZACION'].includes(tipo);
-            const isEvent = ['EVENTO', 'GUERRA', 'ERA', 'MARCA_TEMPORAL'].includes(tipo);
+          {nodes.map((node) => {
+            const tipo = node.tipo ? node.tipo.toUpperCase() : "";
+            let shape = (
+              <Circle
+                radius={25}
+                fill={themeNodeFill}
+                stroke={themeNodeStroke}
+                strokeWidth={2}
+              />
+            );
+
+            const isActor = [
+              "PERSONAJE",
+              "OBJETO",
+              "RELIQUIA",
+              "VEHICULO",
+            ].includes(tipo);
+            const isCosmic = [
+              "UNIVERSO",
+              "PLANETA",
+              "SISTEMA",
+              "DIMENSION",
+              "ASTRO",
+            ].includes(tipo);
+            const isTerritory = [
+              "REINO",
+              "CIUDAD",
+              "LUGAR",
+              "CONTINENTE",
+            ].includes(tipo);
+            const isCollective = [
+              "FACCION",
+              "RELIGION",
+              "RAZA",
+              "ORGANIZACION",
+            ].includes(tipo);
+            const isEvent = [
+              "EVENTO",
+              "GUERRA",
+              "ERA",
+              "MARCA_TEMPORAL",
+            ].includes(tipo);
 
             if (isActor) {
               // ARQUETIPO INDIVIDUAL: Rombo / Cápsula
-              shape = <RegularPolygon sides={4} radius={30} fill="#0a0a0a" stroke="#00ffcc" strokeWidth={1.5} />;
+              shape = (
+                <RegularPolygon
+                  sides={4}
+                  radius={30}
+                  fill={themeNodeFill}
+                  stroke={themeNodeStroke}
+                  strokeWidth={1.5}
+                />
+              );
             } else if (isCosmic) {
               // ARQUETIPO CÓSMICO: Esferas perfectas (Sin glows)
-              shape = <Circle radius={45} fill="#0a0a0a" stroke="#00ffcc" strokeWidth={2} />;
+              shape = (
+                <Circle
+                  radius={45}
+                  fill={themeNodeFill}
+                  stroke={themeNodeStroke}
+                  strokeWidth={2}
+                />
+              );
             } else if (isTerritory) {
               // ARQUETIPO TERRITORIAL: Hexágono
-              shape = <RegularPolygon sides={6} radius={35} fill="#0a0a0a" stroke="#00ffcc" strokeWidth={1.5} />;
+              shape = (
+                <RegularPolygon
+                  sides={6}
+                  radius={35}
+                  fill={themeNodeFill}
+                  stroke={themeNodeStroke}
+                  strokeWidth={1.5}
+                />
+              );
             } else if (isCollective) {
               // ARQUETIPO COLECTIVO: Escudo (5 lados)
-              shape = <RegularPolygon sides={5} radius={32} rotation={180} fill="#0a0a0a" stroke="#00ffcc" strokeWidth={1.5} />;
+              shape = (
+                <RegularPolygon
+                  sides={5}
+                  radius={32}
+                  rotation={180}
+                  fill={themeNodeFill}
+                  stroke={themeNodeStroke}
+                  strokeWidth={1.5}
+                />
+              );
             } else if (isEvent) {
               // ARQUETIPO CRONOLÓGICO: Triángulo Invertido
-              shape = <RegularPolygon sides={3} radius={30} rotation={180} fill="#0a0a0a" stroke="#00ffcc" strokeWidth={1.5} />;
+              shape = (
+                <RegularPolygon
+                  sides={3}
+                  radius={30}
+                  rotation={180}
+                  fill={themeNodeFill}
+                  stroke={themeNodeStroke}
+                  strokeWidth={1.5}
+                />
+              );
             }
 
             return (
@@ -243,7 +355,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
                 {shape}
                 <Text
                   text={node.label}
-                  fill={backgroundColor === '#ffffff' ? '#111111' : '#ffffff'}
+                  fill={themeLabelColor}
                   fontSize={12}
                   fontFamily="Inter, sans-serif"
                   fontStyle="bold"
