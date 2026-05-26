@@ -46,6 +46,10 @@ const BibleCard: React.FC<BibleCardProps> = ({
   onMove,
 }) => {
   const { isFolder, hasCount, label, colorClass } = useBibleCard(item, type);
+  const cardImageUrl =
+    typeof item.iconUrl === "string" && item.iconUrl.trim().length > 0
+      ? item.iconUrl
+      : undefined;
 
   const alignmentClass = isFolder ? "left-[95%]" : "left-[85%]";
 
@@ -111,82 +115,90 @@ const BibleCard: React.FC<BibleCardProps> = ({
           )}
         </div>
 
-        <div className="absolute inset-0 z-10 pointer-events-none">
-          {isFolder ? (
-            <>
-              <div
-                className="absolute inset-0"
-                style={{
-                  backgroundColor: "var(--bible-card-shell-bg)",
-                  clipPath:
-                    "polygon(5% 10%, 35% 10%, 45% 20%, 95% 20%, 95% 90%, 5% 90%)",
-                }}
-              />
-              <div className="absolute left-[5%] top-[10%] bottom-[10%] w-[1px] bg-current" />
-              <div className="absolute left-[5%] right-[5%] bottom-[10%] h-[1px] bg-current" />
-              <div className="absolute right-[5%] top-[20%] bottom-[10%] w-[1px] bg-current" />
-              <div className="absolute left-[5%] top-[10%] w-[30%] h-[1px] bg-current" />
-              <div
-                className="absolute bg-current h-[1px]"
-                style={{
-                  left: "35%",
-                  top: "10%",
-                  width: "14.14%",
-                  transform: "rotate(45deg)",
-                  transformOrigin: "top left",
-                }}
-              />
-              <div className="absolute left-[45%] right-[5%] top-[20%] h-[1px] bg-current" />
-              <div className="absolute left-[5%] top-[5%] h-[10px] w-[1px] bg-current opacity-40" />
-              <div className="absolute left-0 top-[10%] w-[10px] h-[1px] bg-current opacity-40" />
-              <div className="absolute right-[5%] bottom-[5%] h-[10px] w-[1px] bg-current opacity-40" />
-              <div className="absolute right-0 bottom-[10%] w-[10px] h-[1px] bg-current opacity-40" />
-            </>
-          ) : (
-            <>
-              <div
-                className="absolute inset-0"
-                style={{
-                  backgroundColor: "var(--bible-card-shell-bg)",
-                  clipPath:
-                    "polygon(15% 10%, 65% 10%, 85% 30%, 85% 90%, 15% 90%)",
-                }}
-              />
-              <div className="absolute left-[15%] top-[10%] bottom-[10%] w-[1px] bg-current" />
-              <div className="absolute left-[15%] right-[15%] bottom-[10%] h-[1px] bg-current" />
-              <div className="absolute right-[15%] top-[30%] bottom-[10%] w-[1px] bg-current" />
-              <div className="absolute left-[15%] top-[10%] right-[35%] h-[1px] bg-current" />
-              <div
-                className="absolute bg-current h-[1px]"
-                style={{
-                  left: "65%",
-                  top: "10%",
-                  width: "28.28%",
-                  transform: "rotate(45deg)",
-                  transformOrigin: "top left",
-                }}
-              />
-              <div className="absolute right-[15%] top-[30%] w-[20%] h-[1px] bg-current" />
-              <div className="absolute right-[35%] top-[10%] w-[1px] h-[20%] bg-current" />
-              <div className="absolute left-[15%] top-[10%] w-[3px] h-[3px] bg-current -translate-x-[1px] -translate-y-[1px] rounded-full" />
-              <div className="absolute right-[15%] bottom-[10%] w-[3px] h-[3px] bg-current translate-x-[1px] translate-y-[1px] rounded-full" />
-              <div className="absolute left-[15%] bottom-[10%] w-[3px] h-[3px] bg-current -translate-x-[1px] translate-y-[1px] rounded-full" />
-            </>
-          )}
-        </div>
+        {!cardImageUrl && (
+          <div className="absolute inset-0 z-10 pointer-events-none">
+            {isFolder ? (
+              <>
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    backgroundColor: "var(--bible-card-shell-bg)",
+                    clipPath:
+                      "polygon(5% 10%, 35% 10%, 45% 20%, 95% 20%, 95% 90%, 5% 90%)",
+                  }}
+                />
+                <div className="absolute left-[5%] top-[10%] bottom-[10%] w-[1px] bg-current" />
+                <div className="absolute left-[5%] right-[5%] bottom-[10%] h-[1px] bg-current" />
+                <div className="absolute right-[5%] top-[20%] bottom-[10%] w-[1px] bg-current" />
+                <div className="absolute left-[5%] top-[10%] w-[30%] h-[1px] bg-current" />
+                <div
+                  className="absolute bg-current h-[1px]"
+                  style={{
+                    left: "35%",
+                    top: "10%",
+                    width: "14.14%",
+                    transform: "rotate(45deg)",
+                    transformOrigin: "top left",
+                  }}
+                />
+                <div className="absolute left-[45%] right-[5%] top-[20%] h-[1px] bg-current" />
+                <div className="absolute left-[5%] top-[5%] h-[10px] w-[1px] bg-current opacity-40" />
+                <div className="absolute left-0 top-[10%] w-[10px] h-[1px] bg-current opacity-40" />
+                <div className="absolute right-[5%] bottom-[5%] h-[10px] w-[1px] bg-current opacity-40" />
+                <div className="absolute right-0 bottom-[10%] w-[10px] h-[1px] bg-current opacity-40" />
+              </>
+            ) : (
+              <>
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    backgroundColor: "var(--bible-card-shell-bg)",
+                    clipPath:
+                      "polygon(15% 10%, 65% 10%, 85% 30%, 85% 90%, 15% 90%)",
+                  }}
+                />
+                <div className="absolute left-[15%] top-[10%] bottom-[10%] w-[1px] bg-current" />
+                <div className="absolute left-[15%] right-[15%] bottom-[10%] h-[1px] bg-current" />
+                <div className="absolute right-[15%] top-[30%] bottom-[10%] w-[1px] bg-current" />
+                <div className="absolute left-[15%] top-[10%] right-[35%] h-[1px] bg-current" />
+                <div
+                  className="absolute bg-current h-[1px]"
+                  style={{
+                    left: "65%",
+                    top: "10%",
+                    width: "28.28%",
+                    transform: "rotate(45deg)",
+                    transformOrigin: "top left",
+                  }}
+                />
+                <div className="absolute right-[15%] top-[30%] w-[20%] h-[1px] bg-current" />
+                <div className="absolute right-[35%] top-[10%] w-[1px] h-[20%] bg-current" />
+                <div className="absolute left-[15%] top-[10%] w-[3px] h-[3px] bg-current -translate-x-[1px] -translate-y-[1px] rounded-full" />
+                <div className="absolute right-[15%] bottom-[10%] w-[3px] h-[3px] bg-current translate-x-[1px] translate-y-[1px] rounded-full" />
+                <div className="absolute left-[15%] bottom-[10%] w-[3px] h-[3px] bg-current -translate-x-[1px] translate-y-[1px] rounded-full" />
+              </>
+            )}
+          </div>
+        )}
 
-        {item.iconUrl && (
-          <div className="absolute inset-[15%] z-[12] overflow-hidden opacity-30 group-hover:opacity-50 grayscale mix-blend-screen">
+        {cardImageUrl && (
+          <div
+            className="absolute inset-[15%] z-[15] overflow-hidden pointer-events-none grayscale group-hover:grayscale-0"
+            style={{
+              mixBlendMode:
+                "var(--bible-card-image-blend)" as React.CSSProperties["mixBlendMode"],
+            }}
+          >
             <img
-              src={item.iconUrl}
+              src={cardImageUrl}
               alt=""
               className="w-full h-full object-cover"
             />
           </div>
         )}
 
-        <div className="relative z-20 flex flex-col items-center justify-center p-5 text-center w-[90%] mx-auto">
-          <div className="bible-name-scroll w-full overflow-x-auto overflow-y-hidden whitespace-nowrap">
+        <div className="relative z-20 pointer-events-none flex flex-col items-center justify-center p-5 text-center w-[90%] mx-auto">
+          <div className="bible-name-scroll pointer-events-auto inline-flex max-w-full overflow-x-auto overflow-y-hidden whitespace-nowrap">
             <span className="inline-block min-w-max text-sm font-bold leading-tight select-none">
               {item.nombre}
             </span>

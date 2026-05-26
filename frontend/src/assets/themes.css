@@ -57,6 +57,7 @@
   --bible-card-meta-color-hover: hsl(var(--foreground) / 0.72);
   --bible-card-action-hover-bg: hsl(var(--foreground));
   --bible-card-action-hover-fg: hsl(var(--background));
+  --bible-card-image-blend: normal;
 }
 
 .dark,
@@ -84,6 +85,12 @@
   --color-cyan-foreground: 240 10% 4%;
   --color-destructive: 0 72% 51%;
   --color-destructive-foreground: 0 0% 98%;
+  --bible-card-image-blend: screen;
+}
+
+.theme-deep_space,
+.theme-nebula {
+  --bible-card-image-blend: screen;
 }
 
 .theme-light {

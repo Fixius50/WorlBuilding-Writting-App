@@ -2,6 +2,8 @@ import { useState, useMemo, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { Carpeta, Entidad } from "@domain/models/database";
 
+type SortDirection = "asc" | "desc";
+
 interface BibleContext {
   handleOpenCreateModal: (
     parentId: string | number | null,
@@ -19,6 +21,7 @@ interface BibleContext {
   projectId: number;
   searchTerm: string;
   filterType: string;
+  sortDirection?: SortDirection;
 }
 
 /**
@@ -36,25 +39,49 @@ export const useBibleGridView = (context: BibleContext) => {
     entities = [],
     searchTerm = "",
     filterType = "ALL",
+    sortDirection = "desc",
     handleRenameFolder,
   } = context;
 
+  const sortMultiplier = sortDirection === "asc" ? 1 : -1;
+
+  const getNumericId = (value: number | string): number => {
+    const parsedId = Number(value);
+    return Number.isFinite(parsedId) ? parsedId : 0;
+  };
+
+  const getTimestamp = (value: unknown): number => {
+    if (typeof value !== "string" || value.trim().length === 0) return 0;
+    const parsedTime = Date.parse(value);
+    return Number.isFinite(parsedTime) ? parsedTime : 0;
+  };
+
   // Logic: Filter content based on Search and Type
   const filteredFolders = useMemo(() => {
-    return folders.filter((f) =>
-      f.nombre.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
-  }, [folders, searchTerm]);
+    return [...folders]
+      .filter((f) => f.nombre.toLowerCase().includes(searchTerm.toLowerCase()))
+      .sort(
+        (a, b) => (getNumericId(a.id) - getNumericId(b.id)) * sortMultiplier,
+      );
+  }, [folders, searchTerm, sortMultiplier]);
 
   const filteredEntities = useMemo(() => {
-    return entities.filter((e) => {
-      const matchesSearch = e.nombre
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-      const matchesType = filterType === "ALL" || e.tipo === filterType;
-      return matchesSearch && matchesType;
-    });
-  }, [entities, searchTerm, filterType]);
+    return [...entities]
+      .filter((e) => {
+        const matchesSearch = e.nombre
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
+        const matchesType = filterType === "ALL" || e.tipo === filterType;
+        return matchesSearch && matchesType;
+      })
+      .sort((a, b) => {
+        const byCreatedAt =
+          (getTimestamp(a.fecha_creacion) - getTimestamp(b.fecha_creacion)) *
+          sortMultiplier;
+        if (byCreatedAt !== 0) return byCreatedAt;
+        return (getNumericId(a.id) - getNumericId(b.id)) * sortMultiplier;
+      });
+  }, [entities, searchTerm, filterType, sortMultiplier]);
 
   // Rename State
   const [renamingFolderId, setRenamingFolderId] = useState<
