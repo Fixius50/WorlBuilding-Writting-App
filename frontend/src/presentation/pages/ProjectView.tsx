@@ -77,9 +77,9 @@ const ProjectView: React.FC = () => {
 
       {/* Content Area */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <div className="max-w-7xl mx-auto p-12 space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-700">
+        <div className="max-w-7xl mx-auto p-12 space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
           {/* Welcome Section */}
-          <div className="space-y-4 max-w-2xl">
+          <div className="space-y-2 max-w-2xl">
             <h2 className="text-4xl font-black text-foreground tracking-tighter leading-tight">
               {t("project.welcome")}{" "}
               <span className="text-primary">
@@ -87,9 +87,6 @@ const ProjectView: React.FC = () => {
               </span>
               .
             </h2>
-            <p className="text-foreground/60 text-lg font-serif italic leading-relaxed opacity-80">
-              {t("project.welcome_desc")}
-            </p>
           </div>
 
           {/* Quick Access Grid */}

@@ -48,11 +48,14 @@ public class DatabaseController {
     public ResponseEntity<Resource> downloadDatabase(@PathVariable String projectName) {
         try {
             Path filePath = Paths.get(PROJECTS_DIR).resolve(projectName + ".sqlite").normalize();
-            Resource resource = new UrlResource(filePath.toUri());
+            @SuppressWarnings("null")
+            Resource resource = (Resource) new UrlResource(filePath.toUri());
 
             if (resource.exists()) {
+                @SuppressWarnings("null")
+                MediaType mediaType = (MediaType) MediaType.APPLICATION_OCTET_STREAM;
                 return ResponseEntity.ok()
-                        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                        .contentType(mediaType)
                         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
                         .body(resource);
             } else {

@@ -45,6 +45,18 @@
   --editor-base-bg: hsl(var(--background));
   --editor-elevated-bg: hsl(var(--background) / 0.92);
   --editor-placeholder: hsl(var(--foreground) / 0.45);
+
+  /* WorldBible Redesign Tokens */
+  --bible-card-shell-bg: hsl(var(--background));
+  --bible-card-bookmark-bg: hsl(var(--background));
+  --bible-card-folder-color: hsl(var(--color-indigo) / 0.8);
+  --bible-card-folder-color-hover: hsl(var(--color-indigo) / 1);
+  --bible-card-entity-color: hsl(var(--foreground) / 0.55);
+  --bible-card-entity-color-hover: hsl(var(--foreground) / 0.9);
+  --bible-card-meta-color: hsl(var(--foreground) / 0.45);
+  --bible-card-meta-color-hover: hsl(var(--foreground) / 0.72);
+  --bible-card-action-hover-bg: hsl(var(--foreground));
+  --bible-card-action-hover-fg: hsl(var(--background));
 }
 
 .dark,

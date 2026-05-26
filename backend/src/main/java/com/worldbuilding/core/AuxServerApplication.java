@@ -18,7 +18,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import java.util.EnumSet;
 
 @Configuration
-@ComponentScan(basePackages = "com.worldbuilding.auxserver")
+@ComponentScan(basePackages = "com.worldbuilding.core")
 @EnableWebMvc
 public class AuxServerApplication {
 
@@ -81,7 +81,7 @@ public class AuxServerApplication {
                 chain.doFilter(request, response);
 
                 // SPA Fallback: Si no se encuentra el recurso y no es la API, servir index.html
-                if (res.getStatus() == 404 && !uri.startsWith("/api/")) {
+                if (res.getStatus() == 404 && uri != null && !uri.startsWith("/api/")) {
                     res.setStatus(200);
                     res.setContentType("text/html");
                     request.getRequestDispatcher("/index.html").forward(request, response);

@@ -151,7 +151,7 @@ const WorkspaceSelector: React.FC = () => {
         default:
           setError(res.message);
           break;
-    }
+      }
     } catch (err) {
       setError("Error al importar datos.");
     } finally {
@@ -172,6 +172,7 @@ const WorkspaceSelector: React.FC = () => {
       default:
         setStatusModal(null);
         break;
+    }
   };
 
   const filteredWorkspaces = workspaces.filter((w) =>

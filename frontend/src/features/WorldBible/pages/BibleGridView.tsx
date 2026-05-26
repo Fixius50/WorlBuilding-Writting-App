@@ -117,20 +117,27 @@ const BibleGridView = () => {
   return (
     <div className="flex-1 p-8 pt-0 max-w-[1600px] mx-auto w-full h-full overflow-y-auto custom-scrollbar">
       {/* Content Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+      <div className="flex flex-wrap gap-6 items-start justify-center">
         {/* Add Card (Dynamic) */}
         <div
           onClick={() =>
             handleOpenCreateModal(null, isInsideFolder ? "node" : "folder")
           }
-          className="group relative flex flex-col p-8 rounded-none bg-foreground/[0.01] border border-dashed border-foreground/10 hover:border-primary/40 hover:bg-foreground/[0.03] transition-all duration-500 cursor-pointer items-center justify-center min-h-[220px]"
+          className="group relative flex flex-col items-center w-36 cursor-pointer"
         >
-          <div className="size-16 rounded-none bg-foreground/[0.03] border border-foreground/10 flex items-center justify-center text-foreground/20 group-hover:text-primary group-hover:scale-110 group-hover:border-primary/30 transition-all duration-500">
-            <span className="material-symbols-outlined text-3xl">add</span>
+          <div
+            className="relative flex items-center justify-center w-full h-32 border border-dashed group-hover:border-[color:var(--bible-card-folder-color-hover)]"
+            style={{
+              borderColor: "hsl(var(--foreground) / 0.2)",
+              color: "var(--bible-card-meta-color)",
+              backgroundColor: "hsl(var(--foreground) / 0.01)",
+            }}
+          >
+            <span className="material-symbols-outlined text-2xl">add</span>
           </div>
 
-          <div className="absolute bottom-8 left-0 right-0 text-center">
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/30 group-hover:text-foreground/80 transition-colors">
+          <div className="mt-1 text-center relative z-10">
+            <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-[color:var(--bible-card-meta-color)] group-hover:text-[color:var(--bible-card-meta-color-hover)]">
               {isInsideFolder ? "NUEVO NODO" : "NUEVA CARPETA"}
             </span>
           </div>
