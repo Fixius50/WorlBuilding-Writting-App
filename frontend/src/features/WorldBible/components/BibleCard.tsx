@@ -185,10 +185,12 @@ const BibleCard: React.FC<BibleCardProps> = ({
           </div>
         )}
 
-        <div className="relative z-20 flex flex-col items-center justify-center p-5 text-center w-auto max-w-[90%] mx-auto">
-          <span className="text-sm font-bold leading-tight break-words line-clamp-3 select-none">
-            {item.nombre}
-          </span>
+        <div className="relative z-20 flex flex-col items-center justify-center p-5 text-center w-[90%] mx-auto">
+          <div className="bible-name-scroll w-full overflow-x-auto overflow-y-hidden whitespace-nowrap">
+            <span className="inline-block min-w-max text-sm font-bold leading-tight select-none">
+              {item.nombre}
+            </span>
+          </div>
 
           {isFolder && hasCount && (
             <span className="text-[10px] font-mono mt-1 select-none">

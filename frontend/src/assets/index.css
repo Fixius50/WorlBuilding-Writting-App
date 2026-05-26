@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@200..800&family=Cormorant+Garamond:wght@400;600&family=Lexend:wght@300;400;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=JetBrains+Mono:wght@400;700&family=Manrope:wght@300;400;700&display=swap');
-@import url('https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined');
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@200..800&family=Cormorant+Garamond:wght@400;600&family=Lexend:wght@300;400;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=JetBrains+Mono:wght@400;700&family=Manrope:wght@300;400;700&display=swap");
+@import url("https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined");
 
 /* Modular CSS Architecture */
-@import './themes.css';
-@import './editor.css';
-@import './ui-kit.css';
-@import './timeline.css';
+@import "./themes.css";
+@import "./editor.css";
+@import "./ui-kit.css";
+@import "./timeline.css";
 
 @tailwind base;
 @tailwind components;
@@ -58,4 +58,41 @@ option {
 select:focus {
   border-color: hsl(var(--primary));
   outline: none;
+}
+
+/* =====================================================
+   WORLD BIBLE NAME SCROLLBAR
+   Oculto por defecto; visible solo al interactuar.
+   ===================================================== */
+.bible-name-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.bible-name-scroll::-webkit-scrollbar {
+  height: 0;
+}
+
+.bible-name-scroll:hover,
+.bible-name-scroll:active,
+.bible-name-scroll:focus-within {
+  scrollbar-width: thin;
+}
+
+.bible-name-scroll:hover::-webkit-scrollbar,
+.bible-name-scroll:active::-webkit-scrollbar,
+.bible-name-scroll:focus-within::-webkit-scrollbar {
+  height: 6px;
+}
+
+.bible-name-scroll:hover::-webkit-scrollbar-thumb,
+.bible-name-scroll:active::-webkit-scrollbar-thumb,
+.bible-name-scroll:focus-within::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--foreground) / 0.45);
+}
+
+.bible-name-scroll:hover::-webkit-scrollbar-track,
+.bible-name-scroll:active::-webkit-scrollbar-track,
+.bible-name-scroll:focus-within::-webkit-scrollbar-track {
+  background-color: hsl(var(--foreground) / 0.1);
 }
