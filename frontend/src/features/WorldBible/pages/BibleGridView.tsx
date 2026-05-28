@@ -90,7 +90,7 @@ const BibleGridView = () => {
     };
 
     const parsedPayload = parseJsonPayload(targetEntity.contenido_json);
-    const payloadImages = parsedPayload?.images;
+    const payloadImages = parsedPayload?.images as unknown[];
 
     switch (
       Array.isArray(payloadImages) &&
@@ -108,7 +108,7 @@ const BibleGridView = () => {
       targetEntity.imagen_url.trim().length > 0
     ) {
       case true:
-        return targetEntity.imagen_url;
+        return targetEntity.imagen_url as string;
       default:
         return undefined;
     }
@@ -117,16 +117,16 @@ const BibleGridView = () => {
   return (
     <div className="flex-1 p-8 pt-0 max-w-[1600px] mx-auto w-full h-full overflow-y-auto custom-scrollbar">
       {/* Content Grid */}
-      <div className="flex flex-wrap gap-6 items-start justify-center">
+      <div className="flex flex-wrap gap-6 items-start justify-start">
         {/* Add Card (Dynamic) */}
         <div
           onClick={() =>
             handleOpenCreateModal(null, isInsideFolder ? "node" : "folder")
           }
-          className="group relative flex flex-col items-center w-36 cursor-pointer"
+          className="group relative flex flex-col items-center w-48 cursor-pointer"
         >
           <div
-            className="relative flex items-center justify-center w-full h-32 border border-dashed group-hover:border-[color:var(--bible-card-folder-color-hover)]"
+            className="relative flex items-center justify-center w-full h-40 border border-dashed group-hover:border-[color:var(--bible-card-folder-color-hover)]"
             style={{
               borderColor: "hsl(var(--foreground) / 0.2)",
               color: "var(--bible-card-meta-color)",

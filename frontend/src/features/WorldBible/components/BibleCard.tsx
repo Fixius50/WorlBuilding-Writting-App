@@ -57,10 +57,10 @@ const BibleCard: React.FC<BibleCardProps> = ({
     <Link
       to={linkTo}
       onContextMenu={onContextMenu}
-      className="group relative flex flex-col items-center w-36 hover:z-50 outline-none cursor-pointer"
+      className="group relative flex flex-col items-center w-48 hover:z-50 outline-none cursor-pointer"
     >
       <div
-        className={`relative flex items-center justify-center w-full h-32 ${colorClass}`}
+        className={`relative flex items-center justify-center w-full h-40 ${colorClass}`}
       >
         <div
           className={`absolute ${alignmentClass} top-1/2 -translate-y-1/2 z-0 pointer-events-auto flex flex-col text-current border border-current translate-x-[-30px] group-hover:translate-x-1`}
