@@ -59,8 +59,6 @@ Docs/logs/
 ### Logs ###
 Docs/logs/
 *.log
-*.txt
-restart.flag
 *.zip
 *.jar
 *.war

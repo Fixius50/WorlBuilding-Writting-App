@@ -117,7 +117,7 @@ const BibleGridView = () => {
   return (
     <div className="flex-1 p-8 pt-0 max-w-[1600px] mx-auto w-full h-full overflow-y-auto custom-scrollbar">
       {/* Content Grid */}
-      <div className="flex flex-wrap gap-6 items-start justify-start">
+      <div className="flex flex-wrap gap-6 items-start justify-center">
         {/* Add Card (Dynamic) */}
         <div
           onClick={() =>

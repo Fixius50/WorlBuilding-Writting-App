@@ -103,6 +103,20 @@ WorldbuildingApp/
 - **Java** 21+ (Backend de Sincronización)
 - **Navegador Moderno** (Chrome/Edge/Arc recomendados por soporte OPFS)
 
+## 📄 Licenciamiento Dual & Modelo de Código Abierto
+
+Chronos Atlas se distribuye bajo un modelo de **Licenciamiento Dual**. Los términos de uso del código fuente de este repositorio dependen estrictamente del perfil económico de la entidad:
+
+### 1. Vía Comunitaria e Independiente (Facturación < 500.000 EUR)
+A menos que se indique lo contrario, todos los archivos de código fuente de este repositorio están sujetos de forma global a los términos de la **Mozilla Public License Version 2.0 (MPL 2.0)**. 
+* **Protección del Núcleo:** Cualquier modificación o mejora realizada directamente sobre los archivos existentes del Core de Chronos Atlas debe liberarse de forma abierta bajo la misma licencia MPL 2.0.
+* **Modularidad Limpia e Independencia:** Los desarrolladores independientes tienen el derecho legal absoluto de crear archivos y módulos complementarios completamente nuevos desde cero bajo sus propias licencias comerciales o privativas, sin obligación de abrir su código fuente.
+
+### 2. Vía Comercial a Gran Escala (Facturación ≥ 500.000 EUR)
+Las corporaciones, grandes estudios o entidades cuyos ingresos brutos anuales sean iguales o superiores a **500.000 EUR**, o que coticen en mercados de valores, no están autorizados a utilizar este software de forma gratuita bajo los términos comunitarios. Están legalmente obligados a adquirir una **Licencia Comercial Privativa** otorgada por el autor original para poder instalar, desplegar o utilizar la herramienta en sus entornos corporativos.
+
+Para consultar los textos completos de regulación o adquirir una licencia comercial, diríjase al archivo `LICENSE.txt` en la raíz de este proyecto o contacte al autor.
+
 ---
 
 Developed with 💜 by [Roberto Monedero Alonso](https://github.com/Fixius50)
