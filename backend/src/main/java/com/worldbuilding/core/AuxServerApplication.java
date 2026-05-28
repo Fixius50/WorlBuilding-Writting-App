@@ -18,7 +18,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import java.util.EnumSet;
 
 @Configuration
-@ComponentScan(basePackages = "com.worldbuilding.core")
+@ComponentScan(basePackages = {"com.worldbuilding.core", "com.worldbuilding.domains"})
 @EnableWebMvc
 public class AuxServerApplication {
 
