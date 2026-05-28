@@ -36,12 +36,12 @@ const TerritoryProfileView: React.FC<{ entityId?: string | number }> = ({
   const presetTabIds = presetTabs.map((tab) => tab.id);
   const isPresetTechnicalTab = presetTabIds.includes(activeTab);
 
-  const narrativeContent = (
+  const narrativeContent = String(
     entity?.appearance ||
     entity?.descripcion ||
     ""
   ).trim();
-  const narrativeStory = (entity?.descripcion || "").trim();
+  const narrativeStory = String(entity?.descripcion || "").trim();
   const narrativeLength = narrativeContent.length;
   const narrativeGrowth = Math.min(560, Math.floor(narrativeLength / 3));
   const panelMinHeight = 360 + narrativeGrowth;

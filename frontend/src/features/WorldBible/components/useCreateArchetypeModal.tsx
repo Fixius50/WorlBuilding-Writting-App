@@ -30,7 +30,7 @@ export const useCreateArchetypeModal = (
   const ARQUETIPOS_GROUPS = [
     {
       name: "ARQUETIPO INDIVIDUAL",
-      ids: ["personaje", "magic", "objeto", "entidad"] as HierarchyTypeId[],
+      ids: ["personaje", "magic", "objeto"] as HierarchyTypeId[],
     },
     {
       name: "ARQUETIPO COLECTIVO",

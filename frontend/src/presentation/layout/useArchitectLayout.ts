@@ -7,6 +7,7 @@ import { useSettingsStore } from '@store/useSettingsStore';
 import { useDashboardStore } from '@store/useDashboardStore';
 import { useAppStore } from '@store/useAppStore';
 import { useRightPanelStore } from '@store/useRightPanelStore';
+import { useQueryClient } from '@tanstack/react-query';
 
 export const useArchitectLayout = () => {
   const { username, projectName } = useParams<{ username: string; projectName: string }>();
@@ -30,6 +31,7 @@ export const useArchitectLayout = () => {
   // General Settings State
   const panelMode = useAppStore((state) => state.panelMode);
   const notifications = useSettingsStore((state) => state.notifications);
+  const queryClient = useQueryClient();
 
   // Microheader State
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -127,10 +129,19 @@ export const useArchitectLayout = () => {
     };
   }, [activeModal]);
 
+  // Bible Explorer State
+  const [folders, setFolders] = useState<Carpeta[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [filterType, setFilterType] = useState<string>('ALL');
+
+  // CRUD Modal State
+  const [confirmOpen, setConfirmOpen] = useState<boolean>(false);
+  const [deletionTarget, setDeletionTarget] = useState<{ id: number; type: 'folder' | 'entity'; parentId?: number | null } | null>(null);
+
   const getPageName = useCallback((): string => {
     const path = location.pathname;
     const isBible = path.endsWith('/bible');
-    const isExplorador = path.includes('/bible/folder/');
+    const isExplorador = path.includes('/bible/folder/') || path.includes('/bible/entity/');
     const isMap = path.endsWith('/map');
     const isTimeline = path.endsWith('/timeline');
     const isTime = path.endsWith('/time');
@@ -145,8 +156,35 @@ export const useArchitectLayout = () => {
     switch (true) {
       case isBible:
         return t('nav.bible') || 'Biblia del Mundo';
-      case isExplorador:
-        return 'Explorador';
+      case isExplorador: {
+        const baseName = t('nav.bible') || 'Biblia del Mundo';
+        const folderMatch = path.match(/\/bible\/folder\/(\w+)/);
+        const folderIdStr = folderMatch ? folderMatch[1] : null;
+        const entityMatch = path.match(/\/entity\/(\d+)/);
+        const entityId = entityMatch ? parseInt(entityMatch[1], 10) : null;
+        
+        let folderName = '';
+        if (folderIdStr) {
+          const folder = folders.find((f) => String(f.id) === folderIdStr);
+          if (folder) folderName = ` > ${folder.nombre}`;
+        }
+        
+        let entityName = '';
+        if (entityId) {
+          const entityData = queryClient.getQueryData<any>(['entityRouter', entityId]);
+          if (entityData && entityData.nombre) {
+            entityName = ` > ${entityData.nombre}`;
+          } else {
+            const bibleEntities = projectId ? queryClient.getQueryData<any[]>(['worldBible', 'all', projectId]) : null;
+            const found = bibleEntities?.find((e: any) => e.id === entityId);
+            if (found && found.nombre) {
+              entityName = ` > ${found.nombre}`;
+            }
+          }
+        }
+        
+        return `${baseName}${folderName}${entityName}`;
+      }
       case isMap:
         return t('nav.atlas') || 'Atlas';
       case isTimeline:
@@ -170,21 +208,12 @@ export const useArchitectLayout = () => {
       default:
         return t('nav.dashboard') || 'Panel de Control';
     }
-  }, [location.pathname, t]);
+  }, [location.pathname, t, folders, queryClient, projectId]);
 
   const handleOtrosAction = useCallback((section: 'database' | 'notes' | 'stats' | 'sync'): void => {
     setActiveModal(section);
     setActiveDropdown(null);
   }, []);
-
-  // Bible Explorer State
-  const [folders, setFolders] = useState<Carpeta[]>([]);
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [filterType, setFilterType] = useState<string>('ALL');
-
-  // CRUD Modal State
-  const [confirmOpen, setConfirmOpen] = useState<boolean>(false);
-  const [deletionTarget, setDeletionTarget] = useState<{ id: number; type: 'folder' | 'entity'; parentId?: number | null } | null>(null);
 
   const loadFolders = useCallback(async (pId: number): Promise<void> => {
     const rootFolders = await WorkspaceUseCase.getRootFolders(pId);

@@ -91,16 +91,6 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
             {confirmDelete ? "¿CONFIRMAR?" : "ELIMINAR"}
           </button>
 
-          <button
-            onClick={() =>
-              navigate(
-                `/${username || "local"}/${projectName}/bible/entity/${entityId}/edit`,
-              )
-            }
-            className="px-4 py-2 border border-foreground/10 text-foreground/60 text-[9px] font-black uppercase tracking-widest hover:bg-primary hover:text-background transition-all"
-          >
-            EDITAR
-          </button>
 
           <button
             onClick={() =>

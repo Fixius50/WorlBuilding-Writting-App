@@ -38,12 +38,12 @@ const EventProfileView: React.FC<{ entityId?: string | number }> = ({
   const presetTabIds = presetTabs.map((tab) => tab.id);
   const isPresetTechnicalTab = presetTabIds.includes(activeTab);
 
-  const narrativeContent = (
+  const narrativeContent = String(
     entity?.appearance ||
     entity?.descripcion ||
     ""
   ).trim();
-  const narrativeStory = (entity?.descripcion || "").trim();
+  const narrativeStory = String(entity?.descripcion || "").trim();
   const narrativeLength = narrativeContent.length;
   const narrativeGrowth = Math.min(560, Math.floor(narrativeLength / 3));
   const panelMinHeight = 360 + narrativeGrowth;
@@ -90,16 +90,6 @@ const EventProfileView: React.FC<{ entityId?: string | number }> = ({
             {confirmDelete ? "¿CONFIRMAR?" : "ELIMINAR"}
           </button>
 
-          <button
-            onClick={() =>
-              navigate(
-                `/${username || "local"}/${projectName}/bible/entity/${entityId}/edit`,
-              )
-            }
-            className="px-4 py-2 border border-foreground/10 text-foreground/60 text-[9px] font-black uppercase tracking-widest hover:bg-primary hover:text-background transition-all"
-          >
-            EDITAR
-          </button>
 
           <button
             onClick={() =>
