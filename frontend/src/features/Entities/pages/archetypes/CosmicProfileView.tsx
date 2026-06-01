@@ -68,24 +68,24 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
     );
 
   return (
-    <div className="flex-1 bg-background flex flex-col h-full w-full animate-in fade-in duration-1000">
+    <div className="flex-1 bg-background flex flex-col h-full w-full">
       <header className="bg-background border-b border-foreground/5 px-8 py-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-6">
-          <h1 className="text-lg font-black text-foreground tracking-tighter uppercase">
+          <h1 className="font-sans font-bold text-3xl tracking-wider uppercase text-foreground">
             {entity.nombre}
           </h1>
-          <div className="px-3 py-1 bg-foreground/[0.03] border border-foreground/5 text-[9px] font-black uppercase tracking-widest text-foreground/20">
+          <span className="font-mono text-[10px] tracking-[0.2em] text-foreground/60 border border-foreground/20 px-3 py-1 bg-foreground/5 uppercase">
             {entity.tipo}
-          </div>
+          </span>
         </div>
 
         <div className="flex items-center gap-3">
           <button
             onClick={handleDelete}
-            className={`px-4 py-2 border transition-all text-[9px] font-black uppercase tracking-widest ${
+            className={`px-4 py-2 border transition-all text-[9px] font-mono tracking-[0.2em] uppercase flex items-center justify-center gap-2 ${
               confirmDelete
                 ? "bg-destructive text-primary-foreground border-destructive animate-pulse"
-                : "border-destructive/20 text-destructive/40 hover:bg-destructive hover:text-primary-foreground"
+                : "bg-background border-foreground/20 text-foreground/70 hover:border-red-500/50 hover:text-red-500 hover:bg-red-500/10"
             }`}
           >
             {confirmDelete ? "¿CONFIRMAR?" : "ELIMINAR"}
@@ -96,7 +96,7 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
             onClick={() =>
               navigate(`/local/${projectName}/bible/entity/${entity.id}/edit`)
             }
-            className="px-4 py-2 border border-foreground/10 text-foreground text-[9px] font-black uppercase tracking-widest hover:bg-foreground hover:text-background transition-all"
+            className="px-4 py-2 bg-background border border-foreground/20 text-foreground/70 text-[9px] font-mono tracking-[0.2em] uppercase flex items-center justify-center gap-2 hover:border-green-500/50 hover:text-green-500 hover:bg-green-500/10 transition-all"
           >
             EDITAR
           </button>
@@ -105,7 +105,7 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
 
           <button
             onClick={() => navigate(-1)}
-            className="px-4 py-2 border border-foreground/10 text-foreground/40 text-[9px] font-black uppercase tracking-widest hover:bg-foreground hover:text-background transition-all"
+            className="px-4 py-2 bg-background border border-foreground/20 text-foreground/70 text-[9px] font-mono tracking-[0.2em] uppercase flex items-center justify-center gap-2 hover:border-blue-500/50 hover:text-blue-500 hover:bg-blue-500/10 transition-all"
           >
             VOLVER / CANCELAR
           </button>
@@ -123,77 +123,87 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
         className={`flex-1 relative ${activeTab === "CARTOGRAFÍA" ? "overflow-hidden" : "overflow-y-auto custom-scrollbar"}`}
       >
         {activeTab === "REGISTRO" && (
-          <main className="p-12 lg:p-24 space-y-24 max-w-6xl mx-auto w-full">
-            <section>
-              <div className="grid grid-cols-2 gap-8 items-start">
-                <div
-                  className="border border-foreground/10 bg-foreground/[0.02] p-8"
-                  style={{ minHeight: `${panelMinHeight}px` }}
-                >
-                  <div className="flex flex-col items-center gap-4 mb-8">
-                    <h3 className="text-[10px] font-black text-foreground uppercase tracking-[0.4em] border-b border-primary/40 pb-2">
-                      CRÓNICA ESTELAR
-                    </h3>
-                  </div>
-                  <div className="max-w-4xl mx-auto">
-                    <NarrativeRichText content={narrativeContent} />
-                  </div>
-                </div>
-
-                <div
-                  className="border border-foreground/10 bg-foreground/[0.02] p-8 flex flex-col"
-                  style={{
-                    minHeight: `${panelMinHeight}px`,
-                    maxHeight: `${panelMinHeight}px`,
-                  }}
-                >
-                  <div className="flex flex-col items-center gap-4 mb-6">
-                    <h3 className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.4em]">
-                      AVISTAMIENTOS VISUALES
-                    </h3>
-                  </div>
-
-                  <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
-                    {entity.images && entity.images.length > 0 ? (
-                      <div className="flex flex-col gap-3">
-                        {entity.images.map((img, idx) => (
-                          <div
-                            key={idx}
-                            className="aspect-video bg-foreground/[0.02] border border-foreground/5 overflow-hidden group transition-all cursor-zoom-in"
-                            onClick={() => setZoomImage(img)}
-                          >
-                            <img
-                              src={img}
-                              alt={`Cosmic View ${idx}`}
-                              className="w-full h-full object-cover opacity-60 group-hover:opacity-100 grayscale group-hover:grayscale-0 transition-all duration-700"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="h-full min-h-[12rem] flex items-center justify-center border border-dashed border-foreground/10 text-foreground/30 text-[10px] font-black uppercase tracking-[0.2em]">
-                        Sin imágenes en galería
-                      </div>
-                    )}
-                  </div>
-                </div>
+          <main className="p-8 lg:p-16 grid grid-cols-1 lg:grid-cols-2 gap-8 items-start max-w-[90rem] mx-auto w-full">
+            <div
+              className="border border-foreground/20 bg-background p-8 flex flex-col"
+              style={{ minHeight: `${panelMinHeight}px` }}
+            >
+              <div className="flex justify-center mb-8">
+                <h3 className="font-mono font-bold text-[10px] tracking-[0.2em] uppercase text-foreground border-b border-foreground/30 pb-2">
+                  CRÓNICA ESTELAR
+                </h3>
               </div>
-            </section>
+              {!narrativeContent || narrativeContent === "Sin descripción." ? (
+                <div className="flex justify-center mt-10">
+                  <span className="font-serif italic text-foreground/50 text-xl">
+                    Sin descripción.
+                  </span>
+                </div>
+              ) : (
+                <div className="max-w-4xl mx-auto w-full">
+                  <NarrativeRichText content={narrativeContent} />
+                </div>
+              )}
+            </div>
 
-            <section>
-              <div className="border border-foreground/10 bg-foreground/[0.02] p-8">
-                <div className="flex flex-col items-center gap-4 mb-8">
-                  <h3 className="text-[10px] font-black text-foreground uppercase tracking-[0.4em] border-b border-primary/40 pb-2">
-                    NARRATIVA
-                  </h3>
-                </div>
-                <div className="max-w-4xl mx-auto">
-                  <NarrativeRichText
-                    content={narrativeStory || "Sin narrativa."}
-                  />
-                </div>
+            <div
+              className="border border-foreground/20 bg-background p-8 flex flex-col"
+              style={{
+                minHeight: `${panelMinHeight}px`,
+                maxHeight: `${panelMinHeight}px`,
+              }}
+            >
+              <div className="flex justify-center mb-8">
+                <h3 className="font-mono font-bold text-[10px] tracking-[0.2em] uppercase text-foreground border-b border-foreground/30 pb-2">
+                  AVISTAMIENTOS VISUALES
+                </h3>
               </div>
-            </section>
+
+              <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 flex flex-col">
+                {entity.images && entity.images.length > 0 ? (
+                  <div className="flex flex-col gap-3">
+                    {entity.images.map((img, idx) => (
+                      <div
+                        key={idx}
+                        className="aspect-video bg-foreground/[0.02] border border-foreground/5 overflow-hidden group transition-all cursor-zoom-in"
+                        onClick={() => setZoomImage(img)}
+                      >
+                        <img
+                          src={img}
+                          alt={`Cosmic View ${idx}`}
+                          className="w-full h-full object-cover opacity-60 group-hover:opacity-100 grayscale group-hover:grayscale-0 transition-all duration-700"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="w-full h-full min-h-[150px] p-8 flex flex-col items-center justify-center bg-background border border-dashed border-foreground/20 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5),_inset_0_0_0_1px_rgba(240,240,245,0.05)]">
+                    <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-foreground/40">
+                      SIN IMÁGENES EN GALERÍA
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="border border-foreground/20 bg-background p-8 flex flex-col lg:col-span-2">
+              <div className="flex justify-center mb-8">
+                <h3 className="font-mono font-bold text-[10px] tracking-[0.2em] uppercase text-foreground border-b border-foreground/30 pb-2">
+                  NARRATIVA
+                </h3>
+              </div>
+              {!narrativeStory || narrativeStory === "Sin narrativa." ? (
+                <div className="flex justify-center mt-10">
+                  <span className="font-serif italic text-foreground/50 text-xl">
+                    Sin narrativa.
+                  </span>
+                </div>
+              ) : (
+                <div className="max-w-4xl mx-auto w-full">
+                  <NarrativeRichText content={narrativeStory} />
+                </div>
+              )}
+            </div>
           </main>
         )}
 
@@ -212,7 +222,7 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
         )}
 
         {(activeTab === "TELEMETRÍA" || isPresetTechnicalTab) && (
-          <div className="p-12 lg:p-24 max-w-5xl mx-auto space-y-16">
+          <div className="p-8 lg:p-16 max-w-[90rem] mx-auto space-y-16">
             <div className="pt-0">
               <DynamicAttributeForm
                 key={`dynamic-attributes-${entity.project_id}-${entity.id}`}
