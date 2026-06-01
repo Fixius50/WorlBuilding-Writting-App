@@ -18,7 +18,12 @@ export const useEntityBuilderSidebar = (
   const [editingTpl, setEditingTpl] = useState<Plantilla | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
+  // --- PRESERVATION ORIGINAL CODE ---
+  // const filteredTemplates = (templates || []).filter(tpl =>
+  //   tpl.nombre?.toLowerCase().includes(filter.toLowerCase())
+  // );
   const filteredTemplates = (templates || []).filter(tpl =>
+    tpl.categoria !== 'Individual' &&
     tpl.nombre?.toLowerCase().includes(filter.toLowerCase())
   );
 

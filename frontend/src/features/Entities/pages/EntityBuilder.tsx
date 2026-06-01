@@ -16,10 +16,46 @@ interface EntityBuilderProps {
 }
 
 const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
+  // --- PRESERVATION ORIGINAL DESTRUCTURE ---
+  // const {
+  //   entity,
+  //   setEntity,
+  //   fields,
+  //   loading,
+  //   saving,
+  //   deleteModalOpen,
+  //   setDeleteModalOpen,
+  //   availableTemplates,
+  //   activeEntityTab,
+  //   setActiveEntityTab,
+  //   zoomImage,
+  //   setZoomImage,
+  //   showLibrary,
+  //   setShowLibrary,
+  //   editingTemplate,
+  //   setEditingTemplate,
+  //   isDraggingOver,
+  //   extras,
+  //   projectId,
+  //   handleSave,
+  //   handleFieldChange,
+  //   handleRemoveField,
+  //   handleImageUpload,
+  //   removeImage,
+  //   handleDragOverArea,
+  //   handleDragLeaveArea,
+  //   handleDropArea,
+  //   handleDeleteEntity,
+  //   updateExtra,
+  //   refreshTemplates,
+  //   navigate,
+  // } = useEntityBuilder(mode);
   const {
     entity,
     setEntity,
     fields,
+    setFields,
+    setRemovedFieldIds,
     loading,
     saving,
     deleteModalOpen,
@@ -33,8 +69,38 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
     setShowLibrary,
     editingTemplate,
     setEditingTemplate,
+    editingFieldId,
+    setEditingFieldId,
     isDraggingOver,
+
+    // UI migrados
+    defaultEntityColor,
     extras,
+    galleryImages,
+    editorTabs,
+    isPresetEditorTab,
+    primaryImage,
+    secondaryImages,
+    secondaryStart,
+    hasMoreImages,
+    secondaryPage,
+    setSecondaryPage,
+    secondaryPageCount,
+    appearanceTextareaRef,
+    narrativeTextareaRef,
+    handleAppearanceUndo,
+    handleAppearanceRedo,
+    handleAppearanceKeyDown,
+    handleNarrativeUndo,
+    handleNarrativeRedo,
+    handleNarrativeKeyDown,
+    setAppearanceValue,
+    setNarrativeValue,
+    applyWrapFormatting,
+    applyTabIndent,
+    applyNarrativeWrapFormatting,
+    applyNarrativeTabIndent,
+
     projectId,
     handleSave,
     handleFieldChange,
@@ -49,520 +115,6 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
     refreshTemplates,
     navigate,
   } = useEntityBuilder(mode);
-  const defaultEntityColor = getThemePrimaryHex();
-
-  const galleryImages = extras.images || [];
-  const baseEditorTabs = [
-    { id: "identity", label: "Identidad" },
-    { id: "narrative", label: "Narrativa" },
-    { id: "attributes", label: "Atributos" },
-    { id: "relationships", label: "Linaje" },
-  ];
-  const presetEditorTabs = getPresetTabsByEntityType(entity.tipo || "").map(
-    (tab) => ({
-      id: `preset-${tab.id}`,
-      label: tab.label,
-      icon: tab.icon,
-    }),
-  );
-  const editorTabs = [...baseEditorTabs];
-  presetEditorTabs.forEach((tab) => {
-    const exists = editorTabs.some((editorTab) => editorTab.id === tab.id);
-    switch (exists) {
-      case false:
-        editorTabs.push(tab);
-        break;
-      default:
-        break;
-    }
-  });
-  const presetEditorTabIds = presetEditorTabs.map((tab) => tab.id);
-  const isPresetEditorTab = presetEditorTabIds.includes(activeEntityTab);
-  const primaryImage = galleryImages[0] || null;
-  const secondaryPool = galleryImages.slice(1);
-  const [secondaryPage, setSecondaryPage] = React.useState(0);
-  const secondaryPageSize = 4;
-  const secondaryPageCount = Math.max(
-    1,
-    Math.ceil(secondaryPool.length / secondaryPageSize),
-  );
-
-  React.useEffect(() => {
-    if (secondaryPage >= secondaryPageCount) {
-      setSecondaryPage(Math.max(0, secondaryPageCount - 1));
-    }
-  }, [secondaryPage, secondaryPageCount]);
-
-  const secondaryStart = secondaryPage * secondaryPageSize;
-  const secondaryImages = secondaryPool.slice(
-    secondaryStart,
-    secondaryStart + secondaryPageSize,
-  );
-  const hasMoreImages = secondaryPool.length > secondaryPageSize;
-  const appearanceTextareaRef = React.useRef<HTMLTextAreaElement | null>(null);
-  const appearanceHistoryRef = React.useRef<string[]>([]);
-  const appearanceHistoryIndexRef = React.useRef<number>(-1);
-  const narrativeTextareaRef = React.useRef<HTMLTextAreaElement | null>(null);
-  const narrativeHistoryRef = React.useRef<string[]>([]);
-  const narrativeHistoryIndexRef = React.useRef<number>(-1);
-
-  const setAppearanceValue = React.useCallback(
-    (nextValue: string, registerHistory = true) => {
-      switch (registerHistory) {
-        case true: {
-          const history = appearanceHistoryRef.current;
-          const currentIndex = appearanceHistoryIndexRef.current;
-          const currentValue =
-            currentIndex >= 0 ? history[currentIndex] : undefined;
-
-          switch (currentValue !== nextValue) {
-            case true: {
-              const truncatedHistory =
-                currentIndex >= 0 ? history.slice(0, currentIndex + 1) : [];
-              truncatedHistory.push(nextValue);
-
-              appearanceHistoryRef.current = truncatedHistory;
-              appearanceHistoryIndexRef.current = truncatedHistory.length - 1;
-              break;
-            }
-            default:
-              break;
-          }
-          break;
-        }
-        default:
-          break;
-      }
-
-      updateExtra({ appearance: nextValue });
-    },
-    [updateExtra],
-  );
-
-  const handleAppearanceUndo = React.useCallback(() => {
-    const history = appearanceHistoryRef.current;
-    const currentIndex = appearanceHistoryIndexRef.current;
-
-    switch (currentIndex > 0) {
-      case true: {
-        const nextIndex = currentIndex - 1;
-        appearanceHistoryIndexRef.current = nextIndex;
-        setAppearanceValue(history[nextIndex], false);
-
-        requestAnimationFrame(() => {
-          const textarea = appearanceTextareaRef.current;
-          if (!textarea) {
-            return;
-          }
-          textarea.focus();
-          const cursor = textarea.value.length;
-          textarea.setSelectionRange(cursor, cursor);
-        });
-        break;
-      }
-      default:
-        break;
-    }
-  }, [setAppearanceValue]);
-
-  const handleAppearanceRedo = React.useCallback(() => {
-    const history = appearanceHistoryRef.current;
-    const currentIndex = appearanceHistoryIndexRef.current;
-
-    switch (currentIndex < history.length - 1) {
-      case true: {
-        const nextIndex = currentIndex + 1;
-        appearanceHistoryIndexRef.current = nextIndex;
-        setAppearanceValue(history[nextIndex], false);
-
-        requestAnimationFrame(() => {
-          const textarea = appearanceTextareaRef.current;
-          if (!textarea) {
-            return;
-          }
-          textarea.focus();
-          const cursor = textarea.value.length;
-          textarea.setSelectionRange(cursor, cursor);
-        });
-        break;
-      }
-      default:
-        break;
-    }
-  }, [setAppearanceValue]);
-
-  React.useEffect(() => {
-    const currentAppearance = extras.appearance || "";
-    appearanceHistoryRef.current = [currentAppearance];
-    appearanceHistoryIndexRef.current = 0;
-  }, [entity.id]);
-
-  const setNarrativeValue = React.useCallback(
-    (nextValue: string, registerHistory = true) => {
-      switch (registerHistory) {
-        case true: {
-          const history = narrativeHistoryRef.current;
-          const currentIndex = narrativeHistoryIndexRef.current;
-          const currentValue =
-            currentIndex >= 0 ? history[currentIndex] : undefined;
-
-          switch (currentValue !== nextValue) {
-            case true: {
-              const truncatedHistory =
-                currentIndex >= 0 ? history.slice(0, currentIndex + 1) : [];
-              truncatedHistory.push(nextValue);
-
-              narrativeHistoryRef.current = truncatedHistory;
-              narrativeHistoryIndexRef.current = truncatedHistory.length - 1;
-              break;
-            }
-            default:
-              break;
-          }
-          break;
-        }
-        default:
-          break;
-      }
-
-      setEntity((prev) => ({ ...prev, descripcion: nextValue }));
-    },
-    [setEntity],
-  );
-
-  const handleNarrativeUndo = React.useCallback(() => {
-    const history = narrativeHistoryRef.current;
-    const currentIndex = narrativeHistoryIndexRef.current;
-
-    switch (currentIndex > 0) {
-      case true: {
-        const nextIndex = currentIndex - 1;
-        narrativeHistoryIndexRef.current = nextIndex;
-        setNarrativeValue(history[nextIndex], false);
-
-        requestAnimationFrame(() => {
-          const textarea = narrativeTextareaRef.current;
-          if (!textarea) {
-            return;
-          }
-          textarea.focus();
-          const cursor = textarea.value.length;
-          textarea.setSelectionRange(cursor, cursor);
-        });
-        break;
-      }
-      default:
-        break;
-    }
-  }, [setNarrativeValue]);
-
-  const handleNarrativeRedo = React.useCallback(() => {
-    const history = narrativeHistoryRef.current;
-    const currentIndex = narrativeHistoryIndexRef.current;
-
-    switch (currentIndex < history.length - 1) {
-      case true: {
-        const nextIndex = currentIndex + 1;
-        narrativeHistoryIndexRef.current = nextIndex;
-        setNarrativeValue(history[nextIndex], false);
-
-        requestAnimationFrame(() => {
-          const textarea = narrativeTextareaRef.current;
-          if (!textarea) {
-            return;
-          }
-          textarea.focus();
-          const cursor = textarea.value.length;
-          textarea.setSelectionRange(cursor, cursor);
-        });
-        break;
-      }
-      default:
-        break;
-    }
-  }, [setNarrativeValue]);
-
-  const applyNarrativeWrapFormatting = React.useCallback(
-    (wrapper: "**" | "*") => {
-      const textarea = narrativeTextareaRef.current;
-
-      if (!textarea) {
-        return;
-      }
-
-      const currentValue = entity.descripcion || "";
-      const start = textarea.selectionStart ?? currentValue.length;
-      const end = textarea.selectionEnd ?? currentValue.length;
-      const selectedText = currentValue.slice(start, end);
-      const wrappedText = `${wrapper}${selectedText}${wrapper}`;
-      const nextValue =
-        currentValue.slice(0, start) + wrappedText + currentValue.slice(end);
-
-      setNarrativeValue(nextValue);
-
-      requestAnimationFrame(() => {
-        const updatedTextarea = narrativeTextareaRef.current;
-        if (!updatedTextarea) {
-          return;
-        }
-
-        updatedTextarea.focus();
-        const selectionStart = start + wrapper.length;
-        const selectionEnd = selectionStart + selectedText.length;
-        updatedTextarea.setSelectionRange(selectionStart, selectionEnd);
-      });
-    },
-    [entity.descripcion, setNarrativeValue],
-  );
-
-  const applyNarrativeTabIndent = React.useCallback(() => {
-    const textarea = narrativeTextareaRef.current;
-
-    if (!textarea) {
-      return;
-    }
-
-    const currentValue = entity.descripcion || "";
-    const start = textarea.selectionStart ?? currentValue.length;
-    const end = textarea.selectionEnd ?? currentValue.length;
-    const selectedText = currentValue.slice(start, end);
-    const hasSelection = end > start;
-
-    switch (hasSelection) {
-      case true: {
-        const indentedSelection = selectedText
-          .split("\n")
-          .map((line) => `\t${line}`)
-          .join("\n");
-
-        const nextValue =
-          currentValue.slice(0, start) +
-          indentedSelection +
-          currentValue.slice(end);
-
-        setNarrativeValue(nextValue);
-
-        requestAnimationFrame(() => {
-          const updatedTextarea = narrativeTextareaRef.current;
-          if (!updatedTextarea) {
-            return;
-          }
-
-          updatedTextarea.focus();
-          updatedTextarea.setSelectionRange(
-            start,
-            start + indentedSelection.length,
-          );
-        });
-        break;
-      }
-      default: {
-        const nextValue =
-          currentValue.slice(0, start) + "\t" + currentValue.slice(end);
-
-        setNarrativeValue(nextValue);
-
-        requestAnimationFrame(() => {
-          const updatedTextarea = narrativeTextareaRef.current;
-          if (!updatedTextarea) {
-            return;
-          }
-
-          updatedTextarea.focus();
-          const cursorPosition = start + 1;
-          updatedTextarea.setSelectionRange(cursorPosition, cursorPosition);
-        });
-        break;
-      }
-    }
-  }, [entity.descripcion, setNarrativeValue]);
-
-  const handleNarrativeKeyDown = React.useCallback(
-    (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      const hasCommandModifier = event.ctrlKey || event.metaKey;
-
-      switch (true) {
-        case hasCommandModifier && event.key.toLowerCase() === "b":
-          event.preventDefault();
-          applyNarrativeWrapFormatting("**");
-          break;
-        case hasCommandModifier && event.key.toLowerCase() === "i":
-          event.preventDefault();
-          applyNarrativeWrapFormatting("*");
-          break;
-        case hasCommandModifier &&
-          event.shiftKey &&
-          event.key.toLowerCase() === "z":
-          event.preventDefault();
-          handleNarrativeRedo();
-          break;
-        case hasCommandModifier && event.key.toLowerCase() === "z":
-          event.preventDefault();
-          handleNarrativeUndo();
-          break;
-        case hasCommandModifier && event.key.toLowerCase() === "y":
-          event.preventDefault();
-          handleNarrativeRedo();
-          break;
-        case event.key === "Tab":
-          event.preventDefault();
-          applyNarrativeTabIndent();
-          break;
-        default:
-          break;
-      }
-    },
-    [
-      applyNarrativeTabIndent,
-      applyNarrativeWrapFormatting,
-      handleNarrativeRedo,
-      handleNarrativeUndo,
-    ],
-  );
-
-  React.useEffect(() => {
-    const currentNarrative = entity.descripcion || "";
-    narrativeHistoryRef.current = [currentNarrative];
-    narrativeHistoryIndexRef.current = 0;
-  }, [entity.id]);
-
-  const applyWrapFormatting = React.useCallback(
-    (wrapper: "**" | "*") => {
-      const textarea = appearanceTextareaRef.current;
-
-      if (!textarea) {
-        return;
-      }
-
-      const currentValue = extras.appearance || "";
-      const start = textarea.selectionStart ?? currentValue.length;
-      const end = textarea.selectionEnd ?? currentValue.length;
-      const selectedText = currentValue.slice(start, end);
-      const wrappedText = `${wrapper}${selectedText}${wrapper}`;
-      const nextValue =
-        currentValue.slice(0, start) + wrappedText + currentValue.slice(end);
-
-      setAppearanceValue(nextValue);
-
-      requestAnimationFrame(() => {
-        const updatedTextarea = appearanceTextareaRef.current;
-        if (!updatedTextarea) {
-          return;
-        }
-
-        updatedTextarea.focus();
-        const selectionStart = start + wrapper.length;
-        const selectionEnd = selectionStart + selectedText.length;
-        updatedTextarea.setSelectionRange(selectionStart, selectionEnd);
-      });
-    },
-    [extras.appearance, setAppearanceValue],
-  );
-
-  const applyTabIndent = React.useCallback(() => {
-    const textarea = appearanceTextareaRef.current;
-
-    if (!textarea) {
-      return;
-    }
-
-    const currentValue = extras.appearance || "";
-    const start = textarea.selectionStart ?? currentValue.length;
-    const end = textarea.selectionEnd ?? currentValue.length;
-    const selectedText = currentValue.slice(start, end);
-    const hasSelection = end > start;
-
-    switch (hasSelection) {
-      case true: {
-        const indentedSelection = selectedText
-          .split("\n")
-          .map((line) => `\t${line}`)
-          .join("\n");
-
-        const nextValue =
-          currentValue.slice(0, start) +
-          indentedSelection +
-          currentValue.slice(end);
-
-        setAppearanceValue(nextValue);
-
-        requestAnimationFrame(() => {
-          const updatedTextarea = appearanceTextareaRef.current;
-          if (!updatedTextarea) {
-            return;
-          }
-
-          updatedTextarea.focus();
-          updatedTextarea.setSelectionRange(
-            start,
-            start + indentedSelection.length,
-          );
-        });
-        break;
-      }
-      default: {
-        const nextValue =
-          currentValue.slice(0, start) + "\t" + currentValue.slice(end);
-
-        setAppearanceValue(nextValue);
-
-        requestAnimationFrame(() => {
-          const updatedTextarea = appearanceTextareaRef.current;
-          if (!updatedTextarea) {
-            return;
-          }
-
-          updatedTextarea.focus();
-          const cursorPosition = start + 1;
-          updatedTextarea.setSelectionRange(cursorPosition, cursorPosition);
-        });
-        break;
-      }
-    }
-  }, [extras.appearance, setAppearanceValue]);
-
-  const handleAppearanceKeyDown = React.useCallback(
-    (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      const hasCommandModifier = event.ctrlKey || event.metaKey;
-
-      switch (true) {
-        case hasCommandModifier && event.key.toLowerCase() === "b":
-          event.preventDefault();
-          applyWrapFormatting("**");
-          break;
-        case hasCommandModifier && event.key.toLowerCase() === "i":
-          event.preventDefault();
-          applyWrapFormatting("*");
-          break;
-        case hasCommandModifier &&
-          event.shiftKey &&
-          event.key.toLowerCase() === "z":
-          event.preventDefault();
-          handleAppearanceRedo();
-          break;
-        case hasCommandModifier && event.key.toLowerCase() === "z":
-          event.preventDefault();
-          handleAppearanceUndo();
-          break;
-        case hasCommandModifier && event.key.toLowerCase() === "y":
-          event.preventDefault();
-          handleAppearanceRedo();
-          break;
-        case event.key === "Tab":
-          event.preventDefault();
-          applyTabIndent();
-          break;
-        default:
-          break;
-      }
-    },
-    [
-      applyTabIndent,
-      applyWrapFormatting,
-      handleAppearanceRedo,
-      handleAppearanceUndo,
-    ],
-  );
 
   const narrativeLength = (entity.descripcion || "").length;
   const narrativeGrowth = Math.min(560, Math.floor(narrativeLength / 3));
@@ -1150,7 +702,8 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                 onDragLeave={handleDragLeaveArea}
                 onDrop={handleDropArea}
               >
-                {fields.length === 0 && !isDraggingOver && (
+                {/* --- PRESERVATION ORIGINAL EMPTY PLACEHOLDER --- */}
+                {/* {fields.length === 0 && !isDraggingOver && (
                   <div className="col-span-full py-32 border border-dashed border-white/5 flex flex-col items-center justify-center text-foreground/20 bg-background w-full">
                     <span className="material-symbols-outlined text-5xl mb-6 font-light">
                       inventory_2
@@ -1160,6 +713,23 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                     </p>
                     <p className="text-[9px] mt-4 opacity-50 italic">
                       Arrastra aquí tus módulos desde el lateral derecho
+                    </p>
+                  </div>
+                )} */}
+                {fields.length === 0 && (
+                  <div className={`col-span-full py-32 border border-dashed flex flex-col items-center justify-center bg-background w-full transition-all duration-300 ${
+                    isDraggingOver 
+                      ? "border-primary/40 text-primary bg-primary/5 shadow-2xl shadow-primary/5" 
+                      : "border-white/5 text-foreground/20"
+                  }`}>
+                    <span className="material-symbols-outlined text-5xl mb-6 font-light">
+                      {isDraggingOver ? "download" : "inventory_2"}
+                    </span>
+                    <p className="text-[10px] font-mono font-bold uppercase tracking-[0.25em]">
+                      {isDraggingOver ? "¡Suelta el Módulo Aquí!" : "Área de Atributos Vacía"}
+                    </p>
+                    <p className="text-[9px] mt-4 opacity-50 italic">
+                      {isDraggingOver ? "Libera el atributo para añadirlo a esta entidad" : "Arrastra aquí tus módulos desde el lateral derecho"}
                     </p>
                   </div>
                 )}
@@ -1173,19 +743,80 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                       value={field.value}
                       onChange={(val) => handleFieldChange(field.id, val)}
                       onRemove={() => handleRemoveField(field.id)}
-                      onEditTemplate={(tpl) => setEditingTemplate(tpl)}
+                      onEditTemplate={(tpl) => {
+                        setEditingTemplate(tpl);
+                        setEditingFieldId(field.id);
+                      }}
                     />
                   </div>
                 ))}
               </div>
 
-              {editingTemplate && (
+              {/* --- PRESERVATION ORIGINAL TEMPLATE SETTINGS MODAL --- */}
+              {/* {editingTemplate && (
                 <TemplateSettingsModal
                   template={editingTemplate}
                   onClose={() => setEditingTemplate(null)}
                   onSave={async () => {
                     await refreshTemplates();
                     setEditingTemplate(null);
+                  }}
+                />
+              )} */}
+              {editingTemplate && (
+                <TemplateSettingsModal
+                  template={editingTemplate}
+                  isIndividual={true}
+                  projectId={projectId}
+                  onClose={() => {
+                    setEditingTemplate(null);
+                    setEditingFieldId(null);
+                  }}
+                  onSave={async (newTpl) => {
+                    // --- PRESERVATION ORIGINAL IN-MEMORY DISCONNECT ---
+                    // await refreshTemplates();
+                    // if (newTpl) {
+                    //   // Al ser una edición local, desvinculamos el campo de la plantilla global original
+                    //   const fieldToUpdate = fields.find((f) => f.attribute.id === editingTemplate.id);
+                    //   if (fieldToUpdate && !fieldToUpdate.isTemp) {
+                    //     // Enviamos el valor asociado a la plantilla global antigua a la pila de eliminación en DB
+                    //     setRemovedFieldIds((prev) => [...prev, fieldToUpdate.id as number]);
+                    //   }
+                    //   setFields((prev) =>
+                    //     prev.map((f) =>
+                    //       f.attribute.id === editingTemplate.id
+                    //         ? {
+                    //             ...f,
+                    //             id: `temp-${newTpl.id}-${Date.now()}`,
+                    //             attribute: newTpl,
+                    //             isTemp: true,
+                    //           }
+                    //         : f
+                    //     )
+                    //   );
+                    // }
+
+                    if (newTpl) {
+                      const fieldToUpdate = fields.find((f) => f.id === editingFieldId);
+                      fieldToUpdate && !fieldToUpdate.isTemp
+                        ? setRemovedFieldIds((prev) => [...prev, fieldToUpdate.id as number])
+                        : undefined;
+
+                      setFields((prev) =>
+                        prev.map((f) =>
+                          f.id === editingFieldId
+                            ? {
+                                ...f,
+                                id: `temp-${newTpl.id}-${Date.now()}`,
+                                attribute: newTpl,
+                                isTemp: true,
+                              }
+                            : f
+                        )
+                      );
+                    }
+                    setEditingTemplate(null);
+                    setEditingFieldId(null);
                   }}
                 />
               )}

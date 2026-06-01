@@ -3,13 +3,27 @@ import { Plantilla } from '@domain/models/database';
 import { templateService } from '@repositories/templateService';
 import '@assets/attributes.css';
 
+// --- PRESERVATION ORIGINAL PROPS ---
+// interface TemplateSettingsModalProps {
+//   template: Plantilla;
+//   onClose: () => void;
+//   onSave: () => void;
+// }
 interface TemplateSettingsModalProps {
   template: Plantilla;
   onClose: () => void;
-  onSave: () => void;
+  onSave: (updatedTemplate?: Plantilla) => void;
+  isIndividual?: boolean;
+  projectId?: number;
 }
 
-const TemplateSettingsModal: React.FC<TemplateSettingsModalProps> = ({ template, onClose, onSave }) => {
+const TemplateSettingsModal: React.FC<TemplateSettingsModalProps> = ({ 
+  template, 
+  onClose, 
+  onSave,
+  isIndividual = false,
+  projectId
+}) => {
   const [nombre, setNombre] = useState(template.nombre);
   const [tipo, setTipo] = useState(template.tipo);
   
@@ -32,14 +46,33 @@ const TemplateSettingsModal: React.FC<TemplateSettingsModalProps> = ({ template,
     setOptions(options.filter(o => o !== opt));
   };
 
+  // Guarda la configuración local (clonando en caliente la plantilla) o actualiza la plantilla global según corresponda
   const handleSave = async () => {
     const updatedMeta = { ...initialMeta, options };
-    await templateService.update(template.id, {
-      nombre,
-      tipo: tipo as unknown as Plantilla['tipo'],
-      metadata: JSON.stringify(updatedMeta)
-    });
-    onSave();
+    isIndividual && projectId
+      ? await (async () => {
+          const newTemplate = await templateService.create({
+            nombre,
+            tipo: tipo as unknown as Plantilla['tipo'],
+            metadata: JSON.stringify(updatedMeta),
+            valor_defecto: template.valor_defecto || '',
+            es_obligatorio: template.es_obligatorio || 0,
+            project_id: projectId,
+            aplica_a_todo: 0,
+            tipo_objetivo: template.tipo_objetivo || null,
+            categoria: 'Individual',
+            orden: template.orden || 0
+          });
+          onSave(newTemplate);
+        })()
+      : await (async () => {
+          await templateService.update(template.id, {
+            nombre,
+            tipo: tipo as unknown as Plantilla['tipo'],
+            metadata: JSON.stringify(updatedMeta)
+          });
+          onSave();
+        })();
   };
 
   return (
