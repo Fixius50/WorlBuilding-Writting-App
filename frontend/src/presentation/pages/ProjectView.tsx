@@ -1,7 +1,5 @@
 import React from "react";
-import { useLanguage } from "@context/LanguageContext";
-import { useOutletContext, useNavigate } from "react-router-dom";
-import { useAppStore } from "@store/useAppStore";
+import { useProjectView } from "./useProjectView";
 
 interface ActionCardProps {
   icon: string;
@@ -45,21 +43,18 @@ const ActionCard: React.FC<ActionCardProps> = ({
 );
 
 const ProjectView: React.FC = () => {
-  // projectName comes from the Outlet context in ArchitectLayout
-  const { projectName, projectId } = useOutletContext<{
-    projectName: string;
-    projectId: number | null;
-  }>();
-  const navigate = useNavigate();
-  const { t } = useLanguage();
-  const user = useAppStore((state) => state.user);
-
-  const baseUrl = `/local/${projectName}`;
+  const {
+    projectName,
+    navigate,
+    t,
+    user,
+    baseUrl
+  } = useProjectView();
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden bg-background">
       {/* Header */}
-      <div className="h-20 border-b flex items-center justify-between px-12 bg-background/95 shrink-0">
+      <div className="h-20 border-b flex items-center justify-between px-12 bg-background shrink-0">
         <div className="flex items-center gap-4">
           <div className="size-10 rounded-none bg-primary/20 flex items-center justify-center text-primary shadow-lg shadow-primary/10">
             <span className="material-symbols-outlined">auto_stories</span>

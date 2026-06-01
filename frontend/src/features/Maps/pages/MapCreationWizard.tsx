@@ -27,7 +27,7 @@ const MapCreationWizard: React.FC<MapCreationWizardProps> = ({ onCancel, onCreat
   } = useMapCreationWizard(onCreate);
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-6">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-6">
       <div className="w-full max-w-4xl max-h-[90vh] overflow-hidden monolithic-panel bg-background border border-foreground/10 shadow-[0_0_100px_rgba(0,0,0,0.5)] flex flex-col animate-in zoom-in-95 duration-500">
         <div className="flex-1 overflow-y-auto p-12 space-y-16 custom-scrollbar">
           <section className="space-y-6">

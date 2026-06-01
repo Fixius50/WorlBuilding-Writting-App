@@ -819,7 +819,7 @@ const ArchitectLayout: React.FC = () => {
       {/* MODAL CENTRAL FLOTANTE PARA "OTROS" */}
       {activeModal && (
         <div
-          className="fixed inset-0 z-[400] bg-black/40 backdrop-blur-[1px] flex items-center justify-center animate-in fade-in duration-200"
+          className="fixed inset-0 z-[400] bg-black/75 flex items-center justify-center animate-in fade-in duration-200"
           onClick={() => setActiveModal(null)}
         >
           <div

@@ -1,410 +1,568 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { WorkspaceUseCase } from "@application/useCases/WorkspaceUseCase";
-import { Proyecto } from "@domain/models/database";
-import CreateWorkspaceModal from "@features/Dashboard/components/CreateWorkspaceModal";
-import EditWorkspaceModal from "@features/Dashboard/components/EditWorkspaceModal";
-import { sqlocal } from "@database";
-import ConfirmModal from "@organisms/ConfirmModal";
+import React, { useState, useRef } from "react";
 import ConfirmationModal from "@organisms/ConfirmationModal";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-// Sync Service handled by UseCase
+import { Proyecto } from "@domain/models/database";
+import { useWorkspaceSelector } from "./useWorkspaceSelector";
 
-import { useAppStore } from "@store/useAppStore";
+// --- COMPONENTES ATÓMICOS ---
 
-const WorkspaceSelector: React.FC = () => {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const setUser = useAppStore((state) => state.setUser);
-  const setLastProjectId = useAppStore((state) => state.setLastProjectId);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [importConfirmOpen, setImportConfirmOpen] = useState(false);
-  const [statusModal, setStatusModal] = useState<{
-    title: string;
-    message: string;
-  } | null>(null);
+const Icon: React.FC<{ name: string; filled?: boolean; className?: string }> = ({
+  name,
+  filled = false,
+  className = "",
+}) => (
+  <span
+    className={`material-symbols-outlined normal-case ${filled ? "icon-filled" : ""} ${className}`}
+    style={filled ? { fontVariationSettings: "'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24" } : undefined}
+  >
+    {name}
+  </span>
+);
 
-  // CRUD State
-  const [projectToDelete, setProjectToDelete] = useState<number | null>(null);
-  const [projectToEdit, setProjectToEdit] = useState<Proyecto | null>(null);
+const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <label className="font-mono text-[10px] text-foreground/50 tracking-[0.2em] uppercase mb-2 block">
+    {children}
+  </label>
+);
 
-  const {
-    data: workspaces = [],
-    isLoading: listLoading,
-    refetch: refetchWorkspaces,
-  } = useQuery<Proyecto[]>({
-    queryKey: ["workspaces", "list"],
-    queryFn: async () => {
-      return await WorkspaceUseCase.listProjects();
-    },
+const CarvedInput: React.FC<{
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholder: string;
+  type?: string;
+  icon?: string;
+}> = ({ value, onChange, placeholder, type = "text", icon }) => (
+  <div className="relative group w-full">
+    {icon && (
+      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-foreground/30 group-focus-within:text-primary transition-colors">
+        <Icon name={icon} />
+      </div>
+    )}
+    <input
+      type={type}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      className={`w-full bg-background border border-foreground/10 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] p-3 
+                 font-sans text-foreground/90 placeholder:text-foreground/20 placeholder:font-mono placeholder:text-xs
+                 focus:outline-none focus:border-primary/50 transition-colors rounded-none
+                 ${icon ? "pl-10" : ""}`}
+    />
+  </div>
+);
+
+const PrimaryButton: React.FC<{
+  children: React.ReactNode;
+  onClick: (e: React.MouseEvent) => void;
+  icon?: string;
+  className?: string;
+  disabled?: boolean;
+}> = ({ children, onClick, icon, className = "", disabled = false }) => (
+  <button
+    disabled={disabled}
+    onClick={onClick}
+    className={`flex items-center justify-center gap-2 bg-primary/10 border border-primary/30 
+               text-primary hover:bg-primary hover:text-background hover:border-primary
+               px-6 py-3 font-mono text-[10px] tracking-widest uppercase transition-all duration-300 rounded-none disabled:opacity-30 disabled:pointer-events-none ${className}`}
+  >
+    {icon && <Icon name={icon} />}
+    {children}
+  </button>
+);
+
+const GhostButton: React.FC<{
+  children: React.ReactNode;
+  onClick: (e: React.MouseEvent) => void;
+  icon?: string;
+  className?: string;
+}> = ({ children, onClick, icon, className = "" }) => (
+  <button
+    onClick={onClick}
+    className={`flex items-center justify-center gap-2 bg-transparent border border-foreground/10
+               text-foreground/60 hover:bg-foreground/5 hover:text-foreground hover:border-foreground/30
+               px-6 py-3 font-mono text-[10px] tracking-widest uppercase transition-all duration-300 rounded-none ${className}`}
+  >
+    {icon && <Icon name={icon} />}
+    {children}
+  </button>
+);
+
+const Badge: React.FC<{ children: React.ReactNode; active?: boolean }> = ({
+  children,
+  active = false,
+}) => (
+  <span
+    className={`font-mono text-[9px] tracking-[0.2em] uppercase px-2 py-1 border rounded-none transition-colors
+              ${active ? "border-primary/50 bg-primary/10 text-primary" : "border-foreground/10 bg-foreground/5 text-foreground/50"}`}
+  >
+    {children}
+  </span>
+);
+
+// --- SELECTOR DUAL DE IMAGENES (LOCAL / URL) ---
+
+interface ImageUploaderProps {
+  currentUrl: string;
+  onImageUpdate: (url: string) => void;
+}
+
+const ImageUploader: React.FC<ImageUploaderProps> = ({ currentUrl, onImageUpdate }) => {
+  const [mode, setMode] = useState<"url" | "local">("url");
+  const [localGallery, setLocalGallery] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem("codex_session_gallery");
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const loading = listLoading || actionLoading;
-
-  const handleSelect = async (projectName: string) => {
-    try {
-      // En Local-First, el select es solo navegar a la ruta del proyecto
-      const selected = workspaces.find((w) => w.nombre === projectName);
-      if (selected) {
-        await setLastProjectId(selected.id);
-      }
-      await setUser({ username: "local" });
-      navigate(`/local/${projectName}`);
-    } catch (err: unknown) {
-      setError((err as Error).message || "Fallo al entrar al cuaderno");
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        const newGallery = [base64String, ...localGallery.filter((img) => img !== base64String)].slice(0, 10);
+        setLocalGallery(newGallery);
+        localStorage.setItem("codex_session_gallery", JSON.stringify(newGallery));
+        onImageUpdate(base64String);
+      };
+      reader.readAsDataURL(file);
     }
   };
-
-  const handleCreateWorkspace = async (formData: {
-    name: string;
-    title: string;
-    genre: string;
-    imageUrl?: string;
-  }) => {
-    try {
-      setActionLoading(true);
-      const res = await WorkspaceUseCase.createProject(
-        formData.name,
-        formData.title,
-        formData.genre,
-        formData.imageUrl,
-      );
-      await queryClient.invalidateQueries({ queryKey: ["workspaces", "list"] });
-      if (res) await handleSelect(res.nombre);
-    } catch (err) {
-      setError("Error al crear cuaderno");
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (projectToDelete !== null) {
-      try {
-        setActionLoading(true);
-        await WorkspaceUseCase.deleteProject(projectToDelete);
-        await queryClient.invalidateQueries({
-          queryKey: ["workspaces", "list"],
-        });
-        await refetchWorkspaces();
-        setProjectToDelete(null);
-      } catch (err) {
-        setError("Error al borrar el cuaderno");
-      } finally {
-        setActionLoading(false);
-      }
-    }
-  };
-
-  const handleUpdateWorkspace = async (id: number, data: Partial<Proyecto>) => {
-    try {
-      setActionLoading(true);
-      await WorkspaceUseCase.updateProject(id, data);
-      await queryClient.invalidateQueries({ queryKey: ["workspaces", "list"] });
-      await refetchWorkspaces();
-      setProjectToEdit(null);
-    } catch (err) {
-      setError("Error al actualizar cuaderno");
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleExport = async () => {
-    try {
-      setActionLoading(true);
-      const res = await WorkspaceUseCase.exportBackup("worldbuilding_master");
-      switch (res.success) {
-        case true:
-          setStatusModal({
-            title: "Exportación completada",
-            message:
-              "La copia de seguridad se guardó correctamente en el servidor local.",
-          });
-          break;
-        default:
-          setError(res.message);
-          break;
-      }
-    } catch (err) {
-      setError("Fallo en la sincronización.");
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const executeImport = async () => {
-    try {
-      setActionLoading(true);
-      const res = await WorkspaceUseCase.importBackup("worldbuilding_master");
-      switch (res.success) {
-        case true:
-          setStatusModal({
-            title: "Importación completada",
-            message:
-              "Los datos se restauraron correctamente. La aplicación se recargará para aplicar los cambios.",
-          });
-          break;
-        default:
-          setError(res.message);
-          break;
-      }
-    } catch (err) {
-      setError("Error al importar datos.");
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleImport = async () => {
-    setImportConfirmOpen(true);
-  };
-
-  const handleStatusAcknowledge = (): void => {
-    switch (statusModal?.title) {
-      case "Importación completada":
-        setStatusModal(null);
-        window.location.reload();
-        break;
-      default:
-        setStatusModal(null);
-        break;
-    }
-  };
-
-  const filteredWorkspaces = workspaces.filter((w) =>
-    (w.nombre || w.descripcion || "")
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase()),
-  );
 
   return (
-    <div className="h-screen w-full bg-background text-foreground flex flex-col items-center font-sans selection:bg-indigo-500/30 overflow-hidden">
-      <div className="w-full max-w-6xl flex-1 flex flex-col overflow-y-auto custom-scrollbar p-8">
-        <header className="w-full mb-12 flex flex-col lg:flex-row lg:items-end justify-center text-center gap-8 flex-shrink-0">
-          <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <h1 className="text-6xl font-black tracking-tighter leading-none">
-                <span className="block text-primary">Mis</span>
-                <span className="block text-foreground">Cuadernos</span>
-              </h1>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate("/settings")}
-              className="flex items-center gap-2 px-5 py-3 monolithic-panel hover:bg-foreground/5 rounded-none transition-all text-xs font-bold text-foreground/60 hover:text-foreground group"
-              title="Configuración Global"
-            >
-              <span className="material-symbols-outlined text-lg group-hover:rotate-90 transition-transform duration-500">
-                settings
-              </span>
-              <span className="hidden sm:inline">Ajustes</span>
-            </button>
-
-            <button
-              onClick={handleExport}
-              className="flex items-center gap-2 px-5 py-3 monolithic-panel hover:bg-primary/5 rounded-none transition-all text-xs font-bold text-primary group"
-              title="Exportar base de datos al servidor"
-            >
-              <span className="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">
-                cloud_upload
-              </span>
-              <span className="hidden sm:inline">Exportar</span>
-            </button>
-
-            <button
-              onClick={handleImport}
-              className="flex items-center gap-2 px-5 py-3 monolithic-panel hover:bg-foreground/5 rounded-none transition-all text-xs font-bold text-foreground/60 group"
-              title="Importar base de datos desde el servidor"
-            >
-              <span className="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">
-                cloud_download
-              </span>
-              <span className="hidden sm:inline">Importar</span>
-            </button>
-
-            <a
-              href="/manual/Guia_Usuario.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-5 py-3 monolithic-panel hover:bg-primary/10 rounded-none transition-all text-xs font-bold text-primary hover:text-primary/80 group no-underline"
-              title="Abrir Manual de Usuario"
-            >
-              <span className="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">
-                menu_book
-              </span>
-              <span className="hidden sm:inline">Guía de Usuario</span>
-            </a>
-
-            <div className="relative group min-w-[300px]">
-              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-foreground/20 text-xl group-focus-within:text-primary transition-colors pointer-events-none">
-                search
-              </span>
-              <input
-                type="text"
-                placeholder="Buscar..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full sunken-panel rounded-none py-3 pl-12 pr-4 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-all placeholder:text-foreground/20"
-              />
-            </div>
-          </div>
-        </header>
-
-        <section className="w-full max-w-6xl">
-          {loading ? (
-            <div className="flex flex-col items-center gap-6 py-20 opacity-20">
-              <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em]">
-                Accediendo al Sector Local...
-              </p>
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-6 justify-start pb-20">
-              <div
-                onClick={() => setIsCreateModalOpen(true)}
-                className="group relative h-[380px] monolithic-panel border-dashed border-2 overflow-hidden flex flex-col items-center justify-center gap-6 transition-all cursor-pointer animate-in fade-in duration-700 w-full md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]"
-              >
-                <div className="w-20 h-20 bg-background border-[0.5px] rounded-none flex items-center justify-center text-4xl text-foreground/40 group-hover:scale-110 group-hover:text-primary transition-all rounded-full">
-                  <span className="material-symbols-outlined text-4xl">
-                    add
-                  </span>
-                </div>
-                <div className="text-center">
-                  <h3 className="text-xl font-black tracking-tight text-foreground/70 group-hover:text-foreground transition-colors">
-                    Nuevo Cuaderno
-                  </h3>
-                  <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest mt-2 group-hover:text-foreground/70">
-                    Inicia un nuevo universo
-                  </p>
-                </div>
-              </div>
-
-              {filteredWorkspaces.map((workspace) => {
-                const displayImg =
-                  workspace.image_url ||
-                  "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800";
-
-                return (
-                  <div
-                    key={workspace.id}
-                    onClick={() => handleSelect(workspace.nombre)}
-                    className="group relative h-[380px] monolithic-panel overflow-hidden transition-all hover:-translate-y-2 cursor-pointer animate-in fade-in slide-in-from-bottom-4 w-full md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] flex flex-col"
-                  >
-                    <div className="w-full h-40 shrink-0 border-b overflow-hidden">
-                      <img
-                        src={displayImg}
-                        className="w-full h-full object-cover opacity-60 group-hover:opacity-100 grayscale-[0.8] group-hover:grayscale-0 transition-all duration-500"
-                        alt=""
-                      />
-                    </div>
-
-                    <div className="absolute top-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setProjectToEdit(workspace);
-                        }}
-                        className="w-10 h-10 monolithic-panel rounded-none flex items-center justify-center text-foreground/60 hover:text-primary-foreground hover:bg-primary transition-all border-none"
-                        title="Editar"
-                      >
-                        <span className="material-symbols-outlined text-sm">
-                          edit
-                        </span>
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setProjectToDelete(workspace.id);
-                        }}
-                        className="w-10 h-10 monolithic-panel rounded-none flex items-center justify-center text-foreground/60 hover:text-foreground hover:bg-red-500 transition-all border-none"
-                        title="Eliminar"
-                      >
-                        <span className="material-symbols-outlined text-sm">
-                          delete
-                        </span>
-                      </button>
-                    </div>
-
-                    <div className="flex-1 flex flex-col p-8">
-                      <div className="mt-auto space-y-3">
-                        <span className="inline-block px-3 py-1 bg-primary/10 border border-primary/20 text-[9px] font-black text-primary rounded-none tracking-widest uppercase">
-                          {workspace.tag || "GENERAL"}
-                        </span>
-                        <h3 className="text-3xl font-black text-foreground tracking-tighter leading-tight group-hover:text-primary transition-colors">
-                          {workspace.nombre}
-                        </h3>
-
-                        <p className="text-xs text-foreground/60 line-clamp-2 leading-relaxed">
-                          {workspace.descripcion ||
-                            "Una tierra dividida por la magia y la tecnología antigua..."}
-                        </p>
-
-                        <div className="flex items-center justify-between pt-6 border-t mt-4">
-                          <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-                            <span className="text-[9px] font-black uppercase tracking-widest text-foreground/40">
-                              Última edición:{" "}
-                              <span className="text-foreground/70">
-                                {new Date(
-                                  workspace.ultima_modificacion,
-                                ).toLocaleDateString()}
-                              </span>
-                            </span>
-                          </div>
-                          <div className="w-8 h-8 rounded-full bg-background border flex items-center justify-center text-[10px] font-black text-primary">
-                            {workspace.initials}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
+    <div className="space-y-4">
+      {/* Tabs de modo (Estilo Técnico) */}
+      <div className="flex gap-px bg-foreground/10 border border-foreground/10 p-px rounded-none">
+        <button
+          type="button"
+          onClick={() => setMode("url")}
+          className={`flex-1 py-2 font-mono text-[10px] tracking-widest uppercase transition-colors flex items-center justify-center gap-1.5 ${mode === "url" ? "bg-background text-foreground" : "text-foreground/40 hover:bg-foreground/5 hover:text-foreground/80"}`}
+        >
+          <Icon name="link" className="text-sm align-middle" /> Enlace URL
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode("local")}
+          className={`flex-1 py-2 font-mono text-[10px] tracking-widest uppercase transition-colors flex items-center justify-center gap-1.5 ${mode === "local" ? "bg-background text-foreground" : "text-foreground/40 hover:bg-foreground/5 hover:text-foreground/80"}`}
+        >
+          <Icon name="folder" className="text-sm align-middle" /> Archivo Local
+        </button>
       </div>
 
-      {error && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-red-500/20 border border-red-500/30 text-red-200 rounded-none text-xs font-bold shadow-2xl animate-bounce">
-          {error}
+      {/* Contenido según el modo */}
+      {mode === "url" ? (
+        <div className="animate-in fade-in duration-200">
+          <CarvedInput
+            icon="language"
+            value={currentUrl.startsWith("data:") ? "" : currentUrl}
+            onChange={(e) => onImageUpdate(e.target.value)}
+            placeholder="Ej: https://images.unsplash.com/..."
+          />
+          <p className="font-mono text-[9px] text-foreground/30 mt-2 tracking-widest uppercase">
+            Pegar enlace directo de la imagen de portada.
+          </p>
+        </div>
+      ) : (
+        <div className="animate-in fade-in duration-200 space-y-4">
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className="w-full h-24 border border-dashed border-foreground/20 bg-background shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] rounded-none
+                       flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all group"
+          >
+            <Icon
+              name="upload_file"
+              className="text-foreground/30 group-hover:text-primary mb-2 transition-colors"
+            />
+            <span className="font-mono text-[10px] text-foreground/50 group-hover:text-primary tracking-widest uppercase transition-colors">
+              Haz clic para buscar en el sistema
+            </span>
+          </div>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept="image/*"
+            className="hidden"
+          />
+
+          {/* Galería de Sesión Local */}
+          {localGallery.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-foreground/10">
+              <p className="font-mono text-[9px] text-foreground/50 tracking-widest uppercase mb-3 flex items-center justify-between">
+                <span>Memoria de Sesión Local</span>
+                <span className="text-primary">{localGallery.length} Artefactos</span>
+              </p>
+              <div className="grid grid-cols-5 gap-2">
+                {localGallery.map((imgUrl, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => onImageUpdate(imgUrl)}
+                    className={`aspect-square relative cursor-pointer border rounded-none overflow-hidden transition-all
+                              ${currentUrl === imgUrl ? "border-primary shadow-[0_0_10px_rgba(99,102,241,0.3)]" : "border-foreground/20 hover:border-foreground/50 opacity-60 hover:opacity-100"}`}
+                  >
+                    <img src={imgUrl} className="w-full h-full object-cover" alt={`Upload ${idx}`} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
+    </div>
+  );
+};
 
-      <CreateWorkspaceModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onCreate={handleCreateWorkspace}
+// --- CONSOLA DE CONFIGURACION MONOLITICA ---
+
+interface EditorMonolithicPanelProps {
+  projectToEdit?: Proyecto | null;
+  onSave: (data: { nombre: string; descripcion: string; tag: string; coverUrl: string }) => void | Promise<void>;
+  onCancel: () => void;
+  isCreating: boolean;
+}
+
+const EditorMonolithicPanel: React.FC<EditorMonolithicPanelProps> = ({
+  projectToEdit,
+  onSave,
+  onCancel,
+  isCreating,
+}) => {
+  const [title, setTitle] = useState(projectToEdit?.nombre || "");
+  const [description, setDescription] = useState(projectToEdit?.descripcion || "");
+  const [tag, setTag] = useState(projectToEdit?.tag || "Fantasía");
+  const [coverUrl, setCoverUrl] = useState(projectToEdit?.image_url || "");
+
+  const handleSave = () => {
+    if (!title.trim()) return;
+    onSave({
+      nombre: title,
+      descripcion: description,
+      tag: tag,
+      coverUrl: coverUrl,
+    });
+  };
+
+  const displayId = projectToEdit ? `CN-${projectToEdit.id}` : `CN-${Math.floor(Math.random() * 9000) + 1000}`;
+
+  return (
+    <div className="fixed inset-0 bg-background/95 z-[500] flex items-center justify-center p-4 sm:p-8 animate-in fade-in duration-200">
+      {/* THE MONOLITHIC BOX */}
+      <div className="w-full max-w-6xl h-[85vh] bg-background border border-foreground/10 shadow-2xl flex flex-col md:flex-row relative overflow-hidden">
+        <button
+          onClick={onCancel}
+          className="absolute top-4 right-4 text-foreground/40 hover:text-foreground z-20 p-2 bg-background border border-foreground/10 rounded-none transition-colors"
+          title="Cerrar Panel"
+        >
+          <Icon name="close" />
+        </button>
+
+        {/* --- COLUMNA IZQUIERDA: VISOR DE ARTE PRISTINO --- */}
+        <div className="hidden md:flex w-1/2 border-r border-foreground/10 flex-col bg-foreground/5 relative">
+          <div className="flex-1 relative overflow-hidden shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]">
+            {coverUrl ? (
+              <img src={coverUrl} alt="Portada del proyecto" className="w-full h-full object-cover" />
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-foreground/20 bg-background">
+                <Icon name="broken_image" className="text-6xl mb-4 opacity-50" />
+                <span className="font-mono text-xs tracking-[0.2em] uppercase">Ausencia de Artefacto Visual</span>
+              </div>
+            )}
+
+            {/* Overlay Técnico Sutil */}
+            <div className="absolute top-4 left-4 flex items-center gap-2">
+              <span className="font-mono text-[10px] tracking-[0.2em] uppercase px-2 py-1 border border-foreground bg-foreground text-background rounded-none shadow-md">
+                {displayId}
+              </span>
+              <span className="font-mono text-[0.6rem] tracking-[0.2em] uppercase px-[0.5rem] py-[0.25rem] border border-primary/30 bg-primary/20 text-primary rounded-none shadow-md truncate max-w-[150px]">
+                {tag || "SIN CLASIFICAR"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* --- COLUMNA DERECHA: CONSOLA DE CONFIGURACION --- */}
+        <div className="w-full md:w-1/2 flex flex-col h-full overflow-y-auto bg-background">
+          <div className="p-8 border-b border-foreground/10 bg-background/95 sticky top-0 z-10">
+            <h1 className="font-sans text-2xl font-light tracking-wide text-foreground flex items-center gap-3 min-w-0">
+              <Icon name="edit_note" className="text-primary flex-shrink-0" />
+              <span className="truncate">{title || "Nuevo Universo"}</span>
+            </h1>
+          </div>
+
+          <div className="p-8 space-y-10 flex-1">
+            <div>
+              <Label>Título del Proyecto</Label>
+              <CarvedInput
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Ej: Crónicas del Abismo"
+                icon="title"
+              />
+            </div>
+
+            <div>
+              <Label>Descripción del Universo</Label>
+              <CarvedInput
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Ej: Una tierra de ingeniería cósmica monolítica..."
+                icon="description"
+              />
+            </div>
+
+            <div>
+              <Label>Clasificación (Género o Tag)</Label>
+              <CarvedInput
+                value={tag}
+                onChange={(e) => setTag(e.target.value)}
+                placeholder="Ej: Fantasía, Cyberpunk, Sci-Fi..."
+                icon="category"
+              />
+            </div>
+
+            <div>
+              <Label>Artefacto Visual (Portada)</Label>
+              <ImageUploader currentUrl={coverUrl} onImageUpdate={setCoverUrl} />
+            </div>
+          </div>
+
+          <div className="p-6 border-t border-foreground/10 bg-foreground/5 flex justify-end gap-4 mt-auto">
+            <GhostButton onClick={onCancel} icon="block">
+              Descartar
+            </GhostButton>
+            <PrimaryButton onClick={handleSave} icon="save" disabled={!title.trim()}>
+              {isCreating ? "Inicializar Universo" : "Guardar Configuración"}
+            </PrimaryButton>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- TARJETA DE CUADERNO PRINCIPAL (ARTEFACT CARD) ---
+
+interface NotebookCardProps {
+  data: Proyecto;
+  onSelect: (name: string) => void;
+  onEdit: (project: Proyecto) => void;
+  onDelete: (id: number) => void;
+}
+
+const NotebookCard: React.FC<{
+  data: Proyecto;
+  onSelect: (name: string) => void;
+  onEdit: (project: Proyecto) => void;
+  onDelete: (id: number) => void;
+}> = ({ data, onSelect, onEdit, onDelete }) => {
+  const displayImg =
+    data.image_url || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800";
+
+  return (
+    <div
+      onClick={() => onSelect(data.nombre)}
+      className="group relative aspect-[3/4] w-full bg-background border border-foreground/10 overflow-hidden cursor-pointer hover:border-foreground/30 shadow-lg transition-all animate-in fade-in duration-500 flex flex-col"
+    >
+      {/* Imagen de Fondo (Protagonista) */}
+      <img
+        src={displayImg}
+        alt={data.nombre}
+        className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-100 grayscale-[0.8] group-hover:grayscale-0 transition-all duration-700"
       />
 
-      {projectToEdit && (
-        <EditWorkspaceModal
-          isOpen={!!projectToEdit}
-          onClose={() => setProjectToEdit(null)}
-          project={projectToEdit}
-          onUpdate={(data: Partial<Proyecto>) =>
-            handleUpdateWorkspace(projectToEdit.id, data)
-          }
+      <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-transparent to-transparent opacity-60"></div>
+
+      {/* ID Técnico y Género/Tag */}
+      <div className="absolute top-4 left-4 right-4 flex items-center gap-2 overflow-hidden z-20 opacity-40 group-hover:opacity-100 transition-opacity duration-300">
+        <span className="font-mono text-[9px] tracking-[0.2em] uppercase px-2 py-1 border border-foreground bg-foreground text-background rounded-none">
+          CN-{data.id}
+        </span>
+        <span className="font-mono text-[0.65rem] tracking-[0.2em] uppercase px-2 py-1 border border-primary/30 bg-primary/10 text-primary rounded-none truncate">
+          {data.tag || "GENERAL"}
+        </span>
+      </div>
+
+      {/* Bloque de Información y Acciones */}
+      <div className="absolute bottom-0 left-0 w-full p-4 flex items-stretch justify-between gap-2 z-20">
+        {/* Caja de Título */}
+        <div className="bg-background/95 border border-foreground/10 px-4 py-3 relative overflow-hidden flex-1 min-w-0 flex items-center">
+          <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary"></div>
+          <h3 className="font-serif text-xl text-foreground leading-tight truncate pl-1">
+            {data.nombre}
+          </h3>
+        </div>
+
+        {/* Acciones en Hover */}
+        <div className="hidden group-hover:flex items-stretch gap-2 flex-shrink-0">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(data);
+            }}
+            className="flex items-center justify-center bg-background/95 border border-foreground/10 text-foreground/60 hover:text-foreground w-12 rounded-none transition-all"
+            title="Editar Cuaderno"
+          >
+            <Icon name="settings" className="text-lg" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(data.id);
+            }}
+            className="flex items-center justify-center bg-background/95 border border-foreground/10 text-foreground/40 hover:text-red-400 hover:border-red-500/30 w-12 rounded-none transition-all"
+            title="Eliminar Cuaderno"
+          >
+            <Icon name="delete" className="text-lg" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- PAGINA PRINCIPAL ---
+
+const WorkspaceSelector: React.FC = () => {
+  const {
+    navigate,
+    workspaces,
+    loading,
+    error,
+    searchTerm,
+    setSearchTerm,
+    isCreating,
+    setIsCreating,
+    projectToEdit,
+    setProjectToEdit,
+    projectToDelete,
+    setProjectToDelete,
+    importConfirmOpen,
+    setImportConfirmOpen,
+    statusModal,
+    setStatusModal,
+    handleSelect,
+    handleSaveWorkspace,
+    handleDeleteConfirm,
+    handleExport,
+    executeImport,
+    handleStatusAcknowledge,
+    filteredWorkspaces
+  } = useWorkspaceSelector();
+
+  return (
+    <div className="min-h-screen bg-background relative flex flex-col selection:bg-primary/30 selection:text-foreground overflow-x-hidden">
+      {/* TopNav (Reducido, técnico, monolítico) */}
+      <header className="border-b border-foreground/10 px-8 py-4 bg-background flex justify-between items-center sticky top-0 z-30 flex-shrink-0">
+        <div className="flex items-center gap-4">
+          <h1 className="font-sans text-2xl tracking-tight text-foreground">
+            <span className="font-bold text-primary">Mis</span> Cuadernos
+          </h1>
+          <span className="px-2 py-0.5 bg-foreground/10 border border-foreground/10 rounded-none font-mono text-[10px] tracking-widest text-foreground/50 hidden sm:inline-block">
+            WORKSPACE ALFA
+          </span>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <CarvedInput
+            placeholder="Buscar por título..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            icon="search"
+          />
+          <GhostButton onClick={handleExport} icon="cloud_upload" className="hidden md:flex">
+            Respaldar
+          </GhostButton>
+          <GhostButton onClick={() => setImportConfirmOpen(true)} icon="cloud_download" className="hidden md:flex">
+            Importar
+          </GhostButton>
+          <GhostButton onClick={() => navigate("/settings")} icon="settings" className="hidden md:flex">
+            Ajustes
+          </GhostButton>
+        </div>
+      </header>
+
+      {/* Canvas Principal */}
+      <main className="flex-1 p-8 overflow-y-auto">
+        <div className="max-w-7xl mx-auto">
+          {/* Toolbar superior */}
+          <div className="flex justify-between items-end mb-8 border-b border-foreground/10 pb-4">
+            <div>
+              <h2 className="font-serif text-2xl text-foreground">Inventario de Proyectos</h2>
+              <p className="font-mono text-[10px] text-foreground/40 uppercase tracking-widest mt-1">
+                {workspaces.length} Artefactos localizados
+              </p>
+            </div>
+            <PrimaryButton onClick={() => setIsCreating(true)} icon="add">
+              Nuevo Cuaderno
+            </PrimaryButton>
+          </div>
+
+          {loading ? (
+            <div className="flex flex-col items-center justify-center gap-6 py-20 opacity-20">
+              <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-none animate-spin"></div>
+              <p className="font-mono text-[10px] uppercase tracking-widest">Accediendo al Sector Local...</p>
+            </div>
+          ) : (
+            /* GRID DE CUADERNOS */
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {/* Tarjeta Especial: Añadir Nuevo */}
+              <div
+                onClick={() => setIsCreating(true)}
+                className="aspect-[3/4] w-full border border-dashed border-foreground/20 bg-foreground/5 hover:bg-foreground/10 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] cursor-pointer flex flex-col items-center justify-center group rounded-none"
+              >
+                <div className="w-12 h-12 rounded-none bg-background border border-foreground/10 flex items-center justify-center mb-4 group-hover:border-primary group-hover:text-primary transition-colors">
+                  <Icon name="add" />
+                </div>
+                <span className="font-mono text-xs tracking-[0.2em] uppercase text-foreground/60 group-hover:text-foreground">
+                  Inicializar
+                </span>
+                <span className="font-serif text-lg text-foreground/40 mt-1">Nuevo Universo</span>
+              </div>
+
+              {/* Tarjetas de Cuadernos */}
+              {filteredWorkspaces.map((ws) => (
+                <NotebookCard
+                  key={ws.id}
+                  data={ws}
+                  onSelect={handleSelect}
+                  onEdit={(proj) => setProjectToEdit(proj)}
+                  onDelete={(id) => setProjectToDelete(id)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* Editor Monolítico (Se muestra si editamos o creamos) */}
+      {(projectToEdit || isCreating) && (
+        <EditorMonolithicPanel
+          projectToEdit={projectToEdit}
+          onSave={handleSaveWorkspace}
+          onCancel={() => {
+            setProjectToEdit(null);
+            setIsCreating(false);
+          }}
+          isCreating={isCreating}
         />
       )}
 
-      <ConfirmModal
-        isOpen={!!projectToDelete}
+      {/* Diálogos de Confirmación */}
+      <ConfirmationModal
+        isOpen={projectToDelete !== null}
         onClose={() => setProjectToDelete(null)}
         onConfirm={handleDeleteConfirm}
         title="¿Eliminar Proyecto?"
-        message={`Estás a punto de borrar este cuaderno y todo su contenido permanentemente. Esta acción no se puede deshacer.`}
+        message="Estás a punto de borrar este cuaderno y todo su contenido permanentemente. Esta acción no se puede deshacer."
         confirmText="Eliminar Universo"
-        isDestructive={true}
+        cancelText="Cancelar"
+        type="danger"
       />
 
-      <ConfirmModal
+      <ConfirmationModal
         isOpen={importConfirmOpen}
         onClose={() => setImportConfirmOpen(false)}
         onConfirm={() => {
@@ -415,7 +573,7 @@ const WorkspaceSelector: React.FC = () => {
         message="Esto sobrescribirá los datos actuales del universo con la versión respaldada."
         confirmText="Sí, importar"
         cancelText="Cancelar"
-        isDestructive={true}
+        type="warning"
       />
 
       <ConfirmationModal
@@ -428,6 +586,12 @@ const WorkspaceSelector: React.FC = () => {
         cancelText="Cerrar"
         type="warning"
       />
+
+      {error && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-red-500/20 border border-red-500/30 text-red-200 rounded-none text-xs font-bold shadow-2xl animate-bounce z-[600]">
+          {error}
+        </div>
+      )}
     </div>
   );
 };

@@ -165,7 +165,7 @@ const InteractiveMapView: React.FC<{
               )}
             </div>
             {onBack && (
-              <div className="p-4 border-t border-foreground/10 bg-background/80 sticky bottom-0 z-10 backdrop-blur-md">
+              <div className="p-4 border-t border-foreground/10 bg-background sticky bottom-0 z-10">
                 <Button
                   variant="ghost"
                   className="w-full justify-center py-3 text-[10px] font-black uppercase tracking-widest"

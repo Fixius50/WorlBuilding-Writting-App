@@ -91,7 +91,7 @@ const CosmicCanvasEditor: React.FC<{ entityId: number }> = ({ entityId }) => {
           backgroundColor="hsl(var(--background))"
         />
         <div className="absolute top-4 px-6 w-full pointer-events-none flex justify-center">
-          <div className="px-6 py-2 bg-background/80 border border-primary/30 text-primary font-black text-[10px] uppercase tracking-[0.4em] backdrop-blur-md">
+          <div className="px-6 py-2 bg-background border border-primary/30 text-primary font-black text-[10px] uppercase tracking-[0.4em]">
             MODO_DISEÑO_COSMICO: {entity.nombre}
           </div>
         </div>

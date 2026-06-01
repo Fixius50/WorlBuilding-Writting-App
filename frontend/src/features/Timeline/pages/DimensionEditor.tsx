@@ -298,7 +298,7 @@ const DimensionEditor: React.FC = () => {
 
       {/* Inline Editor Overlay */}
       {editingId !== null && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/85">
           <div className="w-full max-md monolithic-panel p-8 bg-[hsl(var(--background))] border border-[hsl(var(--primary)/0.3)] shadow-2xl">
             <h3 className="text-xl font-black mb-6 uppercase italic">
               Editar Hito

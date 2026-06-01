@@ -46,7 +46,7 @@ const CreateArchetypeModal: React.FC<CreateArchetypeModalProps> = ({
   const isCreatingFolder = parentFolder?.type === "folder"; // Determinar si es carpeta o nodo
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 p-4">
       <div className="bg-background w-full max-w-5xl rounded-none shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-foreground/10 overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
         {/* Header & Actions Toolbar */}
         <div className="p-6 border-b border-foreground/5 flex justify-between items-center bg-foreground/[0.03] sticky top-0 z-10">

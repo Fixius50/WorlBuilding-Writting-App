@@ -92,7 +92,7 @@ const CommandPalette = ({ folders = [], entities = [] }: CommandPaletteProps) =>
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-start justify-center pt-[15vh] bg-background/80 backdrop-blur-sm"
+      className="fixed inset-0 z-[9999] flex items-start justify-center pt-[15vh] bg-background/95"
       onClick={() => setOpen(false)}
     >
       <div
