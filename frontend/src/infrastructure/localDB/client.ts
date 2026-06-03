@@ -248,14 +248,23 @@ export const initializeDatabase = async () => {
       )
     `;
 
+    // Recreamos la tabla de posiciones con soporte de contexto si no tiene la columna contexto
+    const columns = await sql<{ name: string }>`PRAGMA table_info(grafo_posiciones)`.catch(() => []);
+    const hasContexto = columns.some((c) => c.name === 'contexto');
+    if (!hasContexto) {
+      await sql`DROP TABLE IF EXISTS grafo_posiciones`.catch(() => {});
+    }
+
     // Nueva tabla para posiciones del Grafo
     await sql`
       CREATE TABLE IF NOT EXISTS grafo_posiciones (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        entidad_id INTEGER UNIQUE NOT NULL,
+        entidad_id INTEGER NOT NULL,
+        contexto TEXT NOT NULL DEFAULT 'general',
         x REAL NOT NULL,
         y REAL NOT NULL,
-        FOREIGN KEY (entidad_id) REFERENCES entidades(id) ON DELETE CASCADE
+        FOREIGN KEY (entidad_id) REFERENCES entidades(id) ON DELETE CASCADE,
+        UNIQUE(entidad_id, contexto)
       )
     `;
     await sql`CREATE INDEX IF NOT EXISTS idx_grafo_posiciones_entidad_id ON grafo_posiciones(entidad_id);`;

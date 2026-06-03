@@ -27,7 +27,7 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
   }, []);
 
   const handleNodeDragEnd = useCallback(async (id: string, x: number, y: number) => {
-    await RelationshipUseCase.saveNodePosition(Number(id), x, y);
+    await RelationshipUseCase.saveNodePosition(Number(id), x, y, 'general');
   }, []);
 
   if (loading) {

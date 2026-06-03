@@ -17,7 +17,7 @@ export const useMiniGraph = (entityId?: number, projectId?: number) => {
     try {
       const [rels, savedPositions] = await Promise.all([
         RelationshipUseCase.getRelationshipsByEntity(id),
-        RelationshipUseCase.getAllNodePositions(projectId)
+        RelationshipUseCase.getAllNodePositions(projectId, `minigraph_${id}`)
       ]);
       const nodeMap = new Map<string, CanvasNode>();
       const newEdges: CanvasEdge[] = [];
@@ -88,10 +88,16 @@ export const useMiniGraph = (entityId?: number, projectId?: number) => {
     }
   }, [entityId, projectId, loadGraph]);
 
-  const handleNodeDragEnd = useCallback(async (id: string, x: number, y: number) => {
-    if (!projectId) return;
-    await RelationshipUseCase.saveNodePosition(Number(id), x, y);
-  }, [projectId]);
+  const handleNodeDragEnd = useCallback(async (nodeId: string, x: number, y: number) => {
+    const canSave = !!projectId && !!entityId;
+    switch (canSave) {
+      case true:
+        await RelationshipUseCase.saveNodePosition(Number(nodeId), x, y, `minigraph_${entityId}`);
+        break;
+      default:
+        break;
+    }
+  }, [projectId, entityId]);
 
   return {
     nodes,

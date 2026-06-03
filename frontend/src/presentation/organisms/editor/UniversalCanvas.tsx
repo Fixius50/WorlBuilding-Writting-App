@@ -61,6 +61,8 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [nodes, setNodes] = useState<CanvasNode[]>(initialNodes);
   const [edges, setEdges] = useState<CanvasEdge[]>(initialEdges);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState("ALL");
 
   useEffect(() => {
     setNodes(initialNodes);
@@ -69,6 +71,32 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   useEffect(() => {
     setEdges(initialEdges);
   }, [initialEdges]);
+
+  const uniqueTypes = React.useMemo(() => {
+    const types = new Set<string>();
+    initialNodes.forEach((n) => {
+      if (n.tipo) {
+        types.add(n.tipo);
+      }
+    });
+    return Array.from(types);
+  }, [initialNodes]);
+
+  const filteredNodes = React.useMemo(() => {
+    return nodes.filter((node) => {
+      const matchesSearch = node.label.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesType = filterType === "ALL" || node.tipo === filterType;
+      return matchesSearch && matchesType;
+    });
+  }, [nodes, searchTerm, filterType]);
+
+  const filteredEdges = React.useMemo(() => {
+    return edges.filter((edge) => {
+      const fromExists = filteredNodes.some((n) => n.id === edge.from);
+      const toExists = filteredNodes.some((n) => n.id === edge.to);
+      return fromExists && toExists;
+    });
+  }, [edges, filteredNodes]);
 
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -206,9 +234,9 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
         </Layer>
 
         <Layer id="edges">
-          {edges.map((edge) => {
-            const fromNode = nodes.find((n) => n.id === edge.from);
-            const toNode = nodes.find((n) => n.id === edge.to);
+          {filteredEdges.map((edge) => {
+            const fromNode = filteredNodes.find((n) => n.id === edge.from);
+            const toNode = filteredNodes.find((n) => n.id === edge.to);
             if (!fromNode || !toNode) return null;
             return (
               <Line
@@ -243,7 +271,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
         </Layer>
 
         <Layer id="nodes">
-          {nodes.map((node) => {
+          {filteredNodes.map((node) => {
             const tipo = node.tipo ? node.tipo.toUpperCase() : "";
             let shape = (
               <Circle
@@ -376,6 +404,41 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
           })}
         </Layer>
       </Stage>
+
+      {/* Panel de Filtro y Búsqueda Flotante */}
+      <div className="absolute top-4 right-3 z-10 bg-background border border-foreground/10 p-[0.75rem] rounded shadow-md flex flex-col gap-[0.5rem] w-[auto]">
+        <div className="flex flex-col gap-[0.25rem]">
+          <label htmlFor="canvas-search-input" className="text-[0.69rem] font-semibold text-muted-foreground uppercase tracking-wider">
+            Buscar Elemento
+          </label>
+          <input
+            id="canvas-search-input"
+            type="text"
+            placeholder="Escribe para buscar..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-muted text-foreground border border-foreground/10 rounded px-[0.5rem] py-[0.25rem] text-[0.69rem] outline-none focus:border-primary/50 transition-colors"
+          />
+        </div>
+        <div className="flex flex-col gap-[0.25rem]">
+          <label htmlFor="canvas-type-select" className="text-[0.69rem] font-semibold text-muted-foreground uppercase tracking-wider">
+            Filtrar por Tipo
+          </label>
+          <select
+            id="canvas-type-select"
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="w-full bg-muted text-foreground border border-foreground/10 rounded px-[0.5rem] py-[0.25rem] text-[0.69rem] outline-none focus:border-primary/50 transition-colors"
+          >
+            <option value="ALL">Todos los tipos</option>
+            {uniqueTypes.map((t) => (
+              <option key={t} value={t}>
+                {t.toUpperCase()}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
     </div>
   );
 };

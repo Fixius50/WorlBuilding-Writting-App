@@ -93,13 +93,13 @@ export class RelationshipUseCase {
   }
 
   /** Guarda la posición de un nodo (entidad) en la tabla grafo_posiciones */
-  static async saveNodePosition(entityId: number, x: number, y: number): Promise<void> {
-    await entityService.savePosition(entityId, x, y);
+  static async saveNodePosition(entityId: number, x: number, y: number, context: string = 'general'): Promise<void> {
+    await entityService.savePosition(entityId, x, y, context);
   }
 
-  /** Obtiene las posiciones de todos los nodos de un proyecto */
-  static async getAllNodePositions(projectId: number): Promise<Record<number, { x: number, y: number }>> {
-    const list = await entityService.getAllPositions(projectId);
+  /** Obtiene las posiciones de todos los nodos de un proyecto y contexto específico */
+  static async getAllNodePositions(projectId: number, context: string = 'general'): Promise<Record<number, { x: number, y: number }>> {
+    const list = await entityService.getAllPositions(projectId, context);
     const positions: Record<number, { x: number, y: number }> = {};
     list.forEach(item => {
       positions[item.entidad_id] = { x: item.x, y: item.y };

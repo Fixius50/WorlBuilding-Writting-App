@@ -17,7 +17,7 @@ export const useGeneralGraph = (projectId: number | undefined) => {
     try {
       const [networkData, savedPositions] = await Promise.all([
         RelationshipUseCase.getFullNetwork(projectId),
-        RelationshipUseCase.getAllNodePositions(projectId)
+        RelationshipUseCase.getAllNodePositions(projectId, 'general')
       ]);
       const { entities: allEntities, relationships: allRels } = networkData;
 

@@ -211,32 +211,32 @@ export const entityService = {
     }
   },
 
-  getPosition: async (entityId: number): Promise<{ x: number; y: number } | null> => {
-    console.log("[DB] getPosition for entity:", entityId);
-    const rows = await sql<{ x: number; y: number }>`SELECT x, y FROM grafo_posiciones WHERE entidad_id = ${entityId} LIMIT 1`;
+  getPosition: async (entityId: number, context: string = "general"): Promise<{ x: number; y: number } | null> => {
+    console.log("[DB] getPosition for entity:", entityId, "context:", context);
+    const rows = await sql<{ x: number; y: number }>`SELECT x, y FROM grafo_posiciones WHERE entidad_id = ${entityId} AND contexto = ${context} LIMIT 1`;
     console.log("[DB] getPosition result:", rows[0]);
     return rows[0] || null;
   },
 
-  getAllPositions: async (projectId: number): Promise<{ entidad_id: number; x: number; y: number }[]> => {
-    console.log("[DB] getAllPositions for project:", projectId);
+  getAllPositions: async (projectId: number, context: string = "general"): Promise<{ entidad_id: number; x: number; y: number }[]> => {
+    console.log("[DB] getAllPositions for project:", projectId, "context:", context);
     const result = await sql<{ entidad_id: number; x: number; y: number }>`
       SELECT gp.entidad_id, gp.x, gp.y 
       FROM grafo_posiciones gp
       JOIN entidades e ON gp.entidad_id = e.id
-      WHERE e.project_id = ${projectId} AND e.borrado = 0
+      WHERE e.project_id = ${projectId} AND gp.contexto = ${context} AND e.borrado = 0
     `;
     console.log("[DB] getAllPositions result count:", result.length, result);
     return result;
   },
 
-  savePosition: async (entityId: number, x: number, y: number): Promise<void> => {
-    console.log("[DB] savePosition for entityId:", entityId, "coords:", x, y);
+  savePosition: async (entityId: number, x: number, y: number, context: string = "general"): Promise<void> => {
+    console.log("[DB] savePosition for entityId:", entityId, "coords:", x, y, "context:", context);
     try {
       await sql`
-        INSERT INTO grafo_posiciones (entidad_id, x, y)
-        VALUES (${entityId}, ${x}, ${y})
-        ON CONFLICT(entidad_id) DO UPDATE SET x = excluded.x, y = excluded.y
+        INSERT INTO grafo_posiciones (entidad_id, contexto, x, y)
+        VALUES (${entityId}, ${context}, ${x}, ${y})
+        ON CONFLICT(entidad_id, contexto) DO UPDATE SET x = excluded.x, y = excluded.y
       `;
       console.log("[DB] savePosition success");
     } catch (e) {
