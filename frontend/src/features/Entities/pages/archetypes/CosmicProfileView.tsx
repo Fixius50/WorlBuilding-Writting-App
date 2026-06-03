@@ -4,6 +4,7 @@ import SecondaryTabs from "@presentation/molecules/SecondaryTabs";
 import UniversalCanvas from "@presentation/organisms/editor/UniversalCanvas";
 import DynamicAttributeForm from "@features/Entities/components/DynamicAttributeForm";
 import NarrativeRichText from "@features/Entities/components/NarrativeRichText";
+import MiniGraph from "@features/Entities/components/MiniGraph";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   getPresetTabsByEntityType,
@@ -33,6 +34,7 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
 
   const baseTabs = [
     { id: "REGISTRO", label: "REGISTRO", icon: "menu_book" },
+    { id: "RED_DE_CONTACTOS", label: "RELACIONES", icon: "hub" },
     { id: "CARTOGRAFÍA", label: "CARTOGRAFÍA", icon: "map" },
     { id: "TELEMETRÍA", label: "TELEMETRÍA", icon: "bar_chart" },
   ];
@@ -120,7 +122,7 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
       />
 
       <div
-        className={`flex-1 relative ${activeTab === "CARTOGRAFÍA" ? "overflow-hidden" : "overflow-y-auto custom-scrollbar"}`}
+        className={`flex-1 relative ${activeTab === "CARTOGRAFÍA" || activeTab === "RED_DE_CONTACTOS" ? "overflow-hidden" : "overflow-y-auto custom-scrollbar"}`}
       >
         {activeTab === "REGISTRO" && (
           <main className="p-8 lg:p-16 grid grid-cols-1 lg:grid-cols-2 gap-8 items-start max-w-[90rem] mx-auto w-full">
@@ -205,6 +207,12 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
               )}
             </div>
           </main>
+        )}
+
+        {activeTab === "RED_DE_CONTACTOS" && (
+          <div className="w-full h-full relative bg-background">
+            <MiniGraph entityId={Number(entity.id)} projectId={entity.project_id} />
+          </div>
         )}
 
         {activeTab === "CARTOGRAFÍA" && (

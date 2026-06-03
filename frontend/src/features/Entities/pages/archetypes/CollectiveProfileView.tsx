@@ -3,6 +3,7 @@ import { useCollectiveProfile } from "./useCollectiveProfile";
 import SecondaryTabs from "@presentation/molecules/SecondaryTabs";
 import DynamicAttributeForm from "@features/Entities/components/DynamicAttributeForm";
 import NarrativeRichText from "@features/Entities/components/NarrativeRichText";
+import MiniGraph from "@features/Entities/components/MiniGraph";
 import {
   getPresetTabsByEntityType,
   mergeTabs,
@@ -28,6 +29,7 @@ const CollectiveProfileView: React.FC<{ entityId?: string | number }> = ({
 
   const baseTabs = [
     { id: "REGISTRO", label: "REGISTRO", icon: "menu_book" },
+    { id: "RED_DE_CONTACTOS", label: "RELACIONES", icon: "hub" },
     { id: "DIPLOMACIA", label: "PANEL DE DIPLOMACIA", icon: "handshake" },
     { id: "DATOS_TÉCNICOS", label: "DATOS TÉCNICOS", icon: "bar_chart" },
   ];
@@ -115,7 +117,7 @@ const CollectiveProfileView: React.FC<{ entityId?: string | number }> = ({
       />
 
       <div
-        className={`flex-1 relative ${activeTab === "DIPLOMACIA" ? "overflow-hidden" : "overflow-y-auto custom-scrollbar"}`}
+        className={`flex-1 relative ${activeTab === "DIPLOMACIA" || activeTab === "RED_DE_CONTACTOS" ? "overflow-hidden" : "overflow-y-auto custom-scrollbar"}`}
       >
         {activeTab === "REGISTRO" && (
           <main className="p-8 lg:p-16 grid grid-cols-1 lg:grid-cols-2 gap-8 items-start max-w-[90rem] mx-auto w-full">
@@ -200,6 +202,12 @@ const CollectiveProfileView: React.FC<{ entityId?: string | number }> = ({
               )}
             </div>
           </main>
+        )}
+
+        {activeTab === "RED_DE_CONTACTOS" && (
+          <div className="w-full h-full relative bg-background">
+            <MiniGraph entityId={Number(entity.id)} projectId={entity.project_id} />
+          </div>
         )}
 
         {activeTab === "DIPLOMACIA" && (

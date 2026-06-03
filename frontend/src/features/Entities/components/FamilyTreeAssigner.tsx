@@ -55,7 +55,7 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({
 
   return (
     <div className="space-y-8">
-      <MonolithicPanel className="p-8 space-y-6 bg-foreground/[0.02] border-foreground/10">
+      <div className="monolithic-panel rounded-none flex flex-col transition-all duration-300 hover:border-primary/30 group p-8 space-y-6 bg-foreground/[0.02] border-foreground/10 overflow-visible">
         <header className="flex items-center gap-3 text-primary border-b border-foreground/5 pb-4">
           <span className="material-symbols-outlined text-lg">
             account_tree
@@ -180,7 +180,7 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({
             </div>
           </div>
         </div>
-      </MonolithicPanel>
+      </div>
 
       <div className="space-y-4">
         <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-foreground/30 px-2 flex items-center gap-2">

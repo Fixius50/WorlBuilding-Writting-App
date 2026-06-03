@@ -69,7 +69,8 @@ export const useFamilyTreeAssigner = (entityId: number, projectId: number) => {
         const all = await EntityUseCase.getAllByProject(projectId);
         const eligible = all.filter((entity) => entity.id !== entityId);
         const normalizedQuery = query.trim().toLowerCase();
-        const filtered = normalizedQuery
+        const isSelectedName = selectedRelative && query === selectedRelative.nombre;
+        const filtered = (normalizedQuery && !isSelectedName)
           ? eligible.filter((entity) =>
               entity.nombre.toLowerCase().includes(normalizedQuery),
             )
@@ -79,7 +80,7 @@ export const useFamilyTreeAssigner = (entityId: number, projectId: number) => {
         setSearchResults([]);
       }
     },
-    [projectId, entityId],
+    [projectId, entityId, selectedRelative],
   );
 
   useEffect(() => {
