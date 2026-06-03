@@ -6,37 +6,48 @@ import { RelationshipUseCase } from '@application/useCases/RelationshipUseCase';
  * 🧠 useMiniGraph
  * Hook to handle relationship loading and transformation into a star-shaped graph layout.
  */
-export const useMiniGraph = (entityId?: number) => {
+export const useMiniGraph = (entityId?: number, projectId?: number) => {
   const [nodes, setNodes] = useState<CanvasNode[]>([]);
   const [edges, setEdges] = useState<CanvasEdge[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadGraph = useCallback(async (id: number) => {
+    if (!projectId) return;
     setLoading(true);
     try {
-      const rels = await RelationshipUseCase.getRelationshipsByEntity(id);
+      const [rels, savedPositions] = await Promise.all([
+        RelationshipUseCase.getRelationshipsByEntity(id),
+        RelationshipUseCase.getAllNodePositions(projectId)
+      ]);
       const nodeMap = new Map<string, CanvasNode>();
       const newEdges: CanvasEdge[] = [];
 
       rels.forEach((rel, i) => {
         const angle = (i / rels.length) * 2 * Math.PI;
         
-        // Ensure both origin and destination nodes are in the map
-        if (!nodeMap.has(rel.origen_id.toString())) {
-          nodeMap.set(rel.origen_id.toString(), {
-            id: rel.origen_id.toString(),
-            x: 400 + Math.cos(angle) * 150,
-            y: 300 + Math.sin(angle) * 150,
+        const fromId = rel.origen_id.toString();
+        const posFrom = savedPositions[rel.origen_id] || (savedPositions as any)[fromId];
+        const hasPosFrom = posFrom !== undefined;
+
+        if (!nodeMap.has(fromId)) {
+          nodeMap.set(fromId, {
+            id: fromId,
+            x: hasPosFrom ? posFrom.x : (400 + Math.cos(angle) * 150),
+            y: hasPosFrom ? posFrom.y : (300 + Math.sin(angle) * 150),
             label: rel.nombre_origen || 'Desconocido',
             tipo: 'entidad'
           });
         }
 
-        if (!nodeMap.has(rel.destino_id.toString())) {
-          nodeMap.set(rel.destino_id.toString(), {
-            id: rel.destino_id.toString(),
-            x: 400 + Math.cos(angle) * 150,
-            y: 300 + Math.sin(angle) * 150,
+        const toId = rel.destino_id.toString();
+        const posTo = savedPositions[rel.destino_id] || (savedPositions as any)[toId];
+        const hasPosTo = posTo !== undefined;
+
+        if (!nodeMap.has(toId)) {
+          nodeMap.set(toId, {
+            id: toId,
+            x: hasPosTo ? posTo.x : (400 + Math.cos(angle) * 150),
+            y: hasPosTo ? posTo.y : (300 + Math.sin(angle) * 150),
             label: rel.nombre_destino || 'Desconocido',
             tipo: 'entidad'
           });
@@ -52,8 +63,14 @@ export const useMiniGraph = (entityId?: number) => {
       // Centralize the target entity
       if (nodeMap.has(id.toString())) {
         const center = nodeMap.get(id.toString())!;
-        center.x = 400;
-        center.y = 300;
+        const posCenter = savedPositions[id] || (savedPositions as any)[id.toString()];
+        if (posCenter !== undefined) {
+          center.x = posCenter.x;
+          center.y = posCenter.y;
+        } else {
+          center.x = 400;
+          center.y = 300;
+        }
       }
 
       setNodes(Array.from(nodeMap.values()));
@@ -63,17 +80,23 @@ export const useMiniGraph = (entityId?: number) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [projectId]);
 
   useEffect(() => {
-    if (entityId) {
+    if (entityId && projectId) {
       loadGraph(entityId);
     }
-  }, [entityId, loadGraph]);
+  }, [entityId, projectId, loadGraph]);
+
+  const handleNodeDragEnd = useCallback(async (id: string, x: number, y: number) => {
+    if (!projectId) return;
+    await RelationshipUseCase.saveNodePosition(Number(id), x, y);
+  }, [projectId]);
 
   return {
     nodes,
     edges,
-    loading
+    loading,
+    handleNodeDragEnd
   };
 };

@@ -53,22 +53,6 @@ const ProjectView: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden bg-background">
-      {/* Header */}
-      <div className="h-20 border-b flex items-center justify-between px-12 bg-background shrink-0">
-        <div className="flex items-center gap-4">
-          <div className="size-10 rounded-none bg-primary/20 flex items-center justify-center text-primary shadow-lg shadow-primary/10">
-            <span className="material-symbols-outlined">auto_stories</span>
-          </div>
-          <div>
-            <h1 className="text-xl font-black text-foreground tracking-tight uppercase">
-              {projectName}
-            </h1>
-            <p className="text-[10px] font-bold text-foreground/50 uppercase tracking-widest">
-              {t("project.dashboard_desc")}
-            </p>
-          </div>
-        </div>
-      </div>
 
       {/* Content Area */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">

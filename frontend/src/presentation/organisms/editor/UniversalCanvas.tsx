@@ -43,6 +43,7 @@ export interface UniversalCanvasProps {
   initialEdges?: CanvasEdge[];
   onNodeClick?: (id: string) => void;
   onEdgeClick?: (id: string) => void;
+  onNodeDragEnd?: (id: string, x: number, y: number) => void;
   backgroundColor?: string;
 }
 
@@ -51,6 +52,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   initialEdges = defaultEdges,
   onNodeClick,
   onEdgeClick,
+  onNodeDragEnd,
   backgroundColor,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -349,6 +351,11 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
                 y={node.y}
                 draggable
                 onDragMove={(e) => handleDragMoveNode(node.id, e)}
+                onDragEnd={(e) => {
+                  if (e.target === e.currentTarget) {
+                    onNodeDragEnd && onNodeDragEnd(node.id, e.target.x(), e.target.y());
+                  }
+                }}
                 onClick={() => onNodeClick && onNodeClick(node.id)}
                 onTap={() => onNodeClick && onNodeClick(node.id)}
               >

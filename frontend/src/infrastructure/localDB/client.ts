@@ -248,6 +248,18 @@ export const initializeDatabase = async () => {
       )
     `;
 
+    // Nueva tabla para posiciones del Grafo
+    await sql`
+      CREATE TABLE IF NOT EXISTS grafo_posiciones (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        entidad_id INTEGER UNIQUE NOT NULL,
+        x REAL NOT NULL,
+        y REAL NOT NULL,
+        FOREIGN KEY (entidad_id) REFERENCES entidades(id) ON DELETE CASCADE
+      )
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS idx_grafo_posiciones_entidad_id ON grafo_posiciones(entidad_id);`;
+
     // MIGRACIONES PARA MOTOR EAV
     await sql`ALTER TABLE plantillas ADD COLUMN aplica_a_todo INTEGER DEFAULT 1`.catch(() => {});
     await sql`ALTER TABLE plantillas ADD COLUMN tipo_objetivo TEXT`.catch(() => {});

@@ -2,6 +2,7 @@ import React, { useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
 import UniversalCanvas from "@presentation/organisms/editor/UniversalCanvas";
 import { useGeneralGraph } from "./useGeneralGraph";
+import { RelationshipUseCase } from "@application/useCases/RelationshipUseCase";
 
 interface GraphViewProps {
   projectId?: number;
@@ -25,6 +26,10 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
     // Panel derecho eliminado: antes abría el inspector de relación.
   }, []);
 
+  const handleNodeDragEnd = useCallback(async (id: string, x: number, y: number) => {
+    await RelationshipUseCase.saveNodePosition(Number(id), x, y);
+  }, []);
+
   if (loading) {
     return (
       <div className="p-8 text-foreground/50">
@@ -40,6 +45,7 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
         initialEdges={canvasEdges}
         onNodeClick={handleNodeClick}
         onEdgeClick={handleEdgeClick}
+        onNodeDragEnd={handleNodeDragEnd}
       />
     </div>
   );

@@ -61,14 +61,14 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({
             account_tree
           </span>
           <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground">
-            Asignación de Linaje
+            Asignación de Relaciones
           </h3>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <label className="text-[9px] font-black uppercase text-foreground/40 tracking-[0.2em] block px-1">
-              Buscar Familiar
+              Buscar Personaje
             </label>
             <div ref={searchContainerRef} className="relative">
               <input
@@ -101,7 +101,7 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({
                     ))
                   ) : (
                     <div className="p-3 text-[10px] font-bold uppercase tracking-tight text-foreground/40">
-                      Sin familiares disponibles
+                    Sin personajes disponibles
                     </div>
                   )}
                 </div>
@@ -185,7 +185,7 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({
       <div className="space-y-4">
         <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-foreground/30 px-2 flex items-center gap-2">
           <span className="material-symbols-outlined text-sm">groups</span>{" "}
-          Familiares Registrados
+          Relaciones Registradas
         </h3>
 
         {loading ? (
@@ -198,7 +198,7 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({
               family_history
             </span>
             <p className="text-[10px] font-black uppercase tracking-widest">
-              Sin linaje definido aún
+              Sin relaciones definidas aún
             </p>
           </div>
         ) : (

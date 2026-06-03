@@ -130,7 +130,7 @@ const CreateArchetypeModal: React.FC<CreateArchetypeModalProps> = ({
               <div className="space-y-12">
                 <div className="space-y-8">
                   <div>
-                    <label className="block text-[10px] font-black text-foreground/20 uppercase mb-4 tracking-[0.2em]">
+                    <label className="block text-[0.63rem] font-black text-foreground/20 uppercase mb-4 tracking-[0.2em]">
                       Nombre
                     </label>
                     <input
@@ -138,7 +138,7 @@ const CreateArchetypeModal: React.FC<CreateArchetypeModalProps> = ({
                       type="text"
                       value={formData.nombre}
                       onChange={(e) => setNombre(e.target.value)}
-                      className="w-full bg-foreground/[0.02] border border-foreground/5 rounded-none px-6 py-5 text-foreground focus:outline-none focus:border-primary/20 transition-all text-sm font-black uppercase tracking-widest"
+                      className="w-full bg-foreground/[0.02] border border-foreground/5 rounded-none px-6 py-5 text-foreground focus:outline-none focus:border-primary/20 transition-all text-[0.88rem] font-black tracking-widest"
                       placeholder={
                         isRoot ? "Nombre de Carpeta" : "Nombre de Entidad"
                       }
@@ -146,20 +146,33 @@ const CreateArchetypeModal: React.FC<CreateArchetypeModalProps> = ({
                   </div>
                 </div>
               </div>
+
+              {(!isRoot || forceEntityMode) && (
+                <div className="p-8 border border-foreground/5 italic">
+                  <p className="text-[0.63rem] text-foreground/30 leading-relaxed">
+                    Creando registro tipo{" "}
+                    <span className="text-foreground/60 font-black">
+                      {HIERARCHY_DEFINITIONS[formData.tipo]?.label}
+                    </span>
+                    . El sistema aplicará el arquetipo visual correspondiente de
+                    forma automática.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Columna Derecha: Configuración (Oculto en Raíz) */}
             {(!isRoot || forceEntityMode) && (
               <div className="space-y-8">
                 <div>
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-6 italic">
+                  <h3 className="text-[0.63rem] font-black uppercase tracking-[0.2em] text-primary mb-6 italic">
                     Arquetipos
                   </h3>
 
                   <div className="space-y-8">
                     {ARQUETIPOS_GROUPS.map((group) => (
                       <div key={group.name} className="space-y-3">
-                        <div className="text-[9px] font-black text-foreground/20 uppercase tracking-[0.3em] border-b border-foreground/5 pb-2">
+                        <div className="text-[0.56rem] font-black text-foreground/20 uppercase tracking-[0.3em] border-b border-foreground/5 pb-2">
                           {group.name}
                         </div>
                         <div className="grid grid-cols-2 gap-3">
@@ -188,11 +201,11 @@ const CreateArchetypeModal: React.FC<CreateArchetypeModalProps> = ({
                                 </div>
                                 <div className="flex flex-col min-w-0">
                                   <span
-                                    className={`text-[11px] font-black uppercase tracking-tighter truncate ${formData.tipo === type.id ? "text-primary" : "text-foreground/80"}`}
+                                    className={`text-[0.69rem] font-black uppercase tracking-tighter truncate ${formData.tipo === type.id ? "text-primary" : "text-foreground/80"}`}
                                   >
                                     {type.label}
                                   </span>
-                                  <span className="text-[8px] font-bold text-foreground/30 uppercase tracking-widest">
+                                  <span className="text-[0.5rem] font-bold text-foreground/30 uppercase tracking-widest">
                                     Inyectar
                                   </span>
                                 </div>
@@ -208,17 +221,6 @@ const CreateArchetypeModal: React.FC<CreateArchetypeModalProps> = ({
                       </div>
                     ))}
                   </div>
-                </div>
-
-                <div className="p-8 border border-foreground/5 italic">
-                  <p className="text-[10px] text-foreground/30 leading-relaxed">
-                    Creando registro tipo{" "}
-                    <span className="text-foreground/60 font-black">
-                      {HIERARCHY_DEFINITIONS[formData.tipo]?.label}
-                    </span>
-                    . El sistema aplicará el arquetipo visual correspondiente de
-                    forma automática.
-                  </p>
                 </div>
               </div>
             )}

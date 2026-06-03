@@ -91,4 +91,19 @@ export class RelationshipUseCase {
   static async deleteRelationship(relationshipId: number): Promise<void> {
     await relationshipService.delete(relationshipId);
   }
+
+  /** Guarda la posición de un nodo (entidad) en la tabla grafo_posiciones */
+  static async saveNodePosition(entityId: number, x: number, y: number): Promise<void> {
+    await entityService.savePosition(entityId, x, y);
+  }
+
+  /** Obtiene las posiciones de todos los nodos de un proyecto */
+  static async getAllNodePositions(projectId: number): Promise<Record<number, { x: number, y: number }>> {
+    const list = await entityService.getAllPositions(projectId);
+    const positions: Record<number, { x: number, y: number }> = {};
+    list.forEach(item => {
+      positions[item.entidad_id] = { x: item.x, y: item.y };
+    });
+    return positions;
+  }
 }

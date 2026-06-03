@@ -28,7 +28,7 @@ const IndividualProfileView: React.FC<{ entityId?: string | number }> = ({
 
   const baseTabs = [
     { id: "REGISTRO", label: "REGISTRO", icon: "menu_book" },
-    { id: "RED_DE_CONTACTOS", label: "RED DE CONTACTOS / LINAJE", icon: "hub" },
+    { id: "RED_DE_CONTACTOS", label: "RELACIONES", icon: "hub" },
     { id: "DATOS_TÉCNICOS", label: "DATOS TÉCNICOS", icon: "bar_chart" },
   ];
   const presetTabs = getPresetTabsByEntityType(entity?.tipo || "");
@@ -201,7 +201,7 @@ const IndividualProfileView: React.FC<{ entityId?: string | number }> = ({
 
         {activeTab === "RED_DE_CONTACTOS" && (
           <div className="w-full h-full relative bg-background">
-            <MiniGraph entityId={Number(entity.id)} />
+            <MiniGraph entityId={Number(entity.id)} projectId={entity.project_id} />
           </div>
         )}
 

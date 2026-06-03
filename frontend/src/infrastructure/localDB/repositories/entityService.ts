@@ -210,4 +210,37 @@ export const entityService = {
         break;
     }
   },
+
+  getPosition: async (entityId: number): Promise<{ x: number; y: number } | null> => {
+    console.log("[DB] getPosition for entity:", entityId);
+    const rows = await sql<{ x: number; y: number }>`SELECT x, y FROM grafo_posiciones WHERE entidad_id = ${entityId} LIMIT 1`;
+    console.log("[DB] getPosition result:", rows[0]);
+    return rows[0] || null;
+  },
+
+  getAllPositions: async (projectId: number): Promise<{ entidad_id: number; x: number; y: number }[]> => {
+    console.log("[DB] getAllPositions for project:", projectId);
+    const result = await sql<{ entidad_id: number; x: number; y: number }>`
+      SELECT gp.entidad_id, gp.x, gp.y 
+      FROM grafo_posiciones gp
+      JOIN entidades e ON gp.entidad_id = e.id
+      WHERE e.project_id = ${projectId} AND e.borrado = 0
+    `;
+    console.log("[DB] getAllPositions result count:", result.length, result);
+    return result;
+  },
+
+  savePosition: async (entityId: number, x: number, y: number): Promise<void> => {
+    console.log("[DB] savePosition for entityId:", entityId, "coords:", x, y);
+    try {
+      await sql`
+        INSERT INTO grafo_posiciones (entidad_id, x, y)
+        VALUES (${entityId}, ${x}, ${y})
+        ON CONFLICT(entidad_id) DO UPDATE SET x = excluded.x, y = excluded.y
+      `;
+      console.log("[DB] savePosition success");
+    } catch (e) {
+      console.error("[DB] savePosition FAILED:", e);
+    }
+  },
 };

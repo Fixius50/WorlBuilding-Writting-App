@@ -15,18 +15,24 @@ export const useGeneralGraph = (projectId: number | undefined) => {
     if (!projectId) return;
     setLoading(true);
     try {
-      const { entities: allEntities, relationships: allRels } = await RelationshipUseCase.getFullNetwork(projectId);
+      const [networkData, savedPositions] = await Promise.all([
+        RelationshipUseCase.getFullNetwork(projectId),
+        RelationshipUseCase.getAllNodePositions(projectId)
+      ]);
+      const { entities: allEntities, relationships: allRels } = networkData;
 
       const filteredEntities = allEntities.filter(ent => ent.carpeta_id !== null);
 
       const newNodes: CanvasNode[] = filteredEntities.map((ent, idx) => {
+        const pos = savedPositions[ent.id] || (savedPositions as any)[ent.id.toString()];
+        const hasPos = pos !== undefined;
         const angle = (idx / filteredEntities.length) * 2 * Math.PI;
         const radius = 350 + Math.random() * 50;
 
         return {
           id: ent.id.toString(),
-          x: Math.cos(angle) * radius + 500,
-          y: Math.sin(angle) * radius + 500,
+          x: hasPos ? pos.x : (Math.cos(angle) * radius + 500),
+          y: hasPos ? pos.y : (Math.sin(angle) * radius + 500),
           label: ent.nombre,
           tipo: ent.tipo
         };

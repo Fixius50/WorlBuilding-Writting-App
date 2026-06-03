@@ -471,12 +471,12 @@ const ArchitectLayout: React.FC = () => {
         </div>
 
         {/* Center Section: Proyecto › Página */}
-        <div className="font-mono text-foreground/45 flex items-center gap-1.5 truncate max-w-[40vw] font-bold">
-          <span className="hover:text-foreground/70 transition-colors duration-150 cursor-default text-[10px] font-bold">
+        <div className="font-sans text-foreground/80 flex items-center gap-1.5 truncate max-w-[40vw] font-bold text-[0.69rem]">
+          <span className="hover:text-foreground/70 transition-colors duration-150 cursor-default font-bold">
             {projectName}
           </span>
-          <span className="text-[9px] opacity-40 font-bold">›</span>
-          <span className="text-foreground/75 font-semibold font-sans truncate cursor-default text-[11px] font-bold">
+          <span className="opacity-40 font-bold">›</span>
+          <span className="truncate cursor-default font-bold">
             {getPageName()}
           </span>
         </div>

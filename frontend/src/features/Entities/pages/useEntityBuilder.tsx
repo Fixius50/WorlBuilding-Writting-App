@@ -405,7 +405,7 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
     { id: "identity", label: "Identidad" },
     { id: "narrative", label: "Narrativa" },
     { id: "attributes", label: "Atributos" },
-    { id: "relationships", label: "Linaje" },
+    { id: "relationships", label: "Relaciones" },
   ];
   const presetEditorTabs = getPresetTabsByEntityType(entity.tipo || "").map(
     (tab) => ({

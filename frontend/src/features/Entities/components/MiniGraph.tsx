@@ -8,8 +8,8 @@ interface Props {
   [key: string]: unknown;
 }
 
-const MiniGraph: React.FC<Props> = ({ entityId }) => {
-  const { nodes, edges, loading } = useMiniGraph(entityId);
+const MiniGraph: React.FC<Props> = ({ entityId, projectId }) => {
+  const { nodes, edges, loading, handleNodeDragEnd } = useMiniGraph(entityId, projectId as number);
 
   if (loading) return (
     <div className="w-full h-64 flex items-center justify-center text-[10px] uppercase font-black tracking-widest text-primary animate-pulse border border-primary/20">
@@ -26,7 +26,11 @@ const MiniGraph: React.FC<Props> = ({ entityId }) => {
 
   return (
     <div className="w-full h-full bg-background relative overflow-hidden group">
-       <UniversalCanvas initialNodes={nodes} initialEdges={edges} />
+       <UniversalCanvas 
+         initialNodes={nodes} 
+         initialEdges={edges} 
+         onNodeDragEnd={handleNodeDragEnd} 
+       />
     </div>
   );
 };

@@ -38,6 +38,16 @@ const WorldBibleLayout: React.FC = () => {
     entityId,
   } = useWorldBibleLayout(architectContext);
 
+  const uniqueEntityTypes = React.useMemo(() => {
+    const types = new Set<string>();
+    localEntities.forEach((entity) => {
+      if (entity.tipo) {
+        types.add(entity.tipo);
+      }
+    });
+    return Array.from(types);
+  }, [localEntities]);
+
   if (!architectContext)
     return (
       <div className="p-20 text-center animate-pulse">
@@ -50,7 +60,7 @@ const WorldBibleLayout: React.FC = () => {
       <main className="flex-1 overflow-y-auto custom-scrollbar relative bg-gradient-to-br from-background-dark to-surface-dark/20 text-foreground flex flex-col">
         {!isEditorView && (
           <header className="pt-12 pb-8 flex flex-col items-center justify-center text-center px-8 z-[100] shrink-0 animate-in fade-in slide-in-from-top-4 duration-700">
-            <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-[hsl(var(--primary))] italic mb-4">
+            <div className="flex items-center gap-3 text-[0.63rem] font-black uppercase tracking-[0.3em] text-[hsl(var(--primary))] italic mb-4">
               <span className="material-symbols-outlined text-sm">
                 auto_stories
               </span>
@@ -80,13 +90,14 @@ const WorldBibleLayout: React.FC = () => {
                     onChange={(e) =>
                       architectContext.setFilterType?.(e.target.value)
                     }
-                    className="bg-transparent pl-4 pr-10 py-4 text-[10px] font-black uppercase tracking-widest text-[hsl(var(--foreground)/0.6)] hover:text-[hsl(var(--primary))] outline-none appearance-none cursor-pointer transition-colors"
+                    className="bg-transparent pl-4 pr-10 py-4 text-[0.63rem] font-black uppercase tracking-widest text-[hsl(var(--foreground)/0.6)] hover:text-[hsl(var(--primary))] outline-none appearance-none cursor-pointer transition-colors"
                   >
                     <option value="ALL">Todo</option>
-                    <option value="SPACES">Espacios</option>
-                    <option value="ENTITIES">Entidades</option>
-                    <option value="MAPS">Mapas</option>
-                    <option value="TIMELINES">Líneas</option>
+                    {uniqueEntityTypes.map((type) => (
+                      <option key={type} value={type}>
+                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                      </option>
+                    ))}
                   </select>
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-xs pointer-events-none opacity-40">
                     expand_more
