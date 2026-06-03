@@ -121,11 +121,11 @@ const TerritoryProfileView: React.FC<{ entityId?: string | number }> = ({
         {activeTab === "REGISTRO" && (
           <main className="p-8 lg:p-16 grid grid-cols-1 lg:grid-cols-2 gap-8 items-start max-w-[90rem] mx-auto w-full">
             <div
-              className="border border-foreground/20 bg-background p-8 flex flex-col"
+              className="border border-foreground/20 bg-background p-4 flex flex-col"
               style={{ minHeight: `${panelMinHeight}px` }}
             >
-              <div className="flex justify-center mb-8">
-                <h3 className="font-mono font-bold text-[10px] tracking-[0.2em] uppercase text-foreground border-b border-foreground/30 pb-2">
+              <div className="flex justify-center mb-4">
+                <h3 className="font-mono font-black text-sm tracking-[0.2em] uppercase text-foreground border-b border-foreground/30 pb-1">
                   CRÓNICA TERRITORIAL
                 </h3>
               </div>
@@ -136,21 +136,21 @@ const TerritoryProfileView: React.FC<{ entityId?: string | number }> = ({
                   </span>
                 </div>
               ) : (
-                <div className="max-w-4xl mx-auto w-full">
-                  <NarrativeRichText content={narrativeContent} />
+                <div className="w-full">
+                  <NarrativeRichText content={narrativeContent} galleryImages={entity?.images} />
                 </div>
               )}
             </div>
 
             <div
-              className="border border-foreground/20 bg-background p-8 flex flex-col"
+              className="border border-foreground/20 bg-background p-4 flex flex-col"
               style={{
                 minHeight: `${panelMinHeight}px`,
                 maxHeight: `${panelMinHeight}px`,
               }}
             >
-              <div className="flex justify-center mb-8">
-                <h3 className="font-mono font-bold text-[10px] tracking-[0.2em] uppercase text-foreground border-b border-foreground/30 pb-2">
+              <div className="flex justify-center mb-4">
+                <h3 className="font-mono font-black text-sm tracking-[0.2em] uppercase text-foreground border-b border-foreground/30 pb-1">
                   REGISTROS VISUALES
                 </h3>
               </div>
@@ -182,9 +182,9 @@ const TerritoryProfileView: React.FC<{ entityId?: string | number }> = ({
               </div>
             </div>
 
-            <div className="border border-foreground/20 bg-background p-8 flex flex-col lg:col-span-2">
-              <div className="flex justify-center mb-8">
-                <h3 className="font-mono font-bold text-[10px] tracking-[0.2em] uppercase text-foreground border-b border-foreground/30 pb-2">
+            <div className="border border-foreground/20 bg-background p-4 flex flex-col lg:col-span-2">
+              <div className="flex justify-center mb-4">
+                <h3 className="font-mono font-black text-sm tracking-[0.2em] uppercase text-foreground border-b border-foreground/30 pb-1">
                   NARRATIVA
                 </h3>
               </div>
@@ -195,8 +195,8 @@ const TerritoryProfileView: React.FC<{ entityId?: string | number }> = ({
                   </span>
                 </div>
               ) : (
-                <div className="max-w-4xl mx-auto w-full">
-                  <NarrativeRichText content={narrativeStory} />
+                <div className="w-full">
+                  <NarrativeRichText content={narrativeStory} galleryImages={entity?.images} />
                 </div>
               )}
             </div>

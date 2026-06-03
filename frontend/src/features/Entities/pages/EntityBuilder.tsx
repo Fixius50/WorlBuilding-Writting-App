@@ -16,40 +16,6 @@ interface EntityBuilderProps {
 }
 
 const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
-  // --- PRESERVATION ORIGINAL DESTRUCTURE ---
-  // const {
-  //   entity,
-  //   setEntity,
-  //   fields,
-  //   loading,
-  //   saving,
-  //   deleteModalOpen,
-  //   setDeleteModalOpen,
-  //   availableTemplates,
-  //   activeEntityTab,
-  //   setActiveEntityTab,
-  //   zoomImage,
-  //   setZoomImage,
-  //   showLibrary,
-  //   setShowLibrary,
-  //   editingTemplate,
-  //   setEditingTemplate,
-  //   isDraggingOver,
-  //   extras,
-  //   projectId,
-  //   handleSave,
-  //   handleFieldChange,
-  //   handleRemoveField,
-  //   handleImageUpload,
-  //   removeImage,
-  //   handleDragOverArea,
-  //   handleDragLeaveArea,
-  //   handleDropArea,
-  //   handleDeleteEntity,
-  //   updateExtra,
-  //   refreshTemplates,
-  //   navigate,
-  // } = useEntityBuilder(mode);
   const {
     entity,
     setEntity,
@@ -376,6 +342,38 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                     value={extras.appearance}
                     onKeyDown={handleAppearanceKeyDown}
                     onChange={(e) => setAppearanceValue(e.target.value)}
+                    onDrop={(e) => {
+                      const droppedText = e.dataTransfer.getData("text/plain");
+                      const hasText = !!droppedText;
+                      switch (hasText) {
+                        case true: {
+                          e.preventDefault();
+                          const textarea = e.currentTarget;
+                          const start = textarea.selectionStart;
+                          const end = textarea.selectionEnd;
+                          const text = textarea.value;
+                          const before = text.substring(0, start);
+                          const after  = text.substring(end, text.length);
+                          
+                          const isImageUri = droppedText.startsWith("data:image/");
+                          const formattedText = isImageUri
+                            ? `![imagen](${droppedText})`
+                            : droppedText;
+
+                          const newValue = before + formattedText + after;
+                          setAppearanceValue(newValue);
+                          
+                          const newCursorPos = start + formattedText.length;
+                          requestAnimationFrame(() => {
+                            textarea.focus();
+                            textarea.setSelectionRange(newCursorPos, newCursorPos);
+                          });
+                          break;
+                        }
+                        default:
+                          break;
+                      }
+                    }}
                   />
                 </div>
               </div>
@@ -400,7 +398,11 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                         >
                           <img
                             src={primaryImage}
-                            className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700"
+                            draggable
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData("text/plain", `![imagen](gallery:0)`);
+                            }}
+                            className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 cursor-grab active:cursor-grabbing"
                             alt="Imagen principal"
                           />
                           <button
@@ -485,7 +487,11 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                           >
                             <img
                               src={img}
-                              className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all duration-500"
+                              draggable
+                              onDragStart={(e) => {
+                                e.dataTransfer.setData("text/plain", `![imagen](gallery:${originalIndex})`);
+                              }}
+                              className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all duration-500 cursor-grab active:cursor-grabbing"
                               alt={`Miniatura ${originalIndex}`}
                             />
                             <button
@@ -606,6 +612,38 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                     value={entity.descripcion || ""}
                     onKeyDown={handleNarrativeKeyDown}
                     onChange={(e) => setNarrativeValue(e.target.value)}
+                    onDrop={(e) => {
+                      const droppedText = e.dataTransfer.getData("text/plain");
+                      const hasText = !!droppedText;
+                      switch (hasText) {
+                        case true: {
+                          e.preventDefault();
+                          const textarea = e.currentTarget;
+                          const start = textarea.selectionStart;
+                          const end = textarea.selectionEnd;
+                          const text = textarea.value;
+                          const before = text.substring(0, start);
+                          const after  = text.substring(end, text.length);
+                          
+                          const isImageUri = droppedText.startsWith("data:image/");
+                          const formattedText = isImageUri
+                            ? `![imagen](${droppedText})`
+                            : droppedText;
+
+                          const newValue = before + formattedText + after;
+                          setNarrativeValue(newValue);
+                          
+                          const newCursorPos = start + formattedText.length;
+                          requestAnimationFrame(() => {
+                            textarea.focus();
+                            textarea.setSelectionRange(newCursorPos, newCursorPos);
+                          });
+                          break;
+                        }
+                        default:
+                          break;
+                      }
+                    }}
                   />
                 </div>
 
@@ -633,7 +671,11 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                           >
                             <img
                               src={img}
-                              className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-all duration-500"
+                              draggable
+                              onDragStart={(e) => {
+                                e.dataTransfer.setData("text/plain", `![imagen](gallery:${i})`);
+                              }}
+                              className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-all duration-500 cursor-grab active:cursor-grabbing"
                               alt={`Galería narrativa ${i + 1}`}
                             />
                           </div>
