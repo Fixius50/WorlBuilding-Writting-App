@@ -115,7 +115,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                 url={extras.iconUrl}
                 name={entity.nombre || "Nuevo Ente"}
                 size="sm"
-                className="ring-1 ring-primary/20 shadow-xl shadow-primary/5 shrink-0"
+                className="ring-1 ring-primary/20 shadow-xl shrink-0"
               />
               <div className="space-y-0.5 min-w-0">
                 <div className="text-[8px] font-black uppercase tracking-[0.4em] text-primary/40 italic truncate">
@@ -153,7 +153,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
               <button
                 onClick={() => handleSave(true)}
                 disabled={saving}
-                className={`flex items-center gap-3 px-8 py-2.5 rounded-none font-black text-[9px] uppercase tracking-[0.2em] transition-all shadow-lg ${saving ? "bg-primary/20 text-primary cursor-wait" : "bg-primary hover:bg-primary/90 text-primary-foreground hover:scale-[1.02] active:scale-[0.98] shadow-primary/20"}`}
+                className={`flex items-center gap-3 px-8 py-2.5 rounded-none font-black text-[9px] uppercase tracking-[0.2em] transition-all shadow-lg ${saving ? "bg-primary/20 text-primary cursor-wait" : "bg-primary hover:bg-primary/90 text-primary-foreground hover:scale-[1.02] active:scale-[0.98]"}`}
               >
                 <span className="material-symbols-outlined text-sm">
                   {saving ? "sync" : "save"}
@@ -172,7 +172,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                     onClick={() => setActiveEntityTab(tab.id)}
                     className={`shrink-0 py-4 text-[9px] font-black uppercase tracking-[0.3em] border-b-2 transition-all duration-500 ${
                       activeEntityTab === tab.id
-                        ? "border-primary text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.4)]"
+                        ? "border-primary text-primary"
                         : "border-transparent text-foreground/30 hover:text-foreground"
                     }`}
                   >
@@ -707,7 +707,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                 <div className="relative">
                   <button
                     onClick={() => setShowLibrary(!showLibrary)}
-                    className={`flex items-center gap-3 px-6 py-2.5 rounded-none font-black text-[9px] uppercase tracking-[0.2em] transition-all border ${showLibrary ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20" : "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"}`}
+                    className={`flex items-center gap-3 px-6 py-2.5 rounded-none font-black text-[9px] uppercase tracking-[0.2em] transition-all border ${showLibrary ? "bg-primary text-primary-foreground border-primary shadow-lg" : "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"}`}
                   >
                     <span className="material-symbols-outlined text-sm">
                       {showLibrary ? "close" : "add_box"}
@@ -739,7 +739,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
               </header>
 
               <div
-                className={`flex flex-wrap gap-8 p-4 transition-all duration-500 border-2 border-transparent ${isDraggingOver ? "bg-primary/5 border-dashed border-primary/40 shadow-2xl shadow-primary/5" : ""}`}
+                className={`flex flex-wrap gap-8 p-4 transition-all duration-500 border-2 border-transparent ${isDraggingOver ? "bg-primary/5 border-dashed border-primary/40 shadow-2xl" : ""}`}
                 onDragOver={handleDragOverArea}
                 onDragLeave={handleDragLeaveArea}
                 onDrop={handleDropArea}
@@ -761,7 +761,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                 {fields.length === 0 && (
                   <div className={`col-span-full py-32 border border-dashed flex flex-col items-center justify-center bg-background w-full transition-all duration-300 ${
                     isDraggingOver 
-                      ? "border-primary/40 text-primary bg-primary/5 shadow-2xl shadow-primary/5" 
+                      ? "border-primary/40 text-primary bg-primary/5 shadow-2xl" 
                       : "border-white/5 text-foreground/20"
                   }`}>
                     <span className="material-symbols-outlined text-5xl mb-6 font-light">

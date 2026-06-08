@@ -48,7 +48,7 @@ const NotebookGrid: React.FC<NotebookGridProps> = ({
           </div>
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/80 text-foreground rounded-none transition-all shadow-lg shadow-primary/20"
+            className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/80 text-foreground rounded-none transition-all shadow-lg"
           >
             <span className="material-symbols-outlined">add</span>
             <span className="font-bold tracking-wide text-sm">
@@ -65,7 +65,7 @@ const NotebookGrid: React.FC<NotebookGridProps> = ({
               <div
                 key={notebook.id}
                 onClick={() => onSelectNotebook(notebook)}
-                className="group relative monolithic-panel rounded-none p-6 cursor-pointer hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 h-64 flex flex-col"
+                className="group relative monolithic-panel rounded-none p-6 cursor-pointer hover:border-primary/50 hover:shadow-2xl transition-all duration-300 h-64 flex flex-col"
               >
                 <div className="flex-1 relative">
                   <div className="flex justify-between items-start">

@@ -28,7 +28,7 @@ const TopNavBar = () => {
  return (
  <div className="h-16 flex items-center justify-center pointer-events-none sticky top-0 z-50 px-8">
  <MonolithicPanel className="flex items-center gap-2 px-2 py-1.5 rounded-full pointer-events-auto monolithic-panel shadow-2xl">
- <Link to="/dashboard" className={`p-2 rounded-full transition-colors ${path === '/dashboard' ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'text-foreground/60 hover:text-foreground hover:bg-foreground/5'}`}>
+ <Link to="/dashboard" className={`p-2 rounded-full transition-colors ${path === '/dashboard' ? 'bg-primary text-primary-foreground shadow-lg' : 'text-foreground/60 hover:text-foreground hover:bg-foreground/5'}`}>
  <span className="material-symbols-outlined text-xl">home</span>
  </Link>
 
@@ -53,7 +53,7 @@ const TopNavBar = () => {
  <div className="w-px h-4 bg-foreground/10 mx-1"></div>
 
  <div className="flex items-center gap-1">
- <Link to="/settings" className={`p-2 rounded-full transition-colors ${path === '/settings' ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'text-foreground/60 hover:text-foreground hover:bg-foreground/5'}`}>
+ <Link to="/settings" className={`p-2 rounded-full transition-colors ${path === '/settings' ? 'bg-primary text-primary-foreground shadow-lg' : 'text-foreground/60 hover:text-foreground hover:bg-foreground/5'}`}>
  <span className="material-symbols-outlined text-xl">settings</span>
  </Link>
  <Link to="/settings" className="ml-1">
@@ -73,7 +73,7 @@ interface NavItemProps {
 }
 
 const NavItem: React.FC<NavItemProps> = ({ to, icon, label, active }) => (
- <Link to={to} className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all ${active ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'text-foreground/60 hover:text-foreground hover:bg-foreground/5'}`}>
+ <Link to={to} className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all ${active ? 'bg-primary text-primary-foreground shadow-lg' : 'text-foreground/60 hover:text-foreground hover:bg-foreground/5'}`}>
  <span className="material-symbols-outlined text-sm">{icon}</span>
  <span className="text-[10px] font-bold tracking-[0.1em] uppercase">{label}</span>
  </Link>

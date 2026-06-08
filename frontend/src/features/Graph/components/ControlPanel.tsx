@@ -118,13 +118,13 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ isOpen, onToggle, projectId
           border transition-all duration-300 shadow-2xl group
           font-black text-[0.65rem] uppercase tracking-widest
           ${isOpen
-            ? 'bg-primary/10 border-primary/50 text-primary hover:bg-primary/20 shadow-primary/20'
+            ? 'bg-primary/10 border-primary/50 text-primary hover:bg-primary/20'
             : 'bg-background border-foreground/10 text-foreground/60 hover:border-indigo-500/50 hover:bg-indigo-500/5 hover:text-indigo-400'
           }
         `}
         title={isOpen ? 'Cerrar Panel de Control' : 'Abrir Panel de Control'}
       >
-        <span className={`material-symbols-outlined text-[1.125rem] transition-transform duration-300 ${isOpen ? 'text-primary rotate-180' : 'text-indigo-500 group-hover:drop-shadow-[0_0_0.5rem_rgba(99,102,241,0.6)]'}`}>
+        <span className={`material-symbols-outlined text-[1.125rem] transition-transform duration-300 ${isOpen ? 'text-primary rotate-180' : 'text-indigo-500'}`}>
           {isOpen ? 'expand_more' : 'dashboard'}
         </span>
         <span>{isOpen ? 'Cerrar Panel' : 'Panel de Control'}</span>

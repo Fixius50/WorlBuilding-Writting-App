@@ -42,7 +42,7 @@ const SpecializedMap = ({
             }}
           >
             <span
-              className={`material-symbols-outlined text-4xl text-${pin.color}-500 drop-shadow-[0_0_15px_rgba(var(--${pin.color}-rgb),0.5)]`}
+              className={`material-symbols-outlined text-4xl text-${pin.color}-500`}
             >
               {pin.type}
             </span>

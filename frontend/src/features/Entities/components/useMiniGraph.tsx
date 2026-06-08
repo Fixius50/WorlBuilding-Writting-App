@@ -56,7 +56,8 @@ export const useMiniGraph = (entityId?: number, projectId?: number) => {
         newEdges.push({
           id: rel.id.toString(),
           from: rel.origen_id.toString(),
-          to: rel.destino_id.toString()
+          to: rel.destino_id.toString(),
+          relation: rel.tipo
         });
       });
 

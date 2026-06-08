@@ -22,7 +22,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
  const baseStyles = "inline-flex items-center justify-center rounded-none font-medium transition-all focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed active:scale-95";
 
  const variants = {
- primary: "bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary-light hover:shadow-primary/40 border border-transparent",
+ primary: "bg-primary text-primary-foreground shadow-lg hover:bg-primary-light border border-transparent",
  secondary: "monolithic-panel text-foreground/80 hover:bg-foreground/5 hover:text-foreground hover:border-foreground/40",
  ghost: "bg-transparent text-foreground/60 hover:text-foreground hover:bg-foreground/5",
  danger: "bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20 hover:border-destructive/50 hover:shadow-lg hover:shadow-destructive/10",

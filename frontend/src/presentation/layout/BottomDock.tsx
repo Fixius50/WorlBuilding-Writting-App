@@ -45,7 +45,7 @@ const BottomDock = () => {
  <button className="size-10 rounded-full flex items-center justify-center text-foreground/60 hover:text-foreground hover:bg-foreground/5 transition-all">
  <span className="material-symbols-outlined">search</span>
  </button>
- <div className="size-10 rounded-full bg-primary flex items-center justify-center text-foreground shadow-lg shadow-primary/20 cursor-pointer hover:scale-105 transition-transform active:scale-95">
+ <div className="size-10 rounded-full bg-primary flex items-center justify-center text-foreground shadow-lg cursor-pointer hover:scale-105 transition-transform active:scale-95">
  <span className="material-symbols-outlined">add</span>
  </div>
  </div>

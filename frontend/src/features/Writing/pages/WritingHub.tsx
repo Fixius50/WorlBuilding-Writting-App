@@ -71,7 +71,6 @@ const WritingHub = () => {
 
         {/* Buscador Dinámico Centrado */}
         <div className="w-full max-w-md relative group">
-          <div className="absolute inset-0 bg-primary/5 blur-xl group-focus-within:bg-primary/10 transition-all duration-500"></div>
           <div className="relative flex items-center bg-background border border-white/10 group-focus-within:border-primary/40 transition-all">
             <span className="material-symbols-outlined ml-4 text-foreground/20 group-focus-within:text-primary transition-colors">
               search
@@ -194,7 +193,7 @@ const WritingHub = () => {
         >
           <MonolithicPanel className="p-12 w-full max-w-xl shadow-2xl animate-in zoom-in-95 duration-500 border-white/10">
             <div className="flex items-center gap-6 mb-10">
-              <div className="size-14 bg-primary flex items-center justify-center text-foreground shadow-2xl shadow-primary/30">
+              <div className="size-14 bg-primary flex items-center justify-center text-foreground shadow-2xl">
                 <span className="material-symbols-outlined text-3xl">
                   {notebookToEdit ? "edit" : "auto_stories"}
                 </span>
@@ -268,7 +267,7 @@ const WritingHub = () => {
                   type="button"
                   disabled={saving}
                   onClick={handleSubmitWithValidation}
-                  className={`flex-[2] py-5 text-foreground font-black uppercase text-[10px] tracking-[0.3em] shadow-2xl shadow-primary/20 transition-all ${saving ? "bg-primary/40 cursor-wait" : "bg-primary hover:bg-primary/80 hover:scale-[1.02] active:scale-95"}`}
+                  className={`flex-[2] py-5 text-foreground font-black uppercase text-[10px] tracking-[0.3em] shadow-2xl transition-all ${saving ? "bg-primary/40 cursor-wait" : "bg-primary hover:bg-primary/80 hover:scale-[1.02] active:scale-95"}`}
                 >
                   {saving
                     ? "Guardando..."

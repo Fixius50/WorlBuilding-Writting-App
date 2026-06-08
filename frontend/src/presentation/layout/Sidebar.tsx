@@ -26,7 +26,7 @@ const Sidebar = () => {
  <aside className="w-64 flex-none flex flex-col monolithic-panel border-y-0 border-l-0 z-20 h-full">
  {/* Brand */}
  <div className="h-16 flex items-center px-6 gap-3 border-b" >
- <div className="size-8 bg-primary rounded-none flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20">
+ <div className="size-8 bg-primary rounded-none flex items-center justify-center text-primary-foreground shadow-lg">
  <span className="material-symbols-outlined">public</span>
  </div>
  <h1 className="text-foreground font-bold text-lg tracking-tight">Chronos Atlas</h1>
@@ -35,7 +35,7 @@ const Sidebar = () => {
  {/* Context */}
  <div className="p-4 flex-1 overflow-y-auto no-scrollbar">
  <div className="flex items-center gap-3 px-3 py-2 rounded-none sunken-panel mb-6">
- <div className="size-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)] animate-pulse"></div>
+ <div className="size-2 rounded-full bg-emerald-500 animate-pulse"></div>
  <span className="text-foreground text-sm font-medium truncate">Kingdom of Aethelgard</span>
  </div>
 

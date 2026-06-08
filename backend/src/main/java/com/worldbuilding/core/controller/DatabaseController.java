@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/db")
-@CrossOrigin(origins = "*") // Allow Vite/Electron access
+@CrossOrigin(origins = "*")
 public class DatabaseController {
 
     private final String PROJECTS_DIR = "projects";

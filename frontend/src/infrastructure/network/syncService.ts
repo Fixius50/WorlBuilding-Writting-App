@@ -121,39 +121,41 @@ export const syncService = {
     message: string;
     payload?: SyncRealtimePayload;
   }> {
+    let result: {
+      success: boolean;
+      message: string;
+      payload?: SyncRealtimePayload;
+    };
     try {
       const project = await projectService.getByName(projectName);
 
-      switch (project === null) {
-        case true:
-          return {
-            success: false,
-            message: `No se encontró el proyecto '${projectName}' en la base de datos local.`,
-          };
-        default:
-          break;
+      if (project === null) {
+        result = {
+          success: false,
+          message: `No se encontró el proyecto '${projectName}' en la base de datos local.`,
+        };
+      } else {
+        const [folders, entities, relationships] = await Promise.all([
+          folderService.getByProject(project.id),
+          entityService.getAllByProject(project.id),
+          relationshipService.getByProject(project.id),
+        ]);
+
+        result = {
+          success: true,
+          message: "Snapshot real generado correctamente.",
+          payload: {
+            schemaVersion: 1,
+            exportedAt: new Date().toISOString(),
+            project,
+            folders,
+            entities,
+            relationships,
+          },
+        };
       }
-
-      const [folders, entities, relationships] = await Promise.all([
-        folderService.getByProject(project.id),
-        entityService.getAllByProject(project.id),
-        relationshipService.getByProject(project.id),
-      ]);
-
-      return {
-        success: true,
-        message: "Snapshot real generado correctamente.",
-        payload: {
-          schemaVersion: 1,
-          exportedAt: new Date().toISOString(),
-          project,
-          folders,
-          entities,
-          relationships,
-        },
-      };
     } catch (error) {
-      return {
+      result = {
         success: false,
         message:
           error instanceof Error
@@ -161,6 +163,7 @@ export const syncService = {
             : "Error desconocido al construir snapshot.",
       };
     }
+    return result;
   },
 
   /**

@@ -41,7 +41,8 @@ export const useGeneralGraph = (projectId: number | undefined) => {
       const newEdges: CanvasEdge[] = allRels.map(rel => ({
         id: rel.id.toString(),
         from: rel.origen_id.toString(),
-        to: rel.destino_id.toString()
+        to: rel.destino_id.toString(),
+        relation: rel.tipo
       }));
 
       setCanvasNodes(newNodes);

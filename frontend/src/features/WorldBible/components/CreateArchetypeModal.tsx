@@ -110,7 +110,7 @@ const CreateArchetypeModal: React.FC<CreateArchetypeModalProps> = ({
             <button
               onClick={handleSubmit}
               disabled={!formData.nombre}
-              className="px-6 py-2.5 rounded-none bg-primary hover:bg-primary-dark text-primary-foreground text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/10 transition-all disabled:opacity-30 disabled:pointer-events-none flex items-center gap-2"
+              className="px-6 py-2.5 rounded-none bg-primary hover:bg-primary-dark text-primary-foreground text-[10px] font-black uppercase tracking-widest shadow-xl transition-all disabled:opacity-30 disabled:pointer-events-none flex items-center gap-2"
             >
               <span>Confirmar y Crear</span>
               <span className="material-symbols-outlined text-sm">

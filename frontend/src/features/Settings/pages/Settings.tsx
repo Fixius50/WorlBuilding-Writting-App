@@ -36,14 +36,6 @@ const Settings = () => {
 
   return (
     <div className="flex flex-col w-full h-full bg-transparent text-foreground font-sans overflow-hidden relative">
-      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-50">
-        <div className="absolute -top-[10%] -left-[10%] size-[40%] bg-primary/10 blur-[120px] rounded-full animate-pulse"></div>
-        <div
-          className="absolute -bottom-[10%] -right-[10%] size-[40%] bg-primary/5 blur-[120px] rounded-full animate-pulse"
-          style={{ animationDelay: "1s" }}
-        ></div>
-      </div>
-
       {/* TOP NAVIGATION BAR */}
       <header className="h-20 flex-none flex items-center justify-center gap-12 text-center px-12 border-b border-foreground/10 bg-background z-30">
         <div className="flex items-center gap-8">
@@ -52,7 +44,6 @@ const Settings = () => {
               className="size-10 rounded-none flex items-center justify-center text-foreground shadow-lg"
               style={{
                 backgroundColor: "hsl(var(--primary) / 0.8)",
-                boxShadow: "0 8px 20px -4px hsla(var(--primary), 0.3)",
               }}
             >
               <span className="material-symbols-outlined text-2xl">
@@ -68,7 +59,7 @@ const Settings = () => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-none text-xs font-bold transition-all ${
                   activeTab === tab.id
-                    ? "bg-primary text-foreground shadow-lg shadow-primary/20"
+                    ? "bg-primary text-foreground shadow-lg"
                     : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
                 }`}
               >

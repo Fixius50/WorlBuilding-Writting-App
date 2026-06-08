@@ -12,7 +12,7 @@ export interface HierarchyVisuals {
   bgColor: string;
 }
 
-export const HIERARCHY_VISUALS: Record<HierarchyTypeId, HierarchyVisuals> = {
+export const HIERARCHY_VISUALS: Record<HierarchyTypeId | 'entidad', HierarchyVisuals> = {
   universe: { 
     icon: 'auto_awesome', 
     color: 'text-primary', 
@@ -109,6 +109,6 @@ export const HIERARCHY_VISUALS: Record<HierarchyTypeId, HierarchyVisuals> = {
  * Helper para obtener la configuración visual de un tipo de forma segura.
  */
 export const getHierarchyVisuals = (typeId: string): HierarchyVisuals => {
-  const normalizedId = (typeId || 'folder').toLowerCase() as HierarchyTypeId;
+  const normalizedId = (typeId || 'folder').toLowerCase() as HierarchyTypeId | 'entidad';
   return HIERARCHY_VISUALS[normalizedId] || HIERARCHY_VISUALS.folder;
 };

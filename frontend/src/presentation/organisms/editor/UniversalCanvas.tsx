@@ -8,10 +8,14 @@ import {
   Group,
   RegularPolygon,
   Rect,
+  Path,
+  Ellipse,
 } from "react-konva";
 import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import SectionErrorBoundary from "@organisms/SectionErrorBoundary";
+import { getHierarchyVisuals } from "@presentation/utils/hierarchyVisuals";
+import { HierarchyTypeId } from "@domain/models/hierarchy";
 
 export interface CanvasNode {
   id: string;
@@ -25,6 +29,7 @@ export interface CanvasEdge {
   id: string;
   from: string;
   to: string;
+  relation?: string;
 }
 
 const defaultNodes: CanvasNode[] = [
@@ -45,7 +50,225 @@ export interface UniversalCanvasProps {
   onEdgeClick?: (id: string) => void;
   onNodeDragEnd?: (id: string, x: number, y: number) => void;
   backgroundColor?: string;
+  onDropNode?: (entityId: string, x: number, y: number) => void;
+  draggableEntities?: { id: string; label: string; tipo: string }[];
+  onClearCanvas?: () => void;
 }
+
+const getArchetypeTypeAndColor = (tipoRaw: string) => {
+  const tipo = tipoRaw ? tipoRaw.toUpperCase() : "";
+  let result = { type: "DEFAULT", color: "#9ca3af" };
+
+  switch (tipo) {
+    case "PERSONAJE":
+    case "OBJETO":
+    case "RELIQUIA":
+    case "VEHICULO":
+      result = { type: "ACTOR", color: "#3b82f6" };
+      break;
+
+    case "UNIVERSO":
+    case "PLANETA":
+    case "SISTEMA":
+    case "DIMENSION":
+    case "ASTRO":
+      result = { type: "DEFAULT", color: "#9ca3af" };
+      break;
+
+    case "REINO":
+    case "CIUDAD":
+    case "LUGAR":
+    case "CONTINENTE":
+      result = { type: "TERRITORY", color: "#eab308" };
+      break;
+
+    case "FACCION":
+    case "RELIGION":
+    case "RAZA":
+    case "ORGANIZACION":
+      result = { type: "COLLECTIVE", color: "#a855f7" };
+      break;
+
+    case "EVENTO":
+    case "GUERRA":
+    case "ERA":
+    case "MARCA_TEMPORAL":
+      result = { type: "EVENT", color: "#ef4444" };
+      break;
+
+    default:
+      break;
+  }
+
+  return result;
+};
+
+const KonvaArchetypeIcon: React.FC<{
+  type: string;
+  color: string;
+  size?: number;
+  strokeWidth?: number;
+}> = ({ type, color, size = 40, strokeWidth = 1.5 }) => {
+  const scale = size / 24;
+  const sw = strokeWidth;
+
+  return (
+    <Group scaleX={scale} scaleY={scale} x={-12 * scale} y={-12 * scale}>
+      {type === "ACTOR" && (
+        <Group>
+          <Circle
+            x={12}
+            y={7}
+            radius={4}
+            stroke={color}
+            strokeWidth={sw / scale}
+          />
+          <Path
+            data="M 4 20 L 7 13 L 17 13 L 20 20"
+            stroke={color}
+            strokeWidth={sw / scale}
+            lineCap="round"
+            lineJoin="round"
+          />
+        </Group>
+      )}
+      {type === "TERRITORY" && (
+        <Group>
+          <Path
+            data="M 2 20 L 9 8 L 14 16.5"
+            stroke={color}
+            strokeWidth={sw / scale}
+            lineCap="round"
+            lineJoin="round"
+          />
+          <Path
+            data="M 9 14 L 16 3 L 22 20"
+            stroke={color}
+            strokeWidth={sw / scale}
+            lineCap="round"
+            lineJoin="round"
+          />
+          <Line
+            points={[2, 20, 22, 20]}
+            stroke={color}
+            strokeWidth={sw / scale}
+            lineCap="round"
+            lineJoin="round"
+          />
+        </Group>
+      )}
+      {type === "COLLECTIVE" && (
+        <Group>
+          <Circle
+            x={12}
+            y={4}
+            radius={2}
+            stroke={color}
+            strokeWidth={sw / scale}
+          />
+          <Circle
+            x={5}
+            y={18}
+            radius={2}
+            stroke={color}
+            strokeWidth={sw / scale}
+          />
+          <Circle
+            x={19}
+            y={18}
+            radius={2}
+            stroke={color}
+            strokeWidth={sw / scale}
+          />
+          <Line
+            points={[10.5, 5.5, 6.5, 16.5]}
+            stroke={color}
+            strokeWidth={sw / scale}
+            lineCap="round"
+            lineJoin="round"
+          />
+          <Line
+            points={[13.5, 5.5, 17.5, 16.5]}
+            stroke={color}
+            strokeWidth={sw / scale}
+            lineCap="round"
+            lineJoin="round"
+          />
+          <Line
+            points={[7, 18, 17, 18]}
+            stroke={color}
+            strokeWidth={sw / scale}
+            lineCap="round"
+            lineJoin="round"
+          />
+        </Group>
+      )}
+      {type === "EVENT" && (
+        <Group>
+          <Line
+            points={[5, 4, 19, 4, 12, 12]}
+            closed
+            stroke={color}
+            strokeWidth={sw / scale}
+            lineCap="round"
+            lineJoin="round"
+          />
+          <Line
+            points={[5, 20, 19, 20, 12, 12]}
+            closed
+            stroke={color}
+            strokeWidth={sw / scale}
+            lineCap="round"
+            lineJoin="round"
+          />
+          <Line
+            points={[3, 2, 21, 2]}
+            stroke={color}
+            strokeWidth={sw / scale}
+            lineCap="round"
+            lineJoin="round"
+          />
+          <Line
+            points={[3, 22, 21, 22]}
+            stroke={color}
+            strokeWidth={sw / scale}
+            lineCap="round"
+            lineJoin="round"
+          />
+        </Group>
+      )}
+      {type === "DEFAULT" && (
+        <Group>
+          <Circle
+            x={12}
+            y={12}
+            radius={3}
+            stroke={color}
+            strokeWidth={sw / scale}
+          />
+          <Ellipse
+            x={12}
+            y={12}
+            radiusX={10}
+            radiusY={4}
+            rotation={45}
+            stroke={color}
+            strokeWidth={sw / scale}
+          />
+          <Ellipse
+            x={12}
+            y={12}
+            radiusX={10}
+            radiusY={4}
+            rotation={-45}
+            stroke={color}
+            strokeWidth={sw / scale}
+          />
+        </Group>
+      )}
+    </Group>
+  );
+};
 
 const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   initialNodes = defaultNodes,
@@ -54,6 +277,9 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   onEdgeClick,
   onNodeDragEnd,
   backgroundColor,
+  onDropNode,
+  draggableEntities,
+  onClearCanvas,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<Konva.Stage>(null);
@@ -63,6 +289,12 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   const [edges, setEdges] = useState<CanvasEdge[]>(initialEdges);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("ALL");
+  const [dragSearchTerm, setDragSearchTerm] = useState("");
+
+  // Estados de Interacción
+  const [pinnedNode, setPinnedNode] = useState<string | null>(null);
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const [dashOffset, setDashOffset] = useState(0);
 
   useEffect(() => {
     setNodes(initialNodes);
@@ -72,12 +304,33 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
     setEdges(initialEdges);
   }, [initialEdges]);
 
+  // Loop de animación para las líneas activas (flujo de datos)
+  useEffect(() => {
+    const hasActiveAnimation = pinnedNode !== null || hoveredNode !== null;
+    let animId: number;
+
+    const tick = () => {
+      setDashOffset((prev) => (prev - 1) % 30);
+      animId = requestAnimationFrame(tick);
+    };
+
+    hasActiveAnimation
+      ? (animId = requestAnimationFrame(tick))
+      : undefined;
+
+    return () => {
+      hasActiveAnimation
+        ? cancelAnimationFrame(animId)
+        : undefined;
+    };
+  }, [pinnedNode, hoveredNode]);
+
   const uniqueTypes = React.useMemo(() => {
     const types = new Set<string>();
     initialNodes.forEach((n) => {
-      if (n.tipo) {
-        types.add(n.tipo);
-      }
+      n.tipo
+        ? types.add(n.tipo)
+        : undefined;
     });
     return Array.from(types);
   }, [initialNodes]);
@@ -102,29 +355,26 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
   const readHslToken = (tokenName: string, fallback: string): string => {
-    if (typeof window === "undefined") return `hsl(${fallback})`;
-    const cssValue = getComputedStyle(document.documentElement)
-      .getPropertyValue(tokenName)
-      .trim();
+    const cssValue = typeof window === "undefined"
+      ? ""
+      : getComputedStyle(document.documentElement).getPropertyValue(tokenName).trim();
     return cssValue.length > 0 ? `hsl(${cssValue})` : `hsl(${fallback})`;
   };
 
   const themeCanvasBackground =
     backgroundColor || readHslToken("--canvas-bg", "0 0% 100%");
   const themeGridColor = readHslToken("--canvas-grid", "240 10% 3.9%");
-  const themeNodeFill = readHslToken("--canvas-node-fill", "0 0% 100%");
-  const themeNodeStroke = readHslToken("--canvas-node-stroke", "142 70% 45%");
   const themeEdgeColor = readHslToken("--canvas-edge", "142 70% 45%");
   const themeLabelColor = readHslToken("--canvas-label", "240 10% 3.9%");
 
   useEffect(() => {
     const handleResize = () => {
-      if (containerRef.current) {
-        setDimensions({
-          width: containerRef.current.offsetWidth,
-          height: containerRef.current.offsetHeight,
-        });
-      }
+      containerRef.current
+        ? setDimensions({
+            width: containerRef.current.offsetWidth,
+            height: containerRef.current.offsetHeight,
+          })
+        : undefined;
     };
     handleResize();
     window.addEventListener("resize", handleResize);
@@ -158,17 +408,131 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
 
   const handleDragMoveNode = (id: string, e: KonvaEventObject<DragEvent>) => {
     const newNodes = nodes.map((n) => {
-      if (n.id === id) {
-        return { ...n, x: e.target.x(), y: e.target.y() };
-      }
-      return n;
+      return n.id === id
+        ? { ...n, x: e.target.x(), y: e.target.y() }
+        : n;
     });
     setNodes(newNodes);
   };
 
+  const handleNodeClickLocal = (id: string) => {
+    setPinnedNode((prev) => (prev === id ? null : id));
+    onNodeClick?.(id);
+  };
+
+  // --- ALGORITMO BFS: Ruta más corta ---
+  const findShortestPath = (startId: string, endId: string) => {
+    let resultPath: string[] | null = null;
+    const queue: string[][] = startId && endId && startId !== endId ? [[startId]] : [];
+    const visited = new Set<string>([startId]);
+
+    while (queue.length > 0 && !resultPath) {
+      const path = queue.shift()!;
+      const currentId = path[path.length - 1];
+
+      switch (currentId === endId) {
+        case true:
+          resultPath = path;
+          break;
+        default: {
+          const neighbors: string[] = [];
+          filteredEdges.forEach((edge) => {
+            edge.from === currentId
+              ? neighbors.push(edge.to)
+              : edge.to === currentId
+              ? neighbors.push(edge.from)
+              : undefined;
+          });
+
+          for (const neighbor of neighbors) {
+            if (!visited.has(neighbor)) {
+              visited.add(neighbor);
+              queue.push([...path, neighbor]);
+            }
+          }
+          break;
+        }
+      }
+    }
+    return resultPath;
+  };
+
+  // --- CÁLCULO DE ESTADOS ACTIVOS ---
+  const { activeNodes, activeLinks, routeLinks } = React.useMemo(() => {
+    const aNodes = new Set<string>();
+    const aEdges = new Set<string>();
+    const rEdges = new Set<string>();
+
+    if (pinnedNode) {
+      aNodes.add(pinnedNode);
+      filteredEdges.forEach((edge) => {
+        const matchesPinned = edge.from === pinnedNode || edge.to === pinnedNode;
+        matchesPinned ? aEdges.add(edge.id) : undefined;
+        matchesPinned ? aNodes.add(edge.from === pinnedNode ? edge.to : edge.from) : undefined;
+      });
+    }
+
+    if (hoveredNode) {
+      aNodes.add(hoveredNode);
+      filteredEdges.forEach((edge) => {
+        const matchesHovered = edge.from === hoveredNode || edge.to === hoveredNode;
+        matchesHovered ? aEdges.add(edge.id) : undefined;
+        matchesHovered ? aNodes.add(edge.from === hoveredNode ? edge.to : edge.from) : undefined;
+      });
+    }
+
+    const hasDifferentSelection = !!pinnedNode && !!hoveredNode && pinnedNode !== hoveredNode;
+    switch (hasDifferentSelection) {
+      case true: {
+        const path = findShortestPath(pinnedNode!, hoveredNode!);
+        const hasPath = !!path;
+        hasPath ? path.forEach((id) => aNodes.add(id)) : undefined;
+        if (hasPath) {
+          for (let i = 0; i < path.length - 1; i++) {
+            const fromId = path[i];
+            const toId = path[i + 1];
+            const edge = filteredEdges.find(
+              (e) =>
+                (e.from === fromId && e.to === toId) ||
+                (e.from === toId && e.to === fromId)
+            );
+            if (edge) {
+              aEdges.add(edge.id);
+              rEdges.add(edge.id);
+            }
+          }
+        }
+        break;
+      }
+      default:
+        break;
+    }
+
+    return { activeNodes: aNodes, activeLinks: aEdges, routeLinks: rEdges };
+  }, [pinnedNode, hoveredNode, filteredEdges]);
+
+  const hasInteraction = pinnedNode !== null || hoveredNode !== null;
+
+  // Estilos de los enlaces precalculados
+  const edgeStyles = React.useMemo(() => {
+    const styles: Record<string, { strokeColor: string; strokeWidth: number; opacity: number; dash?: number[] }> = {};
+    filteredEdges.forEach((edge) => {
+      const isLinkActive = activeLinks.has(edge.id);
+      const isRoute = routeLinks.has(edge.id);
+      const isAnimated = isRoute || (isLinkActive && pinnedNode !== null);
+
+      const opacity = hasInteraction ? (isRoute ? 1 : (isLinkActive ? 0.6 : 0.05)) : 0.25;
+      const strokeWidth = isRoute ? 4 : (isLinkActive ? 2.5 : 1.5);
+      const strokeColor = isRoute ? "#3b82f6" : (isLinkActive ? themeEdgeColor : "#d1d5db");
+      const dash = isAnimated ? [10, 5] : undefined;
+
+      styles[edge.id] = { strokeColor, strokeWidth, opacity, dash };
+    });
+    return styles;
+  }, [filteredEdges, activeLinks, routeLinks, pinnedNode, hasInteraction, themeEdgeColor]);
+
   // Cálculo para grid infinito simulado
   const BACKGROUND_GRID_SIZE = 50;
-  // Aumentamos el margen de renderizado de la grid basándonos en la escala y posición
   const startX =
     Math.floor(-position.x / scale / BACKGROUND_GRID_SIZE) *
       BACKGROUND_GRID_SIZE -
@@ -190,11 +554,35 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
     horizontalLines.push(y);
   }
 
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const entityId = e.dataTransfer.getData("text/plain");
+    if (entityId && onDropNode && stageRef.current) {
+      const stage = stageRef.current;
+      const rect = stage.container().getBoundingClientRect();
+      
+      // Obtener coordenadas exactas del cursor del evento DragEvent respecto al lienzo
+      const pointerX = e.clientX - rect.left;
+      const pointerY = e.clientY - rect.top;
+
+      const stageX = stage.x();
+      const stageY = stage.y();
+      const stageScale = stage.scaleX();
+      
+      const canvasX = (pointerX - stageX) / stageScale;
+      const canvasY = (pointerY - stageY) / stageScale;
+      
+      onDropNode(entityId, canvasX, canvasY);
+    }
+  };
+
   return (
     <div
       ref={containerRef}
       className="w-full h-full overflow-hidden relative"
       style={{ backgroundColor: themeCanvasBackground }}
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={handleDrop}
     >
       <Stage
         width={dimensions.width}
@@ -206,9 +594,10 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
         x={position.x}
         y={position.y}
         onDragEnd={(e) => {
-          if (e.target === stageRef.current) {
-            setPosition({ x: e.target.x(), y: e.target.y() });
-          }
+          const isStage = e.target === stageRef.current;
+          isStage
+            ? setPosition({ x: e.target.x(), y: e.target.y() })
+            : undefined;
         }}
         ref={stageRef}
       >
@@ -234,143 +623,106 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
         </Layer>
 
         <Layer id="edges">
+          {/* 1. Dibujar líneas de conexión */}
           {filteredEdges.map((edge) => {
             const fromNode = filteredNodes.find((n) => n.id === edge.from);
             const toNode = filteredNodes.find((n) => n.id === edge.to);
-            if (!fromNode || !toNode) return null;
-            return (
+            const hasNodes = !!fromNode && !!toNode;
+
+            return hasNodes ? (
               <Line
-                key={edge.id}
-                points={[fromNode.x, fromNode.y, toNode.x, toNode.y]}
-                stroke={themeEdgeColor}
-                strokeWidth={2}
-                opacity={0.8}
-                onClick={() => onEdgeClick && onEdgeClick(edge.id)}
-                onTap={() => onEdgeClick && onEdgeClick(edge.id)}
-                onMouseEnter={(e) => {
-                  const stage = e.target.getStage();
-                  if (stage) {
-                    stage.container().style.cursor = "pointer";
-                  }
-                  const line = e.target as Konva.Line;
-                  line.setAttr("strokeWidth", 4);
-                  e.target.getLayer()?.draw();
-                }}
-                onMouseLeave={(e) => {
-                  const stage = e.target.getStage();
-                  if (stage) {
-                    stage.container().style.cursor = "default";
-                  }
-                  const line = e.target as Konva.Line;
-                  line.setAttr("strokeWidth", 2);
-                  e.target.getLayer()?.draw();
-                }}
+                key={`line-${edge.id}`}
+                points={[fromNode!.x, fromNode!.y, toNode!.x, toNode!.y]}
+                stroke={edgeStyles[edge.id].strokeColor}
+                strokeWidth={edgeStyles[edge.id].strokeWidth}
+                opacity={edgeStyles[edge.id].opacity}
+                dash={edgeStyles[edge.id].dash}
+                dashOffset={dashOffset}
+                onClick={() => onEdgeClick?.(edge.id)}
+                onTap={() => onEdgeClick?.(edge.id)}
               />
-            );
+            ) : null;
+          })}
+
+          {/* 2. Dibujar etiquetas de relación sobre las líneas */}
+          {filteredEdges.map((edge) => {
+            const fromNode = filteredNodes.find((n) => n.id === edge.from);
+            const toNode = filteredNodes.find((n) => n.id === edge.to);
+            const hasNodes = !!fromNode && !!toNode;
+            
+            const isLinkActive = activeLinks.has(edge.id);
+            const isRoute = routeLinks.has(edge.id);
+            const relationText = edge.relation || "";
+
+            const midX = hasNodes ? (fromNode!.x + toNode!.x) / 2 : 0;
+            const midY = hasNodes ? (fromNode!.y + toNode!.y) / 2 : 0;
+
+            const textWidth = relationText.length * 7;
+            const rectWidth = textWidth + 12;
+            const rectHeight = 20;
+            const rx = 10;
+            const strokeColor = isRoute ? "#3b82f6" : (isLinkActive ? themeEdgeColor : "#d1d5db");
+
+            return hasNodes && isLinkActive && relationText ? (
+              <Group key={`label-${edge.id}`} opacity={isRoute ? 1 : 0.8}>
+                <Rect
+                  x={midX - rectWidth / 2}
+                  y={midY - rectHeight / 2}
+                  width={rectWidth}
+                  height={rectHeight}
+                  cornerRadius={rx}
+                  fill={isRoute ? "#eff6ff" : "#ffffff"}
+                  stroke={strokeColor}
+                  strokeWidth={1}
+                />
+                <Text
+                  x={midX - rectWidth / 2}
+                  y={midY - 5}
+                  width={rectWidth}
+                  text={relationText}
+                  align="center"
+                  fontSize={10}
+                  fontFamily="Inter, sans-serif"
+                  fontStyle={isRoute ? "bold" : "normal"}
+                  fill={isRoute ? "#2563eb" : "#4b5563"}
+                />
+              </Group>
+            ) : null;
           })}
         </Layer>
 
         <Layer id="nodes">
           {filteredNodes.map((node) => {
-            const tipo = node.tipo ? node.tipo.toUpperCase() : "";
-            let shape = (
-              <Circle
-                radius={25}
-                fill={themeNodeFill}
-                stroke={themeNodeStroke}
-                strokeWidth={2}
+            const { type, color } = getArchetypeTypeAndColor(node.tipo);
+            const isNodeActive = !hasInteraction || activeNodes.has(node.id);
+            const isPinned = pinnedNode === node.id;
+            const isHovered = hoveredNode === node.id;
+
+            const scaleNode = (isHovered || isPinned) ? 1.2 : 1;
+            const opacityNode = isNodeActive ? 1 : 0.3;
+
+            const shape = (
+              <KonvaArchetypeIcon
+                type={type}
+                color={color}
+                size={40 * scaleNode}
+                strokeWidth={isPinned ? 2.5 : 1.5}
               />
             );
 
-            const isActor = [
-              "PERSONAJE",
-              "OBJETO",
-              "RELIQUIA",
-              "VEHICULO",
-            ].includes(tipo);
-            const isCosmic = [
-              "UNIVERSO",
-              "PLANETA",
-              "SISTEMA",
-              "DIMENSION",
-              "ASTRO",
-            ].includes(tipo);
-            const isTerritory = [
-              "REINO",
-              "CIUDAD",
-              "LUGAR",
-              "CONTINENTE",
-            ].includes(tipo);
-            const isCollective = [
-              "FACCION",
-              "RELIGION",
-              "RAZA",
-              "ORGANIZACION",
-            ].includes(tipo);
-            const isEvent = [
-              "EVENTO",
-              "GUERRA",
-              "ERA",
-              "MARCA_TEMPORAL",
-            ].includes(tipo);
+            const labelColor = isPinned
+              ? "#2563eb"
+              : isHovered
+              ? "#111827"
+              : themeLabelColor;
+            
+            const fontStyle = isPinned || isHovered ? "bold" : "normal";
 
-            if (isActor) {
-              // ARQUETIPO INDIVIDUAL: Rombo / Cápsula
-              shape = (
-                <RegularPolygon
-                  sides={4}
-                  radius={30}
-                  fill={themeNodeFill}
-                  stroke={themeNodeStroke}
-                  strokeWidth={1.5}
-                />
-              );
-            } else if (isCosmic) {
-              // ARQUETIPO CÓSMICO: Esferas perfectas (Sin glows)
-              shape = (
-                <Circle
-                  radius={45}
-                  fill={themeNodeFill}
-                  stroke={themeNodeStroke}
-                  strokeWidth={2}
-                />
-              );
-            } else if (isTerritory) {
-              // ARQUETIPO TERRITORIAL: Hexágono
-              shape = (
-                <RegularPolygon
-                  sides={6}
-                  radius={35}
-                  fill={themeNodeFill}
-                  stroke={themeNodeStroke}
-                  strokeWidth={1.5}
-                />
-              );
-            } else if (isCollective) {
-              // ARQUETIPO COLECTIVO: Escudo (5 lados)
-              shape = (
-                <RegularPolygon
-                  sides={5}
-                  radius={32}
-                  rotation={180}
-                  fill={themeNodeFill}
-                  stroke={themeNodeStroke}
-                  strokeWidth={1.5}
-                />
-              );
-            } else if (isEvent) {
-              // ARQUETIPO CRONOLÓGICO: Triángulo Invertido
-              shape = (
-                <RegularPolygon
-                  sides={3}
-                  radius={30}
-                  rotation={180}
-                  fill={themeNodeFill}
-                  stroke={themeNodeStroke}
-                  strokeWidth={1.5}
-                />
-              );
-            }
+            // Cálculo adaptativo de tamaño (auto width & height) basado en el texto del nodo
+            const labelLines = node.label.split('\n');
+            const maxLineLength = Math.max(...labelLines.map((line) => line.length));
+            const calculatedWidth = Math.max(60, maxLineLength * 7.5);
+            const calculatedHeight = 55 + labelLines.length * 14;
 
             return (
               <Group
@@ -380,24 +732,51 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
                 draggable
                 onDragMove={(e) => handleDragMoveNode(node.id, e)}
                 onDragEnd={(e) => {
-                  if (e.target === e.currentTarget) {
-                    onNodeDragEnd && onNodeDragEnd(node.id, e.target.x(), e.target.y());
-                  }
+                  const isCurrentTarget = e.target === e.currentTarget;
+                  isCurrentTarget
+                    ? onNodeDragEnd?.(node.id, e.target.x(), e.target.y())
+                    : undefined;
                 }}
-                onClick={() => onNodeClick && onNodeClick(node.id)}
-                onTap={() => onNodeClick && onNodeClick(node.id)}
+                onMouseEnter={(e) => {
+                  const stage = e.target.getStage();
+                  stage
+                    ? (stage.container().style.cursor = "pointer")
+                    : undefined;
+                  setHoveredNode(node.id);
+                }}
+                onMouseLeave={(e) => {
+                  const stage = e.target.getStage();
+                  stage
+                    ? (stage.container().style.cursor = "default")
+                    : undefined;
+                  setHoveredNode(null);
+                }}
+                onClick={() => handleNodeClickLocal(node.id)}
+                onTap={() => handleNodeClickLocal(node.id)}
               >
-                {shape}
+                {/* Contenedor transparente adaptativo (hitbox auto width & height) */}
+                <Rect
+                  x={-calculatedWidth / 2}
+                  y={-25}
+                  width={calculatedWidth}
+                  height={calculatedHeight}
+                  fill="rgba(0,0,0,0)"
+                  listening={true}
+                />
+                <Group opacity={opacityNode}>
+                  {shape}
+                </Group>
                 <Text
                   text={node.label}
-                  fill={themeLabelColor}
+                  fill={labelColor}
                   fontSize={12}
                   fontFamily="Inter, sans-serif"
-                  fontStyle="bold"
+                  fontStyle={fontStyle}
                   align="center"
-                  y={isCosmic ? 55 : 40}
-                  x={-50}
-                  width={100}
+                  y={28}
+                  x={-calculatedWidth / 2}
+                  width={calculatedWidth}
+                  opacity={opacityNode}
                 />
               </Group>
             );
@@ -406,7 +785,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
       </Stage>
 
       {/* Panel de Filtro y Búsqueda Flotante */}
-      <div className="absolute top-4 right-3 z-10 bg-background border border-foreground/10 p-[0.75rem] rounded shadow-md flex flex-col gap-[0.5rem] w-[auto]">
+      <div className="absolute top-4 right-3 z-10 bg-background border border-foreground/10 p-[0.75rem] rounded shadow-md flex flex-col gap-[0.5rem] w-64 h-auto">
         <div className="flex flex-col gap-[0.25rem]">
           <label htmlFor="canvas-search-input" className="text-[0.69rem] font-semibold text-muted-foreground uppercase tracking-wider">
             Buscar Elemento
@@ -438,6 +817,72 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
             ))}
           </select>
         </div>
+
+        {draggableEntities && (
+          <div className="border-t border-foreground/10 pt-2.5 flex flex-col gap-2">
+            <div>
+              <label className="text-[0.69rem] font-bold text-muted-foreground uppercase tracking-wider">
+                Biblia de Mundos
+              </label>
+              <p className="text-[9px] text-muted-foreground/60 leading-tight mt-0.5">
+                Arrastra un elemento al lienzo para graficar sus relaciones.
+              </p>
+            </div>
+            <input
+              type="text"
+              placeholder="Buscar para arrastrar..."
+              value={dragSearchTerm}
+              onChange={(e) => setDragSearchTerm(e.target.value)}
+              className="w-full bg-muted text-foreground border border-foreground/10 rounded px-2 py-1 text-[0.69rem] outline-none focus:border-primary/50 transition-colors"
+            />
+            {nodes.length > 0 && onClearCanvas && (
+              <button
+                onClick={onClearCanvas}
+                className="w-full bg-red-600/10 hover:bg-red-600/20 text-red-500 border border-red-500/20 rounded py-1 text-[0.69rem] font-bold transition-all"
+              >
+                Limpiar Lienzo
+              </button>
+            )}
+            <div
+              className="flex flex-col gap-1 overflow-y-auto pr-1"
+              style={{
+                maxHeight: draggableEntities.filter(ent =>
+                  ent.label.toLowerCase().includes(dragSearchTerm.toLowerCase())
+                ).length > 5 ? '150px' : 'auto'
+              }}
+            >
+              {draggableEntities
+                .filter(ent => ent.label.toLowerCase().includes(dragSearchTerm.toLowerCase()))
+                .map((ent) => {
+                  const visuals = getHierarchyVisuals(ent.tipo);
+                  return (
+                    <div
+                      key={ent.id}
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData("text/plain", ent.id);
+                      }}
+                      className="flex items-center gap-2 px-2 py-1 rounded bg-muted/40 hover:bg-muted/80 border border-foreground/5 cursor-grab active:cursor-grabbing select-none transition-all duration-200"
+                    >
+                      <span className={`material-symbols-outlined text-[10px] ${visuals.color}`}>
+                        {visuals.icon}
+                      </span>
+                      <span className="text-[10px] truncate font-medium text-foreground/80">
+                        {ent.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              {draggableEntities.filter(ent =>
+                ent.label.toLowerCase().includes(dragSearchTerm.toLowerCase())
+              ).length === 0 && (
+                <div className="text-[9px] text-center text-muted-foreground/50 py-2">
+                  Sin elementos
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

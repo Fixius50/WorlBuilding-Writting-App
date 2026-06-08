@@ -14,13 +14,9 @@ const Login: React.FC = () => {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-[#050508]">
-      {/* Background FX */}
-      <div className="absolute top-0 -left-20 w-96 h-96 bg-indigo-500/10 rounded-full blur-[120px]"></div>
-      <div className="absolute bottom-0 -right-20 w-96 h-96 bg-purple-500/5 rounded-full blur-[120px]"></div>
-
       <form onSubmit={handleSubmit} className="relative z-10 w-full max-w-md p-8 bg-foreground/5 rounded-[2.5rem] border border-foreground/40 shadow-2xl">
         <div className="flex flex-col items-center mb-8">
-          <div className="size-16 bg-[#0a0a0c] rounded-none flex items-center justify-center mb-4 border border-foreground/10 shadow-lg shadow-indigo-500/20">
+          <div className="size-16 bg-[#0a0a0c] rounded-none flex items-center justify-center mb-4 border border-foreground/10 shadow-lg">
             <span className="material-symbols-outlined text-4xl text-indigo-400">public</span>
           </div>
           <h1 className="text-3xl font-black text-foreground tracking-tighter">Chronos Atlas</h1>
@@ -63,7 +59,7 @@ const Login: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full h-14 bg-indigo-500 hover:bg-indigo-400 text-foreground font-black uppercase tracking-widest rounded-none shadow-lg shadow-indigo-500/20 transition-all mt-6 flex items-center justify-center gap-3 disabled:opacity-50"
+            className="w-full h-14 bg-indigo-500 hover:bg-indigo-400 text-foreground font-black uppercase tracking-widest rounded-none shadow-lg transition-all mt-6 flex items-center justify-center gap-3 disabled:opacity-50"
           >
             {loading ? (
               <span className="material-symbols-outlined animate-spin text-xl">refresh</span>

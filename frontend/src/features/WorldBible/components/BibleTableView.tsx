@@ -212,7 +212,7 @@ const BibleTableView: React.FC<TableViewProps> = ({
             {selectedCount > 0 && (
               <button
                 onClick={() => setIsDeleteModalOpen(true)}
-                className="flex items-center gap-2 px-4 h-9 bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all shadow-lg shadow-red-500/10 shrink-0"
+                className="flex items-center gap-2 px-4 h-9 bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all shadow-lg shrink-0"
               >
                 <span className="material-symbols-outlined text-sm">
                   delete_sweep
@@ -222,7 +222,7 @@ const BibleTableView: React.FC<TableViewProps> = ({
             )}
             <button
               onClick={() => setIsMassCreateOpen(true)}
-              className="flex items-center gap-2 px-4 h-9 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20 shrink-0 border border-transparent"
+              className="flex items-center gap-2 px-4 h-9 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shrink-0 border border-transparent"
             >
               <span className="material-symbols-outlined text-sm">
                 add_circle

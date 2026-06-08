@@ -618,7 +618,7 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
                 selectedTypes.length === 0 ||
                 selectedFolders.length === 0
               }
-              className={`px-12 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all ${loading || noFolders ? "opacity-50 cursor-not-allowed grayscale" : ""}`}
+              className={`px-12 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all ${loading || noFolders ? "opacity-50 cursor-not-allowed grayscale" : ""}`}
             >
               {loading ? "Sincronizando..." : "Ejecutar Carga Masiva"}
             </button>

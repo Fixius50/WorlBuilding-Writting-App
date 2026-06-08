@@ -61,7 +61,6 @@ const InputModal: React.FC<InputModalProps> = ({
           >
             {/* Background Gradient */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-70" />
-            <div className="absolute -top-10 -right-10 size-40 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
 
             <div>
               <h3 className="text-xl font-bold text-foreground tracking-tight">{title}</h3>

@@ -41,22 +41,21 @@ export const useSyncManager = () => {
                 await syncService.buildRealtimeSnapshot(currentProjectName);
 
               switch (snapshotResult.success) {
-                case true:
-                  switch (!!snapshotResult.payload) {
-                    case true:
-                      addLog(
-                        `Enviando payload real (${snapshotResult.payload.entities.length} entidades)...`,
-                      );
-                      activeConnection?.send({
-                        type: "SYNC_DATA",
-                        payload: snapshotResult.payload,
-                      });
-                      break;
-                    default:
-                      addLog("Snapshot generado sin payload.");
-                      break;
+                case true: {
+                  const payload = snapshotResult.payload;
+                  if (payload) {
+                    addLog(
+                      `Enviando payload real (${payload.entities.length} entidades)...`,
+                    );
+                    activeConnection?.send({
+                      type: "SYNC_DATA",
+                      payload: payload,
+                    });
+                  } else {
+                    addLog("Snapshot generado sin payload.");
                   }
                   break;
+                }
                 default:
                   addLog(`Error al crear snapshot: ${snapshotResult.message}`);
                   break;
@@ -71,44 +70,40 @@ export const useSyncManager = () => {
           const incomingPayload = incoming.payload as
             | SyncRealtimePayload
             | undefined;
-          switch (incomingPayload === undefined) {
-            case true:
-              addLog("SYNC_DATA recibido sin payload válido.");
-              break;
-            default: {
-              addLog("Aplicando datos reales recibidos en la base local...");
-              const applyResult =
-                await syncService.applyRealtimeSnapshot(incomingPayload);
+          if (incomingPayload) {
+            addLog("Aplicando datos reales recibidos en la base local...");
+            const applyResult =
+              await syncService.applyRealtimeSnapshot(incomingPayload);
 
-              switch (applyResult.success) {
-                case true:
-                  addLog("Aplicación local completada.");
-                  setStatus("DONE");
-                  break;
-                default:
-                  addLog(`Fallo aplicando datos: ${applyResult.message}`);
-                  setStatus("CONNECTED");
-                  break;
-              }
-
-              const archiveProject =
-                projectName || incomingPayload.project.nombre;
-              const archiveResult = await syncService.archiveRealtimePayload(
-                archiveProject,
-                incomingPayload,
-              );
-              switch (archiveResult.success) {
-                case true:
-                  addLog("Payload archivado en backend auxiliar.");
-                  break;
-                default:
-                  addLog(
-                    `Archivado backend no disponible: ${archiveResult.message}`,
-                  );
-                  break;
-              }
-              break;
+            switch (applyResult.success) {
+              case true:
+                addLog("Aplicación local completada.");
+                setStatus("DONE");
+                break;
+              default:
+                addLog(`Fallo aplicando datos: ${applyResult.message}`);
+                setStatus("CONNECTED");
+                break;
             }
+
+            const archiveProject =
+              projectName || incomingPayload.project.nombre;
+            const archiveResult = await syncService.archiveRealtimePayload(
+              archiveProject,
+              incomingPayload,
+            );
+            switch (archiveResult.success) {
+              case true:
+                addLog("Payload archivado en backend auxiliar.");
+                break;
+              default:
+                addLog(
+                  `Archivado backend no disponible: ${archiveResult.message}`,
+                );
+                break;
+            }
+          } else {
+            addLog("SYNC_DATA recibido sin payload válido.");
           }
           break;
         }
@@ -186,15 +181,13 @@ export const useSyncManager = () => {
   }, [targetId, addLog, handleIncomingData]);
 
   const startSync = useCallback(() => {
-    switch (connection === null) {
-      case true:
-        addLog("No hay conexión activa para iniciar sincronización.");
-        break;
-      default:
-        setStatus("SYNCING");
-        addLog("Solicitando sincronización al partner...");
-        connection.send({ type: "SYNC_REQUEST" });
-        break;
+    const conn = connection;
+    if (conn) {
+      setStatus("SYNCING");
+      addLog("Solicitando sincronización al partner...");
+      conn.send({ type: "SYNC_REQUEST" });
+    } else {
+      addLog("No hay conexión activa para iniciar sincronización.");
     }
   }, [connection, addLog]);
 

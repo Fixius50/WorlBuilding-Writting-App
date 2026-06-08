@@ -106,7 +106,7 @@ const WorldBibleLayout: React.FC = () => {
               </div>
 
               {isRoot ? (
-                <div className="flex items-center justify-center gap-2 bg-background  border border-[hsl(var(--foreground)/0.1)] p-1 w-fit mx-auto rounded-full shadow-2xl animate-in fade-in zoom-in-95">
+                <div className="flex items-center justify-center gap-2 bg-background  border border-[hsl(var(--foreground)/0.1)] p-1 w-fit mx-auto rounded-full animate-in fade-in zoom-in-95">
                   <button
                     onClick={(e) => {
                       e.preventDefault();
@@ -115,7 +115,7 @@ const WorldBibleLayout: React.FC = () => {
                     }}
                     className={`flex items-center gap-2 px-6 py-2 rounded-full transition-all duration-500 ${
                       viewMode === "folders"
-                        ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-lg shadow-[hsl(var(--primary)/0.2)]"
+                        ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-lg"
                         : "text-[hsl(var(--foreground)/0.4)] hover:text-[hsl(var(--foreground)/0.8)]"
                     }`}
                   >
@@ -134,7 +134,7 @@ const WorldBibleLayout: React.FC = () => {
                     }}
                     className={`flex items-center gap-2 px-6 py-2 rounded-full transition-all duration-500 ${
                       viewMode === "table"
-                        ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-lg shadow-[hsl(var(--primary)/0.2)]"
+                        ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-lg"
                         : "text-[hsl(var(--foreground)/0.4)] hover:text-[hsl(var(--foreground)/0.8)]"
                     }`}
                   >

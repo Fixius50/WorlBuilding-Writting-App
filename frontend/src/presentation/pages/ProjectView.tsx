@@ -20,7 +20,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
 }) => (
   <div
     onClick={onClick}
-    className="group relative p-8 rounded-[32px] monolithic-panel hover:border-primary/50 transition-all cursor-pointer flex flex-col h-full gap-6 hover:shadow-2xl hover:shadow-primary/5"
+    className="group relative p-8 rounded-[32px] monolithic-panel hover:border-primary/50 transition-all cursor-pointer flex flex-col h-full gap-6 hover:shadow-2xl"
   >
     <div
       className={`size-14 rounded-none ${color} flex items-center justify-center text-primary-foreground shadow-lg group-hover:scale-110 transition-all duration-500`}
@@ -74,7 +74,7 @@ const ProjectView: React.FC = () => {
               icon="menu_book"
               title={t("project.codex_title")}
               desc={t("project.codex_desc")}
-              color="bg-indigo-600 shadow-indigo-500/20"
+              color="bg-indigo-600"
               onClick={() => navigate(`${baseUrl}/bible`)}
               t={t}
             />
@@ -82,7 +82,7 @@ const ProjectView: React.FC = () => {
               icon="map"
               title={t("project.atlas_title")}
               desc={t("project.atlas_desc")}
-              color="bg-emerald-600 shadow-emerald-500/20"
+              color="bg-emerald-600"
               onClick={() => navigate(`${baseUrl}/map`)}
               t={t}
             />
@@ -90,7 +90,7 @@ const ProjectView: React.FC = () => {
               icon="edit_note"
               title={t("project.chronicles_title")}
               desc={t("project.chronicles_desc")}
-              color="bg-amber-600 shadow-amber-500/20"
+              color="bg-amber-600"
               onClick={() => navigate(`${baseUrl}/writing`)}
               t={t}
             />
@@ -98,7 +98,7 @@ const ProjectView: React.FC = () => {
               icon="hub"
               title={t("project.graph_title")}
               desc={t("project.graph_desc")}
-              color="bg-purple-600 shadow-purple-500/20"
+              color="bg-purple-600"
               onClick={() => navigate(`${baseUrl}/graph`)}
               t={t}
             />
@@ -106,7 +106,7 @@ const ProjectView: React.FC = () => {
               icon="calendar_month"
               title={t("project.timeline_title")}
               desc={t("project.timeline_desc")}
-              color="bg-rose-600 shadow-rose-500/20"
+              color="bg-rose-600"
               onClick={() => navigate(`${baseUrl}/timeline`)}
               t={t}
             />
@@ -114,7 +114,7 @@ const ProjectView: React.FC = () => {
               icon="translate"
               title={t("project.linguistics_title")}
               desc={t("project.linguistics_desc")}
-              color="bg-blue-600 shadow-blue-500/20"
+              color="bg-blue-600"
               onClick={() => navigate(`${baseUrl}/linguistics`)}
               t={t}
             />
@@ -122,7 +122,7 @@ const ProjectView: React.FC = () => {
               icon="analytics"
               title={t("project.analytics_title")}
               desc={t("project.analytics_desc")}
-              color="bg-cyan-600 shadow-cyan-500/20"
+              color="bg-cyan-600"
               onClick={() => navigate(`${baseUrl}/analytics`)}
               t={t}
             />
