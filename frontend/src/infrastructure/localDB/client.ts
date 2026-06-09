@@ -189,6 +189,11 @@ export const initializeDatabase = async () => {
     await sql`ALTER TABLE entidades ADD COLUMN borrado INTEGER DEFAULT 0`.catch(() => {});
     await sql`ALTER TABLE eventos ADD COLUMN borrado INTEGER DEFAULT 0`.catch(() => {});
     
+    // Asegurar que registros antiguos sin valor de borrado tengan por defecto 0 (evitar NULL)
+    await sql`UPDATE carpetas SET borrado = 0 WHERE borrado IS NULL`.catch(() => {});
+    await sql`UPDATE entidades SET borrado = 0 WHERE borrado IS NULL`.catch(() => {});
+    await sql`UPDATE eventos SET borrado = 0 WHERE borrado IS NULL`.catch(() => {});
+    
     // MIGRACIÓN PARA MULTIVERSO (LÍNEAS PARALELAS)
     await sql`ALTER TABLE eventos ADD COLUMN linea_id INTEGER`.catch(() => {});
     
