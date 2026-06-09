@@ -491,8 +491,8 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
           for (let i = 0; i < path.length - 1; i++) {
             const fromId = path[i];
             const toId = path[i + 1];
-            const edge = filteredEdges.find((e) => e.from === fromId && e.to === toId)
-              || filteredEdges.find((e) => e.from === toId && e.to === fromId);
+            const edge = filteredEdges.find((e) => String(e.from) === String(fromId) && String(e.to) === String(toId))
+              || filteredEdges.find((e) => String(e.from) === String(toId) && String(e.to) === String(fromId));
             if (edge) {
               aEdges.add(edge.id);
               rEdges.add(edge.id);
@@ -528,7 +528,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
       const strokeColor = isRoute 
         ? "#3b82f6" 
         : (isLinkActive 
-            ? (isOutbound ? themeEdgeColor : "#10b981") 
+            ? themeEdgeColor 
             : "#d1d5db"
           );
 
@@ -677,21 +677,21 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
             const strokeColor = isRoute 
               ? "#3b82f6" 
               : (isLinkActive 
-                  ? (isOutbound ? themeEdgeColor : "#10b981") 
+                  ? themeEdgeColor 
                   : "#d1d5db"
                 );
 
             const textColor = isRoute
               ? "#2563eb"
               : (isLinkActive
-                  ? (isOutbound ? themeEdgeColor : "#000000ff")
+                  ? themeEdgeColor
                   : "#ffffffff"
                 );
 
             const fillColor = isRoute 
               ? "#eff6ff" 
               : (isLinkActive 
-                  ? (isOutbound ? "#f0f9ff" : "#f0fdf4")
+                  ? "#f0f9ff" 
                   : "#ffffff"
                 );
 
