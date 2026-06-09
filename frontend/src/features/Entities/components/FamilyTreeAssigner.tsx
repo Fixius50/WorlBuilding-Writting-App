@@ -38,6 +38,7 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({
     setIsAddingCustom,
     handleAddRelationship,
     handleDelete,
+    resolveRelativesByNames,
   } = useFamilyTreeAssigner(entityId, projectId);
 
   React.useEffect(() => {
@@ -84,6 +85,15 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setIsSearchOpen(true)}
                 onClick={() => setIsSearchOpen(true)}
+                onKeyDown={(e) => {
+                  const isEnter = e.key === "Enter";
+                  isEnter ? (async () => {
+                    e.preventDefault();
+                    await resolveRelativesByNames(searchQuery);
+                    setSearchQuery("");
+                    setIsSearchOpen(false);
+                  })() : null;
+                }}
               />
               {isSearchOpen && (
                 <div className="absolute top-full left-0 w-full bg-background border border-foreground/10 z-50 shadow-2xl max-h-60 overflow-y-auto custom-scrollbar">
@@ -151,30 +161,39 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({
                     value={customType}
                     onChange={(e) => setCustomType(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") {
+                      const isEnter = e.key === "Enter";
+                      isEnter ? (() => {
                         e.preventDefault();
-                        const val = customType.trim().toUpperCase();
-                        if (val) {
-                          if (!selectedTypes.includes(val)) {
-                            setSelectedTypes([...selectedTypes, val]);
-                          }
-                          setCustomType("");
-                          setIsAddingCustom(false);
-                        }
-                      }
+                        const parts = customType
+                          .split(";")
+                          .map((t) => t.trim().toUpperCase())
+                          .filter((t) => !!t);
+                        const newTypes = [...selectedTypes];
+                        parts.forEach((p) => {
+                          const hasType = newTypes.includes(p);
+                          !hasType ? newTypes.push(p) : null;
+                        });
+                        setSelectedTypes(newTypes);
+                        setCustomType("");
+                        setIsAddingCustom(false);
+                      })() : null;
                     }}
                   />
                   <button
                     type="button"
                     onClick={() => {
-                      const val = customType.trim().toUpperCase();
-                      if (val) {
-                        if (!selectedTypes.includes(val)) {
-                          setSelectedTypes([...selectedTypes, val]);
-                        }
-                        setCustomType("");
-                        setIsAddingCustom(false);
-                      }
+                      const parts = customType
+                        .split(";")
+                        .map((t) => t.trim().toUpperCase())
+                        .filter((t) => !!t);
+                      const newTypes = [...selectedTypes];
+                      parts.forEach((p) => {
+                        const hasType = newTypes.includes(p);
+                        !hasType ? newTypes.push(p) : null;
+                      });
+                      setSelectedTypes(newTypes);
+                      setCustomType("");
+                      setIsAddingCustom(false);
                     }}
                     className="px-3 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/20"
                   >

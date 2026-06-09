@@ -62,7 +62,11 @@ export const useCreateMassEntities = (
       e.preventDefault();
       const val = inputValue.trim();
       if (val) {
-        setNameEntries((prev) => [...prev, { name: val, type }]);
+        const parts = val.split(";").map((p) => p.trim()).filter((p) => !!p);
+        setNameEntries((prev) => [
+          ...prev,
+          ...parts.map((p) => ({ name: p, type })),
+        ]);
         setInputValue("");
       }
     } else if (e.key === "Backspace" && !inputValue && nameEntries.length > 0) {

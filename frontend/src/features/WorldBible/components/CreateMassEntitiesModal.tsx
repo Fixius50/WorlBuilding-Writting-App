@@ -196,16 +196,20 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
   const handleClassKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      const resolvedTypeId = resolveTypeId(classInput);
-      if (!resolvedTypeId) {
-        return;
+      const parts = classInput.split(";").map((p) => p.trim()).filter((p) => !!p);
+      const newTypeIds: string[] = [];
+      parts.forEach((part) => {
+        const resolved = resolveTypeId(part);
+        const isDuplicate = resolved ? selectedTypes.includes(resolved) || newTypeIds.includes(resolved) : false;
+        resolved && !isDuplicate
+          ? newTypeIds.push(resolved)
+          : undefined;
+      });
+
+      if (newTypeIds.length > 0) {
+        setSelectedTypes((prev) => [...prev, ...newTypeIds]);
+        setType(newTypeIds[newTypeIds.length - 1]);
       }
-      if (selectedTypes.includes(resolvedTypeId)) {
-        setClassInput("");
-        return;
-      }
-      setSelectedTypes((prev) => [...prev, resolvedTypeId]);
-      setType(resolvedTypeId);
       setClassInput("");
     } else if (
       e.key === "Backspace" &&
@@ -219,16 +223,20 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
   const handleFolderKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      const resolvedFolderId = resolveFolderId(folderInput);
-      if (!resolvedFolderId) {
-        return;
+      const parts = folderInput.split(";").map((p) => p.trim()).filter((p) => !!p);
+      const newFolderIds: number[] = [];
+      parts.forEach((part) => {
+        const resolved = resolveFolderId(part);
+        const isDuplicate = resolved ? selectedFolders.includes(resolved) || newFolderIds.includes(resolved) : false;
+        resolved && !isDuplicate
+          ? newFolderIds.push(resolved)
+          : undefined;
+      });
+
+      if (newFolderIds.length > 0) {
+        setSelectedFolders((prev) => [...prev, ...newFolderIds]);
+        setFolderId(newFolderIds[newFolderIds.length - 1]);
       }
-      if (selectedFolders.includes(resolvedFolderId)) {
-        setFolderInput("");
-        return;
-      }
-      setSelectedFolders((prev) => [...prev, resolvedFolderId]);
-      setFolderId(resolvedFolderId);
       setFolderInput("");
     } else if (
       e.key === "Backspace" &&
@@ -512,7 +520,11 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
                 <option value="" disabled>
                   Inyectar Plantilla...
                 </option>
-                {availableTemplates.map((t) => (
+                {Array.from(
+                  new Map(
+                    availableTemplates.map((t) => [`${t.nombre}-${t.categoria || ""}`, t])
+                  ).values()
+                ).map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.nombre} ({t.categoria || "Sin Categoría"})
                   </option>

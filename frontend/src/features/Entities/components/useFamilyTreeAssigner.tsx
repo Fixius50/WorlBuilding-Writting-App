@@ -148,6 +148,39 @@ export const useFamilyTreeAssigner = (entityId: number, projectId: number) => {
     } catch {}
   };
 
+  const resolveRelativesByNames = useCallback(
+    async (namesString: string) => {
+      try {
+        const parts = namesString
+          .split(";")
+          .map((n) => n.trim())
+          .filter((n) => !!n);
+
+        const all = await EntityUseCase.getAllByProject(projectId);
+        const added: Entidad[] = [];
+
+        parts.forEach((part) => {
+          const matched = all.find(
+            (entity) =>
+              entity.id !== entityId &&
+              entity.nombre.trim().toLowerCase() === part.toLowerCase(),
+          );
+          const isAlreadySelected = selectedRelatives.some(
+            (sr) => sr.id === matched?.id,
+          );
+          const isAlreadyAdded = added.some((sr) => sr.id === matched?.id);
+
+          const shouldAdd = matched && !isAlreadySelected && !isAlreadyAdded;
+          shouldAdd ? added.push(matched) : null;
+        });
+
+        const hasAdded = added.length > 0;
+        hasAdded ? setSelectedRelatives([...selectedRelatives, ...added]) : null;
+      } catch {}
+    },
+    [projectId, entityId, selectedRelatives],
+  );
+
   return {
     relationships,
     searchQuery,
@@ -170,5 +203,6 @@ export const useFamilyTreeAssigner = (entityId: number, projectId: number) => {
     handleAddRelationship,
     handleDelete,
     loadRelationships,
+    resolveRelativesByNames,
   };
 };
