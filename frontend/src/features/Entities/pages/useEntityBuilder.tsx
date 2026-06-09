@@ -9,7 +9,7 @@ import { WorkspaceUseCase } from "@application/useCases/WorkspaceUseCase";
 import { EntityUseCase } from "@application/useCases/EntityUseCase";
 import { TemplateUseCase } from "@application/useCases/TemplateUseCase";
 import { Entidad, Plantilla, Carpeta, Valor } from "@domain/models/database";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getThemePrimaryHex } from "@infrastructure/utils/themeColor";
 import { getPresetTabsByEntityType } from "@features/Entities/utils/entityPresetTabs";
 
@@ -44,6 +44,7 @@ export interface EntityExtras {
 export const useEntityBuilder = (mode: "creation" | "edit") => {
   const { username, projectName, entityId, folderId, type } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const location = useLocation();
   const [isCreation, setIsCreation] = useState(mode === "creation");
 
@@ -174,6 +175,15 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
     }
   });
 
+  const { data: linkableEntities = [] } = useQuery({
+    queryKey: ["entity-builder-linkable-entities", projectId || 1],
+    enabled: Number.isFinite(projectId || 1),
+    refetchOnWindowFocus: false,
+    queryFn: async (): Promise<Entidad[]> => {
+      return await EntityUseCase.getAllByProject(projectId || 1);
+    }
+  });
+
   const refreshTemplates = useCallback(async () => {
     try {
       const result = await refetchTemplatesQuery();
@@ -259,6 +269,8 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
         for (const rid of removedFieldIds) {
           await TemplateUseCase.deleteEntityValue(rid);
         }
+
+        await queryClient.invalidateQueries();
 
         if (redirect) {
           navigate(-1);
@@ -905,6 +917,7 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
     galleryImages,
     editorTabs,
     isPresetEditorTab,
+    linkableEntities,
     primaryImage,
     secondaryImages,
     secondaryStart,

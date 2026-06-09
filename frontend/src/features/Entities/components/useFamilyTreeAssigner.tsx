@@ -18,9 +18,8 @@ export const useFamilyTreeAssigner = (entityId: number, projectId: number) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Entidad[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [selectedRelative, setSelectedRelative] = useState<Entidad | null>(
-    null,
-  );
+  const [selectedRelatives, setSelectedRelatives] = useState<Entidad[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedType, setSelectedType] = useState("");
   const [customType, setCustomType] = useState("");
   const [availableTypes, setAvailableTypes] = useState<string[]>([]);
@@ -67,10 +66,10 @@ export const useFamilyTreeAssigner = (entityId: number, projectId: number) => {
     async (query: string) => {
       try {
         const all = await EntityUseCase.getAllByProject(projectId);
-        const eligible = all.filter((entity) => entity.id !== entityId);
+        const selectedIds = new Set(selectedRelatives.map((sr) => sr.id));
+        const eligible = all.filter((entity) => entity.id !== entityId && !selectedIds.has(entity.id));
         const normalizedQuery = query.trim().toLowerCase();
-        const isSelectedName = selectedRelative && query === selectedRelative.nombre;
-        const filtered = (normalizedQuery && !isSelectedName)
+        const filtered = normalizedQuery
           ? eligible.filter((entity) =>
               entity.nombre.toLowerCase().includes(normalizedQuery),
             )
@@ -80,7 +79,7 @@ export const useFamilyTreeAssigner = (entityId: number, projectId: number) => {
         setSearchResults([]);
       }
     },
-    [projectId, entityId, selectedRelative],
+    [projectId, entityId, selectedRelatives],
   );
 
   useEffect(() => {
@@ -96,23 +95,34 @@ export const useFamilyTreeAssigner = (entityId: number, projectId: number) => {
   }, [searchQuery, isSearchOpen, loadSearchResults]);
 
   const handleAddRelationship = async () => {
-    if (!selectedRelative) return;
-    const finalType = isAddingCustom
-      ? customType.trim().toUpperCase()
-      : selectedType.trim().toUpperCase();
-    if (!finalType) return;
+    let finalTypes = [...selectedTypes];
+    const cleanCustom = customType.trim().toUpperCase();
+    if (isAddingCustom && cleanCustom && !finalTypes.includes(cleanCustom)) {
+      finalTypes.push(cleanCustom);
+    }
+
+    if (selectedRelatives.length === 0 || finalTypes.length === 0) {
+      return;
+    }
 
     try {
-      await RelationshipUseCase.createRelationship({
-        origen_id: entityId,
-        destino_id: selectedRelative.id,
-        tipo: finalType,
-        descripcion: "",
-        project_id: projectId,
-      });
+      const promises = selectedRelatives.flatMap((relative) =>
+        finalTypes.map((t) =>
+          RelationshipUseCase.createRelationship({
+            origen_id: entityId,
+            destino_id: relative.id,
+            tipo: t,
+            descripcion: "",
+            project_id: projectId,
+          })
+        )
+      );
 
-      if (!availableTypes.includes(finalType)) {
-        const updated = [...availableTypes, finalType];
+      await Promise.all(promises);
+
+      const newCustoms = finalTypes.filter((t) => !availableTypes.includes(t));
+      if (newCustoms.length > 0) {
+        const updated = [...availableTypes, ...newCustoms];
         await WorkspaceUseCase.saveSetting(
           SETTINGS_KEY,
           JSON.stringify(updated),
@@ -120,7 +130,8 @@ export const useFamilyTreeAssigner = (entityId: number, projectId: number) => {
         setAvailableTypes(updated);
       }
 
-      setSelectedRelative(null);
+      setSelectedRelatives([]);
+      setSelectedTypes([]);
       setSelectedType("");
       setSearchQuery("");
       setIsSearchOpen(false);
@@ -131,7 +142,6 @@ export const useFamilyTreeAssigner = (entityId: number, projectId: number) => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("¿Eliminar este vínculo genealógico?")) return;
     try {
       await RelationshipUseCase.deleteRelationship(id);
       loadRelationships();
@@ -145,8 +155,10 @@ export const useFamilyTreeAssigner = (entityId: number, projectId: number) => {
     searchResults,
     isSearchOpen,
     setIsSearchOpen,
-    selectedRelative,
-    setSelectedRelative,
+    selectedRelatives,
+    setSelectedRelatives,
+    selectedTypes,
+    setSelectedTypes,
     selectedType,
     setSelectedType,
     customType,

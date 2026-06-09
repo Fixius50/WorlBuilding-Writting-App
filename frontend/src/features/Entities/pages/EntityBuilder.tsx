@@ -39,12 +39,12 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
     setEditingFieldId,
     isDraggingOver,
 
-    // UI migrados
     defaultEntityColor,
     extras,
     galleryImages,
     editorTabs,
     isPresetEditorTab,
+    linkableEntities,
     primaryImage,
     secondaryImages,
     secondaryStart,
@@ -785,10 +785,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                       value={field.value}
                       onChange={(val) => handleFieldChange(field.id, val)}
                       onRemove={() => handleRemoveField(field.id)}
-                      onEditTemplate={(tpl) => {
-                        setEditingTemplate(tpl);
-                        setEditingFieldId(field.id);
-                      }}
+                      linkableEntities={linkableEntities}
                     />
                   </div>
                 ))}

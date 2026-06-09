@@ -59,17 +59,48 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
           />
         );
       case "boolean":
+        const boolMeta = metadata || {};
+        const states = Array.isArray(boolMeta.states) && boolMeta.states.length > 0
+          ? boolMeta.states
+          : [{ id: "default", trueLabel: boolMeta.trueLabel || "Confirmado", falseLabel: boolMeta.falseLabel || "Negativo" }];
+
+        const valuesMap = (() => {
+          try {
+            return value && value.startsWith("{") ? JSON.parse(value) : { default: value === "true" };
+          } catch (e) {
+            return { default: value === "true" };
+          }
+        })();
+
+        const handleToggleState = (stId: string) => {
+          const newMap = { ...valuesMap, [stId]: !valuesMap[stId] };
+          if (states.length === 1 && states[0].id === "default") {
+            onChange(newMap["default"] ? "true" : "false");
+          } else {
+            onChange(JSON.stringify(newMap));
+          }
+        };
+
         return (
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => onChange(value === "true" ? "false" : "true")}
-              className={`size-6 rounded-none border flex items-center justify-center transition-all ${value === "true" ? "bg-primary border-primary text-foreground" : "border-foreground/10 text-transparent hover:border-primary/50"}`}
-            >
-              <span className="material-symbols-outlined text-sm">check</span>
-            </button>
-            <span className="text-xs text-foreground">
-              {value === "true" ? "Enabled" : "Disabled"}
-            </span>
+          <div className="space-y-3 mt-1.5 w-full">
+            {states.map((st: { id: string; name?: string; trueLabel: string; falseLabel: string }) => {
+              const isTrue = !!valuesMap[st.id];
+              return (
+                <div key={st.id} className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleToggleState(st.id)}
+                    className={`size-6 rounded-none border flex items-center justify-center transition-all ${isTrue ? "bg-primary border-primary text-foreground" : "border-foreground/10 text-transparent hover:border-primary/50"}`}
+                  >
+                    <span className="material-symbols-outlined text-sm">check</span>
+                  </button>
+                  <span className="text-xs text-foreground">
+                    {st.name && <span className="opacity-55 mr-1 font-bold uppercase text-[10px]">{st.name}:</span>}
+                    {isTrue ? st.trueLabel : st.falseLabel}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         );
       case "select":
@@ -82,7 +113,7 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
               onChange={(e) => onChange(e.target.value)}
             >
               <option value="" className="bg-background text-foreground/50">
-                Select an option...
+                Selecciona una opción...
               </option>
               {options.map((opt: string, i: number) => (
                 <option
@@ -147,29 +178,81 @@ const AttributeField: React.FC<AttributeFieldProps> = ({
           />
         );
       case "entity_link":
+        const selectedIds: string[] = (() => {
+          try {
+            const parsed = value ? JSON.parse(value) : [];
+            return Array.isArray(parsed) ? parsed.map(String) : (value ? [String(value)] : []);
+          } catch {
+            return value ? [String(value)] : [];
+          }
+        })();
+
+        const handleAddEntityLink = (idStr: string) => {
+          if (idStr && !selectedIds.includes(idStr)) {
+            const updated = [...selectedIds, idStr];
+            onChange(JSON.stringify(updated));
+          }
+        };
+
+        const handleRemoveEntityLink = (idStr: string) => {
+          const updated = selectedIds.filter((id) => id !== idStr);
+          onChange(JSON.stringify(updated));
+        };
+
+        const availableLinkables = linkableEntities.filter(
+          (ent) => !selectedIds.includes(String(ent.id))
+        );
+
         return (
-          <div className="relative">
-            <select
-              className="w-full bg-background border border-foreground/10 rounded-none px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50 appearance-none cursor-pointer"
-              value={value || ""}
-              onChange={(e) => onChange(e.target.value)}
-            >
-              <option value="" className="bg-background text-foreground/50">
-                Select an Entity...
-              </option>
-              {linkableEntities.map((ent) => (
-                <option
-                  key={ent.id}
-                  value={ent.id}
-                  className="bg-background text-foreground py-4"
-                >
-                  {ent.nombre}
+          <div className="space-y-3 mt-1.5 w-full">
+            <div className="relative">
+              <select
+                className="w-full bg-background border border-foreground/10 rounded-none px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50 appearance-none cursor-pointer"
+                value=""
+                onChange={(e) => {
+                  handleAddEntityLink(e.target.value);
+                  e.target.value = "";
+                }}
+              >
+                <option value="" className="bg-background text-foreground/50">
+                  Selecciona una entidad...
                 </option>
-              ))}
-            </select>
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-foreground/50">
-              <span className="material-symbols-outlined text-sm">link</span>
+                {availableLinkables.map((ent) => (
+                  <option
+                    key={ent.id}
+                    value={ent.id}
+                    className="bg-background text-foreground py-4"
+                  >
+                    {ent.nombre}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-foreground/50">
+                <span className="material-symbols-outlined text-sm">link</span>
+              </div>
             </div>
+
+            {/* Chips de entidades vinculadas */}
+            {selectedIds.length > 0 && (
+              <div className="flex flex-wrap gap-2 px-1">
+                {selectedIds.map((idStr) => {
+                  const ent = linkableEntities.find((e) => String(e.id) === idStr);
+                  if (!ent) return null;
+                  return (
+                    <div key={idStr} className="flex items-center gap-1.5 px-3 py-1.5 bg-foreground/5 border border-foreground/10 text-foreground text-[10px] font-black uppercase tracking-wider">
+                      <span>{ent.nombre}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveEntityLink(idStr)}
+                        className="text-foreground/45 hover:text-red-400 bg-transparent border-none p-0 cursor-pointer flex items-center"
+                      >
+                        <span className="material-symbols-outlined text-xs">close</span>
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         );
       case "image":

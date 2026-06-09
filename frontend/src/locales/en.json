@@ -124,6 +124,14 @@
     "new_map": "New Map"
   },
   "bible": {
+    "categories": {
+      "general": "General Information",
+      "individual": "Individual Records",
+      "collective": "Collective Records",
+      "territory": "Territory Records",
+      "cosmic": "Cosmic Records",
+      "event": "Event Records"
+    },
     "explore": "Explore",
     "explorer": "Explorer",
     "templates": "Templates",

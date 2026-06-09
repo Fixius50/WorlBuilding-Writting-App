@@ -491,11 +491,8 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
           for (let i = 0; i < path.length - 1; i++) {
             const fromId = path[i];
             const toId = path[i + 1];
-            const edge = filteredEdges.find(
-              (e) =>
-                (e.from === fromId && e.to === toId) ||
-                (e.from === toId && e.to === fromId)
-            );
+            const edge = filteredEdges.find((e) => e.from === fromId && e.to === toId)
+              || filteredEdges.find((e) => e.from === toId && e.to === fromId);
             if (edge) {
               aEdges.add(edge.id);
               rEdges.add(edge.id);
@@ -521,15 +518,26 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
       const isRoute = routeLinks.has(edge.id);
       const isAnimated = isRoute || (isLinkActive && pinnedNode !== null);
 
+      const isOutbound = pinnedNode !== null 
+        ? edge.from === pinnedNode 
+        : (hoveredNode !== null ? edge.from === hoveredNode : false);
+
       const opacity = hasInteraction ? (isRoute ? 1 : (isLinkActive ? 0.6 : 0.05)) : 0.25;
       const strokeWidth = isRoute ? 4 : (isLinkActive ? 2.5 : 1.5);
-      const strokeColor = isRoute ? "#3b82f6" : (isLinkActive ? themeEdgeColor : "#d1d5db");
+      
+      const strokeColor = isRoute 
+        ? "#3b82f6" 
+        : (isLinkActive 
+            ? (isOutbound ? themeEdgeColor : "#10b981") 
+            : "#d1d5db"
+          );
+
       const dash = isAnimated ? [10, 5] : undefined;
 
       styles[edge.id] = { strokeColor, strokeWidth, opacity, dash };
     });
     return styles;
-  }, [filteredEdges, activeLinks, routeLinks, pinnedNode, hasInteraction, themeEdgeColor]);
+  }, [filteredEdges, activeLinks, routeLinks, pinnedNode, hoveredNode, hasInteraction, themeEdgeColor]);
 
   // Cálculo para grid infinito simulado
   const BACKGROUND_GRID_SIZE = 50;
@@ -654,14 +662,38 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
             const isRoute = routeLinks.has(edge.id);
             const relationText = edge.relation || "";
 
-            const midX = hasNodes ? (fromNode!.x + toNode!.x) / 2 : 0;
-            const midY = hasNodes ? (fromNode!.y + toNode!.y) / 2 : 0;
+            const factor = 0.33;
+            const midX = hasNodes ? fromNode!.x + (toNode!.x - fromNode!.x) * factor : 0;
+            const midY = hasNodes ? fromNode!.y + (toNode!.y - fromNode!.y) * factor : 0;
 
             const textWidth = relationText.length * 7;
             const rectWidth = textWidth + 12;
             const rectHeight = 20;
             const rx = 10;
-            const strokeColor = isRoute ? "#3b82f6" : (isLinkActive ? themeEdgeColor : "#d1d5db");
+            const isOutbound = pinnedNode !== null 
+              ? edge.from === pinnedNode 
+              : (hoveredNode !== null ? edge.from === hoveredNode : false);
+
+            const strokeColor = isRoute 
+              ? "#3b82f6" 
+              : (isLinkActive 
+                  ? (isOutbound ? themeEdgeColor : "#10b981") 
+                  : "#d1d5db"
+                );
+
+            const textColor = isRoute
+              ? "#2563eb"
+              : (isLinkActive
+                  ? (isOutbound ? themeEdgeColor : "#000000ff")
+                  : "#ffffffff"
+                );
+
+            const fillColor = isRoute 
+              ? "#eff6ff" 
+              : (isLinkActive 
+                  ? (isOutbound ? "#f0f9ff" : "#f0fdf4")
+                  : "#ffffff"
+                );
 
             return hasNodes && isLinkActive && relationText ? (
               <Group key={`label-${edge.id}`} opacity={isRoute ? 1 : 0.8}>
@@ -671,7 +703,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
                   width={rectWidth}
                   height={rectHeight}
                   cornerRadius={rx}
-                  fill={isRoute ? "#eff6ff" : "#ffffff"}
+                  fill={fillColor}
                   stroke={strokeColor}
                   strokeWidth={1}
                 />
@@ -684,7 +716,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
                   fontSize={10}
                   fontFamily="Inter, sans-serif"
                   fontStyle={isRoute ? "bold" : "normal"}
-                  fill={isRoute ? "#2563eb" : "#4b5563"}
+                  fill={textColor}
                 />
               </Group>
             ) : null;

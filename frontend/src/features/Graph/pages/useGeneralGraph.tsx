@@ -38,11 +38,29 @@ export const useGeneralGraph = (projectId: number | undefined) => {
         };
       });
 
-      const newEdges: CanvasEdge[] = allRels.map(rel => ({
-        id: rel.id.toString(),
-        from: rel.origen_id.toString(),
-        to: rel.destino_id.toString(),
-        relation: rel.tipo
+      const groupedEdgesMap = new Map<string, { from: string; to: string; relations: string[]; id: string }>();
+      allRels.forEach((rel) => {
+        const key = `${rel.origen_id}-${rel.destino_id}`;
+        const existing = groupedEdgesMap.get(key);
+        if (existing) {
+          if (!existing.relations.includes(rel.tipo)) {
+            existing.relations.push(rel.tipo);
+          }
+        } else {
+          groupedEdgesMap.set(key, {
+            id: rel.id.toString(),
+            from: rel.origen_id.toString(),
+            to: rel.destino_id.toString(),
+            relations: [rel.tipo],
+          });
+        }
+      });
+
+      const newEdges: CanvasEdge[] = Array.from(groupedEdgesMap.values()).map((edge) => ({
+        id: edge.id,
+        from: edge.from,
+        to: edge.to,
+        relation: edge.relations.join(", "),
       }));
 
       setCanvasNodes(newNodes);

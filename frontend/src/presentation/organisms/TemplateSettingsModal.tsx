@@ -29,11 +29,31 @@ const TemplateSettingsModal: React.FC<TemplateSettingsModalProps> = ({
   
   // Parsear opciones actuales de los metadatos JSON
   const initialMeta = typeof template.metadata === 'string' 
-    ? JSON.parse(template.metadata || '{"options":[]}') 
-    : (template.metadata || { options: [] });
+    ? JSON.parse(template.metadata || '{"options":[],"states":[]}') 
+    : (template.metadata || { options: [], states: [] });
     
   const [options, setOptions] = useState<string[]>(initialMeta.options || []);
   const [newOption, setNewOption] = useState('');
+  
+  // Custom boolean states list
+  const [statesList, setStatesList] = useState<Array<{ id: string; name?: string; trueLabel: string; falseLabel: string }>>(
+    initialMeta.states && initialMeta.states.length > 0
+      ? initialMeta.states
+      : [{ id: "default", name: "", trueLabel: initialMeta.trueLabel || "Confirmado", falseLabel: initialMeta.falseLabel || "Negativo" }]
+  );
+
+  const handleAddState = () => {
+    const newId = `state-${Date.now()}`;
+    setStatesList([...statesList, { id: newId, name: "", trueLabel: "Verdadero", falseLabel: "Falso" }]);
+  };
+
+  const handleRemoveState = (id: string) => {
+    setStatesList(statesList.filter(s => s.id !== id));
+  };
+
+  const handleUpdateState = (id: string, field: 'name' | 'trueLabel' | 'falseLabel', val: string) => {
+    setStatesList(statesList.map(s => s.id === id ? { ...s, [field]: val } : s));
+  };
 
   const handleAddOption = () => {
     if (newOption.trim() && !options.includes(newOption.trim())) {
@@ -48,7 +68,13 @@ const TemplateSettingsModal: React.FC<TemplateSettingsModalProps> = ({
 
   // Guarda la configuración local (clonando en caliente la plantilla) o actualiza la plantilla global según corresponda
   const handleSave = async () => {
-    const updatedMeta = { ...initialMeta, options };
+    const updatedMeta = { 
+      ...initialMeta, 
+      options, 
+      states: statesList,
+      trueLabel: statesList[0]?.trueLabel || "Confirmado",
+      falseLabel: statesList[0]?.falseLabel || "Negativo"
+    };
     isIndividual && projectId
       ? await (async () => {
           const newTemplate = await templateService.create({
@@ -102,24 +128,89 @@ const TemplateSettingsModal: React.FC<TemplateSettingsModalProps> = ({
             />
           </div>
 
-          {/* Tipo de Selector */}
+          {/* Tipo de Atributo */}
           <div className="attr-modal-section">
-            <label className="attr-label-wrapper" style={{ color: 'hsla(var(--foreground), 0.4)' }}>Tipo de Selector</label>
-            <div className="attr-modal-btn-group">
-              <button 
-                onClick={() => setTipo('select')}
-                className={`attr-modal-type-btn ${tipo === 'select' ? 'active' : ''}`}
-              >
-                Único
-              </button>
-              <button 
-                onClick={() => setTipo('multi_select')}
-                className={`attr-modal-type-btn ${tipo === 'multi_select' ? 'active' : ''}`}
-              >
-                Múltiple
-              </button>
-            </div>
+            <label className="attr-label-wrapper" style={{ color: 'hsla(var(--foreground), 0.4)' }}>Tipo de Atributo</label>
+            <select
+              className="w-full monolithic-panel border border-[hsl(var(--foreground)/0.1)] rounded-none px-[0.5rem] py-[0.375rem] text-[0.75rem] text-[hsl(var(--foreground))] outline-none bg-background focus:border-[hsl(var(--primary))]"
+              value={tipo}
+              onChange={(e) => setTipo(e.target.value as unknown as Plantilla['tipo'])}
+            >
+              <option value="text">Texto Largo</option>
+              <option value="short_text">Texto Corto</option>
+              <option value="number">Número</option>
+              <option value="boolean">Booleano</option>
+              <option value="date">Fecha</option>
+              <option value="select">Selección Única</option>
+              <option value="multi_select">Selección Múltiple</option>
+            </select>
           </div>
+
+          {/* Gestión de Booleanos Múltiples */}
+          {tipo === 'boolean' && (
+            <div className="attr-modal-section space-y-4">
+              <div className="flex items-center justify-between">
+                <label className="attr-label-wrapper" style={{ color: 'hsla(var(--foreground), 0.4)' }}>Estados Booleanos</label>
+                <button 
+                  type="button"
+                  onClick={handleAddState}
+                  className="flex items-center justify-center w-6 h-6 rounded-full border border-foreground/15 hover:border-foreground/30 hover:bg-foreground/5 text-foreground transition-all duration-200"
+                  title="Añadir Estado"
+                >
+                  <span className="material-symbols-outlined text-[1.1rem]">add</span>
+                </button>
+              </div>
+
+              <div className="space-y-3 max-h-[250px] overflow-y-auto custom-scrollbar pr-1">
+                {statesList.map((st, i) => (
+                  <div key={st.id} className="border border-foreground/10 p-3 space-y-2 relative rounded-none">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] uppercase font-bold text-foreground/45">Estado #{i + 1}</span>
+                      {statesList.length > 1 && (
+                        <button 
+                          type="button"
+                          onClick={() => handleRemoveState(st.id)}
+                          className="text-red-400 hover:text-red-600 cursor-pointer bg-transparent border-none p-0 flex items-center"
+                          title="Eliminar Estado"
+                        >
+                          <span className="material-symbols-outlined text-[1rem]">delete</span>
+                        </button>
+                      )}
+                    </div>
+                    <div>
+                      <span className="text-[9px] text-foreground/50 block mb-1">Nombre del Estado</span>
+                      <input 
+                        type="text" 
+                        className="attr-modal-input w-full text-xs py-1 mb-2"
+                        value={st.name || ""}
+                        onChange={(e) => handleUpdateState(st.id, 'name', e.target.value)}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <span className="text-[9px] text-foreground/50 block mb-1">Verdadero (Activo)</span>
+                        <input 
+                          type="text" 
+                          className="attr-modal-input w-full text-xs py-1"
+                          value={st.trueLabel}
+                          onChange={(e) => handleUpdateState(st.id, 'trueLabel', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <span className="text-[9px] text-foreground/50 block mb-1">Falso (Inactivo)</span>
+                        <input 
+                          type="text" 
+                          className="attr-modal-input w-full text-xs py-1"
+                          value={st.falseLabel}
+                          onChange={(e) => handleUpdateState(st.id, 'falseLabel', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Gestión de Opciones */}
           {(tipo === 'select' || tipo === 'multi_select') && (

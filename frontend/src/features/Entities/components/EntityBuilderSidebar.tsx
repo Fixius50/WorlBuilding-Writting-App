@@ -1,5 +1,6 @@
 import React from "react";
 import ConfirmModal from "@organisms/ConfirmModal";
+import TemplateSettingsModal from "@organisms/TemplateSettingsModal";
 import { useEntityBuilderSidebar } from "./useEntityBuilderSidebar";
 import { Plantilla } from "@domain/models/database";
 
@@ -72,6 +73,7 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
               <option value="boolean">Booleano</option>
               <option value="date">Fecha</option>
               <option value="select">Selección Única</option>
+              <option value="multi_select">Selección Múltiple</option>
             </select>
             <button
               onClick={handleCreateTemplate}
@@ -171,57 +173,16 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
       </div>
 
       {editingTpl && (
-        <div className="p-[1.5rem] border-t border-[hsl(var(--foreground)/0.1)] bg-[hsl(var(--primary)/0.05)] space-y-[0.75rem] animate-in slide-in-from-bottom duration-300">
-          <div className="flex items-center justify-between">
-            <h4 className="text-[0.625rem] font-black uppercase text-[hsl(var(--primary))] tracking-widest">
-              Editando Módulo
-            </h4>
-            <button
-              onClick={() => setEditingTpl(null)}
-              className="text-[hsl(var(--foreground)/0.4)] hover:text-[hsl(var(--primary))] transition-colors"
-            >
-              <span className="material-symbols-outlined text-[1rem]">
-                close
-              </span>
-            </button>
-          </div>
-          <input
-            autoFocus
-            className="w-full bg-background border-b border-[hsl(var(--primary)/0.4)] py-[0.25rem] text-[0.75rem] text-[hsl(var(--foreground))] outline-none focus:border-[hsl(var(--primary))]"
-            value={editingTpl.nombre}
-            onChange={(e) =>
-              setEditingTpl({ ...editingTpl, nombre: e.target.value })
+        <TemplateSettingsModal
+          template={editingTpl}
+          onClose={() => setEditingTpl(null)}
+          onSave={async () => {
+            if (onRefresh) {
+              await onRefresh();
             }
-          />
-          <select
-            className="w-full monolithic-panel border border-[hsl(var(--foreground)/0.1)] rounded-none px-[0.5rem] py-[0.375rem] text-[0.625rem] text-[hsl(var(--foreground)/0.7)] outline-none bg-background"
-            value={editingTpl.tipo}
-            onChange={(e) =>
-              setEditingTpl({ ...editingTpl, tipo: e.target.value })
-            }
-          >
-            <option value="text">Texto Largo</option>
-            <option value="short_text">Texto Corto</option>
-            <option value="number">Número</option>
-            <option value="boolean">Booleano</option>
-            <option value="date">Fecha</option>
-            <option value="select">Selección Única</option>
-          </select>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setEditingTpl(null)}
-              className="flex-1 py-[0.5rem] bg-[hsl(var(--foreground)/0.05)] text-[hsl(var(--foreground)/0.6)] text-[0.625rem] font-black uppercase tracking-widest hover:bg-[hsl(var(--foreground)/0.1)] transition-all"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={handleUpdateTemplate}
-              className="flex-1 py-[0.5rem] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-[0.625rem] font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all"
-            >
-              Actualizar
-            </button>
-          </div>
-        </div>
+            setEditingTpl(null);
+          }}
+        />
       )}
 
       <div className="p-[1rem] border-t border-[hsl(var(--foreground)/0.1)] text-center bg-[hsl(var(--foreground)/0.02)]">

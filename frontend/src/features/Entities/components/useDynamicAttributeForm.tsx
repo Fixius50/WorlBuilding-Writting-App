@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { TemplateUseCase } from "@application/useCases/TemplateUseCase";
+import { EntityUseCase } from "@application/useCases/EntityUseCase";
 import { Plantilla, Valor, Entidad } from "@domain/models/database";
 
 /**
@@ -13,6 +14,15 @@ export const useDynamicAttributeForm = (
 ) => {
   const queryClient = useQueryClient();
   const [savingId, setSavingId] = useState<number | null>(null);
+
+  const { data: allEntities = [] } = useQuery({
+    queryKey: ["dynamic-form-entities", entity.project_id],
+    enabled: Number.isFinite(entity.project_id),
+    refetchOnWindowFocus: false,
+    queryFn: async (): Promise<Entidad[]> => {
+      return await EntityUseCase.getAllByProject(entity.project_id);
+    }
+  });
 
   const attributesQueryKey = [
     "entity-dynamic-attributes",
@@ -29,41 +39,15 @@ export const useDynamicAttributeForm = (
     queryKey: attributesQueryKey,
     enabled: Number.isFinite(entity.id) && Number.isFinite(entity.project_id),
     queryFn: async (): Promise<{ templates: Plantilla[]; values: Valor[] }> => {
-      const allTemplates = await TemplateUseCase.getTemplates(
-        entity.project_id,
-      );
-      const normalizedEntityType = (entity.tipo || "").trim().toUpperCase();
-      const applicable = allTemplates.filter((tpl) => {
-        const appliesToAll =
-          tpl.aplica_a_todo === true || tpl.aplica_a_todo === 1;
-        const targetType =
-          typeof tpl.tipo_objetivo === "string"
-            ? tpl.tipo_objetivo.trim().toUpperCase()
-            : "";
-        const hasNoSpecificTarget = targetType.length === 0;
-        const matchesEntityType = targetType === normalizedEntityType;
-
-        switch (true) {
-          case appliesToAll:
-          case hasNoSpecificTarget:
-          case matchesEntityType:
-            return true;
-          default:
-            return false;
-        }
-      });
 
       const entityValues = await TemplateUseCase.getEntityValues(entity.id);
       const templatesMap = new Map<number, Plantilla>();
       
-      applicable.forEach((tpl) => {
-        templatesMap.set(tpl.id, tpl);
-      });
-
       entityValues.forEach((val) => {
         const valTpl = val.plantilla;
-        const hasTpl = valTpl ? !templatesMap.has(valTpl.id) : false;
-        hasTpl && valTpl ? templatesMap.set(valTpl.id, valTpl) : undefined;
+        if (valTpl) {
+          templatesMap.set(valTpl.id, valTpl);
+        }
       });
 
       const combinedTemplates = Array.from(templatesMap.values());
@@ -118,6 +102,7 @@ export const useDynamicAttributeForm = (
     loading,
     savingId,
     categories,
+    allEntities,
     handleValueChange,
     loadData,
   };

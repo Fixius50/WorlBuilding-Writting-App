@@ -1,6 +1,6 @@
 import React from "react";
 import { useLanguage } from "@context/LanguageContext";
-import { Entidad } from "@domain/models/database";
+import { Entidad, Plantilla } from "@domain/models/database";
 import { useDynamicAttributeForm } from "./useDynamicAttributeForm";
 
 interface DynamicAttributeFormProps {
@@ -8,192 +8,200 @@ interface DynamicAttributeFormProps {
   onUpdate?: () => void;
 }
 
+const formatDate = (val: string): string => {
+  const parts = val.split("-");
+  return parts.length === 3 ? `${parts[2]} / ${parts[1]} / ${parts[0]}` : val;
+};
+
+const getCategoryTitle = (category: string, t: (key: string) => string): string => {
+  const normalized = category.trim().toLowerCase();
+  const key = `bible.categories.${normalized}`;
+  const translated = t(key);
+  return translated === key ? category : translated;
+};
+
+
+const renderAttributeValue = (tpl: Plantilla, value: string, allEntities: Entidad[]): React.ReactNode => {
+  const cleanValue = (value || "").trim();
+
+  return cleanValue === "" ? (
+    <span className="font-serif italic text-foreground/35 text-[1rem]">
+      -
+    </span>
+  ) : (() => {
+    switch (tpl.tipo) {
+      case "boolean":
+        return (() => {
+          const boolMeta = typeof tpl.metadata === 'string'
+            ? JSON.parse(tpl.metadata || '{}')
+            : (tpl.metadata || {});
+          
+          const states = Array.isArray(boolMeta.states) && boolMeta.states.length > 0
+            ? boolMeta.states
+            : [{ id: "default", trueLabel: boolMeta.trueLabel || "Confirmado", falseLabel: boolMeta.falseLabel || "Negativo" }];
+
+          const valuesMap = (() => {
+            try {
+              return cleanValue.startsWith("{") ? JSON.parse(cleanValue) : { default: cleanValue === "true" };
+            } catch (e) {
+              return { default: cleanValue === "true" };
+            }
+          })();
+
+          return (
+            <div className="flex flex-col gap-1.5 mt-1">
+              {states.map((st: { id: string; name?: string; trueLabel: string; falseLabel: string }) => {
+                const isTrue = !!valuesMap[st.id];
+                return (
+                  <div key={st.id} className="font-serif text-[1rem] text-foreground/65 leading-relaxed flex items-center gap-1.5">
+                    {st.name && <span className="font-sans text-[0.875rem] font-bold text-foreground/45 mr-1.5 uppercase tracking-wide">{st.name}:</span>}
+                    {isTrue ? (
+                      <>
+                        <span className="text-emerald-500/80">✓</span> {st.trueLabel}
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-foreground/35">⊗</span> {st.falseLabel}
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })();
+
+      case "date":
+        return (
+          <span className="font-serif text-[1rem] text-foreground/65 leading-relaxed">
+            {formatDate(cleanValue)}
+          </span>
+        );
+
+      case "text":
+      case "textarea":
+      case "long_text":
+        return (
+          <blockquote className="border-l-2 border-primary/30 pl-4 py-1 italic font-serif text-[1.15rem] text-foreground/80 leading-relaxed w-full whitespace-pre-line">
+            {cleanValue}
+          </blockquote>
+        );
+      
+      case "multi_select":
+        return (() => {
+          try {
+            const parsed = JSON.parse(cleanValue);
+            const optionsList = Array.isArray(parsed) ? parsed : [];
+            return optionsList.length === 0 ? (
+              <span className="font-serif italic text-foreground/35 text-[1rem]">-</span>
+            ) : (
+              <span className="font-serif text-[1rem] text-foreground/65 leading-relaxed">
+                {optionsList.join(", ")}
+              </span>
+            );
+          } catch (e) {
+            return (
+              <span className="font-serif text-[1rem] text-foreground/65 leading-relaxed">
+                {cleanValue}
+              </span>
+            );
+          }
+        })();
+
+      case "image":
+        return (
+          <div className="size-40 overflow-hidden mt-1">
+            <img
+              src={cleanValue}
+              alt={tpl.nombre}
+              className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+            />
+          </div>
+        );
+
+      case "entity_link":
+        return (() => {
+          try {
+            const parsed = JSON.parse(cleanValue);
+            const idsList = Array.isArray(parsed) ? parsed : [];
+            const namesList = idsList
+              .map((id) => allEntities.find((e) => String(e.id) === String(id))?.nombre)
+              .filter(Boolean);
+
+            return namesList.length === 0 ? (
+              <span className="font-serif italic text-foreground/35 text-[1rem]">-</span>
+            ) : (
+              <span className="font-serif text-[1rem] text-foreground/65 leading-relaxed">
+                {namesList.join(", ")}
+              </span>
+            );
+          } catch (e) {
+            const ent = allEntities.find((e) => String(e.id) === String(cleanValue));
+            return (
+              <span className="font-serif text-[1rem] text-foreground/65 leading-relaxed">
+                {ent?.nombre || cleanValue}
+              </span>
+            );
+          }
+        })();
+
+      default:
+        return (
+          <span className="font-serif text-[1rem] text-foreground/65 leading-relaxed">
+            {cleanValue}
+          </span>
+        );
+    }
+  })();
+};
+
 const DynamicAttributeForm: React.FC<DynamicAttributeFormProps> = ({
   entity,
   onUpdate,
 }) => {
   const { t } = useLanguage();
-  const { loading, savingId, categories, values, handleValueChange } =
-    useDynamicAttributeForm(entity, onUpdate);
+  const { loading, categories, values, allEntities } = useDynamicAttributeForm(entity, onUpdate);
 
-  if (loading)
-    return (
-      <div className="p-4 animate-pulse italic opacity-30 text-[10px]">
-        Cargando atributos mágicos...
-      </div>
-    );
-  if (Object.keys(categories).length === 0) {
-    return (
-      <div className="p-10 border border-dashed border-foreground/10 text-foreground/40 text-[10px] font-black uppercase tracking-[0.2em] text-center">
-        Sin datos tecnicos configurados
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-8">
+  return loading ? (
+    <div className="p-4 animate-pulse italic opacity-30 text-[10px]">
+      Cargando atributos...
+    </div>
+  ) : Object.keys(categories).length === 0 ? (
+    <div className="p-10 border border-dashed border-foreground/10 text-foreground/40 text-[2.5rem] font-black uppercase tracking-[0.2em] text-center">
+      Sin datos. Vaya al modo de editar para agregarlos.
+    </div>
+  ) : (
+    <div className="max-w-4xl mx-auto space-y-12 pb-16 font-sans text-foreground">
       {Object.entries(categories).map(([category, tpls]) => (
-        <div key={category} className="space-y-4">
-          <div className="flex items-center gap-4">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary whitespace-nowrap">
-              {category}
+        <div key={category} className="space-y-6">
+          <div className="mb-2">
+            <h3 className="font-serif text-[2.7rem] font-normal text-foreground inline-block border-b border-foreground/30 pb-1">
+              {getCategoryTitle(category, t)}
             </h3>
-            <div className="h-[1px] w-full bg-gradient-to-r from-primary/20 to-transparent"></div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4">
-            {tpls.map((tpl) => {
-              const valueObj = values.find((v) => v.plantilla_id === tpl.id);
-              const currentValue = valueObj ? valueObj.valor : "";
+          <div className="border-l border-foreground/80 pl-5 ml-1">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-8">
+              {tpls.map((tpl) => {
+                const valueObj = values.find((v) => v.plantilla_id === tpl.id);
+                const currentValue = valueObj?.valor ?? "";
+                const isLongText = tpl.tipo === "text" || tpl.tipo === "textarea" || tpl.tipo === "long_text";
 
-              return (
-                <div
-                  key={tpl.id}
-                  className="group relative flex flex-col md:flex-row md:items-center justify-between p-4 bg-background border border-foreground/5 hover:border-primary/20 transition-all rounded-none"
-                >
-                  <div className="mb-2 md:mb-0">
-                    <label className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest block mb-1">
+                return (
+                  <div
+                    key={tpl.id}
+                    className={`flex flex-col items-start ${
+                      isLongText ? "md:col-span-3 gap-2" : "gap-1"
+                    }`}
+                  >
+                    <label className="font-sans text-[1.3rem] font-normal text-foreground/90">
                       {tpl.nombre}
-                      {tpl.es_obligatorio ? (
-                        <span className="text-primary ml-1">*</span>
-                      ) : (
-                        ""
-                      )}
                     </label>
+                    {renderAttributeValue(tpl, currentValue, allEntities)}
                   </div>
-
-                  <div className="flex items-center gap-3 w-full md:w-2/3">
-                    {(() => {
-                      switch (tpl.tipo) {
-                        case "boolean":
-                          return (
-                            <button
-                              onClick={() =>
-                                handleValueChange(
-                                  tpl.id,
-                                  currentValue === "true" ? "false" : "true",
-                                )
-                              }
-                              className={`flex items-center gap-2 px-4 py-2 border transition-all text-[10px] font-black uppercase tracking-widest ${
-                                currentValue === "true"
-                                  ? "bg-primary border-primary text-primary-foreground"
-                                  : "bg-foreground/5 border-foreground/10 text-foreground/40"
-                              }`}
-                            >
-                              <span className="material-symbols-outlined text-sm">
-                                {currentValue === "true"
-                                  ? "check_circle"
-                                  : "cancel"}
-                              </span>
-                              {currentValue === "true"
-                                ? "Activado"
-                                : "Desactivado"}
-                            </button>
-                          );
-                        case "date":
-                          return (
-                            <input
-                              type="date"
-                              value={currentValue || ""}
-                              onChange={(e) =>
-                                handleValueChange(tpl.id, e.target.value)
-                              }
-                              className="w-full bg-foreground/[0.02] border border-foreground/10 p-2 text-xs text-foreground outline-none focus:border-primary/50 transition-colors"
-                            />
-                          );
-                        case "number":
-                          return (
-                            <input
-                              type="number"
-                              value={currentValue || ""}
-                              onChange={(e) =>
-                                handleValueChange(tpl.id, e.target.value)
-                              }
-                              className="w-full bg-foreground/[0.02] border border-foreground/10 p-2 text-xs text-foreground outline-none focus:border-primary/50 transition-colors"
-                            />
-                          );
-                        case "textarea":
-                        case "long_text":
-                          return (
-                            <textarea
-                              rows={tpl.tipo === "long_text" ? 4 : 2}
-                              value={currentValue || ""}
-                              onChange={(e) =>
-                                handleValueChange(tpl.id, e.target.value)
-                              }
-                              className="w-full bg-foreground/[0.02] border border-foreground/10 p-3 text-xs text-foreground outline-none focus:border-primary/50 transition-colors min-h-[80px] leading-relaxed resize-y"
-                              placeholder="Escribe contenido extendido..."
-                            />
-                          );
-                        case "select":
-                          const metadata =
-                            typeof tpl.metadata === "string"
-                              ? JSON.parse(tpl.metadata)
-                              : tpl.metadata || {};
-                          const options = (metadata.options as string[]) || [];
-                          return (
-                            <select
-                              value={currentValue || ""}
-                              onChange={(e) =>
-                                handleValueChange(tpl.id, e.target.value)
-                              }
-                              className="w-full bg-foreground/[0.02] border border-foreground/10 p-2 text-xs text-foreground outline-none focus:border-primary/50 transition-colors appearance-none"
-                            >
-                              <option value="">Seleccionar...</option>
-                              {options.map((opt) => (
-                                <option key={opt} value={opt}>
-                                  {opt}
-                                </option>
-                              ))}
-                            </select>
-                          );
-                        case "image":
-                          return (
-                            <div className="flex flex-col gap-2 w-full">
-                              <input
-                                type="text"
-                                value={currentValue || ""}
-                                onChange={(e) =>
-                                  handleValueChange(tpl.id, e.target.value)
-                                }
-                                className="w-full bg-foreground/[0.02] border border-foreground/10 p-2 text-xs text-foreground outline-none focus:border-primary/50 transition-colors"
-                                placeholder="https://ejemplo.com/imagen.png"
-                              />
-                              {currentValue && (
-                                <div className="size-20 border border-foreground/10 bg-foreground/5 overflow-hidden">
-                                  <img
-                                    src={currentValue}
-                                    alt="Preview"
-                                    className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          );
-                        default:
-                          return (
-                            <input
-                              type="text"
-                              value={currentValue || ""}
-                              onChange={(e) =>
-                                handleValueChange(tpl.id, e.target.value)
-                              }
-                              className="w-full bg-foreground/[0.02] border border-foreground/10 p-2 text-xs text-foreground outline-none focus:border-primary/50 transition-colors"
-                              placeholder="..."
-                            />
-                          );
-                      }
-                    })()}
-
-                    {savingId === tpl.id && (
-                      <span className="animate-spin material-symbols-outlined text-primary text-sm">
-                        sync
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
       ))}

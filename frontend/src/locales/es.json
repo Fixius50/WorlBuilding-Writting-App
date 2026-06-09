@@ -124,6 +124,14 @@
     "new_map": "Nuevo Mapa"
   },
   "bible": {
+    "categories": {
+      "general": "Información General",
+      "individual": "Registros Individuales",
+      "collective": "Registros Colectivos",
+      "territory": "Registros Territoriales",
+      "cosmic": "Registros Cósmicos",
+      "event": "Registros de Eventos"
+    },
     "explore": "Explorar",
     "explorer": "Explorador",
     "templates": "Plantillas",
