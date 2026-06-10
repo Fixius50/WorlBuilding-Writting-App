@@ -1,13 +1,17 @@
 package com.worldbuilding.core;
-
+ 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.multipart.support.StandardServletMultipartResolver;
+ 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.MultipartConfigElement;
 import java.io.File;
 import java.io.IOException;
 import org.eclipse.jetty.servlet.FilterHolder;
@@ -16,35 +20,49 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import java.util.EnumSet;
-
+ 
 @Configuration
 @ComponentScan(basePackages = {"com.worldbuilding.core", "com.worldbuilding.domains"})
 @EnableWebMvc
 public class AuxServerApplication {
-
+ 
+    @Bean(name = "multipartResolver")
+    public MultipartResolver multipartResolver() {
+        return new StandardServletMultipartResolver();
+    }
+ 
     public static void main(String[] args) throws Exception {
         int port = 8080;
         System.out.println("--- Starting WorldbuildingAuxServer (Spring v4 + Java 21) on port " + port + " ---");
-
+ 
         Server server = new Server(port);
-
+ 
         // Configurar el contexto de Spring Web
         AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
         context.register(AuxServerApplication.class);
-
+ 
         ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.SESSIONS);
         handler.setContextPath("/");
         
         // Agregar el listener de Spring
         handler.addEventListener(new ContextLoaderListener(context));
-
+ 
         // Obtener ruta absoluta para la carpeta dist
         String distPath = new File("./dist").getAbsolutePath();
         System.out.println("Serving static content from: " + distPath);
-
+ 
         // 1. Configurar el DispatcherServlet de Spring MVC para los endpoints de API
         ServletHolder servletHolder = new ServletHolder(new DispatcherServlet(context));
         handler.addServlet(servletHolder, "/api/*");
+ 
+        // Habilitar la subida de archivos multipart en Jetty para este servlet (límite de 500MB)
+        MultipartConfigElement multipartConfigElement = new MultipartConfigElement(
+                "",
+                1024L * 1024L * 500L, // maxFileSize: 500MB
+                1024L * 1024L * 1000L, // maxRequestSize: 1000MB (1GB)
+                1024 * 1024 * 100 // fileSizeThreshold: 100MB
+        );
+        servletHolder.getRegistration().setMultipartConfig(multipartConfigElement);
 
         // 2. Servidor de archivos estáticos (Vite dist) mediante DefaultServlet
         ServletHolder defaultServlet = new ServletHolder("default", org.eclipse.jetty.servlet.DefaultServlet.class);

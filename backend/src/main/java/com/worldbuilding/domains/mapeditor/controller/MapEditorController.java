@@ -73,4 +73,40 @@ public class MapEditorController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    @PostMapping("/assets/{projectName}/upload-url")
+    public ResponseEntity<MapAsset> uploadMapAssetFromUrl(
+            @PathVariable String projectName,
+            @RequestParam("name") String mapName,
+            @RequestParam("url") String imageUrl) {
+        
+        ResponseEntity<MapAsset> response;
+        boolean isUrlEmpty = imageUrl == null || imageUrl.trim().isEmpty();
+        if (isUrlEmpty) {
+            response = ResponseEntity.badRequest().build();
+        } else {
+            try {
+                MapAsset processedAsset = assetProcessor.saveMapImageFromUrl(projectName, mapName, imageUrl);
+                response = ResponseEntity.ok(processedAsset);
+            } catch (IOException e) {
+                response = ResponseEntity.internalServerError().build();
+            }
+        }
+        return response;
+    }
+
+    @PostMapping("/assets/{projectName}/blank")
+    public ResponseEntity<MapAsset> createBlankMap(
+            @PathVariable String projectName,
+            @RequestParam("name") String mapName) {
+        
+        ResponseEntity<MapAsset> response;
+        try {
+            MapAsset processedAsset = assetProcessor.createBlankCanvas(projectName, mapName);
+            response = ResponseEntity.ok(processedAsset);
+        } catch (IOException e) {
+            response = ResponseEntity.internalServerError().build();
+        }
+        return response;
+    }
 }

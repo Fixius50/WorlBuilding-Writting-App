@@ -12,12 +12,13 @@ import { Entidad } from '@domain/models/database';
 const MapRouter = () => {
   const outletContext = useOutletContext<unknown>();
   const { projectId } = outletContext as { projectId: number };
+  const { projectName } = useParams<{ projectName: string }>();
   const navigate = useNavigate();
   const [maps, setMaps] = useState<Entidad[]>([]);
   const [mapToDelete, setMapToDelete] = useState<Entidad | null>(null);
 
   useEffect(() => {
-    if (projectId) loadMaps();
+    projectId ? loadMaps() : null;
     const handleRefresh = () => loadMaps();
     window.addEventListener('map-updated', handleRefresh);
     return () => window.removeEventListener('map-updated', handleRefresh);
@@ -99,15 +100,17 @@ const MapRouter = () => {
         })
       });
       await loadMaps();
-      navigate(`editor/${newEntity.id}`);
+      navigate(`/local/${projectName}/map/editor/${newEntity.slug || newEntity.id}`);
     } catch (err) { /* Ignored */ }
   };
 
   const MapViewerWrapper = () => {
     const { mapId } = useParams();
-    const map = maps.find(m => m.id.toString() === mapId);
-    if (!map) return <div className="p-10 text-foreground/50 uppercase text-[10px] font-black">Cargando mapa...</div>;
-    return <InteractiveMapView map={map} onBack={() => navigate('..')} />;
+    const map = maps.find(m => m.slug === mapId || m.id.toString() === mapId);
+    const content = !map
+      ? <div className="p-10 text-foreground/50 uppercase text-[10px] font-black">Cargando mapa...</div>
+      : <InteractiveMapView map={map} onBack={() => navigate('..')} />;
+    return content;
   };
 
   const MapEditorWrapper = () => {
@@ -120,16 +123,16 @@ const MapRouter = () => {
         <Route index element={
           <MapManager
             maps={maps}
-            onSelectMap={(map: Entidad) => navigate(`viewer/${map.id}`)}
+            onSelectMap={(map: Entidad) => navigate(`viewer/${map.slug || map.id}`)}
             onCreateMap={() => navigate(`wizard`)}
             onDuplicateMap={handleDuplicateMap}
             onDeleteMap={(map: Entidad) => setMapToDelete(map)}
-            onEditMap={(map: Entidad) => navigate(`editor/${map.id}`)}
+            onEditMap={(map: Entidad) => navigate(`editor/${map.slug || map.id}`)}
           />
         } />
         <Route path="viewer/:mapId" element={<MapViewerWrapper />} />
         <Route path="editor/:entityId" element={<MapEditorWrapper />} />
-        <Route path="wizard" element={<MapCreationWizard onCancel={() => navigate('..')} onCreate={handleCreateMap} />} />
+        <Route path="wizard" element={<MapCreationWizard onCancel={() => navigate('..')} onCreate={handleCreateMap} projectName={projectName || ''} />} />
       </Routes>
 
       <ConfirmationModal

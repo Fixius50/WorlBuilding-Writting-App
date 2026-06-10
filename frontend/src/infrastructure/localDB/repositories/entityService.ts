@@ -68,15 +68,17 @@ export const entityService = {
       "id" | "fecha_creacion" | "fecha_actualizacion" | "borrado"
     >,
   ): Promise<Entidad> {
+    const slug = entity.slug || entity.nombre.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
     await sql`
-      INSERT INTO entidades (nombre, tipo, descripcion, contenido_json, project_id, carpeta_id)
+      INSERT INTO entidades (nombre, tipo, descripcion, contenido_json, project_id, carpeta_id, slug)
       VALUES (
         ${entity.nombre}, 
         ${entity.tipo}, 
         ${entity.descripcion || ""}, 
         ${entity.contenido_json ? (typeof entity.contenido_json === "string" ? entity.contenido_json : JSON.stringify(entity.contenido_json)) : null}, 
         ${entity.project_id}, 
-        ${entity.carpeta_id}
+        ${entity.carpeta_id},
+        ${slug}
       )
     `;
 
@@ -103,6 +105,8 @@ export const entityService = {
     }
     if (entity.carpeta_id !== undefined)
       fields.push(`carpeta_id = ${entity.carpeta_id}`);
+    if (entity.slug !== undefined)
+      fields.push(`slug = ${entity.slug}`);
 
     if (fields.length > 0) {
       // Usando sintaxis segura de SQLocal con COALESCE para evitar sobrescribir con null si no se desea
@@ -112,7 +116,8 @@ export const entityService = {
           tipo = COALESCE(${entity.tipo}, tipo),
           descripcion = COALESCE(${entity.descripcion}, descripcion),
           contenido_json = COALESCE(${entity.contenido_json ? (typeof entity.contenido_json === "string" ? entity.contenido_json : JSON.stringify(entity.contenido_json)) : null}, contenido_json),
-          carpeta_id = COALESCE(${entity.carpeta_id}, carpeta_id)
+          carpeta_id = COALESCE(${entity.carpeta_id}, carpeta_id),
+          slug = COALESCE(${entity.slug}, slug)
         WHERE id = ${id}
       `;
     }

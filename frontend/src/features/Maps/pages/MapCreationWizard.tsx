@@ -9,9 +9,10 @@ interface MapCreationWizardProps {
     mapName: string, 
     config: { bgImage: string; mapType: string; description: string; parentId?: number; is3D: boolean }
   ) => void;
+  projectName: string;
 }
 
-const MapCreationWizard: React.FC<MapCreationWizardProps> = ({ onCancel, onCreate }) => {
+const MapCreationWizard: React.FC<MapCreationWizardProps> = ({ onCancel, onCreate, projectName }) => {
   const {
     mapType, setMapType,
     canvasSource, setCanvasSource,
@@ -20,15 +21,26 @@ const MapCreationWizard: React.FC<MapCreationWizardProps> = ({ onCancel, onCreat
     mapName, setMapName,
     description, setDescription,
     is3D,
+    urlError,
+    isValidatingUrl,
+    isCreating,
+    creationStatusText,
     fileInputRef,
     handleFileSelect,
     handleUploadClick,
     handleCreate
-  } = useMapCreationWizard(onCreate);
+  } = useMapCreationWizard(onCreate, projectName);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-6">
-      <div className="w-full max-w-4xl max-h-[90vh] overflow-hidden monolithic-panel bg-background border border-foreground/10 shadow-[0_0_100px_rgba(0,0,0,0.5)] flex flex-col animate-in zoom-in-95 duration-500">
+      <div className="w-full max-w-4xl max-h-[90vh] overflow-hidden monolithic-panel bg-background border border-foreground/10 shadow-[0_0_100px_rgba(0,0,0,0.5)] flex flex-col animate-in zoom-in-95 duration-500 relative">
+        {isCreating && (
+          <div className="absolute inset-0 z-[110] flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm gap-4 animate-in fade-in duration-300">
+            <span className="material-symbols-outlined text-4xl text-primary animate-spin">sync</span>
+            <p className="text-xs font-black uppercase tracking-widest text-foreground">{creationStatusText}</p>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-foreground/40">Por favor, espera...</p>
+          </div>
+        )}
         <div className="flex-1 overflow-y-auto p-12 space-y-16 custom-scrollbar">
           <section className="space-y-6">
             <div className="space-y-1">
@@ -65,10 +77,10 @@ const MapCreationWizard: React.FC<MapCreationWizardProps> = ({ onCancel, onCreat
               <p className="text-[10px] text-foreground/40 font-black uppercase tracking-[0.3em]">¿De dónde vendrá la imagen base?</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <input type="file" ref={fileInputRef} accept="image/*" onChange={handleFileSelect} className="hidden" />
-              <SourceCard active={canvasSource === 'url'} onClick={() => setCanvasSource('url')} icon="language" label="URL Externa" desc="Enlazar desde la web" subdesc="Gran tamaño" />
-              <SourceCard active={canvasSource === 'upload'} onClick={handleUploadClick} icon="cloud_upload" label={uploadedFile ? uploadedFile.name : "Archivo Local"} desc="Subir desde tu equipo" subdesc="MAX 5MB" />
-              <SourceCard active={canvasSource === 'blank'} onClick={() => setCanvasSource('blank')} icon="brush" label="Lienzo Blanco" desc="Dibujar desde cero" subdesc="4096 px" />
+              <input type="file" ref={fileInputRef} accept="image/*,.glb,.gltf,.obj,.fbx,.stl" onChange={handleFileSelect} className="hidden" />
+              <SourceCard active={canvasSource === 'url'} onClick={() => setCanvasSource('url')} icon="language" label="URL Externa" desc="Enlazar desde la web" subdesc="TAMAÑO INFINITO" />
+              <SourceCard active={canvasSource === 'upload'} onClick={handleUploadClick} icon="cloud_upload" label={uploadedFile ? uploadedFile.name : "Archivo Local"} desc="Subir desde tu equipo" subdesc="SIN LÍMITE" />
+              <SourceCard active={canvasSource === 'blank'} onClick={() => setCanvasSource('blank')} icon="brush" label="Lienzo Blanco" desc="Dibujar desde cero" subdesc="ESCALA INFINITA" />
             </div>
             {canvasSource === 'url' && (
               <div className="mt-6 space-y-2 animate-in fade-in slide-in-from-top-2">
@@ -77,9 +89,19 @@ const MapCreationWizard: React.FC<MapCreationWizardProps> = ({ onCancel, onCreat
                   type="text" 
                   value={bgImageUrl} 
                   onChange={e => setBgImageUrl(e.target.value)} 
-                  className="w-full bg-foreground/5 border border-foreground/10 p-4 text-xs font-mono text-foreground outline-none focus:border-primary transition-all" 
+                  className={`w-full bg-foreground/5 border p-4 text-xs font-mono text-foreground outline-none transition-all ${urlError ? 'border-rose-500/50 focus:border-rose-500 bg-rose-500/5' : 'border-foreground/10 focus:border-primary'}`} 
                   placeholder="https://..." 
                 />
+                {urlError && (
+                  <p className="text-rose-400 text-[10px] font-bold mt-1.5 uppercase tracking-wider animate-in fade-in duration-200 flex items-center gap-1.5 font-mono">
+                    <span className="material-symbols-outlined text-xs">warning</span> {urlError}
+                  </p>
+                )}
+                {isValidatingUrl && (
+                  <p className="text-foreground/40 text-[9px] font-bold mt-1.5 uppercase tracking-wider animate-pulse flex items-center gap-1.5 font-mono">
+                    <span className="material-symbols-outlined text-xs animate-spin">sync</span> Validando URL...
+                  </p>
+                )}
               </div>
             )}
           </section>
@@ -89,7 +111,14 @@ const MapCreationWizard: React.FC<MapCreationWizardProps> = ({ onCancel, onCreat
           <button onClick={onCancel} className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Cancelar</button>
           <div className="flex items-center gap-6">
             <span className="text-[9px] font-black uppercase tracking-widest text-foreground/60">Cambios guardados localmente</span>
-            <Button variant="primary" className="px-10 py-3 shadow-xl" onClick={handleCreate}>Crear Mapa</Button>
+            <Button 
+              variant="primary" 
+              className="px-10 py-3 shadow-xl" 
+              onClick={handleCreate}
+              disabled={canvasSource === 'url' && (!!urlError || !bgImageUrl || isValidatingUrl)}
+            >
+              Crear Mapa
+            </Button>
           </div>
         </footer>
       </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useLanguage } from '@context/LanguageContext';
 import { useSettingsStore } from '@store/useSettingsStore';
 
@@ -9,6 +9,7 @@ import { useSettingsStore } from '@store/useSettingsStore';
  */
 export const useSettings = () => {
   const navigate = useNavigate();
+  const { projectName } = useParams<{ projectName: string }>();
   const { language, changeLanguage } = useLanguage();
   const [activeTab, setActiveTab] = useState('general');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -59,6 +60,12 @@ export const useSettings = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   }, [handleImportDatabase]);
 
+  const handleExportZip = useCallback(async () => {
+    const targetProject = projectName || 'worldbuilding_master';
+    addNotification("Generando paquete ZIP del universo...", "info");
+    window.location.href = `/api/db/export/${targetProject}`;
+  }, [projectName, addNotification]);
+
   const goBack = useCallback(() => navigate(-1), [navigate]);
 
   return {
@@ -74,6 +81,7 @@ export const useSettings = () => {
     handleAvatarChange,
     handleImport,
     handleDownloadBackup,
+    handleExportZip,
     updateSetting,
     toggleProjectSelection,
     updateProfile,

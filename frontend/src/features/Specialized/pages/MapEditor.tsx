@@ -454,6 +454,13 @@ const MapEditor: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col h-full bg-background text-foreground overflow-hidden relative">
       <div className="absolute top-6 left-6 z-[50] flex flex-col gap-4">
+        <button
+          onClick={() => navigate(-2)}
+          className="p-3 bg-background/90 shadow-2xl border border-foreground/10 text-foreground/60 hover:text-primary hover:border-primary transition-all duration-300 flex items-center justify-center monolithic-panel"
+          title="Volver a Mapas"
+        >
+          <span className="material-symbols-outlined text-xl font-bold">arrow_back</span>
+        </button>
         <div className="monolithic-panel p-2 flex flex-col gap-1 bg-background/90 shadow-2xl border border-foreground/10">
           {(Object.entries(DRAW_MODE_LABELS) as [DrawMode, string][]).map(
             ([m, label]) => (

@@ -211,9 +211,9 @@ export const useMapEditor = (
     } catch {}
   }, [projectId]);
 
-  const loadMap = useCallback(async (id: number) => {
+  const loadMap = useCallback(async (idOrSlug: string | number) => {
     try {
-      const entity = await MapUseCase.getMapById(id);
+      const entity = await MapUseCase.getMapByIdOrSlug(idOrSlug, Number(projectId));
       if (entity) {
         setMapEntity(entity);
         setTargetFolderId(entity.carpeta_id);
@@ -222,7 +222,16 @@ export const useMapEditor = (
             ? JSON.parse(entity.contenido_json)
             : entity.contenido_json || {};
         setMarkers(attrs.markers || []);
-        if (attrs.layers && attrs.layers.length > 0) setLayers(attrs.layers);
+        
+        let loadedLayers = attrs.layers && attrs.layers.length > 0 ? attrs.layers : DEFAULT_LAYERS;
+        const bgImg = typeof attrs.bgImage === "string" ? attrs.bgImage : (typeof attrs.snapshotUrl === "string" ? attrs.snapshotUrl : undefined);
+        if (bgImg) {
+          loadedLayers = loadedLayers.map((l): MapLayer =>
+            l.id === "base" && !l.url ? { ...l, url: bgImg } : l,
+          );
+        }
+        setLayers(loadedLayers);
+        
         if (attrs.features) setFeatures(attrs.features as GeoFeatureCollection);
         setIs3D(!!attrs.is3D);
         if (attrs.mapSettings) {
@@ -235,11 +244,11 @@ export const useMapEditor = (
         }
       }
     } catch {}
-  }, []);
+  }, [projectId]);
 
   useEffect(() => {
     if (entityId && mode === "edit") {
-      loadMap(Number(entityId));
+      loadMap(entityId);
     } else if (mode === "create") {
       setMapEntity({
         id: 0,
@@ -266,6 +275,46 @@ export const useMapEditor = (
     }
     loadAllEntities();
   }, [entityId, mode, projectId, loadMap, loadAllEntities]);
+
+  useEffect(() => {
+    const validateImageLayers = (): void => {
+      layers.forEach((layer) => {
+        const isImgLayer = (layer.type === "base" || layer.type === "image") && !!layer.url;
+        
+        isImgLayer ? (() => {
+          const img = new Image();
+          img.src = layer.url!;
+          img.onload = () => {
+            setErrorLayers((prev) => {
+              const hasId = prev.has(layer.id);
+              let next: Set<string> = prev;
+              
+              hasId ? (() => {
+                next = new Set(prev);
+                next.delete(layer.id);
+              })() : null;
+              
+              return next;
+            });
+          };
+          img.onerror = () => {
+            setErrorLayers((prev) => {
+              const hasId = prev.has(layer.id);
+              let next: Set<string> = prev;
+              
+              !hasId ? (() => {
+                next = new Set(prev);
+                next.add(layer.id);
+              })() : null;
+              
+              return next;
+            });
+          };
+        })() : null;
+      });
+    };
+    validateImageLayers();
+  }, [layers]);
 
   const handleSaveMap = useCallback(async () => {
     if (!mapEntity) return;

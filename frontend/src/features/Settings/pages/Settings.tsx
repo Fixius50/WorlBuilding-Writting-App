@@ -18,6 +18,7 @@ const Settings = () => {
     handleAvatarChange,
     handleImport,
     handleDownloadBackup,
+    handleExportZip,
     updateSetting,
     toggleProjectSelection,
     updateProfile,
@@ -155,7 +156,7 @@ const Settings = () => {
                       type="file"
                       ref={fileInputRef}
                       onChange={handleImport}
-                      accept=".db,.sqlite,.sqlite3"
+                      accept=".db,.sqlite,.sqlite3,.zip"
                       className="hidden"
                     />
                     <button
@@ -166,6 +167,15 @@ const Settings = () => {
                         upload_file
                       </span>
                       Importar
+                    </button>
+                    <button
+                      onClick={handleExportZip}
+                      className="flex items-center gap-2 px-5 py-2.5 monolithic-panel hover:bg-foreground/5 text-foreground/60 hover:text-foreground rounded-none text-[10px] font-black uppercase tracking-widest transition-all"
+                    >
+                      <span className="material-symbols-outlined text-base">
+                        download
+                      </span>
+                      Exportar (ZIP)
                     </button>
                     <ComingSoonWrapper>
                       <button

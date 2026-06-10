@@ -40,16 +40,40 @@ export class SettingsUseCase {
   }
 
   static async importDatabase(file: File): Promise<{ success: boolean; message: string }> {
-    if (!file.name.endsWith('.db') && !file.name.endsWith('.sqlite3') && !file.name.endsWith('.sqlite')) {
-      return { success: false, message: 'Solo se permiten bases de datos SQLite (.db, .sqlite3)' };
+    let result = { success: false, message: 'Solo se permiten bases de datos SQLite (.db, .sqlite, .sqlite3) o archivos de respaldo ZIP (.zip).' };
+    const isDb = file.name.endsWith('.db') || file.name.endsWith('.sqlite3') || file.name.endsWith('.sqlite');
+    const isZip = file.name.endsWith('.zip');
+    
+    if (isDb || isZip) {
+      try {
+        if (isZip) {
+          const rawName = file.name.substring(0, file.name.lastIndexOf('.'));
+          const projectName = rawName || 'worldbuilding_master';
+          const formData = new FormData();
+          formData.append('file', file);
+          
+          const response = await fetch(`/api/db/import/${projectName}`, {
+            method: 'POST',
+            body: formData
+          });
+          
+          if (response.ok) {
+            const dbBlob = await response.blob();
+            await sqlocal.overwriteDatabaseFile(dbBlob);
+            result = { success: true, message: 'Universo y assets importados con éxito. Por favor recarga la página.' };
+          } else {
+            result = { success: false, message: 'Error en el servidor al descomprimir el archivo ZIP.' };
+          }
+        } else {
+          await sqlocal.overwriteDatabaseFile(file);
+          result = { success: true, message: 'Universo importado con éxito. Por favor recarga la página.' };
+        }
+      } catch (err: unknown) {
+        result = { success: false, message: 'Error al sobreescribir la base de datos local' };
+      }
     }
-    try {
-      await sqlocal.overwriteDatabaseFile(file);
-      return { success: true, message: 'Universo importado con éxito. Por favor recarga la página.' };
-    } catch (err: unknown) {
-      // [LOG REMOVED]
-      return { success: false, message: 'Error al sobreescribir la base de datos local' };
-    }
+    
+    return result;
   }
 
   // SQLite Settings Handlers (Centralized)

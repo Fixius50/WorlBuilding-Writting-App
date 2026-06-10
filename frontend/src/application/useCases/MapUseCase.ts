@@ -19,10 +19,24 @@ export class MapUseCase {
     return await entityService.getAllByProject(projectId);
   }
 
-  /** Obtiene los datos completos de un mapa específico por su ID */
-  static async getMapById(mapId: number): Promise<Entidad | null> {
-    return await entityService.getById(mapId);
-  }
+  /** Obtiene los datos completos de un mapa específico por su ID o Slug */
+  static getMapByIdOrSlug = async (
+    idOrSlug: string | number,
+    projectId: number,
+  ): Promise<Entidad | null> => {
+    let result: Entidad | null = null;
+    const idNum = Number(idOrSlug);
+
+    !isNaN(idNum)
+      ? (result = await entityService.getById(idNum))
+      : null;
+
+    !result
+      ? (result = await entityService.getBySlug(projectId, String(idOrSlug)))
+      : null;
+
+    return result;
+  };
 
   /** Crea un nuevo mapa desde cero */
   static async createMap(data: {
