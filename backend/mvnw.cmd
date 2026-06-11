@@ -32,9 +32,20 @@ goto error
 set MAVEN_PROJECTBASEDIR=%~dp0
 if "%MAVEN_PROJECTBASEDIR:~-1%"=="\" set MAVEN_PROJECTBASEDIR=%MAVEN_PROJECTBASEDIR:~0,-1%
 set MAVEN_CMD_LINE_ARGS=%*
+set "WRAPPER_DIR=%MAVEN_PROJECTBASEDIR%\.mvn\wrapper"
 set "WRAPPER_JAR=%MAVEN_PROJECTBASEDIR%\.mvn\wrapper\maven-wrapper.jar"
+set "WRAPPER_PROPERTIES=%WRAPPER_DIR%\maven-wrapper.properties"
 set WRAPPER_LAUNCHER=org.apache.maven.wrapper.MavenWrapperMain
-set DOWNLOAD_URL="https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.2.0/maven-wrapper-3.2.0.jar"
+set DOWNLOAD_URL=https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.2.0/maven-wrapper-3.2.0.jar
+
+IF NOT EXIST "%WRAPPER_DIR%" (
+    mkdir "%WRAPPER_DIR%"
+)
+
+IF NOT EXIST "%WRAPPER_PROPERTIES%" (
+    > "%WRAPPER_PROPERTIES%" echo distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.9/apache-maven-3.9.9-bin.zip
+    >> "%WRAPPER_PROPERTIES%" echo wrapperUrl=https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.2.0/maven-wrapper-3.2.0.jar
+)
 
 IF EXIST "%WRAPPER_JAR%" (
     goto run
@@ -43,7 +54,7 @@ IF EXIST "%WRAPPER_JAR%" (
 echo "%WRAPPER_JAR%" not found, downloading it...
 echo Downloading from: %DOWNLOAD_URL%
 
-powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; (New-Object System.Net.WebClient).DownloadFile('%DOWNLOAD_URL%', '%WRAPPER_JAR%')"
+powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; try { (New-Object System.Net.WebClient).DownloadFile('%DOWNLOAD_URL%', '%WRAPPER_JAR%') } catch { try { Invoke-WebRequest -Uri '%DOWNLOAD_URL%' -OutFile '%WRAPPER_JAR%' -UseBasicParsing } catch { exit 1 } }"
 
 IF ERRORLEVEL 1 (
     echo [X] Error: Failed to download maven-wrapper.jar
