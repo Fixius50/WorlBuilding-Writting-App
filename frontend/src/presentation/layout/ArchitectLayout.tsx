@@ -961,18 +961,40 @@ const ArchitectLayout: React.FC = () => {
         {notifications.map((n) => (
           <div
             key={n.id}
-            className="flex items-center gap-3 px-6 py-4 monolithic-panel border border-foreground/40 rounded-none shadow-2xl animate-slide-in-right pointer-events-auto"
+            className="min-w-[340px] px-6 py-4 monolithic-panel border border-foreground/40 rounded-none shadow-2xl animate-slide-in-right pointer-events-auto"
           >
-            <span
-              className={`material-symbols-outlined ${n.type === "success" ? "text-emerald-400" : n.type === "error" ? "text-red-500" : "text-primary"}`}
-            >
-              {n.type === "success"
-                ? "check_circle"
-                : n.type === "error"
-                  ? "report"
-                  : "info"}
-            </span>
-            <span className="text-sm font-bold">{n.message}</span>
+            <div className="flex items-start gap-3">
+              <span
+                className={`material-symbols-outlined ${n.type === "success" ? "text-emerald-400" : n.type === "error" ? "text-red-500" : "text-primary"}`}
+              >
+                {n.type === "success"
+                  ? "check_circle"
+                  : n.type === "error"
+                    ? "report"
+                    : "info"}
+              </span>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold break-words">{n.message}</div>
+                {typeof n.progressCurrent === "number" &&
+                typeof n.progressTotal === "number" &&
+                n.progressTotal > 0 ? (
+                  <>
+                    <div className="mt-2 h-1.5 w-full bg-foreground/15 overflow-hidden">
+                      <div
+                        className="h-full bg-primary transition-all duration-300"
+                        style={{
+                          width: `${Math.max(0, Math.min(100, (n.progressCurrent / n.progressTotal) * 100))}%`,
+                        }}
+                      />
+                    </div>
+                    <div className="mt-1 text-[10px] font-black uppercase tracking-widest text-foreground/55">
+                      {Math.min(n.progressCurrent, n.progressTotal)}/
+                      {n.progressTotal}
+                    </div>
+                  </>
+                ) : null}
+              </div>
+            </div>
           </div>
         ))}
       </div>

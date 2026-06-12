@@ -36,6 +36,32 @@
 }
 
 /* =====================================================
+   GLOBAL SCROLLBAR THEME
+   Scroll fino personalizado de 1px para toda la app.
+   ===================================================== */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--foreground) / 0.45) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 1px;
+  height: 1px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--foreground) / 0.45);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--primary) / 0.8);
+}
+
+/* =====================================================
    GLOBAL SELECT / OPTION — CSS Variable Fix
    Los elementos nativos <select> y <option> NO heredan
    variables CSS de Tailwind, así que los forzamos aquí.
@@ -62,39 +88,11 @@ select:focus {
 
 /* =====================================================
    WORLD BIBLE NAME SCROLLBAR
-   Oculto por defecto; visible solo al interactuar.
+   Usa scrollbar nativa del navegador.
    ===================================================== */
 .bible-name-scroll {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.bible-name-scroll::-webkit-scrollbar {
-  height: 0;
-}
-
-.bible-name-scroll:hover,
-.bible-name-scroll:active,
-.bible-name-scroll:focus-within {
-  scrollbar-width: thin;
-}
-
-.bible-name-scroll:hover::-webkit-scrollbar,
-.bible-name-scroll:active::-webkit-scrollbar,
-.bible-name-scroll:focus-within::-webkit-scrollbar {
-  height: 6px;
-}
-
-.bible-name-scroll:hover::-webkit-scrollbar-thumb,
-.bible-name-scroll:active::-webkit-scrollbar-thumb,
-.bible-name-scroll:focus-within::-webkit-scrollbar-thumb {
-  background-color: hsl(var(--foreground) / 0.45);
-}
-
-.bible-name-scroll:hover::-webkit-scrollbar-track,
-.bible-name-scroll:active::-webkit-scrollbar-track,
-.bible-name-scroll:focus-within::-webkit-scrollbar-track {
-  background-color: hsl(var(--foreground) / 0.1);
+  scrollbar-width: auto;
+  -ms-overflow-style: auto;
 }
 
 /* =====================================================

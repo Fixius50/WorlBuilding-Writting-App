@@ -21,30 +21,37 @@
   }
 
   /* ... Scrollbar utils ... */
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
   .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+    -ms-overflow-style: auto;
+    scrollbar-width: auto;
   }
 
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+  .mass-scrollbar {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-background;
+  /* Workspace selector layout utilities */
+  .workspace-scroll {
+    max-height: calc(100vh - 16rem);
+    overflow-y: auto;
+    padding-right: 0.25rem;
+    scrollbar-width: auto;
+    scrollbar-color: auto;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-muted rounded-full;
+  .workspace-cards-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: flex-start;
+    gap: 1.25rem;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-primary;
+  .workspace-card-shell {
+    width: min(max(27vw, 30vh), 72vw);
+    flex: 0 1 min(max(27vw, 30vh), 72vw);
+    aspect-ratio: 4 / 5;
   }
 
   @keyframes slide-in-right {
