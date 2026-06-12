@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { WorldBibleUseCase } from "@application/useCases/WorldBibleUseCase";
+import { TemplateUseCase } from "@application/useCases/TemplateUseCase";
 import { Carpeta, Plantilla } from "@domain/models/database";
+import { useSettingsStore } from "@store/useSettingsStore";
 
 interface AttributeValue {
   template: Plantilla;
@@ -33,9 +35,11 @@ export const useCreateMassEntities = (
   const [selectedAttributes, setSelectedAttributes] = useState<
     AttributeValue[]
   >([]);
+  const addNotification = useSettingsStore((state) => state.addNotification);
+  const wasOpenRef = useRef(false);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !wasOpenRef.current) {
       loadTemplates();
       setNameEntries([]);
       setInputValue("");
@@ -48,13 +52,63 @@ export const useCreateMassEntities = (
         setFolderId(null);
       }
     }
-  }, [isOpen, allFolders, initialFolderId]);
+
+    wasOpenRef.current = isOpen;
+  }, [isOpen, initialFolderId, projectId]);
+
+  useEffect(() => {
+    if (!isOpen || folderId) {
+      return;
+    }
+
+    if (initialFolderId) {
+      setFolderId(initialFolderId);
+      return;
+    }
+
+    if (allFolders && allFolders.length > 0) {
+      setFolderId(allFolders[0].id);
+    }
+  }, [isOpen, folderId, initialFolderId, allFolders]);
 
   const loadTemplates = async () => {
     try {
       const tpls = await WorldBibleUseCase.getTemplates(projectId);
       setAvailableTemplates(tpls);
-    } catch (err) {}
+    } catch {}
+  };
+
+  const handleCreateTemplate = async (
+    templateData: Pick<
+      Plantilla,
+      "nombre" | "tipo" | "valor_defecto" | "es_obligatorio"
+    >,
+  ): Promise<Plantilla | null> => {
+    if (!projectId || !templateData.nombre.trim()) {
+      return null;
+    }
+
+    try {
+      const createdTemplate = await TemplateUseCase.createTemplate({
+        nombre: templateData.nombre.trim(),
+        tipo: templateData.tipo || "text",
+        valor_defecto: templateData.valor_defecto ?? "",
+        metadata: null,
+        es_obligatorio: Number(templateData.es_obligatorio) ? 1 : 0,
+        project_id: projectId,
+        aplica_a_todo: 1,
+        tipo_objetivo: "PERSONAJE",
+        categoria: "General",
+        orden: 0,
+      });
+
+      await loadTemplates();
+      addNotification(`Plantilla creada: ${createdTemplate.nombre}`, "success");
+      return createdTemplate;
+    } catch {
+      addNotification("No se pudo crear la plantilla", "error");
+      return null;
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -62,7 +116,10 @@ export const useCreateMassEntities = (
       e.preventDefault();
       const val = inputValue.trim();
       if (val) {
-        const parts = val.split(";").map((p) => p.trim()).filter((p) => !!p);
+        const parts = val
+          .split(";")
+          .map((p) => p.trim())
+          .filter((p) => !!p);
         setNameEntries((prev) => [
           ...prev,
           ...parts.map((p) => ({ name: p, type })),
@@ -88,8 +145,12 @@ export const useCreateMassEntities = (
     );
   };
 
-  const handleAddAttribute = (templateId: number) => {
-    const tpl = availableTemplates.find((t) => t.id === templateId);
+  const handleAddAttribute = (
+    templateId: number,
+    templateOverride?: Plantilla,
+  ) => {
+    const tpl =
+      templateOverride || availableTemplates.find((t) => t.id === templateId);
     if (tpl && !selectedAttributes.find((a) => a.template.id === templateId)) {
       setSelectedAttributes((prev) => [
         ...prev,
@@ -116,8 +177,35 @@ export const useCreateMassEntities = (
   ) => {
     const hasFolderSequence = !!folderSequence && folderSequence.length > 0;
     if (nameEntries.length === 0 || (!folderId && !hasFolderSequence)) return;
+
+    const attributesToApply: { templateId: number; value: string }[] = [];
+    for (const attr of selectedAttributes) {
+      const trimmedValue = attr.value.trim();
+      if (!trimmedValue) {
+        continue;
+      }
+      attributesToApply.push({
+        templateId: attr.template.id,
+        value: attr.value,
+      });
+    }
+
     setLoading(true);
+    onClose();
+    const totalCount = nameEntries.length;
+    const progressNotificationId = addNotification(
+      `Cargando entidades en serie...`,
+      "info",
+      {
+        autoCloseMs: null,
+        progress: { current: 0, total: totalCount },
+      },
+    );
+
     try {
+      let createdCount = 0;
+      let failedCount = 0;
+
       for (let index = 0; index < nameEntries.length; index += 1) {
         const entry = nameEntries[index];
         const resolvedType =
@@ -129,28 +217,76 @@ export const useCreateMassEntities = (
             ? folderSequence[Math.min(index, folderSequence.length - 1)]
             : folderId;
         if (!resolvedFolderId) {
+          failedCount += 1;
+          addNotification(
+            `Procesando carga masiva... (${index + 1}/${totalCount})`,
+            "info",
+            {
+              id: progressNotificationId,
+              autoCloseMs: null,
+              progress: { current: index + 1, total: totalCount },
+            },
+          );
           continue;
         }
-        await WorldBibleUseCase.createEntityWithAttributes(
+
+        try {
+          await WorldBibleUseCase.createEntityWithAttributes(
+            {
+              nombre: entry.name,
+              tipo: resolvedType,
+              project_id: projectId,
+              carpeta_id: resolvedFolderId,
+            },
+            attributesToApply,
+          );
+
+          createdCount += 1;
+          onCreated();
+        } catch {
+          failedCount += 1;
+        }
+
+        addNotification(
+          `Procesando carga masiva... (${index + 1}/${totalCount})`,
+          "info",
           {
-            nombre: entry.name,
-            tipo: resolvedType,
-            project_id: projectId,
-            carpeta_id: resolvedFolderId,
+            id: progressNotificationId,
+            autoCloseMs: null,
+            progress: { current: index + 1, total: totalCount },
           },
-          selectedAttributes
-            .filter((attr) => attr.value.trim())
-            .map((attr) => ({
-              templateId: attr.template.id,
-              value: attr.value,
-            })),
         );
       }
-      onCreated();
-      onClose();
+
+      if (failedCount > 0) {
+        addNotification(
+          `Carga finalizada: ${createdCount} creadas, ${failedCount} con error`,
+          createdCount > 0 ? "info" : "error",
+          {
+            id: progressNotificationId,
+            autoCloseMs: 2000,
+            progress: { current: totalCount, total: totalCount },
+          },
+        );
+      } else {
+        addNotification(
+          `Carga completada: ${createdCount} entidades creadas`,
+          "success",
+          {
+            id: progressNotificationId,
+            autoCloseMs: 2000,
+            progress: { current: totalCount, total: totalCount },
+          },
+        );
+      }
+
       setNameEntries([]);
       setSelectedAttributes([]);
-    } catch (err) {
+    } catch {
+      addNotification("Error inesperado durante la carga masiva", "error", {
+        id: progressNotificationId,
+        autoCloseMs: 2000,
+      });
     } finally {
       setLoading(false);
     }
@@ -173,6 +309,7 @@ export const useCreateMassEntities = (
     handleAddAttribute,
     handleRemoveAttribute,
     handleAttributeValueChange,
+    handleCreateTemplate,
     handleSubmit,
   };
 };

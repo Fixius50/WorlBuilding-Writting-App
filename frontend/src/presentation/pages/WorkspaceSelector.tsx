@@ -5,14 +5,18 @@ import { useWorkspaceSelector } from "./useWorkspaceSelector";
 
 // --- COMPONENTES ATÓMICOS ---
 
-const Icon: React.FC<{ name: string; filled?: boolean; className?: string }> = ({
-  name,
-  filled = false,
-  className = "",
-}) => (
+const Icon: React.FC<{
+  name: string;
+  filled?: boolean;
+  className?: string;
+}> = ({ name, filled = false, className = "" }) => (
   <span
     className={`material-symbols-outlined normal-case ${filled ? "icon-filled" : ""} ${className}`}
-    style={filled ? { fontVariationSettings: "'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24" } : undefined}
+    style={
+      filled
+        ? { fontVariationSettings: "'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24" }
+        : undefined
+    }
   >
     {name}
   </span>
@@ -105,7 +109,10 @@ interface ImageUploaderProps {
   onImageUpdate: (url: string) => void;
 }
 
-const ImageUploader: React.FC<ImageUploaderProps> = ({ currentUrl, onImageUpdate }) => {
+const ImageUploader: React.FC<ImageUploaderProps> = ({
+  currentUrl,
+  onImageUpdate,
+}) => {
   const [mode, setMode] = useState<"url" | "local">("url");
   const [localGallery, setLocalGallery] = useState<string[]>(() => {
     try {
@@ -123,9 +130,15 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentUrl, onImageUpdate
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64String = reader.result as string;
-        const newGallery = [base64String, ...localGallery.filter((img) => img !== base64String)].slice(0, 10);
+        const newGallery = [
+          base64String,
+          ...localGallery.filter((img) => img !== base64String),
+        ].slice(0, 10);
         setLocalGallery(newGallery);
-        localStorage.setItem("codex_session_gallery", JSON.stringify(newGallery));
+        localStorage.setItem(
+          "codex_session_gallery",
+          JSON.stringify(newGallery),
+        );
         onImageUpdate(base64String);
       };
       reader.readAsDataURL(file);
@@ -193,7 +206,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentUrl, onImageUpdate
             <div className="mt-4 pt-4 border-t border-foreground/10">
               <p className="font-mono text-[9px] text-foreground/50 tracking-widest uppercase mb-3 flex items-center justify-between">
                 <span>Memoria de Sesión Local</span>
-                <span className="text-primary">{localGallery.length} Artefactos</span>
+                <span className="text-primary">
+                  {localGallery.length} Artefactos
+                </span>
               </p>
               <div className="grid grid-cols-5 gap-2">
                 {localGallery.map((imgUrl, idx) => (
@@ -203,7 +218,11 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentUrl, onImageUpdate
                     className={`aspect-square relative cursor-pointer border rounded-none overflow-hidden transition-all
                               ${currentUrl === imgUrl ? "border-primary shadow-[0_0_10px_rgba(99,102,241,0.3)]" : "border-foreground/20 hover:border-foreground/50 opacity-60 hover:opacity-100"}`}
                   >
-                    <img src={imgUrl} className="w-full h-full object-cover" alt={`Upload ${idx}`} />
+                    <img
+                      src={imgUrl}
+                      className="w-full h-full object-cover"
+                      alt={`Upload ${idx}`}
+                    />
                   </div>
                 ))}
               </div>
@@ -219,7 +238,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ currentUrl, onImageUpdate
 
 interface EditorMonolithicPanelProps {
   projectToEdit?: Proyecto | null;
-  onSave: (data: { nombre: string; descripcion: string; tag: string; coverUrl: string }) => void | Promise<void>;
+  onSave: (data: {
+    nombre: string;
+    descripcion: string;
+    tag: string;
+    coverUrl: string;
+  }) => void | Promise<void>;
   onCancel: () => void;
   isCreating: boolean;
 }
@@ -231,7 +255,9 @@ const EditorMonolithicPanel: React.FC<EditorMonolithicPanelProps> = ({
   isCreating,
 }) => {
   const [title, setTitle] = useState(projectToEdit?.nombre || "");
-  const [description, setDescription] = useState(projectToEdit?.descripcion || "");
+  const [description, setDescription] = useState(
+    projectToEdit?.descripcion || "",
+  );
   const [tag, setTag] = useState(projectToEdit?.tag || "Fantasía");
   const [coverUrl, setCoverUrl] = useState(projectToEdit?.image_url || "");
 
@@ -245,7 +271,9 @@ const EditorMonolithicPanel: React.FC<EditorMonolithicPanelProps> = ({
     });
   };
 
-  const displayId = projectToEdit ? `CN-${projectToEdit.id}` : `CN-${Math.floor(Math.random() * 9000) + 1000}`;
+  const displayId = projectToEdit
+    ? `CN-${projectToEdit.id}`
+    : `CN-${Math.floor(Math.random() * 9000) + 1000}`;
 
   return (
     <div className="fixed inset-0 bg-background/95 z-[500] flex items-center justify-center p-4 sm:p-8 animate-in fade-in duration-200">
@@ -263,11 +291,20 @@ const EditorMonolithicPanel: React.FC<EditorMonolithicPanelProps> = ({
         <div className="hidden md:flex w-1/2 border-r border-foreground/10 flex-col bg-foreground/5 relative">
           <div className="flex-1 relative overflow-hidden shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]">
             {coverUrl ? (
-              <img src={coverUrl} alt="Portada del proyecto" className="w-full h-full object-cover" />
+              <img
+                src={coverUrl}
+                alt="Portada del proyecto"
+                className="w-full h-full object-cover"
+              />
             ) : (
               <div className="absolute inset-0 flex flex-col items-center justify-center text-foreground/20 bg-background">
-                <Icon name="broken_image" className="text-6xl mb-4 opacity-50" />
-                <span className="font-mono text-xs tracking-[0.2em] uppercase">Ausencia de Artefacto Visual</span>
+                <Icon
+                  name="broken_image"
+                  className="text-6xl mb-4 opacity-50"
+                />
+                <span className="font-mono text-xs tracking-[0.2em] uppercase">
+                  Ausencia de Artefacto Visual
+                </span>
               </div>
             )}
 
@@ -325,7 +362,10 @@ const EditorMonolithicPanel: React.FC<EditorMonolithicPanelProps> = ({
 
             <div>
               <Label>Artefacto Visual (Portada)</Label>
-              <ImageUploader currentUrl={coverUrl} onImageUpdate={setCoverUrl} />
+              <ImageUploader
+                currentUrl={coverUrl}
+                onImageUpdate={setCoverUrl}
+              />
             </div>
           </div>
 
@@ -333,7 +373,11 @@ const EditorMonolithicPanel: React.FC<EditorMonolithicPanelProps> = ({
             <GhostButton onClick={onCancel} icon="block">
               Descartar
             </GhostButton>
-            <PrimaryButton onClick={handleSave} icon="save" disabled={!title.trim()}>
+            <PrimaryButton
+              onClick={handleSave}
+              icon="save"
+              disabled={!title.trim()}
+            >
               {isCreating ? "Inicializar Universo" : "Guardar Configuración"}
             </PrimaryButton>
           </div>
@@ -359,12 +403,13 @@ const NotebookCard: React.FC<{
   onDelete: (id: number) => void;
 }> = ({ data, onSelect, onEdit, onDelete }) => {
   const displayImg =
-    data.image_url || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800";
+    data.image_url ||
+    "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800";
 
   return (
     <div
       onClick={() => onSelect(data.nombre)}
-      className="group relative aspect-[3/4] w-full bg-background border border-foreground/10 overflow-hidden cursor-pointer hover:border-foreground/30 shadow-lg transition-all animate-in fade-in duration-500 flex flex-col"
+      className="workspace-card-shell group relative bg-background border border-foreground/10 overflow-hidden cursor-pointer hover:border-foreground/30 shadow-lg transition-all animate-in fade-in duration-500 flex flex-col"
     >
       {/* Imagen de Fondo (Protagonista) */}
       <img
@@ -449,36 +494,33 @@ const WorkspaceSelector: React.FC = () => {
     handleExport,
     executeImport,
     handleStatusAcknowledge,
-    filteredWorkspaces
+    filteredWorkspaces,
   } = useWorkspaceSelector();
 
   return (
     <div className="min-h-screen bg-background relative flex flex-col selection:bg-primary/30 selection:text-foreground overflow-x-hidden">
       {/* TopNav (Reducido, técnico, monolítico) */}
-      <header className="border-b border-foreground/10 px-8 py-4 bg-background flex justify-between items-center sticky top-0 z-30 flex-shrink-0">
+      <header className="border-b border-foreground/10 px-8 py-4 bg-background flex justify-end items-center sticky top-0 z-30 flex-shrink-0">
         <div className="flex items-center gap-4">
-          <h1 className="font-sans text-2xl tracking-tight text-foreground">
-            <span className="font-bold text-primary">Mis</span> Cuadernos
-          </h1>
-          <span className="px-2 py-0.5 bg-foreground/10 border border-foreground/10 rounded-none font-mono text-[10px] tracking-widest text-foreground/50 hidden sm:inline-block">
-            WORKSPACE ALFA
-          </span>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <CarvedInput
-            placeholder="Buscar por título..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            icon="search"
-          />
-          <GhostButton onClick={handleExport} icon="cloud_upload" className="hidden md:flex">
+          <GhostButton
+            onClick={handleExport}
+            icon="cloud_upload"
+            className="hidden md:flex"
+          >
             Respaldar
           </GhostButton>
-          <GhostButton onClick={() => setImportConfirmOpen(true)} icon="cloud_download" className="hidden md:flex">
+          <GhostButton
+            onClick={() => setImportConfirmOpen(true)}
+            icon="cloud_download"
+            className="hidden md:flex"
+          >
             Importar
           </GhostButton>
-          <GhostButton onClick={() => navigate("/settings")} icon="settings" className="hidden md:flex">
+          <GhostButton
+            onClick={() => navigate("/settings")}
+            icon="settings"
+            className="hidden md:flex"
+          >
             Ajustes
           </GhostButton>
         </div>
@@ -488,12 +530,22 @@ const WorkspaceSelector: React.FC = () => {
       <main className="flex-1 p-8 overflow-y-auto">
         <div className="max-w-7xl mx-auto">
           {/* Toolbar superior */}
-          <div className="flex justify-between items-end mb-8 border-b border-foreground/10 pb-4">
-            <div>
-              <h2 className="font-serif text-2xl text-foreground">Inventario de Proyectos</h2>
+          <div className="flex items-end gap-4 mb-8 border-b border-foreground/10 pb-4">
+            <div className="flex-shrink-0">
+              <h2 className="font-serif text-2xl text-foreground">
+                Mis proyectos
+              </h2>
               <p className="font-mono text-[10px] text-foreground/40 uppercase tracking-widest mt-1">
                 {workspaces.length} Artefactos localizados
               </p>
+            </div>
+            <div className="flex-1">
+              <CarvedInput
+                placeholder="Buscar por título..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                icon="search"
+              />
             </div>
             <PrimaryButton onClick={() => setIsCreating(true)} icon="add">
               Nuevo Cuaderno
@@ -503,35 +555,41 @@ const WorkspaceSelector: React.FC = () => {
           {loading ? (
             <div className="flex flex-col items-center justify-center gap-6 py-20 opacity-20">
               <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-none animate-spin"></div>
-              <p className="font-mono text-[10px] uppercase tracking-widest">Accediendo al Sector Local...</p>
+              <p className="font-mono text-[10px] uppercase tracking-widest">
+                Accediendo al Sector Local...
+              </p>
             </div>
           ) : (
             /* GRID DE CUADERNOS */
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {/* Tarjeta Especial: Añadir Nuevo */}
-              <div
-                onClick={() => setIsCreating(true)}
-                className="aspect-[3/4] w-full border border-dashed border-foreground/20 bg-foreground/5 hover:bg-foreground/10 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] cursor-pointer flex flex-col items-center justify-center group rounded-none"
-              >
-                <div className="w-12 h-12 rounded-none bg-background border border-foreground/10 flex items-center justify-center mb-4 group-hover:border-primary group-hover:text-primary transition-colors">
-                  <Icon name="add" />
+            <div className="workspace-scroll">
+              <div className="workspace-cards-wrap">
+                {/* Tarjeta Especial: Añadir Nuevo */}
+                <div
+                  onClick={() => setIsCreating(true)}
+                  className="workspace-card-shell border border-dashed border-foreground/20 bg-foreground/5 hover:bg-foreground/10 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] cursor-pointer flex flex-col items-center justify-center group rounded-none"
+                >
+                  <div className="w-12 h-12 rounded-none bg-background border border-foreground/10 flex items-center justify-center mb-4 group-hover:border-primary group-hover:text-primary transition-colors">
+                    <Icon name="add" />
+                  </div>
+                  <span className="font-mono text-xs tracking-[0.2em] uppercase text-foreground/60 group-hover:text-foreground">
+                    Inicializar
+                  </span>
+                  <span className="font-serif text-lg text-foreground/40 mt-1">
+                    Nuevo Universo
+                  </span>
                 </div>
-                <span className="font-mono text-xs tracking-[0.2em] uppercase text-foreground/60 group-hover:text-foreground">
-                  Inicializar
-                </span>
-                <span className="font-serif text-lg text-foreground/40 mt-1">Nuevo Universo</span>
-              </div>
 
-              {/* Tarjetas de Cuadernos */}
-              {filteredWorkspaces.map((ws) => (
-                <NotebookCard
-                  key={ws.id}
-                  data={ws}
-                  onSelect={handleSelect}
-                  onEdit={(proj) => setProjectToEdit(proj)}
-                  onDelete={(id) => setProjectToDelete(id)}
-                />
-              ))}
+                {/* Tarjetas de Cuadernos */}
+                {filteredWorkspaces.map((ws) => (
+                  <NotebookCard
+                    key={ws.id}
+                    data={ws}
+                    onSelect={handleSelect}
+                    onEdit={(proj) => setProjectToEdit(proj)}
+                    onDelete={(id) => setProjectToDelete(id)}
+                  />
+                ))}
+              </div>
             </div>
           )}
         </div>

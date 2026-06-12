@@ -1,12 +1,27 @@
-import { create } from 'zustand';
-import { SettingsUseCase, UserData, AppSettings } from '@application/useCases/SettingsUseCase';
-import { Proyecto } from '@domain/models/database';
-import { useAppStore } from './useAppStore';
+import { create } from "zustand";
+import {
+  SettingsUseCase,
+  UserData,
+  AppSettings,
+} from "@application/useCases/SettingsUseCase";
+import { Proyecto } from "@domain/models/database";
+import { useAppStore } from "./useAppStore";
 
 export interface NotificationData {
   id: number;
   message: string;
-  type: 'success' | 'info' | 'error';
+  type: "success" | "info" | "error";
+  progressCurrent?: number;
+  progressTotal?: number;
+}
+
+export interface NotificationOptions {
+  id?: number;
+  autoCloseMs?: number | null;
+  progress?: {
+    current: number;
+    total: number;
+  };
 }
 
 interface SettingsState {
@@ -15,7 +30,7 @@ interface SettingsState {
   selectedProjects: string[];
   settings: AppSettings;
   notifications: NotificationData[];
-  
+
   initialize: () => Promise<void>;
   updateSetting: (key: keyof AppSettings, value: unknown) => void;
   toggleProjectSelection: (id: string) => void;
@@ -23,18 +38,23 @@ interface SettingsState {
   setAvatar: (avatarUrl: string) => void;
   handleDownloadBackup: () => Promise<void>;
   handleImportDatabase: (file: File) => Promise<boolean>;
-  addNotification: (message: string, type?: 'success' | 'info' | 'error') => void;
+  addNotification: (
+    message: string,
+    type?: "success" | "info" | "error",
+    options?: NotificationOptions,
+  ) => number;
 }
 
 const defaultSettings: AppSettings = {
-  theme: 'deep_space',
-  font: 'Outfit',
+  theme: "deep_space",
+  font: "Outfit",
   fontSize: 16,
-  panelMode: 'classic',
-  autoBackup: false
+  panelMode: "classic",
+  autoBackup: false,
 };
 
 let autoBackupInterval: ReturnType<typeof setInterval> | null = null;
+const notificationTimers = new Map<number, ReturnType<typeof setTimeout>>();
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
   user: null,
@@ -43,17 +63,60 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   settings: defaultSettings,
   notifications: [],
 
-  addNotification: (message: string, type: 'success' | 'info' | 'error' = 'success') => {
-    const id = Date.now();
-    set((state) => ({ notifications: [...state.notifications, { id, message, type }] }));
-    setTimeout(() => {
-      set((state) => ({ notifications: state.notifications.filter(n => n.id !== id) }));
-    }, 3000);
+  addNotification: (
+    message: string,
+    type: "success" | "info" | "error" = "success",
+    options?: NotificationOptions,
+  ) => {
+    const id = options?.id ?? Date.now() + Math.floor(Math.random() * 1000);
+    const progressCurrent = options?.progress?.current;
+    const progressTotal = options?.progress?.total;
+
+    set((state) => {
+      const existingIndex = state.notifications.findIndex((n) => n.id === id);
+      const nextNotification: NotificationData = {
+        id,
+        message,
+        type,
+        progressCurrent,
+        progressTotal,
+      };
+
+      if (existingIndex === -1) {
+        return { notifications: [...state.notifications, nextNotification] };
+      }
+
+      const updated = [...state.notifications];
+      updated[existingIndex] = {
+        ...updated[existingIndex],
+        ...nextNotification,
+      };
+      return { notifications: updated };
+    });
+
+    const previousTimer = notificationTimers.get(id);
+    if (previousTimer) {
+      clearTimeout(previousTimer);
+      notificationTimers.delete(id);
+    }
+
+    const autoCloseMs = options?.autoCloseMs ?? 3000;
+    if (autoCloseMs !== null && autoCloseMs >= 0) {
+      const timer = setTimeout(() => {
+        set((state) => ({
+          notifications: state.notifications.filter((n) => n.id !== id),
+        }));
+        notificationTimers.delete(id);
+      }, autoCloseMs);
+      notificationTimers.set(id, timer);
+    }
+
+    return id;
   },
 
   initialize: async () => {
     const user = await SettingsUseCase.loadUser();
-    const settings = await SettingsUseCase.loadSettings() || defaultSettings;
+    const settings = (await SettingsUseCase.loadSettings()) || defaultSettings;
     const selectedProjects = await SettingsUseCase.loadSyncProjects();
     const projects = await SettingsUseCase.loadProjects();
 
@@ -61,9 +124,12 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
     // Setup auto-backup
     if (settings.autoBackup && !autoBackupInterval) {
-      autoBackupInterval = setInterval(() => {
-        get().handleDownloadBackup();
-      }, 10 * 60 * 1000); // Cada 10 minutos
+      autoBackupInterval = setInterval(
+        () => {
+          get().handleDownloadBackup();
+        },
+        10 * 60 * 1000,
+      ); // Cada 10 minutos
     }
   },
 
@@ -74,18 +140,23 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     get().addNotification(`Ajuste actualizado: ${key}`);
 
     // Si el ajuste es el tema o el modo de panel, sincronizar con useAppStore para coherencia global
-    if (key === 'theme') {
+    if (key === "theme") {
       useAppStore.getState().setTheme(value as string);
     }
-    if (key === 'panelMode') {
-      useAppStore.getState().setPanelMode(value as 'classic' | 'binder' | 'floating');
+    if (key === "panelMode") {
+      useAppStore
+        .getState()
+        .setPanelMode(value as "classic" | "binder" | "floating");
     }
 
-    if (key === 'autoBackup') {
+    if (key === "autoBackup") {
       if (value && !autoBackupInterval) {
-        autoBackupInterval = setInterval(() => {
-          get().handleDownloadBackup();
-        }, 10 * 60 * 1000);
+        autoBackupInterval = setInterval(
+          () => {
+            get().handleDownloadBackup();
+          },
+          10 * 60 * 1000,
+        );
       } else if (!value && autoBackupInterval) {
         clearInterval(autoBackupInterval);
         autoBackupInterval = null;
@@ -97,12 +168,16 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     const { selectedProjects } = get();
     const isSelected = selectedProjects.includes(id);
     const newSelection = isSelected
-      ? selectedProjects.filter(p => p !== id)
+      ? selectedProjects.filter((p) => p !== id)
       : [...selectedProjects, id];
 
     set({ selectedProjects: newSelection });
     await SettingsUseCase.saveSyncProjects(newSelection);
-    get().addNotification(isSelected ? "Universo desmarcado de sincronización" : "Universo incluido en sincronización");
+    get().addNotification(
+      isSelected
+        ? "Universo desmarcado de sincronización"
+        : "Universo incluido en sincronización",
+    );
   },
 
   updateProfile: async (key: keyof UserData, value: string) => {
@@ -130,14 +205,20 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     get().addNotification("Sincronizando con el servidor local...", "info");
     const res = await SettingsUseCase.exportBackup();
     if (res.success) {
-      get().addNotification("Copia de seguridad guardada en el servidor", "success");
+      get().addNotification(
+        "Copia de seguridad guardada en el servidor",
+        "success",
+      );
     } else {
       get().addNotification(res.message, "error");
     }
   },
 
   handleImportDatabase: async (file: File) => {
-    get().addNotification("Sobrescribiendo la base de datos local OPFS...", "info");
+    get().addNotification(
+      "Sobrescribiendo la base de datos local OPFS...",
+      "info",
+    );
     const res = await SettingsUseCase.importDatabase(file);
     if (res.success) {
       get().addNotification(res.message, "success");
@@ -146,5 +227,5 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       get().addNotification(res.message, "error");
       return false;
     }
-  }
+  },
 }));
