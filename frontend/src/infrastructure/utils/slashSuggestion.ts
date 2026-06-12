@@ -7,41 +7,34 @@ export default {
   items: ({ query }: { query: string }) => {
     return [
       {
-        title: 'Encabezado 1',
-        icon: 'format_h1',
+        title: 'Título Principal',
+        label: 'T',
         command: ({ editor }: SuggestionProps) => {
           editor.chain().focus().toggleHeading({ level: 1 }).run();
         },
       },
       {
-        title: 'Encabezado 2',
-        icon: 'format_h2',
+        title: 'Subtítulo',
+        label: 'H2',
         command: ({ editor }: SuggestionProps) => {
           editor.chain().focus().toggleHeading({ level: 2 }).run();
         },
       },
       {
-        title: 'Lista de viñetas',
-        icon: 'format_list_bulleted',
-        command: ({ editor }: SuggestionProps) => {
-          editor.chain().focus().toggleBulletList().run();
-        },
-      },
-      {
-        title: 'Cita',
-        icon: 'format_quote',
+        title: 'Cita Narrativa',
+        label: '99',
         command: ({ editor }: SuggestionProps) => {
           editor.chain().focus().toggleBlockquote().run();
         },
       },
       {
         title: 'Separador',
-        icon: 'horizontal_rule',
+        label: '—',
         command: ({ editor }: SuggestionProps) => {
           editor.chain().focus().setHorizontalRule().run();
         },
       },
-    ].filter(item => item.title.toLowerCase().startsWith(query.toLowerCase()));
+    ].filter(item => item.title.toLowerCase().includes(query.toLowerCase()));
   },
 
   command: ({ editor, range, props }: SuggestionProps & { props: { command: (args: Pick<SuggestionProps, 'editor' | 'range'>) => void } }) => {

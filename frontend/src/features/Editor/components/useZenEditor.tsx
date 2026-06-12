@@ -11,6 +11,7 @@ interface UsePageEditorProps {
   onJumpBack?: () => void;
   onAutoDelete?: () => void;
   autoFocus?: boolean;
+  onMentionClick?: (id: string) => void;
 }
 
 /**
@@ -26,7 +27,8 @@ export const usePageEditor = ({
   onJumpNext,
   onJumpBack,
   onAutoDelete,
-  autoFocus = false
+  autoFocus = false,
+  onMentionClick
 }: UsePageEditorProps) => {
   const lastHeightRef = useRef(0);
   const isDeletingRef = useRef(false);
@@ -54,6 +56,15 @@ export const usePageEditor = ({
       attributes: {
         class: `prose prose-invert max-w-none focus:outline-none text-foreground/90 leading-relaxed text-lg`,
         style: `font-family: "Cormorant Garamond", serif; font-size: 18px;`,
+      },
+      handleClick: (view, pos, event) => {
+        const target = event.target as HTMLElement;
+        const mention = target.closest('.mention');
+        const id = mention ? mention.getAttribute('data-id') : null;
+        
+        return (mention && id && onMentionClick)
+          ? (onMentionClick(id), true)
+          : false;
       },
       handleKeyDown: (view, event) => {
         const { selection } = view.state;

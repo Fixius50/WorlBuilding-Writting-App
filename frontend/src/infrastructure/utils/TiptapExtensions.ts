@@ -38,7 +38,7 @@ export const getZenExtensions = (placeholderText: string = 'Escribe tu historia 
   }),
   Mention.configure({
     HTMLAttributes: { 
-        class: 'mention bg-primary/10 text-primary px-1.5 py-0.5 rounded-sm border border-primary/20 font-medium inline-block cursor-pointer hover:bg-primary/20 transition-colors' 
+        class: 'mention text-primary font-medium inline cursor-pointer hover:underline transition-colors' 
     },
     suggestion,
   }),

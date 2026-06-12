@@ -2,91 +2,75 @@ import { EditorContent, BubbleMenu } from "@tiptap/react";
 import React from "react";
 import EditorTopBar from "./EditorTopBar";
 import { Hoja as HojaModel } from "@domain/models/database";
-import { useZenEditor, usePageEditor } from "./useZenEditor";
+import { usePageEditor } from "./useZenEditor";
 
-interface PageEditorProps {
+interface PageContentEditorProps {
   content: string;
   onUpdate: (html: string) => void;
-  numero: number;
-  lado: "izq" | "der";
-  isLastPage: boolean;
-  onNearEnd: () => void;
-  onJumpNext?: () => void;
-  onJumpBack?: () => void;
-  onAutoDelete?: () => void;
-  autoFocus?: boolean;
+  onMentionClick?: (id: string) => void;
 }
 
-const PageEditor: React.FC<PageEditorProps> = (props) => {
-  const { editor } = usePageEditor(props);
+const PageContentEditor: React.FC<PageContentEditorProps> = ({ content, onUpdate, onMentionClick }) => {
+  const { editor } = usePageEditor({
+    content,
+    onUpdate,
+    isLastPage: false,
+    onNearEnd: () => {},
+    autoFocus: true,
+    onMentionClick,
+  });
 
   return (
-    <div
-      className={`w-[40vw] h-[1200px] border border-white/10 bg-white/5 shadow-2xl relative flex flex-col mb-[60px] group transition-all duration-500`}
-      style={{ boxShadow: "0 25px 50px -12px rgba(0,0,0,0.8)" }}
-    >
-      <div className="h-[100px] flex items-center px-16 opacity-10 border-b border-white/5">
-        <span className="text-[9px] font-mono uppercase tracking-[0.4em]">
-          Manuscrito
-        </span>
-      </div>
-
-      <div className="flex-1 overflow-hidden relative p-[40px_60px]">
-        {editor && (
-          <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
-            <div className="flex items-center gap-1 p-1 bg-background border border-foreground/10 shadow-2xl ">
-              <button
-                onClick={() => editor.chain().focus().toggleBold().run()}
-                className={`p-2 hover:bg-foreground/10 ${editor.isActive("bold") ? "text-primary" : "text-foreground/60"}`}
-              >
-                <span className="material-symbols-outlined text-lg">
-                  format_bold
-                </span>
-              </button>
-              <button
-                onClick={() => editor.chain().focus().toggleItalic().run()}
-                className={`p-2 hover:bg-foreground/10 ${editor.isActive("italic") ? "text-primary" : "text-foreground/60"}`}
-              >
-                <span className="material-symbols-outlined text-lg">
-                  format_italic
-                </span>
-              </button>
-            </div>
-          </BubbleMenu>
-        )}
-        <EditorContent editor={editor} className="h-full prose-editor" />
-      </div>
-
-      <div
-        className={`h-[100px] flex items-center px-16 border-t border-white/5 opacity-30`}
-      >
-        <div
-          className={`w-full flex ${props.lado === "izq" ? "justify-start" : "justify-end"}`}
-        >
-          <span className="text-[11px] font-mono font-bold tracking-[0.5em]">
-            PAGE {props.numero}
-          </span>
-        </div>
-      </div>
-
+    <div className="flex-1 w-full relative">
+      {editor && (
+        <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
+          <div className="flex items-center gap-1 p-1 bg-background border border-foreground/10 rounded-md shadow-2xl">
+            <button
+              onClick={() => editor.chain().focus().toggleBold().run()}
+              className={`p-1.5 rounded-md hover:bg-foreground/5 transition-colors ${editor.isActive("bold") ? "text-primary bg-primary/10" : "text-foreground/60"}`}
+            >
+              <span className="material-symbols-outlined text-lg">format_bold</span>
+            </button>
+            <button
+              onClick={() => editor.chain().focus().toggleItalic().run()}
+              className={`p-1.5 rounded-md hover:bg-foreground/5 transition-colors ${editor.isActive("italic") ? "text-primary bg-primary/10" : "text-foreground/60"}`}
+            >
+              <span className="material-symbols-outlined text-lg">format_italic</span>
+            </button>
+          </div>
+        </BubbleMenu>
+      )}
+      <EditorContent editor={editor} className="h-full prose-editor" />
       <style
         dangerouslySetInnerHTML={{
           __html: `
-        .prose-editor .ProseMirror {
-           height: 100% !important;
-           max-height: 1000px !important;
-           overflow: hidden !important;
-           outline: none !important;
-           text-align: justify;
-        }
-        .prose-editor .ProseMirror p.is-editor-empty:first-child::before {
-          content: attr(data-placeholder);
-          float: left;
-          color: var(--editor-placeholder);
-          pointer-events: none;
-          height: 0;
-        }
-      `,
+            .prose-editor .ProseMirror {
+               height: 100% !important;
+               outline: none !important;
+               font-family: "Cormorant Garamond", serif;
+               font-size: 20px;
+               line-height: 1.8;
+               color: hsl(var(--foreground) / 0.9);
+            }
+            .prose-editor .ProseMirror p {
+               margin-bottom: 1.2em;
+               text-align: justify;
+            }
+            .prose-editor .ProseMirror p.is-editor-empty:first-child::before {
+              content: attr(data-placeholder);
+              float: left;
+              color: var(--editor-placeholder);
+              pointer-events: none;
+              height: 0;
+              text-indent: 0;
+              font-style: italic;
+            }
+            /* Estilos de las menciones de Tiptap */
+            .prose-editor .ProseMirror .mention {
+              font-family: "Outfit", sans-serif;
+              font-size: 15px;
+            }
+          `,
         }}
       />
     </div>
@@ -105,6 +89,9 @@ interface ZenEditorProps {
   onRestoreSnapshot?: (id: number) => void;
   onMentionClick?: (id: string) => void;
   minimal?: boolean;
+  notebookTitle?: string;
+  sidebarOpen?: boolean;
+  onToggleSidebar?: () => void;
 }
 
 const ZenEditor: React.FC<ZenEditorProps> = ({
@@ -112,66 +99,64 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
   currentPageIndex,
   onUpdate,
   onTitleChange,
-  onCreatePage,
-  onAutoDeletePage,
   onSnapshot,
   snapshots = [],
   onRestoreSnapshot = () => {},
+  onMentionClick,
   minimal = false,
+  notebookTitle,
+  sidebarOpen = true,
+  onToggleSidebar,
 }) => {
-  const {
-    focusedPageIndex,
-    handleAutoCreate,
-    pagePairs,
-    handleJumpNext,
-    handleJumpBack,
-  } = useZenEditor({ pages, onCreatePage });
-
   const currentPage = pages[currentPageIndex];
 
+  if (!currentPage) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-editor-elevated select-none">
+        <span className="text-xs font-black uppercase tracking-widest text-foreground/20 font-sans">
+          Crea una hoja para comenzar
+        </span>
+      </div>
+    );
+  }
+
+  const wordCount = currentPage.contenido
+    ? currentPage.contenido.replace(/<[^>]+>/g, "").trim().split(/\s+/).filter(Boolean).length
+    : 0;
+
   return (
-    <div className="flex flex-col w-full h-full bg-editor-base">
+    <div className="flex flex-col w-full h-full bg-editor-base select-text">
       <EditorTopBar
-        title={currentPage?.titulo || "Sin Título"}
+        title={currentPage.titulo || `Hoja ${currentPageIndex + 1}`}
         onTitleChange={(newTitle) => onTitleChange(currentPageIndex, newTitle)}
-        wordCount={0}
+        wordCount={wordCount}
         wordGoal={2000}
         saving={false}
-        onManualSnapshot={() => onSnapshot(currentPage?.contenido || "")}
+        onManualSnapshot={() => onSnapshot(currentPage.contenido || "")}
         snapshots={snapshots}
         onRestoreSnapshot={onRestoreSnapshot}
         minimal={minimal}
+        notebookTitle={notebookTitle}
+        sidebarOpen={sidebarOpen}
+        onToggleSidebar={onToggleSidebar}
       />
 
-      <div className="flex-1 relative bg-editor-elevated overflow-hidden">
-        <div className="absolute inset-0 overflow-auto custom-scrollbar">
-          <div className="w-full min-h-full py-[10vh] flex flex-col items-center">
-            <div className="flex flex-col gap-[20px]">
-              {pagePairs.map((pair, pairIndex) => (
-                <div key={pairIndex} className="flex flex-row gap-[4vw]">
-                  {pair.map((page, subIndex) => {
-                    const globalIndex = pairIndex * 2 + subIndex;
-                    const isLast = globalIndex === pages.length - 1;
-                    return (
-                      <PageEditor
-                        key={page.id || globalIndex}
-                        content={page.contenido || ""}
-                        onUpdate={(html) => onUpdate(html, globalIndex)}
-                        numero={globalIndex + 1}
-                        lado={subIndex === 0 ? "izq" : "der"}
-                        isLastPage={isLast}
-                        onNearEnd={handleAutoCreate}
-                        onJumpNext={() => handleJumpNext(globalIndex)}
-                        onJumpBack={() => handleJumpBack(globalIndex)}
-                        onAutoDelete={() => onAutoDeletePage(globalIndex)}
-                        autoFocus={focusedPageIndex === globalIndex}
-                      />
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          </div>
+      <div className="flex-1 relative bg-editor-elevated overflow-y-auto custom-scrollbar flex justify-center py-16 px-6">
+        <div className="w-full max-w-2xl flex flex-col gap-8 h-full">
+          {/* TÍTULO EDITABLE EN EL PROPIO MANUSCRITO */}
+          <input
+            value={currentPage.titulo || ""}
+            onChange={(e) => onTitleChange(currentPageIndex, e.target.value)}
+            className="w-full bg-transparent border-none text-foreground font-serif font-semibold text-[38px] outline-none focus:ring-0 placeholder:text-foreground/15 p-0"
+            placeholder={`Hoja ${currentPageIndex + 1}`}
+          />
+
+          {/* CUERPO DEL TEXTO */}
+          <PageContentEditor
+            content={currentPage.contenido || ""}
+            onUpdate={(html) => onUpdate(html, currentPageIndex)}
+            onMentionClick={onMentionClick}
+          />
         </div>
       </div>
     </div>
@@ -179,3 +164,4 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
 };
 
 export default ZenEditor;
+

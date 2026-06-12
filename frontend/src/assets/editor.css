@@ -4,50 +4,37 @@
 
 /* --- Refined Mention System --- */
 .mention {
-  @apply inline-flex items-center gap-1 font-medium rounded-sm px-1.5 py-0.5 border transition-all cursor-pointer no-underline hover:bg-primary/20 hover:border-primary/40;
-  background-color: hsl(var(--foreground) / 0.05);
-  border-color: hsl(var(--foreground) / 0.1);
+  @apply inline font-medium transition-all cursor-pointer no-underline;
   color: hsl(var(--foreground) / 0.8);
 }
 
 .mention:hover {
-  @apply opacity-80 shadow-md;
+  text-decoration: underline;
+  opacity: 0.9;
 }
 
 .mention[data-type="individual"], .mention-individual {
-  background-color: hsl(var(--color-indigo) / 0.1);
-  color: hsl(var(--color-indigo) / 0.8);
-  border-color: hsl(var(--color-indigo) / 0.2);
+  color: hsl(var(--color-indigo) / 0.9);
 }
 
 .mention[data-type="location"], .mention-location {
-  background-color: hsl(var(--color-emerald) / 0.1);
-  color: hsl(var(--color-emerald) / 0.8);
-  border-color: hsl(var(--color-emerald) / 0.2);
+  color: hsl(var(--color-emerald) / 0.9);
 }
 
 .mention[data-type="group"], .mention-group {
-  background-color: hsl(var(--color-purple) / 0.1);
-  color: hsl(var(--color-purple) / 0.8);
-  border-color: hsl(var(--color-purple) / 0.2);
+  color: hsl(var(--color-purple) / 0.9);
 }
 
 .mention[data-type="timeline"], .mention-timeline {
-  background-color: hsl(var(--color-orange) / 0.1);
-  color: hsl(var(--color-orange) / 0.8);
-  border-color: hsl(var(--color-orange) / 0.2);
+  color: hsl(var(--color-orange) / 0.9);
 }
 
 .mention[data-type="event"], .mention-event {
-  background-color: hsl(var(--color-red) / 0.1);
-  color: hsl(var(--color-red) / 0.8);
-  border-color: hsl(var(--color-red) / 0.2);
+  color: hsl(var(--color-red) / 0.9);
 }
 
 .mention[data-type="item"], .mention-item {
-  background-color: hsl(var(--color-amber) / 0.1);
-  color: hsl(var(--color-amber) / 0.8);
-  border-color: hsl(var(--color-amber) / 0.2);
+  color: hsl(var(--color-amber) / 0.9);
 }
 
 /* --- Tiptap Editor Overrides --- */

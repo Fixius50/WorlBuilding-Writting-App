@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Cuaderno, Hoja } from "@domain/models/database";
 import { WritingUseCase } from "@application/useCases/WritingUseCase";
 import { EntityUseCase } from "@application/useCases/EntityUseCase";
+import { TemplateUseCase } from "@application/useCases/TemplateUseCase";
 import { useSettingsStore } from "@store/useSettingsStore";
 
 /**
@@ -13,13 +14,6 @@ import { useSettingsStore } from "@store/useSettingsStore";
 export const useWritingView = () => {
   const { notebookId } = useParams();
   const navigate = useNavigate();
-
-  const openPanel = (_mode: string, _id?: number, _title?: string) => {
-    // Panel derecho eliminado: antes abría entidad o contenedor contextual de archivador.
-  };
-  const setCustomContent = (_content: unknown, _title?: unknown) => {
-    // Panel derecho eliminado: antes inyectaba UI lateral de archivador.
-  };
 
   const [notebook, setNotebook] = useState<Cuaderno | null>(null);
   const [pages, setPages] = useState<Hoja[]>([]);
@@ -42,8 +36,11 @@ export const useWritingView = () => {
   const indexRef = useRef(currentPageIndex);
   const isMounted = useRef(true);
 
-  const [activeTab, setActiveTab] = useState<"index" | "format">("index");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState<"index" | "references">("index");
   const [editingPageId, setEditingPageId] = useState<number | null>(null);
+  const [selectedEntity, setSelectedEntity] = useState<any | null>(null);
+  const [selectedEntityValues, setSelectedEntityValues] = useState<any[]>([]);
 
   useEffect(() => {
     pagesRef.current = pages;
@@ -94,7 +91,6 @@ export const useWritingView = () => {
   );
 
   useEffect(() => {
-    // Panel derecho eliminado: antes abría pestaña contextual "Archivador".
     if (notebookId) {
       loadNotebookAndPages(Number(notebookId));
     }
@@ -174,7 +170,11 @@ export const useWritingView = () => {
       try {
         const entity = await EntityUseCase.getById(Number(id));
         if (entity) {
-          openPanel("entity", Number(id), entity.nombre);
+          setSelectedEntity(entity);
+          const vals = await TemplateUseCase.getEntityValues(entity.id);
+          setSelectedEntityValues(vals);
+          setActiveTab("references");
+          setSidebarOpen(true);
         }
       } catch (err) {
         useSettingsStore
@@ -182,7 +182,7 @@ export const useWritingView = () => {
           .addNotification("Error al cargar entidad", "error");
       }
     },
-    [openPanel],
+    [],
   );
 
   const handleRestoreSnapshot = useCallback(
@@ -320,6 +320,10 @@ export const useWritingView = () => {
     handleAutoDeletePage,
     handlePageSelect,
     confirmDeletePage,
-    setCustomContent,
+    sidebarOpen,
+    setSidebarOpen,
+    selectedEntity,
+    setSelectedEntity,
+    selectedEntityValues,
   };
 };

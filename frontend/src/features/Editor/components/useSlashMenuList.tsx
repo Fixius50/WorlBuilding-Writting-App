@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useImperativeHandle } from 'react';
 interface SlashMenuItem {
   title: string;
   command: (props: { editor: unknown; range: unknown }) => void;
-  icon: string;
+  label: string;
 }
 
 /**

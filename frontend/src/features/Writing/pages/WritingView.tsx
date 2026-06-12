@@ -1,13 +1,13 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useLanguage } from "@context/LanguageContext";
 import ZenEditor from "@features/Editor/components/ZenEditor";
 import ConfirmModal from "@organisms/ConfirmModal";
 import { useWritingView } from "./useWritingView";
-import { useNavigate, useParams } from "react-router-dom";
-import GlobalNotes from "@presentation/layout/GlobalNotes";
-import { EntityUseCase } from "@application/useCases/EntityUseCase";
-import { WorkspaceUseCase } from "@application/useCases/WorkspaceUseCase";
-import { Entidad } from "@domain/models/database";
+import IndividualProfileView from "@features/Entities/pages/archetypes/IndividualProfileView";
+import TerritoryProfileView from "@features/Entities/pages/archetypes/TerritoryProfileView";
+import CosmicProfileView from "@features/Entities/pages/archetypes/CosmicProfileView";
+import CollectiveProfileView from "@features/Entities/pages/archetypes/CollectiveProfileView";
+import EventProfileView from "@features/Entities/pages/archetypes/EventProfileView";
 
 const WritingView = () => {
   const { t } = useLanguage();
@@ -37,127 +37,51 @@ const WritingView = () => {
     handleAutoDeletePage,
     handlePageSelect,
     confirmDeletePage,
-    setCustomContent,
+    sidebarOpen,
+    setSidebarOpen,
+    selectedEntity,
   } = useWritingView();
 
-  const { projectName } = useParams();
-  const navigate = useNavigate();
-  const [panelTab, setPanelTab] = useState<
-    "index" | "notes" | "bible" | "metadata"
-  >("index");
-  const [entities, setEntities] = useState<Entidad[]>([]);
-  const [bibleSearch, setBibleSearch] = useState<string>("");
-  const [expandedEntityId, setExpandedEntityId] = useState<number | null>(null);
+  const renderProfilePreview = useCallback(() => {
+    const type = selectedEntity 
+      ? (selectedEntity.tipo || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase()
+      : "";
 
-  // Estados de metadatos de escena
-  const [povId, setPovId] = useState<string>("");
-  const [locationId, setLocationId] = useState<string>("");
-  const [sceneDate, setSceneDate] = useState<string>("");
+    const isChar = type.includes("PERSONAJE") || type.includes("INDIVIDUAL") || type.includes("CHARACTER");
+    const isLoc = type.includes("LUGAR") || type.includes("TERRITORIO") || type.includes("LOCATION");
+    const isCosmic = type.includes("COSMO") || type.includes("COSMIC") || type.includes("COSMICOS");
+    const isColl = type.includes("COLECTIVO") || type.includes("CULTURA") || type.includes("FACCION") || type.includes("COLLECTIVE") || type.includes("ORGANIZACION");
+    const isEvent = type.includes("EVENTO") || type.includes("EVENT");
 
-  useEffect(() => {
-    switch (!!notebook?.project_id) {
-      case true:
-        EntityUseCase.getAllByProject(notebook!.project_id).then((list) => {
-          setEntities(
-            list.filter((e) => e.tipo !== "Map" && e.tipo !== "Mapa"),
-          );
-        });
-        break;
-      default:
-        break;
-    }
-  }, [notebook?.project_id]);
+    const component = !selectedEntity
+      ? null
+      : isChar
+        ? React.createElement(IndividualProfileView, { entityId: selectedEntity.id })
+        : isLoc
+          ? React.createElement(TerritoryProfileView, { entityId: selectedEntity.id })
+          : isCosmic
+            ? React.createElement(CosmicProfileView, { entityId: selectedEntity.id })
+            : isColl
+              ? React.createElement(CollectiveProfileView, { entityId: selectedEntity.id })
+              : isEvent
+                ? React.createElement(EventProfileView, { entityId: selectedEntity.id })
+                : React.createElement(IndividualProfileView, { entityId: selectedEntity.id });
+
+    return component;
+  }, [selectedEntity]);
 
   const currentPage = pages[currentPageIndex];
 
-  useEffect(() => {
-    const loadMeta = async () => {
-      switch (!!currentPage?.id) {
-        case true: {
-          const saved = await WorkspaceUseCase.getSetting(
-            `page_metadata_${currentPage.id}`,
-          );
-          switch (!!saved) {
-            case true: {
-              try {
-                const parsed = JSON.parse(saved!);
-                setPovId(parsed.povId || "");
-                setLocationId(parsed.locationId || "");
-                setSceneDate(parsed.sceneDate || "");
-              } catch {}
-              break;
-            }
-            default:
-              setPovId("");
-              setLocationId("");
-              setSceneDate("");
-              break;
-          }
-          break;
-        }
-        default:
-          break;
-      }
-    };
-    loadMeta();
-  }, [currentPage?.id]);
-
-  const handleSaveMetadata = useCallback(
-    async (newPov: string, newLoc: string, newDate: string) => {
-      switch (!!currentPage?.id) {
-        case true: {
-          const meta = {
-            povId: newPov,
-            locationId: newLoc,
-            sceneDate: newDate,
-          };
-          await WorkspaceUseCase.saveSetting(
-            `page_metadata_${currentPage.id}`,
-            JSON.stringify(meta),
-          );
-          break;
-        }
-        default:
-          break;
-      }
-    },
-    [currentPage?.id],
-  );
-
-  const filteredEntities = useMemo(() => {
-    const searchLower = bibleSearch.toLowerCase();
-    const result = entities.filter(
-      (e) =>
-        (e.nombre || "").toLowerCase().includes(searchLower) ||
-        (e.tipo || "").toLowerCase().includes(searchLower),
+  // Filtramos páginas según el término de búsqueda
+  const filteredPages = useMemo(() => {
+    return pages.filter(
+      (p) =>
+        (p.titulo || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (p.contenido || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
-    return result;
-  }, [entities, bibleSearch]);
+  }, [pages, searchTerm]);
 
-  const characters = useMemo(() => {
-    const result = entities.filter((e) => {
-      const tUpper = e.tipo ? e.tipo.toUpperCase() : "";
-      const isChar = tUpper === "PERSONAJE" || tUpper === "INDIVIDUAL";
-      return isChar;
-    });
-    return result;
-  }, [entities]);
-
-  const locations = useMemo(() => {
-    const result = entities.filter((e) => {
-      const tUpper = e.tipo ? e.tipo.toUpperCase() : "";
-      const isLoc = tUpper === "LUGAR" || tUpper === "TERRITORIO";
-      return isLoc;
-    });
-    return result;
-  }, [entities]);
-
-  const filteredPages = pages.filter(
-    (p) =>
-      (p.titulo || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (p.contenido || "").toLowerCase().includes(searchTerm.toLowerCase()),
-  );
-
+  // Manejador del borrado
   const deletePage = React.useCallback(
     (e: React.MouseEvent, id: number, index: number) => {
       e.stopPropagation();
@@ -169,545 +93,45 @@ const WritingView = () => {
       setPageToDelete({ id, index });
       setDeleteModalOpen(true);
     },
-    [pages.length, setPageToDelete, setDeleteModalOpen],
+    [pages.length, setPageToDelete, setDeleteModalOpen]
   );
 
-  useEffect(() => {
-    const renderRightPanel = () => (
-      <div className="flex flex-col h-full monolithic-panel/95 select-none">
-        {/* Cabecera del Panel */}
-        <div className="p-4 border-b border-foreground/10 flex items-center justify-center bg-background/60 relative">
-          <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/60">
-            {notebook?.titulo || "Archivador"}
-          </h3>
-          {saving && (
-            <div className="absolute right-4 animate-pulse">
-              <span className="material-symbols-outlined text-xs text-amber-500 animate-spin">
-                sync
-              </span>
-            </div>
-          )}
-        </div>
+  // Parsear metadatos de la referencia seleccionada
+  const selectedEntityDetails = useMemo(() => {
+    if (!selectedEntity) return null;
+    try {
+      const attrs =
+        typeof selectedEntity.contenido_json === "string"
+          ? JSON.parse(selectedEntity.contenido_json)
+          : selectedEntity.contenido_json || {};
+      
+      const isChar = selectedEntity.tipo?.toUpperCase() === "PERSONAJE" || selectedEntity.tipo?.toUpperCase() === "INDIVIDUAL";
+      const isLoc = selectedEntity.tipo?.toUpperCase() === "LUGAR" || selectedEntity.tipo?.toUpperCase() === "TERRITORIO";
+      
+      let subInfo = selectedEntity.tipo || "Referencia";
+      if (isChar) subInfo = "Personaje • Protagonista";
+      else if (isLoc) subInfo = `${selectedEntity.tipo} • Escenario Principal`;
 
-        {/* Pestañas del Súper Inspector */}
-        <div className="flex border-b border-foreground/10 bg-background/40">
-          <button
-            onClick={() => setPanelTab("index")}
-            className={`flex-1 py-3 text-center border-b-2 transition-all flex items-center justify-center gap-1.5 ${panelTab === "index" ? "border-primary text-primary" : "border-transparent text-foreground/40 hover:text-foreground"}`}
-            title="Archivador de Hojas"
-          >
-            <span className="material-symbols-outlined text-base">
-              list_alt
-            </span>
-            <span className="text-[9px] font-black uppercase tracking-wider hidden xl:inline">
-              Archivador
-            </span>
-          </button>
-
-          <button
-            onClick={() => setPanelTab("notes")}
-            className={`flex-1 py-3 text-center border-b-2 transition-all flex items-center justify-center gap-1.5 ${panelTab === "notes" ? "border-primary text-primary" : "border-transparent text-foreground/40 hover:text-foreground"}`}
-            title="Notas de la Hoja"
-          >
-            <span className="material-symbols-outlined text-base">
-              edit_note
-            </span>
-            <span className="text-[9px] font-black uppercase tracking-wider hidden xl:inline">
-              Notas
-            </span>
-          </button>
-
-          <button
-            onClick={() => setPanelTab("bible")}
-            className={`flex-1 py-3 text-center border-b-2 transition-all flex items-center justify-center gap-1.5 ${panelTab === "bible" ? "border-primary text-primary" : "border-transparent text-foreground/40 hover:text-foreground"}`}
-            title="Biblia Rápida"
-          >
-            <span className="material-symbols-outlined text-base">
-              menu_book
-            </span>
-            <span className="text-[9px] font-black uppercase tracking-wider hidden xl:inline">
-              Biblia
-            </span>
-          </button>
-
-          <button
-            onClick={() => setPanelTab("metadata")}
-            className={`flex-1 py-3 text-center border-b-2 transition-all flex items-center justify-center gap-1.5 ${panelTab === "metadata" ? "border-primary text-primary" : "border-transparent text-foreground/40 hover:text-foreground"}`}
-            title="Metadatos de Escena"
-          >
-            <span className="material-symbols-outlined text-base">
-              settings
-            </span>
-            <span className="text-[9px] font-black uppercase tracking-wider hidden xl:inline">
-              Escena
-            </span>
-          </button>
-        </div>
-
-        {/* Contenido Dinámico según la pestaña activa */}
-        <div
-          className="flex-1 overflow-hidden flex flex-col relative"
-          style={{ backgroundColor: "hsl(var(--background))" }}
-        >
-          {(() => {
-            switch (panelTab) {
-              case "notes":
-                return (
-                  <div className="flex-1 overflow-y-auto p-4 custom-scrollbar h-full">
-                    {currentPage ? (
-                      <GlobalNotes
-                        projectName={projectName || ""}
-                        storageKey={`notes_page_${currentPage.id}`}
-                      />
-                    ) : (
-                      <div className="p-10 text-center text-[10px] font-black uppercase tracking-widest opacity-25">
-                        Crea una hoja para añadir notas
-                      </div>
-                    )}
-                  </div>
-                );
-
-              case "bible":
-                return (
-                  <div className="flex-1 flex flex-col h-full overflow-hidden select-text">
-                    <div className="p-4 border-b border-foreground/5">
-                      <div className="relative">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-sm text-foreground/40 font-black">
-                          search
-                        </span>
-                        <input
-                          type="text"
-                          placeholder="Buscar en la Biblia..."
-                          className="w-full bg-foreground/5 border border-foreground/10 py-2.5 pl-9 pr-4 text-[10px] font-mono outline-none focus:border-primary/50 transition-all text-foreground placeholder:text-foreground/30"
-                          value={bibleSearch}
-                          onChange={(e) => setBibleSearch(e.target.value)}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
-                      {filteredEntities.length === 0 ? (
-                        <div className="p-8 text-center text-[10px] font-black uppercase tracking-widest opacity-20">
-                          Sin coincidencias en la biblia
-                        </div>
-                      ) : (
-                        filteredEntities.map((ent) => {
-                          const isExpanded = expandedEntityId === ent.id;
-                          let entImg = "";
-                          let entDesc = "";
-                          try {
-                            const attrs =
-                              typeof ent.contenido_json === "string"
-                                ? JSON.parse(ent.contenido_json)
-                                : ent.contenido_json || {};
-                            entImg =
-                              attrs.imageUrl ||
-                              attrs.image ||
-                              attrs.avatar ||
-                              "";
-                            entDesc =
-                              ent.descripcion ||
-                              attrs.description ||
-                              "Sin descripción adicional en la biblia.";
-                          } catch {}
-
-                          return (
-                            <div
-                              key={ent.id}
-                              className="border border-foreground/5 bg-foreground/[0.02] hover:bg-foreground/[0.04] transition-all p-3 space-y-3"
-                            >
-                              <div
-                                className="flex items-center gap-3 cursor-pointer select-none"
-                                onClick={() =>
-                                  setExpandedEntityId(
-                                    isExpanded ? null : ent.id,
-                                  )
-                                }
-                              >
-                                <div className="size-8 bg-primary/10 border border-primary/20 flex items-center justify-center text-primary text-xs shrink-0">
-                                  <span className="material-symbols-outlined text-sm">
-                                    {ent.tipo?.toUpperCase() === "PERSONAJE" ||
-                                    ent.tipo?.toUpperCase() === "INDIVIDUAL"
-                                      ? "person"
-                                      : ent.tipo?.toUpperCase() === "LUGAR" ||
-                                          ent.tipo?.toUpperCase() ===
-                                            "TERRITORIO"
-                                        ? "location_on"
-                                        : "category"}
-                                  </span>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="text-[11px] font-bold text-foreground truncate">
-                                    {ent.nombre}
-                                  </div>
-                                  <div className="text-[8px] text-foreground/40 uppercase font-black tracking-widest">
-                                    {ent.tipo}
-                                  </div>
-                                </div>
-                                <span
-                                  className="material-symbols-outlined text-sm text-foreground/20 transition-transform duration-300"
-                                  style={{
-                                    transform: isExpanded
-                                      ? "rotate(90deg)"
-                                      : "rotate(0deg)",
-                                  }}
-                                >
-                                  chevron_right
-                                </span>
-                              </div>
-
-                              {isExpanded && (
-                                <div className="pt-2 border-t border-foreground/5 space-y-3 animate-in fade-in duration-300">
-                                  {entImg && (
-                                    <div className="aspect-video w-full overflow-hidden border border-foreground/10">
-                                      <img
-                                        src={entImg}
-                                        alt={ent.nombre}
-                                        className="w-full h-full object-cover"
-                                      />
-                                    </div>
-                                  )}
-                                  <p className="text-[10px] text-foreground/75 leading-relaxed font-serif">
-                                    {entDesc}
-                                  </p>
-                                  <button
-                                    onClick={() => {
-                                      // Panel derecho eliminado: antes abría perfil en inspector lateral.
-                                      navigate(
-                                        `/local/${projectName}/bible/entity/${ent.id}`,
-                                      );
-                                    }}
-                                    className="w-full py-1.5 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary text-[8px] font-black uppercase tracking-widest transition-all"
-                                  >
-                                    Ver Perfil Completo
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-                  </div>
-                );
-
-              case "metadata":
-                return (
-                  <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar animate-in fade-in duration-300 select-text">
-                    {currentPage ? (
-                      <>
-                        <div className="space-y-1">
-                          <span className="text-[8px] font-black uppercase tracking-[0.2em] text-primary">
-                            Detalles Contextuales
-                          </span>
-                          <h4 className="text-xs font-black uppercase text-foreground">
-                            Metadatos de Escena
-                          </h4>
-                        </div>
-
-                        {/* POV Character */}
-                        <div className="space-y-2">
-                          <label className="text-[9px] font-black uppercase tracking-widest text-foreground/40 px-0.5">
-                            Personaje POV (Punto de Vista)
-                          </label>
-                          <select
-                            value={povId}
-                            onChange={(e) => {
-                              setPovId(e.target.value);
-                              handleSaveMetadata(
-                                e.target.value,
-                                locationId,
-                                sceneDate,
-                              );
-                            }}
-                            className="w-full bg-editor-elevated border border-foreground/10 py-2.5 px-3 text-[10px] font-mono outline-none focus:border-primary/50 transition-all text-foreground"
-                          >
-                            <option value="" className="text-foreground/40">
-                              Seleccionar personaje...
-                            </option>
-                            {characters.map((char) => (
-                              <option key={char.id} value={char.id}>
-                                {char.nombre}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        {/* Location */}
-                        <div className="space-y-2">
-                          <label className="text-[9px] font-black uppercase tracking-widest text-foreground/40 px-0.5">
-                            Escenario / Ubicación
-                          </label>
-                          <select
-                            value={locationId}
-                            onChange={(e) => {
-                              setLocationId(e.target.value);
-                              handleSaveMetadata(
-                                povId,
-                                e.target.value,
-                                sceneDate,
-                              );
-                            }}
-                            className="w-full bg-editor-elevated border border-foreground/10 py-2.5 px-3 text-[10px] font-mono outline-none focus:border-primary/50 transition-all text-foreground"
-                          >
-                            <option value="" className="text-foreground/40">
-                              Seleccionar ubicación...
-                            </option>
-                            {locations.map((loc) => (
-                              <option key={loc.id} value={loc.id}>
-                                {loc.nombre}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        {/* Simulated Date */}
-                        <div className="space-y-2">
-                          <label className="text-[9px] font-black uppercase tracking-widest text-foreground/40 px-0.5">
-                            Fecha del Acontecimiento
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="Ej. Año 124 de la Segunda Era..."
-                            value={sceneDate}
-                            onChange={(e) => {
-                              setSceneDate(e.target.value);
-                              handleSaveMetadata(
-                                povId,
-                                locationId,
-                                e.target.value,
-                              );
-                            }}
-                            className="w-full bg-editor-elevated border border-foreground/10 py-2.5 px-3 text-[10px] font-mono outline-none focus:border-primary/50 transition-all text-foreground placeholder:text-foreground/20"
-                          />
-                        </div>
-
-                        <div className="pt-4 border-t border-foreground/5">
-                          <p className="text-[9px] text-foreground/30 italic leading-relaxed">
-                            Tip: Estos metadatos te ayudan a organizar
-                            cronológicamente tus escenas y a realizar un
-                            seguimiento de dónde se encuentran tus personajes en
-                            cada capítulo.
-                          </p>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="p-10 text-center text-[10px] font-black uppercase tracking-widest opacity-25">
-                        Crea una hoja para asignar metadatos
-                      </div>
-                    )}
-                  </div>
-                );
-
-              case "index":
-              default:
-                return (
-                  <div className="flex-1 flex flex-col h-full overflow-hidden">
-                    <div className="flex p-2 gap-2 border-b border-foreground/10 bg-background/20 select-none">
-                      <button
-                        onClick={() => setActiveTab("index")}
-                        className={`flex-1 py-2 rounded-none text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "index" ? "bg-primary text-foreground shadow-lg" : "text-foreground/60 hover:text-foreground"}`}
-                      >
-                        {t("writing.index")}
-                      </button>
-                      <button
-                        onClick={() => setActiveTab("format")}
-                        className={`flex-1 py-2 rounded-none text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "format" ? "bg-primary text-foreground shadow-lg" : "text-foreground/60 hover:text-foreground"}`}
-                      >
-                        {t("writing.format")}
-                      </button>
-                    </div>
-
-                    <div className="flex-1 overflow-hidden">
-                      {activeTab === "index" ? (
-                        <div className="flex flex-col h-full">
-                          <div className="p-4 border-b border-foreground/5 select-none">
-                            <div className="relative">
-                              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-sm text-foreground/40">
-                                search
-                              </span>
-                              <input
-                                type="text"
-                                placeholder="Buscar..."
-                                className="w-full bg-foreground/5 border border-foreground/10 py-2 pl-9 pr-4 text-[10px] font-mono outline-none focus:border-primary/50 transition-all text-foreground placeholder:text-foreground/30 select-text"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                              />
-                            </div>
-                          </div>
-                          <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
-                            {filteredPages.map((page) => {
-                              const globalIdx = pages.findIndex(
-                                (p) => p.id === page.id,
-                              );
-                              const isSelected = globalIdx === currentPageIndex;
-                              return (
-                                <div key={page.id} className="group relative">
-                                  <div
-                                    onClick={() => handlePageSelect(globalIdx)}
-                                    className={`w-full text-left p-4 rounded-none border transition-all cursor-pointer ${
-                                      isSelected
-                                        ? "bg-primary/10 border-primary/30 text-primary shadow-[inset_0_0_20px_rgba(var(--primary-rgb),0.1)]"
-                                        : "bg-foreground/5 border-transparent hover:bg-foreground/10 text-foreground/60"
-                                    }`}
-                                  >
-                                    <div className="flex justify-between items-center mb-1">
-                                      {editingPageId === page.id ? (
-                                        <input
-                                          autoFocus
-                                          onBlur={() => setEditingPageId(null)}
-                                          onKeyDown={(e) => {
-                                            if (e.key === "Enter")
-                                              setEditingPageId(null);
-                                            e.stopPropagation();
-                                          }}
-                                          onClick={(e) => e.stopPropagation()}
-                                          className={`bg-editor-elevated border-b border-primary font-serif font-bold text-sm outline-none w-full px-1 ${isSelected ? "text-primary" : "text-foreground/80"}`}
-                                          value={page.titulo || ""}
-                                          onChange={(e) =>
-                                            handleTitleChangeInternal(
-                                              globalIdx,
-                                              e.target.value,
-                                            )
-                                          }
-                                          placeholder={`Hoja ${globalIdx + 1}`}
-                                        />
-                                      ) : (
-                                        <span
-                                          className={`font-serif font-bold text-sm truncate w-full ${isSelected ? "text-primary" : "text-foreground/80"}`}
-                                        >
-                                          {page.titulo ||
-                                            `Hoja ${globalIdx + 1}`}
-                                        </span>
-                                      )}
-                                      {isSelected && !editingPageId && (
-                                        <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0 ml-2 animate-pulse"></span>
-                                      )}
-                                    </div>
-                                    <p className="text-[10px] line-clamp-1 opacity-50 font-mono break-words leading-relaxed pointer-events-none">
-                                      {page.contenido
-                                        ?.replace(/<[^>]+>/g, "")
-                                        .substring(0, 30) || "Sin contenido..."}
-                                    </p>
-                                  </div>
-                                  <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-all z-30">
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setEditingPageId(page.id);
-                                      }}
-                                      className="p-1.5 rounded-none text-foreground/40 hover:text-primary hover:bg-primary/10 transition-all"
-                                      title="Editar título"
-                                    >
-                                      <span className="material-symbols-outlined text-sm">
-                                        edit
-                                      </span>
-                                    </button>
-                                    <button
-                                      onClick={(e) =>
-                                        deletePage(e, page.id, globalIdx)
-                                      }
-                                      className="p-1.5 rounded-none text-foreground/40 hover:text-red-400 hover:bg-red-400/10 transition-all"
-                                      title="Eliminar hoja"
-                                    >
-                                      <span className="material-symbols-outlined text-sm">
-                                        delete
-                                      </span>
-                                    </button>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                          <div className="p-4 bg-background/20 border-t border-foreground/10 select-none">
-                            <button
-                              onClick={handleCreatePage}
-                              className="w-full py-3 bg-primary text-foreground rounded-none text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all hover:scale-[1.02] shadow-xl shadow-primary/20"
-                            >
-                              <span className="material-symbols-outlined text-base">
-                                add
-                              </span>
-                              <span>AÑADIR HOJA</span>
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="p-6 space-y-8 animate-in fade-in slide-in-from-right-4 select-text">
-                          <div className="space-y-4">
-                            <h3 className="text-xs font-black uppercase text-primary mb-4 tracking-widest">
-                              {t("writing.format")}
-                            </h3>
-                            <div className="space-y-2 text-[11px] text-foreground/60 font-mono">
-                              <div className="flex justify-between items-center p-2 bg-background/20 rounded">
-                                <span>Negrita</span>
-                                <kbd>Ctrl+B</kbd>
-                              </div>
-                              <div className="flex justify-between items-center p-2 bg-background/20 rounded">
-                                <span>Cursiva</span>
-                                <kbd>Ctrl+I</kbd>
-                              </div>
-                              <div className="flex justify-between items-center p-2 bg-background/20 rounded">
-                                <span>Mencionar Entidad</span>
-                                <kbd>@</kbd>
-                              </div>
-                              <div className="flex justify-between items-center p-2 bg-background/20 rounded">
-                                <span>Comandos / Menú</span>
-                                <kbd>/</kbd>
-                              </div>
-                            </div>
-                            <div className="pt-6 border-t border-foreground/5 space-y-3">
-                              <p className="text-[10px] text-foreground/40 leading-relaxed italic">
-                                Tip: Puedes invocar entidades de tu biblia
-                                escribiendo @ y seleccionando el nombre. Usa /
-                                para insertar separadores o dar formato
-                                avanzado.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-            }
-          })()}
-        </div>
-      </div>
-    );
-
-    setCustomContent(renderRightPanel(), notebook?.titulo || "Archivador");
-  }, [
-    notebook,
-    pages,
-    activeTab,
-    searchTerm,
-    editingPageId,
-    saving,
-    currentPageIndex,
-    handlePageSelect,
-    handleCreatePage,
-    handleTitleChangeInternal,
-    setCustomContent,
-    t,
-    deletePage,
-    panelTab,
-    entities,
-    bibleSearch,
-    expandedEntityId,
-    povId,
-    locationId,
-    sceneDate,
-    characters,
-    locations,
-    filteredEntities,
-    handleSaveMetadata,
-    projectName,
-    currentPage,
-  ]);
+      return {
+        nombre: selectedEntity.nombre,
+        subInfo,
+        descripcion: selectedEntity.descripcion || attrs.description || "Sin descripción disponible.",
+        estado: attrs.estado || attrs.status || "Estable",
+      };
+    } catch {
+      return {
+        nombre: selectedEntity.nombre,
+        subInfo: selectedEntity.tipo || "Referencia",
+        descripcion: selectedEntity.descripcion || "Sin descripción disponible.",
+        estado: "Desconocido",
+      };
+    }
+  }, [selectedEntity]);
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-background">
-        <div className="animate-pulse text-foreground/60 font-serif text-2xl italic tracking-widest">
+      <div className="flex-1 flex items-center justify-center bg-background select-none">
+        <div className="animate-pulse text-foreground/40 font-serif text-xl italic tracking-widest font-black uppercase">
           Abriendo Archivador...
         </div>
       </div>
@@ -715,9 +139,10 @@ const WritingView = () => {
   }
 
   return (
-    <div className="flex-1 flex w-full h-full bg-editor-base relative font-sans text-foreground/60">
-      <div className="flex-1 flex flex-col relative z-10">
-        <main className="flex-1 flex flex-col relative bg-editor-elevated">
+    <div className="flex-1 flex w-full h-full bg-editor-base relative select-text overflow-hidden">
+      {/* SECCIÓN CENTRAL: Lienzo del Editor */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
+        <main className="flex-1 flex flex-col relative bg-editor-elevated overflow-hidden">
           {currentPage && (
             <ZenEditor
               pages={pages}
@@ -730,10 +155,177 @@ const WritingView = () => {
               snapshots={snapshots}
               onRestoreSnapshot={handleRestoreSnapshot}
               onMentionClick={handleMentionClick}
+              notebookTitle={notebook?.titulo}
+              sidebarOpen={sidebarOpen}
+              onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
             />
           )}
         </main>
       </div>
+
+      {/* SECCIÓN LATERAL: Panel Contextual local de dos pestañas */}
+      {sidebarOpen && (
+        <aside className={`border-l border-foreground/5 bg-background flex flex-col h-full shrink-0 relative animate-in slide-in-from-right-3 duration-300 select-none transition-all ${
+          activeTab === "references" ? "w-[600px]" : "w-80"
+        }`}>
+          {/* Cabecera del Panel (Pestañas Índice y Referencias) */}
+          <div className="flex border-b border-foreground/5 bg-background/50 sticky top-0 z-20">
+            <button
+              onClick={() => setActiveTab("index")}
+              className={`flex-1 py-4 text-center border-b font-sans text-[11px] font-bold uppercase tracking-wider transition-all ${
+                activeTab === "index"
+                  ? "border-primary text-primary bg-primary/[0.02]"
+                  : "border-transparent text-foreground/40 hover:text-foreground"
+              }`}
+            >
+              Índice
+            </button>
+            <button
+              onClick={() => setActiveTab("references")}
+              className={`flex-1 py-4 text-center border-b font-sans text-[11px] font-bold uppercase tracking-wider transition-all ${
+                activeTab === "references"
+                  ? "border-primary text-primary bg-primary/[0.02]"
+                  : "border-transparent text-foreground/40 hover:text-foreground"
+              }`}
+            >
+              Referencias
+            </button>
+          </div>
+
+          {/* Contenido de las Pestañas */}
+          <div className="flex-grow overflow-y-auto custom-scrollbar flex flex-col justify-between">
+            {activeTab === "index" ? (
+              <div className="flex flex-col h-full justify-between flex-grow">
+                <div className="flex-grow flex flex-col overflow-hidden">
+                  {/* Buscador plano de Hojas */}
+                  <div className="p-3 border-b border-foreground/5">
+                    <div className="relative">
+                      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-sm text-foreground/35">
+                        search
+                      </span>
+                      <input
+                        type="text"
+                        placeholder="Buscar en el índice..."
+                        className="w-full bg-foreground/[0.03] border border-foreground/10 py-2 pl-9 pr-4 text-[10px] font-sans rounded-md outline-none focus:border-primary/50 transition-all text-foreground placeholder:text-foreground/30 select-text"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Lista de páginas con anidamiento dinámico */}
+                  <div className="flex-grow overflow-y-auto p-3 space-y-1 custom-scrollbar">
+                    {filteredPages.map((page) => {
+                      const globalIdx = pages.findIndex((p) => p.id === page.id);
+                      const isSelected = globalIdx === currentPageIndex;
+                      
+                      // Anidamiento dinámico: si no empieza por "Capítulo", se indenta sutilmente a la derecha
+                      const isChapter = (page.titulo || "").toLowerCase().startsWith("capítulo") || (page.titulo || "").toLowerCase().startsWith("capitulo");
+                      
+                      return (
+                        <div key={page.id} className="group relative">
+                          <button
+                            onClick={() => handlePageSelect(globalIdx)}
+                            className={`w-full text-left px-4 py-3 rounded-md transition-all flex flex-col justify-center border ${
+                              isChapter ? "" : "ml-4 max-w-[calc(100%-1rem)]"
+                            } ${
+                              isSelected
+                                ? "bg-primary/15 border-primary/20 text-primary font-bold shadow-[inset_0_0_10px_rgba(var(--primary-rgb),0.05)]"
+                                : "bg-transparent border-transparent hover:bg-foreground/[0.03] text-foreground/75"
+                            }`}
+                          >
+                            {editingPageId === page.id ? (
+                              <input
+                                autoFocus
+                                onBlur={() => setEditingPageId(null)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") setEditingPageId(null);
+                                  e.stopPropagation();
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="bg-background border-b border-primary font-sans font-bold text-xs outline-none w-full px-1 text-foreground"
+                                value={page.titulo || ""}
+                                onChange={(e) =>
+                                  handleTitleChangeInternal(globalIdx, e.target.value)
+                                }
+                                placeholder={`Hoja ${globalIdx + 1}`}
+                              />
+                            ) : (
+                              <span
+                                className={`font-sans text-[12px] truncate w-full ${
+                                  isChapter ? "font-bold text-foreground/90" : "font-medium text-foreground/60"
+                                }`}
+                              >
+                                {page.titulo || `Hoja ${globalIdx + 1}`}
+                              </span>
+                            )}
+                          </button>
+
+                          {/* Opciones de edición y borrado rápidas */}
+                          {!editingPageId && (
+                            <div className="absolute top-1/2 -translate-y-1/2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingPageId(page.id);
+                                }}
+                                className="p-1 rounded-sm text-foreground/35 hover:text-primary hover:bg-primary/10 transition-colors"
+                                title="Renombrar"
+                              >
+                                <span className="material-symbols-outlined text-sm">edit</span>
+                              </button>
+                              <button
+                                onClick={(e) => deletePage(e, page.id, globalIdx)}
+                                className="p-1 rounded-sm text-foreground/35 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                                title="Eliminar"
+                              >
+                                <span className="material-symbols-outlined text-sm">delete</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Botón de añadir hoja en la parte inferior */}
+                <div className="p-3 bg-background border-t border-foreground/5 sticky bottom-0">
+                  <button
+                    onClick={handleCreatePage}
+                    className="w-full py-3 bg-primary hover:bg-primary/95 text-foreground rounded-md text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.98] shadow-md shadow-primary/10"
+                  >
+                    <span className="material-symbols-outlined text-sm">add</span>
+                    <span>AÑADIR HOJA</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Pestaña Referencias */
+              <div className="flex-grow flex flex-col justify-start h-full overflow-hidden references-preview relative">
+                {!selectedEntityDetails ? (
+                  /* Estado vacío literario */
+                  <div className="flex-grow flex flex-col items-center justify-center text-center p-6 gap-4 min-h-[400px]">
+                    <span className="material-symbols-outlined text-4xl text-foreground/15">
+                      menu_book
+                    </span>
+                    <p className="text-[12px] font-serif italic text-foreground/35 leading-relaxed max-w-[180px]">
+                      Selecciona una mención en el texto para revisar sus notas.
+                    </p>
+                  </div>
+                ) : (
+                  /* Vista previa completa tipo iframe */
+                  <div className="w-full h-full overflow-y-auto custom-scrollbar select-text bg-background">
+                    {renderProfilePreview()}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </aside>
+      )}
+
+      {/* Diálogo de Confirmación de Borrado */}
       <ConfirmModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
@@ -752,6 +344,26 @@ const WritingView = () => {
           pageToDelete?.error === "one_page" ? "Entendido" : "Confirmar"
         }
         isDestructive={pageToDelete?.error !== "one_page"}
+      />
+
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            .references-preview header {
+               padding-left: 1.5rem !important;
+               padding-right: 1.5rem !important;
+               padding-top: 1rem !important;
+               padding-bottom: 1rem !important;
+            }
+            .references-preview header h1 {
+               font-size: 1.35rem !important;
+            }
+            .references-preview header button,
+            .references-preview header .h-4.w-px {
+               display: none !important;
+            }
+          `,
+        }}
       />
     </div>
   );

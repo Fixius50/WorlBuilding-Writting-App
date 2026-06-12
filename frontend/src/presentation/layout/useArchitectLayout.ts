@@ -8,6 +8,8 @@ import { useDashboardStore } from '@store/useDashboardStore';
 import { useAppStore } from '@store/useAppStore';
 import { useRightPanelStore } from '@store/useRightPanelStore';
 import { useQueryClient } from '@tanstack/react-query';
+import { WritingUseCase } from '@application/useCases/WritingUseCase';
+
 
 export const useArchitectLayout = () => {
   const { username, projectName } = useParams<{ username: string; projectName: string }>();
@@ -24,6 +26,8 @@ export const useArchitectLayout = () => {
   const [leftOpen, setLeftOpen] = useState<boolean>(true);
   const [loadedProject, setLoadedProject] = useState<Proyecto | null>(null);
   const [projectId, setProjectId] = useState<number | null>(null);
+  const [notebookTitle, setNotebookTitle] = useState<string>('');
+
 
   // Bottom Graph Panel State
   const [bottomGraphOpen, setBottomGraphOpen] = useState<boolean>(false);
@@ -147,7 +151,7 @@ export const useArchitectLayout = () => {
     const isTime = path.endsWith('/time');
     const isLanguages = path.endsWith('/languages');
     const isPlanning = path.endsWith('/planning');
-    const isWriting = path.endsWith('/writing');
+    const isWriting = path.includes('/writing');
     const isAnalytics = path.endsWith('/analytics');
     const isSync = path.endsWith('/sync');
     const isTrash = path.endsWith('/trash');
@@ -196,7 +200,7 @@ export const useArchitectLayout = () => {
       case isPlanning:
         return 'Centro de Planificación';
       case isWriting:
-        return t('nav.writing') || 'Escritura';
+        return notebookTitle ? `${t('nav.writing') || 'Escritura'} › ${notebookTitle}` : (t('nav.writing') || 'Escritura');
       case isAnalytics:
         return t('project.analytics_title') || 'Estadísticas';
       case isSync:
@@ -208,7 +212,7 @@ export const useArchitectLayout = () => {
       default:
         return t('nav.dashboard') || 'Panel de Control';
     }
-  }, [location.pathname, t, folders, queryClient, projectId]);
+  }, [location.pathname, t, folders, queryClient, projectId, notebookTitle]);
 
   const handleOtrosAction = useCallback((section: 'database' | 'notes' | 'stats' | 'sync'): void => {
     setActiveModal(section);
@@ -242,6 +246,21 @@ export const useArchitectLayout = () => {
     };
     init();
   }, [projectName]);
+
+  // Cargar título del cuaderno activo si estamos en la sección de escritura
+  useEffect(() => {
+    const match = location.pathname.match(/\/writing\/(\d+)/);
+    const notebookId = match ? parseInt(match[1], 10) : null;
+    
+    notebookId
+      ? WritingUseCase.getNotebookById(notebookId).then((nb) => {
+          nb ? setNotebookTitle(nb.titulo) : setNotebookTitle('');
+        }).catch(() => {
+          setNotebookTitle('');
+        })
+      : setNotebookTitle('');
+  }, [location.pathname]);
+
 
   // Auto-backup cada 5 minutos
   useEffect(() => {
@@ -450,7 +469,12 @@ export const useArchitectLayout = () => {
     searchTerm,
     setSearchTerm,
     filterType,
-    setFilterType
+    setFilterType,
+    // MOCK CONTEXT FOR BIBLE PROFILE PREVIEWS
+    setRightOpen: () => {},
+    setRightPanelTab: () => {},
+    setRightPanelContent: () => {},
+    setRightPanelTitle: () => {},
   }), [
     projectId,
     projectName,
