@@ -109,7 +109,7 @@ const MapRouter = () => {
     const map = maps.find(m => m.slug === mapId || m.id.toString() === mapId);
     const content = !map
       ? <div className="p-10 text-foreground/50 uppercase text-[10px] font-black">Cargando mapa...</div>
-      : <InteractiveMapView map={map} onBack={() => navigate('..')} />;
+      : <InteractiveMapView map={map} onBack={() => navigate(`/local/${projectName}/map`)} />;
     return content;
   };
 

@@ -244,8 +244,7 @@ const MapManager: React.FC<MapManagerProps> = ({
                   <MonolithicPanel
                     key={map.id}
                     className={`group relative overflow-hidden border-foreground/10 hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 cursor-pointer ${selectedMapId === map.id ? "ring-2 ring-primary bg-primary/5 shadow-2xl shadow-primary/10" : ""}`}
-                    onClick={() => setSelectedMapId(map.id)}
-                    onDoubleClick={() => onSelectMap(map)}
+                    onClick={() => onSelectMap(map)}
                   >
                     <div className="aspect-[16/9] w-full bg-background/50 relative overflow-hidden border-b border-foreground/10">
                       {preview ? (
@@ -263,6 +262,7 @@ const MapManager: React.FC<MapManagerProps> = ({
                       )}
 
                       <div className="absolute bottom-2 right-2 flex items-center gap-1 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        {/* 
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -287,6 +287,7 @@ const MapManager: React.FC<MapManagerProps> = ({
                             edit
                           </span>
                         </button>
+                        */}
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
