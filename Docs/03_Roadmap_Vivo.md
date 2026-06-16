@@ -51,6 +51,11 @@
 - [x] **Motor de Entidades Multiversal (EAV) — Completado ✅**
   - [x] Implementación de base de datos dinámica (EAV) para atributos ilimitados.
   - [x] **Gestor Masivo (BibleTableView)**: Interfaz tipo hoja de cálculo con @tanstack/react-table.
+- [x] **Visor de Mapas y Estudio Cartográfico (Atlas) — Completado ✅**
+  - [x] Optimización de rendimiento mediante caché local en memoria para trazos y opacidades.
+  - [x] Acotado dinámico del canvas a las dimensiones naturales de la imagen base de fondo.
+  - [x] Panel derecho colapsable estilo VS Code con tooltips CSS (Modo Enfoque).
+  - [x] Instalación de dependencias profesionales de dibujo vectorial 2D/3D (@mapbox/mapbox-gl-draw y @deck.gl-community/editable-layers).
 - [ ] Optimización de rendimiento en consultas relacionales complejas.
 
 ## FASE 5: EL ECOSISTEMA CONECTADO Y ESPECIALIZACIÓN PROFESIONAL (Futuro 🚀)
@@ -74,6 +79,10 @@
   - [ ] Resolución de conflictos: conservar local, aceptar remoto o fusión manual asistida.
 
 ## CRONOLOGÍA DE HITOS (CONSOLIDADO)
+
+### JUNIO 2026
+
+- **2026-06-15:** Optimización del Estudio Cartográfico (Atlas): caché local de dibujo, acotamiento dinámico al tamaño real de imagen, panel colapsable estilo VS Code con tooltips CSS e instalación de kits de dibujo avanzado (@mapbox/mapbox-gl-draw y @deck.gl-community/editable-layers).
 
 ### MAYO 2026
 

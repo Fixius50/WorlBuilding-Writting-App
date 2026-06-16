@@ -31,9 +31,12 @@ El sistema permite la selección dinámica de fuentes en Ajustes, pero la jerarq
    - **Hairline Borders:** Bordes extremadamente finos (`border-foreground/10`) para definir paneles sin sombras pesadas.
    - **Relieve Negativo:** Sombras interiores (`shadow-inner`) para simular paneles hundidos o tallados.
 3. **Inspección Contextual por Feature:**
-
-- No existe panel derecho global. El contexto se presenta por rutas, modales locales o paneles embebidos según el módulo.
-- Mantener consistencia visual en títulos, jerarquía tipográfica y acciones de cierre/retorno.
+   - No existe panel derecho global. El contexto se presenta por rutas, modales locales o paneles embebidos según el módulo.
+   - Mantener consistencia visual en títulos, jerarquía tipográfica y acciones de cierre/retorno.
+4. **Paneles Laterales Colapsables Contextuales (Estilo VS Code):**
+   - Para maximizar el área de visualización y dibujo en interfaces inmersivas, se priorizan las barras de actividad verticales estrechas (`w-[48px]`).
+   - Los botones de estas barras no contienen etiquetas de texto directo; en su lugar, utilizan tooltips flotantes en español basados en hover (CSS puro).
+   - Los paneles de contenido correspondientes flotan de manera adyacente y son colapsables haciendo clic sobre el icono activo o el botón de cerrar.
 
 ## ORGANIZACIÓN VISUAL (ATOMIC DESIGN)
 

@@ -80,6 +80,9 @@ Para garantizar un código mantenible y escalable, las jerarquías del sistema (
 2. **Efectos reactivos estables:** Para handlers inestables en `useEffect`, priorizar patrón con `useRef`.
 3. **Persistencia dinámica:** Valores `unknown` provenientes de `contenido_json` deben castearse explícitamente en capa de presentación.
 4. **Contratos de mapas:** `MapMarker.entityId` se mantiene como clave canónica de vínculo y `snapshotUrl`/`bgImage` deben persistirse en guardado de mapas.
+5. **Caché y Persistencia en Pantallas de Edición Táctica (Ej. Estudio Cartográfico):**
+   - Para evitar bloqueos de base de datos por I/O excesivo (como operaciones rápidas de trazos libres del ratón), se debe implementar una caché en memoria para el lienzo.
+   - La persistencia física en base de datos se difiere hasta la salida de la pantalla (limpieza de efectos, evento `beforeunload` o acción de retroceso explícita), mientras que las acciones estructurales del CRUD (niveles, anotaciones) se guardan inmediatamente para garantizar consistencia.
 
 ## REFERENCIAS CRUZADAS (EVITAR DUPLICIDAD)
 
