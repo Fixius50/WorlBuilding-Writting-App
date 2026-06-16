@@ -1,5 +1,5 @@
 import React from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { useLanguage } from "@context/LanguageContext";
 import { Evento } from "@domain/database";
 import ConfirmationModal from "@organisms/ConfirmationModal";
@@ -17,12 +17,10 @@ const CHRONOLOGY_ORDER_LABEL = "desc";
 const CHRONOLOGY_ORDER_MULTIPLIER = -1;
 
 const TimelineEditor: React.FC = () => {
-  const { projectName, folderId } = useParams<{
+  const { folderId } = useParams<{
     username: string;
-    projectName: string;
     folderId: string;
   }>();
-  const navigate = useNavigate();
   const { t } = useLanguage();
   const location = useLocation();
   const isInBible = location.pathname.includes("/bible");
@@ -84,10 +82,8 @@ const TimelineEditor: React.FC = () => {
 
   // Handlers
   const handleOpenInspector = (event: Evento) => {
-    // Panel derecho eliminado: antes montaba EventInspector para el evento seleccionado.
-    navigate(
-      `/local/${projectName}/bible/folder/${folderId}/timeline/event/${event.id}`,
-    );
+    // Sin panel derecho: abrir edición directa del hito en el overlay local.
+    onEditStart(event);
   };
 
   const chronologyEvents = React.useMemo(() => {

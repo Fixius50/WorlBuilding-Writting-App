@@ -227,7 +227,7 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
                   order="desc"
                   onOpenEvent={(event) => {
                     navigate(
-                      `/local/${projectName}/bible/folder/${event.timeline_id}/timeline/event/${event.id}`,
+                      `/local/${projectName}/bible/timeline/${event.timeline_id}`,
                     );
                   }}
                 />
