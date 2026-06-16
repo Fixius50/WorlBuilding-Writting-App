@@ -16,6 +16,7 @@ import { KonvaEventObject } from "konva/lib/Node";
 import SectionErrorBoundary from "@components/layout/SectionErrorBoundary";
 import { getHierarchyVisuals } from "@components/ui/hierarchyVisuals";
 import { HierarchyTypeId } from "@domain/hierarchy";
+import Switch from "@components/ui/Switch";
 
 export interface CanvasNode {
   id: string;
@@ -283,6 +284,8 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<Konva.Stage>(null);
+  const minimapCanvasRef = useRef<HTMLCanvasElement>(null);
+  const isDraggingMinimap = useRef<boolean>(false);
 
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [nodes, setNodes] = useState<CanvasNode[]>(initialNodes);
@@ -290,6 +293,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("ALL");
   const [dragSearchTerm, setDragSearchTerm] = useState("");
+  const [showMinimap, setShowMinimap] = useState<boolean>(true);
 
   // Estados de Interacción
   const [pinnedNode, setPinnedNode] = useState<string | null>(null);
@@ -562,6 +566,174 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
     horizontalLines.push(y);
   }
 
+  // --- LÓGICA DEL MINIMAPA ---
+  const getCanvasBounds = () => {
+    const bounds = nodes.length === 0
+      ? { minX: -400, maxX: 400, minY: -300, maxY: 300 }
+      : (() => {
+          let minX = Infinity;
+          let maxX = -Infinity;
+          let minY = Infinity;
+          let maxY = -Infinity;
+          nodes.forEach((n) => {
+            n.x < minX ? (minX = n.x) : undefined;
+            n.x > maxX ? (maxX = n.x) : undefined;
+            n.y < minY ? (minY = n.y) : undefined;
+            n.y > maxY ? (maxY = n.y) : undefined;
+          });
+          const margin = 200;
+          return {
+            minX: minX - margin,
+            maxX: maxX + margin,
+            minY: minY - margin,
+            maxY: maxY + margin,
+          };
+        })();
+    return bounds;
+  };
+
+  const minimapWidth = 180;
+  const minimapHeight = 135;
+
+  const getMinimapScaleAndOffset = () => {
+    const bounds = getCanvasBounds();
+    const boundsWidth = bounds.maxX - bounds.minX;
+    const boundsHeight = bounds.maxY - bounds.minY;
+
+    const scaleX = minimapWidth / boundsWidth;
+    const scaleY = minimapHeight / boundsHeight;
+    const mScale = Math.min(scaleX, scaleY, 0.5);
+
+    const offsetX = (minimapWidth - boundsWidth * mScale) / 2;
+    const offsetY = (minimapHeight - boundsHeight * mScale) / 2;
+
+    return { bounds, mScale, offsetX, offsetY, boundsWidth, boundsHeight };
+  };
+
+  const cxToMx = (x: number, bounds: { minX: number }, mScale: number, offsetX: number) =>
+    (x - bounds.minX) * mScale + offsetX;
+
+  const cyToMy = (y: number, bounds: { minY: number }, mScale: number, offsetY: number) =>
+    (y - bounds.minY) * mScale + offsetY;
+
+  const mxToCx = (x: number, bounds: { minX: number }, mScale: number, offsetX: number) =>
+    (x - offsetX) / mScale + bounds.minX;
+
+  const myToCy = (y: number, bounds: { minY: number }, mScale: number, offsetY: number) =>
+    (y - offsetY) / mScale + bounds.minY;
+
+  useEffect(() => {
+    const canvas = minimapCanvasRef.current;
+    const shouldDraw = showMinimap && canvas;
+    
+    if (shouldDraw) {
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        const { bounds, mScale, offsetX, offsetY } = getMinimapScaleAndOffset();
+
+        // Limpiar el canvas
+        ctx.clearRect(0, 0, minimapWidth, minimapHeight);
+
+        // 1. Dibujar enlaces
+        ctx.strokeStyle = "rgba(148, 163, 184, 0.15)";
+        ctx.lineWidth = 1;
+        filteredEdges.forEach((edge) => {
+          const fromNode = filteredNodes.find((n) => n.id === edge.from);
+          const toNode = filteredNodes.find((n) => n.id === edge.to);
+          
+          if (fromNode && toNode) {
+            ctx.beginPath();
+            ctx.moveTo(
+              cxToMx(fromNode.x, bounds, mScale, offsetX),
+              cyToMy(fromNode.y, bounds, mScale, offsetY)
+            );
+            ctx.lineTo(
+              cxToMx(toNode.x, bounds, mScale, offsetX),
+              cyToMy(toNode.y, bounds, mScale, offsetY)
+            );
+            ctx.stroke();
+          }
+        });
+
+        // 2. Dibujar nodos
+        filteredNodes.forEach((node) => {
+          const { color } = getArchetypeTypeAndColor(node.tipo);
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(
+            cxToMx(node.x, bounds, mScale, offsetX),
+            cyToMy(node.y, bounds, mScale, offsetY),
+            3,
+            0,
+            2 * Math.PI
+          );
+          ctx.fill();
+        });
+
+        // 3. Dibujar Viewport (área visible actual)
+        const vx1 = -position.x / scale;
+        const vy1 = -position.y / scale;
+        const vWidth = dimensions.width / scale;
+        const vHeight = dimensions.height / scale;
+
+        const mx1 = cxToMx(vx1, bounds, mScale, offsetX);
+        const my1 = cyToMy(vy1, bounds, mScale, offsetY);
+        const mw = vWidth * mScale;
+        const mh = vHeight * mScale;
+
+        // Borde y Fondo del viewport (círculo)
+        const centerX = mx1 + mw / 2;
+        const centerY = my1 + mh / 2;
+        const radius = Math.min(mw, mh) / 2;
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        
+        ctx.strokeStyle = "#3b82f6";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.fillStyle = "rgba(59, 130, 246, 0.05)";
+        ctx.fill();
+      }
+    }
+  }, [showMinimap, filteredNodes, filteredEdges, position, scale, dimensions]);
+
+  const handleMinimapInteraction = (clientX: number, clientY: number, canvasElement: HTMLCanvasElement) => {
+    const rect = canvasElement.getBoundingClientRect();
+    const localX = clientX - rect.left;
+    const localY = clientY - rect.top;
+
+    const { bounds, mScale, offsetX, offsetY } = getMinimapScaleAndOffset();
+    const canvasX = mxToCx(localX, bounds, mScale, offsetX);
+    const canvasY = myToCy(localY, bounds, mScale, offsetY);
+
+    // Centrar el viewport en las coordenadas (canvasX, canvasY)
+    const newPosX = -scale * canvasX + dimensions.width / 2;
+    const newPosY = -scale * canvasY + dimensions.height / 2;
+
+    setPosition({ x: newPosX, y: newPosY });
+  };
+
+  const handleMinimapMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    isDraggingMinimap.current = true;
+    handleMinimapInteraction(e.clientX, e.clientY, e.currentTarget);
+  };
+
+  const handleMinimapMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (isDraggingMinimap.current) {
+      handleMinimapInteraction(e.clientX, e.clientY, e.currentTarget);
+    }
+  };
+
+  const handleMinimapMouseUp = () => {
+    isDraggingMinimap.current = false;
+  };
+
+  const handleMinimapMouseLeave = () => {
+    isDraggingMinimap.current = false;
+  };
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const entityId = e.dataTransfer.getData("text/plain");
@@ -818,6 +990,13 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
 
       {/* Panel de Filtro y Búsqueda Flotante */}
       <div className="absolute top-4 right-3 z-10 bg-background border border-foreground/10 p-[0.75rem] rounded shadow-md flex flex-col gap-[0.5rem] w-64 h-auto">
+        <div className="flex items-center justify-between border-b border-foreground/10 pb-2 mb-1">
+          <span className="text-[10px] font-black uppercase tracking-widest text-foreground/80">Navegación</span>
+          <Switch
+            checked={showMinimap}
+            onChange={setShowMinimap}
+          />
+        </div>
         <div className="flex flex-col gap-[0.25rem]">
           <label htmlFor="canvas-search-input" className="text-[0.69rem] font-semibold text-muted-foreground uppercase tracking-wider">
             Buscar Elemento
@@ -916,6 +1095,21 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
           </div>
         )}
       </div>
+
+      {showMinimap && (
+        <div className="absolute bottom-4 left-4 z-10">
+          <canvas
+            ref={minimapCanvasRef}
+            width={180}
+            height={135}
+            className="cursor-crosshair border border-black bg-transparent"
+            onMouseDown={handleMinimapMouseDown}
+            onMouseMove={handleMinimapMouseMove}
+            onMouseUp={handleMinimapMouseUp}
+            onMouseLeave={handleMinimapMouseLeave}
+          />
+        </div>
+      )}
     </div>
   );
 };
