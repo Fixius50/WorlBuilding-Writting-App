@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
-import { WorldBibleUseCase } from "@application/useCases/WorldBibleUseCase";
-import { Carpeta } from "@domain/models/database";
-import { ArchitectContext } from "@domain/models/ui";
+import { WorldBibleUseCase } from "@application/WorldBibleUseCase";
+import { Carpeta } from "@domain/database";
+import { ArchitectContext } from "@domain/ui";
 import {
   useWorldBibleData,
   useWorldBibleFolderData,
@@ -79,17 +79,17 @@ export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
   const isEditorView = useMemo(() => {
     return (
       location.pathname.includes("/entity/") ||
-      location.pathname.includes("/dimension")
+      location.pathname.includes("/timeline")
     );
   }, [location.pathname]);
 
   const dynamicTitle = useMemo(() => {
     if (isRoot) return "Biblia del Mundo";
 
-    if (location.pathname.includes("/dimension")) {
+    if (location.pathname.includes("/timeline")) {
       return currentFolder
-        ? `Dimensión: ${currentFolder.nombre}`
-        : "Visor de Dimensiones";
+        ? `Timeline: ${currentFolder.nombre}`
+        : "Visor de Timelines";
     }
 
     if (location.pathname.includes("/entity/")) {

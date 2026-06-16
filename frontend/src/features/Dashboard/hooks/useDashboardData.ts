@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { DashboardUseCase, DashboardStats } from '@application/useCases/DashboardUseCase';
+import { DashboardUseCase, DashboardStats } from '@application/DashboardUseCase';
 
 /**
  * 🧠 useDashboardData

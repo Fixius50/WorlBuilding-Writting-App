@@ -1,5 +1,5 @@
 import { sql } from "../client";
-import { Proyecto } from "@domain/models/database";
+import { Proyecto } from "@domain/database";
 import { emitUIRefresh } from "@utils/uiRefresh";
 
 export const projectService = {

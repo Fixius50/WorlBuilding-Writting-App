@@ -1,5 +1,5 @@
 import { sql } from "../client";
-import { Carpeta, FolderType } from "@domain/models/database";
+import { Carpeta, FolderType } from "@domain/database";
 import { emitUIRefresh } from "@utils/uiRefresh";
 
 export const folderService = {

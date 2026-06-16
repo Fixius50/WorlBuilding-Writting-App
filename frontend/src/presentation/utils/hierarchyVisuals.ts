@@ -1,4 +1,4 @@
-import { HierarchyTypeId } from '@domain/models/hierarchy';
+import { HierarchyTypeId } from '@domain/hierarchy';
 
 /**
  * PRESENTATION LAYER (Atomic Design Integration)

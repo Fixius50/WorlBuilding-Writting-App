@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { WorldBibleUseCase } from "@application/useCases/WorldBibleUseCase";
-import { Entidad } from "@domain/models/database";
+import { WorldBibleUseCase } from "@application/WorldBibleUseCase";
+import { Entidad } from "@domain/database";
 import { BIBLE_KEYS } from "./useWorldBibleData";
 
 /**

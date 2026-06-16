@@ -1,5 +1,5 @@
 import React from "react";
-import { Carpeta, Entidad } from "@domain/models/database";
+import { Carpeta, Entidad } from "@domain/database";
 import { useLanguage } from "@context/LanguageContext";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import BibleCard from "../components/BibleCard";
@@ -171,7 +171,7 @@ const BibleGridView = () => {
               type="folder"
               linkTo={
                 folder.tipo === "TIMELINE"
-                  ? `/${username}/${projectName}/bible/dimension/${folder.id}`
+                  ? `/${username}/${projectName}/bible/timeline/${folder.id}`
                   : `/${username}/${projectName}/bible/folder/${folder.id}`
               }
               onDelete={() => handleDeleteFolder(folder.id)}

@@ -15,7 +15,7 @@ import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import SectionErrorBoundary from "@organisms/SectionErrorBoundary";
 import { getHierarchyVisuals } from "@presentation/utils/hierarchyVisuals";
-import { HierarchyTypeId } from "@domain/models/hierarchy";
+import { HierarchyTypeId } from "@domain/hierarchy";
 
 export interface CanvasNode {
   id: string;

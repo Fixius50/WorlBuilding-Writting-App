@@ -1,19 +1,19 @@
-import { SQLocal } from 'sqlocal';
+import { SQLocal } from "sqlocal";
 
 // Instancia de la base de datos local
-export const sqlocal = new SQLocal('worldbuilding_app.sqlite3');
+export const sqlocal = new SQLocal("worldbuilding_app.sqlite3");
 export const { sql } = sqlocal;
 
 /**
  * Inicializa el esquema de la base de datos si no existe.
  */
 export const initializeDatabase = async () => {
- try {
- // Activar claves foráneas para que ON DELETE CASCADE funcione
- await sql`PRAGMA foreign_keys = ON`;
- 
- // Tabla de Proyectos
- await sql`
+  try {
+    // Activar claves foráneas para que ON DELETE CASCADE funcione
+    await sql`PRAGMA foreign_keys = ON`;
+
+    // Tabla de Proyectos
+    await sql`
  CREATE TABLE IF NOT EXISTS proyectos (
  id INTEGER PRIMARY KEY AUTOINCREMENT,
  nombre TEXT NOT NULL UNIQUE,
@@ -26,8 +26,8 @@ export const initializeDatabase = async () => {
  )
  `;
 
- // Tabla de Carpetas (World Bible)
- await sql`
+    // Tabla de Carpetas (World Bible)
+    await sql`
  CREATE TABLE IF NOT EXISTS carpetas (
  id INTEGER PRIMARY KEY AUTOINCREMENT,
  nombre TEXT NOT NULL,
@@ -41,8 +41,8 @@ export const initializeDatabase = async () => {
  )
  `;
 
- // Tabla de Entidades (Personajes, Lugares, etc.)
- await sql`
+    // Tabla de Entidades (Personajes, Lugares, etc.)
+    await sql`
  CREATE TABLE IF NOT EXISTS entidades (
  id INTEGER PRIMARY KEY AUTOINCREMENT,
  nombre TEXT NOT NULL,
@@ -58,8 +58,8 @@ export const initializeDatabase = async () => {
  )
  `;
 
- // Tabla de Plantillas (Atributos Personalizados)
- await sql`
+    // Tabla de Plantillas (Atributos Personalizados)
+    await sql`
  CREATE TABLE IF NOT EXISTS plantillas (
  id INTEGER PRIMARY KEY AUTOINCREMENT,
  nombre TEXT NOT NULL,
@@ -73,8 +73,8 @@ export const initializeDatabase = async () => {
  )
  `;
 
- // Tabla de Valores (Instancia de atributo en entidad)
- await sql`
+    // Tabla de Valores (Instancia de atributo en entidad)
+    await sql`
  CREATE TABLE IF NOT EXISTS valores (
  id INTEGER PRIMARY KEY AUTOINCREMENT,
  entidad_id INTEGER NOT NULL,
@@ -86,8 +86,8 @@ export const initializeDatabase = async () => {
  )
  `;
 
- // Tabla de Eventos (Timeline)
- await sql`
+    // Tabla de Eventos (Timeline)
+    await sql`
  CREATE TABLE IF NOT EXISTS eventos (
  id INTEGER PRIMARY KEY AUTOINCREMENT,
  titulo TEXT NOT NULL,
@@ -99,8 +99,8 @@ export const initializeDatabase = async () => {
  )
  `;
 
- // Tabla de Relaciones (Para el Grafo)
- await sql`
+    // Tabla de Relaciones (Para el Grafo)
+    await sql`
  CREATE TABLE IF NOT EXISTS relaciones (
  id INTEGER PRIMARY KEY AUTOINCREMENT,
  origen_id INTEGER NOT NULL,
@@ -115,8 +115,8 @@ export const initializeDatabase = async () => {
  )
  `;
 
-  // Tabla de Cuadernos (Estructura de Escritura)
-  await sql`
+    // Tabla de Cuadernos (Estructura de Escritura)
+    await sql`
   CREATE TABLE IF NOT EXISTS cuadernos (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   titulo TEXT NOT NULL,
@@ -128,8 +128,8 @@ export const initializeDatabase = async () => {
   )
   `;
 
-  // Tabla de Hojas (Contenido de Escritura)
-  await sql`
+    // Tabla de Hojas (Contenido de Escritura)
+    await sql`
   CREATE TABLE IF NOT EXISTS hojas (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   titulo TEXT,
@@ -141,8 +141,8 @@ export const initializeDatabase = async () => {
   )
   `;
 
-  // Tabla de Snapshots (Control de Versiones)
-  await sql`
+    // Tabla de Snapshots (Control de Versiones)
+    await sql`
   CREATE TABLE IF NOT EXISTS hojas_snapshots (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   hoja_id INTEGER NOT NULL,
@@ -152,8 +152,8 @@ export const initializeDatabase = async () => {
   )
   `;
 
-  // Tabla de Configuraciones Globales (Sustituye a localStorage)
-  await sql`
+    // Tabla de Configuraciones Globales de la aplicacion
+    await sql`
   CREATE TABLE IF NOT EXISTS configuraciones (
   clave TEXT PRIMARY KEY,
   valor TEXT NOT NULL,
@@ -161,48 +161,72 @@ export const initializeDatabase = async () => {
   )
   `;
 
-  // Índices para mejorar rendimiento en uniones y filtrados frecuentes
-  await sql`CREATE INDEX IF NOT EXISTS idx_entidades_project_id ON entidades(project_id)`;
-  await sql`CREATE INDEX IF NOT EXISTS idx_entidades_carpeta_id ON entidades(carpeta_id)`;
-  await sql`CREATE INDEX IF NOT EXISTS idx_entidades_tipo ON entidades(tipo)`;
-  await sql`CREATE INDEX IF NOT EXISTS idx_relaciones_origen_id ON relaciones(origen_id)`;
-  await sql`CREATE INDEX IF NOT EXISTS idx_relaciones_destino_id ON relaciones(destino_id)`;
-  await sql`CREATE INDEX IF NOT EXISTS idx_relaciones_project_id ON relaciones(project_id)`;
+    // Índices para mejorar rendimiento en uniones y filtrados frecuentes
+    await sql`CREATE INDEX IF NOT EXISTS idx_entidades_project_id ON entidades(project_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_entidades_carpeta_id ON entidades(carpeta_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_entidades_tipo ON entidades(tipo)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_relaciones_origen_id ON relaciones(origen_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_relaciones_destino_id ON relaciones(destino_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_relaciones_project_id ON relaciones(project_id)`;
 
-  // [LOG REMOVED]
+    // [LOG REMOVED]
 
-  // --- MIGRACIONES MANUALES (Para tablas que ya existen pero necesitan columnas nuevas) ---
-  try {
-    // Añadir 'genero' a 'cuadernos' si no existe
-    await sql`ALTER TABLE cuadernos ADD COLUMN genero TEXT`.catch(() => {});
-    // Añadir 'image_url' a 'cuadernos' si no existe
-    await sql`ALTER TABLE cuadernos ADD COLUMN image_url TEXT`.catch(() => {});
-    // Añadir 'orden' a 'hojas' si no existe
-    await sql`ALTER TABLE hojas ADD COLUMN orden INTEGER DEFAULT 0`.catch(() => {});
-    
-    // MIGRACIÓN PARA HANDLES DEL GRAFO
-    await sql`ALTER TABLE relaciones ADD COLUMN origen_handle TEXT`.catch(() => {});
-    await sql`ALTER TABLE relaciones ADD COLUMN destino_handle TEXT`.catch(() => {});
-    
-    // MIGRACIÓN PARA SOFT DELETE EN TODAS LAS TABLAS CLAVE
-    await sql`ALTER TABLE carpetas ADD COLUMN borrado INTEGER DEFAULT 0`.catch(() => {});
-    await sql`ALTER TABLE entidades ADD COLUMN borrado INTEGER DEFAULT 0`.catch(() => {});
-    await sql`ALTER TABLE eventos ADD COLUMN borrado INTEGER DEFAULT 0`.catch(() => {});
-    
-    // MIGRACIÓN PARA COLUMNA SLUG EN ENTIDADES
-    await sql`ALTER TABLE entidades ADD COLUMN slug TEXT`.catch(() => {});
-    await sql`UPDATE entidades SET slug = lower(replace(nombre, ' ', '-')) WHERE slug IS NULL`.catch(() => {});
-    
-    // Asegurar que registros antiguos sin valor de borrado tengan por defecto 0 (evitar NULL)
-    await sql`UPDATE carpetas SET borrado = 0 WHERE borrado IS NULL`.catch(() => {});
-    await sql`UPDATE entidades SET borrado = 0 WHERE borrado IS NULL`.catch(() => {});
-    await sql`UPDATE eventos SET borrado = 0 WHERE borrado IS NULL`.catch(() => {});
-    
-    // MIGRACIÓN PARA MULTIVERSO (LÍNEAS PARALELAS)
-    await sql`ALTER TABLE eventos ADD COLUMN linea_id INTEGER`.catch(() => {});
-    
-    // Nueva tabla para Ramas/Líneas de la Dimensión
-    await sql`
+    // --- MIGRACIONES MANUALES (Para tablas que ya existen pero necesitan columnas nuevas) ---
+    try {
+      // Añadir 'genero' a 'cuadernos' si no existe
+      await sql`ALTER TABLE cuadernos ADD COLUMN genero TEXT`.catch(() => {});
+      // Añadir 'image_url' a 'cuadernos' si no existe
+      await sql`ALTER TABLE cuadernos ADD COLUMN image_url TEXT`.catch(
+        () => {},
+      );
+      // Añadir 'orden' a 'hojas' si no existe
+      await sql`ALTER TABLE hojas ADD COLUMN orden INTEGER DEFAULT 0`.catch(
+        () => {},
+      );
+
+      // MIGRACIÓN PARA HANDLES DEL GRAFO
+      await sql`ALTER TABLE relaciones ADD COLUMN origen_handle TEXT`.catch(
+        () => {},
+      );
+      await sql`ALTER TABLE relaciones ADD COLUMN destino_handle TEXT`.catch(
+        () => {},
+      );
+
+      // MIGRACIÓN PARA SOFT DELETE EN TODAS LAS TABLAS CLAVE
+      await sql`ALTER TABLE carpetas ADD COLUMN borrado INTEGER DEFAULT 0`.catch(
+        () => {},
+      );
+      await sql`ALTER TABLE entidades ADD COLUMN borrado INTEGER DEFAULT 0`.catch(
+        () => {},
+      );
+      await sql`ALTER TABLE eventos ADD COLUMN borrado INTEGER DEFAULT 0`.catch(
+        () => {},
+      );
+
+      // MIGRACIÓN PARA COLUMNA SLUG EN ENTIDADES
+      await sql`ALTER TABLE entidades ADD COLUMN slug TEXT`.catch(() => {});
+      await sql`UPDATE entidades SET slug = lower(replace(nombre, ' ', '-')) WHERE slug IS NULL`.catch(
+        () => {},
+      );
+
+      // Asegurar que registros antiguos sin valor de borrado tengan por defecto 0 (evitar NULL)
+      await sql`UPDATE carpetas SET borrado = 0 WHERE borrado IS NULL`.catch(
+        () => {},
+      );
+      await sql`UPDATE entidades SET borrado = 0 WHERE borrado IS NULL`.catch(
+        () => {},
+      );
+      await sql`UPDATE eventos SET borrado = 0 WHERE borrado IS NULL`.catch(
+        () => {},
+      );
+
+      // MIGRACIÓN PARA MULTIVERSO (LÍNEAS PARALELAS)
+      await sql`ALTER TABLE eventos ADD COLUMN linea_id INTEGER`.catch(
+        () => {},
+      );
+
+      // Nueva tabla para Ramas/Líneas de la Dimensión
+      await sql`
       CREATE TABLE IF NOT EXISTS dimension_lineas (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nombre TEXT NOT NULL,
@@ -214,11 +238,13 @@ export const initializeDatabase = async () => {
       )
     `;
 
-    // Migración para añadir entidad_id si ya existe la tabla
-    await sql`ALTER TABLE dimension_lineas ADD COLUMN entidad_id INTEGER`.catch(() => {});
+      // Migración para añadir entidad_id si ya existe la tabla
+      await sql`ALTER TABLE dimension_lineas ADD COLUMN entidad_id INTEGER`.catch(
+        () => {},
+      );
 
-    // Nueva tabla para Vinculación de Entidades a Hitos
-    await sql`
+      // Nueva tabla para Vinculación de Entidades a Hitos
+      await sql`
       CREATE TABLE IF NOT EXISTS eventos_entidades (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         evento_id INTEGER NOT NULL,
@@ -228,8 +254,8 @@ export const initializeDatabase = async () => {
       )
     `;
 
-    // Nueva tabla para Pizarras (Whiteboards)
-    await sql`
+      // Nueva tabla para Pizarras (Whiteboards)
+      await sql`
       CREATE TABLE IF NOT EXISTS pizarras (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         titulo TEXT NOT NULL,
@@ -243,8 +269,8 @@ export const initializeDatabase = async () => {
       )
     `;
 
-    // Nueva tabla para Calendarios (Sistemas de Tiempo)
-    await sql`
+      // Nueva tabla para Calendarios (Sistemas de Tiempo)
+      await sql`
       CREATE TABLE IF NOT EXISTS calendarios (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nombre TEXT NOT NULL,
@@ -257,15 +283,17 @@ export const initializeDatabase = async () => {
       )
     `;
 
-    // Recreamos la tabla de posiciones con soporte de contexto si no tiene la columna contexto
-    const columns = await sql<{ name: string }>`PRAGMA table_info(grafo_posiciones)`.catch(() => []);
-    const hasContexto = columns.some((c) => c.name === 'contexto');
-    if (!hasContexto) {
-      await sql`DROP TABLE IF EXISTS grafo_posiciones`.catch(() => {});
-    }
+      // Recreamos la tabla de posiciones con soporte de contexto si no tiene la columna contexto
+      const columns = await sql<{
+        name: string;
+      }>`PRAGMA table_info(grafo_posiciones)`.catch(() => []);
+      const hasContexto = columns.some((c) => c.name === "contexto");
+      if (!hasContexto) {
+        await sql`DROP TABLE IF EXISTS grafo_posiciones`.catch(() => {});
+      }
 
-    // Nueva tabla para posiciones del Grafo
-    await sql`
+      // Nueva tabla para posiciones del Grafo
+      await sql`
       CREATE TABLE IF NOT EXISTS grafo_posiciones (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         entidad_id INTEGER NOT NULL,
@@ -276,23 +304,30 @@ export const initializeDatabase = async () => {
         UNIQUE(entidad_id, contexto)
       )
     `;
-    await sql`CREATE INDEX IF NOT EXISTS idx_grafo_posiciones_entidad_id ON grafo_posiciones(entidad_id);`;
+      await sql`CREATE INDEX IF NOT EXISTS idx_grafo_posiciones_entidad_id ON grafo_posiciones(entidad_id);`;
 
-    // MIGRACIONES PARA MOTOR EAV
-    await sql`ALTER TABLE plantillas ADD COLUMN aplica_a_todo INTEGER DEFAULT 1`.catch(() => {});
-    await sql`ALTER TABLE plantillas ADD COLUMN tipo_objetivo TEXT`.catch(() => {});
-    await sql`ALTER TABLE plantillas ADD COLUMN categoria TEXT`.catch(() => {});
-    await sql`ALTER TABLE plantillas ADD COLUMN orden INTEGER DEFAULT 0`.catch(() => {});
+      // MIGRACIONES PARA MOTOR EAV
+      await sql`ALTER TABLE plantillas ADD COLUMN aplica_a_todo INTEGER DEFAULT 1`.catch(
+        () => {},
+      );
+      await sql`ALTER TABLE plantillas ADD COLUMN tipo_objetivo TEXT`.catch(
+        () => {},
+      );
+      await sql`ALTER TABLE plantillas ADD COLUMN categoria TEXT`.catch(
+        () => {},
+      );
+      await sql`ALTER TABLE plantillas ADD COLUMN orden INTEGER DEFAULT 0`.catch(
+        () => {},
+      );
+
+      // [LOG REMOVED]
+    } catch (err) {
+      // [LOG REMOVED]
+    }
 
     // [LOG REMOVED]
-  } catch (err) {
+  } catch (error) {
     // [LOG REMOVED]
+    throw error;
   }
-
-  // [LOG REMOVED]
-
- } catch (error) {
- // [LOG REMOVED]
- throw error;
- }
-}
+};

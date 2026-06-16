@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLanguage } from '@context/LanguageContext';
-import { Word } from '@domain/models/database';
+import { Word } from '@domain/database';
 import { useLinguisticsSidebar } from './useLinguisticsSidebar';
 
 export interface GrammarRule {

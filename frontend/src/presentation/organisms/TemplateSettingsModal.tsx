@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plantilla } from '@domain/models/database';
+import { Plantilla } from '@domain/database';
 import { templateService } from '@repositories/templateService';
 import '@assets/attributes.css';
 

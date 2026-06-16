@@ -1,5 +1,5 @@
 import React from 'react';
-import { Entidad } from '@domain/models/database';
+import { Entidad } from '@domain/database';
 import { useEntityDatabase } from './useEntityDatabase';
 
 interface EntityDatabaseProps {

@@ -1,5 +1,5 @@
 import { sql } from "../client";
-import { Evento, DimensionLinea, Entidad } from "@domain/models/database";
+import { Evento, DimensionLinea, Entidad } from "@domain/database";
 import { emitUIRefresh } from "@utils/uiRefresh";
 
 export const timelineService = {

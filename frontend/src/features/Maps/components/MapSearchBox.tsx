@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { EntityUseCase } from '@application/useCases/EntityUseCase';
-import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
+import { EntityUseCase } from '@application/EntityUseCase';
+import { TemplateUseCase } from '@application/TemplateUseCase';
 import Switch from '@atoms/Switch';
 
 interface MapSearchBoxProps {

@@ -1,5 +1,5 @@
 import { sql } from "../client";
-import { Plantilla, Valor } from "@domain/models/database";
+import { Plantilla, Valor } from "@domain/database";
 import { emitUIRefresh } from "@utils/uiRefresh";
 
 export const templateService = {

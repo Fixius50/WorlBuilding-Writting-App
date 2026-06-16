@@ -29,8 +29,8 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useLanguage } from "@context/LanguageContext";
-import { RelationshipUseCase } from "@application/useCases/RelationshipUseCase";
-import { RelacionEnriquecida } from "@domain/models/database";
+import { RelationshipUseCase } from "@application/RelationshipUseCase";
+import { RelacionEnriquecida } from "@domain/database";
 import Button from "@atoms/Button";
 import ConfirmationModal from "@organisms/ConfirmationModal";
 

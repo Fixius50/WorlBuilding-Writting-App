@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { WorkspaceUseCase } from "@application/useCases/WorkspaceUseCase";
-import { Proyecto } from "@domain/models/database";
+import { WorkspaceUseCase } from "@application/WorkspaceUseCase";
+import { Proyecto } from "@domain/database";
 import { useAppStore } from "@store/useAppStore";
 
 export const useWorkspaceSelector = () => {

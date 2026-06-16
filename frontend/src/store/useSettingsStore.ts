@@ -3,8 +3,8 @@ import {
   SettingsUseCase,
   UserData,
   AppSettings,
-} from "@application/useCases/SettingsUseCase";
-import { Proyecto } from "@domain/models/database";
+} from "@application/SettingsUseCase";
+import { Proyecto } from "@domain/database";
 import { useAppStore } from "./useAppStore";
 
 export interface NotificationData {

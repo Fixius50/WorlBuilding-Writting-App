@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { EntityUseCase } from '@application/useCases/EntityUseCase';
-import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
-import { Entidad, Word } from '@domain/models/database';
+import { EntityUseCase } from '@application/EntityUseCase';
+import { TemplateUseCase } from '@application/TemplateUseCase';
+import { Entidad, Word } from '@domain/database';
 import { GrammarRule } from '../components/LinguisticsSidebar';
 
 export const useLexiconManager = (projectParam: string | undefined) => {

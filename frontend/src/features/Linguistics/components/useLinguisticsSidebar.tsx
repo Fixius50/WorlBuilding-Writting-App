@@ -1,4 +1,4 @@
-import { Word } from '@domain/models/database';
+import { Word } from '@domain/database';
 import { GrammarRule } from '../components/LinguisticsSidebar';
 
 /**

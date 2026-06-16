@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Plantilla } from '@domain/models/database';
-import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
+import { Plantilla } from '@domain/database';
+import { TemplateUseCase } from '@application/TemplateUseCase';
 
 /**
  * 🧠 useEntityBuilderSidebar

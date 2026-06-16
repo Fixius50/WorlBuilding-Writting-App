@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { CanvasNode, CanvasEdge } from '@presentation/organisms/editor/UniversalCanvas';
-import { RelationshipUseCase } from '@application/useCases/RelationshipUseCase';
+import { RelationshipUseCase } from '@application/RelationshipUseCase';
 
 /**
  * 🧠 useMiniGraph

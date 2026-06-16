@@ -1,5 +1,5 @@
 import { sql } from "../client";
-import { Entidad, Valor } from "@domain/models/database";
+import { Entidad, Valor } from "@domain/database";
 import { emitUIRefresh } from "@utils/uiRefresh";
 
 // interface EntityValueQueryResult is an interface that is used to query the database for values of an entity and return them as an array of objects

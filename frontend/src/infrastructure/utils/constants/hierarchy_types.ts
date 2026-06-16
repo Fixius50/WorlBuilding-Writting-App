@@ -1,4 +1,4 @@
-import { HierarchyTypeId, HIERARCHY_DEFINITIONS } from '@domain/models/hierarchy';
+import { HierarchyTypeId, HIERARCHY_DEFINITIONS } from '@domain/hierarchy';
 import { HIERARCHY_VISUALS } from '@presentation/utils/hierarchyVisuals';
 
 /**

@@ -5,10 +5,10 @@ import {
   useNavigate,
   useLocation,
 } from "react-router-dom";
-import { WorkspaceUseCase } from "@application/useCases/WorkspaceUseCase";
-import { EntityUseCase } from "@application/useCases/EntityUseCase";
-import { TemplateUseCase } from "@application/useCases/TemplateUseCase";
-import { Entidad, Plantilla, Carpeta, Valor } from "@domain/models/database";
+import { WorkspaceUseCase } from "@application/WorkspaceUseCase";
+import { EntityUseCase } from "@application/EntityUseCase";
+import { TemplateUseCase } from "@application/TemplateUseCase";
+import { Entidad, Plantilla, Carpeta, Valor } from "@domain/database";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getThemePrimaryHex } from "@infrastructure/utils/themeColor";
 import { getPresetTabsByEntityType } from "@features/Entities/utils/entityPresetTabs";

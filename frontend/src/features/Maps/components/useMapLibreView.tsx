@@ -7,7 +7,7 @@ import {
   PathLayer,
   GeoJsonLayer,
 } from "@deck.gl/layers";
-import { MapLayer, MapMarker, MapConnection } from "@domain/models/maps";
+import { MapLayer, MapMarker, MapConnection } from "@domain/maps";
 import { getThemePrimaryRgb } from "@infrastructure/utils/themeColor";
 
 interface GeoFeatureCollection {

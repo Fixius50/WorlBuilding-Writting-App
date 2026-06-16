@@ -1,7 +1,7 @@
 import React from "react";
 import ConfirmModal from "@organisms/ConfirmModal";
 import InputModal from "@organisms/InputModal";
-import { Notebook } from "@domain/models/writing";
+import { Notebook } from "@domain/writing";
 import { useNotebookGrid } from "./useNotebookGrid";
 
 interface NotebookGridProps {

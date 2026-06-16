@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useLanguage } from '@context/LanguageContext';
-import { Word } from '@domain/models/database';
+import { Word } from '@domain/database';
 import MonolithicPanel from '@atoms/MonolithicPanel';
 import Button from '@atoms/Button';
 import DrawingCanvas from '@presentation/organisms/editor/DrawingCanvas';

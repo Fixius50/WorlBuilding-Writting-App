@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { Plantilla } from '@domain/models/database';
+import { Plantilla } from '@domain/database';
 
 /**
  * 🧠 useAttributeField

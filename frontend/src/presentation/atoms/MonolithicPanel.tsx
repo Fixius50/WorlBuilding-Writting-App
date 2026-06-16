@@ -1,6 +1,6 @@
 import React from 'react';
 import { twMerge } from "tailwind-merge";
-import { IconProps } from '@domain/models/ui';
+import { IconProps } from '@domain/ui';
 
 interface MonolithicPanelProps extends IconProps {
   title?: string;

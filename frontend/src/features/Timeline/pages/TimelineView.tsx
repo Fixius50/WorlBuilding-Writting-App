@@ -1,21 +1,18 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useCallback } from "react";
 import { useLanguage } from "@context/LanguageContext";
 import { useOutletContext } from "react-router-dom";
-import { TimelineUseCase } from "@application/useCases/TimelineUseCase";
+import { TimelineUseCase } from "@application/TimelineUseCase";
 import ConfirmationModal from "@organisms/ConfirmationModal";
 import Button from "@atoms/Button";
 import TimelineEventCard from "../components/TimelineEventCard";
 import { useTimelineView } from "./useTimelineView";
 
+const CHRONOLOGY_MAX_ITEMS = 10;
+const CHRONOLOGY_ORDER_LABEL = "desc";
+
 const TimelineView = () => {
   const { t } = useLanguage();
   const { projectId } = useOutletContext<{ projectId: number }>();
-  const setCustomContent = (
-    _content: React.ReactNode,
-    _title?: React.ReactNode | null,
-  ) => {
-    // Panel derecho eliminado: antes publicaba la UI de gestión de multiversos en el inspector lateral.
-  };
 
   const {
     universes,
@@ -48,6 +45,28 @@ const TimelineView = () => {
     executeDeletion,
     loadMultiverse,
   } = useTimelineView(projectId);
+
+  const chronologyHighlights = React.useMemo(() => {
+    const getYear = (dateValue: string | null): number => {
+      if (!dateValue || dateValue === "?") return Number.MIN_SAFE_INTEGER;
+      const match = dateValue.match(/-?\d+/);
+      return match ? parseInt(match[0], 10) : Number.MIN_SAFE_INTEGER;
+    };
+
+    const sortedEvents = [...events].sort((a, b) => {
+      const yearA = getYear(a.fecha_simulada);
+      const yearB = getYear(b.fecha_simulada);
+
+      switch (true) {
+        case yearA !== yearB:
+          return yearB - yearA;
+        default:
+          return b.id - a.id;
+      }
+    });
+
+    return sortedEvents.slice(0, CHRONOLOGY_MAX_ITEMS);
+  }, [events]);
 
   const renderUniverseTab = useCallback(
     () => (
@@ -304,135 +323,119 @@ const TimelineView = () => {
     setNewLine,
   ]);
 
-  useEffect(() => {
-    const sidebarContent = (
-      <>
-        <div className="p-4 border-b border-foreground/10">
-          <div className="flex bg-background/40 p-1 gap-1">
-            {[
-              {
-                id: "universo",
-                label: "Multiverso",
-                icon: "language",
-                color: "amber",
-              },
-              {
-                id: "linea",
-                label: "Línea",
-                icon: "timeline",
-                color: "indigo",
-              },
-              {
-                id: "eventos",
-                label: "Eventos",
-                icon: "event",
-                color: "primary",
-              },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 py-2 text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === tab.id ? `bg-${tab.color}-500/20 text-${tab.color}-400 border border-${tab.color}-500/40` : "text-foreground/40 hover:text-foreground/60"}`}
-              >
-                <span className="material-symbols-outlined text-sm">
-                  {tab.icon}
-                </span>
-                <span className="hidden sm:inline">{tab.label}</span>
-              </button>
-            ))}
-          </div>
+  const sidebarContent = (
+    <>
+      <div className="p-4 border-b border-foreground/10">
+        <div className="flex bg-background/40 p-1 gap-1">
+          {[
+            {
+              id: "universo",
+              label: "Multiverso",
+              icon: "language",
+              color: "amber",
+            },
+            {
+              id: "linea",
+              label: "Línea",
+              icon: "timeline",
+              color: "indigo",
+            },
+            {
+              id: "eventos",
+              label: "Eventos",
+              icon: "event",
+              color: "primary",
+            },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 py-2 text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === tab.id ? `bg-${tab.color}-500/20 text-${tab.color}-400 border border-${tab.color}-500/40` : "text-foreground/40 hover:text-foreground/60"}`}
+            >
+              <span className="material-symbols-outlined text-sm">
+                {tab.icon}
+              </span>
+              <span className="hidden sm:inline">{tab.label}</span>
+            </button>
+          ))}
         </div>
-        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-          {activeTab === "universo" && renderUniverseTab()}
-          {activeTab === "linea" && renderTimelineTab()}
-          {activeTab === "eventos" && (
-            <div className="space-y-6">
-              {!selectedTimelineId ? (
-                <div className="p-10 text-center opacity-30 italic text-[10px] uppercase font-black">
-                  Selecciona una línea temporal primero.
-                </div>
-              ) : (
-                <div className="bg-background/20 p-4 border border-foreground/10 space-y-4">
-                  <h3 className="text-[10px] font-black uppercase text-primary flex items-center justify-between">
-                    {editingEvent ? "Editar Evento" : "Añadir Hito"}
-                    {editingEvent && (
-                      <button
-                        onClick={() => setEditingEvent(null)}
-                        className="text-[8px] uppercase"
-                      >
-                        Cancelar
-                      </button>
-                    )}
-                  </h3>
+      </div>
+      <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+        {activeTab === "universo" && renderUniverseTab()}
+        {activeTab === "linea" && renderTimelineTab()}
+        {activeTab === "eventos" && (
+          <div className="space-y-6">
+            {!selectedTimelineId ? (
+              <div className="p-10 text-center opacity-30 italic text-[10px] uppercase font-black">
+                Selecciona una línea temporal primero.
+              </div>
+            ) : (
+              <div className="bg-background/20 p-4 border border-foreground/10 space-y-4">
+                <h3 className="text-[10px] font-black uppercase text-primary flex items-center justify-between">
+                  {editingEvent ? "Editar Evento" : "Añadir Hito"}
+                  {editingEvent && (
+                    <button
+                      onClick={() => setEditingEvent(null)}
+                      className="text-[8px] uppercase"
+                    >
+                      Cancelar
+                    </button>
+                  )}
+                </h3>
+                <input
+                  className="w-full bg-background border border-foreground/20 p-2 text-xs outline-none focus:border-primary"
+                  value={newEvent.titulo}
+                  onChange={(e) =>
+                    setNewEvent({ ...newEvent, titulo: e.target.value })
+                  }
+                  placeholder="Título..."
+                />
+                <div className="grid grid-cols-2 gap-2">
                   <input
                     className="w-full bg-background border border-foreground/20 p-2 text-xs outline-none focus:border-primary"
-                    value={newEvent.titulo}
+                    value={newEvent.fecha_simulada}
                     onChange={(e) =>
-                      setNewEvent({ ...newEvent, titulo: e.target.value })
+                      setNewEvent({
+                        ...newEvent,
+                        fecha_simulada: e.target.value,
+                      })
                     }
-                    placeholder="Título..."
+                    placeholder="Fecha..."
                   />
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      className="w-full bg-background border border-foreground/20 p-2 text-xs outline-none focus:border-primary"
-                      value={newEvent.fecha_simulada}
-                      onChange={(e) =>
-                        setNewEvent({
-                          ...newEvent,
-                          fecha_simulada: e.target.value,
-                        })
-                      }
-                      placeholder="Fecha..."
-                    />
-                    <input
-                      type="number"
-                      className="w-full bg-background border border-foreground/20 p-2 text-xs outline-none focus:border-primary"
-                      value={newEvent.ordenAbsoluto}
-                      onChange={(e) =>
-                        setNewEvent({
-                          ...newEvent,
-                          ordenAbsoluto: parseInt(e.target.value) || 0,
-                        })
-                      }
-                    />
-                  </div>
-                  <textarea
-                    className="w-full bg-background border border-foreground/20 p-2 text-xs outline-none focus:border-primary h-24 resize-none"
-                    value={newEvent.descripcion}
+                  <input
+                    type="number"
+                    className="w-full bg-background border border-foreground/20 p-2 text-xs outline-none focus:border-primary"
+                    value={newEvent.ordenAbsoluto}
                     onChange={(e) =>
-                      setNewEvent({ ...newEvent, descripcion: e.target.value })
+                      setNewEvent({
+                        ...newEvent,
+                        ordenAbsoluto: parseInt(e.target.value) || 0,
+                      })
                     }
-                    placeholder="Crónica..."
                   />
-                  <Button
-                    variant="primary"
-                    onClick={handleSaveEvent}
-                    className="w-full justify-center !text-[10px]"
-                  >
-                    Guardar
-                  </Button>
                 </div>
-              )}
-            </div>
-          )}
-        </div>
-      </>
-    );
-
-    setCustomContent(sidebarContent, "Gestión de Multiversos");
-  }, [
-    activeTab,
-    renderUniverseTab,
-    renderTimelineTab,
-    selectedTimelineId,
-    editingEvent,
-    newEvent,
-    setEditingEvent,
-    setNewEvent,
-    handleSaveEvent,
-    setActiveTab,
-    setCustomContent,
-  ]);
+                <textarea
+                  className="w-full bg-background border border-foreground/20 p-2 text-xs outline-none focus:border-primary h-24 resize-none"
+                  value={newEvent.descripcion}
+                  onChange={(e) =>
+                    setNewEvent({ ...newEvent, descripcion: e.target.value })
+                  }
+                  placeholder="Crónica..."
+                />
+                <Button
+                  variant="primary"
+                  onClick={handleSaveEvent}
+                  className="w-full justify-center !text-[10px]"
+                >
+                  Guardar
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </>
+  );
 
   if (loading)
     return (
@@ -443,6 +446,12 @@ const TimelineView = () => {
 
   return (
     <div className="flex h-screen bg-background text-foreground overflow-hidden">
+      <aside className="w-[24rem] shrink-0 border-r border-foreground/10 bg-background/50 flex flex-col">
+        <div className="px-4 py-3 border-b border-foreground/10 text-[10px] font-black uppercase tracking-[0.2em] text-foreground/55">
+          Gestión de Multiversos
+        </div>
+        {sidebarContent}
+      </aside>
       <main className="flex-1 relative flex flex-col h-full overflow-hidden bg-background">
         <div className="h-20 border-b border-foreground/10 bg-background/80  flex items-center justify-center px-10 z-20 shrink-0 relative">
           <div className="text-center">
@@ -482,6 +491,46 @@ const TimelineView = () => {
 
             return (
               <div className="min-h-full p-10 space-y-12">
+                <section className="border border-[hsl(var(--foreground)/0.14)] bg-[hsl(var(--background)/0.75)] p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <div className="text-[10px] font-black uppercase tracking-[0.24em] text-[hsl(var(--foreground)/0.6)]">
+                        Vista Cronologica Global
+                      </div>
+                      <div className="text-[9px] uppercase tracking-[0.14em] text-[hsl(var(--foreground)/0.45)] mt-1">
+                        Orden: {CHRONOLOGY_ORDER_LABEL} | Max:{" "}
+                        {CHRONOLOGY_MAX_ITEMS}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+                    {chronologyHighlights.map((event) => (
+                      <button
+                        key={event.id}
+                        onClick={() => startEditEvent(event)}
+                        className="text-left border border-[hsl(var(--foreground)/0.12)] bg-[hsl(var(--background)/0.62)] p-3 hover:border-[hsl(var(--primary)/0.4)] hover:bg-[hsl(var(--primary)/0.08)] transition-colors"
+                      >
+                        <div className="text-[9px] font-black uppercase tracking-[0.12em] text-[hsl(var(--primary))] mb-1">
+                          {event.fecha_simulada || "Sin fecha"}
+                        </div>
+                        <div className="text-[12px] font-black text-[hsl(var(--foreground))] line-clamp-1 mb-1">
+                          {event.titulo || "Hito sin titulo"}
+                        </div>
+                        <div className="text-[10px] text-[hsl(var(--foreground)/0.62)] line-clamp-2">
+                          {event.descripcion || "Sin descripcion registrada."}
+                        </div>
+                      </button>
+                    ))}
+
+                    {chronologyHighlights.length === 0 && (
+                      <div className="col-span-full border border-dashed border-[hsl(var(--foreground)/0.2)] p-6 text-center text-[11px] text-[hsl(var(--foreground)/0.55)] italic">
+                        No hay hitos registrados todavia.
+                      </div>
+                    )}
+                  </div>
+                </section>
+
                 <div className="relative">
                   <div className="flex items-center gap-4 mb-4">
                     <span className="text-[10px] font-black uppercase text-amber-500 tracking-widest bg-amber-500/10 px-3 py-1">

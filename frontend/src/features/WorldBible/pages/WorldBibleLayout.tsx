@@ -3,7 +3,7 @@ import { useLanguage } from "@context/LanguageContext";
 import { Outlet, useOutletContext } from "react-router-dom";
 import BibleTableView from "../components/BibleTableView";
 import CreateArchetypeModal from "../components/CreateArchetypeModal";
-import { ArchitectContext } from "@domain/models/ui";
+import { ArchitectContext } from "@domain/ui";
 import ConfirmationModal from "@organisms/ConfirmationModal";
 import { useWorldBibleLayout } from "./useWorldBibleLayout";
 

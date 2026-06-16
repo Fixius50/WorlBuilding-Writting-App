@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { useParams } from "react-router-dom";
-import { Carpeta, Entidad } from "@domain/models/database";
+import { Carpeta, Entidad } from "@domain/database";
 
 type SortDirection = "asc" | "desc";
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Evento, Entidad } from '@domain/models/database';
+import { Evento, Entidad } from '@domain/database';
 import { useTimelineEventCard } from './useTimelineEventCard';
 
 interface TimelineEventCardProps {
