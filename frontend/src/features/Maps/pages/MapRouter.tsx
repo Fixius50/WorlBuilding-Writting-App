@@ -126,7 +126,7 @@ const MapRouter = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
+    <div className="relative flex-1 flex flex-col h-full bg-background overflow-hidden">
       <Routes>
         <Route
           index
