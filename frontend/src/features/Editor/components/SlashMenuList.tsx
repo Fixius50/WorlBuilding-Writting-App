@@ -1,11 +1,5 @@
 import React, { forwardRef } from 'react';
-import { useSlashMenuList } from './useSlashMenuList';
-
-interface SlashMenuItem {
-  title: string;
-  command: (props: { editor: unknown; range: unknown }) => void;
-  label: string;
-}
+import { useSlashMenuList, SlashMenuItem } from './useSlashMenuList';
 
 interface SlashMenuListProps {
   items: SlashMenuItem[];
@@ -13,13 +7,13 @@ interface SlashMenuListProps {
 }
 
 const SlashMenuList = forwardRef((props: SlashMenuListProps, ref) => {
-  const { selectedIndex, selectItem } = useSlashMenuList(props.items, props.command, ref);
+  const { selectedIndex, selectItem, currentItems } = useSlashMenuList(props.items, props.command, ref);
 
   return (
     <div className="bg-background border border-foreground/10 shadow-2xl p-1 w-56 rounded-lg animate-in fade-in zoom-in-95 duration-200">
       <div className="max-h-80 overflow-y-auto no-scrollbar flex flex-col gap-0.5">
-        {props.items.length ? (
-          props.items.map((item, index) => (
+        {currentItems.length ? (
+          currentItems.map((item, index) => (
             <button
               key={index}
               className={`w-full flex items-center gap-3.5 px-3 py-2 text-left rounded-md transition-colors outline-none font-sans ${

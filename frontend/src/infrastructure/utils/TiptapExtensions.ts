@@ -2,6 +2,12 @@ import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import Mention from '@tiptap/extension-mention'
 import CharacterCount from '@tiptap/extension-character-count'
+import Underline from '@tiptap/extension-underline'
+import TextStyle from '@tiptap/extension-text-style'
+import Color from '@tiptap/extension-color'
+import Highlight from '@tiptap/extension-highlight'
+import TextAlign from '@tiptap/extension-text-align'
+import Link from '@tiptap/extension-link'
 import suggestion from './suggestion'
 import slashSuggestion from './slashSuggestion'
 import { AnyExtension, Extension } from '@tiptap/core'
@@ -45,4 +51,18 @@ export const getZenExtensions = (placeholderText: string = 'Escribe tu historia 
   // Usamos nuestra nueva extensión funcional para evitar problemas de nodos fantasmas
   SlashCommands,
   CharacterCount,
+  Underline,
+  TextStyle,
+  Color,
+  Highlight.configure({ multicolor: true }),
+  TextAlign.configure({
+    types: ['heading', 'paragraph'],
+  }),
+  Link.configure({
+    openOnClick: false,
+    HTMLAttributes: {
+      class: 'text-primary underline cursor-pointer hover:text-primary/80 transition-colors',
+    },
+  }),
 ];
+

@@ -105,10 +105,9 @@ export const usePageEditor = ({
   });
 
   useEffect(() => {
-    if (editor && content !== editor.getHTML()) {
-      if (!editor.isFocused) {
-        editor.commands.setContent(content, false);
-      }
+    const shouldUpdate = editor && content !== editor.getHTML();
+    if (shouldUpdate && editor) {
+      editor.commands.setContent(content, false);
     }
   }, [content, editor]);
 

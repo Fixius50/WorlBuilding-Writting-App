@@ -5,36 +5,120 @@ import { SuggestionProps } from '@tiptap/suggestion';
 
 export default {
   items: ({ query }: { query: string }) => {
-    return [
+    const rawItems = [
       {
-        title: 'Título Principal',
-        label: 'T',
-        command: ({ editor }: SuggestionProps) => {
-          editor.chain().focus().toggleHeading({ level: 1 }).run();
+        title: 'Texto Normal',
+        label: 'P',
+        command: ({ editor }: { editor: any }) => {
+          editor.chain().focus().setParagraph().run();
         },
       },
       {
-        title: 'Subtítulo',
-        label: 'H2',
-        command: ({ editor }: SuggestionProps) => {
-          editor.chain().focus().toggleHeading({ level: 2 }).run();
-        },
+        title: 'Títulos',
+        label: 'H',
+        subItems: [
+          {
+            title: 'Título 1',
+            label: 'H1',
+            command: ({ editor }: { editor: any }) => {
+              editor.chain().focus().toggleHeading({ level: 1 }).run();
+            },
+          },
+          {
+            title: 'Título 2',
+            label: 'H2',
+            command: ({ editor }: { editor: any }) => {
+              editor.chain().focus().toggleHeading({ level: 2 }).run();
+            },
+          },
+          {
+            title: 'Título 3',
+            label: 'H3',
+            command: ({ editor }: { editor: any }) => {
+              editor.chain().focus().toggleHeading({ level: 3 }).run();
+            },
+          },
+          {
+            title: 'Título 4',
+            label: 'H4',
+            command: ({ editor }: { editor: any }) => {
+              editor.chain().focus().toggleHeading({ level: 4 }).run();
+            },
+          },
+          {
+            title: 'Título 5',
+            label: 'H5',
+            command: ({ editor }: { editor: any }) => {
+              editor.chain().focus().toggleHeading({ level: 5 }).run();
+            },
+          },
+          {
+            title: 'Título 6',
+            label: 'H6',
+            command: ({ editor }: { editor: any }) => {
+              editor.chain().focus().toggleHeading({ level: 6 }).run();
+            },
+          },
+        ],
       },
       {
         title: 'Cita Narrativa',
         label: '99',
-        command: ({ editor }: SuggestionProps) => {
+        command: ({ editor }: { editor: any }) => {
           editor.chain().focus().toggleBlockquote().run();
         },
       },
       {
+        title: 'Listas',
+        label: 'LI',
+        subItems: [
+          {
+            title: 'Lista de Viñetas',
+            label: '•',
+            command: ({ editor }: { editor: any }) => {
+              editor.chain().focus().toggleBulletList().run();
+            },
+          },
+          {
+            title: 'Lista Numerada',
+            label: '1.',
+            command: ({ editor }: { editor: any }) => {
+              editor.chain().focus().toggleOrderedList().run();
+            },
+          },
+        ],
+      },
+      {
         title: 'Separador',
         label: '—',
-        command: ({ editor }: SuggestionProps) => {
+        command: ({ editor }: { editor: any }) => {
           editor.chain().focus().setHorizontalRule().run();
         },
       },
-    ].filter(item => item.title.toLowerCase().includes(query.toLowerCase()));
+    ];
+
+    const cleanQuery = query.toLowerCase().trim();
+    let result = rawItems;
+
+    if (cleanQuery) {
+      const flattened: typeof rawItems = [];
+      rawItems.forEach((item) => {
+        if (item.subItems) {
+          item.subItems.forEach((sub) => {
+            if (sub.title.toLowerCase().includes(cleanQuery)) {
+              flattened.push(sub);
+            }
+          });
+        } else {
+          if (item.title.toLowerCase().includes(cleanQuery)) {
+            flattened.push(item);
+          }
+        }
+      });
+      result = flattened;
+    }
+
+    return result;
   },
 
   command: ({ editor, range, props }: SuggestionProps & { props: { command: (args: Pick<SuggestionProps, 'editor' | 'range'>) => void } }) => {
