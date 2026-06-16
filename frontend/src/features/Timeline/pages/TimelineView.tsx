@@ -7,6 +7,9 @@ import Button from "@atoms/Button";
 import TimelineEventCard from "../components/TimelineEventCard";
 import { useTimelineView } from "./useTimelineView";
 
+const CHRONOLOGY_MAX_ITEMS = 10;
+const CHRONOLOGY_ORDER_LABEL = "desc";
+
 const TimelineView = () => {
   const { t } = useLanguage();
   const { projectId } = useOutletContext<{ projectId: number }>();
@@ -48,6 +51,28 @@ const TimelineView = () => {
     executeDeletion,
     loadMultiverse,
   } = useTimelineView(projectId);
+
+  const chronologyHighlights = React.useMemo(() => {
+    const getYear = (dateValue: string | null): number => {
+      if (!dateValue || dateValue === "?") return Number.MIN_SAFE_INTEGER;
+      const match = dateValue.match(/-?\d+/);
+      return match ? parseInt(match[0], 10) : Number.MIN_SAFE_INTEGER;
+    };
+
+    const sortedEvents = [...events].sort((a, b) => {
+      const yearA = getYear(a.fecha_simulada);
+      const yearB = getYear(b.fecha_simulada);
+
+      switch (true) {
+        case yearA !== yearB:
+          return yearB - yearA;
+        default:
+          return b.id - a.id;
+      }
+    });
+
+    return sortedEvents.slice(0, CHRONOLOGY_MAX_ITEMS);
+  }, [events]);
 
   const renderUniverseTab = useCallback(
     () => (
@@ -482,6 +507,46 @@ const TimelineView = () => {
 
             return (
               <div className="min-h-full p-10 space-y-12">
+                <section className="border border-[hsl(var(--foreground)/0.14)] bg-[hsl(var(--background)/0.75)] p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <div className="text-[10px] font-black uppercase tracking-[0.24em] text-[hsl(var(--foreground)/0.6)]">
+                        Vista Cronologica Global
+                      </div>
+                      <div className="text-[9px] uppercase tracking-[0.14em] text-[hsl(var(--foreground)/0.45)] mt-1">
+                        Orden: {CHRONOLOGY_ORDER_LABEL} | Max:{" "}
+                        {CHRONOLOGY_MAX_ITEMS}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+                    {chronologyHighlights.map((event) => (
+                      <button
+                        key={event.id}
+                        onClick={() => startEditEvent(event)}
+                        className="text-left border border-[hsl(var(--foreground)/0.12)] bg-[hsl(var(--background)/0.62)] p-3 hover:border-[hsl(var(--primary)/0.4)] hover:bg-[hsl(var(--primary)/0.08)] transition-colors"
+                      >
+                        <div className="text-[9px] font-black uppercase tracking-[0.12em] text-[hsl(var(--primary))] mb-1">
+                          {event.fecha_simulada || "Sin fecha"}
+                        </div>
+                        <div className="text-[12px] font-black text-[hsl(var(--foreground))] line-clamp-1 mb-1">
+                          {event.titulo || "Hito sin titulo"}
+                        </div>
+                        <div className="text-[10px] text-[hsl(var(--foreground)/0.62)] line-clamp-2">
+                          {event.descripcion || "Sin descripcion registrada."}
+                        </div>
+                      </button>
+                    ))}
+
+                    {chronologyHighlights.length === 0 && (
+                      <div className="col-span-full border border-dashed border-[hsl(var(--foreground)/0.2)] p-6 text-center text-[11px] text-[hsl(var(--foreground)/0.55)] italic">
+                        No hay hitos registrados todavia.
+                      </div>
+                    )}
+                  </div>
+                </section>
+
                 <div className="relative">
                   <div className="flex items-center gap-4 mb-4">
                     <span className="text-[10px] font-black uppercase text-amber-500 tracking-widest bg-amber-500/10 px-3 py-1">

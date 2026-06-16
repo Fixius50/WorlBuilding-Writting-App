@@ -3,6 +3,7 @@ import UniversalCanvas from "@presentation/organisms/editor/UniversalCanvas";
 import DynamicAttributeForm from "../components/DynamicAttributeForm";
 import ConfirmationModal from "@organisms/ConfirmationModal";
 import { useCosmicCanvasEditor } from "./useCosmicCanvasEditor";
+import TimelineChronologyStrip from "@features/Entities/components/TimelineChronologyStrip";
 
 const CosmicCanvasEditor: React.FC<{ entityId: number }> = ({ entityId }) => {
   const {
@@ -123,6 +124,15 @@ const CosmicCanvasEditor: React.FC<{ entityId: number }> = ({ entityId }) => {
             </div>
             <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
               <DynamicAttributeForm entity={selectedEntity} />
+
+              <div className="mt-6">
+                <TimelineChronologyStrip
+                  entityId={selectedEntity.id}
+                  title="Cronologia del Nodo"
+                  maxItems={8}
+                  order="desc"
+                />
+              </div>
             </div>
           </>
         ) : (

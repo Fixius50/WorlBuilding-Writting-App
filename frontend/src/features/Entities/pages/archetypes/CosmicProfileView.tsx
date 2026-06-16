@@ -5,6 +5,7 @@ import UniversalCanvas from "@presentation/organisms/editor/UniversalCanvas";
 import DynamicAttributeForm from "@features/Entities/components/DynamicAttributeForm";
 import NarrativeRichText from "@features/Entities/components/NarrativeRichText";
 import MiniGraph from "@features/Entities/components/MiniGraph";
+import TimelineChronologyStrip from "@features/Entities/components/TimelineChronologyStrip";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   getPresetTabsByEntityType,
@@ -52,6 +53,11 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
   const narrativeLength = narrativeContent.length;
   const narrativeGrowth = Math.min(560, Math.floor(narrativeLength / 3));
   const panelMinHeight = 360 + narrativeGrowth;
+  const normalizedType = (entity?.tipo || "").toUpperCase();
+  const isDimensionType =
+    normalizedType === "DIMENSION" ||
+    normalizedType === "DIMENSIÓN" ||
+    normalizedType === "DIMENSIONS";
 
   if (loading)
     return (
@@ -92,7 +98,6 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
           >
             {confirmDelete ? "¿CONFIRMAR?" : "ELIMINAR"}
           </button>
-
 
           <button
             onClick={() =>
@@ -143,7 +148,10 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
                 </div>
               ) : (
                 <div className="w-full">
-                  <NarrativeRichText content={narrativeContent} galleryImages={entity?.images} />
+                  <NarrativeRichText
+                    content={narrativeContent}
+                    galleryImages={entity?.images}
+                  />
                 </div>
               )}
             </div>
@@ -202,16 +210,38 @@ const CosmicProfileView: React.FC<{ entityId?: string | number }> = ({
                 </div>
               ) : (
                 <div className="w-full">
-                  <NarrativeRichText content={narrativeStory} galleryImages={entity?.images} />
+                  <NarrativeRichText
+                    content={narrativeStory}
+                    galleryImages={entity?.images}
+                  />
                 </div>
               )}
             </div>
+
+            {isDimensionType && (
+              <div className="border border-foreground/20 bg-background p-4 flex flex-col lg:col-span-2">
+                <TimelineChronologyStrip
+                  entityId={Number(entity.id)}
+                  title="Cronologia del Timeline"
+                  maxItems={10}
+                  order="desc"
+                  onOpenEvent={(event) => {
+                    navigate(
+                      `/local/${projectName}/bible/folder/${event.timeline_id}/timeline/event/${event.id}`,
+                    );
+                  }}
+                />
+              </div>
+            )}
           </main>
         )}
 
         {activeTab === "RED_DE_CONTACTOS" && (
           <div className="w-full h-full relative bg-background">
-            <MiniGraph entityId={Number(entity.id)} projectId={entity.project_id} />
+            <MiniGraph
+              entityId={Number(entity.id)}
+              projectId={entity.project_id}
+            />
           </div>
         )}
 

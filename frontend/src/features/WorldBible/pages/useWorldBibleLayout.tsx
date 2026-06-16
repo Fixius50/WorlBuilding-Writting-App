@@ -79,17 +79,17 @@ export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
   const isEditorView = useMemo(() => {
     return (
       location.pathname.includes("/entity/") ||
-      location.pathname.includes("/dimension")
+      location.pathname.includes("/timeline")
     );
   }, [location.pathname]);
 
   const dynamicTitle = useMemo(() => {
     if (isRoot) return "Biblia del Mundo";
 
-    if (location.pathname.includes("/dimension")) {
+    if (location.pathname.includes("/timeline")) {
       return currentFolder
-        ? `Dimensión: ${currentFolder.nombre}`
-        : "Visor de Dimensiones";
+        ? `Timeline: ${currentFolder.nombre}`
+        : "Visor de Timelines";
     }
 
     if (location.pathname.includes("/entity/")) {

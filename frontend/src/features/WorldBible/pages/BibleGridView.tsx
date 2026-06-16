@@ -171,7 +171,7 @@ const BibleGridView = () => {
               type="folder"
               linkTo={
                 folder.tipo === "TIMELINE"
-                  ? `/${username}/${projectName}/bible/dimension/${folder.id}`
+                  ? `/${username}/${projectName}/bible/timeline/${folder.id}`
                   : `/${username}/${projectName}/bible/folder/${folder.id}`
               }
               onDelete={() => handleDeleteFolder(folder.id)}
