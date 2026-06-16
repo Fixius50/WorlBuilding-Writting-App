@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { TimelineUseCase } from "@application/useCases/TimelineUseCase";
-import { Evento } from "@domain/models/database";
-import { TimelineLine, UniverseExtended } from "@domain/models/timeline";
+import { TimelineUseCase } from "@application/TimelineUseCase";
+import { Evento } from "@domain/database";
+import { TimelineLine, UniverseExtended } from "@domain/timeline";
 import { useQuery } from "@tanstack/react-query";
 
 export const timelineUniversesQueryKey = (projectId: number) =>

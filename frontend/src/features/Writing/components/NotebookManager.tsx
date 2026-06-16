@@ -1,9 +1,9 @@
 import React from "react";
 import ConfirmationModal from "@organisms/ConfirmationModal";
 import InputModal from "@organisms/InputModal";
-import { Notebook } from "@domain/models/writing";
+import { Notebook } from "@domain/writing";
 import ZenEditor from "@features/Editor/components/ZenEditor";
-import { Hoja as HojaModel } from "@domain/models/database";
+import { Hoja as HojaModel } from "@domain/database";
 import { useNotebookManager } from "./useNotebookManager";
 
 interface NotebookManagerProps {

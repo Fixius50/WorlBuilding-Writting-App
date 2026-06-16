@@ -1,8 +1,8 @@
 import { useState, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { TemplateUseCase } from "@application/useCases/TemplateUseCase";
-import { EntityUseCase } from "@application/useCases/EntityUseCase";
-import { Plantilla, Valor, Entidad } from "@domain/models/database";
+import { TemplateUseCase } from "@application/TemplateUseCase";
+import { EntityUseCase } from "@application/EntityUseCase";
+import { Plantilla, Valor, Entidad } from "@domain/database";
 
 /**
  * 🧠 useDynamicAttributeForm

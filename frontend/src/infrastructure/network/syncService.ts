@@ -3,7 +3,7 @@ import { projectService } from "@repositories/projectService";
 import { folderService } from "@repositories/folderService";
 import { entityService } from "@repositories/entityService";
 import { relationshipService } from "@repositories/relationshipService";
-import { Carpeta, Entidad, Proyecto, Relacion } from "@domain/models/database";
+import { Carpeta, Entidad, Proyecto, Relacion } from "@domain/database";
 
 export interface SyncRealtimePayload {
   schemaVersion: number;

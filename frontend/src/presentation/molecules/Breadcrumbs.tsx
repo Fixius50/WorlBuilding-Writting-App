@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Carpeta } from '@domain/models/database';
+import { Carpeta } from '@domain/database';
 
 interface BreadcrumbsProps {
   path?: Carpeta[];

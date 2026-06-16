@@ -1,5 +1,5 @@
 import { notebookService } from '@repositories/notebookService';
-import { Cuaderno, Hoja } from '@domain/models/database';
+import { Cuaderno, Hoja } from '@domain/database';
 
 export interface Snapshot {
   id: number;

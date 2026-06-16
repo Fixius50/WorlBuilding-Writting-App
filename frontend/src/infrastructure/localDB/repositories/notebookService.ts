@@ -1,5 +1,5 @@
 import { sql } from "../client";
-import { Cuaderno, Hoja } from "@domain/models/database";
+import { Cuaderno, Hoja } from "@domain/database";
 import { emitUIRefresh } from "@utils/uiRefresh";
 
 export const notebookService = {

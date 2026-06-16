@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Cuaderno, Hoja } from "@domain/models/database";
-import { WritingUseCase } from "@application/useCases/WritingUseCase";
-import { EntityUseCase } from "@application/useCases/EntityUseCase";
-import { TemplateUseCase } from "@application/useCases/TemplateUseCase";
+import { Cuaderno, Hoja } from "@domain/database";
+import { WritingUseCase } from "@application/WritingUseCase";
+import { EntityUseCase } from "@application/EntityUseCase";
+import { TemplateUseCase } from "@application/TemplateUseCase";
 import { useSettingsStore } from "@store/useSettingsStore";
 
 /**

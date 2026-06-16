@@ -1,5 +1,5 @@
 import { Font as OpentypeFont, Glyph as OpentypeGlyph, Path as OpentypePath } from 'opentype.js';
-import { Word } from '@domain/models/database';
+import { Word } from '@domain/database';
 
 export const useFontExporter = (fontName: string) => {
   const exportFont = async (foundryGlyphs: Word[]) => {

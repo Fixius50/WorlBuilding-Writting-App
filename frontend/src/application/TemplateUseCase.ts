@@ -1,7 +1,7 @@
 import { templateService } from '@repositories/templateService';
 import { entityService } from '@repositories/entityService';
 import { folderService } from '@repositories/folderService';
-import { Plantilla, Valor, Carpeta } from '@domain/models/database';
+import { Plantilla, Valor, Carpeta } from '@domain/database';
 
 /**
  * 📝 TEMPLATE USE CASE (Capa de Aplicación)

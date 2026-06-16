@@ -6,14 +6,14 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { useLanguage } from "@context/LanguageContext";
-import { WorkspaceUseCase } from "@application/useCases/WorkspaceUseCase";
-import { Carpeta, Proyecto, FolderType } from "@domain/models/database";
+import { WorkspaceUseCase } from "@application/WorkspaceUseCase";
+import { Carpeta, Proyecto, FolderType } from "@domain/database";
 import { useSettingsStore } from "@store/useSettingsStore";
 import { useDashboardStore } from "@store/useDashboardStore";
 import { useAppStore } from "@store/useAppStore";
 import { useRightPanelStore } from "@store/useRightPanelStore";
 import { useQueryClient } from "@tanstack/react-query";
-import { WritingUseCase } from "@application/useCases/WritingUseCase";
+import { WritingUseCase } from "@application/WritingUseCase";
 
 export const useArchitectLayout = () => {
   const { username, projectName } = useParams<{

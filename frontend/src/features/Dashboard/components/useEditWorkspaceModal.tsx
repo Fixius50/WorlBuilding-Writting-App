@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Proyecto } from '@domain/models/database';
+import { Proyecto } from '@domain/database';
 
 const GENRES = ['FANTASÍA', 'SCI-FI', 'HORROR', 'LORE', 'MISTERIO', 'HISTÓRICO', 'STEAMPUNK'];
 

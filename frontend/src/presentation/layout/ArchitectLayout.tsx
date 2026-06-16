@@ -9,7 +9,7 @@ import NotebookManager from "@features/Writing/components/NotebookManager";
 import { SyncView } from "@features/Sync";
 import { ResponsiveBar } from "@nivo/bar";
 import { useArchitectLayout } from "./useArchitectLayout";
-import { WorkspaceUseCase } from "@application/useCases/WorkspaceUseCase";
+import { WorkspaceUseCase } from "@application/WorkspaceUseCase";
 import { getModuleCache, setModuleCache } from "@utils/moduleCache";
 
 // --- Subcomponente de Gráficos para el Modal Central ---

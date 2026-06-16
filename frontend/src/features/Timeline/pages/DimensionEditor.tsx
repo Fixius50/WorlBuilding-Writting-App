@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useLanguage } from "@context/LanguageContext";
-import { Evento } from "@domain/models/database";
+import { Evento } from "@domain/database";
 import ConfirmationModal from "@organisms/ConfirmationModal";
 
 // Custom Hooks & Components

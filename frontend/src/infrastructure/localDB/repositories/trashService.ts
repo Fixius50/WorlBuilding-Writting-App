@@ -1,5 +1,5 @@
 import { sql } from "../client";
-import { Entidad, Carpeta } from "@domain/models/database";
+import { Entidad, Carpeta } from "@domain/database";
 import { emitUIRefresh } from "@utils/uiRefresh";
 
 export const trashService = {

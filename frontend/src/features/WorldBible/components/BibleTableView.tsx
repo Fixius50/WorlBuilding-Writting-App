@@ -9,7 +9,7 @@ import {
   type CellContext,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Entidad, Carpeta } from "@domain/models/database";
+import { Entidad, Carpeta } from "@domain/database";
 import { Link, useParams } from "react-router-dom";
 import { useLanguage } from "@context/LanguageContext";
 import ConfirmationModal from "@organisms/ConfirmationModal";

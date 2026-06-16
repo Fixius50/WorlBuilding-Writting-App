@@ -1,7 +1,7 @@
 import { folderService } from '@repositories/folderService';
 import { timelineService } from '@repositories/timelineService';
 import { entityService } from '@repositories/entityService';
-import { Carpeta, Evento, Entidad } from '@domain/models/database';
+import { Carpeta, Evento, Entidad } from '@domain/database';
 
 /**
  * ⏳ TIMELINE USE CASE (Capa de Aplicación)

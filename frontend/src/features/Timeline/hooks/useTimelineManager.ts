@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { TimelineUseCase } from '@application/useCases/TimelineUseCase';
-import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
-import { EntityUseCase } from '@application/useCases/EntityUseCase';
-import { TemplateUseCase } from '@application/useCases/TemplateUseCase';
-import { Evento, Carpeta, Entidad } from '@domain/models/database';
+import { TimelineUseCase } from '@application/TimelineUseCase';
+import { WorkspaceUseCase } from '@application/WorkspaceUseCase';
+import { EntityUseCase } from '@application/EntityUseCase';
+import { TemplateUseCase } from '@application/TemplateUseCase';
+import { Evento, Carpeta, Entidad } from '@domain/database';
 import { useLanguage } from '@context/LanguageContext';
 
 export const useTimelineManager = (folderId: string | undefined) => {

@@ -1,6 +1,6 @@
 import React from "react";
 import { useLanguage } from "@context/LanguageContext";
-import { Entidad, Plantilla } from "@domain/models/database";
+import { Entidad, Plantilla } from "@domain/database";
 import { useDynamicAttributeForm } from "./useDynamicAttributeForm";
 
 interface DynamicAttributeFormProps {

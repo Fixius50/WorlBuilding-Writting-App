@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapRef, MapMouseEvent } from "react-map-gl/maplibre";
-import { MapUseCase } from "@application/useCases/MapUseCase";
-import { Entidad } from "@domain/models/database";
-import { MapMarker, MapLayer, MapAttributes } from "@domain/models/maps";
+import { MapUseCase } from "@application/MapUseCase";
+import { Entidad } from "@domain/database";
+import { MapMarker, MapLayer, MapAttributes } from "@domain/maps";
 
 export type DrawMode = "none" | "spray" | "line" | "marker" | "eraser";
 

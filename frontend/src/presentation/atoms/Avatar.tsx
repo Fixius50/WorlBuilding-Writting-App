@@ -1,6 +1,6 @@
 import React from 'react';
 import { twMerge } from "tailwind-merge";
-import { Size, BaseProps } from '@domain/models/ui';
+import { Size, BaseProps } from '@domain/ui';
 
 interface AvatarProps extends BaseProps {
  url?: string | null;

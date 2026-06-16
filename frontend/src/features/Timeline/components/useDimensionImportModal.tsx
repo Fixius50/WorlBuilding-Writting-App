@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Entidad } from '@domain/models/database';
+import { Entidad } from '@domain/database';
 
 /**
  * 🧠 useDimensionImportModal

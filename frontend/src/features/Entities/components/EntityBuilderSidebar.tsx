@@ -2,7 +2,7 @@ import React from "react";
 import ConfirmModal from "@organisms/ConfirmModal";
 import TemplateSettingsModal from "@organisms/TemplateSettingsModal";
 import { useEntityBuilderSidebar } from "./useEntityBuilderSidebar";
-import { Plantilla } from "@domain/models/database";
+import { Plantilla } from "@domain/database";
 
 interface EntityBuilderSidebarProps {
   templates: Plantilla[];

@@ -1,1 +1,1 @@
-export { default as CalendarManagerView } from '@features/Calendars/pages/CalendarManagerView';
+export { default as CalendarManagerView } from '@features/Calendars/CalendarManagerView';

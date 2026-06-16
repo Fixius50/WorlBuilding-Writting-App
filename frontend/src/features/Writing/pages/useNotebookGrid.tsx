@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Notebook } from '@domain/models/writing';
+import { Notebook } from '@domain/writing';
 
 /**
  * 🧠 useNotebookGrid

@@ -7,13 +7,13 @@ import {
   Route,
 } from "react-router-dom";
 import MapCreationWizard from "./MapCreationWizard";
-import MapEditor from "@features/Specialized/pages/MapEditor";
+import { MapEditor } from "@features/Specialized";
 import InteractiveMapView from "./InteractiveMapView";
 import MapManager from "./MapManager";
-import { EntityUseCase } from "@application/useCases/EntityUseCase";
-import { WorkspaceUseCase } from "@application/useCases/WorkspaceUseCase";
+import { EntityUseCase } from "@application/EntityUseCase";
+import { WorkspaceUseCase } from "@application/WorkspaceUseCase";
 import ConfirmationModal from "@organisms/ConfirmationModal";
-import { Entidad } from "@domain/models/database";
+import { Entidad } from "@domain/database";
 import {
   MapAggregateService,
   MapCreationConfig,

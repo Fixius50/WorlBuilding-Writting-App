@@ -3,7 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import UniversalCanvas, { CanvasNode, CanvasEdge } from '@presentation/organisms/editor/UniversalCanvas';
 import { entityService } from '@repositories/entityService';
 import { relationshipService } from '@repositories/relationshipService';
-import { Entidad, Relacion } from '@domain/models/database';
+import { Entidad, Relacion } from '@domain/database';
 
 /**
  * 🌳 GenealogyView

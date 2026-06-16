@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import Konva from 'konva';
-import { Shape, LayerData } from '@domain/models/canvas';
-import { Word } from '@domain/models/database';
+import { Shape, LayerData } from '@domain/canvas';
+import { Word } from '@domain/database';
 
 export const useDrawingCanvas = () => {
   const [layers, setLayers] = useState<LayerData[]>([

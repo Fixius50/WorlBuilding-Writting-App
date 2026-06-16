@@ -1,7 +1,7 @@
 import React from 'react';
 import MapLibreView from '../components/MapLibreView';
 import { useInteractiveMapView } from './useInteractiveMapView';
-import { Entidad } from '@domain/models/database';
+import { Entidad } from '@domain/database';
 
 const InteractiveMapView: React.FC<{
   map: Entidad;

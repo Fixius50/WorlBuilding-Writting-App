@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { Evento, Entidad } from '@domain/models/database';
+import { Evento, Entidad } from '@domain/database';
 
 /**
  * 🧠 useDimensionEditor

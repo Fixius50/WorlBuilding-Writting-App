@@ -2,7 +2,7 @@ import { sqlocal } from '@database';
 import { projectService } from '@repositories/projectService';
 import { settingsService } from '@repositories/settingsService';
 import { syncService } from '@network/syncService';
-import { Proyecto } from '@domain/models/database';
+import { Proyecto } from '@domain/database';
 
 export interface UserData {
   displayName?: string;

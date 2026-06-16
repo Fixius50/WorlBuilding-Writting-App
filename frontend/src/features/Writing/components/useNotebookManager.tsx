@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Notebook } from "@domain/models/writing";
-import { WorkspaceUseCase } from "@application/useCases/WorkspaceUseCase";
+import { Notebook } from "@domain/writing";
+import { WorkspaceUseCase } from "@application/WorkspaceUseCase";
 import { getModuleCache, setModuleCache } from "@utils/moduleCache";
 
 /**

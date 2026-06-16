@@ -1,18 +1,21 @@
-import React, { useState } from 'react';
-import { useOutletContext, useParams } from 'react-router-dom';
-import MonolithicPanel from '@atoms/MonolithicPanel';
-import GraphView from '@features/Graph/pages/GeneralGraphView';
-import { GenealogyView } from '@features/Genealogy';
+import React, { useState } from "react";
+import { useOutletContext, useParams } from "react-router-dom";
+import MonolithicPanel from "@atoms/MonolithicPanel";
+import { GeneralGraphView as GraphView } from "@features/Graph";
+import { GenealogyView } from "@features/Genealogy";
 
-type PlanningTab = 'NETWORK' | 'GENEALOGY';
+type PlanningTab = "NETWORK" | "GENEALOGY";
 
 const PlanningCenterView: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<PlanningTab>('NETWORK');
-  const { projectId, projectName } = useOutletContext<{ projectId: number, projectName: string }>();
+  const [activeTab, setActiveTab] = useState<PlanningTab>("NETWORK");
+  const { projectId, projectName } = useOutletContext<{
+    projectId: number;
+    projectName: string;
+  }>();
 
   const TABS = [
-    { id: 'NETWORK', label: 'Red Neuronal', icon: 'hub' },
-    { id: 'GENEALOGY', label: 'Árbol de Linaje', icon: 'account_tree' },
+    { id: "NETWORK", label: "Red Neuronal", icon: "hub" },
+    { id: "GENEALOGY", label: "Árbol de Linaje", icon: "account_tree" },
   ];
 
   return (
@@ -27,30 +30,40 @@ const PlanningCenterView: React.FC = () => {
               className={`
                 relative flex items-center gap-2.5 px-8 transition-all duration-500
                 text-[9px] font-black uppercase tracking-[0.2em]
-                ${activeTab === tab.id 
-                  ? 'text-primary bg-primary/5' 
-                  : 'text-foreground/30 hover:text-foreground/60 hover:bg-background'}
+                ${
+                  activeTab === tab.id
+                    ? "text-primary bg-primary/5"
+                    : "text-foreground/30 hover:text-foreground/60 hover:bg-background"
+                }
               `}
             >
               {activeTab === tab.id && (
                 <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary animate-in fade-in slide-in-from-bottom-2 duration-300" />
               )}
-              
-              <span className={`material-symbols-outlined text-[1.1rem] transition-transform duration-500 ${activeTab === tab.id ? 'scale-110' : 'scale-90 opacity-40'}`}>
+
+              <span
+                className={`material-symbols-outlined text-[1.1rem] transition-transform duration-500 ${activeTab === tab.id ? "scale-110" : "scale-90 opacity-40"}`}
+              >
                 {tab.icon}
               </span>
-              <span className="hidden md:inline whitespace-nowrap">{tab.label}</span>
+              <span className="hidden md:inline whitespace-nowrap">
+                {tab.label}
+              </span>
             </button>
           ))}
         </div>
       </div>
 
       <div className="w-full h-full relative">
-        <div className={`absolute inset-0 ${activeTab === 'NETWORK' ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none z-0'}`}>
+        <div
+          className={`absolute inset-0 ${activeTab === "NETWORK" ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0"}`}
+        >
           <GraphView projectId={projectId} projectName={projectName} />
         </div>
-        
-        <div className={`absolute inset-0 ${activeTab === 'GENEALOGY' ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none z-0'}`}>
+
+        <div
+          className={`absolute inset-0 ${activeTab === "GENEALOGY" ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0"}`}
+        >
           <GenealogyView />
         </div>
       </div>

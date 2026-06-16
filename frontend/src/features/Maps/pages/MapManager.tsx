@@ -2,7 +2,7 @@ import React, { useEffect, useCallback } from "react";
 import { useLanguage } from "@context/LanguageContext";
 import MonolithicPanel from "@atoms/MonolithicPanel";
 import Button from "@atoms/Button";
-import { Entidad } from "@domain/models/database";
+import { Entidad } from "@domain/database";
 import { useMapManager } from "./useMapManager";
 
 interface MapManagerProps {

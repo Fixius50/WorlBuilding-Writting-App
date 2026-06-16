@@ -1,8 +1,8 @@
 import { entityService } from '@repositories/entityService';
 import { relationshipService } from '@repositories/relationshipService';
-import { Relacion, RelacionEnriquecida } from '@domain/models/database';
+import { Relacion, RelacionEnriquecida } from '@domain/database';
 import { folderService } from '@repositories/folderService';
-import { Entidad, Carpeta } from '@domain/models/database';
+import { Entidad, Carpeta } from '@domain/database';
 
 /**
  * 🕸️ RELATIONSHIP USE CASE (Capa de Aplicación)

@@ -2,8 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useLexiconManager } from "../hooks/useLexiconManager";
 import { useDrawingCanvas } from "../hooks/useDrawingCanvas";
 import { useFontExporter } from "../hooks/useFontExporter";
-import { Word } from "@domain/models/database";
-import { LogEntry, WRITING_SYSTEM_TYPES } from "@domain/models/linguistics";
+import { Word } from "@domain/database";
+import { LogEntry, WRITING_SYSTEM_TYPES } from "@domain/linguistics";
 
 /**
  * 🧠 useLinguisticsHub

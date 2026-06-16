@@ -1,5 +1,5 @@
 import React from "react";
-import { Shape, LayerData } from "@domain/models/canvas";
+import { Shape, LayerData } from "@domain/canvas";
 
 interface UniversalCanvasPropertiesProps {
   tool: string;

@@ -1,7 +1,7 @@
 import { forwardRef, ButtonHTMLAttributes } from 'react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { Variant, Size, IconProps } from '@domain/models/ui';
+import { Variant, Size, IconProps } from '@domain/ui';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, IconProps {
  variant?: Variant;

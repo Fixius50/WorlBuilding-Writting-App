@@ -1,7 +1,7 @@
 import { EditorContent, BubbleMenu } from "@tiptap/react";
 import React from "react";
 import EditorTopBar from "./EditorTopBar";
-import { Hoja as HojaModel } from "@domain/models/database";
+import { Hoja as HojaModel } from "@domain/database";
 import { usePageEditor } from "./useZenEditor";
 
 interface PageContentEditorProps {

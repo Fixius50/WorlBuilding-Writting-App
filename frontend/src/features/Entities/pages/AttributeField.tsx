@@ -1,5 +1,5 @@
 import React from "react";
-import { Plantilla, Entidad } from "@domain/models/database";
+import { Plantilla, Entidad } from "@domain/database";
 import "@assets/attributes.css";
 import { useAttributeField } from "./useAttributeField";
 

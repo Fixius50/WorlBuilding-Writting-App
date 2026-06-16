@@ -1,7 +1,7 @@
 import React from "react";
 import MonolithicPanel from "@atoms/MonolithicPanel";
 import Button from "@atoms/Button";
-import { MapMarker } from "@domain/models/maps";
+import { MapMarker } from "@domain/maps";
 import { useMapMarkerEditor } from "./useMapMarkerEditor";
 
 interface MapMarkerEditorProps {

@@ -1,4 +1,4 @@
-import { Entidad } from "@domain/models/database";
+import { Entidad } from "@domain/database";
 
 export interface MapCreationConfig {
   description?: string;

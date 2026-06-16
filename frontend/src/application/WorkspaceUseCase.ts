@@ -3,7 +3,7 @@ import { folderService } from '@repositories/folderService';
 import { entityService } from '@repositories/entityService';
 import { syncService } from '@network/syncService';
 import { settingsService } from '@repositories/settingsService';
-import { Proyecto, Carpeta, Entidad, FolderType } from '@domain/models/database';
+import { Proyecto, Carpeta, Entidad, FolderType } from '@domain/database';
 
 /**
  * 🏢 WORKSPACE USE CASE (Capa de Aplicación)

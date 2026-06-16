@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Evento } from '@domain/models/database';
+import { Evento } from '@domain/database';
 
 /**
  * 🧠 useTimelineEventCard

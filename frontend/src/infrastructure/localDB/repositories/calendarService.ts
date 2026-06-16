@@ -1,5 +1,5 @@
 import { sql } from "../client";
-import { Calendario } from "@domain/models/database";
+import { Calendario } from "@domain/database";
 import { emitUIRefresh } from "@utils/uiRefresh";
 
 export const calendarService = {

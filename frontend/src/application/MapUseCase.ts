@@ -1,5 +1,5 @@
 import { entityService } from '@repositories/entityService';
-import { Entidad } from '@domain/models/database';
+import { Entidad } from '@domain/database';
 
 /**
  * 🗺️ MAP USE CASE (Capa de Aplicación)

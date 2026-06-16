@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useOutletContext, useNavigate } from "react-router-dom";
-import { WorkspaceUseCase } from "@application/useCases/WorkspaceUseCase";
-import { EntityUseCase } from "@application/useCases/EntityUseCase";
-import { Entidad, Carpeta } from "@domain/models/database";
+import { WorkspaceUseCase } from "@application/WorkspaceUseCase";
+import { EntityUseCase } from "@application/EntityUseCase";
+import { Entidad, Carpeta } from "@domain/database";
 
 // --- Interfaces ---
 export interface FolderViewContext {

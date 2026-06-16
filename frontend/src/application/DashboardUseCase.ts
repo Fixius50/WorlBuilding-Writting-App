@@ -1,7 +1,7 @@
 import { entityService } from '@repositories/entityService';
 import { folderService } from '@repositories/folderService';
 import { notebookService } from '@repositories/notebookService';
-import { Entidad } from '@domain/models/database';
+import { Entidad } from '@domain/database';
 
 export interface DashboardStats {
   entityCount: number;

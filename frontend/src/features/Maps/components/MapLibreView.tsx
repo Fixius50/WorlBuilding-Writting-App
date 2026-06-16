@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { MapLayer, MapMarker, MapConnection } from '@domain/models/maps';
+import { MapLayer, MapMarker, MapConnection } from '@domain/maps';
 import { useMapLibreView } from './useMapLibreView';
 
 interface GeoFeatureCollection {

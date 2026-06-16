@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { TemplateUseCase } from "@application/useCases/TemplateUseCase";
-import { Plantilla } from "@domain/models/database";
+import { TemplateUseCase } from "@application/TemplateUseCase";
+import { Plantilla } from "@domain/database";
 import { useQuery } from "@tanstack/react-query";
 
 export const globalTemplatesQueryKey = [

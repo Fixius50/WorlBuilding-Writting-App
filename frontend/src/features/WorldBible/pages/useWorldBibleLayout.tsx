@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
-import { WorldBibleUseCase } from "@application/useCases/WorldBibleUseCase";
-import { Carpeta } from "@domain/models/database";
-import { ArchitectContext } from "@domain/models/ui";
+import { WorldBibleUseCase } from "@application/WorldBibleUseCase";
+import { Carpeta } from "@domain/database";
+import { ArchitectContext } from "@domain/ui";
 import {
   useWorldBibleData,
   useWorldBibleFolderData,

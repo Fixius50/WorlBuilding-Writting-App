@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { EntityUseCase } from "@application/useCases/EntityUseCase";
-import { Entidad } from "@domain/models/database";
+import { EntityUseCase } from "@application/EntityUseCase";
+import { Entidad } from "@domain/database";
 
 /**
  * 🧠 useMapManager

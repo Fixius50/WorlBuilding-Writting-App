@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MapMarker } from '@domain/models/maps';
+import { MapMarker } from '@domain/maps';
 
 /**
  * 🧠 useMapMarkerEditor

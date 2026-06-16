@@ -1,5 +1,5 @@
 import { sql } from "../client";
-import { Relacion, RelacionEnriquecida } from "@domain/models/database";
+import { Relacion, RelacionEnriquecida } from "@domain/database";
 import { emitUIRefresh } from "@utils/uiRefresh";
 
 export const relationshipService = {

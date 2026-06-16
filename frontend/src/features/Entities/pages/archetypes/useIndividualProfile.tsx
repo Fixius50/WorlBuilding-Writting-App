@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useOutletContext } from "react-router-dom";
-import { EntityUseCase } from "@application/useCases/EntityUseCase";
-import { TemplateUseCase } from "@application/useCases/TemplateUseCase";
-import { Entidad, Valor } from "@domain/models/database";
+import { EntityUseCase } from "@application/EntityUseCase";
+import { TemplateUseCase } from "@application/TemplateUseCase";
+import { Entidad, Valor } from "@domain/database";
 import { useQuery } from "@tanstack/react-query";
 
 // --- Interfaces ---

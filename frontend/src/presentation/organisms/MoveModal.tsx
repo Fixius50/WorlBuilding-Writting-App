@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Carpeta } from '@domain/models/database';
+import { Carpeta } from '@domain/database';
 
 interface MoveModalProps {
   isOpen: boolean;

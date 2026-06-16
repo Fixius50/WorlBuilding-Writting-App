@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { RelationshipUseCase } from "@application/useCases/RelationshipUseCase";
-import { Entidad, Carpeta } from "@domain/models/database";
+import { RelationshipUseCase } from "@application/RelationshipUseCase";
+import { Entidad, Carpeta } from "@domain/database";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const entityDatabaseQueryKey = (projectId: number) =>

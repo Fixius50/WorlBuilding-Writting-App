@@ -1,5 +1,5 @@
 import Button from '@atoms/Button';
-import { ModalProps } from '@domain/models/ui';
+import { ModalProps } from '@domain/ui';
 
 interface ConfirmModalProps extends ModalProps {
  onConfirm: () => void;

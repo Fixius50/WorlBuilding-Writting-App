@@ -6,7 +6,7 @@ import {
   Carpeta,
   Plantilla,
   FolderType,
-} from "@domain/models/database";
+} from "@domain/database";
 
 /**
  * 🌍 WORLD BIBLE USE CASE (Capa de Aplicación)

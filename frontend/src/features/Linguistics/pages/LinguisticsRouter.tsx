@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import LinguisticsHub from './LinguisticsHub';
 import AdvancedLinguistics from './AdvancedLinguistics';
 
-import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
-import { EntityUseCase } from '@application/useCases/EntityUseCase';
+import { WorkspaceUseCase } from '@application/WorkspaceUseCase';
+import { EntityUseCase } from '@application/EntityUseCase';
 import Button from '@presentation/atoms/Button';
 
 const LinguisticsRouter = () => {

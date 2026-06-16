@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { WorldBibleUseCase } from "@application/useCases/WorldBibleUseCase";
-import { Entidad } from "@domain/models/database";
+import { WorldBibleUseCase } from "@application/WorldBibleUseCase";
+import { Entidad } from "@domain/database";
 
 export const BIBLE_KEYS = {
   all: (projectId: number) => ["world-bible", projectId] as const,

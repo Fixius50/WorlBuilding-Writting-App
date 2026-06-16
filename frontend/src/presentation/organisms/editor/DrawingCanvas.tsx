@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from "react";
 import { Stage, Layer, Line, Rect, Circle, Transformer } from "react-konva";
 import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
-import { Shape, LayerData } from "@domain/models/canvas";
+import { Shape, LayerData } from "@domain/canvas";
 import SectionErrorBoundary from "@organisms/SectionErrorBoundary";
 
 interface DrawingCanvasProps {

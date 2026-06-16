@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { TrashUseCase, TrashItem } from "@application/useCases/TrashUseCase";
+import { TrashUseCase, TrashItem } from "@application/TrashUseCase";
 import { useLanguage } from "@context/LanguageContext";
 
 /**

@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { Proyecto } from '@domain/models/database';
+import { Proyecto } from '@domain/database';
 import { useEditWorkspaceModal } from './useEditWorkspaceModal';
 
 interface EditWorkspaceModalProps {
