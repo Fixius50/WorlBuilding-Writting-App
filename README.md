@@ -1,133 +1,130 @@
-# Chronos Atlas — Worldbuilding Engine 🌌
+# Chronos Atlas - Worldbuilding Engine
 
-**The Architect's Vault | Local-First & Technical Zen**
+Chronos Atlas es una aplicación de worldbuilding local-first para escritura, planificación narrativa, mapas, relaciones, líneas temporales y gestión de entidades dinámicas.
 
-Chronos Atlas es un motor de worldbuilding de alto rendimiento diseñado para arquitectos de mundos, escritores y lingüistas. Construido bajo una arquitectura **Local-First**, prioriza la soberanía de los datos del usuario mediante el uso de SQLite WASM directamente en el navegador.
+La base funcional actual se centra en:
 
----
+- Frontend React + TypeScript + Vite con arquitectura por capas.
+- Persistencia local en SQLite WASM (SQLocal) sobre OPFS.
+- Backend Java auxiliar para bridge de sistema de archivos, backups y endpoints de soporte.
 
-## 🏗️ Arquitectura Local-First
+## Estado Actual
 
-A diferencia de las aplicaciones web tradicionales, Chronos Atlas funciona con una base de datos **SQLite (WASM + OPFS)** persistente en tu sistema de archivos local (via navegador), garantizando:
+El proyecto está en evolución activa. La documentación técnica vive en la carpeta Docs y este README refleja estructura y stack vigentes del repositorio.
 
-- **Latencia Zero:** Operaciones de base de datos a velocidad local.
-- **Soberanía:** Tus universos viven en un archivo `.sqlite3` que puedes mover o respaldar libremente.
-- **Privacidad:** Los datos nunca abandonan tu máquina a menos que decidas sincronizarlos explícitamente.
+## Stack Tecnológico Actual
 
----
+### Frontend
 
-## 🚀 Inicio Rápido
+- React 19.2.4
+- TypeScript 5.7.x (strict)
+- Vite 6
+- Zustand
+- TanStack Query
+- TanStack Table
+- React Router
+- MapLibre + Deck.gl
+- Tiptap
+- Tailwind CSS
 
-### Ejecución con un solo clic (Windows)
+### Persistencia
 
-```bash
-.\INICIAR.bat
+- SQLocal (SQLite WASM)
+- OPFS (Origin Private File System)
+
+### Backend Auxiliar
+
+- Java 21
+- Spring Web MVC 5.3.31
+- Jetty embebido
+- Maven
+
+## Estructura Principal de Carpetas
+
+```text
+WorlBuilding-Writting-App/
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── application/useCases/
+│   │   ├── domain/models/
+│   │   ├── infrastructure/
+│   │   │   ├── localDB/
+│   │   │   ├── network/
+│   │   │   └── utils/
+│   │   ├── features/
+│   │   ├── presentation/
+│   │   ├── store/
+│   │   ├── locales/
+│   │   └── context/
+│   ├── package.json
+│   └── vite.config.ts
+├── backend/
+│   ├── src/main/java/com/worldbuilding/
+│   │   ├── core/
+│   │   └── domains/
+│   ├── pom.xml
+│   └── mvnw.cmd
+├── Docs/
+├── scripts/
+├── LICENSE.txt
+└── LICENSE-MPL-2.0.txt
 ```
 
-Este script orquestador automatiza el despliegue del frontend, el backend de sincronización y el motor de base de datos.
+## Ejecución Local
 
-### Desarrollo Manual
+### Opción rápida (Windows)
 
-**Frontend (Vite + React):**
+Desde scripts:
+
+```bat
+run-app.bat
+```
+
+### Opción manual
+
+Frontend:
 
 ```bash
 cd frontend
+npm install
 npm run dev
 ```
 
-**Backend (Sincronización Opcional - Spring Boot):**
+Backend auxiliar:
+
+```bat
+cd backend
+mvnw.cmd compile exec:java -Dexec.mainClass=com.worldbuilding.core.AuxServerApplication
+```
+
+## Build
+
+Frontend:
 
 ```bash
-.\mvnw.cmd spring-boot:run
+cd frontend
+npm run build
 ```
 
----
+Backend:
 
-## 💎 Funcionalidades Core
-
-### 📖 World Bible (La Biblia del Mundo)
-
-Gestión jerárquica de entidades (Personajes, Lugares, Objetos, Deidades) mediante plantillas dinámicas y atributos personalizados.
-
-- **Backlinks (Apariciones):** Rastreo automático de menciones de entidades en tus manuscritos (Estilo Obsidian).
-
-### 🕸️ Grafo de Causalidad
-
-Visualización relacional de alta fidelidad para mapear conexiones entre personajes y facciones.
-
-- **Memoria de Cámara:** El grafo recuerda exactamente tu zoom y posición (Viewport Persistence).
-
-### ✍️ Writing Hub (Centro de Escritura)
-
-Entorno de escritura minimalista con gestión de cuadernos y hojas.
-
-- **Snapshots:** Control de versiones local para cada página de tu obra.
-
-### 🕒 Multiverse Timeline
-
-Gestión de líneas temporales paralelas y eventos históricos vinculados a entidades del mapa.
-
----
-
-## 🛠️ Stack Tecnológico
-
-- **Frontend:** React 18, TypeScript, Vite.
-- **Estilo:** Vanilla CSS (Technical Zen / Monolithic).
-- **Estado:** Zustand (Async Orchestration).
-- **Persistencia:** SQLite WASM (SQLocal) + OPFS.
-- **Backend:** Spring 4 (Java 21) para servicios de exportación y backup.
-
----
-
-## 📂 Estructura del Proyecto
-
-```text
-WorldbuildingApp/
-├── frontend/           # Interfaz de Usuario y Lógica Local-First
-│   ├── src/
-│   │   ├── application/   # Casos de Uso y Lógica de Negocio
-│   │   ├── domain/        # Modelos e Interfaces
-│   │   ├── infrastructure/# Persistencia (SQLite) y Repositorios
-│   │   ├── presentation/  # Componentes UI (Atoms, Molecules, Layouts)
-│   │   └── store/         # Gestión de Estado Global (Zustand)
-├── main/               # Backend de Sincronización y Backup (Java)
-├── Docs/               # Master Documentation & Architect Logs
-└── scripts/            # Herramientas de Refactorización y Automatización
+```bat
+cd backend
+mvnw.cmd -DskipTests package
 ```
 
----
+## Documentación de Proyecto
 
-## 📝 Requisitos
+- Reglas maestras: Docs/00_Reglas_Maestras.md
+- Estrategia técnica: Docs/01_Estrategia_Tecnica.md
+- Diseño UI/UX: Docs/02_Diseño_UI_UX.md
+- Roadmap vivo: Docs/03_Roadmap_Vivo.md
+- Arquitectura de workspaces: Docs/04_Arquitectura_Workspaces.md
 
-- **Node.js** 18+ (Frontend)
-- **Java** 21+ (Backend de Sincronización)
-- **Navegador Moderno** (Chrome/Edge/Arc recomendados por soporte OPFS)
+## Licenciamiento
 
-## 📄 Licenciamiento Dual & Modelo de Código Abierto
+El proyecto mantiene un modelo de licencia dual. Consultar:
 
-Chronos Atlas se distribuye bajo un modelo de **Licenciamiento Dual**. Los términos de uso del código fuente de este repositorio dependen estrictamente del perfil económico de la entidad:
-
-### 1. Vía Comunitaria e Independiente (Facturación < 500.000 EUR)
-A menos que se indique lo contrario, todos los archivos de código fuente de este repositorio están sujetos de forma global a los términos de la **Mozilla Public License Version 2.0 (MPL 2.0)**. 
-* **Protección del Núcleo:** Cualquier modificación o mejora realizada directamente sobre los archivos existentes del Core de Chronos Atlas debe liberarse de forma abierta bajo la misma licencia MPL 2.0.
-* **Modularidad Limpia e Independencia:** Los desarrolladores independientes tienen el derecho legal absoluto de crear archivos y módulos complementarios completamente nuevos desde cero bajo sus propias licencias comerciales o privativas, sin obligación de abrir su código fuente.
-
-### 2. Vía Comercial a Gran Escala (Facturación ≥ 500.000 EUR)
-Las corporaciones, grandes estudios o entidades cuyos ingresos brutos anuales sean iguales o superiores a **500.000 EUR**, o que coticen en mercados de valores, no están autorizados a utilizar este software de forma gratuita bajo los términos comunitarios. Están legalmente obligados a adquirir una **Licencia Comercial Privativa** otorgada por el autor original para poder instalar, desplegar o utilizar la herramienta en sus entornos corporativos.
-
-Para consultar los textos completos de regulación o adquirir una licencia comercial, diríjase al archivo `LICENSE.txt` en la raíz de este proyecto o contacte al autor.
-
----
-
-Developed with 💜 by [Roberto Monedero Alonso](https://github.com/Fixius50)
-_"En la red de almas, ningún ser es un desierto."_
-
----
-
-### 📺 Demo & Vision
-
-<p align="center">
-  <a href="https://www.youtube.com/watch?v=FjV8SHjHvHk">
-    <img src="https://img.youtube.com/vi/FjV8SHjHvHk/maxresdefault.jpg" alt="Chronos Atlas Demo" width="100%" style="border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
-  </a>
-</p>
+- LICENSE.txt
+- LICENSE-MPL-2.0.txt

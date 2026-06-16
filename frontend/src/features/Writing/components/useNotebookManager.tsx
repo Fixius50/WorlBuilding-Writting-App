@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Notebook } from "@domain/models/writing";
 import { WorkspaceUseCase } from "@application/useCases/WorkspaceUseCase";
+import { getModuleCache, setModuleCache } from "@utils/moduleCache";
 
 /**
  * 🧠 useNotebookManager
@@ -12,22 +13,29 @@ export const useNotebookManager = (projectId: number | string | null) => {
   const [activeNotebook, setActiveNotebook] = useState<Notebook | null>(null);
   const [editingTitleId, setEditingTitleId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const dirtyRef = useRef<boolean>(false);
 
   const key = `notebooks_v2_${projectId || "global"}`;
+
+  const flushNotebooks = useCallback(async () => {
+    if (dirtyRef.current) {
+      await WorkspaceUseCase.saveSetting(key, JSON.stringify(notebooks));
+      dirtyRef.current = false;
+    }
+  }, [key, notebooks]);
 
   const loadNotebooks = useCallback(async () => {
     setIsLoading(true);
     try {
-      const saved = await WorkspaceUseCase.getSetting(key);
-      if (saved) {
-        setNotebooks(JSON.parse(saved));
+      const cached = getModuleCache<Notebook[]>(key);
+      if (cached) {
+        setNotebooks(cached);
       } else {
-        const old = localStorage.getItem(key);
-        if (old) {
-          const parsed = JSON.parse(old);
+        const saved = await WorkspaceUseCase.getSetting(key);
+        if (saved) {
+          const parsed = JSON.parse(saved) as Notebook[];
           setNotebooks(parsed);
-          await WorkspaceUseCase.saveSetting(key, old);
-          localStorage.removeItem(key);
+          setModuleCache(key, parsed);
         }
       }
     } catch (err) {
@@ -41,10 +49,32 @@ export const useNotebookManager = (projectId: number | string | null) => {
     loadNotebooks();
   }, [loadNotebooks]);
 
+  useEffect(() => {
+    setModuleCache(key, notebooks);
+    dirtyRef.current = true;
+  }, [key, notebooks]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      flushNotebooks().catch(() => {
+        // [LOG REMOVED]
+      });
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      flushNotebooks().catch(() => {
+        // [LOG REMOVED]
+      });
+    };
+  }, [flushNotebooks]);
+
   const saveNotebooks = useCallback(
     async (newNotebooks: Notebook[]) => {
       setNotebooks(newNotebooks);
-      await WorkspaceUseCase.saveSetting(key, JSON.stringify(newNotebooks));
+      setModuleCache(key, newNotebooks);
+      dirtyRef.current = true;
     },
     [key],
   );

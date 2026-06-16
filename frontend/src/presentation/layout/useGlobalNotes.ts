@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { WorkspaceUseCase } from '@application/useCases/WorkspaceUseCase';
+import { useState, useEffect, useCallback, useRef } from "react";
+import { WorkspaceUseCase } from "@application/useCases/WorkspaceUseCase";
+import { getModuleCache, setModuleCache } from "@utils/moduleCache";
 
 export interface Note {
   id: number;
@@ -12,32 +13,46 @@ export interface UseGlobalNotesProps {
   storageKey?: string;
 }
 
-export const useGlobalNotes = ({ projectName, storageKey }: UseGlobalNotesProps) => {
+export const useGlobalNotes = ({
+  projectName,
+  storageKey,
+}: UseGlobalNotesProps) => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
+  const dirtyRef = useRef<boolean>(false);
 
   const getStorageKey = (): string => {
     return storageKey || `notes_v2_${projectName}`;
   };
 
+  const flushNotes = useCallback(async (): Promise<void> => {
+    const key = getStorageKey();
+    if (key && dirtyRef.current) {
+      await WorkspaceUseCase.saveSetting(key, JSON.stringify(notes));
+      dirtyRef.current = false;
+    }
+  }, [notes, projectName, storageKey]);
+
   useEffect(() => {
     const loadNotes = async (): Promise<void> => {
       const key = getStorageKey();
       if (key) {
-        const saved = await WorkspaceUseCase.getSetting(key);
-        if (saved) {
-          setNotes(JSON.parse(saved));
-        } else if (!storageKey) {
-          // Migration from old single string if exists (ONLY for global project notes)
-          // Since we are moving to SQLite, we check if there's anything in localStorage to migrate once
-          const oldNotes = localStorage.getItem(`notes_${projectName}`);
-          if (oldNotes) {
-            const initialNote = { id: Date.now(), title: 'Nota General', content: oldNotes };
-            const newNotes = [initialNote];
-            setNotes(newNotes);
-            await WorkspaceUseCase.saveSetting(key, JSON.stringify(newNotes));
-            localStorage.removeItem(`notes_${projectName}`); // Cleanup
+        const cachedNotes = getModuleCache<Note[]>(key);
+        switch (!!cachedNotes) {
+          case true:
+            if (cachedNotes) {
+              setNotes(cachedNotes);
+            }
+            break;
+          default: {
+            const saved = await WorkspaceUseCase.getSetting(key);
+            if (saved) {
+              const parsedNotes = JSON.parse(saved) as Note[];
+              setNotes(parsedNotes);
+              setModuleCache(key, parsedNotes);
+            }
+            break;
           }
         }
       }
@@ -45,19 +60,44 @@ export const useGlobalNotes = ({ projectName, storageKey }: UseGlobalNotesProps)
     loadNotes();
   }, [projectName, storageKey]);
 
+  useEffect(() => {
+    const key = getStorageKey();
+    if (key) {
+      setModuleCache(key, notes);
+      dirtyRef.current = true;
+    }
+  }, [notes, projectName, storageKey]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      flushNotes().catch(() => {
+        // [LOG REMOVED]
+      });
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      flushNotes().catch(() => {
+        // [LOG REMOVED]
+      });
+    };
+  }, [flushNotes]);
+
   const saveNotes = async (newNotes: Note[]): Promise<void> => {
     setNotes(newNotes);
     const key = getStorageKey();
     if (key) {
-      await WorkspaceUseCase.saveSetting(key, JSON.stringify(newNotes));
+      setModuleCache(key, newNotes);
+      dirtyRef.current = true;
     }
   };
 
   const addNote = (): void => {
     const newNote = {
       id: Date.now(),
-      title: 'Nueva Nota',
-      content: ''
+      title: "Nueva Nota",
+      content: "",
     };
     saveNotes([...notes, newNote]);
     setEditingNoteId(newNote.id);
@@ -78,7 +118,11 @@ export const useGlobalNotes = ({ projectName, storageKey }: UseGlobalNotesProps)
   };
 
   const updateNote = (id: number, field: keyof Note, value: string): void => {
-    saveNotes(notes.map((n: Note): Note => n.id === id ? { ...n, [field]: value } : n));
+    saveNotes(
+      notes.map(
+        (n: Note): Note => (n.id === id ? { ...n, [field]: value } : n),
+      ),
+    );
   };
 
   const toggleFullscreen = (): void => {
@@ -95,6 +139,6 @@ export const useGlobalNotes = ({ projectName, storageKey }: UseGlobalNotesProps)
     deleteNote,
     confirmDeleteAction,
     updateNote,
-    toggleFullscreen
+    toggleFullscreen,
   };
 };

@@ -1,7 +1,9 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import ConfirmationModal from "@organisms/ConfirmationModal";
 import { Proyecto } from "@domain/models/database";
 import { useWorkspaceSelector } from "./useWorkspaceSelector";
+import { WorkspaceUseCase } from "@application/useCases/WorkspaceUseCase";
+import { getModuleCache, setModuleCache } from "@utils/moduleCache";
 
 // --- COMPONENTES ATÓMICOS ---
 
@@ -113,16 +115,46 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   currentUrl,
   onImageUpdate,
 }) => {
+  const galleryKey = "codex_session_gallery_v2";
   const [mode, setMode] = useState<"url" | "local">("url");
-  const [localGallery, setLocalGallery] = useState<string[]>(() => {
-    try {
-      const stored = localStorage.getItem("codex_session_gallery");
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [localGallery, setLocalGallery] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const loadGallery = async () => {
+      const cachedGallery = getModuleCache<string[]>(galleryKey);
+      if (cachedGallery) {
+        setLocalGallery(cachedGallery);
+      } else {
+        const savedGallery = await WorkspaceUseCase.getSetting(galleryKey);
+        if (savedGallery) {
+          const parsedGallery = JSON.parse(savedGallery) as string[];
+          setLocalGallery(parsedGallery);
+          setModuleCache(galleryKey, parsedGallery);
+        }
+      }
+    };
+    loadGallery();
+  }, []);
+
+  useEffect(() => {
+    setModuleCache(galleryKey, localGallery);
+
+    const flushGallery = () => {
+      WorkspaceUseCase.saveSetting(
+        galleryKey,
+        JSON.stringify(localGallery),
+      ).catch(() => {
+        // [LOG REMOVED]
+      });
+    };
+
+    window.addEventListener("beforeunload", flushGallery);
+    return () => {
+      window.removeEventListener("beforeunload", flushGallery);
+      flushGallery();
+    };
+  }, [localGallery]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -135,10 +167,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           ...localGallery.filter((img) => img !== base64String),
         ].slice(0, 10);
         setLocalGallery(newGallery);
-        localStorage.setItem(
-          "codex_session_gallery",
-          JSON.stringify(newGallery),
-        );
+        setModuleCache(galleryKey, newGallery);
         onImageUpdate(base64String);
       };
       reader.readAsDataURL(file);

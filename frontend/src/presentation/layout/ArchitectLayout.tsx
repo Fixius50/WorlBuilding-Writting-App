@@ -9,6 +9,8 @@ import NotebookManager from "@features/Writing/components/NotebookManager";
 import { SyncView } from "@features/Sync";
 import { ResponsiveBar } from "@nivo/bar";
 import { useArchitectLayout } from "./useArchitectLayout";
+import { WorkspaceUseCase } from "@application/useCases/WorkspaceUseCase";
+import { getModuleCache, setModuleCache } from "@utils/moduleCache";
 
 // --- Subcomponente de Gráficos para el Modal Central ---
 const WritingStatsChart: React.FC<{ pages: { contenido?: string }[] }> = ({
@@ -142,6 +144,9 @@ const DEFAULT_SIDEBAR_SECTIONS: SidebarSectionsState = {
   sistema: true,
 };
 
+const buildSidebarSectionsKey = (project: string | undefined): string =>
+  `architect.sidebar.sections:${project || "global"}`;
+
 interface DirectorySectionHeaderProps {
   label: string;
   isOpen: boolean;
@@ -221,40 +226,79 @@ const ArchitectLayout: React.FC = () => {
     openPanel,
   } = useArchitectLayout();
 
-  const sidebarSectionsStorageKey = `architect.sidebar.sections:${projectName}`;
+  const sidebarSectionsStorageKey = buildSidebarSectionsKey(projectName);
   const [sidebarSections, setSidebarSections] = useState<SidebarSectionsState>(
     DEFAULT_SIDEBAR_SECTIONS,
   );
 
   useEffect(() => {
-    const raw = window.localStorage.getItem(sidebarSectionsStorageKey);
-    switch (!!raw) {
+    const cached = getModuleCache<SidebarSectionsState>(
+      sidebarSectionsStorageKey,
+    );
+    const applySections = (parsed: Partial<SidebarSectionsState>) => {
+      setSidebarSections({
+        constructor: parsed.constructor ?? true,
+        gestor: parsed.gestor ?? true,
+        otros: parsed.otros ?? true,
+        sistema: parsed.sistema ?? true,
+      });
+    };
+
+    switch (!!cached) {
       case true:
-        try {
-          const parsed = JSON.parse(
-            raw as string,
-          ) as Partial<SidebarSectionsState>;
-          setSidebarSections({
-            constructor: parsed.constructor ?? true,
-            gestor: parsed.gestor ?? true,
-            otros: parsed.otros ?? true,
-            sistema: parsed.sistema ?? true,
-          });
-        } catch (_error) {
-          setSidebarSections(DEFAULT_SIDEBAR_SECTIONS);
+        if (cached) {
+          applySections(cached);
         }
         break;
       default:
-        setSidebarSections(DEFAULT_SIDEBAR_SECTIONS);
+        WorkspaceUseCase.getSetting(sidebarSectionsStorageKey)
+          .then((saved) => {
+            switch (!!saved) {
+              case true:
+                try {
+                  const parsed = JSON.parse(
+                    saved as string,
+                  ) as Partial<SidebarSectionsState>;
+                  applySections(parsed);
+                  setModuleCache(sidebarSectionsStorageKey, {
+                    constructor: parsed.constructor ?? true,
+                    gestor: parsed.gestor ?? true,
+                    otros: parsed.otros ?? true,
+                    sistema: parsed.sistema ?? true,
+                  });
+                } catch (_error) {
+                  setSidebarSections(DEFAULT_SIDEBAR_SECTIONS);
+                }
+                break;
+              default:
+                setSidebarSections(DEFAULT_SIDEBAR_SECTIONS);
+                break;
+            }
+          })
+          .catch(() => {
+            setSidebarSections(DEFAULT_SIDEBAR_SECTIONS);
+          });
         break;
     }
   }, [sidebarSectionsStorageKey]);
 
   useEffect(() => {
-    window.localStorage.setItem(
-      sidebarSectionsStorageKey,
-      JSON.stringify(sidebarSections),
-    );
+    setModuleCache(sidebarSectionsStorageKey, sidebarSections);
+
+    const flushSidebarState = () => {
+      WorkspaceUseCase.saveSetting(
+        sidebarSectionsStorageKey,
+        JSON.stringify(sidebarSections),
+      ).catch(() => {
+        // [LOG REMOVED]
+      });
+    };
+
+    window.addEventListener("beforeunload", flushSidebarState);
+    return () => {
+      window.removeEventListener("beforeunload", flushSidebarState);
+      flushSidebarState();
+    };
   }, [sidebarSections, sidebarSectionsStorageKey]);
 
   const toggleSidebarSection = (section: SidebarSectionKey) => {
@@ -803,7 +847,9 @@ const ArchitectLayout: React.FC = () => {
             <Outlet context={outletContextValue} />
           </div>
 
+          {/*
           <GlobalRightPanel panelMode={panelMode} />
+          */}
 
           {/*
           <ControlPanel
