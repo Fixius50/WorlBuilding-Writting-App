@@ -1,12 +1,12 @@
-import React from "react";
-import MonolithicPanel from "@atoms/MonolithicPanel";
-import Button from "@atoms/Button";
+﻿import React from "react";
+import MonolithicPanel from "@components/ui/MonolithicPanel";
+import Button from "@components/ui/Button";
 import AttributeField from "./AttributeField";
-import Avatar from "@atoms/Avatar";
+import Avatar from "@components/ui/Avatar";
 import EntityBuilderSidebar from "../components/EntityBuilderSidebar";
-import ConfirmationModal from "@organisms/ConfirmationModal";
+import ConfirmationModal from "@components/ui/ConfirmationModal";
 import FamilyTreeAssigner from "../components/FamilyTreeAssigner";
-import TemplateSettingsModal from "@organisms/TemplateSettingsModal";
+import TemplateSettingsModal from "@components/ui/TemplateSettingsModal";
 import { useEntityBuilder } from "./useEntityBuilder";
 import { getPresetTabsByEntityType } from "@features/Entities/utils/entityPresetTabs";
 import { getThemePrimaryHex } from "@infrastructure/utils/themeColor";

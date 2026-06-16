@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useMemo } from "react";
+﻿import React, { useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate, useOutletContext } from "react-router-dom";
 import {
   Map,
@@ -10,8 +10,8 @@ import {
   MapMouseEvent,
 } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
-import MonolithicPanel from "@atoms/MonolithicPanel";
-import Button from "@atoms/Button";
+import MonolithicPanel from "@components/ui/MonolithicPanel";
+import Button from "@components/ui/Button";
 import { useMapEditor, DrawMode } from "./useMapEditor";
 
 const DRAW_MODE_LABELS: Record<DrawMode, string> = {

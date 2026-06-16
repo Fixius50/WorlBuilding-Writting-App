@@ -1,5 +1,5 @@
 import React from "react";
-import { useProjectView } from "./useProjectView";
+import { useProjectView } from "../hooks/useProjectView";
 
 interface ActionCardProps {
   icon: string;

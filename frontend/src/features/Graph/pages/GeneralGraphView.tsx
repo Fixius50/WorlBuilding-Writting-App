@@ -1,6 +1,6 @@
-import React, { useCallback } from "react";
+﻿import React, { useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
-import UniversalCanvas from "@presentation/organisms/editor/UniversalCanvas";
+import UniversalCanvas from "@components/ui/editor/UniversalCanvas";
 import { useGeneralGraph } from "./useGeneralGraph";
 import { RelationshipUseCase } from "@application/RelationshipUseCase";
 

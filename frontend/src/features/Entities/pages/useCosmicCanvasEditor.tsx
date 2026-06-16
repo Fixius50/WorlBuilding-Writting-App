@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+﻿import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EntityUseCase } from '@application/EntityUseCase';
 import { Entidad } from '@domain/database';
-import { CanvasNode, CanvasEdge } from '@presentation/organisms/editor/UniversalCanvas';
+import { CanvasNode, CanvasEdge } from '@components/ui/editor/UniversalCanvas';
 
 /**
  * 🧠 useCosmicCanvasEditor

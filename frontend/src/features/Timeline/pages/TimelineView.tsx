@@ -1,9 +1,9 @@
-import React, { useCallback } from "react";
+﻿import React, { useCallback } from "react";
 import { useLanguage } from "@context/LanguageContext";
 import { useOutletContext } from "react-router-dom";
 import { TimelineUseCase } from "@application/TimelineUseCase";
-import ConfirmationModal from "@organisms/ConfirmationModal";
-import Button from "@atoms/Button";
+import ConfirmationModal from "@components/ui/ConfirmationModal";
+import Button from "@components/ui/Button";
 import TimelineEventCard from "../components/TimelineEventCard";
 import { useTimelineView } from "./useTimelineView";
 

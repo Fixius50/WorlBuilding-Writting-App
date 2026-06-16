@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from "react";
+﻿import React, { useMemo, useRef } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -12,7 +12,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { Entidad, Carpeta } from "@domain/database";
 import { Link, useParams } from "react-router-dom";
 import { useLanguage } from "@context/LanguageContext";
-import ConfirmationModal from "@organisms/ConfirmationModal";
+import ConfirmationModal from "@components/ui/ConfirmationModal";
 import CreateMassEntitiesModal from "./CreateMassEntitiesModal";
 import { useBibleTable } from "./useBibleTable";
 

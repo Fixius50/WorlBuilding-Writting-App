@@ -1,6 +1,6 @@
-import React from "react";
-import ConfirmModal from "@organisms/ConfirmModal";
-import InputModal from "@organisms/InputModal";
+﻿import React from "react";
+import ConfirmModal from "@components/ui/ConfirmModal";
+import InputModal from "@components/ui/InputModal";
 import { Notebook } from "@domain/writing";
 import { useNotebookGrid } from "./useNotebookGrid";
 

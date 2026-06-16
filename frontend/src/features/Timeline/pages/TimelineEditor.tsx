@@ -1,8 +1,8 @@
-import React from "react";
+﻿import React from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { useLanguage } from "@context/LanguageContext";
 import { Evento } from "@domain/database";
-import ConfirmationModal from "@organisms/ConfirmationModal";
+import ConfirmationModal from "@components/ui/ConfirmationModal";
 
 // Custom Hooks & Components
 import { useTimelineManager } from "../hooks/useTimelineManager";

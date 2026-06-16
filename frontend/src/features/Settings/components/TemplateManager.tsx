@@ -1,6 +1,6 @@
-import React from 'react';
-import MonolithicPanel from '@atoms/MonolithicPanel';
-import ConfirmationModal from '@organisms/ConfirmationModal';
+﻿import React from 'react';
+import MonolithicPanel from '@components/ui/MonolithicPanel';
+import ConfirmationModal from '@components/ui/ConfirmationModal';
 import { useTemplateManager, useNewFieldForm, TemplateField } from './useTemplateManager';
 
 const TemplateManager = ({ compact = false }: { compact?: boolean }) => {

@@ -1,6 +1,6 @@
-import React from "react";
-import Button from "@atoms/Button";
-import MonolithicPanel from "@atoms/MonolithicPanel";
+﻿import React from "react";
+import Button from "@components/ui/Button";
+import MonolithicPanel from "@components/ui/MonolithicPanel";
 import { useCosmicHierarchyView } from "./useCosmicHierarchyView";
 
 interface CosmicHierarchyViewProps {

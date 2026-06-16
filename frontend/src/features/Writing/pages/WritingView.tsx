@@ -1,7 +1,7 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+﻿import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useLanguage } from "@context/LanguageContext";
 import ZenEditor from "@features/Editor/components/ZenEditor";
-import ConfirmModal from "@organisms/ConfirmModal";
+import ConfirmModal from "@components/ui/ConfirmModal";
 import { useWritingView } from "./useWritingView";
 import IndividualProfileView from "@features/Entities/pages/archetypes/IndividualProfileView";
 import TerritoryProfileView from "@features/Entities/pages/archetypes/TerritoryProfileView";

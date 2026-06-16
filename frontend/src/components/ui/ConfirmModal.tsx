@@ -1,4 +1,4 @@
-import Button from '@atoms/Button';
+﻿import Button from '@components/ui/Button';
 import { ModalProps } from '@domain/ui';
 
 interface ConfirmModalProps extends ModalProps {

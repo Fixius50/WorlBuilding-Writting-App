@@ -1,5 +1,5 @@
-import React from 'react';
-import Button from '@atoms/Button';
+﻿import React from 'react';
+import Button from '@components/ui/Button';
 import { useRelationshipManager } from './useRelationshipManager';
 
 const ENTITY_TYPES = [

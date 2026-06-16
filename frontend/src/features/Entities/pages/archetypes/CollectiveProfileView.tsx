@@ -1,6 +1,6 @@
-import React from "react";
+﻿import React from "react";
 import { useCollectiveProfile } from "./useCollectiveProfile";
-import SecondaryTabs from "@presentation/molecules/SecondaryTabs";
+import SecondaryTabs from "@components/ui/SecondaryTabs";
 import DynamicAttributeForm from "@features/Entities/components/DynamicAttributeForm";
 import NarrativeRichText from "@features/Entities/components/NarrativeRichText";
 import MiniGraph from "@features/Entities/components/MiniGraph";

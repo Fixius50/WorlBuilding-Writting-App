@@ -13,8 +13,8 @@ import {
 } from "react-konva";
 import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
-import SectionErrorBoundary from "@organisms/SectionErrorBoundary";
-import { getHierarchyVisuals } from "@presentation/utils/hierarchyVisuals";
+import SectionErrorBoundary from "@components/layout/SectionErrorBoundary";
+import { getHierarchyVisuals } from "@components/ui/hierarchyVisuals";
 import { HierarchyTypeId } from "@domain/hierarchy";
 
 export interface CanvasNode {

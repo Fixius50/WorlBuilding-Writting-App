@@ -1,7 +1,7 @@
-import React from "react";
-import UniversalCanvas from "@presentation/organisms/editor/UniversalCanvas";
+﻿import React from "react";
+import UniversalCanvas from "@components/ui/editor/UniversalCanvas";
 import DynamicAttributeForm from "../components/DynamicAttributeForm";
-import ConfirmationModal from "@organisms/ConfirmationModal";
+import ConfirmationModal from "@components/ui/ConfirmationModal";
 import { useCosmicCanvasEditor } from "./useCosmicCanvasEditor";
 import TimelineChronologyStrip from "@features/Entities/components/TimelineChronologyStrip";
 

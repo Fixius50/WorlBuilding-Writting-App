@@ -1,7 +1,7 @@
-import React from "react";
+﻿import React from "react";
 import { useOutletContext } from "react-router-dom";
-import MonolithicPanel from "@atoms/MonolithicPanel";
-import Button from "@atoms/Button";
+import MonolithicPanel from "@components/ui/MonolithicPanel";
+import Button from "@components/ui/Button";
 import { useArchetypeManager } from "./useArchetypeManager";
 
 const ArchetypeManager: React.FC = () => {

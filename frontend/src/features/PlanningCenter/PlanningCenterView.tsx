@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { useOutletContext, useParams } from "react-router-dom";
-import MonolithicPanel from "@atoms/MonolithicPanel";
+import MonolithicPanel from "@components/ui/MonolithicPanel";
 import { GeneralGraphView as GraphView } from "@features/Graph";
 import { GenealogyView } from "@features/Genealogy";
 

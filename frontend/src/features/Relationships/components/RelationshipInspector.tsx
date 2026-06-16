@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 📚 COMPONENTE: RelationshipInspector
  *
  * 📌 PROPÓSITO:
@@ -31,8 +31,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useLanguage } from "@context/LanguageContext";
 import { RelationshipUseCase } from "@application/RelationshipUseCase";
 import { RelacionEnriquecida } from "@domain/database";
-import Button from "@atoms/Button";
-import ConfirmationModal from "@organisms/ConfirmationModal";
+import Button from "@components/ui/Button";
+import ConfirmationModal from "@components/ui/ConfirmationModal";
 
 interface RelationshipInspectorProps {
   relationshipId: number;

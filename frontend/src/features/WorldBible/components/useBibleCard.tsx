@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { getHierarchyVisuals } from '@presentation/utils/hierarchyVisuals';
+﻿import { useMemo } from 'react';
+import { getHierarchyVisuals } from '@components/ui/hierarchyVisuals';
 
 interface BibleCardItem {
   id: number | string;

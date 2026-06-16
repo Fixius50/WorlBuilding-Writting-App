@@ -1,5 +1,5 @@
-import { HierarchyTypeId, HIERARCHY_DEFINITIONS } from '@domain/hierarchy';
-import { HIERARCHY_VISUALS } from '@presentation/utils/hierarchyVisuals';
+﻿import { HierarchyTypeId, HIERARCHY_DEFINITIONS } from '@domain/hierarchy';
+import { HIERARCHY_VISUALS } from '@components/ui/hierarchyVisuals';
 
 /**
  * LEGACY / INFRASTRUCTURE BRIDGE

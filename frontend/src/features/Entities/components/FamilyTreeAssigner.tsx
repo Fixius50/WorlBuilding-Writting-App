@@ -1,7 +1,7 @@
-import React from "react";
-import Avatar from "@atoms/Avatar";
-import MonolithicPanel from "@atoms/MonolithicPanel";
-import ConfirmationModal from "@organisms/ConfirmationModal";
+﻿import React from "react";
+import Avatar from "@components/ui/Avatar";
+import MonolithicPanel from "@components/ui/MonolithicPanel";
+import ConfirmationModal from "@components/ui/ConfirmationModal";
 import { useFamilyTreeAssigner } from "./useFamilyTreeAssigner";
 
 interface FamilyTreeAssignerProps {

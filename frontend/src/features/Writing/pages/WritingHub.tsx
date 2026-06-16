@@ -1,7 +1,7 @@
-import React from "react";
+﻿import React from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
-import MonolithicPanel from "@atoms/MonolithicPanel";
-import ConfirmationModal from "@organisms/ConfirmationModal";
+import MonolithicPanel from "@components/ui/MonolithicPanel";
+import ConfirmationModal from "@components/ui/ConfirmationModal";
 import { useWritingHub } from "./useWritingHub";
 
 interface WritingOutletContext {

@@ -1,9 +1,9 @@
-import React from "react";
+﻿import React from "react";
 import { useEventProfile } from "./useEventProfile";
-import SecondaryTabs from "@molecules/SecondaryTabs";
+import SecondaryTabs from "@components/ui/SecondaryTabs";
 import DynamicAttributeForm from "@features/Entities/components/DynamicAttributeForm";
 import MiniTimeline from "@features/Entities/components/MiniTimeline";
-import SectionErrorBoundary from "@organisms/SectionErrorBoundary";
+import SectionErrorBoundary from "@components/layout/SectionErrorBoundary";
 import NarrativeRichText from "@features/Entities/components/NarrativeRichText";
 import MiniGraph from "@features/Entities/components/MiniGraph";
 import {

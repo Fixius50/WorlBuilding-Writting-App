@@ -2,16 +2,15 @@ import { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 // Layout
-import AppLayout from "@layout/AppLayout";
-import ArchitectLayout from "@layout/ArchitectLayout";
+import AppLayout from "@components/layout/AppLayout";
+import ArchitectLayout from "@components/layout/ArchitectLayout";
 
 // Pages (root level)
-import WorkspaceSelector from "@presentation/pages/WorkspaceSelector";
-import ProjectView from "@presentation/pages/ProjectView";
+import { WorkspaceSelector } from "@features/Workspaces";
 
 // Features (via barrel files)
 import { Settings, ArchetypeManager } from "@features/Settings";
-import { Dashboard } from "@features/Dashboard";
+import { Dashboard, ProjectView } from "@features/Dashboard";
 import {
   EntityRouter,
   EntityBuilder,

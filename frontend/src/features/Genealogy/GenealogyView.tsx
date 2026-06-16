@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+﻿import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import UniversalCanvas, { CanvasNode, CanvasEdge } from '@presentation/organisms/editor/UniversalCanvas';
+import UniversalCanvas, { CanvasNode, CanvasEdge } from '@components/ui/editor/UniversalCanvas';
 import { entityService } from '@repositories/entityService';
 import { relationshipService } from '@repositories/relationshipService';
 import { Entidad, Relacion } from '@domain/database';

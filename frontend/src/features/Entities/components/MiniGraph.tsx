@@ -1,5 +1,5 @@
-import React from 'react';
-import UniversalCanvas from '@presentation/organisms/editor/UniversalCanvas';
+﻿import React from 'react';
+import UniversalCanvas from '@components/ui/editor/UniversalCanvas';
 import { useMiniGraph } from './useMiniGraph';
 
 interface Props {

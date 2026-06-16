@@ -1,5 +1,5 @@
-import React from 'react';
-import MonolithicPanel from '@atoms/MonolithicPanel';
+﻿import React from 'react';
+import MonolithicPanel from '@components/ui/MonolithicPanel';
 
 interface StatCardProps {
   title: string;

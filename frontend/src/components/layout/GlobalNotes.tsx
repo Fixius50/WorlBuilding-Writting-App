@@ -1,5 +1,5 @@
 import React from 'react';
-import ConfirmationModal from '@organisms/ConfirmationModal';
+import ConfirmationModal from '@components/ui/ConfirmationModal';
 import { useGlobalNotes } from './useGlobalNotes';
 
 interface GlobalNotesProps {

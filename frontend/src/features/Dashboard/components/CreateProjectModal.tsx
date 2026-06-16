@@ -1,6 +1,6 @@
-import React from 'react';
-import MonolithicPanel from '@atoms/MonolithicPanel';
-import Button from '@atoms/Button';
+﻿import React from 'react';
+import MonolithicPanel from '@components/ui/MonolithicPanel';
+import Button from '@components/ui/Button';
 import { useCreateProjectModal } from './useCreateProjectModal';
 
 interface CreateProjectModalProps {

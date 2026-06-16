@@ -1,10 +1,10 @@
-import React from "react";
+﻿import React from "react";
 import { useLanguage } from "@context/LanguageContext";
 import { Outlet, useOutletContext } from "react-router-dom";
 import BibleTableView from "../components/BibleTableView";
 import CreateArchetypeModal from "../components/CreateArchetypeModal";
 import { ArchitectContext } from "@domain/ui";
-import ConfirmationModal from "@organisms/ConfirmationModal";
+import ConfirmationModal from "@components/ui/ConfirmationModal";
 import { useWorldBibleLayout } from "./useWorldBibleLayout";
 
 const WorldBibleLayout: React.FC = () => {

@@ -1,11 +1,11 @@
-import React from 'react';
+﻿import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useLanguage } from '@context/LanguageContext';
 import { Word } from '@domain/database';
-import MonolithicPanel from '@atoms/MonolithicPanel';
-import Button from '@atoms/Button';
-import DrawingCanvas from '@presentation/organisms/editor/DrawingCanvas';
-import ConfirmModal from '@organisms/ConfirmModal';
+import MonolithicPanel from '@components/ui/MonolithicPanel';
+import Button from '@components/ui/Button';
+import DrawingCanvas from '@components/ui/editor/DrawingCanvas';
+import ConfirmModal from '@components/ui/ConfirmModal';
 import { useLinguisticsHub } from './useLinguisticsHub';
 
 interface LinguisticsHubProps {

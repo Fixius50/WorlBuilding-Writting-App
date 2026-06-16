@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { EntityUseCase } from '@application/EntityUseCase';
 import { TemplateUseCase } from '@application/TemplateUseCase';
-import Switch from '@atoms/Switch';
+import Switch from '@components/ui/Switch';
 
 interface MapSearchBoxProps {
   onSearch: (term: string) => void;

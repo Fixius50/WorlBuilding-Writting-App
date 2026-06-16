@@ -1,5 +1,5 @@
-import React from 'react';
-import MonolithicPanel from '@atoms/MonolithicPanel';
+﻿import React from 'react';
+import MonolithicPanel from '@components/ui/MonolithicPanel';
 import { useMapSelectionModal, MapPreview } from './useMapSelectionModal';
 
 const MapSelectionModal = ({ maps, onSelect, onCreateNew, onClose }: { maps: MapPreview[]; onSelect: (map: MapPreview) => void; onCreateNew: () => void; onClose: () => void }) => {

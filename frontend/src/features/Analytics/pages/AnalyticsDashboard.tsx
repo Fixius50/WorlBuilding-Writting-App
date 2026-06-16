@@ -1,5 +1,5 @@
-import React from "react";
-import MonolithicPanel from "@atoms/MonolithicPanel";
+﻿import React from "react";
+import MonolithicPanel from "@components/ui/MonolithicPanel";
 import { motion } from "framer-motion";
 import { useOutletContext } from "react-router-dom";
 import { ResponsivePie } from "@nivo/pie";

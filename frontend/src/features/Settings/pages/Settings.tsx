@@ -1,7 +1,7 @@
-import React from "react";
-import MonolithicPanel from "@atoms/MonolithicPanel";
-import Button from "@atoms/Button";
-import ComingSoonWrapper from "@molecules/ComingSoonWrapper";
+﻿import React from "react";
+import MonolithicPanel from "@components/ui/MonolithicPanel";
+import Button from "@components/ui/Button";
+import ComingSoonWrapper from "@components/ui/ComingSoonWrapper";
 import { useSettings } from "./useSettings";
 
 const Settings = () => {

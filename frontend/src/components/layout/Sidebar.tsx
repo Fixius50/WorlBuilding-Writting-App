@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import Avatar from '@atoms/Avatar';
+import Avatar from '@components/ui/Avatar';
 
 interface SidebarItemProps {
  icon: string;

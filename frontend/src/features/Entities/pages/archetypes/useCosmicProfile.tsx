@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useOutletContext } from "react-router-dom";
 import { EntityUseCase } from "@application/EntityUseCase";
 import { TemplateUseCase } from "@application/TemplateUseCase";
@@ -6,7 +6,7 @@ import { Entidad, Valor } from "@domain/database";
 import {
   CanvasNode,
   CanvasEdge,
-} from "@presentation/organisms/editor/UniversalCanvas";
+} from "@components/ui/editor/UniversalCanvas";
 import { useQuery } from "@tanstack/react-query";
 import { entityService } from "@repositories/entityService";
 

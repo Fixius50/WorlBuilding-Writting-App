@@ -1,7 +1,7 @@
-import React from "react";
+﻿import React from "react";
 import { createPortal } from "react-dom";
 import { useCreateWorkspaceModal } from "./useCreateWorkspaceModal";
-import ConfirmationModal from "@organisms/ConfirmationModal";
+import ConfirmationModal from "@components/ui/ConfirmationModal";
 
 interface CreateWorkspaceModalProps {
   isOpen: boolean;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import {
   useParams,
   useNavigate,
@@ -12,7 +12,7 @@ import InteractiveMapView from "./InteractiveMapView";
 import MapManager from "./MapManager";
 import { EntityUseCase } from "@application/EntityUseCase";
 import { WorkspaceUseCase } from "@application/WorkspaceUseCase";
-import ConfirmationModal from "@organisms/ConfirmationModal";
+import ConfirmationModal from "@components/ui/ConfirmationModal";
 import { Entidad } from "@domain/database";
 import {
   MapAggregateService,

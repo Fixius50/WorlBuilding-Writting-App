@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import ConfirmationModal from "@organisms/ConfirmationModal";
+import ConfirmationModal from "@components/ui/ConfirmationModal";
 import { Proyecto } from "@domain/database";
-import { useWorkspaceSelector } from "./useWorkspaceSelector";
+import { useWorkspaceSelector } from "../hooks/useWorkspaceSelector";
 import { WorkspaceUseCase } from "@application/WorkspaceUseCase";
 import { getModuleCache, setModuleCache } from "@utils/moduleCache";
 

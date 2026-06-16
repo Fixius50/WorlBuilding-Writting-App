@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { CanvasNode, CanvasEdge } from '@presentation/organisms/editor/UniversalCanvas';
+﻿import { useState, useEffect, useCallback } from 'react';
+import { CanvasNode, CanvasEdge } from '@components/ui/editor/UniversalCanvas';
 import { RelationshipUseCase } from '@application/RelationshipUseCase';
 
 /**

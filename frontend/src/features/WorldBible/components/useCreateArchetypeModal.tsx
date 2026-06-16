@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { HierarchyTypeId, HIERARCHY_DEFINITIONS } from "../types";
-import { getHierarchyVisuals } from "@presentation/utils/hierarchyVisuals";
+import { getHierarchyVisuals } from "@components/ui/hierarchyVisuals";
 
 /**
  * 🧠 useCreateArchetypeModal

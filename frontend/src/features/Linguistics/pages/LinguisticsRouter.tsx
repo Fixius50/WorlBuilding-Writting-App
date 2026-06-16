@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import LinguisticsHub from './LinguisticsHub';
 import AdvancedLinguistics from './AdvancedLinguistics';
 
 import { WorkspaceUseCase } from '@application/WorkspaceUseCase';
 import { EntityUseCase } from '@application/EntityUseCase';
-import Button from '@presentation/atoms/Button';
+import Button from '@components/ui/Button';
 
 const LinguisticsRouter = () => {
   const [view, setView] = useState('hub'); // 'hub', 'foundry', 'editor', 'advanced'

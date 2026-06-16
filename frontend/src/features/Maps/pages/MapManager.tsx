@@ -1,7 +1,7 @@
-import React from "react";
+﻿import React from "react";
 import { useLanguage } from "@context/LanguageContext";
-import MonolithicPanel from "@atoms/MonolithicPanel";
-import Button from "@atoms/Button";
+import MonolithicPanel from "@components/ui/MonolithicPanel";
+import Button from "@components/ui/Button";
 import { Entidad } from "@domain/database";
 import { useMapManager } from "./useMapManager";
 

@@ -1,5 +1,5 @@
-import React from 'react';
-import Avatar from '@atoms/Avatar';
+﻿import React from 'react';
+import Avatar from '@components/ui/Avatar';
 import { useLanguage } from '@context/LanguageContext';
 import { useEntityInspector } from './useEntityInspector';
 

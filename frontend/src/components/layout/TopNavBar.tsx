@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
-import MonolithicPanel from "@atoms/MonolithicPanel";
-import Avatar from "@atoms/Avatar";
+import MonolithicPanel from "@components/ui/MonolithicPanel";
+import Avatar from "@components/ui/Avatar";
 
 const TopNavBar = () => {
   const location = useLocation();
