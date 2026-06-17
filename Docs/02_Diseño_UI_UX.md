@@ -38,15 +38,26 @@ El sistema permite la selección dinámica de fuentes en Ajustes, pero la jerarq
    - Los botones de estas barras no contienen etiquetas de texto directo; en su lugar, utilizan tooltips flotantes en español basados en hover (CSS puro).
    - Los paneles de contenido correspondientes flotan de manera adyacente y son colapsables haciendo clic sobre el icono activo o el botón de cerrar.
 
-## ORGANIZACIÓN VISUAL (ATOMIC DESIGN)
+## ORGANIZACIÓN VISUAL (FEATURE-FIRST)
 
-La capa de presentación (`/presentation`) se rige estrictamente por Atomic Design:
+La UI se organiza por feature y no por una carpeta global de presentación.
 
-1. **Atoms:** Componentes base indivisibles (botones, inputs).
-2. **Molecules:** Uniones simples de átomos.
-3. **Organisms:** Secciones complejas (ej. explorador de entidades, editores especializados, paneles de control locales).
-4. **Templates:** Layouts de página.
-5. **Pages:** Vistas completas.
+1. **UI Transversal:** Vive en `src/features/Shared/ui`.
+2. **UI de Dominio:** Vive en `src/features/<Feature>/components`.
+3. **Vistas de Ruta:** Viven en `src/features/<Feature>/pages`.
+4. **Hooks de Componente Reutilizables:** Viven en `src/features/<Feature>/hooks`.
+5. **Hooks de uso único de pantalla:** Permanecen colocalizados en `pages`.
+
+Dentro de `Shared/ui` se usa organización por intención visual:
+
+1. `primitives`
+2. `navigation`
+3. `modals`
+4. `panels`
+5. `feedback`
+6. `visuals`
+
+Se mantienen archivos puente en `Shared/ui` para compatibilidad de imports (`@components/ui/*`).
 
 ## REFERENCIAS CRUZADAS (ENRUTAMIENTO)
 

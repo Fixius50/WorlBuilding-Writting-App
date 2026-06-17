@@ -1,5 +1,5 @@
 import React from "react";
-import { useProjectView } from "../hooks/useProjectView";
+import { useProjectView } from "./useProjectView";
 
 interface ActionCardProps {
   icon: string;
@@ -43,17 +43,10 @@ const ActionCard: React.FC<ActionCardProps> = ({
 );
 
 const ProjectView: React.FC = () => {
-  const {
-    projectName,
-    navigate,
-    t,
-    user,
-    baseUrl
-  } = useProjectView();
+  const { projectName, navigate, t, user, baseUrl } = useProjectView();
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden bg-background">
-
       {/* Content Area */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         <div className="max-w-7xl mx-auto p-12 space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700">

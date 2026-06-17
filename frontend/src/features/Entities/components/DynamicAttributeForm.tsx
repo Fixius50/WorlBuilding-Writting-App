@@ -1,7 +1,7 @@
-import React from "react";
+﻿import React from "react";
 import { useLanguage } from "@context/LanguageContext";
 import { Entidad, Plantilla } from "@domain/database";
-import { useDynamicAttributeForm } from "./useDynamicAttributeForm";
+import { useDynamicAttributeForm } from "../hooks/useDynamicAttributeForm";
 
 interface DynamicAttributeFormProps {
   entity: Entidad;
@@ -57,11 +57,11 @@ const renderAttributeValue = (tpl: Plantilla, value: string, allEntities: Entida
                     {st.name && <span className="font-sans text-[0.875rem] font-bold text-foreground/45 mr-1.5 uppercase tracking-wide">{st.name}:</span>}
                     {isTrue ? (
                       <>
-                        <span className="text-emerald-500/80">✓</span> {st.trueLabel}
+                        <span className="text-emerald-500/80">âœ“</span> {st.trueLabel}
                       </>
                     ) : (
                       <>
-                        <span className="text-foreground/35">⊗</span> {st.falseLabel}
+                        <span className="text-foreground/35">âŠ—</span> {st.falseLabel}
                       </>
                     )}
                   </div>
@@ -210,3 +210,4 @@ const DynamicAttributeForm: React.FC<DynamicAttributeFormProps> = ({
 };
 
 export default DynamicAttributeForm;
+

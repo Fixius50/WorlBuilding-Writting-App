@@ -1,7 +1,7 @@
 ﻿import React from "react";
 import ConfirmModal from "@components/ui/ConfirmModal";
 import TemplateSettingsModal from "@features/Entities/components/TemplateSettingsModal";
-import { useEntityBuilderSidebar } from "./useEntityBuilderSidebar";
+import { useEntityBuilderSidebar } from "../hooks/useEntityBuilderSidebar";
 import { Plantilla } from "@domain/database";
 
 interface EntityBuilderSidebarProps {
@@ -206,3 +206,4 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
 };
 
 export default EntityBuilderSidebar;
+

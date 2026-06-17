@@ -1,13 +1,13 @@
-import React from 'react';
+﻿import React from 'react';
 import { Entidad } from '@domain/database';
-import { useEntityDatabase } from './useEntityDatabase';
+import { useEntityDatabase } from '../hooks/useEntityDatabase';
 
 interface EntityDatabaseProps {
   projectId?: number;
 }
 
 const TYPE_OPTIONS = [
-  { value: 'ALL', label: '✦ Todo', icon: 'apps' },
+  { value: 'ALL', label: 'âœ¦ Todo', icon: 'apps' },
   { value: 'individual', label: 'Personajes', icon: 'person' },
   { value: 'location', label: 'Lugares', icon: 'location_on' },
   { value: 'culture', label: 'Culturas', icon: 'groups' },
@@ -50,7 +50,7 @@ const EntityDatabase: React.FC<EntityDatabaseProps> = ({ projectId }) => {
     </div>
   );
 
-  // ── Vista detalle ────────────────────────────────────────────────────────
+  // â”€â”€ Vista detalle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (selectedEntity) {
     const img = selectedEntityAttrs.imageUrl || selectedEntityAttrs.image || selectedEntityAttrs.avatar || '';
     const tags: string[] = selectedEntityAttrs.tags || [];
@@ -83,10 +83,10 @@ const EntityDatabase: React.FC<EntityDatabaseProps> = ({ projectId }) => {
             </div>
           )}
 
-          {/* Descripción */}
+          {/* DescripciÃ³n */}
           {selectedEntity.descripcion && (
             <div className="space-y-1.5">
-              <div className="text-[9px] font-black uppercase tracking-widest text-foreground/40">Descripción</div>
+              <div className="text-[9px] font-black uppercase tracking-widest text-foreground/40">DescripciÃ³n</div>
               <p className="text-xs text-foreground/70 leading-relaxed">{selectedEntity.descripcion}</p>
             </div>
           )}
@@ -102,7 +102,7 @@ const EntityDatabase: React.FC<EntityDatabaseProps> = ({ projectId }) => {
               <div className="text-xs font-bold text-foreground/80">{selectedEntity.tipo}</div>
             </div>
             <div className="col-span-2 p-3 bg-foreground/[0.03] border border-foreground/5 space-y-1">
-              <div className="text-[9px] font-black uppercase tracking-widest text-foreground/30">Última edición</div>
+              <div className="text-[9px] font-black uppercase tracking-widest text-foreground/30">Ãšltima ediciÃ³n</div>
               <div className="text-xs font-mono text-foreground/60">
                 {new Date(selectedEntity.fecha_actualizacion).toLocaleString('es-ES')}
               </div>
@@ -138,12 +138,12 @@ const EntityDatabase: React.FC<EntityDatabaseProps> = ({ projectId }) => {
     );
   }
 
-  // ── Vista lista ──────────────────────────────────────────────────────────
+  // â”€â”€ Vista lista â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Barra de herramientas */}
       <div className="shrink-0 p-4 space-y-3 border-b border-foreground/10 bg-foreground/[0.01]">
-        {/* Búsqueda */}
+        {/* BÃºsqueda */}
         <div className="relative">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-sm text-foreground/40">search</span>
           <input
@@ -186,7 +186,7 @@ const EntityDatabase: React.FC<EntityDatabaseProps> = ({ projectId }) => {
               onChange={e => setFolderFilter(e.target.value === 'ALL' ? 'ALL' : Number(e.target.value))}
               className="w-full appearance-none bg-background border border-foreground/10 rounded-none px-3 py-1.5 pr-7 text-[10px] font-bold text-foreground outline-none focus:border-primary/50 transition-colors"
             >
-              <option value="ALL">📁 Todas</option>
+              <option value="ALL">ðŸ“ Todas</option>
               {folders.map(f => (
                 <option key={f.id} value={String(f.id)}>{f.nombre}</option>
               ))}
@@ -242,7 +242,7 @@ const EntityDatabase: React.FC<EntityDatabaseProps> = ({ projectId }) => {
                       <span className="text-[9px] uppercase tracking-wider text-foreground/40 font-bold">{entity.tipo}</span>
                       {entity.carpeta_id && (
                         <>
-                          <span className="text-foreground/20 text-[9px]">·</span>
+                          <span className="text-foreground/20 text-[9px]">Â·</span>
                           <span className="text-[9px] text-foreground/30 truncate">{folderName(entity.carpeta_id)}</span>
                         </>
                       )}
@@ -263,4 +263,5 @@ const EntityDatabase: React.FC<EntityDatabaseProps> = ({ projectId }) => {
 };
 
 export default EntityDatabase;
+
 

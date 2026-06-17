@@ -9,13 +9,14 @@ Su objetivo es evitar duplicidades y definir con precisión qué archivo consult
 2. **Consistencia Documental:** Si cambia una arquitectura o flujo, se actualiza el documento especializado correspondiente y su trazabilidad en bitácora.
 3. **Doble Verificación:** Antes de implementar, validar estado real del código y documento fuente aplicable.
 4. **Modularidad:** Mantener separación de responsabilidades por capas y por features.
+5. **Arquitectura Canonica de Frontend:** El frontend se organiza por feature (vertical slice). Evitar reintroducir capas globales legacy en `src/`.
 
 ## 2) Mapa de Referencias por Caso de Uso
 
 ### A) Arquitectura, stack y reglas técnicas base
 
 - Leer: `01_Estrategia_Tecnica.md`
-- Cubre: arquitectura híbrida, Clean Architecture, reglas de integración y estado técnico general.
+- Cubre: arquitectura híbrida, Feature-Sliced Architecture, reglas de ubicación por carpetas y estado técnico general.
 
 ### B) Diseño visual, estética y UX
 
@@ -30,7 +31,12 @@ Su objetivo es evitar duplicidades y definir con precisión qué archivo consult
 ### D) Estructura de workspaces y navegación macro
 
 - Leer: `04_Arquitectura_Workspaces.md`
-- Cubre: organización del espacio de trabajo, distribución de áreas y flujo de datos.
+- Cubre: organización del espacio de trabajo, distribución de áreas y flujo de datos por features.
+
+### G) Reglas de estructura para IA y automatizaciones
+
+- Leer: `01_Estrategia_Tecnica.md` (Sección "Reglas de Colocación por Feature")
+- Cubre: dónde debe vivir cada tipo de archivo (`application`, `components`, `hooks`, `pages`, `domain`, `store`) y criterios de colocalización de hooks.
 
 ### E) Historial de decisiones y cambios ejecutados
 
@@ -57,6 +63,15 @@ Cuando se realice un cambio estructural relevante:
 2. Registrar fecha e impacto en `03_Roadmap_Vivo.md`.
 3. Revisar este documento (`00_Reglas_Maestras.md`) solo si cambia el enrutamiento de referencias o la precedencia.
 4. Verificar que `03_Roadmap_Vivo.md` refleje el estado del hito.
+
+## 6) Regla Operativa para Cambios Estructurales
+
+Cuando se reorganicen features del frontend:
+
+1. Mantener `index.ts` en la raíz de cada feature como punto de entrada público.
+2. Actualizar imports internos y exports públicos en el mismo cambio.
+3. Validar compilación/errores de frontend tras cada lote de movimientos.
+4. Registrar la decisión en `03_Roadmap_Vivo.md` y, si afecta normas base, en `01_Estrategia_Tecnica.md`.
 
 ## 5) Operación y Empaquetado
 

@@ -1,6 +1,6 @@
 ﻿import React from "react";
 import UniversalCanvas from "@features/Entities/components/editor/UniversalCanvas";
-import { useMiniGraph } from "./useMiniGraph";
+import { useMiniGraph } from "../hooks/useMiniGraph";
 
 interface Props {
   entityId?: number;
@@ -45,3 +45,4 @@ const MiniGraph: React.FC<Props> = ({ entityId, projectId }) => {
 };
 
 export default MiniGraph;
+

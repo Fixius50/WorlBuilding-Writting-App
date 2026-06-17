@@ -1,6 +1,6 @@
-import React from 'react';
+﻿import React from 'react';
 import { createPortal } from 'react-dom';
-import { useMentionHoverCard } from './useMentionHoverCard';
+import { useMentionHoverCard } from '../hooks/useMentionHoverCard';
 
 interface MentionHoverCardProps {
   x: number;
@@ -56,4 +56,5 @@ const MentionHoverCard: React.FC<MentionHoverCardProps> = ({ x, y, data, onClose
 };
 
 export default MentionHoverCard;
+
 

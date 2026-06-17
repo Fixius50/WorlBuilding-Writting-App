@@ -1,5 +1,5 @@
-import React from 'react';
-import { useInGraphNodeWindow } from './useInGraphNodeWindow';
+﻿import React from 'react';
+import { useInGraphNodeWindow } from '../hooks/useInGraphNodeWindow';
 
 type GraphNode = { id: string; group?: string; data: Record<string, unknown>; label?: string; nombre?: string; category?: string; isFull?: boolean; isStub?: boolean; };
 
@@ -36,7 +36,7 @@ const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned
 
       {/* Navigation Tabs - Interactive */}
       <div className="flex bg-foreground/5 text-[8px] font-black uppercase tracking-widest border-b border-foreground/10 pointer-events-auto">
-        {['ESENCIA', 'RELACIONES', 'CRÓNICA'].map(tab => (
+        {['ESENCIA', 'RELACIONES', 'CRÃ“NICA'].map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -59,9 +59,9 @@ const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned
             {activeTab === 'ESENCIA' && (
               <div className="space-y-4 animate-in fade-in slide-in-from-top-1 duration-300">
                 <div className="space-y-1">
-                  <span className="text-[8px] font-black uppercase text-foreground/60 tracking-widest">Resumen Etéreo</span>
+                  <span className="text-[8px] font-black uppercase text-foreground/60 tracking-widest">Resumen EtÃ©reo</span>
                   <p className="text-xs text-foreground/60 leading-relaxed italic border-l border-foreground/40 pl-3">
-                    {data.description ? String(data.description) : (data.summary ? String(data.summary) : "Ningún cronista ha registrado detalles sobre esta entidad.")}
+                    {data.description ? String(data.description) : (data.summary ? String(data.summary) : "NingÃºn cronista ha registrado detalles sobre esta entidad.")}
                   </p>
                 </div>
 
@@ -103,11 +103,11 @@ const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned
               </div>
             )}
 
-            {activeTab === 'CRÓNICA' && (
+            {activeTab === 'CRÃ“NICA' && (
               <div className="space-y-3 animate-in fade-in slide-in-from-top-1 duration-300">
                 <div className="flex flex-col items-center justify-center py-12 opacity-30 text-foreground/60">
                   <span className="material-symbols-outlined text-3xl mb-2">history_edu</span>
-                  <span className="text-[8px] font-black uppercase tracking-widest">Cronología sellada</span>
+                  <span className="text-[8px] font-black uppercase tracking-widest">CronologÃ­a sellada</span>
                 </div>
               </div>
             )}
@@ -126,4 +126,5 @@ const InGraphNodeWindow = ({ node, elements, onClose, onCenter, onLock, isPinned
 };
 
 export default React.memo(InGraphNodeWindow);
+
 

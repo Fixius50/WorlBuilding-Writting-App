@@ -1,5 +1,5 @@
-import React, { forwardRef } from 'react';
-import { useMentionList } from './useMentionList';
+﻿import React, { forwardRef } from 'react';
+import { useMentionList } from '../hooks/useMentionList';
 
 interface MentionItem {
   id: string;
@@ -53,4 +53,5 @@ const MentionList = forwardRef<MentionListRef, MentionListProps>((props, ref) =>
 });
 
 export default MentionList;
+
 

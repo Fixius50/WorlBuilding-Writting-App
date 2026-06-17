@@ -1,7 +1,7 @@
-import React from 'react';
+﻿import React from 'react';
 import { useLanguage } from '@context/LanguageContext';
 import { Word } from '@domain/database';
-import { useLinguisticsSidebar } from './useLinguisticsSidebar';
+import { useLinguisticsSidebar } from '../hooks/useLinguisticsSidebar';
 
 export interface GrammarRule {
  id: number | string;
@@ -122,4 +122,5 @@ const LinguisticsSidebar: React.FC<SidebarProps> = ({
 };
 
 export default LinguisticsSidebar;
+
 

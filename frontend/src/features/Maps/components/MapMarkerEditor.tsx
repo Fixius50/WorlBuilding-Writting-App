@@ -2,7 +2,7 @@
 import MonolithicPanel from "@components/ui/MonolithicPanel";
 import Button from "@components/ui/Button";
 import { MapMarker } from "@domain/maps";
-import { useMapMarkerEditor } from "./useMapMarkerEditor";
+import { useMapMarkerEditor } from "../hooks/useMapMarkerEditor";
 
 interface MapMarkerEditorProps {
   markers: MapMarker[];
@@ -187,3 +187,4 @@ const MapMarkerEditor: React.FC<MapMarkerEditorProps> = ({
 };
 
 export default MapMarkerEditor;
+

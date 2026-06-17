@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useLexiconManager } from "../hooks/useLexiconManager";
-import { useDrawingCanvas } from "../hooks/useDrawingCanvas";
-import { useFontExporter } from "../hooks/useFontExporter";
+import { useLexiconManager } from "./useLexiconManager";
+import { useDrawingCanvas } from "./useDrawingCanvas";
+import { useFontExporter } from "./useFontExporter";
 import { Word } from "@domain/database";
 import { LogEntry, WRITING_SYSTEM_TYPES } from "@domain/linguistics";
 

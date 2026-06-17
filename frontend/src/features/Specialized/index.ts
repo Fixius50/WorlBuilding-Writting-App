@@ -1,2 +1,2 @@
 // Exportaciones públicas del módulo Specialized
-export { default as MapEditor } from "./MapEditor";
+export { default as MapEditor } from "./pages/MapEditor";

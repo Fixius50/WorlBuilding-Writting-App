@@ -2,7 +2,7 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { getHierarchyVisuals } from "@features/WorldBible/components/hierarchyVisuals";
 import { Carpeta, Entidad } from "@domain/database";
-import { useFolderItem } from "./useFolderItem";
+import { useFolderItem } from "../hooks/useFolderItem";
 
 const getIconForType = (type?: string) => {
   switch (type?.toLowerCase()) {
@@ -420,3 +420,4 @@ const FolderItem: React.FC<FolderItemProps> = ({
 };
 
 export default FolderItem;
+

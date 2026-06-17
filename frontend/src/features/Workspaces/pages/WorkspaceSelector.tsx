@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import ConfirmationModal from "@components/ui/ConfirmationModal";
 import { Proyecto } from "@domain/database";
-import { useWorkspaceSelector } from "../hooks/useWorkspaceSelector";
+import { useWorkspaceSelector } from "./useWorkspaceSelector";
 import { WorkspaceUseCase } from "@features/Workspaces/application/WorkspaceUseCase";
 import { getModuleCache, setModuleCache } from "@utils/moduleCache";
 
@@ -684,4 +684,3 @@ const WorkspaceSelector: React.FC = () => {
 };
 
 export default WorkspaceSelector;
-

@@ -1,7 +1,7 @@
-import React, { useRef } from 'react';
+﻿import React, { useRef } from 'react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { MapLayer, MapMarker, MapConnection } from '@domain/maps';
-import { useMapLibreView } from './useMapLibreView';
+import { useMapLibreView } from '../hooks/useMapLibreView';
 
 interface GeoFeatureCollection {
   type: string;
@@ -33,4 +33,5 @@ const MapLibreView: React.FC<MapLibreViewProps> = (props) => {
 };
 
 export default MapLibreView;
+
 

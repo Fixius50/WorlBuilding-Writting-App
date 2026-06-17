@@ -1,6 +1,6 @@
-import React from 'react';
+﻿import React from 'react';
 import { useLanguage } from '@context/LanguageContext';
-import { useMapEditorSettings, MapSettings } from './useMapEditorSettings';
+import { useMapEditorSettings, MapSettings } from '../hooks/useMapEditorSettings';
 
 const MapEditorSettings = ({ settings, onUpdate }: { settings: MapSettings; onUpdate: (s: MapSettings) => void }) => {
   const { t } = useLanguage();
@@ -109,4 +109,5 @@ const MapEditorSettings = ({ settings, onUpdate }: { settings: MapSettings; onUp
 };
 
 export default MapEditorSettings;
+
 

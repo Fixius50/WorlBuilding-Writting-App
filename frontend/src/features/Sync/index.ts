@@ -1,1 +1,1 @@
-export { default as SyncView } from '@features/Sync/SyncView';
+export { default as SyncView } from "@features/Sync/pages/SyncView";

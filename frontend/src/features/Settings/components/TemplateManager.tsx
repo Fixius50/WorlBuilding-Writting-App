@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 import MonolithicPanel from '@components/ui/MonolithicPanel';
 import ConfirmationModal from '@components/ui/ConfirmationModal';
-import { useTemplateManager, useNewFieldForm, TemplateField } from './useTemplateManager';
+import { useTemplateManager, useNewFieldForm, TemplateField } from '../hooks/useTemplateManager';
 
 const TemplateManager = ({ compact = false }: { compact?: boolean }) => {
   const {
@@ -154,4 +154,5 @@ const NewFieldForm = ({ onAdd }: { onAdd: (field: TemplateField) => void }) => {
 };
 
 export default TemplateManager;
+
 

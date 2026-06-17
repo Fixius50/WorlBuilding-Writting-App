@@ -1,5 +1,5 @@
-import React from 'react';
-import { useLogin } from '../hooks/useLogin';
+import React from "react";
+import { useLogin } from "./useLogin";
 
 const Login: React.FC = () => {
   const {
@@ -9,18 +9,29 @@ const Login: React.FC = () => {
     error,
     loading,
     handleSubmit,
-    handleChange
+    handleChange,
   } = useLogin();
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-[#050508]">
-      <form onSubmit={handleSubmit} className="relative z-10 w-full max-w-md p-8 bg-foreground/5 rounded-[2.5rem] border border-foreground/40 shadow-2xl">
+      <form
+        onSubmit={handleSubmit}
+        className="relative z-10 w-full max-w-md p-8 bg-foreground/5 rounded-[2.5rem] border border-foreground/40 shadow-2xl"
+      >
         <div className="flex flex-col items-center mb-8">
           <div className="size-16 bg-[#0a0a0c] rounded-none flex items-center justify-center mb-4 border border-foreground/10 shadow-lg">
-            <span className="material-symbols-outlined text-4xl text-indigo-400">public</span>
+            <span className="material-symbols-outlined text-4xl text-indigo-400">
+              public
+            </span>
           </div>
-          <h1 className="text-3xl font-black text-foreground tracking-tighter">Chronos Atlas</h1>
-          <p className="text-foreground/60 mt-2 font-medium">{isRegister ? "Join the architect's guild." : "Enter the architect's vault."}</p>
+          <h1 className="text-3xl font-black text-foreground tracking-tighter">
+            Chronos Atlas
+          </h1>
+          <p className="text-foreground/60 mt-2 font-medium">
+            {isRegister
+              ? "Join the architect's guild."
+              : "Enter the architect's vault."}
+          </p>
         </div>
 
         <div className="space-y-4">
@@ -31,7 +42,9 @@ const Login: React.FC = () => {
           )}
 
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest ml-1">Identity</label>
+            <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest ml-1">
+              Identity
+            </label>
             <input
               type="text"
               name="username"
@@ -44,7 +57,9 @@ const Login: React.FC = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest ml-1">Cipher Key</label>
+            <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest ml-1">
+              Cipher Key
+            </label>
             <input
               type="password"
               name="password"
@@ -62,11 +77,15 @@ const Login: React.FC = () => {
             className="w-full h-14 bg-indigo-500 hover:bg-indigo-400 text-foreground font-black uppercase tracking-widest rounded-none shadow-lg transition-all mt-6 flex items-center justify-center gap-3 disabled:opacity-50"
           >
             {loading ? (
-              <span className="material-symbols-outlined animate-spin text-xl">refresh</span>
+              <span className="material-symbols-outlined animate-spin text-xl">
+                refresh
+              </span>
             ) : (
               <>
-                <span className="material-symbols-outlined text-xl">{isRegister ? 'person_add' : 'lock_open'}</span>
-                <span>{isRegister ? 'Initialize' : 'Decrypt'}</span>
+                <span className="material-symbols-outlined text-xl">
+                  {isRegister ? "person_add" : "lock_open"}
+                </span>
+                <span>{isRegister ? "Initialize" : "Decrypt"}</span>
               </>
             )}
           </button>
@@ -77,7 +96,7 @@ const Login: React.FC = () => {
               onClick={() => setIsRegister(!isRegister)}
               className="text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:text-foreground transition-colors"
             >
-              {isRegister ? 'Already an architect?' : 'New traveler? Create ID'}
+              {isRegister ? "Already an architect?" : "New traveler? Create ID"}
             </button>
           </div>
         </div>

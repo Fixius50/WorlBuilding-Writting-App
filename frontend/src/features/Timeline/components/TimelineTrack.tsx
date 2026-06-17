@@ -1,6 +1,6 @@
-import React from 'react';
+﻿import React from 'react';
 import { useLanguage } from '@context/LanguageContext';
-import { useTimelineTrack } from './useTimelineTrack';
+import { useTimelineTrack } from '../hooks/useTimelineTrack';
 
 interface TimelineTrackProps {
   entityId: number | null;
@@ -76,4 +76,5 @@ const TimelineTrack: React.FC<TimelineTrackProps> = ({
 };
 
 export default TimelineTrack;
+
 

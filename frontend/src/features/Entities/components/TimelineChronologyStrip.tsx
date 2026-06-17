@@ -1,6 +1,6 @@
-import React from "react";
+﻿import React from "react";
 import { Evento } from "@domain/database";
-import { useMiniTimeline } from "./useMiniTimeline";
+import { useMiniTimeline } from "../hooks/useMiniTimeline";
 
 type ChronologyOrder = "asc" | "desc";
 
@@ -92,3 +92,4 @@ const TimelineChronologyStrip: React.FC<TimelineChronologyStripProps> = ({
 };
 
 export default TimelineChronologyStrip;
+

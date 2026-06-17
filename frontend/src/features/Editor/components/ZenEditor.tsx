@@ -1,8 +1,8 @@
-import { EditorContent, BubbleMenu, Editor } from "@tiptap/react";
+﻿import { EditorContent, BubbleMenu, Editor } from "@tiptap/react";
 import React from "react";
 import EditorTopBar from "./EditorTopBar";
 import { Hoja as HojaModel } from "@domain/database";
-import { usePageEditor } from "./useZenEditor";
+import { usePageEditor } from "../hooks/useZenEditor";
 
 interface PageContentEditorProps {
   editor: Editor | null;
@@ -22,7 +22,7 @@ const PageContentEditor: React.FC<PageContentEditorProps> = ({ editor, onMention
     { name: 'Amarillo', value: '#eab308' },
     { name: 'Verde', value: '#22c55e' },
     { name: 'Azul', value: '#3b82f6' },
-    { name: 'Púrpura', value: '#a855f7' }
+    { name: 'PÃºrpura', value: '#a855f7' }
   ];
 
   const highlightColors = [
@@ -31,7 +31,7 @@ const PageContentEditor: React.FC<PageContentEditorProps> = ({ editor, onMention
     { name: 'Verde', value: 'rgba(34, 197, 94, 0.3)' },
     { name: 'Azul', value: 'rgba(59, 130, 246, 0.3)' },
     { name: 'Rojo', value: 'rgba(239, 68, 68, 0.3)' },
-    { name: 'Púrpura', value: 'rgba(168, 85, 247, 0.3)' }
+    { name: 'PÃºrpura', value: 'rgba(168, 85, 247, 0.3)' }
   ];
 
   const currentTextColor = editor?.getAttributes('textStyle').color || 'hsl(var(--foreground))';
@@ -108,7 +108,7 @@ const PageContentEditor: React.FC<PageContentEditorProps> = ({ editor, onMention
                         title={color.name}
                       >
                         {currentTextColor === color.value && (
-                          <span className="text-[10px] text-background font-bold">✓</span>
+                          <span className="text-[10px] text-background font-bold">âœ“</span>
                         )}
                       </button>
                     ))}
@@ -155,7 +155,7 @@ const PageContentEditor: React.FC<PageContentEditorProps> = ({ editor, onMention
                         title={color.name}
                       >
                         {currentHighlightColor === color.value && (
-                          <span className="text-[10px] text-foreground font-bold">✓</span>
+                          <span className="text-[10px] text-foreground font-bold">âœ“</span>
                         )}
                       </button>
                     ))}
@@ -370,7 +370,7 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
 
       <div className="flex-1 relative bg-editor-elevated overflow-y-auto custom-scrollbar flex justify-center py-16 px-6">
         <div className="w-full max-w-2xl flex flex-col gap-8 h-full">
-          {/* TÍTULO EDITABLE EN EL PROPIO MANUSCRITO */}
+          {/* TÃTULO EDITABLE EN EL PROPIO MANUSCRITO */}
           <input
             value={currentPage.titulo || ""}
             onChange={(e) => onTitleChange(currentPageIndex, e.target.value)}
@@ -391,4 +391,5 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
 };
 
 export default ZenEditor;
+
 

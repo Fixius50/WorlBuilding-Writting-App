@@ -1,6 +1,6 @@
 ﻿import React from 'react';
 import Button from '@components/ui/Button';
-import { useRelationshipManager } from './useRelationshipManager';
+import { useRelationshipManager } from '../hooks/useRelationshipManager';
 
 const ENTITY_TYPES = [
   { value: 'All', label: 'Todo' },
@@ -176,4 +176,5 @@ const RelationshipManager = ({ entityId, entityType }: { entityId: number | stri
 };
 
 export default RelationshipManager;
+
 

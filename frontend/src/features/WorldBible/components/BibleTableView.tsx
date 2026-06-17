@@ -14,7 +14,7 @@ import { Link, useParams } from "react-router-dom";
 import { useLanguage } from "@context/LanguageContext";
 import ConfirmationModal from "@components/ui/ConfirmationModal";
 import CreateMassEntitiesModal from "./CreateMassEntitiesModal";
-import { useBibleTable } from "./useBibleTable";
+import { useBibleTable } from "../hooks/useBibleTable";
 
 interface TableViewProps {
   projectId: number;
@@ -392,3 +392,4 @@ const BibleTableView: React.FC<TableViewProps> = ({
 };
 
 export default BibleTableView;
+

@@ -1,5 +1,5 @@
-import React from 'react';
-import { useMiniTimeline } from './useMiniTimeline';
+﻿import React from 'react';
+import { useMiniTimeline } from '../hooks/useMiniTimeline';
 
 interface MiniTimelineProps {
   entityId: number;
@@ -19,7 +19,7 @@ const MiniTimeline: React.FC<MiniTimelineProps> = ({ entityId }) => {
            onClick={handleAddEvent}
            className="text-[9px] font-black uppercase tracking-widest text-primary hover:text-foreground transition-colors px-2 py-1 border border-primary/20 hover:bg-primary/10"
          >
-           + Añadir
+           + AÃ±adir
          </button>
       </div>
       <div className="absolute left-[3px] top-12 bottom-4 w-px bg-foreground/10" />
@@ -30,7 +30,7 @@ const MiniTimeline: React.FC<MiniTimelineProps> = ({ entityId }) => {
         </div>
       ) : events.length === 0 ? (
         <div className="p-8 text-center bg-foreground/5 border border-foreground/5 italic text-[10px] text-foreground/40">
-          Esta entidad no ha sido partícipe de eventos registrados aún en la gran crónica.
+          Esta entidad no ha sido partÃ­cipe de eventos registrados aÃºn en la gran crÃ³nica.
         </div>
       ) : (
         events.map((event, idx) => (
@@ -56,4 +56,5 @@ const MiniTimeline: React.FC<MiniTimelineProps> = ({ entityId }) => {
 };
 
 export default MiniTimeline;
+
 

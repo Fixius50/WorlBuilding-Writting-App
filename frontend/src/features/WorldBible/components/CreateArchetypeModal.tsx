@@ -1,6 +1,6 @@
-import React from "react";
+﻿import React from "react";
 import { HierarchyTypeId, HIERARCHY_DEFINITIONS } from "../types";
-import { useCreateArchetypeModal } from "./useCreateArchetypeModal";
+import { useCreateArchetypeModal } from "../hooks/useCreateArchetypeModal";
 
 interface CreateArchetypeModalProps {
   isOpen: boolean;
@@ -83,7 +83,7 @@ const CreateArchetypeModal: React.FC<CreateArchetypeModalProps> = ({
                 <span className="material-symbols-outlined text-[12px] opacity-20">
                   location_on
                 </span>
-                <span>{parentFolder ? parentFolder.nombre : "Raíz"}</span>
+                <span>{parentFolder ? parentFolder.nombre : "RaÃ­z"}</span>
               </div>
             </div>
           </div>
@@ -154,14 +154,14 @@ const CreateArchetypeModal: React.FC<CreateArchetypeModalProps> = ({
                     <span className="text-foreground/60 font-black">
                       {HIERARCHY_DEFINITIONS[formData.tipo]?.label}
                     </span>
-                    . El sistema aplicará el arquetipo visual correspondiente de
-                    forma automática.
+                    . El sistema aplicarÃ¡ el arquetipo visual correspondiente de
+                    forma automÃ¡tica.
                   </p>
                 </div>
               )}
             </div>
 
-            {/* Columna Derecha: Configuración (Oculto en Raíz) */}
+            {/* Columna Derecha: ConfiguraciÃ³n (Oculto en RaÃ­z) */}
             {(!isRoot || forceEntityMode) && (
               <div className="space-y-8">
                 <div>
@@ -232,3 +232,4 @@ const CreateArchetypeModal: React.FC<CreateArchetypeModalProps> = ({
 };
 
 export default CreateArchetypeModal;
+

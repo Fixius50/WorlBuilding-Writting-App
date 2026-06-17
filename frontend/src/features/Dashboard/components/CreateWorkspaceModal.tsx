@@ -1,6 +1,6 @@
 ﻿import React from "react";
 import { createPortal } from "react-dom";
-import { useCreateWorkspaceModal } from "./useCreateWorkspaceModal";
+import { useCreateWorkspaceModal } from "../hooks/useCreateWorkspaceModal";
 import ConfirmationModal from "@components/ui/ConfirmationModal";
 
 interface CreateWorkspaceModalProps {
@@ -197,3 +197,4 @@ const CreateWorkspaceModal: React.FC<CreateWorkspaceModalProps> = ({
 };
 
 export default CreateWorkspaceModal;
+

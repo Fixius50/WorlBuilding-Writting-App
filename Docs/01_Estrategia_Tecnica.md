@@ -1,92 +1,69 @@
 # ESTRATEGIA TÉCNICA Y STACK
 
-Este documento define las decisiones arquitectónicas clave del proyecto tras la consolidación de la arquitectura Local-First.
+Este documento define la arquitectura vigente del proyecto y las reglas de estructura que deben seguir desarrolladores e IA.
 
-## STACK TECNOLÓGICO Y ARQUITECTURA HÍBRIDA
+## STACK Y ARQUITECTURA HÍBRIDA
 
-El proyecto adopta un "Mapa de Carpetas Definitivo" con separación física total:
+- **Frontend en `/frontend`:** React + Vite + TypeScript.
+- **Persistencia local-first:** SQLite WASM (`sqlocal`) sobre OPFS.
+- **Backend auxiliar en `/backend`:** Java + Spring/Jetty para bridge de sistema de archivos, snapshots y soporte de entorno.
 
-- **Frontend (UI y Lógica Core) en `/frontend`:** React 19.2.4 con Vite.
-  - Arquitectura Interna: **Clean Architecture** (`domain`, `application/useCases`, `infrastructure`, `presentation`).
-  - **Alcance de Atomic Design:** se aplica exclusivamente dentro de `src/presentation/` (`atoms`, `molecules`, `organisms`, `templates`, `pages`).
-  - Estado: Zustand para estado global de UI y stores de feature; Context API reservado para datos transversales estables (idioma/proyecto).
-  - Routing: React Router Dom.
-  - Aliasing de rutas configurado (ej. `@application`, `@features`, `@domain`, `@infrastructure`, `@presentation`).
-- **Persistencia (BBDD Local-First):** SQLite WASM (`sqlocal`) sobre OPFS.
-  - Almacenamiento absoluto de datos en el navegador del cliente. Cero latencia de red.
-  - Aislamiento: Requiere cabeceras COOP/COEP inyectadas por el servidor auxiliar.
-- **Backend Auxiliar (Helper) en `/backend`:** Java 21 + Spring Web / Jetty.
-  - Arquitectura Interna: Domain-Driven Design (DDD) por subdominios (`worldbible`, `mapeditor`, `linguistics`, etc.).
-  - Responsabilidad: bridge de sistema de archivos, snapshots en disco y utilidades de entorno.
+## ARQUITECTURA FRONTEND VIGENTE
 
-## ZONA DE APIS Y CONTRATOS DEL PROYECTO
+El frontend usa **Feature-Sliced Architecture (Vertical Slice)**:
 
-Esta sección centraliza las APIs que usa el sistema para evitar dispersión en otros bloques.
+1. La unidad principal es la **feature** (`src/features/<FeatureName>`).
+2. Cada feature encapsula sus capas internas.
+3. `Shared` es solo un kernel transversal de UI/utilidades, no un contenedor de lógica de negocio.
 
-### 1) APIs de Aplicación (Frontend)
+### Estructura estándar por feature
 
-Punto de entrada obligatorio para la UI: `src/application/useCases/`.
+Carpetas permitidas según necesidad real:
 
-- `WorldBibleUseCase`
-- `EntityUseCase`
-- `TemplateUseCase`
-- `RelationshipUseCase`
-- `TimelineUseCase`
-- `MapUseCase`
-- `WritingUseCase`
-- `WorkspaceUseCase`
-- `DashboardUseCase`
-- `SettingsUseCase`
-- `TrashUseCase`
+- `application`: casos de uso y orquestación de negocio.
+- `components`: componentes visuales reutilizables dentro de la feature.
+- `hooks`: hooks reutilizables dentro de la feature.
+- `pages`: vistas de ruta y hooks colocalizados de pantalla.
+- `domain`: tipos, modelos y contratos de dominio.
+- `store`: estado local de feature (Zustand u otro store local).
 
-### 2) APIs de Infraestructura (Frontend)
+No todas las features deben tener todas las carpetas. Solo se crean cuando hay archivos que lo justifiquen.
 
-Implementadas en `src/infrastructure/` y consumidas por Application:
+## REGLAS DE COLOCACIÓN (CRÍTICAS PARA IA)
 
-- Local DB sobre SQLite WASM/OPFS (repositorios y utilidades de persistencia).
-- Cliente de red para llamadas al backend auxiliar cuando aplica (snapshots, operaciones de sistema).
+1. **Pantalla + hook exclusivo:** Si un hook solo lo usa una pantalla, debe vivir junto a ella en `pages/`.
+2. **Hook reutilizable entre múltiples componentes/páginas:** Debe vivir en `hooks/`.
+3. **Hook de componente movido de `components/`:** Los `use*` no deben quedarse dentro de `components/`; van a `hooks/`.
+4. **`index.ts` por feature:** Debe permanecer en la raíz de la feature como API pública.
+5. **Sin capas globales legacy en `src/`:** Evitar reintroducir `src/application`, `src/store`, `src/domain` o `src/presentation` como centros de lógica transversal.
 
-### 3) APIs del Backend Auxiliar (Java)
+## ALIAS Y RESOLUCIÓN DE RUTAS (ACTUAL)
 
-Expuestas por `/backend` para funciones de soporte de entorno:
+Aliases clave de frontend:
 
-- Endpoints de respaldo/sincronización local.
-- Endpoints de utilidades de archivos para empaquetado y snapshots.
-- Inyección de cabeceras requeridas para el aislamiento de SQLite WASM.
+- `@features/*` -> `src/features/*`
+- `@components/*` -> `src/features/Shared/*`
+- `@context/*` -> `src/features/App/context/*`
+- `@domain/*` -> dominios por feature (`App`, `Maps`, `Timeline`, `Writing`, `Linguistics`, `WorldBible`, `Graph`, `Shell`)
 
-### 4) APIs de Plataforma (Navegador)
+Implicación: los imports legacy de UI (`@components/ui/...`) siguen funcionando aunque `Shared/ui` se reorganice internamente.
 
-- OPFS (persistencia binaria local).
-- Web Workers (ejecución aislada de SQLite WASM).
-- Event APIs para sincronización reactiva de UI cuando corresponde.
+## ARQUITECTURA DE INSPECCIÓN CONTEXTUAL
 
-## ARQUITECTURA DE JERARQUÍAS
-
-Para garantizar un código mantenible y escalable, las jerarquías del sistema (Mundos, Personajes, Mapas, etc.) siguen un patrón de desacoplamiento total:
-
-1. **Capa de Dominio (`src/domain/models/hierarchy.ts`):** Define el **"Qué"**. Contiene los IDs literales y las descripciones de negocio. Es el Lenguaje Ubicuo del sistema.
-2. **Capa de Presentación (`src/presentation/utils/hierarchyVisuals.ts`):** Define el **"Cómo se ve"**. Mapea los IDs de dominio a iconos (_Material Symbols_) y colores (_Tailwind Classes_).
-3. **Desacoplamiento:** El dominio no conoce la existencia de Tailwind ni de iconos específicos, protegiendo la lógica de negocio de cambios estéticos.
-
-## ARQUITECTURA DE INSPECCIÓN CONTEXTUAL (SIN PANEL DERECHO GLOBAL)
-
-1. **Sin Inspector Global:** Se elimina el contenedor lateral único. Cada feature gestiona su inspección en su propio contexto de UI.
-2. **Patrones Permitidos:** Navegación por rutas, modales locales, drawers locales de feature y paneles embebidos en la vista activa.
-3. **Regla de Integración:** Evitar acoplamiento de vistas a stores de panel global legacy. La comunicación entre módulos se realiza por casos de uso, navegación o estado local.
+1. No existe panel derecho global único.
+2. Cada feature resuelve inspección contextual por rutas, modales locales o paneles embebidos.
+3. Evitar acoplamiento con stores globales legacy de panel.
 
 ## PATRONES OPERATIVOS TRANSVERSALES
 
-1. **Estabilidad de render:** Contextos y props derivados deben estabilizarse con `useMemo`/`useCallback`.
-2. **Efectos reactivos estables:** Para handlers inestables en `useEffect`, priorizar patrón con `useRef`.
-3. **Persistencia dinámica:** Valores `unknown` provenientes de `contenido_json` deben castearse explícitamente en capa de presentación.
-4. **Contratos de mapas:** `MapMarker.entityId` se mantiene como clave canónica de vínculo y `snapshotUrl`/`bgImage` deben persistirse en guardado de mapas.
-5. **Caché y Persistencia en Pantallas de Edición Táctica (Ej. Estudio Cartográfico):**
-   - Para evitar bloqueos de base de datos por I/O excesivo (como operaciones rápidas de trazos libres del ratón), se debe implementar una caché en memoria para el lienzo.
-   - La persistencia física en base de datos se difiere hasta la salida de la pantalla (limpieza de efectos, evento `beforeunload` o acción de retroceso explícita), mientras que las acciones estructurales del CRUD (niveles, anotaciones) se guardan inmediatamente para garantizar consistencia.
+1. Estabilizar props/handlers con `useMemo` y `useCallback` cuando aplique.
+2. Tipar explícitamente datos dinámicos (`unknown` + casteo seguro) al leer `contenido_json`.
+3. En flujos de alta frecuencia (canvas/edición), usar caché en memoria y flush controlado a SQLite.
+4. Mantener contratos estables entre `application` y `infrastructure`.
 
-## REFERENCIAS CRUZADAS (EVITAR DUPLICIDAD)
+## REFERENCIAS CRUZADAS
 
-- Lineamientos visuales y de estilos: `02_Diseño_UI_UX.md`
-- Gobernanza documental y precedencia de fuentes: `00_Reglas_Maestras.md`
-- Build y distribución operativa: `00_Reglas_Maestras.md` (Sección 5)
-- Historial y trazabilidad de cambios: `03_Roadmap_Vivo.md`
+- UI/UX y estilo visual: `02_Diseño_UI_UX.md`
+- Gobierno documental: `00_Reglas_Maestras.md`
+- Workspaces y flujo macro: `04_Arquitectura_Workspaces.md`
+- Historial de cambios: `03_Roadmap_Vivo.md`

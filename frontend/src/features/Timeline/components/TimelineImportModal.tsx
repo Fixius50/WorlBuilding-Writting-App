@@ -1,7 +1,7 @@
-import React from "react";
+﻿import React from "react";
 import { Entidad } from "@domain/database";
 import { useLanguage } from "@context/LanguageContext";
-import { useTimelineImportModal } from "./useTimelineImportModal";
+import { useTimelineImportModal } from "../hooks/useTimelineImportModal";
 
 interface TimelineImportModalProps {
   isOpen: boolean;
@@ -70,3 +70,4 @@ const TimelineImportModal: React.FC<TimelineImportModalProps> = ({
 };
 
 export default TimelineImportModal;
+

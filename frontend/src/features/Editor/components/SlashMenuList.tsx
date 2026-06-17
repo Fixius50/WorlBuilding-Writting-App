@@ -1,5 +1,5 @@
-import React, { forwardRef } from 'react';
-import { useSlashMenuList, SlashMenuItem } from './useSlashMenuList';
+﻿import React, { forwardRef } from 'react';
+import { useSlashMenuList, SlashMenuItem } from '../hooks/useSlashMenuList';
 
 interface SlashMenuListProps {
   items: SlashMenuItem[];
@@ -38,4 +38,5 @@ const SlashMenuList = forwardRef((props: SlashMenuListProps, ref) => {
 SlashMenuList.displayName = 'SlashMenuList';
 
 export default SlashMenuList;
+
 

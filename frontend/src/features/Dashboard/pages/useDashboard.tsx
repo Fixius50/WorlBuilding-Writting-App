@@ -1,4 +1,4 @@
-import { useDashboardData } from '../hooks/useDashboardData';
+import { useDashboardData } from "./useDashboardData";
 
 /**
  * 🧠 useDashboard
@@ -6,7 +6,12 @@ import { useDashboardData } from '../hooks/useDashboardData';
  * Now powered by TanStack Query for instant caching and performance.
  */
 export const useDashboard = (projectId: number) => {
-  const { data: stats, isLoading, error, refetch } = useDashboardData(projectId);
+  const {
+    data: stats,
+    isLoading,
+    error,
+    refetch,
+  } = useDashboardData(projectId);
 
   const defaultStats = {
     entityCount: 0,
@@ -15,13 +20,13 @@ export const useDashboard = (projectId: number) => {
     recentActivity: [],
     wordCount: 0,
     pageCount: 0,
-    notebookCount: 0
+    notebookCount: 0,
   };
 
   return {
     stats: stats || defaultStats,
     isLoading,
     error,
-    reloadStats: refetch
+    reloadStats: refetch,
   };
 };

@@ -1,7 +1,7 @@
-import React from 'react';
+﻿import React from 'react';
 import { createPortal } from 'react-dom';
 import { Proyecto } from '@domain/database';
-import { useEditWorkspaceModal } from './useEditWorkspaceModal';
+import { useEditWorkspaceModal } from '../hooks/useEditWorkspaceModal';
 
 interface EditWorkspaceModalProps {
   isOpen: boolean;
@@ -49,7 +49,7 @@ const EditWorkspaceModal: React.FC<EditWorkspaceModalProps> = ({ isOpen, onClose
 
             {/* Title */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-foreground/50">Título del Proyecto</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-foreground/50">TÃ­tulo del Proyecto</label>
               <input
                 type="text"
                 name="nombre"
@@ -62,7 +62,7 @@ const EditWorkspaceModal: React.FC<EditWorkspaceModalProps> = ({ isOpen, onClose
 
             {/* Genre */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-foreground/50">Género</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-foreground/50">GÃ©nero</label>
               <div className="grid grid-cols-2 gap-2">
                 {GENRES.slice(0, 4).map(g => (
                   <button
@@ -114,4 +114,5 @@ const EditWorkspaceModal: React.FC<EditWorkspaceModalProps> = ({ isOpen, onClose
 };
 
 export default EditWorkspaceModal;
+
 

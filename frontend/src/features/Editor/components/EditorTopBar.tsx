@@ -1,6 +1,6 @@
-import React from 'react';
+﻿import React from 'react';
 import { Editor } from '@tiptap/react';
-import { useEditorTopBar } from './useEditorTopBar';
+import { useEditorTopBar } from '../hooks/useEditorTopBar';
 
 interface EditorTopBarProps {
   editor: Editor | null;
@@ -65,12 +65,12 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
 
   return (
     <div className="flex flex-col w-full shrink-0 z-50">
-      {/* FILA SUPERIOR: Título, Palabras y Snapshots */}
+      {/* FILA SUPERIOR: TÃ­tulo, Palabras y Snapshots */}
       <header className={`${minimal ? 'h-11 px-4' : 'h-14 px-8'} flex items-center justify-between bg-background border-b border-foreground/5 select-none shrink-0 font-sans`}>
         {/* LADO IZQUIERDO: Ruta tipo libro */}
         <div className="flex items-center gap-1.5 flex-1 min-w-0">
           <span className="text-[12px] text-foreground/40 truncate font-medium">
-            {notebookTitle || "Crónicas"}
+            {notebookTitle || "CrÃ³nicas"}
           </span>
           <span className="text-[11px] text-foreground/20">/</span>
           <span className="text-[12px] text-foreground/80 font-bold truncate">
@@ -92,7 +92,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
               </>
             ) : (
               <>
-                <span className="text-primary font-bold text-[10px]">✓</span>
+                <span className="text-primary font-bold text-[10px]">âœ“</span>
                 <span>Guardado</span>
               </>
             )}
@@ -161,11 +161,11 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
         </div>
       </header>
 
-      {/* FILA INFERIOR: Barra de herramientas con Historial y Zoom de Página */}
+      {/* FILA INFERIOR: Barra de herramientas con Historial y Zoom de PÃ¡gina */}
       {editor && (
         <div className="flex items-center gap-1 py-1.5 px-6 border-b border-foreground/5 bg-background select-none overflow-visible shrink-0">
           
-          {/* Historial e Impresión */}
+          {/* Historial e ImpresiÃ³n */}
           <button
             onClick={() => editor.chain().focus().undo().run()}
             disabled={!editor.can().undo()}
@@ -229,7 +229,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
           <div className="w-px h-4 bg-foreground/10 mx-1 shrink-0" />
 
           {/* Zoom */}
-          <div className="flex items-center" title="Zoom de página">
+          <div className="flex items-center" title="Zoom de pÃ¡gina">
             <select
               value={zoom}
               onChange={(e) => onZoomChange(Number(e.target.value))}
@@ -249,4 +249,5 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
 };
 
 export default EditorTopBar;
+
 

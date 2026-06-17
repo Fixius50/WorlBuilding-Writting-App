@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 import Avatar from '@components/ui/Avatar';
 import { useLanguage } from '@context/LanguageContext';
-import { useEntityInspector } from './useEntityInspector';
+import { useEntityInspector } from '../hooks/useEntityInspector';
 
 interface EntityInspectorProps {
   entityId: number | string;
@@ -83,4 +83,5 @@ const EntityInspector: React.FC<EntityInspectorProps> = ({ entityId }) => {
 };
 
 export default EntityInspector;
+
 

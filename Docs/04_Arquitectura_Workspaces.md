@@ -42,15 +42,15 @@ Herramienta para crear sistemas de escritura, fonética y diccionarios.
 
 La aplicación corre en un ecosistema híbrido disgregado (Vite Frontend / Java Backend). El flujo es:
 
-1. **React UI (/frontend):** Capa de `presentation` que captura la entrada del usuario y orquesta la navegación por módulos.
-2. **Capa de Aplicación (`/application`):** Los casos de uso (puros) orquestan la lógica de negocio sin conocer detalles técnicos de la UI.
-3. **Capa de Infraestructura (`/infrastructure`):**
+1. **React UI (/frontend):** Capa de vistas por feature (`src/features/<Feature>/pages` y `components`) que captura la entrada del usuario y orquesta la navegación por módulos.
+2. **Capa de Aplicación por Feature (`src/features/<Feature>/application`):** Casos de uso que orquestan lógica de negocio sin acoplarse a detalles visuales.
+3. **Capa de Infraestructura (`src/infrastructure`):**
    - **SQLocal (`/localDB`):** Las consultas SQL se envían a un Web Worker que ejecuta la base de datos SQLite (WASM).
    - **API (`/api`):** Comunicación con el backend Java modular.
 4. **Motor EAV (Entidades Dinámicas):**
    - Las definiciones de atributos se leen/escriben desde `plantillas`.
    - Los valores por entidad se persisten en `valores`.
-   - La UI consume estos datos mediante casos de uso y renderiza formularios dinámicos por feature.
+   - La UI consume estos datos mediante casos de uso por feature y renderiza formularios dinámicos en su módulo.
    - Componentes clave del flujo: Taller de arquetipos (gestión de plantillas), formularios dinámicos por entidad y gestor masivo tabular para edición rápida.
    - En lingüística, los datos de glifos y escritura se encapsulan en `contenido_json` (ej. `svgPathData`, `layers`) para persistencia local-first.
 5. **Módulos de Expansión (Fase 5):**
@@ -59,6 +59,24 @@ La aplicación corre en un ecosistema híbrido disgregado (Vite Frontend / Java 
    - Flujo base de colaboración: generar código de invitación, conexión del coautor, sincronización silenciosa y resolución de conflictos por fusión asistida.
 6. **OPFS:** Los cambios se persisten de forma binaria en el _Origin Private File System_ del navegador.
 7. **Bridge (Opcional):** El Servidor Java en `/backend` (`syncService`), estructurado en dominios DDD, gestiona copias de seguridad y comunicación con el sistema de archivos real.
+
+## REGLAS ESTRUCTURALES POR FEATURE
+
+Cada feature puede incluir, según necesidad real:
+
+1. `application`
+2. `components`
+3. `hooks`
+4. `pages`
+5. `domain`
+6. `store`
+
+Reglas de ubicación:
+
+1. Hooks reutilizables de feature en `hooks`.
+2. Hooks exclusivos de una vista en `pages` (colocalizados).
+3. `index.ts` en raíz de feature como contrato público.
+4. `Shared` reservado para utilidades transversales de UI, evitando lógica de negocio.
 
 ## REFERENCIAS CRUZADAS (ENRUTAMIENTO)
 

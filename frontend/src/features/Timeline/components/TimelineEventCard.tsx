@@ -1,6 +1,6 @@
-import React from 'react';
+﻿import React from 'react';
 import { Evento, Entidad } from '@domain/database';
-import { useTimelineEventCard } from './useTimelineEventCard';
+import { useTimelineEventCard } from '../hooks/useTimelineEventCard';
 
 interface TimelineEventCardProps {
   event: Evento;
@@ -53,7 +53,7 @@ const TimelineEventCard: React.FC<TimelineEventCardProps> = ({
              </button>
           </div>
           <p className="text-[10px] text-[hsl(var(--foreground)/0.5)] leading-relaxed line-clamp-3 italic">
-            {event.descripcion ? event.descripcion.replace(/<[^>]*>/g, '') : 'Sin descripción'}
+            {event.descripcion ? event.descripcion.replace(/<[^>]*>/g, '') : 'Sin descripciÃ³n'}
           </p>
       </div>
     </div>
@@ -61,4 +61,5 @@ const TimelineEventCard: React.FC<TimelineEventCardProps> = ({
 };
 
 export default TimelineEventCard;
+
 

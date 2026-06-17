@@ -1,7 +1,7 @@
-import React from "react";
+﻿import React from "react";
 import { Entidad } from "@domain/database";
 import { useLanguage } from "@context/LanguageContext";
-import { useEntityPickerModal } from "./useEntityPickerModal";
+import { useEntityPickerModal } from "../hooks/useEntityPickerModal";
 
 interface EntityPickerModalProps {
   isOpen: boolean;
@@ -81,3 +81,4 @@ const EntityPickerModal: React.FC<EntityPickerModalProps> = ({
 };
 
 export default EntityPickerModal;
+

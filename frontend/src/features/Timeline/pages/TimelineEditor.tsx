@@ -5,7 +5,7 @@ import { Evento } from "@domain/database";
 import ConfirmationModal from "@components/ui/ConfirmationModal";
 
 // Custom Hooks & Components
-import { useTimelineManager } from "../hooks/useTimelineManager";
+import { useTimelineManager } from "./useTimelineManager";
 import { useTimelineEditor } from "./useTimelineEditor";
 import TimelineTrack from "../components/TimelineTrack";
 import TimelineEventCard from "../components/TimelineEventCard";

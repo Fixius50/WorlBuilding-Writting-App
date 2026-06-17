@@ -1,1 +1,1 @@
-export { default as PlanningCenterView } from './PlanningCenterView';
+export { default as PlanningCenterView } from "./pages/PlanningCenterView";

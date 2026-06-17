@@ -2,7 +2,7 @@
 import Avatar from "@components/ui/Avatar";
 import MonolithicPanel from "@components/ui/MonolithicPanel";
 import ConfirmationModal from "@components/ui/ConfirmationModal";
-import { useFamilyTreeAssigner } from "./useFamilyTreeAssigner";
+import { useFamilyTreeAssigner } from "../hooks/useFamilyTreeAssigner";
 
 interface FamilyTreeAssignerProps {
   entityId: number;
@@ -407,3 +407,4 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({
 };
 
 export default FamilyTreeAssigner;
+
