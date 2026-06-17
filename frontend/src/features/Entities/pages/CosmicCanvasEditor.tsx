@@ -1,5 +1,5 @@
 ﻿import React from "react";
-import UniversalCanvas from "@components/ui/editor/UniversalCanvas";
+import UniversalCanvas from "@features/Entities/components/editor/UniversalCanvas";
 import DynamicAttributeForm from "../components/DynamicAttributeForm";
 import ConfirmationModal from "@components/ui/ConfirmationModal";
 import { useCosmicCanvasEditor } from "./useCosmicCanvasEditor";

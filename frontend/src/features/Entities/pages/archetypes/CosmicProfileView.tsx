@@ -1,7 +1,7 @@
 ﻿import React from "react";
 import { cosmicEntityQueryKey, useCosmicProfile } from "./useCosmicProfile";
 import SecondaryTabs from "@features/Entities/components/SecondaryTabs";
-import UniversalCanvas from "@components/ui/editor/UniversalCanvas";
+import UniversalCanvas from "@features/Entities/components/editor/UniversalCanvas";
 import DynamicAttributeForm from "@features/Entities/components/DynamicAttributeForm";
 import NarrativeRichText from "@features/Entities/components/NarrativeRichText";
 import MiniGraph from "@features/Entities/components/MiniGraph";

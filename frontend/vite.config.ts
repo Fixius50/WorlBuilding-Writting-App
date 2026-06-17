@@ -6,10 +6,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@components": path.resolve(
-        __dirname,
-        "./src/features/Shared/components",
-      ),
+      "@components": path.resolve(__dirname, "./src/features/Shared"),
       "@features": path.resolve(__dirname, "./src/features"),
       "@database": path.resolve(
         __dirname,

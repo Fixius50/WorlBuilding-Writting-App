@@ -18,7 +18,7 @@
     "types": [],
     "paths": {
       "*": ["./*"],
-      "@components/*": ["./src/features/Shared/components/*"],
+      "@components/*": ["./src/features/Shared/*"],
       "@features/*": ["./src/features/*"],
       "@database": ["./src/infrastructure/localDB/client"],
       "@context/*": ["./src/features/App/context/*"],

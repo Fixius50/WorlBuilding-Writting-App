@@ -6,7 +6,7 @@ import { Entidad, Valor } from "@domain/database";
 import {
   CanvasNode,
   CanvasEdge,
-} from "@components/ui/editor/UniversalCanvas";
+} from "@features/Entities/components/editor/UniversalCanvas";
 import { useQuery } from "@tanstack/react-query";
 import { entityService } from "@repositories/entityService";
 
@@ -243,4 +243,3 @@ export const useCosmicProfile = (propEntityId?: string | number) => {
     entityId,
   };
 };
-
