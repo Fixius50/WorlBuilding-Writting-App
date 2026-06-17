@@ -307,8 +307,7 @@ export const useArchitectLayout = () => {
                   useSettingsStore
                     .getState()
                     .addNotification(
-                      "Copia de seguridad automÃ¡tica realizada",
-                      "Copia de seguridad automatica realizada",
+                      "Copia de seguridad automática realizada",
                       "success",
                     );
                   break;

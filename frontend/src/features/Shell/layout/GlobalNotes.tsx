@@ -1,13 +1,16 @@
-﻿import React from 'react';
+﻿import React from "react";
 import { ConfirmationModal } from "@components";
-import { useGlobalNotes } from './useGlobalNotes';
+import { useGlobalNotes } from "./useGlobalNotes";
 
 interface GlobalNotesProps {
   projectName: string;
   storageKey?: string;
 }
 
-const GlobalNotes: React.FC<GlobalNotesProps> = ({ projectName, storageKey }) => {
+const GlobalNotes: React.FC<GlobalNotesProps> = ({
+  projectName,
+  storageKey,
+}) => {
   const {
     notes,
     isFullscreen,
@@ -17,88 +20,109 @@ const GlobalNotes: React.FC<GlobalNotesProps> = ({ projectName, storageKey }) =>
     deleteNote,
     confirmDeleteAction,
     updateNote,
-    toggleFullscreen
+    toggleFullscreen,
   } = useGlobalNotes({ projectName, storageKey });
 
- const Content = () => (
- <div className={`flex flex-col h-full monolithic-panel/40 ${!isFullscreen ? 'max-h-[25vh]' : ''}`}>
- {/* Header */}
- <div className="flex items-center justify-between p-3 border-b border-foreground/10 bg-foreground/5">
- <div className="flex items-center gap-2">
- <span className="material-symbols-outlined text-sm text-primary">edit_note</span>
- <h3 className="text-[10px] font-black uppercase tracking-widest text-foreground">Notas ({notes.length})</h3>
- </div>
- <div className="flex items-center gap-2">
- <button onClick={addNote} className="p-1 hover:text-primary text-text-muted transition-colors" title="AÃ±adir Nota">
- <span className="material-symbols-outlined text-sm">add</span>
- </button>
- <button onClick={toggleFullscreen} className="p-1 hover:text-foreground text-text-muted transition-colors" title="Pantalla Completa">
- <span className="material-symbols-outlined text-sm">{isFullscreen ? 'fullscreen_exit' : 'fullscreen'}</span>
- </button>
- </div>
- </div>
+  const Content = () => (
+    <div
+      className={`flex flex-col h-full monolithic-panel/40 ${!isFullscreen ? "max-h-[25vh]" : ""}`}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between p-3 border-b border-foreground/10 bg-foreground/5">
+        <div className="flex items-center gap-2">
+          <span className="material-symbols-outlined text-sm text-primary">
+            edit_note
+          </span>
+          <h3 className="text-[10px] font-black uppercase tracking-widest text-foreground">
+            Notas ({notes.length})
+          </h3>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={addNote}
+            className="p-1 hover:text-primary text-text-muted transition-colors"
+            title="Añadir Nota"
+          >
+            <span className="material-symbols-outlined text-sm">add</span>
+          </button>
+          <button
+            onClick={toggleFullscreen}
+            className="p-1 hover:text-foreground text-text-muted transition-colors"
+            title="Pantalla Completa"
+          >
+            <span className="material-symbols-outlined text-sm">
+              {isFullscreen ? "fullscreen_exit" : "fullscreen"}
+            </span>
+          </button>
+        </div>
+      </div>
 
- {/* List */}
- <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-2">
- {notes.length === 0 ? (
- <div className="py-8 text-center opacity-30 italic text-[10px] uppercase font-bold">Sin notas</div>
- ) : (
- notes.map(note => (
- <div key={note.id} className="group bg-foreground/5 border border-foreground/10 rounded-none overflow-hidden hover:border-primary/30 transition-all">
- <div className="flex items-center justify-between px-3 py-2 bg-foreground/5">
- <input
- className="bg-transparent border-none text-[11px] font-bold text-foreground outline-none w-full"
- value={note.title}
- onChange={(e) => updateNote(note.id, 'title', e.target.value)}
- placeholder="TÃ­tulo..."
- />
- <button
- onClick={() => deleteNote(note.id)}
- className="opacity-0 group-hover:opacity-100 p-1 text-text-muted hover:text-red-400 transition-all"
- >
- <span className="material-symbols-outlined text-xs">delete</span>
- </button>
- </div>
- <textarea
- className="w-full bg-transparent p-3 text-xs text-foreground/70 outline-none resize-none min-h-[80px] custom-scrollbar"
- value={note.content}
- onChange={(e) => updateNote(note.id, 'content', e.target.value)}
- placeholder="Escribe el contenido aquÃ­..."
- />
- </div>
- ))
- )}
- </div>
- {/* Confirmation Modal */}
- <ConfirmationModal
- isOpen={!!confirmDeleteId}
- onClose={() => setConfirmDeleteId(null)}
- onConfirm={confirmDeleteAction}
- title="Eliminar Nota"
- message="Â¿EstÃ¡s seguro de que quieres eliminar esta nota? No se podrÃ¡ recuperar."
- confirmText="Eliminar"
- type="danger"
- />
- </div>
- );
+      {/* List */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-2">
+        {notes.length === 0 ? (
+          <div className="py-8 text-center opacity-30 italic text-[10px] uppercase font-bold">
+            Sin notas
+          </div>
+        ) : (
+          notes.map((note) => (
+            <div
+              key={note.id}
+              className="group bg-foreground/5 border border-foreground/10 rounded-none overflow-hidden hover:border-primary/30 transition-all"
+            >
+              <div className="flex items-center justify-between px-3 py-2 bg-foreground/5">
+                <input
+                  className="bg-transparent border-none text-[11px] font-bold text-foreground outline-none w-full"
+                  value={note.title}
+                  onChange={(e) => updateNote(note.id, "title", e.target.value)}
+                  placeholder="Título..."
+                />
+                <button
+                  onClick={() => deleteNote(note.id)}
+                  className="opacity-0 group-hover:opacity-100 p-1 text-text-muted hover:text-red-400 transition-all"
+                >
+                  <span className="material-symbols-outlined text-xs">
+                    delete
+                  </span>
+                </button>
+              </div>
+              <textarea
+                className="w-full bg-transparent p-3 text-xs text-foreground/70 outline-none resize-none min-h-[80px] custom-scrollbar"
+                value={note.content}
+                onChange={(e) => updateNote(note.id, "content", e.target.value)}
+                placeholder="Escribe el contenido aquí..."
+              />
+            </div>
+          ))
+        )}
+      </div>
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={!!confirmDeleteId}
+        onClose={() => setConfirmDeleteId(null)}
+        onConfirm={confirmDeleteAction}
+        title="Eliminar Nota"
+        message="¿Estás seguro de que quieres eliminar esta nota? No se podrá recuperar."
+        confirmText="Eliminar"
+        type="danger"
+      />
+    </div>
+  );
 
- if (isFullscreen) {
- return (
- <div className="fixed inset-0 z-[100] bg-background/95 p-8 flex flex-col items-center">
- <div className="w-full max-w-4xl h-full flex flex-col border border-foreground/10 rounded-none overflow-hidden shadow-2xl monolithic-panel">
- <Content />
- </div>
- </div>
- );
- }
+  if (isFullscreen) {
+    return (
+      <div className="fixed inset-0 z-[100] bg-background/95 p-8 flex flex-col items-center">
+        <div className="w-full max-w-4xl h-full flex flex-col border border-foreground/10 rounded-none overflow-hidden shadow-2xl monolithic-panel">
+          <Content />
+        </div>
+      </div>
+    );
+  }
 
- return (
- <div className="h-full border border-foreground/10 rounded-none overflow-hidden">
- <Content />
- </div>
- );
+  return (
+    <div className="h-full border border-foreground/10 rounded-none overflow-hidden">
+      <Content />
+    </div>
+  );
 };
 
 export default GlobalNotes;
-
-
