@@ -1,12 +1,7 @@
 import { entityService } from "@repositories/entityService";
 import { folderService } from "@repositories/folderService";
 import { templateService } from "@repositories/templateService";
-import {
-  Entidad,
-  Carpeta,
-  Plantilla,
-  FolderType,
-} from "@domain/database";
+import { Entidad, Carpeta, Plantilla, FolderType } from "@domain/database";
 
 /**
  * 🌍 WORLD BIBLE USE CASE (Capa de Aplicación)
@@ -88,7 +83,7 @@ export class WorldBibleUseCase {
   static async quickUpdateEntity(
     id: number,
     field: string,
-    value: any,
+    value: unknown,
   ): Promise<void> {
     await entityService.update(id, { [field]: value });
   }

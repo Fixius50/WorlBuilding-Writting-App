@@ -1,4 +1,5 @@
 import { ReactRenderer } from "@tiptap/react";
+import type { Editor } from "@tiptap/core";
 import tippy, { Instance as TippyInstance } from "tippy.js";
 import { SlashMenuList } from "@features/Editor";
 import { SuggestionProps } from "@tiptap/suggestion";
@@ -9,7 +10,7 @@ export default {
       {
         title: "Texto Normal",
         label: "P",
-        command: ({ editor }: { editor: any }) => {
+        command: ({ editor }: { editor: Editor }) => {
           editor.chain().focus().setParagraph().run();
         },
       },
@@ -20,42 +21,42 @@ export default {
           {
             title: "Título 1",
             label: "H1",
-            command: ({ editor }: { editor: any }) => {
+            command: ({ editor }: { editor: Editor }) => {
               editor.chain().focus().toggleHeading({ level: 1 }).run();
             },
           },
           {
             title: "Título 2",
             label: "H2",
-            command: ({ editor }: { editor: any }) => {
+            command: ({ editor }: { editor: Editor }) => {
               editor.chain().focus().toggleHeading({ level: 2 }).run();
             },
           },
           {
             title: "Título 3",
             label: "H3",
-            command: ({ editor }: { editor: any }) => {
+            command: ({ editor }: { editor: Editor }) => {
               editor.chain().focus().toggleHeading({ level: 3 }).run();
             },
           },
           {
             title: "Título 4",
             label: "H4",
-            command: ({ editor }: { editor: any }) => {
+            command: ({ editor }: { editor: Editor }) => {
               editor.chain().focus().toggleHeading({ level: 4 }).run();
             },
           },
           {
             title: "Título 5",
             label: "H5",
-            command: ({ editor }: { editor: any }) => {
+            command: ({ editor }: { editor: Editor }) => {
               editor.chain().focus().toggleHeading({ level: 5 }).run();
             },
           },
           {
             title: "Título 6",
             label: "H6",
-            command: ({ editor }: { editor: any }) => {
+            command: ({ editor }: { editor: Editor }) => {
               editor.chain().focus().toggleHeading({ level: 6 }).run();
             },
           },
@@ -64,7 +65,7 @@ export default {
       {
         title: "Cita Narrativa",
         label: "99",
-        command: ({ editor }: { editor: any }) => {
+        command: ({ editor }: { editor: Editor }) => {
           editor.chain().focus().toggleBlockquote().run();
         },
       },
@@ -75,14 +76,14 @@ export default {
           {
             title: "Lista de Viñetas",
             label: "•",
-            command: ({ editor }: { editor: any }) => {
+            command: ({ editor }: { editor: Editor }) => {
               editor.chain().focus().toggleBulletList().run();
             },
           },
           {
             title: "Lista Numerada",
             label: "1.",
-            command: ({ editor }: { editor: any }) => {
+            command: ({ editor }: { editor: Editor }) => {
               editor.chain().focus().toggleOrderedList().run();
             },
           },
@@ -91,7 +92,7 @@ export default {
       {
         title: "Separador",
         label: "—",
-        command: ({ editor }: { editor: any }) => {
+        command: ({ editor }: { editor: Editor }) => {
           editor.chain().focus().setHorizontalRule().run();
         },
       },

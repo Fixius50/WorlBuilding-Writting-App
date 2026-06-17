@@ -30,6 +30,10 @@ const DRAW_MODE_ICONS: Record<DrawMode, string> = {
   eraser: "ink_eraser",
 };
 
+type LayerFeature = {
+  properties?: { layerId?: string };
+};
+
 const MapEditor: React.FC = () => {
   const navigate = useNavigate();
   const { entityId, folderId } = useParams();
@@ -249,8 +253,8 @@ const MapEditor: React.FC = () => {
   );
 
   const featuresByLayer = useMemo(() => {
-    const map: Record<string, any[]> = {};
-    (features.features || []).forEach((f: any) => {
+    const map: Record<string, LayerFeature[]> = {};
+    (features.features || []).forEach((f: LayerFeature) => {
       const lid = f.properties?.layerId;
       if (lid) {
         if (!map[lid]) map[lid] = [];
@@ -459,7 +463,9 @@ const MapEditor: React.FC = () => {
           className="p-3 bg-background/90 shadow-2xl border border-foreground/10 text-foreground/60 hover:text-primary hover:border-primary transition-all duration-300 flex items-center justify-center monolithic-panel"
           title="Volver a Mapas"
         >
-          <span className="material-symbols-outlined text-xl font-bold">arrow_back</span>
+          <span className="material-symbols-outlined text-xl font-bold">
+            arrow_back
+          </span>
         </button>
         <div className="monolithic-panel p-2 flex flex-col gap-1 bg-background/90 shadow-2xl border border-foreground/10">
           {(Object.entries(DRAW_MODE_LABELS) as [DrawMode, string][]).map(
@@ -532,5 +538,3 @@ const MapEditor: React.FC = () => {
 };
 
 export default MapEditor;
-
-

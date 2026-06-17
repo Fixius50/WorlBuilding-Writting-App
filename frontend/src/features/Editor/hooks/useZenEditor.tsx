@@ -1,6 +1,7 @@
-import { useEditor } from '@tiptap/react';
-import { useRef, useEffect, useCallback } from 'react';
-import { getZenExtensions } from '@utils/TiptapExtensions';
+import { useEditor } from "@tiptap/react";
+import { useRef, useEffect, useCallback } from "react";
+import { getZenExtensions } from "@utils/TiptapExtensions";
+import { Hoja } from "@domain/database";
 
 interface UsePageEditorProps {
   content: string;
@@ -28,17 +29,17 @@ export const usePageEditor = ({
   onJumpBack,
   onAutoDelete,
   autoFocus = false,
-  onMentionClick
+  onMentionClick,
 }: UsePageEditorProps) => {
   const lastHeightRef = useRef(0);
   const isDeletingRef = useRef(false);
 
   const editor = useEditor({
-    extensions: getZenExtensions('Empieza a escribir esta página...'),
+    extensions: getZenExtensions("Empieza a escribir esta página..."),
     content: content,
     onUpdate: ({ editor }) => {
       onUpdate(editor.getHTML());
-      
+
       if (isLastPage && !isDeletingRef.current) {
         const height = editor.view.dom.scrollHeight;
         if (height > 900 && height > lastHeightRef.current) {
@@ -49,7 +50,7 @@ export const usePageEditor = ({
     },
     onCreate: ({ editor }) => {
       if (autoFocus) {
-        setTimeout(() => editor.commands.focus('start'), 10);
+        setTimeout(() => editor.commands.focus("start"), 10);
       }
     },
     editorProps: {
@@ -59,10 +60,10 @@ export const usePageEditor = ({
       },
       handleClick: (view, pos, event) => {
         const target = event.target as HTMLElement;
-        const mention = target.closest('.mention');
-        const id = mention ? mention.getAttribute('data-id') : null;
-        
-        return (mention && id && onMentionClick)
+        const mention = target.closest(".mention");
+        const id = mention ? mention.getAttribute("data-id") : null;
+
+        return mention && id && onMentionClick
           ? (onMentionClick(id), true)
           : false;
       },
@@ -70,15 +71,17 @@ export const usePageEditor = ({
         const { selection } = view.state;
         const isAtStart = selection.$from.pos <= 1;
         const isAtEnd = selection.$to.pos === view.state.doc.content.size;
-        
-        if (event.key === 'Backspace') {
+
+        if (event.key === "Backspace") {
           isDeletingRef.current = true;
-          setTimeout(() => { isDeletingRef.current = false; }, 100);
+          setTimeout(() => {
+            isDeletingRef.current = false;
+          }, 100);
         } else {
           isDeletingRef.current = false;
         }
 
-        if (event.key === 'Tab' || event.key === 'Enter') {
+        if (event.key === "Tab" || event.key === "Enter") {
           const height = view.dom.scrollHeight;
           if (height > 950 && isAtEnd && onJumpNext) {
             event.preventDefault();
@@ -87,7 +90,7 @@ export const usePageEditor = ({
           }
         }
 
-        if (event.key === 'Backspace' && isAtStart) {
+        if (event.key === "Backspace" && isAtStart) {
           const isEmpty = view.state.doc.textContent.trim().length === 0;
           if (isEmpty && onAutoDelete) {
             event.preventDefault();
@@ -100,7 +103,7 @@ export const usePageEditor = ({
           }
         }
         return false;
-      }
+      },
     },
   });
 
@@ -113,7 +116,7 @@ export const usePageEditor = ({
 
   useEffect(() => {
     if (autoFocus && editor && !editor.isFocused) {
-      editor.commands.focus('start');
+      editor.commands.focus("start");
     }
   }, [autoFocus, editor]);
 
@@ -121,7 +124,7 @@ export const usePageEditor = ({
 };
 
 interface UseZenEditorProps {
-  pages: any[];
+  pages: Hoja[];
   onCreatePage: () => void;
 }
 
@@ -138,25 +141,30 @@ export const useZenEditor = ({ pages, onCreatePage }: UseZenEditorProps) => {
     if (isCreatingPageRef.current) return;
     isCreatingPageRef.current = true;
     onCreatePage();
-    setTimeout(() => { isCreatingPageRef.current = false; }, 1000);
+    setTimeout(() => {
+      isCreatingPageRef.current = false;
+    }, 1000);
   }, [onCreatePage]);
 
   const pagePairs = useMemo(() => {
-    const pairs: any[][] = [];
+    const pairs: Hoja[][] = [];
     for (let i = 0; i < pages.length; i += 2) {
       pairs.push(pages.slice(i, i + 2));
     }
     return pairs;
   }, [pages]);
 
-  const handleJumpNext = useCallback((currentIndex: number) => {
-    if (currentIndex < pages.length - 1) {
-      setFocusedPageIndex(currentIndex + 1);
-    } else {
-      handleAutoCreate();
-      setFocusedPageIndex(currentIndex + 1);
-    }
-  }, [pages.length, handleAutoCreate]);
+  const handleJumpNext = useCallback(
+    (currentIndex: number) => {
+      if (currentIndex < pages.length - 1) {
+        setFocusedPageIndex(currentIndex + 1);
+      } else {
+        handleAutoCreate();
+        setFocusedPageIndex(currentIndex + 1);
+      }
+    },
+    [pages.length, handleAutoCreate],
+  );
 
   const handleJumpBack = useCallback((currentIndex: number) => {
     if (currentIndex > 0) {
@@ -170,9 +178,9 @@ export const useZenEditor = ({ pages, onCreatePage }: UseZenEditorProps) => {
     handleAutoCreate,
     pagePairs,
     handleJumpNext,
-    handleJumpBack
+    handleJumpBack,
   };
 };
 
 // Auxiliary to avoid importing useState from react-router or similar
-import { useState, useMemo } from 'react';
+import { useState, useMemo } from "react";

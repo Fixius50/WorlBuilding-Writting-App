@@ -5,7 +5,7 @@ import { ResponsiveBar } from "@nivo/bar";
 import { useDashboardStore } from "@features/Dashboard";
 import { useControlPanel } from "../hooks/useControlPanel";
 
-// --- Subcomponente de GrÃƒÂ¡ficos (Movido para uso interno) ---
+// --- Subcomponente de graficos (movido para uso interno) ---
 function WritingStatsChart({ pages }: { pages: { contenido?: string }[] }) {
   const data = pages.map((p, i) => ({
     hoja: `H${i + 1}`,
@@ -93,7 +93,7 @@ interface ControlPanelProps {
 const SECTIONS: { id: PanelSection; icon: string; label: string }[] = [
   { id: "database", icon: "table_chart", label: "Datos" },
   { id: "notes", icon: "sticky_note_2", label: "Notas" },
-  { id: "stats", icon: "analytics", label: "EstadÃƒÂ­sticas" },
+  { id: "stats", icon: "analytics", label: "Estadisticas" },
 ];
 
 const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -113,12 +113,15 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 
   const { stats } = useDashboardStore();
 
-  // Escuchar evento personalizado para cambiar la secciÃƒÂ³n activa desde el microheader
+  // Escuchar evento personalizado para cambiar la seccion activa desde el microheader
   React.useEffect(() => {
     const handleSectionChange = (e: Event) => {
       const customEvent = e as CustomEvent<string>;
-      if (customEvent.detail) {
-        setActiveSection(customEvent.detail as any);
+      if (
+        customEvent.detail &&
+        SECTIONS.some((s) => s.id === customEvent.detail)
+      ) {
+        setActiveSection(customEvent.detail as PanelSection);
       }
     };
     window.addEventListener(
@@ -158,7 +161,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         </span>
         <span>{isOpen ? "Cerrar Panel" : "Panel de Control"}</span>
 
-        {/* Indicador de secciÃƒÂ³n activa cuando estÃƒÂ¡ abierto */}
+        {/* Indicador de seccion activa cuando esta abierto */}
         {isOpen && (
           <span className="flex items-center gap-1 pl-2 border-l border-primary/30 text-primary/60">
             <span className="material-symbols-outlined text-xs">

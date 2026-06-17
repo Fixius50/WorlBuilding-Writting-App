@@ -9,6 +9,8 @@ import { WorldBibleUseCase } from "@features/WorldBible";
 import { useWorldBibleData } from "../hooks/useWorldBibleData";
 import { useWorldBibleMutations } from "../hooks/useWorldBibleMutations";
 
+type CreateEntityInput = Parameters<typeof WorldBibleUseCase.createEntity>[0];
+
 /**
  * ðŸ§  useBibleTable
  * Logic for managing the world bible table, including filtering, selection, and bulk actions.
@@ -37,10 +39,10 @@ export const useBibleTable = (
   );
 
   const openPanel = (_mode: string, _id?: number, _title?: string) => {
-    // Panel derecho eliminado: antes abrÃ­a inspecciÃ³n contextual desde tabla.
+    // Panel derecho eliminado: antes abria inspeccion contextual desde tabla.
   };
   const closePanel = () => {
-    // Panel derecho eliminado: antes cerraba inspecciÃ³n contextual desde tabla.
+    // Panel derecho eliminado: antes cerraba inspeccion contextual desde tabla.
   };
   const isPanelOpen = false;
 
@@ -83,7 +85,11 @@ export const useBibleTable = (
     } catch (err) {}
   };
 
-  const handleUpdateField = async (id: number, field: string, value: any) => {
+  const handleUpdateField = async (
+    id: number,
+    field: string,
+    value: unknown,
+  ) => {
     try {
       await WorldBibleUseCase.quickUpdateEntity(id, field, value);
       loadEntities();
@@ -100,17 +106,14 @@ export const useBibleTable = (
       setNewEntityName("");
 
       try {
-        await createEntity({
+        const entityInput: CreateEntityInput = {
           nombre: name,
           tipo: newEntityType,
           project_id: projectId,
           carpeta_id: newEntityFolderId,
           descripcion: "",
-          slug: name.toLowerCase().replace(/\s+/g, "-"),
-          contenido_json: null,
-          folder_slug: null,
-          imagen_url: null,
-        } as any);
+        };
+        await createEntity(entityInput);
       } catch (err) {}
     }
   };
@@ -142,4 +145,3 @@ export const useBibleTable = (
     isPanelOpen,
   };
 };
-

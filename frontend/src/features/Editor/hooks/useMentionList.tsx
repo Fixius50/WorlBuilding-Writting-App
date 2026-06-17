@@ -1,5 +1,9 @@
 import { useState, useEffect, useCallback, useImperativeHandle } from "react";
 
+type MentionListHandle = {
+  onKeyDown: ({ event }: { event: KeyboardEvent }) => boolean;
+};
+
 interface MentionItem {
   id: string;
   label: string;
@@ -19,7 +23,7 @@ export const useMentionList = (
     type: string;
     desc: string | undefined;
   }) => void,
-  ref: React.ForwardedRef<any>,
+  ref: React.ForwardedRef<MentionListHandle>,
 ) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
 

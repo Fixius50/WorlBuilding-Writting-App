@@ -4,6 +4,7 @@ import { Outlet, useOutletContext } from "react-router-dom";
 import BibleTableView from "../components/BibleTableView";
 import CreateArchetypeModal from "../components/CreateArchetypeModal";
 import { ArchitectContext } from "@domain/ui";
+import { Carpeta } from "@domain/database";
 import { ConfirmationModal } from "@components";
 import { useWorldBibleLayout } from "./useWorldBibleLayout";
 
@@ -204,7 +205,7 @@ const WorldBibleLayout: React.FC = () => {
                 entities: localEntities,
                 currentFolder,
                 allFolders: architectContext.folders || [],
-                handleOpenCreateModal: (folder?: any) =>
+                handleOpenCreateModal: (folder?: Carpeta) =>
                   handleOpenCreateModal(folder || currentFolder),
                 handleDeleteEntity: (id: number) => {
                   setEntityToDelete(id);
@@ -258,5 +259,3 @@ const WorldBibleLayout: React.FC = () => {
 };
 
 export default WorldBibleLayout;
-
-

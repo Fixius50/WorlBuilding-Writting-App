@@ -49,6 +49,12 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
+    proxy: {
+      "/api": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+      },
+    },
     fs: {
       allow: [
         "..", // Permitir acceso a la raíz (para node_modules externos)

@@ -1,6 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
-import { RelationshipUseCase } from '@features/Relationships';
-import { CanvasNode, CanvasEdge } from '@components/editor/UniversalCanvas';
+import { useState, useEffect, useCallback } from "react";
+import { RelationshipUseCase } from "@features/Relationships";
+import { CanvasNode, CanvasEdge } from "@components/editor/UniversalCanvas";
+
+type NodePosition = { x: number; y: number };
 
 /**
  * 🧠 useGeneralGraph
@@ -17,28 +19,35 @@ export const useGeneralGraph = (projectId: number | undefined) => {
     try {
       const [networkData, savedPositions] = await Promise.all([
         RelationshipUseCase.getFullNetwork(projectId),
-        RelationshipUseCase.getAllNodePositions(projectId, 'general')
+        RelationshipUseCase.getAllNodePositions(projectId, "general"),
       ]);
+      const savedPositionsById = savedPositions as Record<string, NodePosition>;
       const { entities: allEntities, relationships: allRels } = networkData;
 
-      const filteredEntities = allEntities.filter(ent => ent.carpeta_id !== null);
+      const filteredEntities = allEntities.filter(
+        (ent) => ent.carpeta_id !== null,
+      );
 
       const newNodes: CanvasNode[] = filteredEntities.map((ent, idx) => {
-        const pos = savedPositions[ent.id] || (savedPositions as any)[ent.id.toString()];
+        const pos =
+          savedPositions[ent.id] || savedPositionsById[ent.id.toString()];
         const hasPos = pos !== undefined;
         const angle = (idx / filteredEntities.length) * 2 * Math.PI;
         const radius = 350 + Math.random() * 50;
 
         return {
           id: ent.id.toString(),
-          x: hasPos ? pos.x : (Math.cos(angle) * radius + 500),
-          y: hasPos ? pos.y : (Math.sin(angle) * radius + 500),
+          x: hasPos ? pos.x : Math.cos(angle) * radius + 500,
+          y: hasPos ? pos.y : Math.sin(angle) * radius + 500,
           label: ent.nombre,
-          tipo: ent.tipo
+          tipo: ent.tipo,
         };
       });
 
-      const groupedEdgesMap = new Map<string, { from: string; to: string; relations: string[]; id: string }>();
+      const groupedEdgesMap = new Map<
+        string,
+        { from: string; to: string; relations: string[]; id: string }
+      >();
       allRels.forEach((rel) => {
         const key = `${rel.origen_id}-${rel.destino_id}`;
         const existing = groupedEdgesMap.get(key);
@@ -56,12 +65,14 @@ export const useGeneralGraph = (projectId: number | undefined) => {
         }
       });
 
-      const newEdges: CanvasEdge[] = Array.from(groupedEdgesMap.values()).map((edge) => ({
-        id: edge.id,
-        from: edge.from,
-        to: edge.to,
-        relation: edge.relations.join(", "),
-      }));
+      const newEdges: CanvasEdge[] = Array.from(groupedEdgesMap.values()).map(
+        (edge) => ({
+          id: edge.id,
+          from: edge.from,
+          to: edge.to,
+          relation: edge.relations.join(", "),
+        }),
+      );
 
       setCanvasNodes(newNodes);
       setCanvasEdges(newEdges);
@@ -91,7 +102,6 @@ export const useGeneralGraph = (projectId: number | undefined) => {
     loading,
     canvasNodes,
     canvasEdges,
-    loadGraph
+    loadGraph,
   };
 };
-

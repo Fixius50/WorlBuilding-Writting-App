@@ -744,7 +744,7 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                               dataTransfer: {
                                 getData: () => JSON.stringify(tpl),
                               },
-                            } as any);
+                            } as unknown as React.DragEvent<HTMLDivElement>);
                           }}
                           onRefresh={refreshTemplates}
                           projectId={projectId}
@@ -919,5 +919,3 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
 };
 
 export default EntityBuilder;
-
-

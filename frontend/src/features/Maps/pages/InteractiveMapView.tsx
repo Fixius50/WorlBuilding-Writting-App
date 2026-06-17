@@ -430,8 +430,10 @@ const InteractiveMapView: React.FC<{
                                       document.createElement("input");
                                     input.type = "file";
                                     input.accept = "image/*";
-                                    input.onchange = (e: any) => {
-                                      const file = e.target.files?.[0];
+                                    input.onchange = (e: Event) => {
+                                      const target =
+                                        e.target as HTMLInputElement | null;
+                                      const file = target?.files?.[0];
                                       if (file) {
                                         const reader = new FileReader();
                                         reader.onload = (event) => {

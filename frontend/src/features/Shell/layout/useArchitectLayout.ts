@@ -15,6 +15,11 @@ import { useRightPanelStore } from "@features/Shell/store/useRightPanelStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { WritingUseCase } from "@features/Writing";
 
+type NamedEntity = {
+  id: number;
+  nombre?: string;
+};
+
 export const useArchitectLayout = () => {
   const { username, projectName } = useParams<{
     username: string;
@@ -100,7 +105,7 @@ export const useArchitectLayout = () => {
     return () => window.removeEventListener("click", handleOutsideClick);
   }, []);
 
-  // Cargar estadÃ­sticas cuando el modal stats estÃ¡ activo
+  // Cargar estadisticas cuando el modal stats esta activo
   useEffect(() => {
     switch (activeModal === "stats" && projectId !== null) {
       case true:
@@ -113,7 +118,7 @@ export const useArchitectLayout = () => {
     }
   }, [activeModal, projectId, loadStats]);
 
-  // Actualizar hora en tiempo real cuando el modal stats estÃ¡ activo
+  // Actualizar hora en tiempo real cuando el modal stats esta activo
   useEffect(() => {
     let timer: ReturnType<typeof setInterval> | undefined = undefined;
     switch (activeModal === "stats") {
@@ -185,7 +190,7 @@ export const useArchitectLayout = () => {
 
         let entityName = "";
         if (entityId) {
-          const entityData = queryClient.getQueryData<any>([
+          const entityData = queryClient.getQueryData<NamedEntity>([
             "entityRouter",
             entityId,
           ]);
@@ -193,13 +198,13 @@ export const useArchitectLayout = () => {
             entityName = ` > ${entityData.nombre}`;
           } else {
             const bibleEntities = projectId
-              ? queryClient.getQueryData<any[]>([
+              ? queryClient.getQueryData<NamedEntity[]>([
                   "worldBible",
                   "all",
                   projectId,
                 ])
               : null;
-            const found = bibleEntities?.find((e: any) => e.id === entityId);
+            const found = bibleEntities?.find((e) => e.id === entityId);
             if (found && found.nombre) {
               entityName = ` > ${found.nombre}`;
             }
@@ -211,21 +216,21 @@ export const useArchitectLayout = () => {
       case isMap:
         return t("nav.atlas") || "Atlas";
       case isTimeline:
-        return t("nav.chronology") || "CronologÃ­a";
+        return t("nav.chronology") || "Cronologia";
       case isTime:
         return "Calendarios";
       case isLanguages:
-        return t("nav.languages") || "LingÃ¼Ã­stica";
+        return t("nav.languages") || "Linguistica";
       case isPlanning:
-        return "Centro de PlanificaciÃ³n";
+        return "Centro de Planificacion";
       case isWriting:
         return notebookTitle
-          ? `${t("nav.writing") || "Escritura"} â€º ${notebookTitle}`
+          ? `${t("nav.writing") || "Escritura"} > ${notebookTitle}`
           : t("nav.writing") || "Escritura";
       case isAnalytics:
-        return t("project.analytics_title") || "EstadÃ­sticas";
+        return t("project.analytics_title") || "Estadisticas";
       case isSync:
-        return "SincronizaciÃ³n";
+        return "Sincronizacion";
       case isTrash:
         return t("nav.trash") || "Papelera";
       case isSettings:
@@ -259,7 +264,7 @@ export const useArchitectLayout = () => {
             if (project) {
               setLoadedProject(project);
               setProjectId(project.id);
-              // Actualizar el store global para que las menciones y sugerencias sepan en quÃ© proyecto estÃ¡n
+              // Actualizar el store global para que las menciones y sugerencias sepan en que proyecto estan
               await useAppStore.getState().setLastProjectId(project.id);
               await loadFolders(project.id);
             }
@@ -272,7 +277,7 @@ export const useArchitectLayout = () => {
     init();
   }, [projectName]);
 
-  // Cargar tÃ­tulo del cuaderno activo si estamos en la secciÃ³n de escritura
+  // Cargar titulo del cuaderno activo si estamos en la seccion de escritura
   useEffect(() => {
     const match = location.pathname.match(/\/writing\/(\d+)/);
     const notebookId = match ? parseInt(match[1], 10) : null;
@@ -303,13 +308,14 @@ export const useArchitectLayout = () => {
                     .getState()
                     .addNotification(
                       "Copia de seguridad automÃ¡tica realizada",
+                      "Copia de seguridad automatica realizada",
                       "success",
                     );
                   break;
                 default:
                   useSettingsStore
                     .getState()
-                    .addNotification("Error en copia automÃ¡tica", "error");
+                    .addNotification("Error en copia automatica", "error");
                   break;
               }
             },
@@ -376,7 +382,7 @@ export const useArchitectLayout = () => {
             try {
               const isTimelineFolder = type === "TIMELINE";
               const folderName = isTimelineFolder
-                ? t("timeline.title") || "Nueva DimensiÃ³n"
+                ? t("timeline.title") || "Nueva Dimension"
                 : t("bible.new_folder") || "Nueva Carpeta";
 
               const newFolder = await WorkspaceUseCase.createFolder(
@@ -435,7 +441,7 @@ export const useArchitectLayout = () => {
                 imagen_url: null,
               });
 
-              // Notificar al Ã¡rbol de carpetas para que refresque el contenido de parentId
+              // Notificar al arbol de carpetas para que refresque el contenido de parentId
               window.dispatchEvent(
                 new CustomEvent("folder-update", {
                   detail: {
@@ -628,5 +634,3 @@ export const useArchitectLayout = () => {
     openPanel,
   };
 };
-
-

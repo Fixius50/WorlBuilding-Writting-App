@@ -5,6 +5,8 @@ import {
 } from "@features/Entities/components/editor/UniversalCanvas";
 import { RelationshipUseCase } from "@features/Relationships";
 
+type NodePosition = { x: number; y: number };
+
 /**
  * 🧠 useMiniGraph
  * Hook to handle relationship loading and transformation into a star-shaped graph layout.
@@ -23,6 +25,10 @@ export const useMiniGraph = (entityId?: number, projectId?: number) => {
           RelationshipUseCase.getRelationshipsByEntity(id),
           RelationshipUseCase.getAllNodePositions(projectId, `minigraph_${id}`),
         ]);
+        const savedPositionsById = savedPositions as Record<
+          string,
+          NodePosition
+        >;
         const nodeMap = new Map<string, CanvasNode>();
 
         rels.forEach((rel, i) => {
@@ -30,7 +36,7 @@ export const useMiniGraph = (entityId?: number, projectId?: number) => {
 
           const fromId = rel.origen_id.toString();
           const posFrom =
-            savedPositions[rel.origen_id] || (savedPositions as any)[fromId];
+            savedPositions[rel.origen_id] || savedPositionsById[fromId];
           const hasPosFrom = posFrom !== undefined;
 
           if (!nodeMap.has(fromId)) {
@@ -45,7 +51,7 @@ export const useMiniGraph = (entityId?: number, projectId?: number) => {
 
           const toId = rel.destino_id.toString();
           const posTo =
-            savedPositions[rel.destino_id] || (savedPositions as any)[toId];
+            savedPositions[rel.destino_id] || savedPositionsById[toId];
           const hasPosTo = posTo !== undefined;
 
           if (!nodeMap.has(toId)) {
@@ -93,7 +99,7 @@ export const useMiniGraph = (entityId?: number, projectId?: number) => {
         if (nodeMap.has(id.toString())) {
           const center = nodeMap.get(id.toString())!;
           const posCenter =
-            savedPositions[id] || (savedPositions as any)[id.toString()];
+            savedPositions[id] || savedPositionsById[id.toString()];
           if (posCenter !== undefined) {
             center.x = posCenter.x;
             center.y = posCenter.y;

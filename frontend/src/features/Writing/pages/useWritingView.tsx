@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Cuaderno, Hoja } from "@domain/database";
+import { Cuaderno, Hoja, Entidad, Valor } from "@domain/database";
 import { WritingUseCase } from "@features/Writing";
 import { EntityUseCase } from "@features/Entities";
 import { TemplateUseCase } from "@features/Settings";
@@ -39,8 +39,8 @@ export const useWritingView = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<"index" | "references">("index");
   const [editingPageId, setEditingPageId] = useState<number | null>(null);
-  const [selectedEntity, setSelectedEntity] = useState<any | null>(null);
-  const [selectedEntityValues, setSelectedEntityValues] = useState<any[]>([]);
+  const [selectedEntity, setSelectedEntity] = useState<Entidad | null>(null);
+  const [selectedEntityValues, setSelectedEntityValues] = useState<Valor[]>([]);
 
   useEffect(() => {
     pagesRef.current = pages;
@@ -165,25 +165,22 @@ export const useWritingView = () => {
     [loadSnapshots],
   );
 
-  const handleMentionClick = useCallback(
-    async (id: string) => {
-      try {
-        const entity = await EntityUseCase.getById(Number(id));
-        if (entity) {
-          setSelectedEntity(entity);
-          const vals = await TemplateUseCase.getEntityValues(entity.id);
-          setSelectedEntityValues(vals);
-          setActiveTab("references");
-          setSidebarOpen(true);
-        }
-      } catch (err) {
-        useSettingsStore
-          .getState()
-          .addNotification("Error al cargar entidad", "error");
+  const handleMentionClick = useCallback(async (id: string) => {
+    try {
+      const entity = await EntityUseCase.getById(Number(id));
+      if (entity) {
+        setSelectedEntity(entity);
+        const vals = await TemplateUseCase.getEntityValues(entity.id);
+        setSelectedEntityValues(vals);
+        setActiveTab("references");
+        setSidebarOpen(true);
       }
-    },
-    [],
-  );
+    } catch (err) {
+      useSettingsStore
+        .getState()
+        .addNotification("Error al cargar entidad", "error");
+    }
+  }, []);
 
   const handleRestoreSnapshot = useCallback(
     async (snapshotId: number) => {
@@ -327,5 +324,3 @@ export const useWritingView = () => {
     selectedEntityValues,
   };
 };
-
-

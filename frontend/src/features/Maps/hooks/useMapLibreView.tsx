@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import maplibregl from "maplibre-gl";
 import { MapboxOverlay } from "@deck.gl/mapbox";
+import type { PickingInfo } from "@deck.gl/core";
 import {
   ScatterplotLayer,
   TextLayer,
@@ -9,6 +10,12 @@ import {
 } from "@deck.gl/layers";
 import { MapLayer, MapMarker, MapConnection } from "@domain/maps";
 import { getThemePrimaryRgb } from "@infrastructure/utils/themeColor";
+
+type ConnectionPath = {
+  path: [number, number][];
+  color: [number, number, number];
+  width: number;
+};
 
 interface GeoFeatureCollection {
   type: string;
@@ -68,32 +75,37 @@ export const useMapLibreView = (
       currentLayers: MapLayer[],
     ) => {
       const primaryRgb = getThemePrimaryRgb();
-      const deckLayers: any[] = [];
+      const deckLayers: Array<
+        | PathLayer<ConnectionPath>
+        | GeoJsonLayer<GeoFeatureCollection>
+        | ScatterplotLayer<MapMarker>
+        | TextLayer<MapMarker>
+      > = [];
 
-      const connPaths = currentConnections
+      const connPaths: ConnectionPath[] = currentConnections
         .map((conn) => {
           const src = currentMarkers.find((m) => m.id === conn.sourceId);
           const tgt = currentMarkers.find((m) => m.id === conn.targetId);
           if (!src || !tgt) return null;
           return {
             path: [
-              [src.lng || 0, src.lat || 0],
-              [tgt.lng || 0, tgt.lat || 0],
+              [src.lng || 0, src.lat || 0] as [number, number],
+              [tgt.lng || 0, tgt.lat || 0] as [number, number],
             ],
-            color: hexToRgb(conn.color || ""),
+            color: hexToRgb(conn.color || "") as [number, number, number],
             width: conn.weight || 2,
           };
         })
-        .filter(Boolean);
+        .filter((path): path is ConnectionPath => path !== null);
 
       if (connPaths.length > 0) {
         deckLayers.push(
           new PathLayer({
             id: "deck-connections",
             data: connPaths,
-            getPath: (d: any) => d.path,
-            getColor: (d: any) => d.color,
-            getWidth: (d: any) => d.width,
+            getPath: (d) => d.path,
+            getColor: (d) => d.color,
+            getWidth: (d) => d.width,
             widthUnits: "pixels",
             rounded: true,
             pickable: false,
@@ -110,13 +122,14 @@ export const useMapLibreView = (
             );
             if (!layerFeatures.length) return;
             const rgb = hexToRgb(layer.color || "");
+            const geojsonData: GeoFeatureCollection = {
+              type: "FeatureCollection",
+              features: layerFeatures,
+            };
             deckLayers.push(
               new GeoJsonLayer({
                 id: `deck-geojson-${layer.id}`,
-                data: {
-                  type: "FeatureCollection",
-                  features: layerFeatures,
-                } as any,
+                data: geojsonData,
                 getLineColor: [...rgb, Math.round((layer.opacity ?? 1) * 255)],
                 getFillColor: [
                   ...rgb,
@@ -162,7 +175,7 @@ export const useMapLibreView = (
             pickable: true,
             autoHighlight: true,
             highlightColor: [...primaryRgb, 255],
-            onClick: (info: any) => {
+            onClick: (info: PickingInfo<MapMarker>) => {
               if (info.object) onMarkerClickRef.current(info.object);
             },
           }),
@@ -226,7 +239,9 @@ export const useMapLibreView = (
       minZoom: 0,
       renderWorldCopies: is3D,
       // @ts-ignore - 'projection' is supported in newer MapLibre GL JS but types might be outdated
-      projection: is3D ? ({ type: "globe" } as any) : undefined,
+      projection: is3D
+        ? ({ type: "globe" } as unknown as { type: "globe" })
+        : undefined,
       attributionControl: false,
     });
 
@@ -237,7 +252,7 @@ export const useMapLibreView = (
       layers: [],
     });
     deckOverlay.current = overlay;
-    mapInstance.addControl(overlay as any);
+    mapInstance.addControl(overlay as unknown as maplibregl.IControl);
     mapInstance.addControl(new maplibregl.NavigationControl(), "bottom-right");
 
     mapInstance.on("click", (e) => {

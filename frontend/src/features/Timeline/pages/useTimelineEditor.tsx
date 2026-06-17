@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { Evento, Entidad } from "@domain/database";
+import { Evento, Entidad, DimensionLinea } from "@domain/database";
 
 /**
  * 🧠 useTimelineEditor
@@ -18,9 +18,12 @@ export const useTimelineEditor = ({
   t: (key: string) => string;
   events: Evento[];
   linkedEntities: Record<number, Entidad[]>;
-  lines: any[];
+  lines: DimensionLinea[];
   involvedEntities: Entidad[];
-  handleSaveEvent: (id: number, data: any) => Promise<void>;
+  handleSaveEvent: (
+    id: number,
+    data: { titulo: string; descripcion: string; fecha_simulada: string },
+  ) => Promise<void>;
   handleDeleteEvent: (id: number) => Promise<void>;
   handleAddEvent: (lineId: number | null) => Promise<Evento | null>;
 }) => {

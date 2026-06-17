@@ -41,7 +41,7 @@ const App = () => {
 
   useEffect(() => {
     const startup = async () => {
-      // 1. Cargar las configuraciones en Zustand (La DB ya se inicializÃ³ en main.tsx)
+      // 1. Cargar las configuraciones en Zustand (la DB ya se inicializo en main.tsx)
       await initializeStore();
     };
     startup();
@@ -54,7 +54,7 @@ const App = () => {
     }
   }, [theme, isInitialized]);
 
-  // Pantalla de carga ultra-rÃ¡pida mientras lee SQLite
+  // Pantalla de carga ultrarapida mientras lee SQLite
   if (!isInitialized) {
     return (
       <div className="h-screen w-screen bg-[#111] flex items-center justify-center text-white text-[10px] uppercase font-black tracking-widest animate-pulse">
