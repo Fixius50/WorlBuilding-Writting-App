@@ -4,7 +4,7 @@ Chronos Atlas es una aplicación de worldbuilding local-first para escritura, pl
 
 La base funcional actual se centra en:
 
-- Frontend React + TypeScript + Vite con arquitectura por capas.
+- Frontend React + TypeScript + Vite con arquitectura feature-first (vertical slices).
 - Persistencia local en SQLite WASM (SQLocal) sobre OPFS.
 - Backend Java auxiliar para bridge de sistema de archivos, backups y endpoints de soporte.
 
@@ -39,6 +39,54 @@ El proyecto está en evolución activa. La documentación técnica vive en la ca
 - Jetty embebido
 - Maven
 
+## Dibujo Explicativo de Arquitectura
+
+### 1) Vista Estructural (Carpetas y Ownership)
+
+```mermaid
+flowchart LR
+	UI[Frontend React + Vite] --> F[Features por dominio]
+	F --> A[application]
+	F --> P[pages]
+	F --> C[components]
+	F --> H[hooks]
+	F --> D[domain]
+	F --> S[store]
+
+	UI --> SH[Shared UI transversal]
+	SH --> SH1[primitives]
+	SH --> SH2[navigation]
+	SH --> SH3[modals]
+	SH --> SH4[panels]
+	SH --> SH5[feedback]
+	SH --> SH6[visuals]
+```
+
+### 2) Vista Runtime (Flujo de Ejecución)
+
+```mermaid
+flowchart LR
+	V[Vista en pages/components] --> U[UseCase en application]
+	U --> I[infrastructure localDB/network]
+	I --> L[(SQLite WASM en OPFS)]
+	I --> J[Backend Java auxiliar]
+
+	V --> H[hooks]
+	H --> V
+
+	subgraph Frontend
+		V
+		H
+		U
+		I
+		L
+	end
+
+	subgraph Backend
+		J
+	end
+```
+
 ## Estructura Principal de Carpetas
 
 ```text
@@ -46,17 +94,30 @@ WorlBuilding-Writting-App/
 ├── frontend/
 │   ├── public/
 │   ├── src/
-│   │   ├── application/useCases/
-│   │   ├── domain/models/
 │   │   ├── infrastructure/
 │   │   │   ├── localDB/
 │   │   │   ├── network/
 │   │   │   └── utils/
 │   │   ├── features/
-│   │   ├── presentation/
-│   │   ├── store/
+│   │   │   ├── Shared/
+│   │   │   │   ├── ui/
+│   │   │   │   │   ├── primitives/
+│   │   │   │   │   ├── navigation/
+│   │   │   │   │   ├── modals/
+│   │   │   │   │   ├── panels/
+│   │   │   │   │   ├── feedback/
+│   │   │   │   │   ├── visuals/
+│   │   │   │   │   └── editor/
+│   │   │   │   └── StatCard.tsx
+│   │   │   ├── Entities/
+│   │   │   │   ├── application/
+│   │   │   │   ├── components/
+│   │   │   │   ├── hooks/
+│   │   │   │   ├── pages/
+│   │   │   │   └── index.ts
+│   │   │   └── ... otras features
 │   │   ├── locales/
-│   │   └── context/
+│   │   └── types/
 │   ├── package.json
 │   └── vite.config.ts
 ├── backend/
@@ -121,6 +182,15 @@ mvnw.cmd -DskipTests package
 - Diseño UI/UX: Docs/02_Diseño_UI_UX.md
 - Roadmap vivo: Docs/03_Roadmap_Vivo.md
 - Arquitectura de workspaces: Docs/04_Arquitectura_Workspaces.md
+
+## Convenciones de Arquitectura Frontend
+
+- Arquitectura objetivo: Feature-Sliced Architecture (vertical slices).
+- Carpeta estándar por feature según necesidad: application, components, hooks, pages, domain, store.
+- Regla de hooks:
+  - Hook reutilizable dentro de la feature: hooks/
+  - Hook exclusivo de una pantalla: colocalizado en pages/
+- index.ts de cada feature permanece en raíz como API pública.
 
 ## Licenciamiento
 
