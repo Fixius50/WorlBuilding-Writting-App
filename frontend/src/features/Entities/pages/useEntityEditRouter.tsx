@@ -36,7 +36,7 @@ const matchesAliases = (normalizedType: string, aliases: string[]): boolean => {
 };
 
 /**
- * ðŸ§  useEntityEditRouter
+ * Hook useEntityEditRouter
  * Hook to handle entity loading and routing logic for the editor, determining which specialized editor to display.
  */
 export const useEntityEditRouter = () => {
@@ -68,7 +68,7 @@ export const useEntityEditRouter = () => {
       "PLANET",
       "PLANETS",
       "DIMENSION",
-      "DIMENSIÃ“N",
+      "DIMENSIÓN",
       "DIMENSIONS",
     ];
     return matchesAliases(tipo, cosmicTypes);
@@ -80,4 +80,3 @@ export const useEntityEditRouter = () => {
     isCosmic,
   };
 };
-

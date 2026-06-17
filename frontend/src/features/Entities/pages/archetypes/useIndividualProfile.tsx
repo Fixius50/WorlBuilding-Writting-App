@@ -23,7 +23,7 @@ export const individualEntityQueryKey = (entityId: number) =>
   ["individual-entity", entityId] as const;
 
 /**
- * ðŸ§  useIndividualProfile
+ * Hook useIndividualProfile
  * Logic hook for IndividualProfileView.
  * Handles data fetching, side panel synchronization, and business actions.
  */
@@ -201,4 +201,3 @@ export const useIndividualProfile = (propEntityId?: string | number) => {
     entityId,
   };
 };
-

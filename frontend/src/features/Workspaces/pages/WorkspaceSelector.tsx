@@ -5,7 +5,7 @@ import { useWorkspaceSelector } from "./useWorkspaceSelector";
 import { WorkspaceUseCase } from "@features/Workspaces";
 import { getModuleCache, setModuleCache } from "@utils/moduleCache";
 
-// --- COMPONENTES ATÃƒâ€œMICOS ---
+// --- COMPONENTES ATÓMICOS ---
 
 const Icon: React.FC<{
   name: string;
@@ -176,7 +176,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Tabs de modo (Estilo TÃƒÂ©cnico) */}
+      {/* Tabs de modo (Estilo Técnico) */}
       <div className="flex gap-px bg-foreground/10 border border-foreground/10 p-px rounded-none">
         <button
           type="button"
@@ -194,7 +194,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         </button>
       </div>
 
-      {/* Contenido segÃƒÂºn el modo */}
+      {/* Contenido según el modo */}
       {mode === "url" ? (
         <div className="animate-in fade-in duration-200">
           <CarvedInput
@@ -230,11 +230,11 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             className="hidden"
           />
 
-          {/* GalerÃƒÂ­a de SesiÃƒÂ³n Local */}
+          {/* Galería de Sesión Local */}
           {localGallery.length > 0 && (
             <div className="mt-4 pt-4 border-t border-foreground/10">
               <p className="font-mono text-[9px] text-foreground/50 tracking-widest uppercase mb-3 flex items-center justify-between">
-                <span>Memoria de SesiÃƒÂ³n Local</span>
+                <span>Memoria de Sesión Local</span>
                 <span className="text-primary">
                   {localGallery.length} Artefactos
                 </span>
@@ -287,7 +287,7 @@ const EditorMonolithicPanel: React.FC<EditorMonolithicPanelProps> = ({
   const [description, setDescription] = useState(
     projectToEdit?.descripcion || "",
   );
-  const [tag, setTag] = useState(projectToEdit?.tag || "FantasÃƒÂ­a");
+  const [tag, setTag] = useState(projectToEdit?.tag || "Fantasía");
   const [coverUrl, setCoverUrl] = useState(projectToEdit?.image_url || "");
 
   const handleSave = () => {
@@ -337,7 +337,7 @@ const EditorMonolithicPanel: React.FC<EditorMonolithicPanelProps> = ({
               </div>
             )}
 
-            {/* Overlay TÃƒÂ©cnico Sutil */}
+            {/* Overlay Técnico Sutil */}
             <div className="absolute top-4 left-4 flex items-center gap-2">
               <span className="font-mono text-[10px] tracking-[0.2em] uppercase px-2 py-1 border border-foreground bg-foreground text-background rounded-none shadow-md">
                 {displayId}
@@ -360,31 +360,31 @@ const EditorMonolithicPanel: React.FC<EditorMonolithicPanelProps> = ({
 
           <div className="p-8 space-y-10 flex-1">
             <div>
-              <Label>TÃƒÂ­tulo del Proyecto</Label>
+              <Label>Título del Proyecto</Label>
               <CarvedInput
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ej: CrÃƒÂ³nicas del Abismo"
+                placeholder="Ej: Crónicas del Abismo"
                 icon="title"
               />
             </div>
 
             <div>
-              <Label>DescripciÃƒÂ³n del Universo</Label>
+              <Label>Descripción del Universo</Label>
               <CarvedInput
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Ej: Una tierra de ingenierÃƒÂ­a cÃƒÂ³smica monolÃƒÂ­tica..."
+                placeholder="Ej: Una tierra de ingeniería cósmica monolítica..."
                 icon="description"
               />
             </div>
 
             <div>
-              <Label>ClasificaciÃƒÂ³n (GÃƒÂ©nero o Tag)</Label>
+              <Label>Clasificación (Género o Tag)</Label>
               <CarvedInput
                 value={tag}
                 onChange={(e) => setTag(e.target.value)}
-                placeholder="Ej: FantasÃƒÂ­a, Cyberpunk, Sci-Fi..."
+                placeholder="Ej: Fantasía, Cyberpunk, Sci-Fi..."
                 icon="category"
               />
             </div>
@@ -407,7 +407,7 @@ const EditorMonolithicPanel: React.FC<EditorMonolithicPanelProps> = ({
               icon="save"
               disabled={!title.trim()}
             >
-              {isCreating ? "Inicializar Universo" : "Guardar ConfiguraciÃƒÂ³n"}
+              {isCreating ? "Inicializar Universo" : "Guardar Configuración"}
             </PrimaryButton>
           </div>
         </div>
@@ -449,7 +449,7 @@ const NotebookCard: React.FC<{
 
       <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-transparent to-transparent opacity-60"></div>
 
-      {/* ID TÃƒÂ©cnico y GÃƒÂ©nero/Tag */}
+      {/* ID Técnico y Género/Tag */}
       <div className="absolute top-4 left-4 right-4 flex items-center gap-2 overflow-hidden z-20 opacity-40 group-hover:opacity-100 transition-opacity duration-300">
         <span className="font-mono text-[9px] tracking-[0.2em] uppercase px-2 py-1 border border-foreground bg-foreground text-background rounded-none">
           CN-{data.id}
@@ -459,9 +459,9 @@ const NotebookCard: React.FC<{
         </span>
       </div>
 
-      {/* Bloque de InformaciÃƒÂ³n y Acciones */}
+      {/* Bloque de Información y Acciones */}
       <div className="absolute bottom-0 left-0 w-full p-4 flex items-stretch justify-between gap-2 z-20">
-        {/* Caja de TÃƒÂ­tulo */}
+        {/* Caja de Título */}
         <div className="bg-background/95 border border-foreground/10 px-4 py-3 relative overflow-hidden flex-1 min-w-0 flex items-center">
           <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary"></div>
           <h3 className="font-serif text-xl text-foreground leading-tight truncate pl-1">
@@ -528,7 +528,7 @@ const WorkspaceSelector: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background relative flex flex-col selection:bg-primary/30 selection:text-foreground overflow-x-hidden">
-      {/* TopNav (Reducido, tÃƒÂ©cnico, monolÃƒÂ­tico) */}
+      {/* TopNav (Reducido, técnico, monolítico) */}
       <header className="border-b border-foreground/10 px-8 py-4 bg-background flex justify-end items-center sticky top-0 z-30 flex-shrink-0">
         <div className="flex items-center gap-4">
           <GhostButton
@@ -570,7 +570,7 @@ const WorkspaceSelector: React.FC = () => {
             </div>
             <div className="flex-1">
               <CarvedInput
-                placeholder="Buscar por tÃƒÂ­tulo..."
+                placeholder="Buscar por título..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 icon="search"
@@ -592,7 +592,7 @@ const WorkspaceSelector: React.FC = () => {
             /* GRID DE CUADERNOS */
             <div className="workspace-scroll">
               <div className="workspace-cards-wrap">
-                {/* Tarjeta Especial: AÃƒÂ±adir Nuevo */}
+                {/* Tarjeta Especial: Añadir Nuevo */}
                 <div
                   onClick={() => setIsCreating(true)}
                   className="workspace-card-shell border border-dashed border-foreground/20 bg-foreground/5 hover:bg-foreground/10 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] cursor-pointer flex flex-col items-center justify-center group rounded-none"
@@ -624,7 +624,7 @@ const WorkspaceSelector: React.FC = () => {
         </div>
       </main>
 
-      {/* Editor MonolÃƒÂ­tico (Se muestra si editamos o creamos) */}
+      {/* Editor Monolítico (Se muestra si editamos o creamos) */}
       {(projectToEdit || isCreating) && (
         <EditorMonolithicPanel
           projectToEdit={projectToEdit}
@@ -637,13 +637,13 @@ const WorkspaceSelector: React.FC = () => {
         />
       )}
 
-      {/* DiÃƒÂ¡logos de ConfirmaciÃƒÂ³n */}
+      {/* Diálogos de Confirmación */}
       <ConfirmationModal
         isOpen={projectToDelete !== null}
         onClose={() => setProjectToDelete(null)}
         onConfirm={handleDeleteConfirm}
-        title="Ã‚Â¿Eliminar Proyecto?"
-        message="EstÃƒÂ¡s a punto de borrar este cuaderno y todo su contenido permanentemente. Esta acciÃƒÂ³n no se puede deshacer."
+        title="¿Eliminar Proyecto?"
+        message="Estás a punto de borrar este cuaderno y todo su contenido permanentemente. Esta acción no se puede deshacer."
         confirmText="Eliminar Universo"
         cancelText="Cancelar"
         type="danger"
@@ -656,9 +656,9 @@ const WorkspaceSelector: React.FC = () => {
           setImportConfirmOpen(false);
           executeImport();
         }}
-        title="Ã‚Â¿Importar respaldo del servidor?"
-        message="Esto sobrescribirÃƒÂ¡ los datos actuales del universo con la versiÃƒÂ³n respaldada."
-        confirmText="SÃƒÂ­, importar"
+        title="¿Importar respaldo del servidor?"
+        message="Esto sobrescribirá los datos actuales del universo con la versión respaldada."
+        confirmText="Sí, importar"
         cancelText="Cancelar"
         type="warning"
       />
@@ -667,7 +667,7 @@ const WorkspaceSelector: React.FC = () => {
         isOpen={statusModal !== null}
         onClose={() => setStatusModal(null)}
         onConfirm={handleStatusAcknowledge}
-        title={statusModal?.title || "OperaciÃƒÂ³n completada"}
+        title={statusModal?.title || "Operación completada"}
         message={statusModal?.message || ""}
         confirmText="Aceptar"
         cancelText="Cerrar"
@@ -684,5 +684,3 @@ const WorkspaceSelector: React.FC = () => {
 };
 
 export default WorkspaceSelector;
-
-

@@ -1,30 +1,30 @@
 ﻿/**
- * ðŸ“š COMPONENTE: RelationshipInspector
+ * COMPONENTE: RelationshipInspector
  *
- * ðŸ“Œ PROPÃ“SITO:
- * Este componente actÃºa como el panel lateral interactivo (Inspector) dedicado a la visualizaciÃ³n,
- * ediciÃ³n y disoluciÃ³n de relaciones (aristas) entre las entidades de la biblia del proyecto.
+ * PROPÓSITO:
+ * Este componente actúa como el panel lateral interactivo (Inspector) dedicado a la visualización,
+ * edición y disolución de relaciones (aristas) entre las entidades de la biblia del proyecto.
  *
- * ðŸŽ® ESCENARIOS DE USO Y FLUJO FRONT-TO-BACK:
- * 1. ðŸ–²ï¸ Lienzo Interactivo (Konva Canvas):
- *    Al hacer clic sobre una arista/lÃ­nea de conexiÃ³n en el canvas global (`UniversalCanvas.tsx`),
- *    se ejecuta el callback `onEdgeClick` el cual activa el almacÃ©n de Zustand (`useRightPanelStore.ts`)
+ * ESCENARIOS DE USO Y FLUJO FRONT-TO-BACK:
+ * 1. Lienzo Interactivo (Konva Canvas):
+ *    Al hacer clic sobre una arista/línea de conexión en el canvas global (`UniversalCanvas.tsx`),
+ *    se ejecuta el callback `onEdgeClick` el cual activa el almacén de Zustand (`useRightPanelStore.ts`)
  *    y abre el panel derecho con el modo `'relationship'` y el ID correspondiente.
- * 2. ðŸ”€ Enrutador Central (`UniversalInspector.tsx`):
- *    Recibe el modo `'relationship'` y monta dinÃ¡micamente este componente pasÃ¡ndole el ID de la relaciÃ³n.
- * 3. ðŸ’¾ Base de Datos SQLite y Reactividad:
- *    - Al cargar, solicita a la capa de aplicaciÃ³n (`RelationshipUseCase.getRelationshipDetails`) los
- *      datos de la relaciÃ³n enriquecidos asÃ­ncronamente con los nombres legibles de origen y destino.
- *    - Al guardar cambios (Tipo de vÃ­nculo o descripciÃ³n), persiste en SQLite a travÃ©s del repositorio.
+ * 2. Enrutador Central (`UniversalInspector.tsx`):
+ *    Recibe el modo `'relationship'` y monta dinámicamente este componente pasándole el ID de la relación.
+ * 3. Base de Datos SQLite y Reactividad:
+ *    - Al cargar, solicita a la capa de aplicación (`RelationshipUseCase.getRelationshipDetails`) los
+ *      datos de la relación enriquecidos asíncronamente con los nombres legibles de origen y destino.
+ *    - Al guardar cambios (Tipo de vínculo o descripción), persiste en SQLite a través del repositorio.
  *    - Despacha el evento global `window.dispatchEvent(new CustomEvent('relationships-update'))` para que
  *      cualquier componente reactivo (ej. el canvas) se redespeje e incorpore los cambios al instante.
- *    - Al eliminar el vÃ­nculo, invoca a la capa de servicio, despacha el evento de actualizaciÃ³n y cierra el panel.
+ *    - Al eliminar el vínculo, invoca a la capa de servicio, despacha el evento de actualización y cierra el panel.
  *
- * âš™ï¸ ESTÃNDARES Y DIRECTIVAS DE CALIDAD CUMPLIDOS:
- * - ðŸŽ¯ Tipado estricto: Uso de interfaces y modelos estrictamente tipados.
- * - ðŸ”€ Flujo de control: ProhibiciÃ³n de declaraciones 'return' dentro de bloques 'if' en el cÃ³digo nuevo;
- *   empleo de bloques 'switch' para la selecciÃ³n lÃ³gica.
- * - âš¡ Exclusividad Lambda: Uso estricto de funciones arrow para las operaciones y manejadores de eventos.
+ * ESTÁNDARES Y DIRECTIVAS DE CALIDAD CUMPLIDOS:
+ * - Tipado estricto: Uso de interfaces y modelos estrictamente tipados.
+ * - Flujo de control: Prohibición de declaraciones 'return' dentro de bloques 'if' en el código nuevo;
+ *   empleo de bloques 'switch' para la selección lógica.
+ * - Exclusividad Lambda: Uso estricto de funciones arrow para las operaciones y manejadores de eventos.
  */
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -46,18 +46,18 @@ const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({
 }) => {
   const { t } = useLanguage();
   const closePanel = () => {
-    // Panel derecho eliminado: antes cerraba el inspector lateral de relaciÃ³n.
+    // Panel derecho eliminado: antes cerraba el inspector lateral de relación.
   };
 
   const [rel, setRel] = useState<RelacionEnriquecida | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
 
-  // Estados de ediciÃ³n
+  // Estados de edición
   const [tipo, setTipo] = useState<string>("");
   const [descripcion, setDescripcion] = useState<string>("");
 
-  // Modal de confirmaciÃ³n
+  // Modal de confirmación
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState<boolean>(false);
 
   const loadRelationship = useCallback(async () => {
@@ -76,7 +76,7 @@ const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({
           break;
       }
     } catch (error) {
-      console.error("Error al cargar la relaciÃ³n:", error);
+      console.error("Error al cargar la relación:", error);
     } finally {
       setLoading(false);
     }
@@ -102,7 +102,7 @@ const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({
       // Emitir evento para actualizar el canvas
       window.dispatchEvent(new CustomEvent("relationships-update"));
     } catch (error) {
-      console.error("Error al guardar la relaciÃ³n:", error);
+      console.error("Error al guardar la relación:", error);
     } finally {
       setSaving(false);
     }
@@ -123,7 +123,7 @@ const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({
         closePanel();
       }
     } catch (error) {
-      console.error("Error al eliminar la relaciÃ³n:", error);
+      console.error("Error al eliminar la relación:", error);
     }
   }, [relationshipId, onUpdate, onClose, closePanel]);
 
@@ -143,7 +143,7 @@ const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({
       return (
         <div className="flex-1 flex items-center justify-center p-10">
           <div className="animate-pulse text-[10px] font-black uppercase tracking-[0.3em] text-foreground/30">
-            Analizando ConexiÃ³n...
+            Analizando Conexión...
           </div>
         </div>
       );
@@ -155,7 +155,7 @@ const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({
     case true:
       return (
         <div className="p-10 text-center text-rose-500 text-xs font-bold uppercase tracking-widest">
-          Error: ConexiÃ³n no hallada en la trama.
+          Error: Conexión no hallada en la trama.
         </div>
       );
     default:
@@ -172,10 +172,10 @@ const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({
           </div>
           <div className="flex flex-col overflow-hidden">
             <span className="text-[10px] font-black uppercase tracking-widest text-primary leading-none mb-1">
-              VÃ­nculo del Destino
+              Vínculo del Destino
             </span>
             <h2 className="text-sm font-black text-foreground uppercase tracking-tight truncate">
-              Naturaleza de ConexiÃ³n
+              Naturaleza de Conexión
             </h2>
           </div>
         </div>
@@ -192,7 +192,7 @@ const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({
 
       {/* Contenido */}
       <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
-        {/* Nodos de ConexiÃ³n */}
+        {/* Nodos de Conexión */}
         <section className="space-y-4">
           <h3 className="text-[10px] font-black uppercase tracking-widest text-foreground/40 px-1">
             Entidades Vinculadas
@@ -227,10 +227,10 @@ const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({
           </div>
         </section>
 
-        {/* Tipo de RelaciÃ³n */}
+        {/* Tipo de Relación */}
         <section className="space-y-2">
           <label className="text-[10px] font-black uppercase tracking-widest text-foreground/40 px-1">
-            Tipo de VÃ­nculo
+            Tipo de Vínculo
           </label>
           <input
             type="text"
@@ -241,10 +241,10 @@ const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({
           />
         </section>
 
-        {/* Notas / DescripciÃ³n */}
+        {/* Notas / Descripción */}
         <section className="space-y-2">
           <label className="text-[10px] font-black uppercase tracking-widest text-foreground/40 px-1">
-            Detalles de la RelaciÃ³n
+            Detalles de la Relación
           </label>
           <textarea
             value={descripcion}
@@ -256,7 +256,7 @@ const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({
         </section>
       </div>
 
-      {/* Botones de AcciÃ³n */}
+      {/* Botones de Acción */}
       <div className="p-6 border-t border-foreground/5 bg-foreground/[0.01] space-y-3">
         <button
           onClick={handleSave}
@@ -278,17 +278,17 @@ const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({
           className="w-full py-3 bg-red-500/5 hover:bg-red-500/10 border border-red-500/20 hover:border-red-500/40 text-red-400 font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
         >
           <span className="material-symbols-outlined text-sm">link_off</span>
-          <span>ELIMINAR VÃNCULO</span>
+          <span>ELIMINAR VÍNCULO</span>
         </button>
       </div>
 
-      {/* ConfirmaciÃ³n de EliminaciÃ³n */}
+      {/* Confirmación de Eliminación */}
       <ConfirmationModal
         isOpen={deleteConfirmOpen}
         onClose={() => setDeleteConfirmOpen(false)}
         onConfirm={handleDelete}
-        title="Romper VÃ­nculo"
-        message={`Â¿EstÃ¡s seguro de que quieres disolver la relaciÃ³n entre "${rel!.nombre_origen}" y "${rel!.nombre_destino}"? Esta acciÃ³n no se puede deshacer.`}
+        title="Romper Vínculo"
+        message={`¿Estás seguro de que quieres disolver la relación entre "${rel!.nombre_origen}" y "${rel!.nombre_destino}"? Esta acción no se puede deshacer.`}
         confirmText="Eliminar"
         type="danger"
       />
@@ -297,6 +297,3 @@ const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({
 };
 
 export default RelationshipInspector;
-
-
-

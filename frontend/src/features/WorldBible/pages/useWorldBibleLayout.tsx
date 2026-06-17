@@ -31,13 +31,17 @@ export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
   const [entityToDelete, setEntityToDelete] = useState<number | null>(null);
 
   const isRoot = useMemo(() => {
-    // Regex para detectar si estamos exactamente en la raÃ­z de la biblia
+    // Regex para detectar si estamos exactamente en la raíz de la biblia
     return /\/bible\/?$/.test(location.pathname);
   }, [location.pathname]);
 
   const currentFolderId = useMemo(() => {
     return folderIdParam ? Number(folderIdParam) : null;
   }, [folderIdParam]);
+
+  const isTimelineFolder = useCallback((folder: Carpeta) => {
+    return folder.tipo === "TIMELINE";
+  }, []);
 
   // Queries
   const { data: rootEntities = [] } = useWorldBibleData(projectId || 0);
@@ -53,7 +57,7 @@ export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
   const localEntities = useMemo(() => {
     const safeEntities = Array.isArray(rootEntities) ? rootEntities : [];
     if (isRoot) {
-      // En la raÃ­z, mostramos las entidades que NO tienen carpeta_id
+      // En la raíz, mostramos las entidades que NO tienen carpeta_id
       return safeEntities.filter((e) => !e.carpeta_id);
     }
     return folderContent?.entities || [];
@@ -61,14 +65,16 @@ export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
 
   const localFolders = useMemo(() => {
     if (isRoot) {
-      return (architectContext.folders || []).filter((f) => !f.padre_id);
+      return (architectContext.folders || []).filter(
+        (f) => !f.padre_id && !isTimelineFolder(f),
+      );
     }
-    return folderContent?.folders || [];
-  }, [isRoot, architectContext.folders, folderContent]);
+    return (folderContent?.folders || []).filter((f) => !isTimelineFolder(f));
+  }, [isRoot, architectContext.folders, folderContent, isTimelineFolder]);
 
   const currentFolder = useMemo(() => {
     if (isRoot) return null;
-    // Prioridad: 1. Detalles cargados por ID, 2. BÃºsqueda en el contexto global, 3. Fallback
+    // Prioridad: 1. Detalles cargados por ID, 2. Búsqueda en el contexto global, 3. Fallback
     return (
       folderDetails ||
       (architectContext.folders || []).find((f) => f.id === currentFolderId) ||
@@ -147,7 +153,7 @@ export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
           if (isRoot) {
             await createCategory({
               nombre: formData.nombre,
-              type: "folder",
+              type: "FOLDER",
               projectId: projectId,
             });
           } else if (currentFolderId) {
@@ -228,4 +234,3 @@ export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
     entityId,
   };
 };
-

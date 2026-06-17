@@ -12,7 +12,7 @@ import { useWorldBibleMutations } from "../hooks/useWorldBibleMutations";
 type CreateEntityInput = Parameters<typeof WorldBibleUseCase.createEntity>[0];
 
 /**
- * ðŸ§  useBibleTable
+ * Hook useBibleTable
  * Logic for managing the world bible table, including filtering, selection, and bulk actions.
  * Powered by TanStack Query + Optimistic UI.
  */

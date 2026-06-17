@@ -164,7 +164,7 @@ const MapRouter = () => {
         onClose={() => setMapToDelete(null)}
         onConfirm={confirmDeleteMap}
         title="Eliminar Mapa"
-        message={`Â¿EstÃ¡s seguro de que quieres eliminar el mapa "${mapToDelete?.nombre}"? Esta acciÃ³n no se puede deshacer.`}
+        message={`¿Estás seguro de que quieres eliminar el mapa "${mapToDelete?.nombre}"? Esta acción no se puede deshacer.`}
         confirmText="Eliminar"
         type="danger"
       />
@@ -173,6 +173,3 @@ const MapRouter = () => {
 };
 
 export default MapRouter;
-
-
-

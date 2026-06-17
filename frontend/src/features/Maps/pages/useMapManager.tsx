@@ -3,7 +3,7 @@ import { EntityUseCase } from "@features/Entities";
 import { Entidad } from "@domain/database";
 
 /**
- * ðŸ§  useMapManager
+ * Hook useMapManager
  * Handles map filtering, preview generation, and attribute updates.
  */
 export const useMapManager = (maps: Entidad[]) => {
@@ -86,4 +86,3 @@ export const useMapManager = (maps: Entidad[]) => {
     handleUpdateMapAttribute,
   };
 };
-

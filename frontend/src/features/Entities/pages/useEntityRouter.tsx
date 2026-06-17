@@ -36,7 +36,7 @@ const matchesAliases = (normalizedType: string, aliases: string[]): boolean => {
 };
 
 /**
- * ðŸ§  useEntityRouter
+ * Hook useEntityRouter
  * Hook to handle entity routing logic, determining which profile view or specialized view to display based on entity type.
  */
 export const useEntityRouter = () => {
@@ -143,4 +143,3 @@ export const useEntityRouter = () => {
     viewType,
   };
 };
-

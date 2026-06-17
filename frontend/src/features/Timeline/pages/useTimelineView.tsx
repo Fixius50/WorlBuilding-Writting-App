@@ -11,7 +11,7 @@ export const timelineEventsQueryKey = (universeId: number) =>
   ["timeline", "events", universeId] as const;
 
 /**
- * ðŸ§  useTimelineView
+ * Hook useTimelineView
  * Manages multiverses, timeline branches, and event orchestration.
  */
 export const useTimelineView = (projectId: number) => {
@@ -139,7 +139,7 @@ export const useTimelineView = (projectId: number) => {
         id: selectedUniverseId,
         title: "Eliminar Universo",
         message:
-          "Â¿EstÃ¡s seguro? Se borrarÃ¡n todas las lÃ­neas y eventos asociados.",
+          "¿Estás seguro? Se borrarán todas las líneas y eventos asociados.",
       });
     }
   }, [selectedUniverseId]);
@@ -200,7 +200,7 @@ export const useTimelineView = (projectId: number) => {
       ordenAbsoluto: 0,
     });
     setActiveTab("eventos");
-    // Panel derecho eliminado: antes abrÃ­a inspector de evento.
+    // Panel derecho eliminado: antes abría inspector de evento.
   }, []);
 
   const executeDeletion = useCallback(async () => {
@@ -262,4 +262,3 @@ export const useTimelineView = (projectId: number) => {
     loadMultiverse,
   };
 };
-

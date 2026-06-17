@@ -5,7 +5,7 @@ import { EntityUseCase } from "@features/Entities";
 import { Plantilla, Valor, Entidad } from "@domain/database";
 
 /**
- * ðŸ§  useDynamicAttributeForm
+ * Hook useDynamicAttributeForm
  * Logic for managing dynamic entity attributes, including loading templates and persistence.
  */
 export const useDynamicAttributeForm = (
@@ -21,7 +21,7 @@ export const useDynamicAttributeForm = (
     refetchOnWindowFocus: false,
     queryFn: async (): Promise<Entidad[]> => {
       return await EntityUseCase.getAllByProject(entity.project_id);
-    }
+    },
   });
 
   const attributesQueryKey = [
@@ -39,10 +39,9 @@ export const useDynamicAttributeForm = (
     queryKey: attributesQueryKey,
     enabled: Number.isFinite(entity.id) && Number.isFinite(entity.project_id),
     queryFn: async (): Promise<{ templates: Plantilla[]; values: Valor[] }> => {
-
       const entityValues = await TemplateUseCase.getEntityValues(entity.id);
       const templatesMap = new Map<number, Plantilla>();
-      
+
       entityValues.forEach((val) => {
         const valTpl = val.plantilla;
         if (valTpl) {
@@ -88,7 +87,7 @@ export const useDynamicAttributeForm = (
 
   const categories = templates.reduce(
     (acc, tpl) => {
-      const cat = tpl.categoria || "Detalles TÃ©cnicos";
+      const cat = tpl.categoria || "Detalles Técnicos";
       if (!acc[cat]) acc[cat] = [];
       acc[cat].push(tpl);
       return acc;
@@ -107,4 +106,3 @@ export const useDynamicAttributeForm = (
     loadData,
   };
 };
-

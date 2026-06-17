@@ -6,7 +6,7 @@ import { BIBLE_KEYS } from "./useWorldBibleData";
 type CreateEntityInput = Parameters<typeof WorldBibleUseCase.createEntity>[0];
 
 /**
- * ðŸ› ï¸ useWorldBibleMutations
+ * Hook useWorldBibleMutations
  * Contiene mutaciones con Optimistic UI para la Biblia del Mundo.
  * La UI se actualiza ANTES de que SQLite confirme el cambio.
  */
@@ -55,7 +55,7 @@ export const useWorldBibleMutations = (projectId: number) => {
     },
   });
 
-  // 2. MutaciÃ³n para borrado masivo
+  // 2. Mutación para borrado masivo
   const bulkDeleteMutation = useMutation({
     mutationFn: (ids: number[]) => WorldBibleUseCase.bulkDeleteEntities(ids),
     onMutate: async (ids) => {

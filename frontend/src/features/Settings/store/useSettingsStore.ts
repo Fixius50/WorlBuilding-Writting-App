@@ -1,16 +1,12 @@
-﻿import { create } from 'zustand';
-import {
-  SettingsUseCase,
-  UserData,
-  AppSettings,
-} from '@features/Settings';
-import { Proyecto } from '@domain/database';
-import { useAppStore } from '@features/App';
+﻿import { create } from "zustand";
+import { SettingsUseCase, UserData, AppSettings } from "@features/Settings";
+import { Proyecto } from "@domain/database";
+import { useAppStore } from "@features/App";
 
 export interface NotificationData {
   id: number;
   message: string;
-  type: 'success' | 'info' | 'error';
+  type: "success" | "info" | "error";
   progressCurrent?: number;
   progressTotal?: number;
 }
@@ -40,16 +36,16 @@ interface SettingsState {
   handleImportDatabase: (file: File) => Promise<boolean>;
   addNotification: (
     message: string,
-    type?: 'success' | 'info' | 'error',
+    type?: "success" | "info" | "error",
     options?: NotificationOptions,
   ) => number;
 }
 
 const defaultSettings: AppSettings = {
-  theme: 'deep_space',
-  font: 'Outfit',
+  theme: "deep_space",
+  font: "Outfit",
   fontSize: 16,
-  panelMode: 'classic',
+  panelMode: "classic",
   autoBackup: false,
 };
 
@@ -65,7 +61,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
   addNotification: (
     message: string,
-    type: 'success' | 'info' | 'error' = 'success',
+    type: "success" | "info" | "error" = "success",
     options?: NotificationOptions,
   ) => {
     const id = options?.id ?? Date.now() + Math.floor(Math.random() * 1000);
@@ -123,9 +119,12 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     set({ user, settings, selectedProjects, projects });
 
     if (settings.autoBackup && !autoBackupInterval) {
-      autoBackupInterval = setInterval(() => {
-        get().handleDownloadBackup();
-      }, 10 * 60 * 1000);
+      autoBackupInterval = setInterval(
+        () => {
+          get().handleDownloadBackup();
+        },
+        10 * 60 * 1000,
+      );
     }
   },
 
@@ -135,18 +134,23 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     await SettingsUseCase.saveSettings(newSettings);
     get().addNotification(`Ajuste actualizado: ${key}`);
 
-    if (key === 'theme') {
+    if (key === "theme") {
       useAppStore.getState().setTheme(value as string);
     }
-    if (key === 'panelMode') {
-      useAppStore.getState().setPanelMode(value as 'classic' | 'binder' | 'floating');
+    if (key === "panelMode") {
+      useAppStore
+        .getState()
+        .setPanelMode(value as "classic" | "binder" | "floating");
     }
 
-    if (key === 'autoBackup') {
+    if (key === "autoBackup") {
       if (value && !autoBackupInterval) {
-        autoBackupInterval = setInterval(() => {
-          get().handleDownloadBackup();
-        }, 10 * 60 * 1000);
+        autoBackupInterval = setInterval(
+          () => {
+            get().handleDownloadBackup();
+          },
+          10 * 60 * 1000,
+        );
       } else if (!value && autoBackupInterval) {
         clearInterval(autoBackupInterval);
         autoBackupInterval = null;
@@ -165,8 +169,8 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     await SettingsUseCase.saveSyncProjects(newSelection);
     get().addNotification(
       isSelected
-        ? 'Universo desmarcado de sincronizaciÃ³n'
-        : 'Universo incluido en sincronizaciÃ³n',
+        ? "Universo desmarcado de sincronización"
+        : "Universo incluido en sincronización",
     );
   },
 
@@ -183,32 +187,37 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     try {
       await SettingsUseCase.saveUser(newUser);
       useAppStore.getState().setUser(newUser);
-      get().addNotification('Foto de perfil actualizada', 'success');
+      get().addNotification("Foto de perfil actualizada", "success");
     } catch (_err) {
-      get().addNotification('Error al guardar imagen (memoria llena)', 'error');
+      get().addNotification("Error al guardar imagen (memoria llena)", "error");
     }
   },
 
   handleDownloadBackup: async () => {
-    get().addNotification('Sincronizando con el servidor local...', 'info');
+    get().addNotification("Sincronizando con el servidor local...", "info");
     const res = await SettingsUseCase.exportBackup();
     if (res.success) {
-      get().addNotification('Copia de seguridad guardada en el servidor', 'success');
+      get().addNotification(
+        "Copia de seguridad guardada en el servidor",
+        "success",
+      );
     } else {
-      get().addNotification(res.message, 'error');
+      get().addNotification(res.message, "error");
     }
   },
 
   handleImportDatabase: async (file: File) => {
-    get().addNotification('Sobrescribiendo la base de datos local OPFS...', 'info');
+    get().addNotification(
+      "Sobrescribiendo la base de datos local OPFS...",
+      "info",
+    );
     const res = await SettingsUseCase.importDatabase(file);
     if (res.success) {
-      get().addNotification(res.message, 'success');
+      get().addNotification(res.message, "success");
       return true;
     }
 
-    get().addNotification(res.message, 'error');
+    get().addNotification(res.message, "error");
     return false;
   },
 }));
-

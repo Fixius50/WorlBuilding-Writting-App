@@ -10,7 +10,7 @@ export interface RelacionExtendida extends Relacion {
 }
 
 /**
- * ðŸ§  useFamilyTreeAssigner
+ * Hook useFamilyTreeAssigner
  * Logic for managing family relationships and lineage assignment.
  */
 export const useFamilyTreeAssigner = (entityId: number, projectId: number) => {
@@ -67,7 +67,9 @@ export const useFamilyTreeAssigner = (entityId: number, projectId: number) => {
       try {
         const all = await EntityUseCase.getAllByProject(projectId);
         const selectedIds = new Set(selectedRelatives.map((sr) => sr.id));
-        const eligible = all.filter((entity) => entity.id !== entityId && !selectedIds.has(entity.id));
+        const eligible = all.filter(
+          (entity) => entity.id !== entityId && !selectedIds.has(entity.id),
+        );
         const normalizedQuery = query.trim().toLowerCase();
         const filtered = normalizedQuery
           ? eligible.filter((entity) =>
@@ -114,8 +116,8 @@ export const useFamilyTreeAssigner = (entityId: number, projectId: number) => {
             tipo: t,
             descripcion: "",
             project_id: projectId,
-          })
-        )
+          }),
+        ),
       );
 
       await Promise.all(promises);
@@ -175,7 +177,9 @@ export const useFamilyTreeAssigner = (entityId: number, projectId: number) => {
         });
 
         const hasAdded = added.length > 0;
-        hasAdded ? setSelectedRelatives([...selectedRelatives, ...added]) : null;
+        hasAdded
+          ? setSelectedRelatives([...selectedRelatives, ...added])
+          : null;
       } catch {}
     },
     [projectId, entityId, selectedRelatives],
@@ -206,4 +210,3 @@ export const useFamilyTreeAssigner = (entityId: number, projectId: number) => {
     resolveRelativesByNames,
   };
 };
-

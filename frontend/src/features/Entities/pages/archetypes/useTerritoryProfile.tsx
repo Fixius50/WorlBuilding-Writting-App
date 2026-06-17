@@ -23,7 +23,7 @@ export const territoryEntityQueryKey = (entityId: number) =>
   ["territory-entity", entityId] as const;
 
 /**
- * ðŸ§  useTerritoryProfile
+ * Hook useTerritoryProfile
  * Logic hook for TerritoryProfileView.
  */
 export const useTerritoryProfile = (propEntityId?: string | number) => {
@@ -151,7 +151,7 @@ export const useTerritoryProfile = (propEntityId?: string | number) => {
                   location_on
                 </span>
                 <div className="text-[10px] uppercase tracking-widest font-black text-foreground/20">
-                  UbicaciÃ³n Virgen
+                  Ubicación Virgen
                 </div>
               </div>
             )}
@@ -200,4 +200,3 @@ export const useTerritoryProfile = (propEntityId?: string | number) => {
     entityId,
   };
 };
-

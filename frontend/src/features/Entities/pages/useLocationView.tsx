@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { EntityUseCase } from '@features/Entities';
-import { Entidad } from '@domain/database';
+import { useState, useEffect, useCallback } from "react";
+import { EntityUseCase } from "@features/Entities";
+import { Entidad } from "@domain/database";
 
 // --- Interfaces ---
 export interface LocationData extends Partial<Entidad> {
@@ -10,7 +10,7 @@ export interface LocationData extends Partial<Entidad> {
 }
 
 /**
- * ðŸ§  useLocationView
+ * Hook useLocationView
  * Logic hook for LocationView.
  */
 export const useLocationView = (id: string | number) => {
@@ -26,13 +26,14 @@ export const useLocationView = (id: string | number) => {
       const data = await EntityUseCase.getById(Number(id));
       if (data) {
         setEntity(data);
-        const extra = typeof data.contenido_json === 'string'
-          ? JSON.parse(data.contenido_json)
-          : (data.contenido_json || {});
+        const extra =
+          typeof data.contenido_json === "string"
+            ? JSON.parse(data.contenido_json)
+            : data.contenido_json || {};
 
         setLocation({
           ...data,
-          ...extra
+          ...extra,
         });
       }
     } catch (err) {
@@ -56,7 +57,7 @@ export const useLocationView = (id: string | number) => {
         nombre,
         tipo,
         descripcion,
-        contenido_json: JSON.stringify(extra)
+        contenido_json: JSON.stringify(extra),
       });
       setIsEditing(false);
     } catch (err) {
@@ -65,7 +66,7 @@ export const useLocationView = (id: string | number) => {
   };
 
   const handleChange = (field: string, value: string) => {
-    setLocation(prev => prev ? ({ ...prev, [field]: value }) : null);
+    setLocation((prev) => (prev ? { ...prev, [field]: value } : null));
   };
 
   return {
@@ -74,7 +75,6 @@ export const useLocationView = (id: string | number) => {
     isEditing,
     setIsEditing,
     handleSave,
-    handleChange
+    handleChange,
   };
 };
-

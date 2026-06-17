@@ -809,7 +809,7 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
                     ).values(),
                   ).map((t) => (
                     <option key={t.id} value={t.id}>
-                      {t.nombre} ({t.categoria || "Sin CategorÃƒÂ­a"})
+                      {t.nombre} ({t.categoria || "Sin Categoría"})
                     </option>
                   ))}
                 </select>
@@ -906,8 +906,8 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
                     Sin herencia de atributos
                   </p>
                   <p className="text-[9px] mt-2 italic text-foreground/60 max-w-[200px]">
-                    Usa el selector superior para aÃƒÂ±adir campos de datos que
-                    compartirÃƒÂ¡n todos los entes.
+                    Usa el selector superior para añadir campos de datos que
+                    compartirán todos los entes.
                   </p>
                 </div>
               ) : (
@@ -953,5 +953,3 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
 };
 
 export default CreateMassEntitiesModal;
-
-

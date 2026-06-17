@@ -7,7 +7,7 @@ export const archetypeTemplatesQueryKey = (projectId: number) =>
   ["archetype-templates", projectId] as const;
 
 /**
- * ðŸ§  useArchetypeManager
+ * Hook useArchetypeManager
  * Logic for managing custom entity attributes and world-building rules.
  */
 export const useArchetypeManager = (projectId: number) => {
@@ -89,7 +89,7 @@ export const useArchetypeManager = (projectId: number) => {
     async (id: number) => {
       if (
         !window.confirm(
-          "Â¿Eliminar este atributo? Esto no borrarÃ¡ los datos ya guardados en las entidades, pero el campo dejarÃ¡ de ser visible.",
+          "¿Eliminar este atributo? Esto no borrará los datos ya guardados en las entidades, pero el campo dejará de ser visible.",
         )
       )
         return;
@@ -124,4 +124,3 @@ export const useArchetypeManager = (projectId: number) => {
     toggleForm,
   };
 };
-

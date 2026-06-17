@@ -7,7 +7,7 @@ import { TemplateUseCase } from "@features/Settings";
 import { useSettingsStore } from "@features/Settings";
 
 /**
- * ðŸ§  useWritingView
+ * Hook useWritingView
  * Logic for managing a notebook: loading pages, saving content,
  * handling snapshots, and coordinating with the RightPanel.
  */
@@ -56,7 +56,7 @@ export const useWritingView = () => {
     } catch (err) {
       useSettingsStore
         .getState()
-        .addNotification("Error al cargar instantÃ¡neas", "error");
+        .addNotification("Error al cargar instantáneas", "error");
     }
   }, []);
 
@@ -159,7 +159,7 @@ export const useWritingView = () => {
       } catch (err) {
         useSettingsStore
           .getState()
-          .addNotification("Error al crear instantÃ¡nea", "error");
+          .addNotification("Error al crear instantánea", "error");
       }
     },
     [loadSnapshots],
@@ -189,7 +189,7 @@ export const useWritingView = () => {
 
       if (
         !window.confirm(
-          "Â¿EstÃ¡s seguro de restaurar esta versiÃ³n? Se perderÃ¡ el contenido actual no guardado.",
+          "¿Estás seguro de restaurar esta versión? Se perderá el contenido actual no guardado.",
         )
       )
         return;
@@ -203,7 +203,7 @@ export const useWritingView = () => {
         savePage(updated[indexRef.current]);
         return updated;
       });
-      alert("VersiÃ³n restaurada con Ã©xito.");
+      alert("Versión restaurada con éxito.");
     },
     [snapshots, savePage],
   );

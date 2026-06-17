@@ -138,7 +138,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 
   return (
     <>
-      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Toggle button Ã¢â‚¬â€ siempre visible, flotante en la misma posiciÃƒÂ³n Ã¢â€â‚¬Ã¢â€â‚¬ */}
+      {/* Toggle button siempre visible, flotante en la misma posición */}
       <button
         onClick={onToggle}
         className={`
@@ -161,7 +161,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         </span>
         <span>{isOpen ? "Cerrar Panel" : "Panel de Control"}</span>
 
-        {/* Indicador de seccion activa cuando esta abierto */}
+        {/* Indicador de sección activa cuando está abierto */}
         {isOpen && (
           <span className="flex items-center gap-1 pl-2 border-l border-primary/30 text-primary/60">
             <span className="material-symbols-outlined text-xs">
@@ -172,7 +172,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         )}
       </button>
 
-      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Panel drawer Ã¢â€â‚¬Ã¢â€â‚¬ */}
+      {/* Panel drawer */}
       <div
         style={{ height: isOpen ? `${heightVH}vh` : "0vh" }}
         className={`
@@ -193,9 +193,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-1 bg-foreground/20 rounded-full group-hover:bg-primary/40 transition-colors" />
         </div>
 
-        {/* Ã¢â€â‚¬Ã¢â€â‚¬ Header con tabs de secciÃƒÂ³n Ã¢â€â‚¬Ã¢â€â‚¬ */}
+        {/* Header con tabs de sección */}
         <div className="shrink-0 h-12 flex items-stretch border-b border-foreground/10 bg-foreground/[0.02] relative">
-          {/* TÃƒÂ­tulo izquierda */}
+          {/* Título izquierda */}
           <div className="flex items-center gap-2 px-5 border-r border-foreground/10 shrink-0">
             <span className="material-symbols-outlined text-sm text-primary">
               dashboard
@@ -205,7 +205,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             </span>
           </div>
 
-          {/* Tabs de secciÃƒÂ³n */}
+          {/* Tabs de sección */}
           <div className="flex items-stretch flex-1">
             {SECTIONS.map((section) => (
               <button
@@ -245,7 +245,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           )}
         </div>
 
-        {/* Ã¢â€â‚¬Ã¢â€â‚¬ Contenido de secciÃƒÂ³n Ã¢â€â‚¬Ã¢â€â‚¬ */}
+        {/* Contenido de sección */}
         <div className="flex-1 relative overflow-hidden bg-background">
           {/* BASE DE DATOS */}
           <div
@@ -265,7 +265,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             )}
           </div>
 
-          {/* ESTADÃƒÂSTICAS */}
+          {/* ESTADÍSTICAS */}
           <div
             className={`absolute inset-0 transition-opacity duration-200 ${activeSection === "stats" ? "opacity-100 pointer-events-auto z-10" : "opacity-0 pointer-events-none z-0"}`}
           >
@@ -305,7 +305,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                       </div>
                       <div className="p-4 bg-foreground/[0.02] border border-foreground/5 flex flex-col space-y-1">
                         <span className="text-[8px] font-black uppercase text-foreground/40 tracking-widest">
-                          PÃƒÂ¡ginas Totales
+                          Páginas Totales
                         </span>
                         <span className="text-xl font-black text-foreground tabular-nums">
                           {stats.pageCount}
@@ -316,19 +316,19 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                     <div className="p-4 bg-primary/5 border border-primary/20 flex items-center gap-3">
                       <div className="size-2 rounded-full bg-primary animate-pulse"></div>
                       <span className="text-[9px] font-black uppercase tracking-widest text-primary">
-                        SesiÃƒÂ³n de Escritura Activa
+                        Sesión de Escritura Activa
                       </span>
                     </div>
                   </div>
 
-                  {/* Columna GrÃƒÂ¡fica DistribuciÃƒÂ³n */}
+                  {/* Columna Gráfica Distribución */}
                   <div className="lg:col-span-2 flex flex-col space-y-4">
                     <div className="flex items-center justify-between px-2">
                       <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/60 flex items-center gap-2">
                         <span className="material-symbols-outlined text-sm">
                           bar_chart
                         </span>
-                        DistribuciÃƒÂ³n por Hojas
+                        Distribución por Hojas
                       </h3>
                       <span className="text-[9px] font-bold text-foreground/30 font-mono">
                         PROYECTO: {projectName}
@@ -344,7 +344,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                             edit_note
                           </span>
                           <span className="text-[10px] font-black uppercase tracking-widest italic">
-                            Abre un cuaderno para ver analÃƒÂ­ticas
+                            Abre un cuaderno para ver analíticas
                           </span>
                         </div>
                       )}

@@ -36,7 +36,7 @@ export interface EntityExtras {
 }
 
 /**
- * ðŸ§  useEntityBuilder
+ * Hook useEntityBuilder
  * The master brain behind EntityBuilder.tsx.
  * Orchestrates entity lifecycle (creation/edit), attribute management,
  * image gallery, and path synchronization.
@@ -116,23 +116,21 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
     [getExtra],
   );
 
-  const {
-    data: templatesData,
-    refetch: refetchTemplatesQuery,
-  } = useQuery({
+  const { data: templatesData, refetch: refetchTemplatesQuery } = useQuery({
     queryKey: ["entity-builder-templates", projectId || 1],
     enabled: Number.isFinite(projectId || 1),
     refetchOnWindowFocus: false,
     queryFn: async (): Promise<Plantilla[]> => {
       return await TemplateUseCase.getTemplates(projectId || 1);
-    }
+    },
   });
 
-  const {
-    data: entityData,
-    isLoading: loading,
-  } = useQuery({
-    queryKey: ["entity-builder-entity-data", entityId ? Number(entityId) : 0, isCreation],
+  const { data: entityData, isLoading: loading } = useQuery({
+    queryKey: [
+      "entity-builder-entity-data",
+      entityId ? Number(entityId) : 0,
+      isCreation,
+    ],
     enabled: Number.isFinite(projectId || 1),
     refetchOnWindowFocus: false,
     queryFn: async (): Promise<{
@@ -172,7 +170,7 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
         loadedEntity: null,
         loadedFields: [],
       };
-    }
+    },
   });
 
   const { data: linkableEntities = [] } = useQuery({
@@ -181,7 +179,7 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
     refetchOnWindowFocus: false,
     queryFn: async (): Promise<Entidad[]> => {
       return await EntityUseCase.getAllByProject(projectId || 1);
-    }
+    },
   });
 
   const refreshTemplates = useCallback(async () => {
@@ -412,7 +410,7 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
   const extras = getExtra();
   const galleryImages = extras.images || [];
 
-  // PestaÃ±as dinÃ¡micas y predefinidas del constructor segÃºn tipo de entidad
+  // Pestañas dinámicas y predefinidas del constructor según tipo de entidad
   const baseEditorTabs = [
     { id: "identity", label: "Identidad" },
     { id: "narrative", label: "Narrativa" },
@@ -440,7 +438,7 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
   const presetEditorTabIds = presetEditorTabs.map((tab) => tab.id);
   const isPresetEditorTab = presetEditorTabIds.includes(activeEntityTab);
 
-  // GestiÃ³n de imÃ¡genes principal y secundarias paginadas
+  // Gestión de imágenes principal y secundarias paginadas
   const primaryImage = galleryImages[0] || null;
   const secondaryPool = galleryImages.slice(1);
   const [secondaryPage, setSecondaryPage] = useState(0);
@@ -488,7 +486,8 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
                   truncatedHistory.push(nextValue);
 
                   appearanceHistoryRef.current = truncatedHistory;
-                  appearanceHistoryIndexRef.current = truncatedHistory.length - 1;
+                  appearanceHistoryIndexRef.current =
+                    truncatedHistory.length - 1;
                 })()
               : undefined;
           })()
@@ -498,7 +497,7 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
     [updateExtra],
   );
 
-  // Vuelve al estado anterior de la descripciÃ³n de rasgos
+  // Vuelve al estado anterior de la descripción de rasgos
   const handleAppearanceUndo = useCallback(() => {
     const history = appearanceHistoryRef.current;
     const currentIndex = appearanceHistoryIndexRef.current;
@@ -511,11 +510,12 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
 
           requestAnimationFrame(() => {
             const textarea = appearanceTextareaRef.current;
-            textarea && (() => {
-              textarea.focus();
-              const cursor = textarea.value.length;
-              textarea.setSelectionRange(cursor, cursor);
-            })();
+            textarea &&
+              (() => {
+                textarea.focus();
+                const cursor = textarea.value.length;
+                textarea.setSelectionRange(cursor, cursor);
+              })();
           });
         })()
       : undefined;
@@ -534,11 +534,12 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
 
           requestAnimationFrame(() => {
             const textarea = appearanceTextareaRef.current;
-            textarea && (() => {
-              textarea.focus();
-              const cursor = textarea.value.length;
-              textarea.setSelectionRange(cursor, cursor);
-            })();
+            textarea &&
+              (() => {
+                textarea.focus();
+                const cursor = textarea.value.length;
+                textarea.setSelectionRange(cursor, cursor);
+              })();
           });
         })()
       : undefined;
@@ -567,7 +568,8 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
                   truncatedHistory.push(nextValue);
 
                   narrativeHistoryRef.current = truncatedHistory;
-                  narrativeHistoryIndexRef.current = truncatedHistory.length - 1;
+                  narrativeHistoryIndexRef.current =
+                    truncatedHistory.length - 1;
                 })()
               : undefined;
           })()
@@ -590,17 +592,18 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
 
           requestAnimationFrame(() => {
             const textarea = narrativeTextareaRef.current;
-            textarea && (() => {
-              textarea.focus();
-              const cursor = textarea.value.length;
-              textarea.setSelectionRange(cursor, cursor);
-            })();
+            textarea &&
+              (() => {
+                textarea.focus();
+                const cursor = textarea.value.length;
+                textarea.setSelectionRange(cursor, cursor);
+              })();
           });
         })()
       : undefined;
   }, [setNarrativeValue]);
 
-  // Avanza al siguiente estado deshecho de la cronologÃ­a
+  // Avanza al siguiente estado deshecho de la cronología
   const handleNarrativeRedo = useCallback(() => {
     const history = narrativeHistoryRef.current;
     const currentIndex = narrativeHistoryIndexRef.current;
@@ -613,11 +616,12 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
 
           requestAnimationFrame(() => {
             const textarea = narrativeTextareaRef.current;
-            textarea && (() => {
-              textarea.focus();
-              const cursor = textarea.value.length;
-              textarea.setSelectionRange(cursor, cursor);
-            })();
+            textarea &&
+              (() => {
+                textarea.focus();
+                const cursor = textarea.value.length;
+                textarea.setSelectionRange(cursor, cursor);
+              })();
           });
         })()
       : undefined;
@@ -629,7 +633,7 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
     narrativeHistoryIndexRef.current = 0;
   }, [entity.id]);
 
-  // Envoltura automÃ¡tica de texto con marcadores Markdown para la narrativa
+  // Envoltura automática de texto con marcadores Markdown para la narrativa
   const applyNarrativeWrapFormatting = useCallback(
     (wrapper: "**" | "*") => {
       const textarea = narrativeTextareaRef.current;
@@ -660,7 +664,7 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
     [entity.descripcion, setNarrativeValue],
   );
 
-  // IndentaciÃ³n por tabulaciÃ³n dentro de la caja de narrativa
+  // Indentación por tabulación dentro de la caja de narrativa
   const applyNarrativeTabIndent = useCallback(() => {
     const textarea = narrativeTextareaRef.current;
     if (!textarea) {
@@ -688,13 +692,14 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
 
           requestAnimationFrame(() => {
             const updatedTextarea = narrativeTextareaRef.current;
-            updatedTextarea && (() => {
-              updatedTextarea.focus();
-              updatedTextarea.setSelectionRange(
-                start,
-                start + indentedSelection.length,
-              );
-            })();
+            updatedTextarea &&
+              (() => {
+                updatedTextarea.focus();
+                updatedTextarea.setSelectionRange(
+                  start,
+                  start + indentedSelection.length,
+                );
+              })();
           });
         })()
       : (() => {
@@ -705,16 +710,20 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
 
           requestAnimationFrame(() => {
             const updatedTextarea = narrativeTextareaRef.current;
-            updatedTextarea && (() => {
-              updatedTextarea.focus();
-              const cursorPosition = start + 1;
-              updatedTextarea.setSelectionRange(cursorPosition, cursorPosition);
-            })();
+            updatedTextarea &&
+              (() => {
+                updatedTextarea.focus();
+                const cursorPosition = start + 1;
+                updatedTextarea.setSelectionRange(
+                  cursorPosition,
+                  cursorPosition,
+                );
+              })();
           });
         })();
   }, [entity.descripcion, setNarrativeValue]);
 
-  // Manejo de atajos de teclado del editor Markdown de cronologÃ­a (Ctrl+B, Ctrl+I, Ctrl+Z, Tab)
+  // Manejo de atajos de teclado del editor Markdown de cronología (Ctrl+B, Ctrl+I, Ctrl+Z, Tab)
   const handleNarrativeKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
       const hasCommandModifier = event.ctrlKey || event.metaKey;
@@ -789,7 +798,7 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
     [extras.appearance, setAppearanceValue],
   );
 
-  // IndentaciÃ³n por tabulaciÃ³n dentro de la caja de rasgos/apariencia
+  // Indentación por tabulación dentro de la caja de rasgos/apariencia
   const applyTabIndent = useCallback(() => {
     const textarea = appearanceTextareaRef.current;
     if (!textarea) {
@@ -817,13 +826,14 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
 
           requestAnimationFrame(() => {
             const updatedTextarea = appearanceTextareaRef.current;
-            updatedTextarea && (() => {
-              updatedTextarea.focus();
-              updatedTextarea.setSelectionRange(
-                start,
-                start + indentedSelection.length,
-              );
-            })();
+            updatedTextarea &&
+              (() => {
+                updatedTextarea.focus();
+                updatedTextarea.setSelectionRange(
+                  start,
+                  start + indentedSelection.length,
+                );
+              })();
           });
         })()
       : (() => {
@@ -834,11 +844,15 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
 
           requestAnimationFrame(() => {
             const updatedTextarea = appearanceTextareaRef.current;
-            updatedTextarea && (() => {
-              updatedTextarea.focus();
-              const cursorPosition = start + 1;
-              updatedTextarea.setSelectionRange(cursorPosition, cursorPosition);
-            })();
+            updatedTextarea &&
+              (() => {
+                updatedTextarea.focus();
+                const cursorPosition = start + 1;
+                updatedTextarea.setSelectionRange(
+                  cursorPosition,
+                  cursorPosition,
+                );
+              })();
           });
         })();
   }, [extras.appearance, setAppearanceValue]);
@@ -959,5 +973,3 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
     navigate,
   };
 };
-
-

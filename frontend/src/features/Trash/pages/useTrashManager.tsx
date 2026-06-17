@@ -3,7 +3,7 @@ import { TrashUseCase, TrashItem } from "@features/Trash";
 import { useLanguage } from "@context/LanguageContext";
 
 /**
- * ðŸ§  useTrashManager
+ * Hook useTrashManager
  * Logic for managing deleted items, restoration, and permanent purging.
  */
 export const useTrashManager = (projectId: number | null) => {
@@ -57,7 +57,7 @@ export const useTrashManager = (projectId: number | null) => {
     async (tipo: string, itemId: number) => {
       if (
         !confirm(
-          t("trash.confirm_purge") || "Â¿EstÃ¡s seguro de purgar este elemento?",
+          t("trash.confirm_purge") || "¿Estás seguro de purgar este elemento?",
         )
       )
         return;
@@ -80,4 +80,3 @@ export const useTrashManager = (projectId: number | null) => {
     reload: loadItems,
   };
 };
-

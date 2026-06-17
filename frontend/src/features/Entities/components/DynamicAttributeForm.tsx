@@ -13,146 +13,188 @@ const formatDate = (val: string): string => {
   return parts.length === 3 ? `${parts[2]} / ${parts[1]} / ${parts[0]}` : val;
 };
 
-const getCategoryTitle = (category: string, t: (key: string) => string): string => {
+const getCategoryTitle = (
+  category: string,
+  t: (key: string) => string,
+): string => {
   const normalized = category.trim().toLowerCase();
   const key = `bible.categories.${normalized}`;
   const translated = t(key);
   return translated === key ? category : translated;
 };
 
-
-const renderAttributeValue = (tpl: Plantilla, value: string, allEntities: Entidad[]): React.ReactNode => {
+const renderAttributeValue = (
+  tpl: Plantilla,
+  value: string,
+  allEntities: Entidad[],
+): React.ReactNode => {
   const cleanValue = (value || "").trim();
 
   return cleanValue === "" ? (
-    <span className="font-serif italic text-foreground/35 text-[1rem]">
-      -
-    </span>
-  ) : (() => {
-    switch (tpl.tipo) {
-      case "boolean":
-        return (() => {
-          const boolMeta = typeof tpl.metadata === 'string'
-            ? JSON.parse(tpl.metadata || '{}')
-            : (tpl.metadata || {});
-          
-          const states = Array.isArray(boolMeta.states) && boolMeta.states.length > 0
-            ? boolMeta.states
-            : [{ id: "default", trueLabel: boolMeta.trueLabel || "Confirmado", falseLabel: boolMeta.falseLabel || "Negativo" }];
+    <span className="font-serif italic text-foreground/35 text-[1rem]">-</span>
+  ) : (
+    (() => {
+      switch (tpl.tipo) {
+        case "boolean":
+          return (() => {
+            const boolMeta =
+              typeof tpl.metadata === "string"
+                ? JSON.parse(tpl.metadata || "{}")
+                : tpl.metadata || {};
 
-          const valuesMap = (() => {
+            const states =
+              Array.isArray(boolMeta.states) && boolMeta.states.length > 0
+                ? boolMeta.states
+                : [
+                    {
+                      id: "default",
+                      trueLabel: boolMeta.trueLabel || "Confirmado",
+                      falseLabel: boolMeta.falseLabel || "Negativo",
+                    },
+                  ];
+
+            const valuesMap = (() => {
+              try {
+                return cleanValue.startsWith("{")
+                  ? JSON.parse(cleanValue)
+                  : { default: cleanValue === "true" };
+              } catch (e) {
+                return { default: cleanValue === "true" };
+              }
+            })();
+
+            return (
+              <div className="flex flex-col gap-1.5 mt-1">
+                {states.map(
+                  (st: {
+                    id: string;
+                    name?: string;
+                    trueLabel: string;
+                    falseLabel: string;
+                  }) => {
+                    const isTrue = !!valuesMap[st.id];
+                    return (
+                      <div
+                        key={st.id}
+                        className="font-serif text-[1rem] text-foreground/65 leading-relaxed flex items-center gap-1.5"
+                      >
+                        {st.name && (
+                          <span className="font-sans text-[0.875rem] font-bold text-foreground/45 mr-1.5 uppercase tracking-wide">
+                            {st.name}:
+                          </span>
+                        )}
+                        {isTrue ? (
+                          <>
+                            <span className="text-emerald-500/80">✓</span>{" "}
+                            {st.trueLabel}
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-foreground/35">x</span>{" "}
+                            {st.falseLabel}
+                          </>
+                        )}
+                      </div>
+                    );
+                  },
+                )}
+              </div>
+            );
+          })();
+
+        case "date":
+          return (
+            <span className="font-serif text-[1rem] text-foreground/65 leading-relaxed">
+              {formatDate(cleanValue)}
+            </span>
+          );
+
+        case "text":
+        case "textarea":
+        case "long_text":
+          return (
+            <blockquote className="border-l-2 border-primary/30 pl-4 py-1 italic font-serif text-[1.15rem] text-foreground/80 leading-relaxed w-full whitespace-pre-line">
+              {cleanValue}
+            </blockquote>
+          );
+
+        case "multi_select":
+          return (() => {
             try {
-              return cleanValue.startsWith("{") ? JSON.parse(cleanValue) : { default: cleanValue === "true" };
+              const parsed = JSON.parse(cleanValue);
+              const optionsList = Array.isArray(parsed) ? parsed : [];
+              return optionsList.length === 0 ? (
+                <span className="font-serif italic text-foreground/35 text-[1rem]">
+                  -
+                </span>
+              ) : (
+                <span className="font-serif text-[1rem] text-foreground/65 leading-relaxed">
+                  {optionsList.join(", ")}
+                </span>
+              );
             } catch (e) {
-              return { default: cleanValue === "true" };
+              return (
+                <span className="font-serif text-[1rem] text-foreground/65 leading-relaxed">
+                  {cleanValue}
+                </span>
+              );
             }
           })();
 
+        case "image":
           return (
-            <div className="flex flex-col gap-1.5 mt-1">
-              {states.map((st: { id: string; name?: string; trueLabel: string; falseLabel: string }) => {
-                const isTrue = !!valuesMap[st.id];
-                return (
-                  <div key={st.id} className="font-serif text-[1rem] text-foreground/65 leading-relaxed flex items-center gap-1.5">
-                    {st.name && <span className="font-sans text-[0.875rem] font-bold text-foreground/45 mr-1.5 uppercase tracking-wide">{st.name}:</span>}
-                    {isTrue ? (
-                      <>
-                        <span className="text-emerald-500/80">âœ“</span> {st.trueLabel}
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-foreground/35">âŠ—</span> {st.falseLabel}
-                      </>
-                    )}
-                  </div>
-                );
-              })}
+            <div className="size-40 overflow-hidden mt-1">
+              <img
+                src={cleanValue}
+                alt={tpl.nombre}
+                className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+              />
             </div>
           );
-        })();
 
-      case "date":
-        return (
-          <span className="font-serif text-[1rem] text-foreground/65 leading-relaxed">
-            {formatDate(cleanValue)}
-          </span>
-        );
+        case "entity_link":
+          return (() => {
+            try {
+              const parsed = JSON.parse(cleanValue);
+              const idsList = Array.isArray(parsed) ? parsed : [];
+              const namesList = idsList
+                .map(
+                  (id) =>
+                    allEntities.find((e) => String(e.id) === String(id))
+                      ?.nombre,
+                )
+                .filter(Boolean);
 
-      case "text":
-      case "textarea":
-      case "long_text":
-        return (
-          <blockquote className="border-l-2 border-primary/30 pl-4 py-1 italic font-serif text-[1.15rem] text-foreground/80 leading-relaxed w-full whitespace-pre-line">
-            {cleanValue}
-          </blockquote>
-        );
-      
-      case "multi_select":
-        return (() => {
-          try {
-            const parsed = JSON.parse(cleanValue);
-            const optionsList = Array.isArray(parsed) ? parsed : [];
-            return optionsList.length === 0 ? (
-              <span className="font-serif italic text-foreground/35 text-[1rem]">-</span>
-            ) : (
-              <span className="font-serif text-[1rem] text-foreground/65 leading-relaxed">
-                {optionsList.join(", ")}
-              </span>
-            );
-          } catch (e) {
-            return (
-              <span className="font-serif text-[1rem] text-foreground/65 leading-relaxed">
-                {cleanValue}
-              </span>
-            );
-          }
-        })();
+              return namesList.length === 0 ? (
+                <span className="font-serif italic text-foreground/35 text-[1rem]">
+                  -
+                </span>
+              ) : (
+                <span className="font-serif text-[1rem] text-foreground/65 leading-relaxed">
+                  {namesList.join(", ")}
+                </span>
+              );
+            } catch (e) {
+              const ent = allEntities.find(
+                (e) => String(e.id) === String(cleanValue),
+              );
+              return (
+                <span className="font-serif text-[1rem] text-foreground/65 leading-relaxed">
+                  {ent?.nombre || cleanValue}
+                </span>
+              );
+            }
+          })();
 
-      case "image":
-        return (
-          <div className="size-40 overflow-hidden mt-1">
-            <img
-              src={cleanValue}
-              alt={tpl.nombre}
-              className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
-            />
-          </div>
-        );
-
-      case "entity_link":
-        return (() => {
-          try {
-            const parsed = JSON.parse(cleanValue);
-            const idsList = Array.isArray(parsed) ? parsed : [];
-            const namesList = idsList
-              .map((id) => allEntities.find((e) => String(e.id) === String(id))?.nombre)
-              .filter(Boolean);
-
-            return namesList.length === 0 ? (
-              <span className="font-serif italic text-foreground/35 text-[1rem]">-</span>
-            ) : (
-              <span className="font-serif text-[1rem] text-foreground/65 leading-relaxed">
-                {namesList.join(", ")}
-              </span>
-            );
-          } catch (e) {
-            const ent = allEntities.find((e) => String(e.id) === String(cleanValue));
-            return (
-              <span className="font-serif text-[1rem] text-foreground/65 leading-relaxed">
-                {ent?.nombre || cleanValue}
-              </span>
-            );
-          }
-        })();
-
-      default:
-        return (
-          <span className="font-serif text-[1rem] text-foreground/65 leading-relaxed">
-            {cleanValue}
-          </span>
-        );
-    }
-  })();
+        default:
+          return (
+            <span className="font-serif text-[1rem] text-foreground/65 leading-relaxed">
+              {cleanValue}
+            </span>
+          );
+      }
+    })()
+  );
 };
 
 const DynamicAttributeForm: React.FC<DynamicAttributeFormProps> = ({
@@ -160,7 +202,10 @@ const DynamicAttributeForm: React.FC<DynamicAttributeFormProps> = ({
   onUpdate,
 }) => {
   const { t } = useLanguage();
-  const { loading, categories, values, allEntities } = useDynamicAttributeForm(entity, onUpdate);
+  const { loading, categories, values, allEntities } = useDynamicAttributeForm(
+    entity,
+    onUpdate,
+  );
 
   return loading ? (
     <div className="p-4 animate-pulse italic opacity-30 text-[10px]">
@@ -185,7 +230,10 @@ const DynamicAttributeForm: React.FC<DynamicAttributeFormProps> = ({
               {tpls.map((tpl) => {
                 const valueObj = values.find((v) => v.plantilla_id === tpl.id);
                 const currentValue = valueObj?.valor ?? "";
-                const isLongText = tpl.tipo === "text" || tpl.tipo === "textarea" || tpl.tipo === "long_text";
+                const isLongText =
+                  tpl.tipo === "text" ||
+                  tpl.tipo === "textarea" ||
+                  tpl.tipo === "long_text";
 
                 return (
                   <div
@@ -210,4 +258,3 @@ const DynamicAttributeForm: React.FC<DynamicAttributeFormProps> = ({
 };
 
 export default DynamicAttributeForm;
-

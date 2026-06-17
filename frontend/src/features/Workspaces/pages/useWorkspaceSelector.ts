@@ -17,7 +17,10 @@ export const useWorkspaceSelector = () => {
   const [projectToEdit, setProjectToEdit] = useState<Proyecto | null>(null);
   const [projectToDelete, setProjectToDelete] = useState<number | null>(null);
   const [importConfirmOpen, setImportConfirmOpen] = useState(false);
-  const [statusModal, setStatusModal] = useState<{ title: string; message: string } | null>(null);
+  const [statusModal, setStatusModal] = useState<{
+    title: string;
+    message: string;
+  } | null>(null);
 
   const {
     data: workspaces = [],
@@ -61,12 +64,21 @@ export const useWorkspaceSelector = () => {
 
       switch (isCreating) {
         case true: {
-          const res = await WorkspaceUseCase.createProject(nameSlug, formData.nombre, formData.tag, formData.coverUrl);
-          // Actualizar descripciÃ³n si se ingresÃ³
+          const res = await WorkspaceUseCase.createProject(
+            nameSlug,
+            formData.nombre,
+            formData.tag,
+            formData.coverUrl,
+          );
+          // Actualizar descripción si se ingresó
           if (res && formData.descripcion) {
-            await WorkspaceUseCase.updateProject(res.id, { descripcion: formData.descripcion });
+            await WorkspaceUseCase.updateProject(res.id, {
+              descripcion: formData.descripcion,
+            });
           }
-          await queryClient.invalidateQueries({ queryKey: ["workspaces", "list"] });
+          await queryClient.invalidateQueries({
+            queryKey: ["workspaces", "list"],
+          });
           if (res) await handleSelect(res.nombre);
           break;
         }
@@ -78,7 +90,9 @@ export const useWorkspaceSelector = () => {
               tag: formData.tag,
               image_url: formData.coverUrl,
             });
-            await queryClient.invalidateQueries({ queryKey: ["workspaces", "list"] });
+            await queryClient.invalidateQueries({
+              queryKey: ["workspaces", "list"],
+            });
             await refetchWorkspaces();
             setProjectToEdit(null);
           }
@@ -87,7 +101,7 @@ export const useWorkspaceSelector = () => {
       }
       setIsCreating(false);
     } catch (err) {
-      setError("Error al guardar la configuraciÃ³n del cuaderno");
+      setError("Error al guardar la configuración del cuaderno");
     } finally {
       setActionLoading(false);
     }
@@ -98,7 +112,9 @@ export const useWorkspaceSelector = () => {
       try {
         setActionLoading(true);
         await WorkspaceUseCase.deleteProject(projectToDelete);
-        await queryClient.invalidateQueries({ queryKey: ["workspaces", "list"] });
+        await queryClient.invalidateQueries({
+          queryKey: ["workspaces", "list"],
+        });
         await refetchWorkspaces();
         setProjectToDelete(null);
       } catch (err) {
@@ -116,8 +132,9 @@ export const useWorkspaceSelector = () => {
       switch (res.success) {
         case true:
           setStatusModal({
-            title: "ExportaciÃ³n completada",
-            message: "La copia de seguridad se guardÃ³ correctamente en el servidor local.",
+            title: "Exportación completada",
+            message:
+              "La copia de seguridad se guardó correctamente en el servidor local.",
           });
           break;
         default:
@@ -138,8 +155,9 @@ export const useWorkspaceSelector = () => {
       switch (res.success) {
         case true:
           setStatusModal({
-            title: "ImportaciÃ³n completada",
-            message: "Los datos se restauraron correctamente. La aplicaciÃ³n se recargarÃ¡ para aplicar los cambios.",
+            title: "Importación completada",
+            message:
+              "Los datos se restauraron correctamente. La aplicación se recargará para aplicar los cambios.",
           });
           break;
         default:
@@ -155,7 +173,7 @@ export const useWorkspaceSelector = () => {
 
   const handleStatusAcknowledge = (): void => {
     switch (statusModal?.title) {
-      case "ImportaciÃ³n completada":
+      case "Importación completada":
         setStatusModal(null);
         window.location.reload();
         break;
@@ -166,7 +184,9 @@ export const useWorkspaceSelector = () => {
   };
 
   const filteredWorkspaces = workspaces.filter((w) =>
-    (w.nombre || w.descripcion || "").toLowerCase().includes(searchTerm.toLowerCase()),
+    (w.nombre || w.descripcion || "")
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase()),
   );
 
   return {
@@ -193,8 +213,6 @@ export const useWorkspaceSelector = () => {
     handleExport,
     executeImport,
     handleStatusAcknowledge,
-    filteredWorkspaces
+    filteredWorkspaces,
   };
 };
-
-

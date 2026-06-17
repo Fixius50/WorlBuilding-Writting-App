@@ -49,7 +49,7 @@ const DEFAULT_LAYERS: MapLayer[] = [
 const INITIAL_VIEW_STATE = { longitude: 0, latitude: 0, zoom: 1 };
 
 /**
- * ðŸ§  useMapEditor
+ * Hook useMapEditor
  * Logic for managing atlas/map editing, drawing, and persistence.
  */
 export const useMapEditor = (
@@ -115,7 +115,7 @@ export const useMapEditor = (
   const [errorLayers, setErrorLayers] = useState<Set<string>>(new Set());
 
   const openPanel = (_mode: string, _id?: number, _title?: string) => {
-    // Panel derecho eliminado: antes abrÃ­a inspector contextual del mapa.
+    // Panel derecho eliminado: antes abría inspector contextual del mapa.
   };
   const setCustomContent = (_content: unknown, _title?: unknown) => {
     // Panel derecho eliminado: antes inyectaba herramientas contextuales.
@@ -211,40 +211,56 @@ export const useMapEditor = (
     } catch {}
   }, [projectId]);
 
-  const loadMap = useCallback(async (idOrSlug: string | number) => {
-    try {
-      const entity = await MapUseCase.getMapByIdOrSlug(idOrSlug, Number(projectId));
-      if (entity) {
-        setMapEntity(entity);
-        setTargetFolderId(entity.carpeta_id);
-        const attrs: MapAttributes =
-          typeof entity.contenido_json === "string"
-            ? JSON.parse(entity.contenido_json)
-            : entity.contenido_json || {};
-        setMarkers(attrs.markers || []);
-        
-        let loadedLayers = attrs.layers && attrs.layers.length > 0 ? attrs.layers : DEFAULT_LAYERS;
-        const bgImg = typeof attrs.bgImage === "string" ? attrs.bgImage : (typeof attrs.snapshotUrl === "string" ? attrs.snapshotUrl : undefined);
-        if (bgImg) {
-          loadedLayers = loadedLayers.map((l): MapLayer =>
-            l.id === "base" && !l.url ? { ...l, url: bgImg } : l,
-          );
+  const loadMap = useCallback(
+    async (idOrSlug: string | number) => {
+      try {
+        const entity = await MapUseCase.getMapByIdOrSlug(
+          idOrSlug,
+          Number(projectId),
+        );
+        if (entity) {
+          setMapEntity(entity);
+          setTargetFolderId(entity.carpeta_id);
+          const attrs: MapAttributes =
+            typeof entity.contenido_json === "string"
+              ? JSON.parse(entity.contenido_json)
+              : entity.contenido_json || {};
+          setMarkers(attrs.markers || []);
+
+          let loadedLayers =
+            attrs.layers && attrs.layers.length > 0
+              ? attrs.layers
+              : DEFAULT_LAYERS;
+          const bgImg =
+            typeof attrs.bgImage === "string"
+              ? attrs.bgImage
+              : typeof attrs.snapshotUrl === "string"
+                ? attrs.snapshotUrl
+                : undefined;
+          if (bgImg) {
+            loadedLayers = loadedLayers.map(
+              (l): MapLayer =>
+                l.id === "base" && !l.url ? { ...l, url: bgImg } : l,
+            );
+          }
+          setLayers(loadedLayers);
+
+          if (attrs.features)
+            setFeatures(attrs.features as GeoFeatureCollection);
+          setIs3D(!!attrs.is3D);
+          if (attrs.mapSettings) {
+            setViewState((prev) => ({
+              ...prev,
+              zoom: attrs.mapSettings?.zoom ?? 1,
+              longitude: attrs.mapSettings?.center?.[0] ?? 0,
+              latitude: attrs.mapSettings?.center?.[1] ?? 0,
+            }));
+          }
         }
-        setLayers(loadedLayers);
-        
-        if (attrs.features) setFeatures(attrs.features as GeoFeatureCollection);
-        setIs3D(!!attrs.is3D);
-        if (attrs.mapSettings) {
-          setViewState((prev) => ({
-            ...prev,
-            zoom: attrs.mapSettings?.zoom ?? 1,
-            longitude: attrs.mapSettings?.center?.[0] ?? 0,
-            latitude: attrs.mapSettings?.center?.[1] ?? 0,
-          }));
-        }
-      }
-    } catch {}
-  }, [projectId]);
+      } catch {}
+    },
+    [projectId],
+  );
 
   useEffect(() => {
     if (entityId && mode === "edit") {
@@ -279,38 +295,45 @@ export const useMapEditor = (
   useEffect(() => {
     const validateImageLayers = (): void => {
       layers.forEach((layer) => {
-        const isImgLayer = (layer.type === "base" || layer.type === "image") && !!layer.url;
-        
-        isImgLayer ? (() => {
-          const img = new Image();
-          img.src = layer.url!;
-          img.onload = () => {
-            setErrorLayers((prev) => {
-              const hasId = prev.has(layer.id);
-              let next: Set<string> = prev;
-              
-              hasId ? (() => {
-                next = new Set(prev);
-                next.delete(layer.id);
-              })() : null;
-              
-              return next;
-            });
-          };
-          img.onerror = () => {
-            setErrorLayers((prev) => {
-              const hasId = prev.has(layer.id);
-              let next: Set<string> = prev;
-              
-              !hasId ? (() => {
-                next = new Set(prev);
-                next.add(layer.id);
-              })() : null;
-              
-              return next;
-            });
-          };
-        })() : null;
+        const isImgLayer =
+          (layer.type === "base" || layer.type === "image") && !!layer.url;
+
+        isImgLayer
+          ? (() => {
+              const img = new Image();
+              img.src = layer.url!;
+              img.onload = () => {
+                setErrorLayers((prev) => {
+                  const hasId = prev.has(layer.id);
+                  let next: Set<string> = prev;
+
+                  hasId
+                    ? (() => {
+                        next = new Set(prev);
+                        next.delete(layer.id);
+                      })()
+                    : null;
+
+                  return next;
+                });
+              };
+              img.onerror = () => {
+                setErrorLayers((prev) => {
+                  const hasId = prev.has(layer.id);
+                  let next: Set<string> = prev;
+
+                  !hasId
+                    ? (() => {
+                        next = new Set(prev);
+                        next.add(layer.id);
+                      })()
+                    : null;
+
+                  return next;
+                });
+              };
+            })()
+          : null;
       });
     };
     validateImageLayers();
@@ -549,4 +572,3 @@ export const useMapEditor = (
     closePanel,
   };
 };
-

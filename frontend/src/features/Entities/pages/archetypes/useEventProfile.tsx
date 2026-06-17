@@ -23,7 +23,7 @@ export const eventEntityQueryKey = (entityId: number) =>
   ["event-entity", entityId] as const;
 
 /**
- * ðŸ§  useEventProfile
+ * Hook useEventProfile
  * Logic hook for EventProfileView.
  */
 export const useEventProfile = (propEntityId?: string | number) => {
@@ -200,4 +200,3 @@ export const useEventProfile = (propEntityId?: string | number) => {
     entityId,
   };
 };
-

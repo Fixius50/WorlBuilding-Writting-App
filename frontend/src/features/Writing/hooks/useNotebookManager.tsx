@@ -4,7 +4,7 @@ import { WorkspaceUseCase } from "@features/Workspaces";
 import { getModuleCache, setModuleCache } from "@utils/moduleCache";
 
 /**
- * ðŸ§  useNotebookManager
+ * Hook useNotebookManager
  * Logic for managing quick notes (notebooks) in the sidebar.
  */
 export const useNotebookManager = (projectId: number | string | null) => {
@@ -140,4 +140,3 @@ export const useNotebookManager = (projectId: number | string | null) => {
     deleteNotebook,
   };
 };
-

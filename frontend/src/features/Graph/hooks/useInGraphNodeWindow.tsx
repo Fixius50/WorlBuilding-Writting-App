@@ -1,16 +1,28 @@
-import { useState, useEffect, useMemo } from 'react';
-import { RelationshipUseCase } from '@features/Relationships';
-import { Entidad } from '@domain/database';
+import { useState, useEffect, useMemo } from "react";
+import { RelationshipUseCase } from "@features/Relationships";
+import { Entidad } from "@domain/database";
 
-type GraphNode = { id: string; group?: string; data: Record<string, unknown>; label?: string; nombre?: string; category?: string; isFull?: boolean; isStub?: boolean; };
+type GraphNode = {
+  id: string;
+  group?: string;
+  data: Record<string, unknown>;
+  label?: string;
+  nombre?: string;
+  category?: string;
+  isFull?: boolean;
+  isStub?: boolean;
+};
 type EntidadExtendida = Entidad & { attributes?: Record<string, unknown> };
 
 /**
- * ðŸ§  useInGraphNodeWindow
+ * Hook useInGraphNodeWindow
  * Hook to handle entity detail fetching, tab navigation, and relationship mapping for the in-graph node window.
  */
-export const useInGraphNodeWindow = (node: GraphNode | null, elements: GraphNode[]) => {
-  const [activeTab, setActiveTab] = useState('ESENCIA'); // ESENCIA, RELACIONES, CRÃ“NICA
+export const useInGraphNodeWindow = (
+  node: GraphNode | null,
+  elements: GraphNode[],
+) => {
+  const [activeTab, setActiveTab] = useState("ESENCIA"); // ESENCIA, RELACIONES, CRÓNICA
   const [details, setDetails] = useState<EntidadExtendida | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -20,7 +32,9 @@ export const useInGraphNodeWindow = (node: GraphNode | null, elements: GraphNode
     const fetchDetails = async () => {
       try {
         setLoading(true);
-        const response = await RelationshipUseCase.getEntityDetails(Number(node.id));
+        const response = await RelationshipUseCase.getEntityDetails(
+          Number(node.id),
+        );
         if (response && response.contenido_json) {
           try {
             const parsed = JSON.parse(response.contenido_json);
@@ -46,18 +60,26 @@ export const useInGraphNodeWindow = (node: GraphNode | null, elements: GraphNode
     }
   }, [node?.id, node?.isFull, node?.isStub]);
 
-  const data = useMemo(() => (details || node) as Record<string, unknown>, [details, node]);
+  const data = useMemo(
+    () => (details || node) as Record<string, unknown>,
+    [details, node],
+  );
   const attributes = useMemo(() => {
-    const rawAttrs = data.attributes && typeof data.attributes === 'object' ? data.attributes as Record<string, unknown> : {};
+    const rawAttrs =
+      data.attributes && typeof data.attributes === "object"
+        ? (data.attributes as Record<string, unknown>)
+        : {};
     return Object.entries(rawAttrs).filter(([key, value]) => {
       const k = key.toLowerCase();
-      return !k.includes('id') &&
-             !k.includes('url') &&
-             !k.includes('image') &&
-             !k.includes('layers') &&
-             !k.includes('snapshot') &&
-             !k.includes('file') &&
-             typeof value !== 'object';
+      return (
+        !k.includes("id") &&
+        !k.includes("url") &&
+        !k.includes("image") &&
+        !k.includes("layers") &&
+        !k.includes("snapshot") &&
+        !k.includes("file") &&
+        typeof value !== "object"
+      );
     });
   }, [data]);
 
@@ -65,24 +87,39 @@ export const useInGraphNodeWindow = (node: GraphNode | null, elements: GraphNode
     if (!node) return [];
     const nodeIdStr = String(node.id);
     return elements
-      .filter(e => e.group === 'edges' && (String(e.data.source) === nodeIdStr || String(e.data.target) === nodeIdStr))
-      .map(edge => {
-        const otherId = String(edge.data.source) === nodeIdStr ? edge.data.target : edge.data.source;
-        const otherNode = elements.find(n => String(n.data?.id) === String(otherId));
+      .filter(
+        (e) =>
+          e.group === "edges" &&
+          (String(e.data.source) === nodeIdStr ||
+            String(e.data.target) === nodeIdStr),
+      )
+      .map((edge) => {
+        const otherId =
+          String(edge.data.source) === nodeIdStr
+            ? edge.data.target
+            : edge.data.source;
+        const otherNode = elements.find(
+          (n) => String(n.data?.id) === String(otherId),
+        );
         return {
           id: edge.data.id as string,
-          otherLabel: String(otherNode?.data?.label || otherNode?.label || 'IncÃ³gnito'),
-          edgeLabel: String(edge.data.label || 'VÃ­nculo')
+          otherLabel: String(
+            otherNode?.data?.label || otherNode?.label || "Incógnito",
+          ),
+          edgeLabel: String(edge.data.label || "Vínculo"),
         };
       });
   }, [node, elements]);
 
   const categoryConfig = useMemo(() => {
-    if (!node) return { color: 'border-foreground/40', icon: 'help' };
+    if (!node) return { color: "border-foreground/40", icon: "help" };
     switch (node.category) {
-      case 'Individual': return { color: 'border-indigo-500/50', icon: 'person' };
-      case 'Location': return { color: 'border-emerald-500/50', icon: 'location_on' };
-      default: return { color: 'border-purple-500/50', icon: 'groups' };
+      case "Individual":
+        return { color: "border-indigo-500/50", icon: "person" };
+      case "Location":
+        return { color: "border-emerald-500/50", icon: "location_on" };
+      default:
+        return { color: "border-purple-500/50", icon: "groups" };
     }
   }, [node?.category]);
 
@@ -94,7 +131,6 @@ export const useInGraphNodeWindow = (node: GraphNode | null, elements: GraphNode
     data,
     attributes,
     relations,
-    categoryConfig
+    categoryConfig,
   };
 };
-

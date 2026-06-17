@@ -7,7 +7,7 @@ export const entityDatabaseQueryKey = (projectId: number) =>
   ["entity-database", projectId] as const;
 
 /**
- * ðŸ§  useEntityDatabase
+ * Hook useEntityDatabase
  * Logic for managing the entity database in the graph feature.
  */
 export const useEntityDatabase = (projectId?: number) => {
@@ -90,7 +90,7 @@ export const useEntityDatabase = (projectId?: number) => {
   }, [selectedEntity]);
 
   const folderName = (folderId: number | null) =>
-    folders.find((f) => f.id === folderId)?.nombre ?? "â€”";
+    folders.find((f) => f.id === folderId)?.nombre ?? "-";
 
   return {
     allEntities,
@@ -110,4 +110,3 @@ export const useEntityDatabase = (projectId?: number) => {
     load,
   };
 };
-

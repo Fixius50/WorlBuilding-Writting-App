@@ -15,7 +15,7 @@ interface PendingEntity {
 }
 
 /**
- * ðŸ§  useCreateMassEntities
+ * Hook useCreateMassEntities
  * Logic for batch creating entities with common attributes.
  */
 export const useCreateMassEntities = (
@@ -313,5 +313,3 @@ export const useCreateMassEntities = (
     handleSubmit,
   };
 };
-
-

@@ -17,7 +17,7 @@ export interface FolderViewContext {
 }
 
 /**
- * ðŸ§  useFolderView
+ * Hook useFolderView
  * Logic hook for FolderView.
  */
 export const useFolderView = () => {
@@ -38,7 +38,7 @@ export const useFolderView = () => {
 
   // --- Right Panel ---
   useEffect(() => {
-    // Panel derecho eliminado: antes abrÃ­a "Explorador" en modo bulk.
+    // Panel derecho eliminado: antes abría "Explorador" en modo bulk.
   }, []);
 
   // --- Data Loading ---
@@ -130,4 +130,3 @@ export const useFolderView = () => {
     path,
   };
 };
-

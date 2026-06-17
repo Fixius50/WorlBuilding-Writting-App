@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
-import { EntityUseCase } from '@features/Entities';
-import { TemplateUseCase } from '@features/Settings';
-import { Entidad, Valor } from '@domain/database';
+import { useState, useEffect } from "react";
+import { EntityUseCase } from "@features/Entities";
+import { TemplateUseCase } from "@features/Settings";
+import { Entidad, Valor } from "@domain/database";
 
 /**
- * ðŸ§  useEntityInspector
+ * Hook useEntityInspector
  * Logic for the quick entity inspector, including loading entity data and key values.
  */
 export const useEntityInspector = (entityId: number | string) => {
@@ -22,8 +22,8 @@ export const useEntityInspector = (entityId: number | string) => {
           const vals = await TemplateUseCase.getEntityValues(data.id);
           setValues(vals.slice(0, 5)); // Just the first 5 for the quick inspector
         }
-      } catch (err) { }
-      finally {
+      } catch (err) {
+      } finally {
         setLoading(false);
       }
     };
@@ -32,7 +32,9 @@ export const useEntityInspector = (entityId: number | string) => {
 
   const handleNavigate = () => {
     if (entity) {
-      window.dispatchEvent(new CustomEvent('navigate-entity', { detail: entity.id }));
+      window.dispatchEvent(
+        new CustomEvent("navigate-entity", { detail: entity.id }),
+      );
     }
   };
 
@@ -40,7 +42,6 @@ export const useEntityInspector = (entityId: number | string) => {
     entity,
     values,
     loading,
-    handleNavigate
+    handleNavigate,
   };
 };
-

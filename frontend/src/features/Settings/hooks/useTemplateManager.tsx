@@ -21,7 +21,7 @@ export interface TemplateField {
 }
 
 /**
- * ðŸ§  useTemplateManager
+ * Hook useTemplateManager
  * Logic for managing global attribute templates.
  */
 export const useTemplateManager = () => {
@@ -100,7 +100,7 @@ export const useTemplateManager = () => {
 };
 
 /**
- * ðŸ§  useNewFieldForm
+ * Hook useNewFieldForm
  * Logic for the new attribute form.
  */
 export const useNewFieldForm = (onAdd: (field: TemplateField) => void) => {
@@ -143,4 +143,3 @@ export const useNewFieldForm = (onAdd: (field: TemplateField) => void) => {
     handleSubmit,
   };
 };
-

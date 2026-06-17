@@ -11,7 +11,7 @@ export const BIBLE_KEYS = {
 };
 
 /**
- * ðŸ“– useWorldBibleData
+ * Hook useWorldBibleData
  * Gestiona la carga de entidades de la Biblia del Mundo con TanStack Query.
  */
 export const useWorldBibleData = (projectId: number) => {
@@ -49,8 +49,8 @@ export const useWorldBibleData = (projectId: number) => {
 };
 
 /**
- * ðŸ“ useWorldBibleFolderData
- * Carga el contenido de una carpeta especÃ­fica (entidades y subcarpetas).
+ * Hook useWorldBibleFolderData
+ * Carga el contenido de una carpeta específica (entidades y subcarpetas).
  */
 export const useWorldBibleFolderData = (
   projectId: number,
@@ -74,8 +74,8 @@ export const useWorldBibleFolderData = (
 };
 
 /**
- * â„¹ï¸ useWorldBibleFolderDetails
- * Carga los detalles (nombre, etc) de una carpeta especÃ­fica.
+ * Hook useWorldBibleFolderDetails
+ * Carga los detalles (nombre, etc) de una carpeta específica.
  */
 export const useWorldBibleFolderDetails = (folderId: number | null) => {
   return useQuery({
@@ -85,4 +85,3 @@ export const useWorldBibleFolderDetails = (folderId: number | null) => {
     enabled: !!folderId,
   });
 };
-

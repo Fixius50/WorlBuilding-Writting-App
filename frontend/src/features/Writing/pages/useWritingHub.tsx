@@ -3,7 +3,7 @@ import { Cuaderno } from "@domain/database";
 import { WritingUseCase } from "@features/Writing";
 
 /**
- * ðŸ§  useWritingHub
+ * Hook useWritingHub
  * Logic for managing the library of notebooks, including creation, editing, and searching.
  */
 export const useWritingHub = (
@@ -102,7 +102,7 @@ export const useWritingHub = (
   }, [projectId, title, genre, notebookToEdit, closeModal]);
 
   const handleDelete = useCallback(async (id: number) => {
-    if (!window.confirm("Â¿Eliminar este archivador?")) return;
+    if (!window.confirm("¿Eliminar este archivador?")) return;
     try {
       await WritingUseCase.deleteNotebook(id);
       setNotebooks((prev) => prev.filter((n) => n.id !== id));
@@ -137,4 +137,3 @@ export const useWritingHub = (
     handleDelete,
   };
 };
-
