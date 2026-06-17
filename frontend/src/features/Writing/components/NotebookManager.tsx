@@ -1,5 +1,5 @@
 ﻿import React from "react";
-import ConfirmationModal from "@components/ui/ConfirmationModal";
+import { ConfirmationModal } from "@components";
 import InputModal from "@features/Writing/components/InputModal";
 import { Notebook } from "@domain/writing";
 import ZenEditor from "@features/Editor/components/ZenEditor";
@@ -222,4 +222,6 @@ const NotebookManager: React.FC<NotebookManagerProps> = ({ projectId }) => {
 };
 
 export default NotebookManager;
+
+
 

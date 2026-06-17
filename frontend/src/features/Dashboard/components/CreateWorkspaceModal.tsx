@@ -1,8 +1,7 @@
 ﻿import React from "react";
 import { createPortal } from "react-dom";
 import { useCreateWorkspaceModal } from "../hooks/useCreateWorkspaceModal";
-import ConfirmationModal from "@components/ui/ConfirmationModal";
-
+import { ConfirmationModal } from "@components";
 interface CreateWorkspaceModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -197,4 +196,6 @@ const CreateWorkspaceModal: React.FC<CreateWorkspaceModalProps> = ({
 };
 
 export default CreateWorkspaceModal;
+
+
 

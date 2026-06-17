@@ -1,5 +1,5 @@
 ﻿import React from "react";
-import MonolithicPanel from "@components/ui/MonolithicPanel";
+import { MonolithicPanel } from "@components";
 import { motion } from "framer-motion";
 import { useOutletContext } from "react-router-dom";
 import { ResponsivePie } from "@nivo/pie";
@@ -165,3 +165,5 @@ const AnalyticsDashboard = () => {
 };
 
 export default AnalyticsDashboard;
+
+

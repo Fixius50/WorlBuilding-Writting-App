@@ -1,10 +1,10 @@
 ﻿import React from "react";
-import MonolithicPanel from "@components/ui/MonolithicPanel";
-import Button from "@components/ui/Button";
+import { MonolithicPanel } from "@components";
+import { Button } from "@components";
 import AttributeField from "./AttributeField";
-import Avatar from "@components/ui/Avatar";
+import { Avatar } from "@components";
 import EntityBuilderSidebar from "../components/EntityBuilderSidebar";
-import ConfirmationModal from "@components/ui/ConfirmationModal";
+import { ConfirmationModal } from "@components";
 import FamilyTreeAssigner from "../components/FamilyTreeAssigner";
 import TemplateSettingsModal from "@features/Entities/components/TemplateSettingsModal";
 import { useEntityBuilder } from "./useEntityBuilder";
@@ -919,3 +919,5 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
 };
 
 export default EntityBuilder;
+
+

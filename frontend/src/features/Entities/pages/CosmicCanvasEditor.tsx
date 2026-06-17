@@ -1,7 +1,7 @@
 ﻿import React from "react";
 import UniversalCanvas from "@features/Entities/components/editor/UniversalCanvas";
 import DynamicAttributeForm from "../components/DynamicAttributeForm";
-import ConfirmationModal from "@components/ui/ConfirmationModal";
+import { ConfirmationModal } from "@components";
 import { useCosmicCanvasEditor } from "./useCosmicCanvasEditor";
 import TimelineChronologyStrip from "@features/Entities/components/TimelineChronologyStrip";
 
@@ -157,3 +157,5 @@ const CosmicCanvasEditor: React.FC<{ entityId: number }> = ({ entityId }) => {
 };
 
 export default CosmicCanvasEditor;
+
+

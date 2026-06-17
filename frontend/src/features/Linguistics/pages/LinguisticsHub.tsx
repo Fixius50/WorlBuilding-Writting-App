@@ -2,10 +2,10 @@
 import { useParams } from "react-router-dom";
 import { useLanguage } from "@context/LanguageContext";
 import { Word } from "@domain/database";
-import MonolithicPanel from "@components/ui/MonolithicPanel";
-import Button from "@components/ui/Button";
+import { MonolithicPanel } from "@components";
+import { Button } from "@components";
 import DrawingCanvas from "@features/Linguistics/components/editor/DrawingCanvas";
-import ConfirmModal from "@components/ui/ConfirmModal";
+import { ConfirmModal } from "@components";
 import { useLinguisticsHub } from "./useLinguisticsHub";
 
 interface LinguisticsHubProps {
@@ -573,3 +573,5 @@ const MeaningEditorModal: React.FC<{
 };
 
 export default LinguisticsHub;
+
+

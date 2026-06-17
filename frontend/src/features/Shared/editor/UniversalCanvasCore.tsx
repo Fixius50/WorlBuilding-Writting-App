@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+﻿import React, { useRef, useState, useEffect } from "react";
 import {
   Stage,
   Layer,
@@ -14,8 +14,7 @@ import {
 import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import SectionErrorBoundary from "@features/Shell/layout/SectionErrorBoundary";
-import Switch from "@components/ui/Switch";
-
+import { Switch } from "@components";
 export interface CanvasNode {
   id: string;
   x: number;
@@ -292,7 +291,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   const [filterType, setFilterType] = useState("ALL");
   const [showMinimap, setShowMinimap] = useState<boolean>(true);
 
-  // Estados de Interacción
+  // Estados de InteracciÃ³n
   const [pinnedNode, setPinnedNode] = useState<string | null>(null);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [dashOffset, setDashOffset] = useState(0);
@@ -305,7 +304,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
     setEdges(initialEdges);
   }, [initialEdges]);
 
-  // Loop de animación para las líneas activas (flujo de datos)
+  // Loop de animaciÃ³n para las lÃ­neas activas (flujo de datos)
   useEffect(() => {
     const hasActiveAnimation = pinnedNode !== null || hoveredNode !== null;
     let animId: number;
@@ -418,7 +417,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
     onNodeClick?.(id);
   };
 
-  // --- ALGORITMO BFS: Ruta más corta ---
+  // --- ALGORITMO BFS: Ruta mÃ¡s corta ---
   const findShortestPath = (startId: string, endId: string) => {
     let resultPath: string[] | null = null;
     const queue: string[][] =
@@ -456,7 +455,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
     return resultPath;
   };
 
-  // --- CÁLCULO DE ESTADOS ACTIVOS ---
+  // --- CÃLCULO DE ESTADOS ACTIVOS ---
   const { activeNodes, activeLinks, routeLinks } = React.useMemo(() => {
     const aNodes = new Set<string>();
     const aEdges = new Set<string>();
@@ -578,7 +577,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
     themeEdgeColor,
   ]);
 
-  // Cálculo para grid infinito simulado
+  // CÃ¡lculo para grid infinito simulado
   const BACKGROUND_GRID_SIZE = 50;
   const startX =
     Math.floor(-position.x / scale / BACKGROUND_GRID_SIZE) *
@@ -601,7 +600,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
     horizontalLines.push(y);
   }
 
-  // --- LÓGICA DEL MINIMAPA ---
+  // --- LÃ“GICA DEL MINIMAPA ---
   const getCanvasBounds = () => {
     const bounds =
       nodes.length === 0
@@ -722,7 +721,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
           ctx.fill();
         });
 
-        // 3. Dibujar Viewport (área visible actual)
+        // 3. Dibujar Viewport (Ã¡rea visible actual)
         const vx1 = -position.x / scale;
         const vy1 = -position.y / scale;
         const vWidth = dimensions.width / scale;
@@ -733,7 +732,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
         const mw = vWidth * mScale;
         const mh = vHeight * mScale;
 
-        // Borde y Fondo del viewport (círculo)
+        // Borde y Fondo del viewport (cÃ­rculo)
         const centerX = mx1 + mw / 2;
         const centerY = my1 + mh / 2;
         const radius = Math.min(mw, mh) / 2;
@@ -859,7 +858,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
         </Layer>
 
         <Layer id="edges">
-          {/* 1. Dibujar líneas de conexión */}
+          {/* 1. Dibujar lÃ­neas de conexiÃ³n */}
           {filteredEdges.map((edge) => {
             const fromNode = filteredNodes.find((n) => n.id === edge.from);
             const toNode = filteredNodes.find((n) => n.id === edge.to);
@@ -880,7 +879,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
             ) : null;
           })}
 
-          {/* 2. Dibujar etiquetas de relación sobre las líneas */}
+          {/* 2. Dibujar etiquetas de relaciÃ³n sobre las lÃ­neas */}
           {filteredEdges.map((edge) => {
             const fromNode = filteredNodes.find((n) => n.id === edge.from);
             const toNode = filteredNodes.find((n) => n.id === edge.to);
@@ -982,7 +981,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
 
             const fontStyle = isPinned || isHovered ? "bold" : "normal";
 
-            // Cálculo adaptativo de tamaño (auto width & height) basado en el texto del nodo
+            // CÃ¡lculo adaptativo de tamaÃ±o (auto width & height) basado en el texto del nodo
             const labelLines = node.label.split("\n");
             const maxLineLength = Math.max(
               ...labelLines.map((line) => line.length),
@@ -1048,11 +1047,11 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
         </Layer>
       </Stage>
 
-      {/* Panel de Filtro y Búsqueda Flotante */}
+      {/* Panel de Filtro y BÃºsqueda Flotante */}
       <div className="absolute top-4 right-3 z-10 bg-background border border-foreground/10 p-[0.75rem] rounded shadow-md flex flex-col gap-[0.5rem] w-64 h-auto">
         <div className="flex items-center justify-between border-b border-foreground/10 pb-2 mb-1">
           <span className="text-[10px] font-black uppercase tracking-widest text-foreground/80">
-            Navegación
+            NavegaciÃ³n
           </span>
           <Switch checked={showMinimap} onChange={setShowMinimap} />
         </div>
@@ -1123,3 +1122,5 @@ const UniversalCanvasSafe = (props: Parameters<typeof UniversalCanvas>[0]) => (
 );
 
 export default UniversalCanvasSafe;
+
+

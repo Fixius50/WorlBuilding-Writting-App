@@ -1,5 +1,5 @@
 ﻿import React from 'react';
-import MonolithicPanel from '@components/ui/MonolithicPanel';
+import { MonolithicPanel } from "@components";
 import { motion } from 'framer-motion';
 
 interface StatCardProps {
@@ -36,3 +36,5 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon, color, isLoadin
 };
 
 export default StatCard;
+
+

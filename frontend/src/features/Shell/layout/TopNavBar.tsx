@@ -1,8 +1,7 @@
-import { useMemo } from "react";
+﻿import { useMemo } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
-import MonolithicPanel from "@components/ui/MonolithicPanel";
-import Avatar from "@components/ui/Avatar";
-
+import { MonolithicPanel } from "@components";
+import { Avatar } from "@components";
 const TopNavBar = () => {
   const location = useLocation();
   const { id: routeProjectId, projectName } = useParams();
@@ -131,3 +130,5 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, active }) => (
 );
 
 export default TopNavBar;
+
+

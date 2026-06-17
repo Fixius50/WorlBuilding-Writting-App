@@ -1,5 +1,5 @@
 ﻿import React from "react";
-import MonolithicPanel from "@components/ui/MonolithicPanel";
+import { MonolithicPanel } from "@components";
 import { getHierarchyVisuals } from "@features/WorldBible/components/hierarchyVisuals";
 import { useFolderView } from "./useFolderView";
 
@@ -74,3 +74,5 @@ const FolderView: React.FC = () => {
 };
 
 export default FolderView;
+
+

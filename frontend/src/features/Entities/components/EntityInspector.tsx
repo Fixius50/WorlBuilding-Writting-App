@@ -1,5 +1,5 @@
 ﻿import React from 'react';
-import Avatar from '@components/ui/Avatar';
+import { Avatar } from "@components";
 import { useLanguage } from '@context/LanguageContext';
 import { useEntityInspector } from '../hooks/useEntityInspector';
 
@@ -83,5 +83,7 @@ const EntityInspector: React.FC<EntityInspectorProps> = ({ entityId }) => {
 };
 
 export default EntityInspector;
+
+
 
 

@@ -1,7 +1,7 @@
 ﻿import React from "react";
 import { useOutletContext } from "react-router-dom";
-import Button from "@components/ui/Button";
-import MonolithicPanel from "@components/ui/MonolithicPanel";
+import { Button } from "@components";
+import { MonolithicPanel } from "@components";
 import { useCalendarManager } from "./useCalendarManager";
 
 const CalendarManagerView: React.FC = () => {
@@ -223,3 +223,5 @@ const CalendarManagerView: React.FC = () => {
 };
 
 export default CalendarManagerView;
+
+

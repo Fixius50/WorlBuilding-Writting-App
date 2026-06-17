@@ -1,6 +1,6 @@
 ﻿import React from "react";
-import Button from "@components/ui/Button";
-import MonolithicPanel from "@components/ui/MonolithicPanel";
+import { Button } from "@components";
+import { MonolithicPanel } from "@components";
 import { useLanguage } from "@context/LanguageContext";
 import { useAdvancedLinguistics } from "./useAdvancedLinguistics";
 
@@ -156,3 +156,5 @@ const AdvancedLinguistics: React.FC = () => {
 };
 
 export default AdvancedLinguistics;
+
+

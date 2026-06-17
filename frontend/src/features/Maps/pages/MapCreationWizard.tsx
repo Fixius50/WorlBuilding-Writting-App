@@ -1,6 +1,6 @@
 ﻿import React from "react";
-import MonolithicPanel from "@components/ui/MonolithicPanel";
-import Button from "@components/ui/Button";
+import { MonolithicPanel } from "@components";
+import { Button } from "@components";
 import { useMapCreationWizard } from "./useMapCreationWizard";
 
 interface MapCreationWizardProps {
@@ -302,3 +302,5 @@ const SourceCard: React.FC<{
 );
 
 export default MapCreationWizard;
+
+

@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { Outlet, NavLink, Link } from "react-router-dom";
 import { useLanguage } from "@context/LanguageContext";
 import GlobalRightPanel from "./GlobalRightPanel";
-import ConfirmationModal from "@components/ui/ConfirmationModal";
+import { ConfirmationModal } from "@components";
 import CommandPalette from "./CommandPalette";
 import EntityDatabase from "@features/Graph/components/EntityDatabase";
 import NotebookManager from "@features/Writing/components/NotebookManager";
@@ -12,7 +12,7 @@ import { useArchitectLayout } from "./useArchitectLayout";
 import { WorkspaceUseCase } from "@features/Workspaces/application/WorkspaceUseCase";
 import { getModuleCache, setModuleCache } from "@utils/moduleCache";
 
-// --- Subcomponente de GrÃ¡ficos para el Modal Central ---
+// --- Subcomponente de GrÃƒÂ¡ficos para el Modal Central ---
 const WritingStatsChart: React.FC<{ pages: { contenido?: string }[] }> = ({
   pages,
 }) => {
@@ -325,9 +325,9 @@ const ArchitectLayout: React.FC = () => {
     <div className="flex flex-col h-screen w-full overflow-hidden bg-background text-foreground font-sans selection:bg-primary/30">
       {/* MICROHEADER GLOBAL STYLE VSCODE */}
       <header className="h-[4.5vh] flex-shrink-0 bg-background border-b border-border flex items-center justify-between px-0 text-[11px] tracking-wide select-none z-[250] text-foreground/80 font-sans font-bold">
-        {/* Left Section: MenÃºs desplegables */}
+        {/* Left Section: MenÃƒÂºs desplegables */}
         <div className="flex items-center gap-1.5 h-full">
-          {/* BotÃ³n Home / Panel de Control */}
+          {/* BotÃƒÂ³n Home / Panel de Control */}
           <Link
             to={baseUrl}
             onClick={() => {
@@ -377,7 +377,7 @@ const ArchitectLayout: React.FC = () => {
                   <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">
                     dashboard_customize
                   </span>
-                  <span className="font-bold">Centro PlanificaciÃ³n</span>
+                  <span className="font-bold">Centro PlanificaciÃƒÂ³n</span>
                 </Link>
                 <Link
                   to={`${baseUrl}/writing`}
@@ -449,7 +449,7 @@ const ArchitectLayout: React.FC = () => {
                   <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">
                     translate
                   </span>
-                  <span className="font-bold">LingÃ¼Ã­stica</span>
+                  <span className="font-bold">LingÃƒÂ¼ÃƒÂ­stica</span>
                 </Link>
               </div>
             )}
@@ -489,7 +489,7 @@ const ArchitectLayout: React.FC = () => {
                   <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">
                     sticky_note_2
                   </span>
-                  <span className="font-bold">Notas rÃ¡pidas</span>
+                  <span className="font-bold">Notas rÃƒÂ¡pidas</span>
                 </button>
                 <button
                   onClick={() => handleOtrosAction("stats")}
@@ -498,7 +498,7 @@ const ArchitectLayout: React.FC = () => {
                   <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">
                     analytics
                   </span>
-                  <span className="font-bold">EstadÃ­sticas</span>
+                  <span className="font-bold">EstadÃƒÂ­sticas</span>
                 </button>
                 <button
                   onClick={() => handleOtrosAction("sync")}
@@ -514,12 +514,12 @@ const ArchitectLayout: React.FC = () => {
           </div>
         </div>
 
-        {/* Center Section: Proyecto â€º PÃ¡gina */}
+        {/* Center Section: Proyecto Ã¢â‚¬Âº PÃƒÂ¡gina */}
         <div className="font-sans text-foreground/80 flex items-center gap-1.5 truncate max-w-[40vw] font-bold text-[0.69rem]">
           <span className="hover:text-foreground/70 transition-colors duration-150 cursor-default font-bold">
             {projectName}
           </span>
-          <span className="opacity-40 font-bold">â€º</span>
+          <span className="opacity-40 font-bold">Ã¢â‚¬Âº</span>
           <span className="truncate cursor-default font-bold">
             {getPageName()}
           </span>
@@ -543,7 +543,7 @@ const ArchitectLayout: React.FC = () => {
 
           <div className="h-4 w-px bg-foreground/10 mx-1"></div>
 
-          {/* BotÃ³n Papelera */}
+          {/* BotÃƒÂ³n Papelera */}
           <Link
             to={`${baseUrl}/trash`}
             className="px-2.5 h-full flex items-center justify-center hover:bg-foreground/5 hover:text-primary transition-colors text-foreground/80"
@@ -554,7 +554,7 @@ const ArchitectLayout: React.FC = () => {
             </span>
           </Link>
 
-          {/* BotÃ³n Ajustes */}
+          {/* BotÃƒÂ³n Ajustes */}
           <Link
             to={`${baseUrl}/settings`}
             className="px-2.5 h-full flex items-center justify-center hover:bg-foreground/5 hover:text-primary transition-colors text-foreground/80"
@@ -565,7 +565,7 @@ const ArchitectLayout: React.FC = () => {
             </span>
           </Link>
 
-          {/* BotÃ³n Salir */}
+          {/* BotÃƒÂ³n Salir */}
           <Link
             to="/"
             className="px-2.5 h-full flex items-center justify-center hover:bg-foreground/5 hover:text-red-400 transition-colors text-foreground/80"
@@ -627,7 +627,7 @@ const ArchitectLayout: React.FC = () => {
                       <NavItem
                         to={`${baseUrl}/planning`}
                         icon="dashboard_customize"
-                        label="Centro de PlanificaciÃ³n"
+                        label="Centro de PlanificaciÃƒÂ³n"
                         level={1}
                       />
                       <NavItem
@@ -691,12 +691,12 @@ const ArchitectLayout: React.FC = () => {
                       />
                       <DirectoryActionItem
                         icon="sticky_note_2"
-                        label="Notas rÃ¡pidas"
+                        label="Notas rÃƒÂ¡pidas"
                         onClick={() => handleOtrosAction("notes")}
                       />
                       <DirectoryActionItem
                         icon="analytics"
-                        label="EstadÃ­sticas"
+                        label="EstadÃƒÂ­sticas"
                         onClick={() => handleOtrosAction("stats")}
                       />
                       <DirectoryActionItem
@@ -788,7 +788,7 @@ const ArchitectLayout: React.FC = () => {
                 setLeftOpen(!leftOpen);
               }}
               className={`w-10 py-5 bg-background border border-foreground/10 border-l-0 rounded-r-md flex justify-center text-foreground/60 hover:text-indigo-400 group relative ${leftOpen ? "bg-indigo-500/10 text-indigo-500 border-indigo-500/50 shadow-[4px_0_15px_-5px_rgba(99,102,241,0.3)] border-l-transparent" : ""}`}
-              title="NavegaciÃ³n"
+              title="NavegaciÃƒÂ³n"
             >
               <div className="absolute inset-y-0 left-0 w-1 bg-current opacity-20"></div>
               <span className="material-symbols-outlined text-xl">map</span>
@@ -821,7 +821,7 @@ const ArchitectLayout: React.FC = () => {
               id="floating-left-toggle"
               onClick={() => setLeftOpen(!leftOpen)}
               className={`fixed top-[2vh] left-[2vw] z-[70] size-12 rounded-none bg-background border transition-all flex items-center justify-center shadow-2xl ${leftOpen ? "border-indigo-500 text-indigo-400 bg-indigo-500/10" : "border-foreground/10 text-foreground/60 hover:text-foreground hover:border-foreground/30"}`}
-              title="MenÃº NavegaciÃ³n"
+              title="MenÃƒÂº NavegaciÃƒÂ³n"
             >
               <span className="material-symbols-outlined">
                 {leftOpen ? "close" : "menu"}
@@ -883,8 +883,8 @@ const ArchitectLayout: React.FC = () => {
                 </span>
                 <span className="text-xs font-black uppercase tracking-widest text-foreground/80">
                   {activeModal === "database" && "Explorador de Datos"}
-                  {activeModal === "notes" && "Notas rÃ¡pidas"}
-                  {activeModal === "stats" && "EstadÃ­sticas del Proyecto"}
+                  {activeModal === "notes" && "Notas rÃƒÂ¡pidas"}
+                  {activeModal === "stats" && "EstadÃƒÂ­sticas del Proyecto"}
                   {activeModal === "sync" && "Sincronizar"}
                 </span>
               </div>
@@ -943,7 +943,7 @@ const ArchitectLayout: React.FC = () => {
                         </div>
                         <div className="p-4 bg-foreground/[0.02] border border-foreground/5 flex flex-col space-y-1">
                           <span className="text-[8px] font-black uppercase text-foreground/40 tracking-widest">
-                            PÃ¡ginas Totales
+                            PÃƒÂ¡ginas Totales
                           </span>
                           <span className="text-xl font-black text-foreground tabular-nums">
                             {stats.pageCount}
@@ -954,19 +954,19 @@ const ArchitectLayout: React.FC = () => {
                       <div className="p-4 bg-primary/5 border border-primary/20 flex items-center gap-3">
                         <div className="size-2 rounded-full bg-primary animate-pulse"></div>
                         <span className="text-[9px] font-black uppercase tracking-widest text-primary">
-                          SesiÃ³n de Escritura Activa
+                          SesiÃƒÂ³n de Escritura Activa
                         </span>
                       </div>
                     </div>
 
-                    {/* Columna GrÃ¡fica DistribuciÃ³n */}
+                    {/* Columna GrÃƒÂ¡fica DistribuciÃƒÂ³n */}
                     <div className="lg:col-span-2 flex flex-col space-y-4">
                       <div className="flex items-center justify-between px-2">
                         <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/60 flex items-center gap-2">
                           <span className="material-symbols-outlined text-sm">
                             bar_chart
                           </span>
-                          DistribuciÃ³n por Hojas
+                          DistribuciÃƒÂ³n por Hojas
                         </h3>
                         <span className="text-[9px] font-bold text-foreground/30 font-mono">
                           PROYECTO: {projectName}
@@ -979,7 +979,7 @@ const ArchitectLayout: React.FC = () => {
                             edit_note
                           </span>
                           <span className="text-[10px] font-black uppercase tracking-widest italic">
-                            Abre un cuaderno para ver analÃ­ticas
+                            Abre un cuaderno para ver analÃƒÂ­ticas
                           </span>
                         </div>
                       </div>
@@ -1044,10 +1044,12 @@ const ArchitectLayout: React.FC = () => {
           </div>
         ))}
       </div>
-      {/* COMMAND PALETTE â€” Ctrl+K */}
+      {/* COMMAND PALETTE Ã¢â‚¬â€ Ctrl+K */}
       <CommandPalette folders={folders} />
     </div>
   );
 };
 
 export default ArchitectLayout;
+
+

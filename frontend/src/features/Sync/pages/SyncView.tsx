@@ -1,6 +1,6 @@
 ﻿import React from "react";
-import Button from "@components/ui/Button";
-import MonolithicPanel from "@components/ui/MonolithicPanel";
+import { Button } from "@components";
+import { MonolithicPanel } from "@components";
 import { useSyncManager } from "./useSyncManager";
 
 const SyncView: React.FC = () => {
@@ -129,3 +129,5 @@ const SyncView: React.FC = () => {
 };
 
 export default SyncView;
+
+

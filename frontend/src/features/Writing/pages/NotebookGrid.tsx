@@ -1,5 +1,5 @@
 ﻿import React from "react";
-import ConfirmModal from "@components/ui/ConfirmModal";
+import { ConfirmModal } from "@components";
 import InputModal from "@features/Writing/components/InputModal";
 import { Notebook } from "@domain/writing";
 import { useNotebookGrid } from "./useNotebookGrid";
@@ -173,3 +173,5 @@ const NotebookGrid: React.FC<NotebookGridProps> = ({
 };
 
 export default NotebookGrid;
+
+

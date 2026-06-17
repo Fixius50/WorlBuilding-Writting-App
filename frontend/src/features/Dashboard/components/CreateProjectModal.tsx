@@ -1,6 +1,6 @@
 ﻿import React from 'react';
-import MonolithicPanel from '@components/ui/MonolithicPanel';
-import Button from '@components/ui/Button';
+import { MonolithicPanel } from "@components";
+import { Button } from "@components";
 import { useCreateProjectModal } from '../hooks/useCreateProjectModal';
 
 interface CreateProjectModalProps {
@@ -68,5 +68,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ isOpen, onClose
 };
 
 export default CreateProjectModal;
+
+
 
 

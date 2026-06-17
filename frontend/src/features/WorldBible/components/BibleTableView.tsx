@@ -12,7 +12,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { Entidad, Carpeta } from "@domain/database";
 import { Link, useParams } from "react-router-dom";
 import { useLanguage } from "@context/LanguageContext";
-import ConfirmationModal from "@components/ui/ConfirmationModal";
+import { ConfirmationModal } from "@components";
 import CreateMassEntitiesModal from "./CreateMassEntitiesModal";
 import { useBibleTable } from "../hooks/useBibleTable";
 
@@ -392,4 +392,6 @@ const BibleTableView: React.FC<TableViewProps> = ({
 };
 
 export default BibleTableView;
+
+
 

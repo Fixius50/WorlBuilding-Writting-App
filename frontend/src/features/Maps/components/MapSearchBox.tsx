@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { EntityUseCase } from '@features/Entities/application/EntityUseCase';
 import { TemplateUseCase } from '@features/Settings/application/TemplateUseCase';
-import Switch from '@components/ui/Switch';
-
+import { Switch } from "@components";
 interface MapSearchBoxProps {
   onSearch: (term: string) => void;
   onFilterChange: (filters: { cities: boolean; ruins: boolean; events: boolean }) => void;
@@ -34,7 +33,7 @@ const MapSearchBox: React.FC<MapSearchBoxProps> = ({
           <span className="material-symbols-outlined text-foreground/40 text-lg">search</span>
           <input
             type="text"
-            placeholder="Buscar ubicación o personaje..."
+            placeholder="Buscar ubicaciÃ³n o personaje..."
             className="bg-transparent border-none outline-none text-xs text-foreground font-serif font-bold w-full placeholder:text-foreground/20"
             value={query}
             onChange={(e) => {
@@ -53,7 +52,7 @@ const MapSearchBox: React.FC<MapSearchBoxProps> = ({
         </button>
       </div>
 
-      {/* RESULTADOS DE BÚSQUEDA */}
+      {/* RESULTADOS DE BÃšSQUEDA */}
       {filteredResults.length > 0 && (
         <div className="bg-background border border-foreground/10 shadow-2xl p-1 animate-in fade-in slide-in-from-top-2 duration-200">
            {filteredResults.map((res, i) => (
@@ -62,7 +61,7 @@ const MapSearchBox: React.FC<MapSearchBoxProps> = ({
                className="w-full text-left p-3 hover:bg-primary/10 transition-colors flex items-center gap-3 group"
                onClick={() => {
                   setQuery('');
-                  // Aquí iría la lógica de centrado en mapa si tuviéramos acceso directo
+                  // AquÃ­ irÃ­a la lÃ³gica de centrado en mapa si tuviÃ©ramos acceso directo
                }}
              >
                <span className="material-symbols-outlined text-foreground/30 text-base group-hover:text-primary transition-colors">location_on</span>
@@ -90,13 +89,13 @@ const MapSearchBox: React.FC<MapSearchBoxProps> = ({
               onChange={(v) => onFilterChange({ ...filters, ruins: v })} 
             />
             <Switch 
-              label="Eventos Históricos" 
+              label="Eventos HistÃ³ricos" 
               checked={filters.events} 
               onChange={(v) => onFilterChange({ ...filters, events: v })} 
             />
           </div>
           <p className="text-[9px] text-foreground/20 italic leading-relaxed pt-2 border-t border-foreground/5">
-            Los cambios se aplican instantáneamente al motor de renderizado.
+            Los cambios se aplican instantÃ¡neamente al motor de renderizado.
           </p>
         </div>
       )}
@@ -105,4 +104,6 @@ const MapSearchBox: React.FC<MapSearchBoxProps> = ({
 };
 
 export default MapSearchBox;
+
+
 

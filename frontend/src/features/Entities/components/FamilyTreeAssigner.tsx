@@ -1,7 +1,7 @@
 ﻿import React from "react";
-import Avatar from "@components/ui/Avatar";
-import MonolithicPanel from "@components/ui/MonolithicPanel";
-import ConfirmationModal from "@components/ui/ConfirmationModal";
+import { Avatar } from "@components";
+import { MonolithicPanel } from "@components";
+import { ConfirmationModal } from "@components";
 import { useFamilyTreeAssigner } from "../hooks/useFamilyTreeAssigner";
 
 interface FamilyTreeAssignerProps {
@@ -407,4 +407,6 @@ const FamilyTreeAssigner: React.FC<FamilyTreeAssignerProps> = ({
 };
 
 export default FamilyTreeAssigner;
+
+
 

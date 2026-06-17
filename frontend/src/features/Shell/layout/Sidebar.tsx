@@ -1,6 +1,5 @@
-import { Link, useLocation } from 'react-router-dom';
-import Avatar from '@components/ui/Avatar';
-
+﻿import { Link, useLocation } from 'react-router-dom';
+import { Avatar } from "@components";
 interface SidebarItemProps {
  icon: string;
  label: string;
@@ -70,3 +69,5 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+
+

@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import UniversalCanvasCore, {
   CanvasNode,
   CanvasEdge,
-} from "@components/ui/editor/UniversalCanvasCore";
+} from "@components/editor/UniversalCanvasCore";
 import { getHierarchyVisuals } from "@features/WorldBible/components/hierarchyVisuals";
 
 export type { CanvasNode, CanvasEdge };

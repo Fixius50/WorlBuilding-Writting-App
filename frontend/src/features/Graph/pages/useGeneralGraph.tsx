@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { RelationshipUseCase } from '@features/Relationships/application/RelationshipUseCase';
-import { CanvasNode, CanvasEdge } from '@components/ui/editor/UniversalCanvas';
+import { CanvasNode, CanvasEdge } from '@components/editor/UniversalCanvas';
 
 /**
  * 🧠 useGeneralGraph

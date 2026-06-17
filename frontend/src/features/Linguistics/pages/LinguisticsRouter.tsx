@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import LinguisticsHub from './LinguisticsHub';
 import AdvancedLinguistics from './AdvancedLinguistics';
 
 import { WorkspaceUseCase } from '@features/Workspaces/application/WorkspaceUseCase';
 import { EntityUseCase } from '@features/Entities/application/EntityUseCase';
-import Button from '@components/ui/Button';
-
+import { Button } from "@components";
 const LinguisticsRouter = () => {
   const [view, setView] = useState('hub'); // 'hub', 'foundry', 'editor', 'advanced'
   const [selectedWord, setSelectedWord] = useState<unknown>(null);
@@ -50,7 +49,7 @@ const LinguisticsRouter = () => {
           <div className="flex-1 flex flex-col">
               <div className="p-4 border-b border-foreground/5 bg-background/50  flex justify-between items-center">
                 <Button variant="ghost" icon="arrow_back" onClick={() => setView('hub')}>Volver al Hub</Button>
-                <div className="text-[10px] font-black uppercase tracking-widest opacity-40">Motor Lingüístico / Laboratorio</div>
+                <div className="text-[10px] font-black uppercase tracking-widest opacity-40">Motor LingÃ¼Ã­stico / Laboratorio</div>
               </div>
               <AdvancedLinguistics />
           </div>
@@ -60,4 +59,6 @@ const LinguisticsRouter = () => {
 };
 
 export default LinguisticsRouter;
+
+
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import {
   useParams,
   useNavigate,
@@ -12,7 +12,7 @@ import InteractiveMapView from "./InteractiveMapView";
 import MapManager from "./MapManager";
 import { EntityUseCase } from "@features/Entities/application/EntityUseCase";
 import { WorkspaceUseCase } from "@features/Workspaces/application/WorkspaceUseCase";
-import ConfirmationModal from "@components/ui/ConfirmationModal";
+import { ConfirmationModal } from "@components";
 import { Entidad } from "@domain/database";
 import {
   MapAggregateService,
@@ -164,7 +164,7 @@ const MapRouter = () => {
         onClose={() => setMapToDelete(null)}
         onConfirm={confirmDeleteMap}
         title="Eliminar Mapa"
-        message={`¿Estás seguro de que quieres eliminar el mapa "${mapToDelete?.nombre}"? Esta acción no se puede deshacer.`}
+        message={`Â¿EstÃ¡s seguro de que quieres eliminar el mapa "${mapToDelete?.nombre}"? Esta acciÃ³n no se puede deshacer.`}
         confirmText="Eliminar"
         type="danger"
       />
@@ -173,4 +173,6 @@ const MapRouter = () => {
 };
 
 export default MapRouter;
+
+
 

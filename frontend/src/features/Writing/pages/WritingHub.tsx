@@ -1,7 +1,7 @@
 ﻿import React from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
-import MonolithicPanel from "@components/ui/MonolithicPanel";
-import ConfirmationModal from "@components/ui/ConfirmationModal";
+import { MonolithicPanel } from "@components";
+import { ConfirmationModal } from "@components";
 import { useWritingHub } from "./useWritingHub";
 
 interface WritingOutletContext {
@@ -296,3 +296,5 @@ const WritingHub = () => {
 };
 
 export default WritingHub;
+
+

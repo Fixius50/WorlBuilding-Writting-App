@@ -1,6 +1,6 @@
 ﻿import React, { useState } from "react";
 import { useOutletContext, useParams } from "react-router-dom";
-import MonolithicPanel from "@components/ui/MonolithicPanel";
+import { MonolithicPanel } from "@components";
 import { GeneralGraphView as GraphView } from "@features/Graph";
 import { GenealogyView } from "@features/Genealogy";
 
@@ -72,3 +72,5 @@ const PlanningCenterView: React.FC = () => {
 };
 
 export default PlanningCenterView;
+
+

@@ -1,5 +1,5 @@
 ﻿import React from "react";
-import ConfirmModal from "@components/ui/ConfirmModal";
+import { ConfirmModal } from "@components";
 import TemplateSettingsModal from "@features/Entities/components/TemplateSettingsModal";
 import { useEntityBuilderSidebar } from "../hooks/useEntityBuilderSidebar";
 import { Plantilla } from "@domain/database";
@@ -206,4 +206,6 @@ const EntityBuilderSidebar: React.FC<EntityBuilderSidebarProps> = ({
 };
 
 export default EntityBuilderSidebar;
+
+
 

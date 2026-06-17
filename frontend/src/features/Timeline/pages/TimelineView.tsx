@@ -1,9 +1,9 @@
-import React, { useCallback } from "react";
+﻿import React, { useCallback } from "react";
 import { useLanguage } from "@context/LanguageContext";
 import { useOutletContext } from "react-router-dom";
 import { TimelineUseCase } from "@features/Timeline/application/TimelineUseCase";
-import ConfirmationModal from "@components/ui/ConfirmationModal";
-import Button from "@components/ui/Button";
+import { ConfirmationModal } from "@components";
+import { Button } from "@components";
 import TimelineEventCard from "../components/TimelineEventCard";
 import { useTimelineView } from "./useTimelineView";
 
@@ -103,7 +103,7 @@ const TimelineView = () => {
             ))}
             {universes.length === 0 && (
               <p className="text-[10px] italic opacity-40 text-center py-4">
-                No hay universos creados aún.
+                No hay universos creados aÃºn.
               </p>
             )}
           </div>
@@ -112,7 +112,7 @@ const TimelineView = () => {
         <div className="bg-background/20 p-4 border border-foreground/10 space-y-4">
           <h4 className="text-[10px] font-black uppercase text-amber-500/60 mb-2">
             {selectedUniverseId
-              ? "Configuración de Universo"
+              ? "ConfiguraciÃ³n de Universo"
               : "Crear Nuevo Universo"}
           </h4>
           <div className="space-y-3">
@@ -190,7 +190,7 @@ const TimelineView = () => {
           <>
             <div className="space-y-2">
               <h3 className="text-[10px] font-black uppercase text-primary tracking-widest mb-3 flex items-center justify-between">
-                Líneas en "{activeUniverse?.nombre}"
+                LÃ­neas en "{activeUniverse?.nombre}"
               </h3>
               <div className="grid grid-cols-1 gap-1">
                 <button
@@ -202,10 +202,10 @@ const TimelineView = () => {
                 >
                   <div className="flex flex-col">
                     <span className="text-xs font-bold uppercase">
-                      Línea Original
+                      LÃ­nea Original
                     </span>
                     <span className="text-[8px] opacity-40">
-                      Eje Raíz del Universo
+                      Eje RaÃ­z del Universo
                     </span>
                   </div>
                   <span className="material-symbols-outlined text-sm opacity-40">
@@ -245,7 +245,7 @@ const TimelineView = () => {
                           type: "TIMELINE",
                           id: line.id,
                           title: "Eliminar Rama",
-                          message: `¿Estás seguro de eliminar "${line.nombre}"? Se borrarán todos sus eventos en cascada.`,
+                          message: `Â¿EstÃ¡s seguro de eliminar "${line.nombre}"? Se borrarÃ¡n todos sus eventos en cascada.`,
                         });
                       }}
                       className="absolute right-10 top-1/2 -translate-y-1/2 p-2 opacity-0 group-hover/item:opacity-100 hover:text-red-500 transition-all"
@@ -258,18 +258,18 @@ const TimelineView = () => {
                 ))}
                 {activeUniverse?.lineasTemporales.length === 0 && (
                   <p className="text-[10px] italic opacity-40 text-center py-4">
-                    Sin líneas secundarias.
+                    Sin lÃ­neas secundarias.
                   </p>
                 )}
               </div>
             </div>
             <div className="bg-background/20 p-4 border border-foreground/10 space-y-4">
               <h4 className="text-[10px] font-black uppercase text-primary/60">
-                {editingTimeline ? "Editar Línea" : "Nueva Línea"}
+                {editingTimeline ? "Editar LÃ­nea" : "Nueva LÃ­nea"}
               </h4>
               <input
                 className="w-full bg-background border border-foreground/20 p-2 text-xs outline-none focus:border-primary"
-                placeholder="Nombre de la línea..."
+                placeholder="Nombre de la lÃ­nea..."
                 value={editingTimeline?.nombre || newLine.nombre}
                 onChange={(e) => {
                   if (editingTimeline)
@@ -336,7 +336,7 @@ const TimelineView = () => {
             },
             {
               id: "linea",
-              label: "Línea",
+              label: "LÃ­nea",
               icon: "timeline",
               color: "indigo",
             },
@@ -367,12 +367,12 @@ const TimelineView = () => {
           <div className="space-y-6">
             {!selectedTimelineId ? (
               <div className="p-10 text-center opacity-30 italic text-[10px] uppercase font-black">
-                Selecciona una línea temporal primero.
+                Selecciona una lÃ­nea temporal primero.
               </div>
             ) : (
               <div className="bg-background/20 p-4 border border-foreground/10 space-y-4">
                 <h3 className="text-[10px] font-black uppercase text-primary flex items-center justify-between">
-                  {editingEvent ? "Editar Evento" : "Añadir Hito"}
+                  {editingEvent ? "Editar Evento" : "AÃ±adir Hito"}
                   {editingEvent && (
                     <button
                       onClick={() => setEditingEvent(null)}
@@ -388,7 +388,7 @@ const TimelineView = () => {
                   onChange={(e) =>
                     setNewEvent({ ...newEvent, titulo: e.target.value })
                   }
-                  placeholder="Título..."
+                  placeholder="TÃ­tulo..."
                 />
                 <div className="grid grid-cols-2 gap-2">
                   <input
@@ -420,7 +420,7 @@ const TimelineView = () => {
                   onChange={(e) =>
                     setNewEvent({ ...newEvent, descripcion: e.target.value })
                   }
-                  placeholder="Crónica..."
+                  placeholder="CrÃ³nica..."
                 />
                 <Button
                   variant="primary"
@@ -448,7 +448,7 @@ const TimelineView = () => {
     <div className="flex h-screen bg-background text-foreground overflow-hidden">
       <aside className="w-[24rem] shrink-0 border-r border-foreground/10 bg-background/50 flex flex-col">
         <div className="px-4 py-3 border-b border-foreground/10 text-[10px] font-black uppercase tracking-[0.2em] text-foreground/55">
-          Gestión de Multiversos
+          GestiÃ³n de Multiversos
         </div>
         {sidebarContent}
       </aside>
@@ -470,7 +470,7 @@ const TimelineView = () => {
             <div className="flex items-center gap-2 px-4 py-2 bg-foreground/5 border border-foreground/10">
               <div className="size-2 bg-amber-500 rounded-full animate-pulse" />
               <span className="text-[10px] font-black uppercase opacity-60">
-                Línea Raíz
+                LÃ­nea RaÃ­z
               </span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 bg-foreground/5 border border-foreground/10">
@@ -534,7 +534,7 @@ const TimelineView = () => {
                 <div className="relative">
                   <div className="flex items-center gap-4 mb-4">
                     <span className="text-[10px] font-black uppercase text-amber-500 tracking-widest bg-amber-500/10 px-3 py-1">
-                      Línea Original
+                      LÃ­nea Original
                     </span>
                   </div>
                   <div className="visual-timeline-wrapper !p-0 !min-h-0 border-l-2 border-amber-500/20 ml-4 pl-8">
@@ -546,7 +546,7 @@ const TimelineView = () => {
                             ev.linea_id === selectedUniverseId,
                         ).length === 0 ? (
                           <p className="text-[10px] italic opacity-30 py-4">
-                            No hay eventos en la línea raíz.
+                            No hay eventos en la lÃ­nea raÃ­z.
                           </p>
                         ) : (
                           events
@@ -594,7 +594,7 @@ const TimelineView = () => {
                           {events.filter((ev) => ev.linea_id === line.id)
                             .length === 0 ? (
                             <p className="text-[10px] italic opacity-20 py-4">
-                              Esta rama aún no tiene eventos registrados.
+                              Esta rama aÃºn no tiene eventos registrados.
                             </p>
                           ) : (
                             events
@@ -656,4 +656,6 @@ const TimelineView = () => {
 };
 
 export default TimelineView;
+
+
 

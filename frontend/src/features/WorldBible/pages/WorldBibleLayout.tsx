@@ -4,7 +4,7 @@ import { Outlet, useOutletContext } from "react-router-dom";
 import BibleTableView from "../components/BibleTableView";
 import CreateArchetypeModal from "../components/CreateArchetypeModal";
 import { ArchitectContext } from "@domain/ui";
-import ConfirmationModal from "@components/ui/ConfirmationModal";
+import { ConfirmationModal } from "@components";
 import { useWorldBibleLayout } from "./useWorldBibleLayout";
 
 const WorldBibleLayout: React.FC = () => {
@@ -258,3 +258,5 @@ const WorldBibleLayout: React.FC = () => {
 };
 
 export default WorldBibleLayout;
+
+

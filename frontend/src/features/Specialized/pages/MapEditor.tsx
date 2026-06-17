@@ -10,8 +10,8 @@ import {
   MapMouseEvent,
 } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
-import MonolithicPanel from "@components/ui/MonolithicPanel";
-import Button from "@components/ui/Button";
+import { MonolithicPanel } from "@components";
+import { Button } from "@components";
 import { useMapEditor, DrawMode } from "./useMapEditor";
 
 const DRAW_MODE_LABELS: Record<DrawMode, string> = {
@@ -532,3 +532,5 @@ const MapEditor: React.FC = () => {
 };
 
 export default MapEditor;
+
+

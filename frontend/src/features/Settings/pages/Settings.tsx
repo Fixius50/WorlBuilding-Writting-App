@@ -1,6 +1,6 @@
 ﻿import React from "react";
-import MonolithicPanel from "@components/ui/MonolithicPanel";
-import Button from "@components/ui/Button";
+import { MonolithicPanel } from "@components";
+import { Button } from "@components";
 import ComingSoonWrapper from "@features/Settings/components/ComingSoonWrapper";
 import { useSettings } from "./useSettings";
 
@@ -497,3 +497,5 @@ const Settings = () => {
 };
 
 export default Settings;
+
+

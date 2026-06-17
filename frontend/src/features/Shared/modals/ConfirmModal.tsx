@@ -1,4 +1,4 @@
-﻿import Button from '@components/ui/Button';
+﻿import { Button } from "@components";
 import { ModalProps } from '@domain/ui';
 
 interface ConfirmModalProps extends ModalProps {
@@ -66,3 +66,5 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onClose, onConfirm,
 };
 
 export default ConfirmModal;
+
+

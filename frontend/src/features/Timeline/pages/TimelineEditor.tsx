@@ -2,8 +2,7 @@
 import { useParams, useLocation } from "react-router-dom";
 import { useLanguage } from "@context/LanguageContext";
 import { Evento } from "@domain/database";
-import ConfirmationModal from "@components/ui/ConfirmationModal";
-
+import { ConfirmationModal } from "@components";
 // Custom Hooks & Components
 import { useTimelineManager } from "./useTimelineManager";
 import { useTimelineEditor } from "./useTimelineEditor";
@@ -410,3 +409,5 @@ const TimelineEditor: React.FC = () => {
 };
 
 export default TimelineEditor;
+
+

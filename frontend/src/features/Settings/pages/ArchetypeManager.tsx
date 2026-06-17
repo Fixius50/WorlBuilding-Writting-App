@@ -1,7 +1,7 @@
 ﻿import React from "react";
 import { useOutletContext } from "react-router-dom";
-import MonolithicPanel from "@components/ui/MonolithicPanel";
-import Button from "@components/ui/Button";
+import { MonolithicPanel } from "@components";
+import { Button } from "@components";
 import { useArchetypeManager } from "./useArchetypeManager";
 
 const ArchetypeManager: React.FC = () => {
@@ -280,3 +280,5 @@ const ArchetypeManager: React.FC = () => {
 };
 
 export default ArchetypeManager;
+
+

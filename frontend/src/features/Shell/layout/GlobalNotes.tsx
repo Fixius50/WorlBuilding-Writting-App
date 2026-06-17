@@ -1,5 +1,5 @@
-import React from 'react';
-import ConfirmationModal from '@components/ui/ConfirmationModal';
+﻿import React from 'react';
+import { ConfirmationModal } from "@components";
 import { useGlobalNotes } from './useGlobalNotes';
 
 interface GlobalNotesProps {
@@ -29,7 +29,7 @@ const GlobalNotes: React.FC<GlobalNotesProps> = ({ projectName, storageKey }) =>
  <h3 className="text-[10px] font-black uppercase tracking-widest text-foreground">Notas ({notes.length})</h3>
  </div>
  <div className="flex items-center gap-2">
- <button onClick={addNote} className="p-1 hover:text-primary text-text-muted transition-colors" title="Añadir Nota">
+ <button onClick={addNote} className="p-1 hover:text-primary text-text-muted transition-colors" title="AÃ±adir Nota">
  <span className="material-symbols-outlined text-sm">add</span>
  </button>
  <button onClick={toggleFullscreen} className="p-1 hover:text-foreground text-text-muted transition-colors" title="Pantalla Completa">
@@ -50,7 +50,7 @@ const GlobalNotes: React.FC<GlobalNotesProps> = ({ projectName, storageKey }) =>
  className="bg-transparent border-none text-[11px] font-bold text-foreground outline-none w-full"
  value={note.title}
  onChange={(e) => updateNote(note.id, 'title', e.target.value)}
- placeholder="Título..."
+ placeholder="TÃ­tulo..."
  />
  <button
  onClick={() => deleteNote(note.id)}
@@ -63,7 +63,7 @@ const GlobalNotes: React.FC<GlobalNotesProps> = ({ projectName, storageKey }) =>
  className="w-full bg-transparent p-3 text-xs text-foreground/70 outline-none resize-none min-h-[80px] custom-scrollbar"
  value={note.content}
  onChange={(e) => updateNote(note.id, 'content', e.target.value)}
- placeholder="Escribe el contenido aquí..."
+ placeholder="Escribe el contenido aquÃ­..."
  />
  </div>
  ))
@@ -75,7 +75,7 @@ const GlobalNotes: React.FC<GlobalNotesProps> = ({ projectName, storageKey }) =>
  onClose={() => setConfirmDeleteId(null)}
  onConfirm={confirmDeleteAction}
  title="Eliminar Nota"
- message="¿Estás seguro de que quieres eliminar esta nota? No se podrá recuperar."
+ message="Â¿EstÃ¡s seguro de que quieres eliminar esta nota? No se podrÃ¡ recuperar."
  confirmText="Eliminar"
  type="danger"
  />
@@ -100,3 +100,5 @@ const GlobalNotes: React.FC<GlobalNotesProps> = ({ projectName, storageKey }) =>
 };
 
 export default GlobalNotes;
+
+

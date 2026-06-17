@@ -1,5 +1,5 @@
 ﻿import React from 'react';
-import MonolithicPanel from '@components/ui/MonolithicPanel';
+import { MonolithicPanel } from "@components";
 import { useMapSelectionModal, MapPreview } from './useMapSelectionModal';
 
 const MapSelectionModal = ({ maps, onSelect, onCreateNew, onClose }: { maps: MapPreview[]; onSelect: (map: MapPreview) => void; onCreateNew: () => void; onClose: () => void }) => {
@@ -79,4 +79,6 @@ const MapSelectionModal = ({ maps, onSelect, onCreateNew, onClose }: { maps: Map
 };
 
 export default MapSelectionModal;
+
+
 

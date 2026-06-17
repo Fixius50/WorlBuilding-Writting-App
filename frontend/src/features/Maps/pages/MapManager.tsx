@@ -1,7 +1,7 @@
 ﻿import React from "react";
 import { useLanguage } from "@context/LanguageContext";
-import MonolithicPanel from "@components/ui/MonolithicPanel";
-import Button from "@components/ui/Button";
+import { MonolithicPanel } from "@components";
+import { Button } from "@components";
 import { Entidad } from "@domain/database";
 import { useMapManager } from "./useMapManager";
 
@@ -222,3 +222,5 @@ const MapManager: React.FC<MapManagerProps> = ({
 };
 
 export default MapManager;
+
+

@@ -1,6 +1,5 @@
-import React from "react";
-import MonolithicPanel from "@components/ui/MonolithicPanel";
-
+﻿import React from "react";
+import { MonolithicPanel } from "@components";
 interface StatCardProps {
   title: string;
   value: number | string;
@@ -28,3 +27,5 @@ export const StatCard: React.FC<StatCardProps> = ({
     </div>
   </MonolithicPanel>
 );
+
+

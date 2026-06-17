@@ -13,9 +13,16 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
   undefined,
 );
 
-type TranslationNode = string | Record<string, TranslationNode>;
+type TranslationValue = string | TranslationMap;
 
-const translations: Record<string, TranslationNode> = { es, en };
+interface TranslationMap {
+  [key: string]: TranslationValue;
+}
+
+const translations: Record<string, TranslationMap> = {
+  es: es as TranslationMap,
+  en: en as TranslationMap,
+};
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -25,7 +32,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const t = (key: string): string => {
     const keys = key.split(".");
-    let result: TranslationNode | undefined = translations[language];
+    let result: TranslationValue | undefined = translations[language];
 
     for (const k of keys) {
       if (typeof result === "object" && result !== null && k in result) {

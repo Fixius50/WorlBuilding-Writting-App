@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import Button from "@components/ui/Button";
-
+import { Button } from "@components";
 interface InputModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -110,3 +109,5 @@ const InputModal: React.FC<InputModalProps> = ({
 };
 
 export default InputModal;
+
+
