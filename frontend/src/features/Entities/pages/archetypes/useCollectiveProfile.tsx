@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useOutletContext } from "react-router-dom";
-import { EntityUseCase } from "@application/EntityUseCase";
-import { TemplateUseCase } from "@application/TemplateUseCase";
+import { EntityUseCase } from "@features/Entities/application/EntityUseCase";
+import { TemplateUseCase } from "@features/Settings/application/TemplateUseCase";
 import { Entidad, Valor } from "@domain/database";
 import { useQuery } from "@tanstack/react-query";
 
@@ -23,7 +23,7 @@ export const collectiveEntityQueryKey = (entityId: number) =>
   ["collective-entity", entityId] as const;
 
 /**
- * 🧠 useCollectiveProfile
+ * ðŸ§  useCollectiveProfile
  * Logic hook for CollectiveProfileView.
  */
 export const useCollectiveProfile = (propEntityId?: string | number) => {
@@ -108,7 +108,7 @@ export const useCollectiveProfile = (propEntityId?: string | number) => {
             hub
           </span>
           <span className="text-[10px] font-black uppercase tracking-widest text-center">
-            MIEMBROS Y LÍDERES
+            MIEMBROS Y LÃDERES
           </span>
         </div>,
       );
@@ -117,7 +117,7 @@ export const useCollectiveProfile = (propEntityId?: string | number) => {
         <div className="flex flex-col h-full bg-background">
           <div className="p-6 border-b border-foreground/5">
             <span className="text-[10px] font-black text-foreground/20 uppercase tracking-widest">
-              Jerarquía de {entity.nombre}
+              JerarquÃ­a de {entity.nombre}
             </span>
           </div>
           <div className="flex-1 overflow-y-auto custom-scrollbar p-0">
@@ -200,3 +200,4 @@ export const useCollectiveProfile = (propEntityId?: string | number) => {
     entityId,
   };
 };
+

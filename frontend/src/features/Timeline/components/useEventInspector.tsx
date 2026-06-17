@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { TimelineUseCase } from '@application/TimelineUseCase';
+import { TimelineUseCase } from '@features/Timeline/application/TimelineUseCase';
 import { Evento, Entidad } from '@domain/database';
 
 /**
- * 🧠 useEventInspector
+ * ðŸ§  useEventInspector
  * Logic for inspecting and managing a timeline event, including entity linking and notes.
  */
 export const useEventInspector = (
@@ -96,3 +96,4 @@ export const useEventInspector = (
     loadEventData
   };
 };
+

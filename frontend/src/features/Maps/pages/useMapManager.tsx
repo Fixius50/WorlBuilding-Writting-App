@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { EntityUseCase } from "@application/EntityUseCase";
+import { EntityUseCase } from "@features/Entities/application/EntityUseCase";
 import { Entidad } from "@domain/database";
 
 /**
- * 🧠 useMapManager
+ * ðŸ§  useMapManager
  * Handles map filtering, preview generation, and attribute updates.
  */
 export const useMapManager = (maps: Entidad[]) => {
@@ -86,3 +86,4 @@ export const useMapManager = (maps: Entidad[]) => {
     handleUpdateMapAttribute,
   };
 };
+

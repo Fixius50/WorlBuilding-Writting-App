@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { TimelineUseCase } from '@application/TimelineUseCase';
-import { WorkspaceUseCase } from '@application/WorkspaceUseCase';
-import { EntityUseCase } from '@application/EntityUseCase';
-import { TemplateUseCase } from '@application/TemplateUseCase';
+import { TimelineUseCase } from '@features/Timeline/application/TimelineUseCase';
+import { WorkspaceUseCase } from '@features/Workspaces/application/WorkspaceUseCase';
+import { EntityUseCase } from '@features/Entities/application/EntityUseCase';
+import { TemplateUseCase } from '@features/Settings/application/TemplateUseCase';
 import { Evento, Carpeta, Entidad } from '@domain/database';
 import { useLanguage } from '@context/LanguageContext';
 
@@ -165,3 +165,4 @@ export const useTimelineManager = (folderId: string | undefined) => {
     involvedEntities, loadData
   };
 };
+

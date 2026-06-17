@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { WorldBibleUseCase } from "@application/WorldBibleUseCase";
+import { WorldBibleUseCase } from "@features/WorldBible/application/WorldBibleUseCase";
 import { Entidad } from "@domain/database";
 import { BIBLE_KEYS } from "./useWorldBibleData";
 
 /**
- * 🛠️ useWorldBibleMutations
+ * ðŸ› ï¸ useWorldBibleMutations
  * Contiene mutaciones con Optimistic UI para la Biblia del Mundo.
  * La UI se actualiza ANTES de que SQLite confirme el cambio.
  */
@@ -12,7 +12,7 @@ export const useWorldBibleMutations = (projectId: number) => {
   const queryClient = useQueryClient();
   const queryKey = BIBLE_KEYS.root(projectId);
 
-  // 1. Mutación para crear entidad
+  // 1. MutaciÃ³n para crear entidad
   const createMutation = useMutation({
     mutationFn: (newEntity: any) => WorldBibleUseCase.createEntity(newEntity),
     onMutate: async (newEntity) => {
@@ -22,7 +22,7 @@ export const useWorldBibleMutations = (projectId: number) => {
       // Guardar el estado anterior por si hay que hacer rollback
       const previousEntities = queryClient.getQueryData<Entidad[]>(queryKey);
 
-      // Actualizar la caché optimísticamente
+      // Actualizar la cachÃ© optimÃ­sticamente
       if (previousEntities) {
         queryClient.setQueryData<Entidad[]>(queryKey, [
           {
@@ -44,7 +44,7 @@ export const useWorldBibleMutations = (projectId: number) => {
       }
     },
     onSettled: () => {
-      // Sincronizar con la DB real al terminar (éxito o fallo)
+      // Sincronizar con la DB real al terminar (Ã©xito o fallo)
       queryClient.invalidateQueries({ queryKey: BIBLE_KEYS.all(projectId) });
       // Disparar evento para que ArchitectLayout (contexto antiguo) se actualice
       window.dispatchEvent(new CustomEvent("entity-update"));
@@ -52,7 +52,7 @@ export const useWorldBibleMutations = (projectId: number) => {
     },
   });
 
-  // 2. Mutación para borrado masivo
+  // 2. MutaciÃ³n para borrado masivo
   const bulkDeleteMutation = useMutation({
     mutationFn: (ids: number[]) => WorldBibleUseCase.bulkDeleteEntities(ids),
     onMutate: async (ids) => {
@@ -66,7 +66,7 @@ export const useWorldBibleMutations = (projectId: number) => {
         );
       }
 
-      // Limpiar optimísticamente todas las queries de World Bible (incluidas carpetas abiertas)
+      // Limpiar optimÃ­sticamente todas las queries de World Bible (incluidas carpetas abiertas)
       queryClient.setQueriesData(
         { queryKey: BIBLE_KEYS.all(projectId) },
         (oldData: unknown) => {
@@ -116,7 +116,7 @@ export const useWorldBibleMutations = (projectId: number) => {
     },
   });
 
-  // 3. Mutación para crear categorías (carpetas)
+  // 3. MutaciÃ³n para crear categorÃ­as (carpetas)
   const createCategoryMutation = useMutation({
     mutationFn: (data: { nombre: string; type: any; projectId: number }) =>
       WorldBibleUseCase.createCategory(data.nombre, data.projectId, data.type),
@@ -136,3 +136,4 @@ export const useWorldBibleMutations = (projectId: number) => {
     isDeleting: bulkDeleteMutation.isPending,
   };
 };
+

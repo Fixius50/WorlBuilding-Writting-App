@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { RelationshipUseCase } from "@application/RelationshipUseCase";
+import { RelationshipUseCase } from "@features/Relationships/application/RelationshipUseCase";
 import { Entidad, Carpeta } from "@domain/database";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -7,7 +7,7 @@ export const entityDatabaseQueryKey = (projectId: number) =>
   ["entity-database", projectId] as const;
 
 /**
- * 🧠 useEntityDatabase
+ * ðŸ§  useEntityDatabase
  * Logic for managing the entity database in the graph feature.
  */
 export const useEntityDatabase = (projectId?: number) => {
@@ -90,7 +90,7 @@ export const useEntityDatabase = (projectId?: number) => {
   }, [selectedEntity]);
 
   const folderName = (folderId: number | null) =>
-    folders.find((f) => f.id === folderId)?.nombre ?? "—";
+    folders.find((f) => f.id === folderId)?.nombre ?? "â€”";
 
   return {
     allEntities,
@@ -110,3 +110,4 @@ export const useEntityDatabase = (projectId?: number) => {
     load,
   };
 };
+

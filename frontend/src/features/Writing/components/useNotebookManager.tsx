@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Notebook } from "@domain/writing";
-import { WorkspaceUseCase } from "@application/WorkspaceUseCase";
+import { WorkspaceUseCase } from "@features/Workspaces/application/WorkspaceUseCase";
 import { getModuleCache, setModuleCache } from "@utils/moduleCache";
 
 /**
- * 🧠 useNotebookManager
+ * ðŸ§  useNotebookManager
  * Logic for managing quick notes (notebooks) in the sidebar.
  */
 export const useNotebookManager = (projectId: number | string | null) => {
@@ -140,3 +140,4 @@ export const useNotebookManager = (projectId: number | string | null) => {
     deleteNotebook,
   };
 };
+

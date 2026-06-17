@@ -1,11 +1,11 @@
 import { useState, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { TemplateUseCase } from "@application/TemplateUseCase";
-import { EntityUseCase } from "@application/EntityUseCase";
+import { TemplateUseCase } from "@features/Settings/application/TemplateUseCase";
+import { EntityUseCase } from "@features/Entities/application/EntityUseCase";
 import { Plantilla, Valor, Entidad } from "@domain/database";
 
 /**
- * 🧠 useDynamicAttributeForm
+ * ðŸ§  useDynamicAttributeForm
  * Logic for managing dynamic entity attributes, including loading templates and persistence.
  */
 export const useDynamicAttributeForm = (
@@ -88,7 +88,7 @@ export const useDynamicAttributeForm = (
 
   const categories = templates.reduce(
     (acc, tpl) => {
-      const cat = tpl.categoria || "Detalles Técnicos";
+      const cat = tpl.categoria || "Detalles TÃ©cnicos";
       if (!acc[cat]) acc[cat] = [];
       acc[cat].push(tpl);
       return acc;
@@ -107,3 +107,4 @@ export const useDynamicAttributeForm = (
     loadData,
   };
 };
+

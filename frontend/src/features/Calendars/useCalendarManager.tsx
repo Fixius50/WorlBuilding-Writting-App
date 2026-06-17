@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { CalendarUseCase } from '@application/CalendarUseCase';
+import { CalendarUseCase } from '@features/Calendars/application/CalendarUseCase';
 import { Calendario } from '@domain/database';
 
 /**
- * 🧠 useCalendarManager
+ * ðŸ§  useCalendarManager
  * Logic for managing custom calendars, months, and weekdays.
  */
 export const useCalendarManager = (projectId: number) => {
@@ -32,7 +32,7 @@ export const useCalendarManager = (projectId: number) => {
     setEditingCalendar({
       nombre: 'Nuevo Calendario',
       meses_json: JSON.stringify([{ nombre: 'Mes 1', dias: 30 }]),
-      dias_semana_json: JSON.stringify(['Día 1', 'Día 2', 'Día 3']),
+      dias_semana_json: JSON.stringify(['DÃ­a 1', 'DÃ­a 2', 'DÃ­a 3']),
       fecha_inicio_json: JSON.stringify({ anio: 1, mes: 1, dia: 1 })
     });
   }, []);
@@ -87,7 +87,7 @@ export const useCalendarManager = (projectId: number) => {
   const handleAddDay = useCallback(() => {
     if (!editingCalendar) return;
     const days = JSON.parse(editingCalendar.dias_semana_json || '[]');
-    days.push(`Día ${days.length + 1}`);
+    days.push(`DÃ­a ${days.length + 1}`);
     updateEditingCalendar({ dias_semana_json: JSON.stringify(days) });
   }, [editingCalendar, updateEditingCalendar]);
 
@@ -121,3 +121,4 @@ export const useCalendarManager = (projectId: number) => {
     updateEditingCalendar
   };
 };
+

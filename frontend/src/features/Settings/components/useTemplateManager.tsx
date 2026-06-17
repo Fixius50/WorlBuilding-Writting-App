@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { TemplateUseCase } from "@application/TemplateUseCase";
+import { TemplateUseCase } from "@features/Settings/application/TemplateUseCase";
 import { Plantilla } from "@domain/database";
 import { useQuery } from "@tanstack/react-query";
 
@@ -21,7 +21,7 @@ export interface TemplateField {
 }
 
 /**
- * 🧠 useTemplateManager
+ * ðŸ§  useTemplateManager
  * Logic for managing global attribute templates.
  */
 export const useTemplateManager = () => {
@@ -100,7 +100,7 @@ export const useTemplateManager = () => {
 };
 
 /**
- * 🧠 useNewFieldForm
+ * ðŸ§  useNewFieldForm
  * Logic for the new attribute form.
  */
 export const useNewFieldForm = (onAdd: (field: TemplateField) => void) => {
@@ -143,3 +143,4 @@ export const useNewFieldForm = (onAdd: (field: TemplateField) => void) => {
     handleSubmit,
   };
 };
+

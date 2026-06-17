@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useOutletContext, useNavigate } from "react-router-dom";
-import { WorkspaceUseCase } from "@application/WorkspaceUseCase";
-import { EntityUseCase } from "@application/EntityUseCase";
+import { WorkspaceUseCase } from "@features/Workspaces/application/WorkspaceUseCase";
+import { EntityUseCase } from "@features/Entities/application/EntityUseCase";
 import { Entidad, Carpeta } from "@domain/database";
 
 // --- Interfaces ---
@@ -17,7 +17,7 @@ export interface FolderViewContext {
 }
 
 /**
- * 🧠 useFolderView
+ * ðŸ§  useFolderView
  * Logic hook for FolderView.
  */
 export const useFolderView = () => {
@@ -38,7 +38,7 @@ export const useFolderView = () => {
 
   // --- Right Panel ---
   useEffect(() => {
-    // Panel derecho eliminado: antes abría "Explorador" en modo bulk.
+    // Panel derecho eliminado: antes abrÃ­a "Explorador" en modo bulk.
   }, []);
 
   // --- Data Loading ---
@@ -130,3 +130,4 @@ export const useFolderView = () => {
     path,
   };
 };
+

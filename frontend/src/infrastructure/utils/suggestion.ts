@@ -2,11 +2,11 @@ import { ReactRenderer } from '@tiptap/react';
 import tippy, { Instance, Props } from 'tippy.js';
 import MentionList from '@features/Editor/components/MentionList';
 import { entityService } from '@repositories/entityService';
-import { useAppStore } from '@store/useAppStore';
+import { useAppStore } from '@features/App/store/useAppStore';
 import { SuggestionOptions, SuggestionProps } from '@tiptap/suggestion';
 
 /**
- * Lógica de sugerencias para la extensión Mention de Tiptap.
+ * LÃ³gica de sugerencias para la extensiÃ³n Mention de Tiptap.
  * Conecta con el motor de base de datos local (entityService) y filtra por el proyecto actual.
  */
 const suggestion: Omit<SuggestionOptions, 'editor'> = {
@@ -123,3 +123,4 @@ const suggestion: Omit<SuggestionOptions, 'editor'> = {
 };
 
 export default suggestion;
+

@@ -1,7 +1,7 @@
 import React from "react";
 import { Carpeta, Plantilla } from "@domain/database";
 import { getHierarchyType } from "@infrastructure/utils/constants/hierarchy_types";
-import { WorldBibleUseCase } from "@application/WorldBibleUseCase";
+import { WorldBibleUseCase } from "@features/WorldBible/application/WorldBibleUseCase";
 import { useCreateMassEntities } from "./useCreateMassEntities";
 
 interface CreateMassEntitiesModalProps {
@@ -809,7 +809,7 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
                     ).values(),
                   ).map((t) => (
                     <option key={t.id} value={t.id}>
-                      {t.nombre} ({t.categoria || "Sin Categoría"})
+                      {t.nombre} ({t.categoria || "Sin CategorÃ­a"})
                     </option>
                   ))}
                 </select>
@@ -906,8 +906,8 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
                     Sin herencia de atributos
                   </p>
                   <p className="text-[9px] mt-2 italic text-foreground/60 max-w-[200px]">
-                    Usa el selector superior para añadir campos de datos que
-                    compartirán todos los entes.
+                    Usa el selector superior para aÃ±adir campos de datos que
+                    compartirÃ¡n todos los entes.
                   </p>
                 </div>
               ) : (
@@ -953,3 +953,4 @@ const CreateMassEntitiesModal: React.FC<CreateMassEntitiesModalProps> = ({
 };
 
 export default CreateMassEntitiesModal;
+

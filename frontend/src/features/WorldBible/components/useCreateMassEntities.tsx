@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { WorldBibleUseCase } from "@application/WorldBibleUseCase";
-import { TemplateUseCase } from "@application/TemplateUseCase";
+import { WorldBibleUseCase } from "@features/WorldBible/application/WorldBibleUseCase";
+import { TemplateUseCase } from "@features/Settings/application/TemplateUseCase";
 import { Carpeta, Plantilla } from "@domain/database";
-import { useSettingsStore } from "@store/useSettingsStore";
+import { useSettingsStore } from "@features/Settings/store/useSettingsStore";
 
 interface AttributeValue {
   template: Plantilla;
@@ -15,7 +15,7 @@ interface PendingEntity {
 }
 
 /**
- * 🧠 useCreateMassEntities
+ * ðŸ§  useCreateMassEntities
  * Logic for batch creating entities with common attributes.
  */
 export const useCreateMassEntities = (
@@ -313,3 +313,5 @@ export const useCreateMassEntities = (
     handleSubmit,
   };
 };
+
+

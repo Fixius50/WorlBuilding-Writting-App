@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Plantilla } from '@domain/database';
-import { TemplateUseCase } from '@application/TemplateUseCase';
+import { TemplateUseCase } from '@features/Settings/application/TemplateUseCase';
 
 /**
- * 🧠 useEntityBuilderSidebar
+ * ðŸ§  useEntityBuilderSidebar
  * Logic for managing entity templates, including searching, creating, editing, and deleting.
  */
 export const useEntityBuilderSidebar = (
@@ -100,3 +100,4 @@ export const useEntityBuilderSidebar = (
     confirmDelete
   };
 };
+

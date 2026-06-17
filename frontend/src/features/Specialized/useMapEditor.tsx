@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapRef, MapMouseEvent } from "react-map-gl/maplibre";
-import { MapUseCase } from "@application/MapUseCase";
+import { MapUseCase } from "@features/Maps/application/MapUseCase";
 import { Entidad } from "@domain/database";
 import { MapMarker, MapLayer, MapAttributes } from "@domain/maps";
 
@@ -49,7 +49,7 @@ const DEFAULT_LAYERS: MapLayer[] = [
 const INITIAL_VIEW_STATE = { longitude: 0, latitude: 0, zoom: 1 };
 
 /**
- * 🧠 useMapEditor
+ * ðŸ§  useMapEditor
  * Logic for managing atlas/map editing, drawing, and persistence.
  */
 export const useMapEditor = (
@@ -115,7 +115,7 @@ export const useMapEditor = (
   const [errorLayers, setErrorLayers] = useState<Set<string>>(new Set());
 
   const openPanel = (_mode: string, _id?: number, _title?: string) => {
-    // Panel derecho eliminado: antes abría inspector contextual del mapa.
+    // Panel derecho eliminado: antes abrÃ­a inspector contextual del mapa.
   };
   const setCustomContent = (_content: unknown, _title?: unknown) => {
     // Panel derecho eliminado: antes inyectaba herramientas contextuales.
@@ -549,3 +549,4 @@ export const useMapEditor = (
     closePanel,
   };
 };
+

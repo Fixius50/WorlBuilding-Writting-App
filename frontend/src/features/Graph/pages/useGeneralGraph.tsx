@@ -1,5 +1,5 @@
-﻿import { useState, useEffect, useCallback } from 'react';
-import { RelationshipUseCase } from '@application/RelationshipUseCase';
+import { useState, useEffect, useCallback } from 'react';
+import { RelationshipUseCase } from '@features/Relationships/application/RelationshipUseCase';
 import { CanvasNode, CanvasEdge } from '@components/ui/editor/UniversalCanvas';
 
 /**
@@ -94,3 +94,4 @@ export const useGeneralGraph = (projectId: number | undefined) => {
     loadGraph
   };
 };
+

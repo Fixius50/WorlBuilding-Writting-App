@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { TrashUseCase, TrashItem } from "@application/TrashUseCase";
+import { TrashUseCase, TrashItem } from "@features/Trash/application/TrashUseCase";
 import { useLanguage } from "@context/LanguageContext";
 
 /**
- * 🧠 useTrashManager
+ * ðŸ§  useTrashManager
  * Logic for managing deleted items, restoration, and permanent purging.
  */
 export const useTrashManager = (projectId: number | null) => {
@@ -57,7 +57,7 @@ export const useTrashManager = (projectId: number | null) => {
     async (tipo: string, itemId: number) => {
       if (
         !confirm(
-          t("trash.confirm_purge") || "¿Estás seguro de purgar este elemento?",
+          t("trash.confirm_purge") || "Â¿EstÃ¡s seguro de purgar este elemento?",
         )
       )
         return;
@@ -80,3 +80,4 @@ export const useTrashManager = (projectId: number | null) => {
     reload: loadItems,
   };
 };
+

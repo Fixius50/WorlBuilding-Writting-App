@@ -5,12 +5,12 @@ import {
   getFilteredRowModel,
 } from "@tanstack/react-table";
 import { Entidad } from "@domain/database";
-import { WorldBibleUseCase } from "@application/WorldBibleUseCase";
+import { WorldBibleUseCase } from "@features/WorldBible/application/WorldBibleUseCase";
 import { useWorldBibleData } from "../hooks/useWorldBibleData";
 import { useWorldBibleMutations } from "../hooks/useWorldBibleMutations";
 
 /**
- * 🧠 useBibleTable
+ * ðŸ§  useBibleTable
  * Logic for managing the world bible table, including filtering, selection, and bulk actions.
  * Powered by TanStack Query + Optimistic UI.
  */
@@ -37,10 +37,10 @@ export const useBibleTable = (
   );
 
   const openPanel = (_mode: string, _id?: number, _title?: string) => {
-    // Panel derecho eliminado: antes abría inspección contextual desde tabla.
+    // Panel derecho eliminado: antes abrÃ­a inspecciÃ³n contextual desde tabla.
   };
   const closePanel = () => {
-    // Panel derecho eliminado: antes cerraba inspección contextual desde tabla.
+    // Panel derecho eliminado: antes cerraba inspecciÃ³n contextual desde tabla.
   };
   const isPanelOpen = false;
 
@@ -142,3 +142,4 @@ export const useBibleTable = (
     isPanelOpen,
   };
 };
+

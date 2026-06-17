@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { WorldBibleUseCase } from '@application/WorldBibleUseCase';
+import { WorldBibleUseCase } from '@features/WorldBible/application/WorldBibleUseCase';
 import { Carpeta, Entidad } from '@domain/database';
 
 interface FolderUpdateEvent extends CustomEvent {
@@ -9,7 +9,7 @@ interface FolderUpdateEvent extends CustomEvent {
 }
 
 /**
- * 🧠 useFolderItem
+ * ðŸ§  useFolderItem
  * Logic for the hierarchical folder tree, including expansion, content loading, and context menu management.
  */
 export const useFolderItem = (
@@ -108,3 +108,4 @@ export const useFolderItem = (
     handleDrop
   };
 };
+

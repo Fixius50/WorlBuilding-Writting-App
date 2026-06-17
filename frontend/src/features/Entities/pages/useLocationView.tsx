@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { EntityUseCase } from '@application/EntityUseCase';
+import { EntityUseCase } from '@features/Entities/application/EntityUseCase';
 import { Entidad } from '@domain/database';
 
 // --- Interfaces ---
@@ -10,7 +10,7 @@ export interface LocationData extends Partial<Entidad> {
 }
 
 /**
- * 🧠 useLocationView
+ * ðŸ§  useLocationView
  * Logic hook for LocationView.
  */
 export const useLocationView = (id: string | number) => {
@@ -77,3 +77,4 @@ export const useLocationView = (id: string | number) => {
     handleChange
   };
 };
+

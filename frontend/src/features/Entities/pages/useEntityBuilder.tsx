@@ -5,9 +5,9 @@ import {
   useNavigate,
   useLocation,
 } from "react-router-dom";
-import { WorkspaceUseCase } from "@application/WorkspaceUseCase";
-import { EntityUseCase } from "@application/EntityUseCase";
-import { TemplateUseCase } from "@application/TemplateUseCase";
+import { WorkspaceUseCase } from "@features/Workspaces/application/WorkspaceUseCase";
+import { EntityUseCase } from "@features/Entities/application/EntityUseCase";
+import { TemplateUseCase } from "@features/Settings/application/TemplateUseCase";
 import { Entidad, Plantilla, Carpeta, Valor } from "@domain/database";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getThemePrimaryHex } from "@infrastructure/utils/themeColor";
@@ -36,7 +36,7 @@ export interface EntityExtras {
 }
 
 /**
- * 🧠 useEntityBuilder
+ * ðŸ§  useEntityBuilder
  * The master brain behind EntityBuilder.tsx.
  * Orchestrates entity lifecycle (creation/edit), attribute management,
  * image gallery, and path synchronization.
@@ -412,7 +412,7 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
   const extras = getExtra();
   const galleryImages = extras.images || [];
 
-  // Pestañas dinámicas y predefinidas del constructor según tipo de entidad
+  // PestaÃ±as dinÃ¡micas y predefinidas del constructor segÃºn tipo de entidad
   const baseEditorTabs = [
     { id: "identity", label: "Identidad" },
     { id: "narrative", label: "Narrativa" },
@@ -440,7 +440,7 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
   const presetEditorTabIds = presetEditorTabs.map((tab) => tab.id);
   const isPresetEditorTab = presetEditorTabIds.includes(activeEntityTab);
 
-  // Gestión de imágenes principal y secundarias paginadas
+  // GestiÃ³n de imÃ¡genes principal y secundarias paginadas
   const primaryImage = galleryImages[0] || null;
   const secondaryPool = galleryImages.slice(1);
   const [secondaryPage, setSecondaryPage] = useState(0);
@@ -498,7 +498,7 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
     [updateExtra],
   );
 
-  // Vuelve al estado anterior de la descripción de rasgos
+  // Vuelve al estado anterior de la descripciÃ³n de rasgos
   const handleAppearanceUndo = useCallback(() => {
     const history = appearanceHistoryRef.current;
     const currentIndex = appearanceHistoryIndexRef.current;
@@ -600,7 +600,7 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
       : undefined;
   }, [setNarrativeValue]);
 
-  // Avanza al siguiente estado deshecho de la cronología
+  // Avanza al siguiente estado deshecho de la cronologÃ­a
   const handleNarrativeRedo = useCallback(() => {
     const history = narrativeHistoryRef.current;
     const currentIndex = narrativeHistoryIndexRef.current;
@@ -629,7 +629,7 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
     narrativeHistoryIndexRef.current = 0;
   }, [entity.id]);
 
-  // Envoltura automática de texto con marcadores Markdown para la narrativa
+  // Envoltura automÃ¡tica de texto con marcadores Markdown para la narrativa
   const applyNarrativeWrapFormatting = useCallback(
     (wrapper: "**" | "*") => {
       const textarea = narrativeTextareaRef.current;
@@ -660,7 +660,7 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
     [entity.descripcion, setNarrativeValue],
   );
 
-  // Indentación por tabulación dentro de la caja de narrativa
+  // IndentaciÃ³n por tabulaciÃ³n dentro de la caja de narrativa
   const applyNarrativeTabIndent = useCallback(() => {
     const textarea = narrativeTextareaRef.current;
     if (!textarea) {
@@ -714,7 +714,7 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
         })();
   }, [entity.descripcion, setNarrativeValue]);
 
-  // Manejo de atajos de teclado del editor Markdown de cronología (Ctrl+B, Ctrl+I, Ctrl+Z, Tab)
+  // Manejo de atajos de teclado del editor Markdown de cronologÃ­a (Ctrl+B, Ctrl+I, Ctrl+Z, Tab)
   const handleNarrativeKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
       const hasCommandModifier = event.ctrlKey || event.metaKey;
@@ -789,7 +789,7 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
     [extras.appearance, setAppearanceValue],
   );
 
-  // Indentación por tabulación dentro de la caja de rasgos/apariencia
+  // IndentaciÃ³n por tabulaciÃ³n dentro de la caja de rasgos/apariencia
   const applyTabIndent = useCallback(() => {
     const textarea = appearanceTextareaRef.current;
     if (!textarea) {
@@ -959,4 +959,5 @@ export const useEntityBuilder = (mode: "creation" | "edit") => {
     navigate,
   };
 };
+
 

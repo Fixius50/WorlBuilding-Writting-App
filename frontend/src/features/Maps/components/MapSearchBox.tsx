@@ -1,6 +1,6 @@
-﻿import React, { useState } from 'react';
-import { EntityUseCase } from '@application/EntityUseCase';
-import { TemplateUseCase } from '@application/TemplateUseCase';
+import React, { useState } from 'react';
+import { EntityUseCase } from '@features/Entities/application/EntityUseCase';
+import { TemplateUseCase } from '@features/Settings/application/TemplateUseCase';
 import Switch from '@components/ui/Switch';
 
 interface MapSearchBoxProps {
@@ -105,3 +105,4 @@ const MapSearchBox: React.FC<MapSearchBoxProps> = ({
 };
 
 export default MapSearchBox;
+

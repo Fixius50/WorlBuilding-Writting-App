@@ -1,7 +1,7 @@
-﻿import React, { useCallback } from "react";
+import React, { useCallback } from "react";
 import { useLanguage } from "@context/LanguageContext";
 import { useOutletContext } from "react-router-dom";
-import { TimelineUseCase } from "@application/TimelineUseCase";
+import { TimelineUseCase } from "@features/Timeline/application/TimelineUseCase";
 import ConfirmationModal from "@components/ui/ConfirmationModal";
 import Button from "@components/ui/Button";
 import TimelineEventCard from "../components/TimelineEventCard";
@@ -656,3 +656,4 @@ const TimelineView = () => {
 };
 
 export default TimelineView;
+

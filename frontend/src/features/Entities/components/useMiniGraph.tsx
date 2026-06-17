@@ -1,6 +1,6 @@
-﻿import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { CanvasNode, CanvasEdge } from '@components/ui/editor/UniversalCanvas';
-import { RelationshipUseCase } from '@application/RelationshipUseCase';
+import { RelationshipUseCase } from '@features/Relationships/application/RelationshipUseCase';
 
 /**
  * 🧠 useMiniGraph
@@ -124,3 +124,4 @@ export const useMiniGraph = (entityId?: number, projectId?: number) => {
     handleNodeDragEnd
   };
 };
+

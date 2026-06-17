@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { RelationshipUseCase } from '@application/RelationshipUseCase';
+import { RelationshipUseCase } from '@features/Relationships/application/RelationshipUseCase';
 import { Entidad, Relacion, RelacionEnriquecida } from '@domain/database';
 
 export interface EnrichedRelationship extends Omit<Relacion, 'created_at'> {
@@ -10,7 +10,7 @@ export interface EnrichedRelationship extends Omit<Relacion, 'created_at'> {
 }
 
 /**
- * 🧠 useRelationshipManager
+ * ðŸ§  useRelationshipManager
  * Logic for managing bidirectional relationships between entities.
  */
 export const useRelationshipManager = (entityId: number | string, entityType?: string) => {
@@ -140,3 +140,4 @@ export const useRelationshipManager = (entityId: number | string, entityType?: s
     resetForm
   };
 };
+

@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLanguage } from '@context/LanguageContext';
-import { useSettingsStore } from '@store/useSettingsStore';
+import { useSettingsStore } from '@features/Settings/store/useSettingsStore';
 
 /**
- * 🧠 useSettings
+ * ðŸ§  useSettings
  * Logic for managing application preferences, appearance, profiles, and data persistence.
  */
 export const useSettings = () => {
@@ -38,7 +38,7 @@ export const useSettings = () => {
     if (!file) return;
 
     if (file.size > 1024 * 1024) {
-      addNotification("Imagen demasiado grande (máx 1MB)", "error");
+      addNotification("Imagen demasiado grande (mÃ¡x 1MB)", "error");
       return;
     }
 
@@ -88,3 +88,4 @@ export const useSettings = () => {
     goBack
   };
 };
+

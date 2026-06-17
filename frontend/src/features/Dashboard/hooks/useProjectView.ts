@@ -1,6 +1,6 @@
 import { useLanguage } from "@context/LanguageContext";
 import { useOutletContext, useNavigate } from "react-router-dom";
-import { useAppStore } from "@store/useAppStore";
+import { useAppStore } from "@features/App/store/useAppStore";
 
 export const useProjectView = () => {
   const { projectName, projectId } = useOutletContext<{
@@ -22,3 +22,4 @@ export const useProjectView = () => {
     baseUrl
   };
 };
+

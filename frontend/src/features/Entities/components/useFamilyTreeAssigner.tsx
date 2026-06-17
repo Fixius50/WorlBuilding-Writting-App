@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { EntityUseCase } from "@application/EntityUseCase";
-import { RelationshipUseCase } from "@application/RelationshipUseCase";
-import { WorkspaceUseCase } from "@application/WorkspaceUseCase";
+import { EntityUseCase } from "@features/Entities/application/EntityUseCase";
+import { RelationshipUseCase } from "@features/Relationships/application/RelationshipUseCase";
+import { WorkspaceUseCase } from "@features/Workspaces/application/WorkspaceUseCase";
 import { Entidad, Relacion } from "@domain/database";
 
 export interface RelacionExtendida extends Relacion {
@@ -10,7 +10,7 @@ export interface RelacionExtendida extends Relacion {
 }
 
 /**
- * 🧠 useFamilyTreeAssigner
+ * ðŸ§  useFamilyTreeAssigner
  * Logic for managing family relationships and lineage assignment.
  */
 export const useFamilyTreeAssigner = (entityId: number, projectId: number) => {
@@ -206,3 +206,4 @@ export const useFamilyTreeAssigner = (entityId: number, projectId: number) => {
     resolveRelativesByNames,
   };
 };
+

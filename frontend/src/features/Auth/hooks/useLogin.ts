@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppStore } from '@store/useAppStore';
+import { useAppStore } from '@features/App/store/useAppStore';
 
 export const useLogin = () => {
   const navigate = useNavigate();
@@ -64,3 +64,4 @@ export const useLogin = () => {
     handleChange
   };
 };
+

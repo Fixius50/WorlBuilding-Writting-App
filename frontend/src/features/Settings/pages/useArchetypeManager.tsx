@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { TemplateUseCase } from "@application/TemplateUseCase";
+import { TemplateUseCase } from "@features/Settings/application/TemplateUseCase";
 import { Plantilla } from "@domain/database";
 import { useQuery } from "@tanstack/react-query";
 
@@ -7,7 +7,7 @@ export const archetypeTemplatesQueryKey = (projectId: number) =>
   ["archetype-templates", projectId] as const;
 
 /**
- * 🧠 useArchetypeManager
+ * ðŸ§  useArchetypeManager
  * Logic for managing custom entity attributes and world-building rules.
  */
 export const useArchetypeManager = (projectId: number) => {
@@ -89,7 +89,7 @@ export const useArchetypeManager = (projectId: number) => {
     async (id: number) => {
       if (
         !window.confirm(
-          "¿Eliminar este atributo? Esto no borrará los datos ya guardados en las entidades, pero el campo dejará de ser visible.",
+          "Â¿Eliminar este atributo? Esto no borrarÃ¡ los datos ya guardados en las entidades, pero el campo dejarÃ¡ de ser visible.",
         )
       )
         return;
@@ -124,3 +124,4 @@ export const useArchetypeManager = (projectId: number) => {
     toggleForm,
   };
 };
+

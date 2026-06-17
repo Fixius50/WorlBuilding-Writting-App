@@ -68,9 +68,25 @@ export const entityService = {
       "id" | "fecha_creacion" | "fecha_actualizacion" | "borrado"
     >,
   ): Promise<Entidad> {
-    const slug = entity.slug || entity.nombre.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    const slug =
+      entity.slug ||
+      entity.nombre
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "");
     await sql`
-      INSERT INTO entidades (nombre, tipo, descripcion, contenido_json, project_id, carpeta_id, slug)
+      INSERT INTO entidades (
+        nombre,
+        tipo,
+        descripcion,
+        contenido_json,
+        project_id,
+        carpeta_id,
+        slug,
+        folder_slug,
+        imagen_url,
+        fecha_actualizacion
+      )
       VALUES (
         ${entity.nombre}, 
         ${entity.tipo}, 
@@ -78,7 +94,10 @@ export const entityService = {
         ${entity.contenido_json ? (typeof entity.contenido_json === "string" ? entity.contenido_json : JSON.stringify(entity.contenido_json)) : null}, 
         ${entity.project_id}, 
         ${entity.carpeta_id},
-        ${slug}
+        ${slug},
+        ${entity.folder_slug ?? null},
+        ${entity.imagen_url ?? null},
+        ${new Date().toISOString()}
       )
     `;
 
@@ -105,8 +124,11 @@ export const entityService = {
     }
     if (entity.carpeta_id !== undefined)
       fields.push(`carpeta_id = ${entity.carpeta_id}`);
-    if (entity.slug !== undefined)
-      fields.push(`slug = ${entity.slug}`);
+    if (entity.slug !== undefined) fields.push(`slug = ${entity.slug}`);
+    if (entity.folder_slug !== undefined)
+      fields.push(`folder_slug = ${entity.folder_slug}`);
+    if (entity.imagen_url !== undefined)
+      fields.push(`imagen_url = ${entity.imagen_url}`);
 
     if (fields.length > 0) {
       // Usando sintaxis segura de SQLocal con COALESCE para evitar sobrescribir con null si no se desea
@@ -117,7 +139,10 @@ export const entityService = {
           descripcion = COALESCE(${entity.descripcion}, descripcion),
           contenido_json = COALESCE(${entity.contenido_json ? (typeof entity.contenido_json === "string" ? entity.contenido_json : JSON.stringify(entity.contenido_json)) : null}, contenido_json),
           carpeta_id = COALESCE(${entity.carpeta_id}, carpeta_id),
-          slug = COALESCE(${entity.slug}, slug)
+          slug = COALESCE(${entity.slug}, slug),
+          folder_slug = COALESCE(${entity.folder_slug}, folder_slug),
+          imagen_url = COALESCE(${entity.imagen_url}, imagen_url),
+          fecha_actualizacion = COALESCE(${entity.fecha_actualizacion}, CURRENT_TIMESTAMP)
         WHERE id = ${id}
       `;
     }
@@ -191,12 +216,18 @@ export const entityService = {
   },
 
   async updateValue(valueId: number, value: string): Promise<void> {
-    const rows = await sql<{ entidad_id: number }>`SELECT entidad_id FROM valores WHERE id = ${valueId} LIMIT 1`;
+    const rows = await sql<{
+      entidad_id: number;
+    }>`SELECT entidad_id FROM valores WHERE id = ${valueId} LIMIT 1`;
     await sql`UPDATE valores SET valor = ${value}, updated_at = CURRENT_TIMESTAMP WHERE id = ${valueId}`;
     const hasRow = rows.length > 0;
     switch (hasRow) {
       case true:
-        emitUIRefresh({ operation: "update", scope: "entity", id: rows[0].entidad_id });
+        emitUIRefresh({
+          operation: "update",
+          scope: "entity",
+          id: rows[0].entidad_id,
+        });
         break;
       default:
         break;
@@ -204,27 +235,47 @@ export const entityService = {
   },
 
   async deleteValue(valueId: number): Promise<void> {
-    const rows = await sql<{ entidad_id: number }>`SELECT entidad_id FROM valores WHERE id = ${valueId} LIMIT 1`;
+    const rows = await sql<{
+      entidad_id: number;
+    }>`SELECT entidad_id FROM valores WHERE id = ${valueId} LIMIT 1`;
     await sql`DELETE FROM valores WHERE id = ${valueId}`;
     const hasRow = rows.length > 0;
     switch (hasRow) {
       case true:
-        emitUIRefresh({ operation: "update", scope: "entity", id: rows[0].entidad_id });
+        emitUIRefresh({
+          operation: "update",
+          scope: "entity",
+          id: rows[0].entidad_id,
+        });
         break;
       default:
         break;
     }
   },
 
-  getPosition: async (entityId: number, context: string = "general"): Promise<{ x: number; y: number } | null> => {
+  getPosition: async (
+    entityId: number,
+    context: string = "general",
+  ): Promise<{ x: number; y: number } | null> => {
     console.log("[DB] getPosition for entity:", entityId, "context:", context);
-    const rows = await sql<{ x: number; y: number }>`SELECT x, y FROM grafo_posiciones WHERE entidad_id = ${entityId} AND contexto = ${context} LIMIT 1`;
+    const rows = await sql<{
+      x: number;
+      y: number;
+    }>`SELECT x, y FROM grafo_posiciones WHERE entidad_id = ${entityId} AND contexto = ${context} LIMIT 1`;
     console.log("[DB] getPosition result:", rows[0]);
     return rows[0] || null;
   },
 
-  getAllPositions: async (projectId: number, context: string = "general"): Promise<{ entidad_id: number; x: number; y: number }[]> => {
-    console.log("[DB] getAllPositions for project:", projectId, "context:", context);
+  getAllPositions: async (
+    projectId: number,
+    context: string = "general",
+  ): Promise<{ entidad_id: number; x: number; y: number }[]> => {
+    console.log(
+      "[DB] getAllPositions for project:",
+      projectId,
+      "context:",
+      context,
+    );
     const result = await sql<{ entidad_id: number; x: number; y: number }>`
       SELECT gp.entidad_id, gp.x, gp.y 
       FROM grafo_posiciones gp
@@ -235,8 +286,21 @@ export const entityService = {
     return result;
   },
 
-  savePosition: async (entityId: number, x: number, y: number, context: string = "general"): Promise<void> => {
-    console.log("[DB] savePosition for entityId:", entityId, "coords:", x, y, "context:", context);
+  savePosition: async (
+    entityId: number,
+    x: number,
+    y: number,
+    context: string = "general",
+  ): Promise<void> => {
+    console.log(
+      "[DB] savePosition for entityId:",
+      entityId,
+      "coords:",
+      x,
+      y,
+      "context:",
+      context,
+    );
     try {
       await sql`
         INSERT INTO grafo_posiciones (entidad_id, contexto, x, y)

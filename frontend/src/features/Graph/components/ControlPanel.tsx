@@ -2,10 +2,10 @@ import React from 'react';
 import EntityDatabase from './EntityDatabase';
 import NotebookManager from '@features/Writing/components/NotebookManager';
 import { ResponsiveBar } from '@nivo/bar';
-import { useDashboardStore } from '@store/useDashboardStore';
+import { useDashboardStore } from '@features/Dashboard/store/useDashboardStore';
 import { useControlPanel } from './useControlPanel';
 
-// --- Subcomponente de Gráficos (Movido para uso interno) ---
+// --- Subcomponente de GrÃ¡ficos (Movido para uso interno) ---
 function WritingStatsChart({ pages }: { pages: { contenido?: string }[] }) {
   const data = pages.map((p, i) => ({
     hoja: `H${i + 1}`,
@@ -79,7 +79,7 @@ interface ControlPanelProps {
 const SECTIONS: { id: PanelSection; icon: string; label: string }[] = [
   { id: 'database', icon: 'table_chart', label: 'Datos' },
   { id: 'notes', icon: 'sticky_note_2', label: 'Notas' },
-  { id: 'stats', icon: 'analytics', label: 'Estadísticas' },
+  { id: 'stats', icon: 'analytics', label: 'EstadÃ­sticas' },
 ];
 
 const ControlPanel: React.FC<ControlPanelProps> = ({ isOpen, onToggle, projectId, projectName, statsData }) => {
@@ -93,7 +93,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ isOpen, onToggle, projectId
   
   const { stats } = useDashboardStore();
 
-  // Escuchar evento personalizado para cambiar la sección activa desde el microheader
+  // Escuchar evento personalizado para cambiar la secciÃ³n activa desde el microheader
   React.useEffect(() => {
     const handleSectionChange = (e: Event) => {
       const customEvent = e as CustomEvent<string>;
@@ -109,7 +109,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ isOpen, onToggle, projectId
 
   return (
     <>
-      {/* ── Toggle button — siempre visible, flotante en la misma posición ── */}
+      {/* â”€â”€ Toggle button â€” siempre visible, flotante en la misma posiciÃ³n â”€â”€ */}
       <button
         onClick={onToggle}
         className={`
@@ -129,7 +129,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ isOpen, onToggle, projectId
         </span>
         <span>{isOpen ? 'Cerrar Panel' : 'Panel de Control'}</span>
 
-        {/* Indicador de sección activa cuando está abierto */}
+        {/* Indicador de secciÃ³n activa cuando estÃ¡ abierto */}
         {isOpen && (
           <span className="flex items-center gap-1 pl-2 border-l border-primary/30 text-primary/60">
             <span className="material-symbols-outlined text-xs">
@@ -140,7 +140,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ isOpen, onToggle, projectId
         )}
       </button>
 
-      {/* ── Panel drawer ── */}
+      {/* â”€â”€ Panel drawer â”€â”€ */}
       <div
         style={{ height: isOpen ? `${heightVH}vh` : '0vh' }}
         className={`
@@ -161,15 +161,15 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ isOpen, onToggle, projectId
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-1 bg-foreground/20 rounded-full group-hover:bg-primary/40 transition-colors" />
         </div>
 
-        {/* ── Header con tabs de sección ── */}
+        {/* â”€â”€ Header con tabs de secciÃ³n â”€â”€ */}
         <div className="shrink-0 h-12 flex items-stretch border-b border-foreground/10 bg-foreground/[0.02] relative">
-          {/* Título izquierda */}
+          {/* TÃ­tulo izquierda */}
           <div className="flex items-center gap-2 px-5 border-r border-foreground/10 shrink-0">
             <span className="material-symbols-outlined text-sm text-primary">dashboard</span>
             <span className="text-[0.65rem] font-black uppercase tracking-widest text-foreground/60">Panel de Control</span>
           </div>
 
-          {/* Tabs de sección */}
+          {/* Tabs de secciÃ³n */}
           <div className="flex items-stretch flex-1">
             {SECTIONS.map(section => (
               <button
@@ -202,7 +202,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ isOpen, onToggle, projectId
           )}
         </div>
 
-        {/* ── Contenido de sección ── */}
+        {/* â”€â”€ Contenido de secciÃ³n â”€â”€ */}
         <div className="flex-1 relative overflow-hidden bg-background">
 
           {/* BASE DE DATOS */}
@@ -219,7 +219,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ isOpen, onToggle, projectId
             )}
           </div>
 
-          {/* ESTADÍSTICAS */}
+          {/* ESTADÃSTICAS */}
           <div className={`absolute inset-0 transition-opacity duration-200 ${activeSection === 'stats' ? 'opacity-100 pointer-events-auto z-10' : 'opacity-0 pointer-events-none z-0'}`}>
             {isOpen && activeSection === 'stats' && (
               <div className="flex flex-col h-full bg-[#0a0a0a] p-8 overflow-y-auto no-scrollbar">
@@ -243,23 +243,23 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ isOpen, onToggle, projectId
                         <span className="text-xl font-black text-foreground tabular-nums">{stats.wordCount.toLocaleString()}</span>
                       </div>
                       <div className="p-4 bg-foreground/[0.02] border border-foreground/5 flex flex-col space-y-1">
-                        <span className="text-[8px] font-black uppercase text-foreground/40 tracking-widest">Páginas Totales</span>
+                        <span className="text-[8px] font-black uppercase text-foreground/40 tracking-widest">PÃ¡ginas Totales</span>
                         <span className="text-xl font-black text-foreground tabular-nums">{stats.pageCount}</span>
                       </div>
                     </div>
 
                     <div className="p-4 bg-primary/5 border border-primary/20 flex items-center gap-3">
                       <div className="size-2 rounded-full bg-primary animate-pulse"></div>
-                      <span className="text-[9px] font-black uppercase tracking-widest text-primary">Sesión de Escritura Activa</span>
+                      <span className="text-[9px] font-black uppercase tracking-widest text-primary">SesiÃ³n de Escritura Activa</span>
                     </div>
                   </div>
 
-                  {/* Columna Gráfica Distribución */}
+                  {/* Columna GrÃ¡fica DistribuciÃ³n */}
                   <div className="lg:col-span-2 flex flex-col space-y-4">
                     <div className="flex items-center justify-between px-2">
                       <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/60 flex items-center gap-2">
                         <span className="material-symbols-outlined text-sm">bar_chart</span>
-                        Distribución por Hojas
+                        DistribuciÃ³n por Hojas
                       </h3>
                       <span className="text-[9px] font-bold text-foreground/30 font-mono">PROYECTO: {projectName}</span>
                     </div>
@@ -270,7 +270,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ isOpen, onToggle, projectId
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center text-foreground/20 space-y-2">
                           <span className="material-symbols-outlined text-4xl">edit_note</span>
-                          <span className="text-[10px] font-black uppercase tracking-widest italic">Abre un cuaderno para ver analíticas</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest italic">Abre un cuaderno para ver analÃ­ticas</span>
                         </div>
                       )}
                     </div>
@@ -286,4 +286,5 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ isOpen, onToggle, projectId
 };
 
 export default ControlPanel;
+
 

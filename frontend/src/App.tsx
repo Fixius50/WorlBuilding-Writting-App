@@ -2,8 +2,8 @@ import { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 // Layout
-import AppLayout from "@components/layout/AppLayout";
-import ArchitectLayout from "@components/layout/ArchitectLayout";
+import AppLayout from "@features/Shell/layout/AppLayout";
+import ArchitectLayout from "@features/Shell/layout/ArchitectLayout";
 
 // Pages (root level)
 import { WorkspaceSelector } from "@features/Workspaces";
@@ -31,7 +31,7 @@ import { CalendarManagerView } from "@features/Calendars";
 import { SyncView } from "@features/Sync";
 
 // Store & Context
-import { useAppStore } from "@store/useAppStore";
+import { useAppStore } from "@features/App/store/useAppStore";
 import { LanguageProvider } from "@context/LanguageContext";
 
 const App = () => {
@@ -41,7 +41,7 @@ const App = () => {
 
   useEffect(() => {
     const startup = async () => {
-      // 1. Cargar las configuraciones en Zustand (La DB ya se inicializó en main.tsx)
+      // 1. Cargar las configuraciones en Zustand (La DB ya se inicializÃ³ en main.tsx)
       await initializeStore();
     };
     startup();
@@ -54,7 +54,7 @@ const App = () => {
     }
   }, [theme, isInitialized]);
 
-  // Pantalla de carga ultra-rápida mientras lee SQLite
+  // Pantalla de carga ultra-rÃ¡pida mientras lee SQLite
   if (!isInitialized) {
     return (
       <div className="h-screen w-screen bg-[#111] flex items-center justify-center text-white text-[10px] uppercase font-black tracking-widest animate-pulse">

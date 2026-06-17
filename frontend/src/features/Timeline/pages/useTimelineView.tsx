@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { TimelineUseCase } from "@application/TimelineUseCase";
+import { TimelineUseCase } from "@features/Timeline/application/TimelineUseCase";
 import { Evento } from "@domain/database";
 import { TimelineLine, UniverseExtended } from "@domain/timeline";
 import { useQuery } from "@tanstack/react-query";
@@ -11,7 +11,7 @@ export const timelineEventsQueryKey = (universeId: number) =>
   ["timeline", "events", universeId] as const;
 
 /**
- * 🧠 useTimelineView
+ * ðŸ§  useTimelineView
  * Manages multiverses, timeline branches, and event orchestration.
  */
 export const useTimelineView = (projectId: number) => {
@@ -139,7 +139,7 @@ export const useTimelineView = (projectId: number) => {
         id: selectedUniverseId,
         title: "Eliminar Universo",
         message:
-          "¿Estás seguro? Se borrarán todas las líneas y eventos asociados.",
+          "Â¿EstÃ¡s seguro? Se borrarÃ¡n todas las lÃ­neas y eventos asociados.",
       });
     }
   }, [selectedUniverseId]);
@@ -200,7 +200,7 @@ export const useTimelineView = (projectId: number) => {
       ordenAbsoluto: 0,
     });
     setActiveTab("eventos");
-    // Panel derecho eliminado: antes abría inspector de evento.
+    // Panel derecho eliminado: antes abrÃ­a inspector de evento.
   }, []);
 
   const executeDeletion = useCallback(async () => {
@@ -262,3 +262,4 @@ export const useTimelineView = (projectId: number) => {
     loadMultiverse,
   };
 };
+

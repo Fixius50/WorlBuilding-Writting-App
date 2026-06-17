@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { EntityUseCase } from "@application/EntityUseCase";
+import { EntityUseCase } from "@features/Entities/application/EntityUseCase";
 import { Entidad } from "@domain/database";
 import { useQuery } from "@tanstack/react-query";
 
@@ -36,7 +36,7 @@ const matchesAliases = (normalizedType: string, aliases: string[]): boolean => {
 };
 
 /**
- * 🧠 useEntityRouter
+ * ðŸ§  useEntityRouter
  * Hook to handle entity routing logic, determining which profile view or specialized view to display based on entity type.
  */
 export const useEntityRouter = () => {
@@ -143,3 +143,4 @@ export const useEntityRouter = () => {
     viewType,
   };
 };
+

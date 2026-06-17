@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { EntityUseCase } from '@application/EntityUseCase';
-import { TemplateUseCase } from '@application/TemplateUseCase';
+import { EntityUseCase } from '@features/Entities/application/EntityUseCase';
+import { TemplateUseCase } from '@features/Settings/application/TemplateUseCase';
 import { Entidad, Valor } from '@domain/database';
 
 /**
- * 🧠 useEntityInspector
+ * ðŸ§  useEntityInspector
  * Logic for the quick entity inspector, including loading entity data and key values.
  */
 export const useEntityInspector = (entityId: number | string) => {
@@ -43,3 +43,4 @@ export const useEntityInspector = (entityId: number | string) => {
     handleNavigate
   };
 };
+

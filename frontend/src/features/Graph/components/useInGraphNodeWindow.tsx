@@ -1,16 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
-import { RelationshipUseCase } from '@application/RelationshipUseCase';
+import { RelationshipUseCase } from '@features/Relationships/application/RelationshipUseCase';
 import { Entidad } from '@domain/database';
 
 type GraphNode = { id: string; group?: string; data: Record<string, unknown>; label?: string; nombre?: string; category?: string; isFull?: boolean; isStub?: boolean; };
 type EntidadExtendida = Entidad & { attributes?: Record<string, unknown> };
 
 /**
- * 🧠 useInGraphNodeWindow
+ * ðŸ§  useInGraphNodeWindow
  * Hook to handle entity detail fetching, tab navigation, and relationship mapping for the in-graph node window.
  */
 export const useInGraphNodeWindow = (node: GraphNode | null, elements: GraphNode[]) => {
-  const [activeTab, setActiveTab] = useState('ESENCIA'); // ESENCIA, RELACIONES, CRÓNICA
+  const [activeTab, setActiveTab] = useState('ESENCIA'); // ESENCIA, RELACIONES, CRÃ“NICA
   const [details, setDetails] = useState<EntidadExtendida | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -71,8 +71,8 @@ export const useInGraphNodeWindow = (node: GraphNode | null, elements: GraphNode
         const otherNode = elements.find(n => String(n.data?.id) === String(otherId));
         return {
           id: edge.data.id as string,
-          otherLabel: String(otherNode?.data?.label || otherNode?.label || 'Incógnito'),
-          edgeLabel: String(edge.data.label || 'Vínculo')
+          otherLabel: String(otherNode?.data?.label || otherNode?.label || 'IncÃ³gnito'),
+          edgeLabel: String(edge.data.label || 'VÃ­nculo')
         };
       });
   }, [node, elements]);
@@ -97,3 +97,4 @@ export const useInGraphNodeWindow = (node: GraphNode | null, elements: GraphNode
     categoryConfig
   };
 };
+

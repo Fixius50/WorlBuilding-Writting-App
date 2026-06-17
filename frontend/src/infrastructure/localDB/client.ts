@@ -51,7 +51,11 @@ export const initializeDatabase = async () => {
  contenido_json TEXT,
  project_id INTEGER NOT NULL,
  carpeta_id INTEGER,
+ slug TEXT,
+ folder_slug TEXT,
+ imagen_url TEXT,
  fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+ fecha_actualizacion DATETIME DEFAULT CURRENT_TIMESTAMP,
  borrado INTEGER DEFAULT 0,
  FOREIGN KEY (project_id) REFERENCES proyectos(id) ON DELETE CASCADE,
  FOREIGN KEY (carpeta_id) REFERENCES carpetas(id) ON DELETE CASCADE
@@ -206,6 +210,20 @@ export const initializeDatabase = async () => {
       // MIGRACIÓN PARA COLUMNA SLUG EN ENTIDADES
       await sql`ALTER TABLE entidades ADD COLUMN slug TEXT`.catch(() => {});
       await sql`UPDATE entidades SET slug = lower(replace(nombre, ' ', '-')) WHERE slug IS NULL`.catch(
+        () => {},
+      );
+
+      // MIGRACIÓN PARA METADATOS COMPLEMENTARIOS EN ENTIDADES
+      await sql`ALTER TABLE entidades ADD COLUMN folder_slug TEXT`.catch(
+        () => {},
+      );
+      await sql`ALTER TABLE entidades ADD COLUMN imagen_url TEXT`.catch(
+        () => {},
+      );
+      await sql`ALTER TABLE entidades ADD COLUMN fecha_actualizacion DATETIME DEFAULT CURRENT_TIMESTAMP`.catch(
+        () => {},
+      );
+      await sql`UPDATE entidades SET fecha_actualizacion = fecha_creacion WHERE fecha_actualizacion IS NULL`.catch(
         () => {},
       );
 

@@ -1,8 +1,8 @@
-﻿import React, { useCallback } from "react";
+import React, { useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
 import UniversalCanvas from "@components/ui/editor/UniversalCanvas";
 import { useGeneralGraph } from "./useGeneralGraph";
-import { RelationshipUseCase } from "@application/RelationshipUseCase";
+import { RelationshipUseCase } from "@features/Relationships/application/RelationshipUseCase";
 
 interface GraphViewProps {
   projectId?: number;
@@ -52,3 +52,4 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
 };
 
 export default GeneralGraphView;
+

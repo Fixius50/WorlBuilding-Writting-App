@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Cuaderno, Hoja } from "@domain/database";
-import { WritingUseCase } from "@application/WritingUseCase";
-import { EntityUseCase } from "@application/EntityUseCase";
-import { TemplateUseCase } from "@application/TemplateUseCase";
-import { useSettingsStore } from "@store/useSettingsStore";
+import { WritingUseCase } from "@features/Writing/application/WritingUseCase";
+import { EntityUseCase } from "@features/Entities/application/EntityUseCase";
+import { TemplateUseCase } from "@features/Settings/application/TemplateUseCase";
+import { useSettingsStore } from "@features/Settings/store/useSettingsStore";
 
 /**
- * 🧠 useWritingView
+ * ðŸ§  useWritingView
  * Logic for managing a notebook: loading pages, saving content,
  * handling snapshots, and coordinating with the RightPanel.
  */
@@ -56,7 +56,7 @@ export const useWritingView = () => {
     } catch (err) {
       useSettingsStore
         .getState()
-        .addNotification("Error al cargar instantáneas", "error");
+        .addNotification("Error al cargar instantÃ¡neas", "error");
     }
   }, []);
 
@@ -159,7 +159,7 @@ export const useWritingView = () => {
       } catch (err) {
         useSettingsStore
           .getState()
-          .addNotification("Error al crear instantánea", "error");
+          .addNotification("Error al crear instantÃ¡nea", "error");
       }
     },
     [loadSnapshots],
@@ -192,7 +192,7 @@ export const useWritingView = () => {
 
       if (
         !window.confirm(
-          "¿Estás seguro de restaurar esta versión? Se perderá el contenido actual no guardado.",
+          "Â¿EstÃ¡s seguro de restaurar esta versiÃ³n? Se perderÃ¡ el contenido actual no guardado.",
         )
       )
         return;
@@ -206,7 +206,7 @@ export const useWritingView = () => {
         savePage(updated[indexRef.current]);
         return updated;
       });
-      alert("Versión restaurada con éxito.");
+      alert("VersiÃ³n restaurada con Ã©xito.");
     },
     [snapshots, savePage],
   );
@@ -327,3 +327,5 @@ export const useWritingView = () => {
     selectedEntityValues,
   };
 };
+
+

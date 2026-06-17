@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { WorldBibleUseCase } from "@application/WorldBibleUseCase";
+import { WorldBibleUseCase } from "@features/WorldBible/application/WorldBibleUseCase";
 import { Entidad } from "@domain/database";
 
 export const BIBLE_KEYS = {
@@ -11,7 +11,7 @@ export const BIBLE_KEYS = {
 };
 
 /**
- * 📖 useWorldBibleData
+ * ðŸ“– useWorldBibleData
  * Gestiona la carga de entidades de la Biblia del Mundo con TanStack Query.
  */
 export const useWorldBibleData = (projectId: number) => {
@@ -49,8 +49,8 @@ export const useWorldBibleData = (projectId: number) => {
 };
 
 /**
- * 📁 useWorldBibleFolderData
- * Carga el contenido de una carpeta específica (entidades y subcarpetas).
+ * ðŸ“ useWorldBibleFolderData
+ * Carga el contenido de una carpeta especÃ­fica (entidades y subcarpetas).
  */
 export const useWorldBibleFolderData = (
   projectId: number,
@@ -74,8 +74,8 @@ export const useWorldBibleFolderData = (
 };
 
 /**
- * ℹ️ useWorldBibleFolderDetails
- * Carga los detalles (nombre, etc) de una carpeta específica.
+ * â„¹ï¸ useWorldBibleFolderDetails
+ * Carga los detalles (nombre, etc) de una carpeta especÃ­fica.
  */
 export const useWorldBibleFolderDetails = (folderId: number | null) => {
   return useQuery({
@@ -85,3 +85,4 @@ export const useWorldBibleFolderDetails = (folderId: number | null) => {
     enabled: !!folderId,
   });
 };
+

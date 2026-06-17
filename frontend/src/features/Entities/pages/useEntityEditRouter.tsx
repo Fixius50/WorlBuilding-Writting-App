@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { EntityUseCase } from "@application/EntityUseCase";
+import { EntityUseCase } from "@features/Entities/application/EntityUseCase";
 import { Entidad } from "@domain/database";
 import { useQuery } from "@tanstack/react-query";
 
@@ -36,7 +36,7 @@ const matchesAliases = (normalizedType: string, aliases: string[]): boolean => {
 };
 
 /**
- * 🧠 useEntityEditRouter
+ * ðŸ§  useEntityEditRouter
  * Hook to handle entity loading and routing logic for the editor, determining which specialized editor to display.
  */
 export const useEntityEditRouter = () => {
@@ -68,7 +68,7 @@ export const useEntityEditRouter = () => {
       "PLANET",
       "PLANETS",
       "DIMENSION",
-      "DIMENSIÓN",
+      "DIMENSIÃ“N",
       "DIMENSIONS",
     ];
     return matchesAliases(tipo, cosmicTypes);
@@ -80,3 +80,4 @@ export const useEntityEditRouter = () => {
     isCosmic,
   };
 };
+

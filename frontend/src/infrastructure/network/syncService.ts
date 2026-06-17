@@ -114,9 +114,7 @@ export const syncService = {
   /**
    * Construye un snapshot real del proyecto actual para sincronización P2P.
    */
-  async buildRealtimeSnapshot(
-    projectName: string,
-  ): Promise<{
+  async buildRealtimeSnapshot(projectName: string): Promise<{
     success: boolean;
     message: string;
     payload?: SyncRealtimePayload;
@@ -220,8 +218,29 @@ export const syncService = {
       }
 
       for (const entity of payload.entities) {
+        const normalizedSlug =
+          entity.slug ||
+          entity.nombre
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "");
+
         await sql`
-          INSERT INTO entidades (id, nombre, tipo, descripcion, contenido_json, project_id, carpeta_id, fecha_creacion, borrado)
+          INSERT INTO entidades (
+            id,
+            nombre,
+            tipo,
+            descripcion,
+            contenido_json,
+            project_id,
+            carpeta_id,
+            slug,
+            folder_slug,
+            imagen_url,
+            fecha_creacion,
+            fecha_actualizacion,
+            borrado
+          )
           VALUES (
             ${entity.id},
             ${entity.nombre},
@@ -230,7 +249,11 @@ export const syncService = {
             ${entity.contenido_json || null},
             ${entity.project_id},
             ${entity.carpeta_id},
+            ${normalizedSlug},
+            ${entity.folder_slug || null},
+            ${entity.imagen_url || null},
             ${entity.fecha_creacion || new Date().toISOString()},
+            ${entity.fecha_actualizacion || entity.fecha_creacion || new Date().toISOString()},
             ${toNumberBoolean(entity.borrado)}
           )
           ON CONFLICT(id) DO UPDATE SET
@@ -240,6 +263,10 @@ export const syncService = {
             contenido_json = excluded.contenido_json,
             project_id = excluded.project_id,
             carpeta_id = excluded.carpeta_id,
+            slug = excluded.slug,
+            folder_slug = excluded.folder_slug,
+            imagen_url = excluded.imagen_url,
+            fecha_actualizacion = excluded.fecha_actualizacion,
             borrado = excluded.borrado
         `;
       }

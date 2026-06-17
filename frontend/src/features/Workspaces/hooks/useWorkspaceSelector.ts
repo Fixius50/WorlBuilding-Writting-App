@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { WorkspaceUseCase } from "@application/WorkspaceUseCase";
+import { WorkspaceUseCase } from "@features/Workspaces/application/WorkspaceUseCase";
 import { Proyecto } from "@domain/database";
-import { useAppStore } from "@store/useAppStore";
+import { useAppStore } from "@features/App/store/useAppStore";
 
 export const useWorkspaceSelector = () => {
   const navigate = useNavigate();
@@ -62,7 +62,7 @@ export const useWorkspaceSelector = () => {
       switch (isCreating) {
         case true: {
           const res = await WorkspaceUseCase.createProject(nameSlug, formData.nombre, formData.tag, formData.coverUrl);
-          // Actualizar descripción si se ingresó
+          // Actualizar descripciÃ³n si se ingresÃ³
           if (res && formData.descripcion) {
             await WorkspaceUseCase.updateProject(res.id, { descripcion: formData.descripcion });
           }
@@ -87,7 +87,7 @@ export const useWorkspaceSelector = () => {
       }
       setIsCreating(false);
     } catch (err) {
-      setError("Error al guardar la configuración del cuaderno");
+      setError("Error al guardar la configuraciÃ³n del cuaderno");
     } finally {
       setActionLoading(false);
     }
@@ -116,8 +116,8 @@ export const useWorkspaceSelector = () => {
       switch (res.success) {
         case true:
           setStatusModal({
-            title: "Exportación completada",
-            message: "La copia de seguridad se guardó correctamente en el servidor local.",
+            title: "ExportaciÃ³n completada",
+            message: "La copia de seguridad se guardÃ³ correctamente en el servidor local.",
           });
           break;
         default:
@@ -138,8 +138,8 @@ export const useWorkspaceSelector = () => {
       switch (res.success) {
         case true:
           setStatusModal({
-            title: "Importación completada",
-            message: "Los datos se restauraron correctamente. La aplicación se recargará para aplicar los cambios.",
+            title: "ImportaciÃ³n completada",
+            message: "Los datos se restauraron correctamente. La aplicaciÃ³n se recargarÃ¡ para aplicar los cambios.",
           });
           break;
         default:
@@ -155,7 +155,7 @@ export const useWorkspaceSelector = () => {
 
   const handleStatusAcknowledge = (): void => {
     switch (statusModal?.title) {
-      case "Importación completada":
+      case "ImportaciÃ³n completada":
         setStatusModal(null);
         window.location.reload();
         break;
@@ -196,3 +196,5 @@ export const useWorkspaceSelector = () => {
     filteredWorkspaces
   };
 };
+
+

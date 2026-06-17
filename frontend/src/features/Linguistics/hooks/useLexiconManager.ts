@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { EntityUseCase } from '@application/EntityUseCase';
-import { TemplateUseCase } from '@application/TemplateUseCase';
+import { EntityUseCase } from '@features/Entities/application/EntityUseCase';
+import { TemplateUseCase } from '@features/Settings/application/TemplateUseCase';
 import { Entidad, Word } from '@domain/database';
 import { GrammarRule } from '../components/LinguisticsSidebar';
 
@@ -19,7 +19,7 @@ export const useLexiconManager = (projectParam: string | undefined) => {
         const data = JSON.parse(r.contenido_json || '{}');
         return {
           id: r.id,
-          titulo: data.titulo || r.nombre || 'Sin título',
+          titulo: data.titulo || r.nombre || 'Sin tÃ­tulo',
           descripcion: data.contenido || r.descripcion || '',
           status: data.status || 'draft'
         };
@@ -114,3 +114,4 @@ export const useLexiconManager = (projectParam: string | undefined) => {
     deleteWord
   };
 };
+

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 📚 COMPONENTE: RelationshipInspector
  *
  * 📌 PROPÓSITO:
@@ -29,7 +29,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useLanguage } from "@context/LanguageContext";
-import { RelationshipUseCase } from "@application/RelationshipUseCase";
+import { RelationshipUseCase } from "@features/Relationships/application/RelationshipUseCase";
 import { RelacionEnriquecida } from "@domain/database";
 import Button from "@components/ui/Button";
 import ConfirmationModal from "@components/ui/ConfirmationModal";
@@ -298,3 +298,4 @@ const RelationshipInspector: React.FC<RelationshipInspectorProps> = ({
 };
 
 export default RelationshipInspector;
+

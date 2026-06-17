@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { TimelineUseCase } from '@application/TimelineUseCase';
+import { TimelineUseCase } from '@features/Timeline/application/TimelineUseCase';
 import { Evento } from '@domain/database';
 
 /**
- * 🧠 useMiniTimeline
+ * ðŸ§  useMiniTimeline
  * Hook to handle event loading for a specific entity, managing chronological sequencing and creation triggers.
  */
 export const useMiniTimeline = (entityId: number) => {
@@ -29,7 +29,7 @@ export const useMiniTimeline = (entityId: number) => {
   }, [entityId, loadEvents]);
 
   const handleAddEvent = useCallback(() => {
-    window.alert('Abrir modal de creación rápida en desarrollo');
+    window.alert('Abrir modal de creaciÃ³n rÃ¡pida en desarrollo');
   }, []);
 
   return {
@@ -38,3 +38,4 @@ export const useMiniTimeline = (entityId: number) => {
     handleAddEvent
   };
 };
+

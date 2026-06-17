@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { EntityUseCase } from "@application/EntityUseCase";
+import { EntityUseCase } from "@features/Entities/application/EntityUseCase";
 import { Entidad } from "@domain/database";
 import {
   MapMarker,
@@ -8,7 +8,7 @@ import {
   MapConnection,
   MapAttributes,
 } from "@domain/maps";
-import { RelationshipUseCase } from "@application/RelationshipUseCase";
+import { RelationshipUseCase } from "@features/Relationships/application/RelationshipUseCase";
 
 export interface AtlasLevel {
   id: string;
@@ -35,7 +35,7 @@ export interface AtlasAttributes extends MapAttributes {
 }
 
 /**
- * 🧠 useInteractiveMapView
+ * ðŸ§  useInteractiveMapView
  * Handles marker selection, filtering, drawing canvas cache, level hierarchy, and SQLite persistence.
  */
 export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
@@ -375,7 +375,7 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
     return { x, y };
   }, [zoom]);
 
-  // --- DIBUJO EN CANVAS 2D (Inicialización y carga del nivel) ---
+  // --- DIBUJO EN CANVAS 2D (InicializaciÃ³n y carga del nivel) ---
   useEffect(() => {
     const isEdit2D = viewMode === '2D' && appMode === 'EDIT' && canvasRef.current;
     if (isEdit2D) {
@@ -405,7 +405,7 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
     }
   }, [viewMode, appMode, activeLevelId, canvasStates]);
 
-  // --- Lógica del Mouse en Dibujo 2D ---
+  // --- LÃ³gica del Mouse en Dibujo 2D ---
   const handleStartDrawing = useCallback((e: React.MouseEvent<HTMLElement>) => {
     const isLeftClick = e.button === 0;
     const isMiddleClick = e.button === 1;
@@ -490,7 +490,7 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
     }
   }, [canvasStates, activeLevelId, updateAtlasCache]);
 
-  // --- Lógica de Toque (Soporte Táctil Completo) ---
+  // --- LÃ³gica de Toque (Soporte TÃ¡ctil Completo) ---
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLElement>) => {
     const isSingleTouch = e.touches.length === 1;
     const isMultiTouch = e.touches.length > 1;
@@ -550,7 +550,7 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
     }
   }, [isPanning, appMode, getCanvasCoords, brushSize, drawTool, brushColor]);
 
-  // --- Lógica del Zoom con Rueda del Ratón ---
+  // --- LÃ³gica del Zoom con Rueda del RatÃ³n ---
   const handleWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
     e.preventDefault();
     const zoomFactor = 1.1;
@@ -687,7 +687,7 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
     persistPendingChanges();
   }, [annotations, updateAtlasCache, persistPendingChanges]);
 
-  // --- Lógica del Canvas Original (Deck.gl / MapLibre) ---
+  // --- LÃ³gica del Canvas Original (Deck.gl / MapLibre) ---
   const markers = useMemo<MapMarker[]>(() => {
     const rawMarkers = mapAttributes.markers || [];
     return rawMarkers.filter((m) => {
@@ -771,7 +771,7 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
     handleSaveEditAnnotation,
     handleDeleteAnnotation,
 
-    // --- Estados y manejadores de interacción movidos al hook ---
+    // --- Estados y manejadores de interacciÃ³n movidos al hook ---
     zoom,
     setZoom,
     pan,
@@ -822,3 +822,4 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
     setActiveSidebarTab,
   };
 };
+

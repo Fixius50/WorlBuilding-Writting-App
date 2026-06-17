@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { DashboardUseCase, DashboardStats } from '@application/DashboardUseCase';
+import { DashboardUseCase, DashboardStats } from '@features/Dashboard/application/DashboardUseCase';
 
 /**
- * 🧠 useDashboardData
- * Hook de TanStack Query para gestionar las estadísticas del proyecto.
- * Proporciona caché automática y estados de carga optimizados.
+ * ðŸ§  useDashboardData
+ * Hook de TanStack Query para gestionar las estadÃ­sticas del proyecto.
+ * Proporciona cachÃ© automÃ¡tica y estados de carga optimizados.
  */
 export const useDashboardData = (projectId: number) => {
   return useQuery<DashboardStats>({
@@ -15,3 +15,4 @@ export const useDashboardData = (projectId: number) => {
     staleTime: 1000 * 60 * 2, // 2 minutos
   });
 };
+

@@ -1,8 +1,8 @@
 import { useEffect, useCallback, useMemo } from 'react';
-import { useDashboardStore } from '@store/useDashboardStore';
+import { useDashboardStore } from '@features/Dashboard/store/useDashboardStore';
 
 /**
- * 🧠 useAnalyticsDashboard
+ * ðŸ§  useAnalyticsDashboard
  * Logic for processing complex metrics, word count progress, and entity distribution.
  */
 export const useAnalyticsDashboard = (projectId: number) => {
@@ -38,3 +38,4 @@ export const useAnalyticsDashboard = (projectId: number) => {
     reloadStats
   };
 };
+

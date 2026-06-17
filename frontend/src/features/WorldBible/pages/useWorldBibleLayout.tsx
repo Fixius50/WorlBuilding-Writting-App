@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
-import { WorldBibleUseCase } from "@application/WorldBibleUseCase";
+import { WorldBibleUseCase } from "@features/WorldBible/application/WorldBibleUseCase";
 import { Carpeta } from "@domain/database";
 import { ArchitectContext } from "@domain/ui";
 import {
@@ -31,7 +31,7 @@ export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
   const [entityToDelete, setEntityToDelete] = useState<number | null>(null);
 
   const isRoot = useMemo(() => {
-    // Regex para detectar si estamos exactamente en la raíz de la biblia
+    // Regex para detectar si estamos exactamente en la raÃ­z de la biblia
     return /\/bible\/?$/.test(location.pathname);
   }, [location.pathname]);
 
@@ -53,7 +53,7 @@ export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
   const localEntities = useMemo(() => {
     const safeEntities = Array.isArray(rootEntities) ? rootEntities : [];
     if (isRoot) {
-      // En la raíz, mostramos las entidades que NO tienen carpeta_id
+      // En la raÃ­z, mostramos las entidades que NO tienen carpeta_id
       return safeEntities.filter((e) => !e.carpeta_id);
     }
     return folderContent?.entities || [];
@@ -68,7 +68,7 @@ export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
 
   const currentFolder = useMemo(() => {
     if (isRoot) return null;
-    // Prioridad: 1. Detalles cargados por ID, 2. Búsqueda en el contexto global, 3. Fallback
+    // Prioridad: 1. Detalles cargados por ID, 2. BÃºsqueda en el contexto global, 3. Fallback
     return (
       folderDetails ||
       (architectContext.folders || []).find((f) => f.id === currentFolderId) ||
@@ -228,3 +228,4 @@ export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
     entityId,
   };
 };
+
