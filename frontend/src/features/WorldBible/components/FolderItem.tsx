@@ -1,6 +1,6 @@
 ﻿import React from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { getHierarchyVisuals } from "@components/ui/hierarchyVisuals";
+import { getHierarchyVisuals } from "@features/WorldBible/components/hierarchyVisuals";
 import { Carpeta, Entidad } from "@domain/database";
 import { useFolderItem } from "./useFolderItem";
 

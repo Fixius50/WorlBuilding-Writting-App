@@ -1,5 +1,5 @@
-﻿import { HierarchyTypeId, HIERARCHY_DEFINITIONS } from '@domain/hierarchy';
-import { HIERARCHY_VISUALS } from '@components/ui/hierarchyVisuals';
+﻿import { HierarchyTypeId, HIERARCHY_DEFINITIONS } from "@domain/hierarchy";
+import { HIERARCHY_VISUALS } from "@features/WorldBible/components/hierarchyVisuals";
 
 /**
  * LEGACY / INFRASTRUCTURE BRIDGE
@@ -8,25 +8,30 @@ import { HIERARCHY_VISUALS } from '@components/ui/hierarchyVisuals';
  */
 
 export interface HierarchyType {
-    id: string;
-    label: string;
-    description?: string;
-    icon: string;
-    color: string;
-    bgColor: string;
+  id: string;
+  label: string;
+  description?: string;
+  icon: string;
+  color: string;
+  bgColor: string;
 }
 
 // Reconstruimos el objeto HIERARCHY_TYPES combinando Dominio y Presentación
-export const HIERARCHY_TYPES: Record<string, HierarchyType> = Object.keys(HIERARCHY_DEFINITIONS).reduce((acc, key) => {
+export const HIERARCHY_TYPES: Record<string, HierarchyType> = Object.keys(
+  HIERARCHY_DEFINITIONS,
+).reduce(
+  (acc, key) => {
     const typeId = key as HierarchyTypeId;
     acc[typeId] = {
-        ...HIERARCHY_DEFINITIONS[typeId],
-        ...HIERARCHY_VISUALS[typeId]
+      ...HIERARCHY_DEFINITIONS[typeId],
+      ...HIERARCHY_VISUALS[typeId],
     };
     return acc;
-}, {} as Record<string, HierarchyType>);
+  },
+  {} as Record<string, HierarchyType>,
+);
 
 export const getHierarchyType = (typeId: string): HierarchyType => {
-    const normalizedId = (typeId || 'folder').toLowerCase();
-    return HIERARCHY_TYPES[normalizedId] || HIERARCHY_TYPES.folder;
+  const normalizedId = (typeId || "folder").toLowerCase();
+  return HIERARCHY_TYPES[normalizedId] || HIERARCHY_TYPES.folder;
 };

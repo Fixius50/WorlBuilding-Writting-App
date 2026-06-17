@@ -1,6 +1,6 @@
 ﻿import React from "react";
 import { useCollectiveProfile } from "./useCollectiveProfile";
-import SecondaryTabs from "@components/ui/SecondaryTabs";
+import SecondaryTabs from "@features/Entities/components/SecondaryTabs";
 import DynamicAttributeForm from "@features/Entities/components/DynamicAttributeForm";
 import NarrativeRichText from "@features/Entities/components/NarrativeRichText";
 import MiniGraph from "@features/Entities/components/MiniGraph";
@@ -88,7 +88,6 @@ const CollectiveProfileView: React.FC<{ entityId?: string | number }> = ({
             {confirmDelete ? "¿CONFIRMAR?" : "ELIMINAR"}
           </button>
 
-
           <button
             onClick={() =>
               navigate(`/local/${projectName}/bible/entity/${entity.id}/edit`)
@@ -138,7 +137,10 @@ const CollectiveProfileView: React.FC<{ entityId?: string | number }> = ({
                 </div>
               ) : (
                 <div className="w-full">
-                  <NarrativeRichText content={narrativeContent} galleryImages={entity?.images} />
+                  <NarrativeRichText
+                    content={narrativeContent}
+                    galleryImages={entity?.images}
+                  />
                 </div>
               )}
             </div>
@@ -197,7 +199,10 @@ const CollectiveProfileView: React.FC<{ entityId?: string | number }> = ({
                 </div>
               ) : (
                 <div className="w-full">
-                  <NarrativeRichText content={narrativeStory} galleryImages={entity?.images} />
+                  <NarrativeRichText
+                    content={narrativeStory}
+                    galleryImages={entity?.images}
+                  />
                 </div>
               )}
             </div>
@@ -206,7 +211,10 @@ const CollectiveProfileView: React.FC<{ entityId?: string | number }> = ({
 
         {activeTab === "RED_DE_CONTACTOS" && (
           <div className="w-full h-full relative bg-background">
-            <MiniGraph entityId={Number(entity.id)} projectId={entity.project_id} />
+            <MiniGraph
+              entityId={Number(entity.id)}
+              projectId={entity.project_id}
+            />
           </div>
         )}
 

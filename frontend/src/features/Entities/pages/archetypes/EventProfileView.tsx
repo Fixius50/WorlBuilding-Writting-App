@@ -1,6 +1,6 @@
 ﻿import React from "react";
 import { useEventProfile } from "./useEventProfile";
-import SecondaryTabs from "@components/ui/SecondaryTabs";
+import SecondaryTabs from "@features/Entities/components/SecondaryTabs";
 import DynamicAttributeForm from "@features/Entities/components/DynamicAttributeForm";
 import MiniTimeline from "@features/Entities/components/MiniTimeline";
 import SectionErrorBoundary from "@features/Shell/layout/SectionErrorBoundary";

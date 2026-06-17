@@ -6,7 +6,7 @@ import Avatar from "@components/ui/Avatar";
 import EntityBuilderSidebar from "../components/EntityBuilderSidebar";
 import ConfirmationModal from "@components/ui/ConfirmationModal";
 import FamilyTreeAssigner from "../components/FamilyTreeAssigner";
-import TemplateSettingsModal from "@components/ui/TemplateSettingsModal";
+import TemplateSettingsModal from "@features/Entities/components/TemplateSettingsModal";
 import { useEntityBuilder } from "./useEntityBuilder";
 import { getPresetTabsByEntityType } from "@features/Entities/utils/entityPresetTabs";
 import { getThemePrimaryHex } from "@infrastructure/utils/themeColor";
@@ -353,20 +353,24 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                           const end = textarea.selectionEnd;
                           const text = textarea.value;
                           const before = text.substring(0, start);
-                          const after  = text.substring(end, text.length);
-                          
-                          const isImageUri = droppedText.startsWith("data:image/");
+                          const after = text.substring(end, text.length);
+
+                          const isImageUri =
+                            droppedText.startsWith("data:image/");
                           const formattedText = isImageUri
                             ? `![imagen](${droppedText})`
                             : droppedText;
 
                           const newValue = before + formattedText + after;
                           setAppearanceValue(newValue);
-                          
+
                           const newCursorPos = start + formattedText.length;
                           requestAnimationFrame(() => {
                             textarea.focus();
-                            textarea.setSelectionRange(newCursorPos, newCursorPos);
+                            textarea.setSelectionRange(
+                              newCursorPos,
+                              newCursorPos,
+                            );
                           });
                           break;
                         }
@@ -400,7 +404,10 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                             src={primaryImage}
                             draggable
                             onDragStart={(e) => {
-                              e.dataTransfer.setData("text/plain", `![imagen](gallery:0)`);
+                              e.dataTransfer.setData(
+                                "text/plain",
+                                `![imagen](gallery:0)`,
+                              );
                             }}
                             className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 cursor-grab active:cursor-grabbing"
                             alt="Imagen principal"
@@ -489,7 +496,10 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                               src={img}
                               draggable
                               onDragStart={(e) => {
-                                e.dataTransfer.setData("text/plain", `![imagen](gallery:${originalIndex})`);
+                                e.dataTransfer.setData(
+                                  "text/plain",
+                                  `![imagen](gallery:${originalIndex})`,
+                                );
                               }}
                               className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all duration-500 cursor-grab active:cursor-grabbing"
                               alt={`Miniatura ${originalIndex}`}
@@ -623,20 +633,24 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                           const end = textarea.selectionEnd;
                           const text = textarea.value;
                           const before = text.substring(0, start);
-                          const after  = text.substring(end, text.length);
-                          
-                          const isImageUri = droppedText.startsWith("data:image/");
+                          const after = text.substring(end, text.length);
+
+                          const isImageUri =
+                            droppedText.startsWith("data:image/");
                           const formattedText = isImageUri
                             ? `![imagen](${droppedText})`
                             : droppedText;
 
                           const newValue = before + formattedText + after;
                           setNarrativeValue(newValue);
-                          
+
                           const newCursorPos = start + formattedText.length;
                           requestAnimationFrame(() => {
                             textarea.focus();
-                            textarea.setSelectionRange(newCursorPos, newCursorPos);
+                            textarea.setSelectionRange(
+                              newCursorPos,
+                              newCursorPos,
+                            );
                           });
                           break;
                         }
@@ -673,7 +687,10 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                               src={img}
                               draggable
                               onDragStart={(e) => {
-                                e.dataTransfer.setData("text/plain", `![imagen](gallery:${i})`);
+                                e.dataTransfer.setData(
+                                  "text/plain",
+                                  `![imagen](gallery:${i})`,
+                                );
                               }}
                               className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-all duration-500 cursor-grab active:cursor-grabbing"
                               alt={`Galería narrativa ${i + 1}`}
@@ -759,19 +776,25 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                   </div>
                 )} */}
                 {fields.length === 0 && (
-                  <div className={`col-span-full py-32 border border-dashed flex flex-col items-center justify-center bg-background w-full transition-all duration-300 ${
-                    isDraggingOver 
-                      ? "border-primary/40 text-primary bg-primary/5 shadow-2xl" 
-                      : "border-white/5 text-foreground/20"
-                  }`}>
+                  <div
+                    className={`col-span-full py-32 border border-dashed flex flex-col items-center justify-center bg-background w-full transition-all duration-300 ${
+                      isDraggingOver
+                        ? "border-primary/40 text-primary bg-primary/5 shadow-2xl"
+                        : "border-white/5 text-foreground/20"
+                    }`}
+                  >
                     <span className="material-symbols-outlined text-5xl mb-6 font-light">
                       {isDraggingOver ? "download" : "inventory_2"}
                     </span>
                     <p className="text-[10px] font-mono font-bold uppercase tracking-[0.25em]">
-                      {isDraggingOver ? "¡Suelta el Módulo Aquí!" : "Área de Atributos Vacía"}
+                      {isDraggingOver
+                        ? "¡Suelta el Módulo Aquí!"
+                        : "Área de Atributos Vacía"}
                     </p>
                     <p className="text-[9px] mt-4 opacity-50 italic">
-                      {isDraggingOver ? "Libera el atributo para añadirlo a esta entidad" : "Arrastra aquí tus módulos desde el lateral derecho"}
+                      {isDraggingOver
+                        ? "Libera el atributo para añadirlo a esta entidad"
+                        : "Arrastra aquí tus módulos desde el lateral derecho"}
                     </p>
                   </div>
                 )}
@@ -836,9 +859,14 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                     // }
 
                     if (newTpl) {
-                      const fieldToUpdate = fields.find((f) => f.id === editingFieldId);
+                      const fieldToUpdate = fields.find(
+                        (f) => f.id === editingFieldId,
+                      );
                       fieldToUpdate && !fieldToUpdate.isTemp
-                        ? setRemovedFieldIds((prev) => [...prev, fieldToUpdate.id as number])
+                        ? setRemovedFieldIds((prev) => [
+                            ...prev,
+                            fieldToUpdate.id as number,
+                          ])
                         : undefined;
 
                       setFields((prev) =>
@@ -850,8 +878,8 @@ const EntityBuilder: React.FC<EntityBuilderProps> = ({ mode }) => {
                                 attribute: newTpl,
                                 isTemp: true,
                               }
-                            : f
-                        )
+                            : f,
+                        ),
                       );
                     }
                     setEditingTemplate(null);

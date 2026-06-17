@@ -3,7 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import { ResponsivePie } from "@nivo/pie";
 import { ResponsiveBar } from "@nivo/bar";
 import MonolithicPanel from "@components/ui/MonolithicPanel";
-import { StatCard } from "@components/StatCard";
+import { StatCard } from "@features/Dashboard/components/StatCard";
 import { useDashboard } from "./useDashboard";
 
 const Dashboard: React.FC = () => {

@@ -1,7 +1,7 @@
 ﻿import React from "react";
 import MonolithicPanel from "@components/ui/MonolithicPanel";
 import Button from "@components/ui/Button";
-import ComingSoonWrapper from "@components/ui/ComingSoonWrapper";
+import ComingSoonWrapper from "@features/Settings/components/ComingSoonWrapper";
 import { useSettings } from "./useSettings";
 
 const Settings = () => {

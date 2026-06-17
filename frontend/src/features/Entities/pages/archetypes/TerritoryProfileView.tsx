@@ -1,6 +1,6 @@
 ﻿import React from "react";
 import { useTerritoryProfile } from "./useTerritoryProfile";
-import SecondaryTabs from "@components/ui/SecondaryTabs";
+import SecondaryTabs from "@features/Entities/components/SecondaryTabs";
 import DynamicAttributeForm from "@features/Entities/components/DynamicAttributeForm";
 import NarrativeRichText from "@features/Entities/components/NarrativeRichText";
 import MiniGraph from "@features/Entities/components/MiniGraph";
@@ -39,9 +39,7 @@ const TerritoryProfileView: React.FC<{ entityId?: string | number }> = ({
   const isPresetTechnicalTab = presetTabIds.includes(activeTab);
 
   const narrativeContent = String(
-    entity?.appearance ||
-    entity?.descripcion ||
-    ""
+    entity?.appearance || entity?.descripcion || "",
   ).trim();
   const narrativeStory = String(entity?.descripcion || "").trim();
   const narrativeLength = narrativeContent.length;
@@ -137,7 +135,10 @@ const TerritoryProfileView: React.FC<{ entityId?: string | number }> = ({
                 </div>
               ) : (
                 <div className="w-full">
-                  <NarrativeRichText content={narrativeContent} galleryImages={entity?.images} />
+                  <NarrativeRichText
+                    content={narrativeContent}
+                    galleryImages={entity?.images}
+                  />
                 </div>
               )}
             </div>
@@ -196,7 +197,10 @@ const TerritoryProfileView: React.FC<{ entityId?: string | number }> = ({
                 </div>
               ) : (
                 <div className="w-full">
-                  <NarrativeRichText content={narrativeStory} galleryImages={entity?.images} />
+                  <NarrativeRichText
+                    content={narrativeStory}
+                    galleryImages={entity?.images}
+                  />
                 </div>
               )}
             </div>
@@ -205,7 +209,10 @@ const TerritoryProfileView: React.FC<{ entityId?: string | number }> = ({
 
         {activeTab === "RED_DE_CONTACTOS" && (
           <div className="w-full h-full relative bg-background">
-            <MiniGraph entityId={Number(entityId)} projectId={entity.project_id} />
+            <MiniGraph
+              entityId={Number(entityId)}
+              projectId={entity.project_id}
+            />
           </div>
         )}
 

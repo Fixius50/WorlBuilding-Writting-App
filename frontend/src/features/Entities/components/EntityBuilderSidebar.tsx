@@ -1,6 +1,6 @@
 ﻿import React from "react";
 import ConfirmModal from "@components/ui/ConfirmModal";
-import TemplateSettingsModal from "@components/ui/TemplateSettingsModal";
+import TemplateSettingsModal from "@features/Entities/components/TemplateSettingsModal";
 import { useEntityBuilderSidebar } from "./useEntityBuilderSidebar";
 import { Plantilla } from "@domain/database";
 

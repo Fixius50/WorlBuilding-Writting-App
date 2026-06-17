@@ -3,7 +3,7 @@ import { Outlet, NavLink, Link } from "react-router-dom";
 import { useLanguage } from "@context/LanguageContext";
 import GlobalRightPanel from "./GlobalRightPanel";
 import ConfirmationModal from "@components/ui/ConfirmationModal";
-import CommandPalette from "@components/ui/CommandPalette";
+import CommandPalette from "./CommandPalette";
 import EntityDatabase from "@features/Graph/components/EntityDatabase";
 import NotebookManager from "@features/Writing/components/NotebookManager";
 import { SyncView } from "@features/Sync";
@@ -1051,4 +1051,3 @@ const ArchitectLayout: React.FC = () => {
 };
 
 export default ArchitectLayout;
-

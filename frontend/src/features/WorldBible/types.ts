@@ -1,6 +1,6 @@
-﻿import { HierarchyTypeId, HIERARCHY_DEFINITIONS } from '@domain/hierarchy';
+﻿import { HierarchyTypeId, HIERARCHY_DEFINITIONS } from "@domain/hierarchy";
 export { type HierarchyTypeId, HIERARCHY_DEFINITIONS };
-import { getHierarchyVisuals } from '@components/ui/hierarchyVisuals';
+import { getHierarchyVisuals } from "@features/WorldBible/components/hierarchyVisuals";
 
 /**
  * 🛠️ World Bible Local Types
@@ -16,11 +16,16 @@ export interface HierarchyType {
   bgColor: string;
 }
 
-export const HIERARCHY_TYPES: Record<string, HierarchyType> = Object.keys(HIERARCHY_DEFINITIONS).reduce((acc, key) => {
-  const typeId = key as HierarchyTypeId;
-  acc[typeId] = {
-    ...HIERARCHY_DEFINITIONS[typeId],
-    ...getHierarchyVisuals(typeId)
-  };
-  return acc;
-}, {} as Record<string, HierarchyType>);
+export const HIERARCHY_TYPES: Record<string, HierarchyType> = Object.keys(
+  HIERARCHY_DEFINITIONS,
+).reduce(
+  (acc, key) => {
+    const typeId = key as HierarchyTypeId;
+    acc[typeId] = {
+      ...HIERARCHY_DEFINITIONS[typeId],
+      ...getHierarchyVisuals(typeId),
+    };
+    return acc;
+  },
+  {} as Record<string, HierarchyType>,
+);
