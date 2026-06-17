@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Cuaderno } from "@domain/database";
-import { WritingUseCase } from "@features/Writing/application/WritingUseCase";
+import { WritingUseCase } from "@features/Writing";
 
 /**
  * ðŸ§  useWritingHub

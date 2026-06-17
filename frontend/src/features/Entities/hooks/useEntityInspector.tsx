@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { EntityUseCase } from '@features/Entities/application/EntityUseCase';
-import { TemplateUseCase } from '@features/Settings/application/TemplateUseCase';
+import { EntityUseCase } from '@features/Entities';
+import { TemplateUseCase } from '@features/Settings';
 import { Entidad, Valor } from '@domain/database';
 
 /**

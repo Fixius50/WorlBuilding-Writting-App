@@ -2,7 +2,7 @@
 import { ConfirmationModal } from "@components";
 import InputModal from "@features/Writing/components/InputModal";
 import { Notebook } from "@domain/writing";
-import ZenEditor from "@features/Editor/components/ZenEditor";
+import { ZenEditor } from "@features/Editor";
 import { Hoja as HojaModel } from "@domain/database";
 import { useNotebookManager } from "../hooks/useNotebookManager";
 
@@ -222,6 +222,3 @@ const NotebookManager: React.FC<NotebookManagerProps> = ({ projectId }) => {
 };
 
 export default NotebookManager;
-
-
-

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useOutletContext, useNavigate } from "react-router-dom";
-import { WorkspaceUseCase } from "@features/Workspaces/application/WorkspaceUseCase";
-import { EntityUseCase } from "@features/Entities/application/EntityUseCase";
+import { WorkspaceUseCase } from "@features/Workspaces";
+import { EntityUseCase } from "@features/Entities";
 import { Entidad, Carpeta } from "@domain/database";
 
 // --- Interfaces ---

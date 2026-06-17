@@ -3,7 +3,7 @@ import { useEventProfile } from "./useEventProfile";
 import SecondaryTabs from "@features/Entities/components/SecondaryTabs";
 import DynamicAttributeForm from "@features/Entities/components/DynamicAttributeForm";
 import MiniTimeline from "@features/Entities/components/MiniTimeline";
-import SectionErrorBoundary from "@features/Shell/layout/SectionErrorBoundary";
+import SectionErrorBoundary from "@components/feedback/SectionErrorBoundary";
 import NarrativeRichText from "@features/Entities/components/NarrativeRichText";
 import MiniGraph from "@features/Entities/components/MiniGraph";
 import {

@@ -1,6 +1,6 @@
-export { default } from "@features/Entities/components/editor/UniversalCanvas";
+export { default } from "../adapters/entities/UniversalCanvas.adapter";
 export type {
   CanvasNode,
   CanvasEdge,
   UniversalCanvasProps,
-} from "@features/Entities/components/editor/UniversalCanvas";
+} from "../adapters/entities/UniversalCanvas.adapter";

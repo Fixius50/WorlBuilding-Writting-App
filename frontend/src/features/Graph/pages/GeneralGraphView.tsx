@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
 import UniversalCanvas from "@components/editor/UniversalCanvas";
 import { useGeneralGraph } from "./useGeneralGraph";
-import { RelationshipUseCase } from "@features/Relationships/application/RelationshipUseCase";
+import { RelationshipUseCase } from "@features/Relationships";
 
 interface GraphViewProps {
   projectId?: number;

@@ -1,5 +1,5 @@
 ﻿import { HierarchyTypeId, HIERARCHY_DEFINITIONS } from "@domain/hierarchy";
-import { HIERARCHY_VISUALS } from "@features/WorldBible/components/hierarchyVisuals";
+import { HIERARCHY_VISUALS } from "@features/WorldBible";
 
 /**
  * LEGACY / INFRASTRUCTURE BRIDGE

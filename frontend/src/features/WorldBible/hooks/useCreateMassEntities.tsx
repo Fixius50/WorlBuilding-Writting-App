@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { WorldBibleUseCase } from "@features/WorldBible/application/WorldBibleUseCase";
-import { TemplateUseCase } from "@features/Settings/application/TemplateUseCase";
+import { WorldBibleUseCase } from "@features/WorldBible";
+import { TemplateUseCase } from "@features/Settings";
 import { Carpeta, Plantilla } from "@domain/database";
-import { useSettingsStore } from "@features/Settings/store/useSettingsStore";
+import { useSettingsStore } from "@features/Settings";
 
 interface AttributeValue {
   template: Plantilla;

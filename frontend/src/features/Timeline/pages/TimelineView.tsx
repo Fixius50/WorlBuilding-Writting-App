@@ -1,7 +1,7 @@
 ﻿import React, { useCallback } from "react";
 import { useLanguage } from "@context/LanguageContext";
 import { useOutletContext } from "react-router-dom";
-import { TimelineUseCase } from "@features/Timeline/application/TimelineUseCase";
+import { TimelineUseCase } from "@features/Timeline";
 import { ConfirmationModal } from "@components";
 import { Button } from "@components";
 import TimelineEventCard from "../components/TimelineEventCard";

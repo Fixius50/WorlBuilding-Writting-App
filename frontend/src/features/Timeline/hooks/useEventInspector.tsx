@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { TimelineUseCase } from '@features/Timeline/application/TimelineUseCase';
+import { TimelineUseCase } from '@features/Timeline';
 import { Evento, Entidad } from '@domain/database';
 
 /**

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { EntityUseCase } from "@features/Entities/application/EntityUseCase";
+import { EntityUseCase } from "@features/Entities";
 import { Entidad } from "@domain/database";
 import {
   MapMarker,
@@ -8,7 +8,7 @@ import {
   MapConnection,
   MapAttributes,
 } from "@domain/maps";
-import { RelationshipUseCase } from "@features/Relationships/application/RelationshipUseCase";
+import { RelationshipUseCase } from "@features/Relationships";
 
 export interface AtlasLevel {
   id: string;

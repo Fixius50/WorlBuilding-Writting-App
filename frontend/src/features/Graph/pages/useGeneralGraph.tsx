@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { RelationshipUseCase } from '@features/Relationships/application/RelationshipUseCase';
+import { RelationshipUseCase } from '@features/Relationships';
 import { CanvasNode, CanvasEdge } from '@components/editor/UniversalCanvas';
 
 /**

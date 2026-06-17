@@ -3,7 +3,7 @@ import UniversalCanvasCore, {
   CanvasNode,
   CanvasEdge,
 } from "@components/editor/UniversalCanvasCore";
-import { getHierarchyVisuals } from "@features/WorldBible/components/hierarchyVisuals";
+import { getHierarchyVisuals } from "@features/WorldBible";
 
 export type { CanvasNode, CanvasEdge };
 

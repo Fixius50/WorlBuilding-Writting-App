@@ -3,7 +3,7 @@ import {
   CanvasNode,
   CanvasEdge,
 } from "@features/Entities/components/editor/UniversalCanvas";
-import { RelationshipUseCase } from "@features/Relationships/application/RelationshipUseCase";
+import { RelationshipUseCase } from "@features/Relationships";
 
 /**
  * 🧠 useMiniGraph

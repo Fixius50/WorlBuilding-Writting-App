@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Cuaderno, Hoja } from "@domain/database";
-import { WritingUseCase } from "@features/Writing/application/WritingUseCase";
-import { EntityUseCase } from "@features/Entities/application/EntityUseCase";
-import { TemplateUseCase } from "@features/Settings/application/TemplateUseCase";
-import { useSettingsStore } from "@features/Settings/store/useSettingsStore";
+import { WritingUseCase } from "@features/Writing";
+import { EntityUseCase } from "@features/Entities";
+import { TemplateUseCase } from "@features/Settings";
+import { useSettingsStore } from "@features/Settings";
 
 /**
  * ðŸ§  useWritingView

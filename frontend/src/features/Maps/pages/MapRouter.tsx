@@ -10,8 +10,8 @@ import MapCreationWizard from "./MapCreationWizard";
 import { MapEditor } from "@features/Specialized";
 import InteractiveMapView from "./InteractiveMapView";
 import MapManager from "./MapManager";
-import { EntityUseCase } from "@features/Entities/application/EntityUseCase";
-import { WorkspaceUseCase } from "@features/Workspaces/application/WorkspaceUseCase";
+import { EntityUseCase } from "@features/Entities";
+import { WorkspaceUseCase } from "@features/Workspaces";
 import { ConfirmationModal } from "@components";
 import { Entidad } from "@domain/database";
 import {

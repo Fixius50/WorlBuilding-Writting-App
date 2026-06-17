@@ -3,7 +3,7 @@ import { Stage, Layer, Line, Rect, Circle, Transformer } from "react-konva";
 import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import { Shape, LayerData } from "@domain/canvas";
-import SectionErrorBoundary from "@features/Shell/layout/SectionErrorBoundary";
+import SectionErrorBoundary from "@components/feedback/SectionErrorBoundary";
 
 interface DrawingCanvasProps {
   stageRef: React.RefObject<Konva.Stage | null>;

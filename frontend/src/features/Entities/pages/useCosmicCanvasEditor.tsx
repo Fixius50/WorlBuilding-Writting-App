@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { EntityUseCase } from "@features/Entities/application/EntityUseCase";
+import { EntityUseCase } from "@features/Entities";
 import { Entidad } from "@domain/database";
 import {
   CanvasNode,

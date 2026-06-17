@@ -5,7 +5,7 @@ import {
   getFilteredRowModel,
 } from "@tanstack/react-table";
 import { Entidad } from "@domain/database";
-import { WorldBibleUseCase } from "@features/WorldBible/application/WorldBibleUseCase";
+import { WorldBibleUseCase } from "@features/WorldBible";
 import { useWorldBibleData } from "../hooks/useWorldBibleData";
 import { useWorldBibleMutations } from "../hooks/useWorldBibleMutations";
 

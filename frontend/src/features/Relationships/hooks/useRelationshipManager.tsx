@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { RelationshipUseCase } from '@features/Relationships/application/RelationshipUseCase';
+import { RelationshipUseCase } from '@features/Relationships';
 import { Entidad, Relacion, RelacionEnriquecida } from '@domain/database';
 
 export interface EnrichedRelationship extends Omit<Relacion, 'created_at'> {

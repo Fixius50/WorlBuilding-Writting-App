@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { RelationshipUseCase } from "@features/Relationships/application/RelationshipUseCase";
+import { RelationshipUseCase } from "@features/Relationships";
 import { Entidad, Carpeta } from "@domain/database";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 

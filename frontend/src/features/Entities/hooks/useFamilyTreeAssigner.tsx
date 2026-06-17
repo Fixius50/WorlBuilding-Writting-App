@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { EntityUseCase } from "@features/Entities/application/EntityUseCase";
-import { RelationshipUseCase } from "@features/Relationships/application/RelationshipUseCase";
-import { WorkspaceUseCase } from "@features/Workspaces/application/WorkspaceUseCase";
+import { EntityUseCase } from "@features/Entities";
+import { RelationshipUseCase } from "@features/Relationships";
+import { WorkspaceUseCase } from "@features/Workspaces";
 import { Entidad, Relacion } from "@domain/database";
 
 export interface RelacionExtendida extends Relacion {

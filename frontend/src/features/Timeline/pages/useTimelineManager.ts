@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { TimelineUseCase } from '@features/Timeline/application/TimelineUseCase';
-import { WorkspaceUseCase } from '@features/Workspaces/application/WorkspaceUseCase';
-import { EntityUseCase } from '@features/Entities/application/EntityUseCase';
-import { TemplateUseCase } from '@features/Settings/application/TemplateUseCase';
+import { TimelineUseCase } from '@features/Timeline';
+import { WorkspaceUseCase } from '@features/Workspaces';
+import { EntityUseCase } from '@features/Entities';
+import { TemplateUseCase } from '@features/Settings';
 import { Evento, Carpeta, Entidad } from '@domain/database';
 import { useLanguage } from '@context/LanguageContext';
 

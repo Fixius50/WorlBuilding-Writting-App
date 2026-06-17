@@ -1,1 +1,1 @@
-﻿export { default } from "@features/Writing/components/InputModal";
+﻿export { default } from "../adapters/writing/InputModal.adapter";

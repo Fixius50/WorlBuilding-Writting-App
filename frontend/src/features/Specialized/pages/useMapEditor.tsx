@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapRef, MapMouseEvent } from "react-map-gl/maplibre";
-import { MapUseCase } from "@features/Maps/application/MapUseCase";
+import { MapUseCase } from "@features/Maps";
 import { Entidad } from "@domain/database";
 import { MapMarker, MapLayer, MapAttributes } from "@domain/maps";
 

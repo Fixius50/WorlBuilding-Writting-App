@@ -1,6 +1,6 @@
 ﻿import React from "react";
 import { useLanguage } from "@context/LanguageContext";
-import ZenEditor from "@features/Editor/components/ZenEditor";
+import { ZenEditor } from "@features/Editor";
 import { Hoja as HojaModel } from "@domain/database";
 import { Avatar } from "@components";
 import { useEventInspector } from "../hooks/useEventInspector";
@@ -213,6 +213,3 @@ const EventInspector: React.FC<EventInspectorProps> = ({
 };
 
 export default EventInspector;
-
-
-

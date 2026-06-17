@@ -53,13 +53,14 @@ flowchart LR
 	F --> D[domain]
 	F --> S[store]
 
-	UI --> SH[Shared UI transversal]
+	UI --> SH[Shared kernel transversal]
 	SH --> SH1[primitives]
 	SH --> SH2[navigation]
 	SH --> SH3[modals]
 	SH --> SH4[panels]
 	SH --> SH5[feedback]
 	SH --> SH6[visuals]
+	SH --> SHA[adapters explicitos]
 ```
 
 ### 2) Vista Runtime (Flujo de Ejecución)
@@ -100,14 +101,15 @@ WorlBuilding-Writting-App/
 │   │   │   └── utils/
 │   │   ├── features/
 │   │   │   ├── Shared/
-│   │   │   │   ├── ui/
-│   │   │   │   │   ├── primitives/
-│   │   │   │   │   ├── navigation/
-│   │   │   │   │   ├── modals/
-│   │   │   │   │   ├── panels/
-│   │   │   │   │   ├── feedback/
-│   │   │   │   │   ├── visuals/
-│   │   │   │   │   └── editor/
+│   │   │   │   ├── primitives/
+│   │   │   │   ├── navigation/
+│   │   │   │   ├── modals/
+│   │   │   │   ├── panels/
+│   │   │   │   ├── feedback/
+│   │   │   │   ├── visuals/
+│   │   │   │   ├── editor/
+│   │   │   │   ├── adapters/
+│   │   │   │   ├── index.ts
 │   │   │   │   └── StatCard.tsx
 │   │   │   ├── Entities/
 │   │   │   │   ├── application/
@@ -168,6 +170,13 @@ cd frontend
 npm run build
 ```
 
+Chequeo de guardrails arquitectónicos:
+
+```bash
+cd frontend
+npm run arch:check
+```
+
 Backend:
 
 ```bat
@@ -191,6 +200,8 @@ mvnw.cmd -DskipTests package
   - Hook reutilizable dentro de la feature: hooks/
   - Hook exclusivo de una pantalla: colocalizado en pages/
 - index.ts de cada feature permanece en raíz como API pública.
+- Evitar imports profundos entre features; consumir `@features/<Feature>` como API pública.
+- Shared funciona como kernel transversal; adapters de negocio legacy viven en `Shared/adapters`.
 
 ## Licenciamiento
 

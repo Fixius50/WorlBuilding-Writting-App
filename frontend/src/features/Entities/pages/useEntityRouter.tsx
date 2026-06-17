@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { EntityUseCase } from "@features/Entities/application/EntityUseCase";
+import { EntityUseCase } from "@features/Entities";
 import { Entidad } from "@domain/database";
 import { useQuery } from "@tanstack/react-query";
 

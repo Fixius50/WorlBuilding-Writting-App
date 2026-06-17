@@ -1,13 +1,15 @@
 ﻿import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useLanguage } from "@context/LanguageContext";
-import ZenEditor from "@features/Editor/components/ZenEditor";
+import { ZenEditor } from "@features/Editor";
 import { ConfirmModal } from "@components";
 import { useWritingView } from "./useWritingView";
-import IndividualProfileView from "@features/Entities/pages/archetypes/IndividualProfileView";
-import TerritoryProfileView from "@features/Entities/pages/archetypes/TerritoryProfileView";
-import CosmicProfileView from "@features/Entities/pages/archetypes/CosmicProfileView";
-import CollectiveProfileView from "@features/Entities/pages/archetypes/CollectiveProfileView";
-import EventProfileView from "@features/Entities/pages/archetypes/EventProfileView";
+import {
+  IndividualProfileView,
+  TerritoryProfileView,
+  CosmicProfileView,
+  CollectiveProfileView,
+  EventProfileView,
+} from "@features/Entities";
 
 const WritingView = () => {
   const { t } = useLanguage();
@@ -43,29 +45,58 @@ const WritingView = () => {
   } = useWritingView();
 
   const renderProfilePreview = useCallback(() => {
-    const type = selectedEntity 
-      ? (selectedEntity.tipo || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase()
+    const type = selectedEntity
+      ? (selectedEntity.tipo || "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toUpperCase()
       : "";
 
-    const isChar = type.includes("PERSONAJE") || type.includes("INDIVIDUAL") || type.includes("CHARACTER");
-    const isLoc = type.includes("LUGAR") || type.includes("TERRITORIO") || type.includes("LOCATION");
-    const isCosmic = type.includes("COSMO") || type.includes("COSMIC") || type.includes("COSMICOS");
-    const isColl = type.includes("COLECTIVO") || type.includes("CULTURA") || type.includes("FACCION") || type.includes("COLLECTIVE") || type.includes("ORGANIZACION");
+    const isChar =
+      type.includes("PERSONAJE") ||
+      type.includes("INDIVIDUAL") ||
+      type.includes("CHARACTER");
+    const isLoc =
+      type.includes("LUGAR") ||
+      type.includes("TERRITORIO") ||
+      type.includes("LOCATION");
+    const isCosmic =
+      type.includes("COSMO") ||
+      type.includes("COSMIC") ||
+      type.includes("COSMICOS");
+    const isColl =
+      type.includes("COLECTIVO") ||
+      type.includes("CULTURA") ||
+      type.includes("FACCION") ||
+      type.includes("COLLECTIVE") ||
+      type.includes("ORGANIZACION");
     const isEvent = type.includes("EVENTO") || type.includes("EVENT");
 
     const component = !selectedEntity
       ? null
       : isChar
-        ? React.createElement(IndividualProfileView, { entityId: selectedEntity.id })
+        ? React.createElement(IndividualProfileView, {
+            entityId: selectedEntity.id,
+          })
         : isLoc
-          ? React.createElement(TerritoryProfileView, { entityId: selectedEntity.id })
+          ? React.createElement(TerritoryProfileView, {
+              entityId: selectedEntity.id,
+            })
           : isCosmic
-            ? React.createElement(CosmicProfileView, { entityId: selectedEntity.id })
+            ? React.createElement(CosmicProfileView, {
+                entityId: selectedEntity.id,
+              })
             : isColl
-              ? React.createElement(CollectiveProfileView, { entityId: selectedEntity.id })
+              ? React.createElement(CollectiveProfileView, {
+                  entityId: selectedEntity.id,
+                })
               : isEvent
-                ? React.createElement(EventProfileView, { entityId: selectedEntity.id })
-                : React.createElement(IndividualProfileView, { entityId: selectedEntity.id });
+                ? React.createElement(EventProfileView, {
+                    entityId: selectedEntity.id,
+                  })
+                : React.createElement(IndividualProfileView, {
+                    entityId: selectedEntity.id,
+                  });
 
     return component;
   }, [selectedEntity]);
@@ -77,7 +108,7 @@ const WritingView = () => {
     return pages.filter(
       (p) =>
         (p.titulo || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (p.contenido || "").toLowerCase().includes(searchTerm.toLowerCase())
+        (p.contenido || "").toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }, [pages, searchTerm]);
 
@@ -93,7 +124,7 @@ const WritingView = () => {
       setPageToDelete({ id, index });
       setDeleteModalOpen(true);
     },
-    [pages.length, setPageToDelete, setDeleteModalOpen]
+    [pages.length, setPageToDelete, setDeleteModalOpen],
   );
 
   // Parsear metadatos de la referencia seleccionada
@@ -104,10 +135,14 @@ const WritingView = () => {
         typeof selectedEntity.contenido_json === "string"
           ? JSON.parse(selectedEntity.contenido_json)
           : selectedEntity.contenido_json || {};
-      
-      const isChar = selectedEntity.tipo?.toUpperCase() === "PERSONAJE" || selectedEntity.tipo?.toUpperCase() === "INDIVIDUAL";
-      const isLoc = selectedEntity.tipo?.toUpperCase() === "LUGAR" || selectedEntity.tipo?.toUpperCase() === "TERRITORIO";
-      
+
+      const isChar =
+        selectedEntity.tipo?.toUpperCase() === "PERSONAJE" ||
+        selectedEntity.tipo?.toUpperCase() === "INDIVIDUAL";
+      const isLoc =
+        selectedEntity.tipo?.toUpperCase() === "LUGAR" ||
+        selectedEntity.tipo?.toUpperCase() === "TERRITORIO";
+
       let subInfo = selectedEntity.tipo || "Referencia";
       if (isChar) subInfo = "Personaje • Protagonista";
       else if (isLoc) subInfo = `${selectedEntity.tipo} • Escenario Principal`;
@@ -115,14 +150,18 @@ const WritingView = () => {
       return {
         nombre: selectedEntity.nombre,
         subInfo,
-        descripcion: selectedEntity.descripcion || attrs.description || "Sin descripción disponible.",
+        descripcion:
+          selectedEntity.descripcion ||
+          attrs.description ||
+          "Sin descripción disponible.",
         estado: attrs.estado || attrs.status || "Estable",
       };
     } catch {
       return {
         nombre: selectedEntity.nombre,
         subInfo: selectedEntity.tipo || "Referencia",
-        descripcion: selectedEntity.descripcion || "Sin descripción disponible.",
+        descripcion:
+          selectedEntity.descripcion || "Sin descripción disponible.",
         estado: "Desconocido",
       };
     }
@@ -165,9 +204,11 @@ const WritingView = () => {
 
       {/* SECCIÓN LATERAL: Panel Contextual local de dos pestañas */}
       {sidebarOpen && (
-        <aside className={`border-l border-foreground/5 bg-background flex flex-col h-full shrink-0 relative animate-in slide-in-from-right-3 duration-300 select-none transition-all ${
-          activeTab === "references" ? "w-[600px]" : "w-80"
-        }`}>
+        <aside
+          className={`border-l border-foreground/5 bg-background flex flex-col h-full shrink-0 relative animate-in slide-in-from-right-3 duration-300 select-none transition-all ${
+            activeTab === "references" ? "w-[600px]" : "w-80"
+          }`}
+        >
           {/* Cabecera del Panel (Pestañas Índice y Referencias) */}
           <div className="flex border-b border-foreground/5 bg-background/50 sticky top-0 z-20">
             <button
@@ -216,12 +257,20 @@ const WritingView = () => {
                   {/* Lista de páginas con anidamiento dinámico */}
                   <div className="flex-grow overflow-y-auto p-3 space-y-1 custom-scrollbar">
                     {filteredPages.map((page) => {
-                      const globalIdx = pages.findIndex((p) => p.id === page.id);
+                      const globalIdx = pages.findIndex(
+                        (p) => p.id === page.id,
+                      );
                       const isSelected = globalIdx === currentPageIndex;
-                      
+
                       // Anidamiento dinámico: si no empieza por "Capítulo", se indenta sutilmente a la derecha
-                      const isChapter = (page.titulo || "").toLowerCase().startsWith("capítulo") || (page.titulo || "").toLowerCase().startsWith("capitulo");
-                      
+                      const isChapter =
+                        (page.titulo || "")
+                          .toLowerCase()
+                          .startsWith("capítulo") ||
+                        (page.titulo || "")
+                          .toLowerCase()
+                          .startsWith("capitulo");
+
                       return (
                         <div key={page.id} className="group relative">
                           <button
@@ -246,14 +295,19 @@ const WritingView = () => {
                                 className="bg-background border-b border-primary font-sans font-bold text-xs outline-none w-full px-1 text-foreground"
                                 value={page.titulo || ""}
                                 onChange={(e) =>
-                                  handleTitleChangeInternal(globalIdx, e.target.value)
+                                  handleTitleChangeInternal(
+                                    globalIdx,
+                                    e.target.value,
+                                  )
                                 }
                                 placeholder={`Hoja ${globalIdx + 1}`}
                               />
                             ) : (
                               <span
                                 className={`font-sans text-[12px] truncate w-full ${
-                                  isChapter ? "font-bold text-foreground/90" : "font-medium text-foreground/60"
+                                  isChapter
+                                    ? "font-bold text-foreground/90"
+                                    : "font-medium text-foreground/60"
                                 }`}
                               >
                                 {page.titulo || `Hoja ${globalIdx + 1}`}
@@ -272,14 +326,20 @@ const WritingView = () => {
                                 className="p-1 rounded-sm text-foreground/35 hover:text-primary hover:bg-primary/10 transition-colors"
                                 title="Renombrar"
                               >
-                                <span className="material-symbols-outlined text-sm">edit</span>
+                                <span className="material-symbols-outlined text-sm">
+                                  edit
+                                </span>
                               </button>
                               <button
-                                onClick={(e) => deletePage(e, page.id, globalIdx)}
+                                onClick={(e) =>
+                                  deletePage(e, page.id, globalIdx)
+                                }
                                 className="p-1 rounded-sm text-foreground/35 hover:text-red-400 hover:bg-red-400/10 transition-colors"
                                 title="Eliminar"
                               >
-                                <span className="material-symbols-outlined text-sm">delete</span>
+                                <span className="material-symbols-outlined text-sm">
+                                  delete
+                                </span>
                               </button>
                             </div>
                           )}
@@ -295,7 +355,9 @@ const WritingView = () => {
                     onClick={handleCreatePage}
                     className="w-full py-3 bg-primary hover:bg-primary/95 text-foreground rounded-md text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.98] shadow-md shadow-primary/10"
                   >
-                    <span className="material-symbols-outlined text-sm">add</span>
+                    <span className="material-symbols-outlined text-sm">
+                      add
+                    </span>
                     <span>AÑADIR HOJA</span>
                   </button>
                 </div>
@@ -370,5 +432,3 @@ const WritingView = () => {
 };
 
 export default WritingView;
-
-

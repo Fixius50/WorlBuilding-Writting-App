@@ -2,7 +2,7 @@
 import { ConfirmationModal } from "@components";
 import { Proyecto } from "@domain/database";
 import { useWorkspaceSelector } from "./useWorkspaceSelector";
-import { WorkspaceUseCase } from "@features/Workspaces/application/WorkspaceUseCase";
+import { WorkspaceUseCase } from "@features/Workspaces";
 import { getModuleCache, setModuleCache } from "@utils/moduleCache";
 
 // --- COMPONENTES ATÃƒâ€œMICOS ---

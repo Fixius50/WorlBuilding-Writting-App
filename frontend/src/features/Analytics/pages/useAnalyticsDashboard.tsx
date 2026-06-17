@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useMemo } from 'react';
-import { useDashboardStore } from '@features/Dashboard/store/useDashboardStore';
+import { useDashboardStore } from '@features/Dashboard';
 
 /**
  * ðŸ§  useAnalyticsDashboard

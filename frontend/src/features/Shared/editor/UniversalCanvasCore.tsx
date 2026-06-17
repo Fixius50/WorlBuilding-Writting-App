@@ -13,7 +13,7 @@ import {
 } from "react-konva";
 import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
-import SectionErrorBoundary from "@features/Shell/layout/SectionErrorBoundary";
+import SectionErrorBoundary from "@components/feedback/SectionErrorBoundary";
 import { Switch } from "@components";
 export interface CanvasNode {
   id: string;
@@ -1122,5 +1122,3 @@ const UniversalCanvasSafe = (props: Parameters<typeof UniversalCanvas>[0]) => (
 );
 
 export default UniversalCanvasSafe;
-
-

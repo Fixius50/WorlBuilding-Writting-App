@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { EntityUseCase } from "@features/Entities/application/EntityUseCase";
+import { EntityUseCase } from "@features/Entities";
 import { Entidad } from "@domain/database";
 
 /**

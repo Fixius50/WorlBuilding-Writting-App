@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { TemplateUseCase } from "@features/Settings/application/TemplateUseCase";
+import { TemplateUseCase } from "@features/Settings";
 import { Plantilla } from "@domain/database";
 import { useQuery } from "@tanstack/react-query";
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { RelationshipUseCase } from '@features/Relationships/application/RelationshipUseCase';
+import { RelationshipUseCase } from '@features/Relationships';
 import { Entidad } from '@domain/database';
 
 type GraphNode = { id: string; group?: string; data: Record<string, unknown>; label?: string; nombre?: string; category?: string; isFull?: boolean; isStub?: boolean; };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useOutletContext } from "react-router-dom";
-import { EntityUseCase } from "@features/Entities/application/EntityUseCase";
-import { TemplateUseCase } from "@features/Settings/application/TemplateUseCase";
+import { EntityUseCase } from "@features/Entities";
+import { TemplateUseCase } from "@features/Settings";
 import { Entidad, Valor } from "@domain/database";
 import { useQuery } from "@tanstack/react-query";
 

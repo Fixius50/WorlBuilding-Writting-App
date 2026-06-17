@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { WorkspaceUseCase } from "@features/Workspaces/application/WorkspaceUseCase";
+import { WorkspaceUseCase } from "@features/Workspaces";
 import { getModuleCache, setModuleCache } from "@utils/moduleCache";
 
 export interface Note {

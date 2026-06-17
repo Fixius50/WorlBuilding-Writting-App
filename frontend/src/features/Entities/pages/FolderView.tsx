@@ -1,6 +1,6 @@
 ﻿import React from "react";
 import { MonolithicPanel } from "@components";
-import { getHierarchyVisuals } from "@features/WorldBible/components/hierarchyVisuals";
+import { getHierarchyVisuals } from "@features/WorldBible";
 import { useFolderView } from "./useFolderView";
 
 const FolderView: React.FC = () => {

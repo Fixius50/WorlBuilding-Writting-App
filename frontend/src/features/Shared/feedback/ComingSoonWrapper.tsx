@@ -1,1 +1,1 @@
-export { default } from "@features/Settings/components/ComingSoonWrapper";
+export { default } from "../adapters/settings/ComingSoonWrapper.adapter";

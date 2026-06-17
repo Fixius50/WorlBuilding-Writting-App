@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLanguage } from '@context/LanguageContext';
-import { useSettingsStore } from '@features/Settings/store/useSettingsStore';
+import { useSettingsStore } from '@features/Settings';
 
 /**
  * ðŸ§  useSettings

@@ -4,12 +4,12 @@ import { useLanguage } from "@context/LanguageContext";
 import GlobalRightPanel from "./GlobalRightPanel";
 import { ConfirmationModal } from "@components";
 import CommandPalette from "./CommandPalette";
-import EntityDatabase from "@features/Graph/components/EntityDatabase";
-import NotebookManager from "@features/Writing/components/NotebookManager";
+import { EntityDatabase } from "@features/Graph";
+import { NotebookManager } from "@features/Writing";
 import { SyncView } from "@features/Sync";
 import { ResponsiveBar } from "@nivo/bar";
 import { useArchitectLayout } from "./useArchitectLayout";
-import { WorkspaceUseCase } from "@features/Workspaces/application/WorkspaceUseCase";
+import { WorkspaceUseCase } from "@features/Workspaces";
 import { getModuleCache, setModuleCache } from "@utils/moduleCache";
 
 // --- Subcomponente de GrÃƒÂ¡ficos para el Modal Central ---
@@ -1051,5 +1051,3 @@ const ArchitectLayout: React.FC = () => {
 };
 
 export default ArchitectLayout;
-
-

@@ -15,5 +15,11 @@ export { default as MonolithicPanel } from "./panels/MonolithicPanel";
 export { default as CommandPalette } from "./panels/CommandPalette";
 
 export { default as ComingSoonWrapper } from "./feedback/ComingSoonWrapper";
+export { default as SectionErrorBoundary } from "./feedback/SectionErrorBoundary";
 
 export * from "./visuals/hierarchyVisuals";
+
+// Adapters explícitos para dependencias de negocio legacy
+export { default as EntitiesUniversalCanvasAdapter } from "./adapters/entities/UniversalCanvas.adapter";
+export { default as LinguisticsDrawingCanvasAdapter } from "./adapters/linguistics/DrawingCanvas.adapter";
+export { default as SettingsComingSoonWrapperAdapter } from "./adapters/settings/ComingSoonWrapper.adapter";

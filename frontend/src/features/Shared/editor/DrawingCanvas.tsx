@@ -1,1 +1,1 @@
-export { default } from "@features/Linguistics/components/editor/DrawingCanvas";
+export { default } from "../adapters/linguistics/DrawingCanvas.adapter";

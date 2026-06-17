@@ -1,6 +1,6 @@
 ﻿import { HierarchyTypeId, HIERARCHY_DEFINITIONS } from "@domain/hierarchy";
 export { type HierarchyTypeId, HIERARCHY_DEFINITIONS };
-import { getHierarchyVisuals } from "@features/WorldBible/components/hierarchyVisuals";
+import { getHierarchyVisuals } from "@features/WorldBible";
 
 /**
  * 🛠️ World Bible Local Types

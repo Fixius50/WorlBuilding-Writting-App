@@ -7,7 +7,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "arch:check": "node scripts/architecture-check.mjs",
+    "arch:check:strict": "node scripts/architecture-check.mjs --strict"
   },
   "dependencies": {
     "@deck.gl-community/editable-layers": "^9.3.7",

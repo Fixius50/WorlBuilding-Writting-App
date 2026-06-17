@@ -1,5 +1,5 @@
 ﻿import { create } from 'zustand';
-import { DashboardUseCase, DashboardStats } from '@features/Dashboard/application/DashboardUseCase';
+import { DashboardUseCase, DashboardStats } from '@features/Dashboard';
 
 interface DashboardState {
   stats: DashboardStats;

@@ -1,1 +1,1 @@
-export { default } from "@features/Entities/components/SecondaryTabs";
+export { default } from "../adapters/entities/SecondaryTabs.adapter";

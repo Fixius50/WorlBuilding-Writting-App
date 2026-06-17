@@ -31,7 +31,7 @@ import { CalendarManagerView } from "@features/Calendars";
 import { SyncView } from "@features/Sync";
 
 // Store & Context
-import { useAppStore } from "@features/App/store/useAppStore";
+import { useAppStore } from "@features/App";
 import { LanguageProvider } from "@context/LanguageContext";
 
 const App = () => {

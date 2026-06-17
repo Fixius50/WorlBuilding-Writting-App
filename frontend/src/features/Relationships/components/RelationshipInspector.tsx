@@ -29,7 +29,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useLanguage } from "@context/LanguageContext";
-import { RelationshipUseCase } from "@features/Relationships/application/RelationshipUseCase";
+import { RelationshipUseCase } from "@features/Relationships";
 import { RelacionEnriquecida } from "@domain/database";
 import { Button } from "@components";
 import { ConfirmationModal } from "@components";

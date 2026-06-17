@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { WorldBibleUseCase } from '@features/WorldBible/application/WorldBibleUseCase';
+import { WorldBibleUseCase } from '@features/WorldBible';
 import { Carpeta, Entidad } from '@domain/database';
 
 interface FolderUpdateEvent extends CustomEvent {

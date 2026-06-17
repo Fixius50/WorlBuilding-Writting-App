@@ -5,9 +5,9 @@ import {
   useNavigate,
   useLocation,
 } from "react-router-dom";
-import { WorkspaceUseCase } from "@features/Workspaces/application/WorkspaceUseCase";
-import { EntityUseCase } from "@features/Entities/application/EntityUseCase";
-import { TemplateUseCase } from "@features/Settings/application/TemplateUseCase";
+import { WorkspaceUseCase } from "@features/Workspaces";
+import { EntityUseCase } from "@features/Entities";
+import { TemplateUseCase } from "@features/Settings";
 import { Entidad, Plantilla, Carpeta, Valor } from "@domain/database";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getThemePrimaryHex } from "@infrastructure/utils/themeColor";

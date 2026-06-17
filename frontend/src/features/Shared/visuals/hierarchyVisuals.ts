@@ -1,5 +1,5 @@
 export {
   HIERARCHY_VISUALS,
   getHierarchyVisuals,
-} from "@features/WorldBible/components/hierarchyVisuals";
-export type { HierarchyVisuals } from "@features/WorldBible/components/hierarchyVisuals";
+} from "../adapters/worldbible/hierarchyVisuals.adapter";
+export type { HierarchyVisuals } from "../adapters/worldbible/hierarchyVisuals.adapter";

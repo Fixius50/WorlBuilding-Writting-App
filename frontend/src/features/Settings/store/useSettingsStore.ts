@@ -3,9 +3,9 @@ import {
   SettingsUseCase,
   UserData,
   AppSettings,
-} from '@features/Settings/application/SettingsUseCase';
+} from '@features/Settings';
 import { Proyecto } from '@domain/database';
-import { useAppStore } from '@features/App/store/useAppStore';
+import { useAppStore } from '@features/App';
 
 export interface NotificationData {
   id: number;

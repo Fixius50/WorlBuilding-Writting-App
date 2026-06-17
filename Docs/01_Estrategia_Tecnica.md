@@ -15,6 +15,7 @@ El frontend usa **Feature-Sliced Architecture (Vertical Slice)**:
 1. La unidad principal es la **feature** (`src/features/<FeatureName>`).
 2. Cada feature encapsula sus capas internas.
 3. `Shared` es solo un kernel transversal de UI/utilidades, no un contenedor de lógica de negocio.
+4. Integraciones de negocio que aún pasan por Shared deben declararse en `Shared/adapters` de forma explícita.
 
 ### Estructura estándar por feature
 
@@ -36,6 +37,8 @@ No todas las features deben tener todas las carpetas. Solo se crean cuando hay a
 3. **Hook de componente movido de `components/`:** Los `use*` no deben quedarse dentro de `components/`; van a `hooks/`.
 4. **`index.ts` por feature:** Debe permanecer en la raíz de la feature como API pública.
 5. **Sin capas globales legacy en `src/`:** Evitar reintroducir `src/application`, `src/store`, `src/domain` o `src/presentation` como centros de lógica transversal.
+6. **Sin imports profundos entre features:** Desde una feature no importar `@features/<OtraFeature>/(components|hooks|pages|application|domain|store)/*`; usar `@features/<OtraFeature>` (API pública).
+7. **Shared kernel limpio:** `src/features/Shared/*` no debe importar features de negocio directamente. Excepciones temporales solo dentro de `src/features/Shared/adapters/*`.
 
 ## ALIAS Y RESOLUCIÓN DE RUTAS (ACTUAL)
 
@@ -43,10 +46,27 @@ Aliases clave de frontend:
 
 - `@features/*` -> `src/features/*`
 - `@components/*` -> `src/features/Shared/*`
+- `@components` -> `src/features/Shared/index`
 - `@context/*` -> `src/features/App/context/*`
 - `@domain/*` -> dominios por feature (`App`, `Maps`, `Timeline`, `Writing`, `Linguistics`, `WorldBible`, `Graph`, `Shell`)
 
-Implicación: los imports legacy de UI (`@components/ui/...`) siguen funcionando aunque `Shared/ui` se reorganice internamente.
+Implicación: los imports de Shared deben usar `@components` y `@components/*` (sin segmento `ui`).
+
+## GUARDRAILS AUTOMÁTICOS DE ARQUITECTURA
+
+Comandos en `frontend/package.json`:
+
+- `npm run arch:check`: genera reporte de arquitectura sin romper CI local.
+- `npm run arch:check:strict`: falla si existen violaciones.
+
+Salida del reporte:
+
+- `frontend/reports/architecture-guard-report.json`
+
+Reglas verificadas por script:
+
+1. Imports profundos cruzados entre features.
+2. Dependencias de negocio dentro de Shared fuera de `Shared/adapters`.
 
 ## ARQUITECTURA DE INSPECCIÓN CONTEXTUAL
 

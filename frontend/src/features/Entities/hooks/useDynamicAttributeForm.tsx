@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { TemplateUseCase } from "@features/Settings/application/TemplateUseCase";
-import { EntityUseCase } from "@features/Entities/application/EntityUseCase";
+import { TemplateUseCase } from "@features/Settings";
+import { EntityUseCase } from "@features/Entities";
 import { Plantilla, Valor, Entidad } from "@domain/database";
 
 /**

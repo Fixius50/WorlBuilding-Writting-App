@@ -72,6 +72,7 @@ Cuando se reorganicen features del frontend:
 2. Actualizar imports internos y exports públicos en el mismo cambio.
 3. Validar compilación/errores de frontend tras cada lote de movimientos.
 4. Registrar la decisión en `03_Roadmap_Vivo.md` y, si afecta normas base, en `01_Estrategia_Tecnica.md`.
+5. Ejecutar `npm run arch:check` en `frontend/` y registrar si hay violaciones en `frontend/reports/architecture-guard-report.json`.
 
 ## 5) Operación y Empaquetado
 

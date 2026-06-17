@@ -1,1 +1,1 @@
-export { default } from "@features/Entities/components/TemplateSettingsModal";
+export { default } from "../adapters/entities/TemplateSettingsModal.adapter";

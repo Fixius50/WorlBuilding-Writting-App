@@ -1,7 +1,7 @@
 ﻿import React from "react";
 import { Carpeta, Plantilla } from "@domain/database";
 import { getHierarchyType } from "@infrastructure/utils/constants/hierarchy_types";
-import { WorldBibleUseCase } from "@features/WorldBible/application/WorldBibleUseCase";
+import { WorldBibleUseCase } from "@features/WorldBible";
 import { useCreateMassEntities } from "../hooks/useCreateMassEntities";
 
 interface CreateMassEntitiesModalProps {

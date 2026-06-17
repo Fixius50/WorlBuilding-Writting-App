@@ -1,1 +1,1 @@
-﻿export { StatCard } from "@features/Dashboard/components/StatCard";
+﻿export { StatCard } from "./adapters/dashboard/StatCard.adapter";

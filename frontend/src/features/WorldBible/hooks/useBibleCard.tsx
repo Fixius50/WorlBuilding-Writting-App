@@ -1,5 +1,5 @@
 ﻿import { useMemo } from "react";
-import { getHierarchyVisuals } from "@features/WorldBible/components/hierarchyVisuals";
+import { getHierarchyVisuals } from "@features/WorldBible";
 
 interface BibleCardItem {
   id: number | string;

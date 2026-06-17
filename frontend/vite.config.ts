@@ -2,60 +2,45 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 
+const resolveFromRoot = (target: string): string =>
+  path.resolve(__dirname, target);
+
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@components": path.resolve(__dirname, "./src/features/Shared"),
-      "@features": path.resolve(__dirname, "./src/features"),
-      "@database": path.resolve(
-        __dirname,
-        "./src/infrastructure/localDB/client",
-      ),
-      "@context": path.resolve(__dirname, "./src/features/App/context"),
-      "@network": path.resolve(__dirname, "./src/infrastructure/network"),
-      "@assets": path.resolve(__dirname, "./src/assets"),
-      "@domain/database": path.resolve(
-        __dirname,
-        "./src/features/App/domain/database",
-      ),
-      "@domain/maps": path.resolve(
-        __dirname,
-        "./src/features/Maps/domain/maps",
-      ),
-      "@domain/timeline": path.resolve(
-        __dirname,
+      "@components": resolveFromRoot("./src/features/Shared"),
+      "@features": resolveFromRoot("./src/features"),
+      "@database": resolveFromRoot("./src/infrastructure/localDB/client"),
+      "@context": resolveFromRoot("./src/features/App/context"),
+      "@network": resolveFromRoot("./src/infrastructure/network"),
+      "@assets": resolveFromRoot("./src/assets"),
+      "@domain/database": resolveFromRoot("./src/features/App/domain/database"),
+      "@domain/maps": resolveFromRoot("./src/features/Maps/domain/maps"),
+      "@domain/timeline": resolveFromRoot(
         "./src/features/Timeline/domain/timeline",
       ),
-      "@domain/writing": path.resolve(
-        __dirname,
+      "@domain/writing": resolveFromRoot(
         "./src/features/Writing/domain/writing",
       ),
-      "@domain/linguistics": path.resolve(
-        __dirname,
+      "@domain/linguistics": resolveFromRoot(
         "./src/features/Linguistics/domain/linguistics",
       ),
-      "@domain/canvas": path.resolve(
-        __dirname,
+      "@domain/canvas": resolveFromRoot(
         "./src/features/Linguistics/domain/canvas",
       ),
-      "@domain/hierarchy": path.resolve(
-        __dirname,
+      "@domain/hierarchy": resolveFromRoot(
         "./src/features/WorldBible/domain/hierarchy",
       ),
-      "@domain/graph": path.resolve(
-        __dirname,
-        "./src/features/Graph/domain/graph",
-      ),
-      "@domain/ui": path.resolve(__dirname, "./src/features/Shell/domain/ui"),
-      "@infrastructure": path.resolve(__dirname, "./src/infrastructure"),
-      "@repositories": path.resolve(
-        __dirname,
+      "@domain/graph": resolveFromRoot("./src/features/Graph/domain/graph"),
+      "@domain/ui": resolveFromRoot("./src/features/Shell/domain/ui"),
+      "@infrastructure": resolveFromRoot("./src/infrastructure"),
+      "@repositories": resolveFromRoot(
         "./src/infrastructure/localDB/repositories",
       ),
-      "@utils": path.resolve(__dirname, "./src/infrastructure/utils"),
-      "@locales": path.resolve(__dirname, "./src/locales"),
-      "@": path.resolve(__dirname, "./src"),
+      "@utils": resolveFromRoot("./src/infrastructure/utils"),
+      "@locales": resolveFromRoot("./src/locales"),
+      "@": resolveFromRoot("./src"),
     },
   },
   worker: {
