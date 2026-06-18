@@ -60,22 +60,19 @@ export const useMentionList = (
 
   useImperativeHandle(ref, () => ({
     onKeyDown: ({ event }: { event: KeyboardEvent }) => {
-      if (event.key === "ArrowUp") {
-        upHandler();
-        return true;
+      switch (event.key) {
+        case "ArrowUp":
+          upHandler();
+          return true;
+        case "ArrowDown":
+          downHandler();
+          return true;
+        case "Enter":
+          enterHandler();
+          return true;
+        default:
+          return false;
       }
-
-      if (event.key === "ArrowDown") {
-        downHandler();
-        return true;
-      }
-
-      if (event.key === "Enter") {
-        enterHandler();
-        return true;
-      }
-
-      return false;
     },
   }));
 

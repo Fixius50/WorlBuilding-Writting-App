@@ -1,12 +1,12 @@
-﻿import React, { forwardRef } from 'react';
-import { useSlashMenuList, SlashMenuItem } from '../hooks/useSlashMenuList';
+import React, { forwardRef } from 'react';
+import { useSlashMenuList, SlashMenuItem, SlashMenuHandle } from '../hooks/useSlashMenuList';
 
 interface SlashMenuListProps {
   items: SlashMenuItem[];
   command: (item: SlashMenuItem) => void;
 }
 
-const SlashMenuList = forwardRef((props: SlashMenuListProps, ref) => {
+const SlashMenuList = forwardRef<SlashMenuHandle, SlashMenuListProps>((props, ref) => {
   const { selectedIndex, selectItem, currentItems } = useSlashMenuList(props.items, props.command, ref);
 
   return (
@@ -24,7 +24,12 @@ const SlashMenuList = forwardRef((props: SlashMenuListProps, ref) => {
               <div className={`size-7 shrink-0 flex items-center justify-center rounded-sm font-sans font-bold text-xs select-none ${index === selectedIndex ? 'text-primary/90' : 'text-foreground/45'}`}>
                 {item.label}
               </div>
-              <span className="text-xs font-semibold">{item.title}</span>
+              <span className="text-xs font-semibold flex-grow">{item.title}</span>
+              {item.subItems && item.subItems.length > 0 && (
+                <span className="material-symbols-outlined text-xs text-foreground/45 shrink-0 ml-auto select-none">
+                  chevron_right
+                </span>
+              )}
             </button>
           ))
         ) : (

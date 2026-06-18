@@ -41,6 +41,7 @@ export const useWritingView = () => {
   const [editingPageId, setEditingPageId] = useState<number | null>(null);
   const [selectedEntity, setSelectedEntity] = useState<Entidad | null>(null);
   const [selectedEntityValues, setSelectedEntityValues] = useState<Valor[]>([]);
+  const [projectEntities, setProjectEntities] = useState<Entidad[]>([]);
 
   useEffect(() => {
     pagesRef.current = pages;
@@ -67,17 +68,23 @@ export const useWritingView = () => {
         const nb = await WritingUseCase.getNotebookById(id);
         setNotebook(nb);
 
+        nb ? (async () => {
+          const entities = await EntityUseCase.getAllByProject(nb.project_id);
+          setProjectEntities(entities);
+        })() : null;
+
         const pgs = await WritingUseCase.getPages(id);
-        if (pgs && pgs.length > 0) {
+        const hasPages = pgs && pgs.length > 0;
+        hasPages ? (() => {
           setPages(pgs);
           setCurrentPageIndex(0);
           loadSnapshots(pgs[0].id);
-        } else {
+        })() : (async () => {
           const newPage = await WritingUseCase.createPage(id);
           setPages([newPage]);
           setCurrentPageIndex(0);
           loadSnapshots(newPage.id);
-        }
+        })();
       } catch (err) {
         useSettingsStore
           .getState()
@@ -322,5 +329,7 @@ export const useWritingView = () => {
     selectedEntity,
     setSelectedEntity,
     selectedEntityValues,
+    projectEntities,
+    setProjectEntities,
   };
 };

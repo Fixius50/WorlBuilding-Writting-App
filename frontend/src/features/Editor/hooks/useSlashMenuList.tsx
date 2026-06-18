@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useImperativeHandle } from "react";
 import type { Editor, Range } from "@tiptap/core";
 
-type SlashMenuHandle = {
+export type SlashMenuHandle = {
   onKeyDown: ({ event }: { event: KeyboardEvent }) => boolean;
 };
 

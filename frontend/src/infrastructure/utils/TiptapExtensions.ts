@@ -12,7 +12,9 @@ import suggestion from './suggestion'
 import slashSuggestion from './slashSuggestion'
 import { AnyExtension, Extension } from '@tiptap/core'
 import { Suggestion } from '@tiptap/suggestion'
-import Focus from '@tiptap/extension-focus'
+import { SelectionHighlight } from './selectionHighlight'
+import { AutoLinker } from './autoLinker'
+import { Entidad } from '@domain/database'
 
 const SlashCommands = Extension.create({
   name: 'slashCommands',
@@ -38,12 +40,14 @@ const SlashCommands = Extension.create({
  * Colección centralizada de extensiones para el editor Tiptap (ZenEditor).
  * Incluye soporte para menciones (@), comandos de barra (/), placeholders y conteo de caracteres.
  */
-export const getZenExtensions = (placeholderText: string = 'Escribe tu historia aquí...'): AnyExtension[] => [
+export const getZenExtensions = (
+  placeholderText: string = 'Escribe tu historia aquí...',
+  options?: {
+    entities?: Entidad[];
+    onSuggestLink?: (entity: Entidad, range: { from: number; to: number }) => void;
+  }
+): AnyExtension[] => [
   StarterKit,
-  Focus.configure({
-    className: 'has-focus',
-    mode: 'all',
-  }),
   Placeholder.configure({
     placeholder: placeholderText,
   }),
@@ -68,6 +72,13 @@ export const getZenExtensions = (placeholderText: string = 'Escribe tu historia 
     HTMLAttributes: {
       class: 'text-primary underline cursor-pointer hover:text-primary/80 transition-colors',
     },
+  }),
+  SelectionHighlight.configure({
+    active: false,
+  }),
+  AutoLinker.configure({
+    entities: options?.entities || [],
+    onSuggestLink: options?.onSuggestLink,
   }),
 ];
 
