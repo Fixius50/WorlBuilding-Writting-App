@@ -1,6 +1,5 @@
-﻿import React from "react";
-import { ConfirmModal } from "@components";
-import InputModal from "@features/Writing/components/InputModal";
+import React from "react";
+import { ConfirmModal, InputModal } from "@components";
 import { Notebook } from "@domain/writing";
 import { useNotebookGrid } from "./useNotebookGrid";
 

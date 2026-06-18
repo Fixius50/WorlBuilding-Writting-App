@@ -1,6 +1,5 @@
-﻿import React from "react";
-import { ConfirmationModal } from "@components";
-import InputModal from "@features/Writing/components/InputModal";
+import React from "react";
+import { ConfirmationModal, InputModal } from "@components";
 import { Notebook } from "@domain/writing";
 import { ZenEditor } from "@features/Editor";
 import { Hoja as HojaModel } from "@domain/database";

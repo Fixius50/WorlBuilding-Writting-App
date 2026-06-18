@@ -20,6 +20,7 @@ interface EditorTopBarProps {
   onZoomChange?: (zoom: number) => void;
   focusMode?: boolean;
   onToggleFocusMode?: () => void;
+  onPrint?: () => void;
 }
 
 const EditorTopBar: React.FC<EditorTopBarProps> = ({
@@ -39,6 +40,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
   onZoomChange = () => {},
   focusMode = false,
   onToggleFocusMode = () => {},
+  onPrint,
 }) => {
   const {
     showSnapshots,
@@ -223,7 +225,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
             <span className="material-symbols-outlined text-[16px]">redo</span>
           </button>
           <button
-            onClick={() => window.print()}
+            onClick={onPrint || (() => window.print())}
             className={buttonClass(false)}
             title="Imprimir"
           >

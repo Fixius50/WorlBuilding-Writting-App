@@ -1,5 +1,6 @@
 import React from "react";
 import { Hoja } from "@domain/database";
+import { Switch } from "@components";
 import WritingCommentsPanel from "./WritingCommentsPanel";
 
 interface PageListPanelProps {
@@ -61,17 +62,11 @@ const PageListPanel: React.FC<PageListPanelProps> = ({
             />
           </div>
           <div className="flex items-center justify-between px-1">
-            <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-foreground/40">
-              Vista de Corcho
-            </span>
-            <button
-              onClick={() => setIsCorkboardMode(!isCorkboardMode)}
-              className={`w-8 h-4 rounded-full relative transition-colors ${isCorkboardMode ? "bg-primary" : "bg-foreground/20"}`}
-            >
-              <div
-                className={`w-3 h-3 rounded-full bg-background absolute top-0.5 transition-all ${isCorkboardMode ? "left-4.5 translate-x-[14px]" : "left-0.5"}`}
-              />
-            </button>
+            <Switch
+              checked={isCorkboardMode}
+              onChange={setIsCorkboardMode}
+              label="Vista de Corcho"
+            />
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-﻿import { Button } from "@components";
+import Button from "../primitives/Button";
 import { ModalProps } from '@domain/ui';
 
 interface ConfirmModalProps extends ModalProps {

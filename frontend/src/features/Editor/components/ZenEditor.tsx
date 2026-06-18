@@ -1,6 +1,7 @@
 import React from "react";
 import { Editor, ReactRenderer } from "@tiptap/react";
 import tippy, { type Instance as TippyInstance } from "tippy.js";
+import { useReactToPrint } from "react-to-print";
 import EditorTopBar from "./EditorTopBar";
 import BubbleToolbar from "./BubbleToolbar";
 import AutoLinkPrompt from "./AutoLinkPrompt";
@@ -43,6 +44,11 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
   const currentPage = pages[currentPageIndex];
   const [zoom, setZoom] = React.useState(100);
   const [focusMode, setFocusMode] = React.useState(false);
+  const printContainerRef = React.useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    contentRef: printContainerRef,
+    documentTitle: currentPage?.titulo || `Hoja ${currentPageIndex + 1}`,
+  });
   const [activeLinkSuggestion, setActiveLinkSuggestion] = React.useState<{
     entity: Entidad;
     range: { from: number; to: number };
@@ -58,8 +64,6 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
   const { editor } = usePageEditor({
     content: currentPage ? (currentPage.contenido || "") : "",
     onUpdate: (html) => onUpdate(html, currentPageIndex),
-    isLastPage: false,
-    onNearEnd: () => {},
     autoFocus: true,
     onMentionClick,
     projectEntities,
@@ -209,15 +213,19 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
         onZoomChange={setZoom}
         focusMode={focusMode}
         onToggleFocusMode={() => setFocusMode(!focusMode)}
+        onPrint={handlePrint}
       />
 
-      <div className="flex-1 relative bg-editor-elevated overflow-y-auto custom-scrollbar flex justify-center py-16 px-6">
-        <div className="w-full max-w-2xl flex flex-col gap-8 h-full">
+      <div className="flex-1 relative overflow-y-auto custom-scrollbar flex justify-center py-12 px-6 prose-editor-wrapper">
+        <div 
+          ref={printContainerRef}
+          className="editor-sheet"
+        >
           {/* TÍTULO EDITABLE EN EL PROPIO MANUSCRITO */}
           <input
             value={currentPage.titulo || ""}
             onChange={(e) => onTitleChange(currentPageIndex, e.target.value)}
-            className={`w-full bg-transparent border-none text-foreground font-serif font-semibold text-[38px] outline-none focus:ring-0 placeholder:text-foreground/15 p-0 transition-opacity duration-300 ${focusMode ? "opacity-30 hover:opacity-100" : "opacity-100"}`}
+            className={`w-full bg-transparent border-none text-foreground font-serif font-semibold text-[38px] outline-none focus:ring-0 placeholder:text-foreground/15 transition-opacity duration-300 px-[2.5cm] pt-[2.5cm] pb-4 editor-title-input ${focusMode ? "opacity-30 hover:opacity-100" : "opacity-100"}`}
             placeholder={`Hoja ${currentPageIndex + 1}`}
           />
 

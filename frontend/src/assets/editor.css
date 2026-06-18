@@ -78,3 +78,263 @@
   position: relative;
   overflow: hidden;
 }
+
+/* =====================================================
+   VIRTUAL A4 PAGE SIMULATION (PAGINACIÓN Y REFLOW)
+   ===================================================== */
+
+.prose-editor-wrapper {
+  background-color: hsl(var(--background-dark, 240 10% 3.9%)) !important;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 3rem 0;
+}
+
+.editor-sheet {
+  width: 21cm !important;
+  max-width: 90vw !important;
+  background-color: hsl(var(--surface-dark, 240 10% 6%)) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box !important;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+}
+
+.prose-editor .ProseMirror {
+  outline: none !important;
+  font-family: "Cormorant Garamond", serif;
+  font-size: var(--editor-zoom-font-size, 20px); /* Vinculado al zoom del componente */
+  line-height: 1.5; /* Interlineado más compacto */
+  color: hsl(var(--foreground) / 0.9);
+  
+  /* El lienzo del editor fluye dentro del papel */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100% !important;
+  min-height: 29.7cm;
+  background-color: transparent !important; /* El fondo lo proporciona .editor-sheet */
+  box-shadow: none !important; /* La sombra la proporciona .editor-sheet */
+  padding-left: 2.5cm !important;
+  padding-right: 2.5cm !important;
+  padding-bottom: 2.5cm !important; /* Margen inferior de la última página */
+  padding-top: 0 !important; /* No necesita padding superior (lo aporta el título) */
+  box-sizing: border-box !important;
+}
+
+/* --- Tiptap Editor Content Styling --- */
+.prose-editor .ProseMirror p {
+   margin-bottom: 0.8em; /* Separación de párrafos más compacta */
+   text-align: justify;
+}
+
+.prose-editor .ProseMirror p.is-editor-empty:first-child::before {
+   content: attr(data-placeholder);
+   float: left;
+   color: var(--editor-placeholder);
+   pointer-events: none;
+   height: 0;
+   text-indent: 0;
+   font-style: italic;
+}
+
+/* Focus Mode Styling (Highlight matching words on selection) */
+.prose-editor .ProseMirror .focus-match-highlight {
+   background-color: hsl(var(--primary) / 0.18);
+   border-bottom: 2px dashed hsl(var(--primary) / 0.7);
+   border-radius: 2px;
+   padding: 0 1px;
+   color: inherit;
+   transition: background-color 0.2s ease;
+}
+
+.prose-editor .ProseMirror .focus-match-selected {
+   background-color: hsl(var(--primary) / 0.35);
+   border-bottom: 2px solid hsl(var(--primary));
+   border-radius: 2px;
+   padding: 0 1px;
+   color: inherit;
+}
+
+/* Estilos de las menciones de Tiptap */
+.prose-editor .ProseMirror .mention {
+  font-family: "Outfit", sans-serif;
+  font-size: 15px;
+}
+
+/* Alineaciones de Tiptap */
+.prose-editor .ProseMirror .text-align-left {
+   text-align: left !important;
+}
+.prose-editor .ProseMirror .text-align-center {
+   text-align: center !important;
+}
+.prose-editor .ProseMirror .text-align-right {
+   text-align: right !important;
+}
+.prose-editor .ProseMirror .text-align-justify {
+   text-align: justify !important;
+}
+
+/* Formatos de texto de Tiptap */
+.prose-editor .ProseMirror u {
+   text-decoration: underline !important;
+}
+.prose-editor .ProseMirror s, .prose-editor .ProseMirror del {
+   text-decoration: line-through !important;
+}
+.prose-editor .ProseMirror mark {
+   background-color: rgba(234, 179, 8, 0.3);
+   color: inherit;
+   border-radius: 2px;
+   padding: 0 2px;
+}
+.prose-editor .ProseMirror a {
+   color: hsl(var(--primary)) !important;
+   text-decoration: underline !important;
+   cursor: pointer;
+}
+.prose-editor .ProseMirror a:hover {
+   color: hsl(var(--primary) / 0.8) !important;
+}
+
+/* Listas */
+.prose-editor .ProseMirror ul {
+   list-style-type: disc !important;
+   padding-left: 1.0em !important;
+   margin-bottom: 1em !important;
+}
+.prose-editor .ProseMirror ol {
+   list-style-type: decimal !important;
+   padding-left: 1.0em !important;
+   margin-bottom: 1em !important;
+}
+.prose-editor .ProseMirror li {
+   margin-bottom: 0.25em !important;
+}
+.prose-editor .ProseMirror li p {
+   margin-bottom: 0px !important;
+   display: inline;
+}
+
+/* Citas */
+.prose-editor .ProseMirror blockquote {
+   border-left: 3px solid hsl(var(--primary) / 0.5) !important;
+   padding-left: 0.8em !important;
+   font-style: italic !important;
+   color: hsl(var(--foreground) / 0.7) !important;
+   margin: 1.0em 0 !important;
+}
+
+/* Los elementos de bloque fluyen al ancho del papel sin fondos ni sombras individuales */
+.prose-editor .ProseMirror > * {
+  width: 100% !important;
+  max-width: 100% !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  margin-top: 0 !important;
+  margin-bottom: 1.5rem !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* El primer y último elemento no tienen padding extra ya que el editor tiene su padding */
+.prose-editor .ProseMirror > *:first-child {
+  padding-top: 0 !important;
+}
+
+.prose-editor .ProseMirror > *:last-child {
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Estilo del widget divisor virtual-page-break */
+.virtual-page-break {
+  display: flex;
+  flex-direction: column;
+  /* El widget compensa el padding lateral del editor para ocupar todo el ancho del papel */
+  margin-left: -2.5cm !important;
+  margin-right: -2.5cm !important;
+  width: 21cm !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  user-select: none;
+  pointer-events: none;
+  box-sizing: border-box !important;
+}
+
+/* Neutralizar sangría de blockquote para el salto de página */
+.prose-editor .ProseMirror blockquote .virtual-page-break {
+  margin-left: calc(-2.5cm - 0.8em - 3px) !important;
+  margin-right: calc(-2.5cm - 0.8em) !important;
+  width: 21cm !important;
+}
+
+/* Neutralizar sangría de listas para el salto de página */
+.prose-editor .ProseMirror ol .virtual-page-break,
+.prose-editor .ProseMirror ul .virtual-page-break {
+  margin-left: calc(-2.5cm - 1.0em) !important;
+  margin-right: calc(-2.5cm - 1.0em) !important;
+  width: 21cm !important;
+}
+
+.virtual-page-break .page-footer {
+  width: 100%;
+  background-color: hsl(var(--surface-dark, 240 10% 6%)) !important;
+  color: hsl(var(--foreground) / 0.35);
+  font-family: "Outfit", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  text-align: center;
+  padding-top: 1.2cm !important;
+  padding-bottom: 2.5cm !important; /* Margen inferior de la hoja */
+  padding-left: 2.5cm !important; /* Alineación del texto con el editor */
+  padding-right: 2.5cm !important;
+  box-sizing: border-box !important;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.virtual-page-break .page-break-line-wrapper {
+  height: 48px;
+  background-color: hsl(var(--background-dark, 240 10% 3.9%)) !important;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Ligeramente más ancho para tapar por completo la sombra del editor a los lados */
+  width: calc(100% + 60px) !important;
+  margin-left: -30px !important;
+}
+
+.virtual-page-break .page-break-line {
+  width: 100%;
+  height: 1px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.virtual-page-break .page-header {
+  width: 100%;
+  background-color: hsl(var(--surface-dark, 240 10% 6%)) !important;
+  color: hsl(var(--foreground) / 0.35);
+  font-family: "Outfit", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  text-align: center;
+  padding-top: 2.5cm !important; /* Margen superior de la hoja */
+  padding-bottom: 1.2cm !important;
+  padding-left: 2.5cm !important; /* Alineación del texto con el editor */
+  padding-right: 2.5cm !important;
+  box-sizing: border-box !important;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+

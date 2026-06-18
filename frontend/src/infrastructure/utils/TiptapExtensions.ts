@@ -15,6 +15,7 @@ import { Suggestion } from '@tiptap/suggestion'
 import { SelectionHighlight } from './selectionHighlight'
 import { AutoLinker } from './autoLinker'
 import { Entidad } from '@domain/database'
+import { PagePaginationPlugin } from '@features/Editor/utils/PagePaginationPlugin'
 
 const SlashCommands = Extension.create({
   name: 'slashCommands',
@@ -34,6 +35,13 @@ const SlashCommands = Extension.create({
       }),
     ]
   },
+})
+
+const PagePagination = Extension.create({
+  name: 'pagePagination',
+  addProseMirrorPlugins() {
+    return [PagePaginationPlugin()];
+  }
 })
 
 /**
@@ -80,5 +88,6 @@ export const getZenExtensions = (
     entities: options?.entities || [],
     onSuggestLink: options?.onSuggestLink,
   }),
+  PagePagination,
 ];
 

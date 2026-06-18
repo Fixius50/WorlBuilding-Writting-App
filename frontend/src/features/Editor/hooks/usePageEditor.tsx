@@ -6,11 +6,6 @@ import { Hoja, Entidad } from "@domain/database";
 interface UsePageEditorProps {
   content: string;
   onUpdate: (html: string) => void;
-  isLastPage: boolean;
-  onNearEnd: () => void;
-  onJumpNext?: () => void;
-  onJumpBack?: () => void;
-  onAutoDelete?: () => void;
   autoFocus?: boolean;
   onMentionClick?: (id: string) => void;
   projectEntities?: Entidad[];
@@ -27,19 +22,11 @@ interface UsePageEditorProps {
 export const usePageEditor = ({
   content,
   onUpdate,
-  isLastPage,
-  onNearEnd,
-  onJumpNext,
-  onJumpBack,
-  onAutoDelete,
   autoFocus = false,
   onMentionClick,
   projectEntities = [],
   onSuggestLink,
 }: UsePageEditorProps) => {
-  const lastHeightRef = useRef(0);
-  const isDeletingRef = useRef(false);
-
   const editor = useEditor({
     extensions: getZenExtensions("Empieza a escribir esta página...", {
       entities: projectEntities,
@@ -48,14 +35,6 @@ export const usePageEditor = ({
     content: content,
     onUpdate: ({ editor }) => {
       onUpdate(editor.getHTML());
-
-      if (isLastPage && !isDeletingRef.current) {
-        const height = editor.view.dom.scrollHeight;
-        if (height > 900 && height > lastHeightRef.current) {
-          onNearEnd();
-        }
-        lastHeightRef.current = height;
-      }
     },
     onCreate: ({ editor }) => {
       autoFocus
@@ -77,43 +56,7 @@ export const usePageEditor = ({
           : false;
       },
       handleKeyDown: (view, event) => {
-        const { selection } = view.state;
-        const isAtStart = selection.$from.pos <= 1;
-        const isAtEnd = selection.$to.pos === view.state.doc.content.size;
-
-        // Marcar que se está borrando para evitar auto-creación
-        isDeletingRef.current = event.key === "Backspace";
-        event.key !== "Backspace"
-          ? (isDeletingRef.current = false)
-          : setTimeout(() => { isDeletingRef.current = false; }, 100);
-
-        // Navegación Tab/Enter → saltar a la siguiente hoja
-        const isTabOrEnter = event.key === "Tab" || event.key === "Enter";
-        const shouldJumpNext =
-          isTabOrEnter && view.dom.scrollHeight > 950 && isAtEnd && !!onJumpNext;
-
-        // Navegación Backspace → borrar hoja vacía o saltar a la anterior
-        const isBackspaceAtStart = event.key === "Backspace" && isAtStart;
-        const isEmpty = view.state.doc.textContent.trim().length === 0;
-        const shouldAutoDelete = isBackspaceAtStart && isEmpty && !!onAutoDelete;
-        const shouldJumpBack = isBackspaceAtStart && !isEmpty && !!onJumpBack;
-
-        switch (true) {
-          case shouldJumpNext:
-            event.preventDefault();
-            onJumpNext!();
-            return true;
-          case shouldAutoDelete:
-            event.preventDefault();
-            onAutoDelete!();
-            return true;
-          case shouldJumpBack:
-            event.preventDefault();
-            onJumpBack!();
-            return true;
-          default:
-            return false;
-        }
+        return false;
       },
     },
   });

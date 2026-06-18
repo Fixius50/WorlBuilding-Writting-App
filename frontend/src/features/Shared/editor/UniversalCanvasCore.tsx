@@ -1,4 +1,4 @@
-﻿import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   Stage,
   Layer,
@@ -14,7 +14,7 @@ import {
 import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import SectionErrorBoundary from "@components/feedback/SectionErrorBoundary";
-import { Switch } from "@components";
+import Switch from "../primitives/Switch";
 export interface CanvasNode {
   id: string;
   x: number;

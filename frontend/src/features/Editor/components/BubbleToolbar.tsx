@@ -283,114 +283,12 @@ const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
           </div>
         </BubbleMenu>
       )}
-      <EditorContent editor={editor} className="h-full prose-editor" />
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-            .prose-editor .ProseMirror {
-               height: 100% !important;
-               outline: none !important;
-               font-family: "Cormorant Garamond", serif;
-               font-size: ${20 * (zoom / 100)}px;
-               line-height: 1.8;
-               color: hsl(var(--foreground) / 0.9);
-            }
-            .prose-editor .ProseMirror p {
-               margin-bottom: 1.2em;
-               text-align: justify;
-            }
-             .prose-editor .ProseMirror p.is-editor-empty:first-child::before {
-               content: attr(data-placeholder);
-               float: left;
-               color: var(--editor-placeholder);
-               pointer-events: none;
-               height: 0;
-               text-indent: 0;
-               font-style: italic;
-             }
-              /* Focus Mode Styling (Highlight matching words on selection) */
-              .prose-editor .ProseMirror .focus-match-highlight {
-                 background-color: hsl(var(--primary) / 0.18);
-                 border-bottom: 2px dashed hsl(var(--primary) / 0.7);
-                 border-radius: 2px;
-                 padding: 0 1px;
-                 color: inherit;
-                 transition: background-color 0.2s ease;
-              }
-              .prose-editor .ProseMirror .focus-match-selected {
-                 background-color: hsl(var(--primary) / 0.35);
-                 border-bottom: 2px solid hsl(var(--primary));
-                 border-radius: 2px;
-                 padding: 0 1px;
-                 color: inherit;
-              }
-             /* Estilos de las menciones de Tiptap */
-            .prose-editor .ProseMirror .mention {
-              font-family: "Outfit", sans-serif;
-              font-size: 15px;
-            }
-            /* Alineaciones de Tiptap */
-            .prose-editor .ProseMirror .text-align-left {
-               text-align: left !important;
-            }
-            .prose-editor .ProseMirror .text-align-center {
-               text-align: center !important;
-            }
-            .prose-editor .ProseMirror .text-align-right {
-               text-align: right !important;
-            }
-            .prose-editor .ProseMirror .text-align-justify {
-               text-align: justify !important;
-            }
-            /* Formatos de texto de Tiptap */
-            .prose-editor .ProseMirror u {
-               text-decoration: underline !important;
-            }
-            .prose-editor .ProseMirror s, .prose-editor .ProseMirror del {
-               text-decoration: line-through !important;
-            }
-            .prose-editor .ProseMirror mark {
-               background-color: rgba(234, 179, 8, 0.3);
-               color: inherit;
-               border-radius: 2px;
-               padding: 0 2px;
-            }
-            .prose-editor .ProseMirror a {
-               color: hsl(var(--primary)) !important;
-               text-decoration: underline !important;
-               cursor: pointer;
-            }
-            .prose-editor .ProseMirror a:hover {
-               color: hsl(var(--primary) / 0.8) !important;
-            }
-            /* Listas */
-            .prose-editor .ProseMirror ul {
-               list-style-type: disc !important;
-               padding-left: 1.5em !important;
-               margin-bottom: 1em !important;
-            }
-            .prose-editor .ProseMirror ol {
-               list-style-type: decimal !important;
-               padding-left: 1.5em !important;
-               margin-bottom: 1em !important;
-            }
-            .prose-editor .ProseMirror li {
-               margin-bottom: 0.25em !important;
-            }
-            .prose-editor .ProseMirror li p {
-               margin-bottom: 0px !important;
-               display: inline;
-            }
-            /* Citas */
-            .prose-editor .ProseMirror blockquote {
-               border-left: 3px solid hsl(var(--primary) / 0.5) !important;
-               padding-left: 1.25em !important;
-               font-style: italic !important;
-               color: hsl(var(--foreground) / 0.7) !important;
-               margin: 1.5em 0 !important;
-            }
-          `,
-        }}
+      <EditorContent 
+        editor={editor} 
+        className="h-full prose-editor" 
+        style={{ 
+          "--editor-zoom-font-size": `${20 * (zoom / 100)}px` 
+        } as React.CSSProperties}
       />
     </div>
   );
