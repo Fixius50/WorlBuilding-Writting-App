@@ -1,4 +1,4 @@
-﻿import { create } from "zustand";
+import { create } from "zustand";
 import { SettingsUseCase, UserData, AppSettings } from "@features/Settings";
 import { Proyecto } from "@domain/database";
 import { useAppStore } from "@features/App";
@@ -78,34 +78,40 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         progressTotal,
       };
 
-      if (existingIndex === -1) {
-        return { notifications: [...state.notifications, nextNotification] };
-      }
-
       const updated = [...state.notifications];
-      updated[existingIndex] = {
-        ...updated[existingIndex],
-        ...nextNotification,
-      };
+      existingIndex === -1
+        ? updated.push(nextNotification)
+        : (() => {
+            updated[existingIndex] = {
+              ...updated[existingIndex],
+              ...nextNotification,
+            };
+          })();
+
       return { notifications: updated };
     });
 
     const previousTimer = notificationTimers.get(id);
-    if (previousTimer) {
-      clearTimeout(previousTimer);
-      notificationTimers.delete(id);
-    }
+    previousTimer
+      ? (() => {
+          clearTimeout(previousTimer);
+          notificationTimers.delete(id);
+        })()
+      : null;
 
     const autoCloseMs = options?.autoCloseMs ?? 3000;
-    if (autoCloseMs !== null && autoCloseMs >= 0) {
-      const timer = setTimeout(() => {
-        set((state) => ({
-          notifications: state.notifications.filter((n) => n.id !== id),
-        }));
-        notificationTimers.delete(id);
-      }, autoCloseMs);
-      notificationTimers.set(id, timer);
-    }
+    const shouldAutoClose = autoCloseMs !== null && autoCloseMs >= 0;
+    shouldAutoClose
+      ? (() => {
+          const timer = setTimeout(() => {
+            set((state) => ({
+              notifications: state.notifications.filter((n) => n.id !== id),
+            }));
+            notificationTimers.delete(id);
+          }, autoCloseMs);
+          notificationTimers.set(id, timer);
+        })()
+      : null;
 
     return id;
   },
@@ -118,43 +124,58 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
     set({ user, settings, selectedProjects, projects });
 
-    if (settings.autoBackup && !autoBackupInterval) {
-      autoBackupInterval = setInterval(
-        () => {
-          get().handleDownloadBackup();
-        },
-        10 * 60 * 1000,
-      );
-    }
+    const shouldStartBackup = settings.autoBackup && !autoBackupInterval;
+    shouldStartBackup
+      ? (() => {
+          autoBackupInterval = setInterval(
+            () => {
+              get().handleDownloadBackup();
+            },
+            10 * 60 * 1000,
+          );
+        })()
+      : null;
   },
 
   updateSetting: async (key: keyof AppSettings, value: unknown) => {
     const newSettings = { ...get().settings, [key]: value } as AppSettings;
     set({ settings: newSettings });
     await SettingsUseCase.saveSettings(newSettings);
-    get().addNotification(`Ajuste actualizado: ${key}`);
+    get().addNotification(`Ajuste actualizado: ${String(key)}`);
 
-    if (key === "theme") {
-      useAppStore.getState().setTheme(value as string);
-    }
-    if (key === "panelMode") {
-      useAppStore
-        .getState()
-        .setPanelMode(value as "classic" | "binder" | "floating");
-    }
-
-    if (key === "autoBackup") {
-      if (value && !autoBackupInterval) {
-        autoBackupInterval = setInterval(
-          () => {
-            get().handleDownloadBackup();
-          },
-          10 * 60 * 1000,
-        );
-      } else if (!value && autoBackupInterval) {
-        clearInterval(autoBackupInterval);
-        autoBackupInterval = null;
+    switch (key) {
+      case "theme": {
+        useAppStore.getState().setTheme(value as string);
+        break;
       }
+      case "panelMode": {
+        useAppStore
+          .getState()
+          .setPanelMode(value as "classic" | "binder" | "floating");
+        break;
+      }
+      case "autoBackup": {
+        value
+          ? (!autoBackupInterval
+              ? (() => {
+                  autoBackupInterval = setInterval(
+                    () => {
+                      get().handleDownloadBackup();
+                    },
+                    10 * 60 * 1000,
+                  );
+                })()
+              : null)
+          : (autoBackupInterval
+              ? (() => {
+                  clearInterval(autoBackupInterval!);
+                  autoBackupInterval = null;
+                })()
+              : null);
+        break;
+      }
+      default:
+        break;
     }
   },
 
@@ -212,12 +233,10 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       "info",
     );
     const res = await SettingsUseCase.importDatabase(file);
-    if (res.success) {
-      get().addNotification(res.message, "success");
-      return true;
-    }
+    res.success
+      ? get().addNotification(res.message, "success")
+      : get().addNotification(res.message, "error");
 
-    get().addNotification(res.message, "error");
-    return false;
+    return res.success;
   },
 }));

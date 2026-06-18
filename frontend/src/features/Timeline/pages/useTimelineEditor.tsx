@@ -18,7 +18,7 @@ export const useTimelineEditor = ({
   t: (key: string) => string;
   events: Evento[];
   linkedEntities: Record<number, Entidad[]>;
-  lines: DimensionLinea[];
+  lines: Entidad[];
   involvedEntities: Entidad[];
   handleSaveEvent: (
     id: number,

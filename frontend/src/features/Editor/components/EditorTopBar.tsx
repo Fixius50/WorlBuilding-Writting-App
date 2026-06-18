@@ -51,6 +51,8 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
   } = useEditorTopBar(wordCount, wordGoal, onManualSnapshot, onRestoreSnapshot);
 
   const [updateTick, setUpdateTick] = React.useState(0);
+  const [showLineHeight, setShowLineHeight] = React.useState(false);
+  const [showExportMenu, setShowExportMenu] = React.useState(false);
 
   React.useEffect(() => {
     const handleTransaction = () => {
@@ -207,7 +209,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
       {/* FILA INFERIOR: Barra de herramientas con Historial y Zoom de Página */}
       {editor && (
         <div className="flex items-center gap-1 py-1.5 px-6 border-b border-foreground/5 bg-background select-none overflow-visible shrink-0">
-          {/* Historial e Impresión */}
+          {/* Historial, Impresión e Imagen */}
           <button
             onClick={() => editor.chain().focus().undo().run()}
             disabled={!editor.can().undo()}
@@ -224,19 +226,166 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
           >
             <span className="material-symbols-outlined text-[16px]">redo</span>
           </button>
+          {/* Desplegable de Imprimir/Exportar */}
+          <div className="relative">
+            <button
+              onClick={(): void => setShowExportMenu(!showExportMenu)}
+              className={buttonClass(showExportMenu)}
+              title="Imprimir o Exportar documento"
+            >
+              <span className="material-symbols-outlined text-[16px]">print</span>
+            </button>
+
+            {showExportMenu && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={(): void => setShowExportMenu(false)}
+                />
+                <div className="absolute top-full left-0 mt-1 w-56 bg-background border border-foreground/10 rounded-lg shadow-2xl z-50 p-1 animate-in fade-in zoom-in-95 duration-100 font-sans text-xs">
+                  <button
+                    onClick={(): void => {
+                      onPrint ? onPrint() : window.print();
+                      setShowExportMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors flex items-center gap-2 text-foreground/85 outline-none font-sans"
+                  >
+                    <span className="material-symbols-outlined text-sm">print</span>
+                    <span>Imprimir</span>
+                  </button>
+                  <div className="h-px bg-foreground/10 my-1" />
+                  <div className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-foreground/45 font-sans">
+                    Descargar como...
+                  </div>
+                  <button
+                    onClick={(): void => {
+                      onPrint ? onPrint() : window.print();
+                      setShowExportMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors flex items-center gap-2 text-foreground/85 outline-none font-sans"
+                  >
+                    <span className="material-symbols-outlined text-sm">picture_as_pdf</span>
+                    <span>Documento PDF (.pdf)</span>
+                  </button>
+                  <button
+                    onClick={(): void => {
+                      const htmlContent: string = editor.getHTML();
+                      const blob: Blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
+                      const url: string = URL.createObjectURL(blob);
+                      const link: HTMLAnchorElement = document.createElement("a");
+                      link.href = url;
+                      link.download = `${title || "documento"}.html`;
+                      link.click();
+                      URL.revokeObjectURL(url);
+                      setShowExportMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors flex items-center gap-2 text-foreground/85 outline-none font-sans"
+                  >
+                    <span className="material-symbols-outlined text-sm">html</span>
+                    <span>Página Web (.html)</span>
+                  </button>
+                  <button
+                    onClick={(): void => {
+                      const textContent: string = editor.getText();
+                      const blob: Blob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
+                      const url: string = URL.createObjectURL(blob);
+                      const link: HTMLAnchorElement = document.createElement("a");
+                      link.href = url;
+                      link.download = `${title || "documento"}.txt`;
+                      link.click();
+                      URL.revokeObjectURL(url);
+                      setShowExportMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors flex items-center gap-2 text-foreground/85 outline-none font-sans"
+                  >
+                    <span className="material-symbols-outlined text-sm">description</span>
+                    <span>Texto Plano (.txt)</span>
+                  </button>
+                  <button
+                    onClick={(): void => {
+                      const htmlContent: string = editor.getHTML();
+                      // Convertidor ultra-ligero de HTML a Markdown
+                      const mdContent: string = htmlContent
+                        .replace(/<h1>(.*?)<\/h1>/gi, '# $1\n\n')
+                        .replace(/<h2>(.*?)<\/h2>/gi, '## $1\n\n')
+                        .replace(/<h3>(.*?)<\/h3>/gi, '### $1\n\n')
+                        .replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
+                        .replace(/<b>(.*?)<\/b>/gi, '**$1**')
+                        .replace(/<em>(.*?)<\/em>/gi, '*$1*')
+                        .replace(/<i>(.*?)<\/i>/gi, '*$1*')
+                        .replace(/<p>(.*?)<\/p>/gi, '$1\n\n')
+                        .replace(/<li>(.*?)<\/li>/gi, '* $1\n')
+                        .replace(/<ul>(.*?)<\/ul>/gi, '$1\n')
+                        .replace(/<ol>(.*?)<\/ol>/gi, '$1\n')
+                        .replace(/<br\s*\/?>/gi, '\n')
+                        .replace(/<[^>]+>/g, '');
+                      const blob: Blob = new Blob([mdContent.trim()], { type: "text/markdown;charset=utf-8" });
+                      const url: string = URL.createObjectURL(blob);
+                      const link: HTMLAnchorElement = document.createElement("a");
+                      link.href = url;
+                      link.download = `${title || "documento"}.md`;
+                      link.click();
+                      URL.revokeObjectURL(url);
+                      setShowExportMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors flex items-center gap-2 text-foreground/85 outline-none font-sans"
+                  >
+                    <span className="material-symbols-outlined text-sm">markdown</span>
+                    <span>Markdown (.md)</span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
           <button
-            onClick={onPrint || (() => window.print())}
+            onClick={() => {
+              const input: HTMLInputElement = document.createElement("input");
+              input.type = "file";
+              input.accept = "image/*";
+              input.onchange = (e: Event): void => {
+                const target: HTMLInputElement = e.target as HTMLInputElement;
+                const file: File | undefined = target.files?.[0];
+                if (file) {
+                  const reader: FileReader = new FileReader();
+                  reader.onload = (): void => {
+                    const result: string = reader.result as string;
+                    editor.chain().focus().setImage({ src: result }).run();
+                  };
+                  reader.readAsDataURL(file);
+                }
+              };
+              input.click();
+            }}
             className={buttonClass(false)}
-            title="Imprimir"
+            title="Insertar imagen"
           >
-            <span className="material-symbols-outlined text-[16px]">print</span>
+            <span className="material-symbols-outlined text-[16px]">image</span>
           </button>
+
+          <div className="w-px h-4 bg-foreground/10 mx-1 shrink-0" />
+
+          {/* Tamaño de Letra */}
+          <div className="flex items-center" title="Tamaño de letra">
+            <select
+              value={(editor.getAttributes("textStyle").fontSize as string) || "20px"}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
+                editor.chain().focus().setFontSize(e.target.value).run();
+              }}
+              className={selectStyle}
+            >
+              {["12px", "14px", "16px", "18px", "20px", "24px", "28px", "32px", "36px"].map((sz: string): React.JSX.Element => (
+                <option key={sz} value={sz} className="bg-background text-foreground text-xs">
+                  {sz}
+                </option>
+              ))}
+            </select>
+          </div>
 
           <div className="w-px h-4 bg-foreground/10 mx-1 shrink-0" />
 
           {/* Alineaciones */}
           <button
-            onMouseDown={(e) => e.preventDefault()}
+            onMouseDown={(e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault()}
             onClick={() => editor.chain().focus().setTextAlign("left").run()}
             className={buttonClass(editor.isActive({ textAlign: "left" }))}
             title="Alinear a la izquierda"
@@ -246,7 +395,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
             </span>
           </button>
           <button
-            onMouseDown={(e) => e.preventDefault()}
+            onMouseDown={(e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault()}
             onClick={() => editor.chain().focus().setTextAlign("center").run()}
             className={buttonClass(editor.isActive({ textAlign: "center" }))}
             title="Centrar"
@@ -256,7 +405,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
             </span>
           </button>
           <button
-            onMouseDown={(e) => e.preventDefault()}
+            onMouseDown={(e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault()}
             onClick={() => editor.chain().focus().setTextAlign("right").run()}
             className={buttonClass(editor.isActive({ textAlign: "right" }))}
             title="Alinear a la derecha"
@@ -266,7 +415,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
             </span>
           </button>
           <button
-            onMouseDown={(e) => e.preventDefault()}
+            onMouseDown={(e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault()}
             onClick={() => editor.chain().focus().setTextAlign("justify").run()}
             className={buttonClass(editor.isActive({ textAlign: "justify" }))}
             title="Justificar"
@@ -276,13 +425,80 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
             </span>
           </button>
 
+          {/* Desplegable de Interlineado */}
+          <div className="relative">
+            <button
+              onClick={(): void => setShowLineHeight(!showLineHeight)}
+              className={buttonClass(showLineHeight)}
+              title="Interlineado y espaciado"
+            >
+              <span className="material-symbols-outlined text-[16px]">
+                format_line_spacing
+              </span>
+            </button>
+
+            {showLineHeight && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={(): void => setShowLineHeight(false)}
+                />
+                <div className="absolute top-full left-0 mt-1 w-56 bg-background border border-foreground/10 rounded-lg shadow-2xl z-50 p-1 animate-in fade-in zoom-in-95 duration-100 font-sans">
+                  {[
+                    { label: "Sencillo", value: "1.0" },
+                    { label: "1,15", value: "1.15" },
+                    { label: "1,5", value: "1.5" },
+                    { label: "Doble", value: "2.0" },
+                  ].map((opt: { label: string; value: string }): React.JSX.Element => {
+                    const attrs: Record<string, any> = editor.getAttributes("paragraph") || {};
+                    const isSel: boolean = (attrs.lineHeight as string || "1.5") === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={(): void => {
+                          editor.chain().focus().setLineHeight(opt.value).run();
+                          setShowLineHeight(false);
+                        }}
+                        className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors flex items-center justify-between text-xs outline-none"
+                      >
+                        <span className="text-foreground/80">{opt.label}</span>
+                        {isSel && (
+                          <span className="text-primary font-bold">✓</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                  <div className="h-px bg-foreground/10 my-1" />
+                  <button
+                    onClick={(): void => {
+                      editor.chain().focus().setParagraphSpacing("1.0em", null).run();
+                      setShowLineHeight(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors text-xs text-foreground/80 outline-none"
+                  >
+                    Añadir espacio antes del párrafo
+                  </button>
+                  <button
+                    onClick={(): void => {
+                      editor.chain().focus().setParagraphSpacing(null, "1.2em").run();
+                      setShowLineHeight(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors text-xs text-foreground/80 outline-none"
+                  >
+                    Añadir espacio después del párrafo
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+
           <div className="w-px h-4 bg-foreground/10 mx-1 shrink-0" />
 
           {/* Zoom */}
           <div className="flex items-center" title="Zoom de página">
             <select
               value={zoom}
-              onChange={(e) => onZoomChange(Number(e.target.value))}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => onZoomChange(Number(e.target.value))}
               className={selectStyle}
             >
               <option

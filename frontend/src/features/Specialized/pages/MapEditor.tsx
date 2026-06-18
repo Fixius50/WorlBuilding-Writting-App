@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useCallback, useMemo } from "react";
+import React, { useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate, useOutletContext } from "react-router-dom";
 import {
   Map,
@@ -10,6 +10,7 @@ import {
   MapMouseEvent,
 } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { Feature, Geometry } from "geojson";
 import { MonolithicPanel } from "@components";
 import { Button } from "@components";
 import { useMapEditor, DrawMode } from "./useMapEditor";
@@ -30,9 +31,7 @@ const DRAW_MODE_ICONS: Record<DrawMode, string> = {
   eraser: "ink_eraser",
 };
 
-type LayerFeature = {
-  properties?: { layerId?: string };
-};
+type LayerFeature = Feature<Geometry, { layerId?: string }>;
 
 const MapEditor: React.FC = () => {
   const navigate = useNavigate();
@@ -254,11 +253,11 @@ const MapEditor: React.FC = () => {
 
   const featuresByLayer = useMemo(() => {
     const map: Record<string, LayerFeature[]> = {};
-    (features.features || []).forEach((f: LayerFeature) => {
-      const lid = f.properties?.layerId;
+    (features.features || []).forEach((f) => {
+      const lid = f.properties?.layerId as string | undefined;
       if (lid) {
         if (!map[lid]) map[lid] = [];
-        map[lid].push(f);
+        map[lid].push(f as unknown as LayerFeature);
       }
     });
     return map;
