@@ -354,7 +354,7 @@
 
 @page {
   size: A4;
-  margin: 0; /* Elimina cabeceras y pies de página automáticos del navegador (esquinas limpias) */
+  margin: 2cm; /* El navegador aplica un margen de 2cm y limpia automáticamente las cabeceras/pies nativos en Chrome/Firefox */
 }
 
 @media print {
@@ -362,7 +362,7 @@
   html, body, .prose-editor-wrapper {
     background-color: #ffffff !important;
     color: #000000 !important;
-    padding: 2cm !important; /* Margen real de la hoja A4 movido aquí para limpiar los bordes */
+    padding: 0 !important; /* Eliminado padding que forzaba páginas adicionales al final */
     margin: 0 !important;
     width: 100% !important;
     height: auto !important;

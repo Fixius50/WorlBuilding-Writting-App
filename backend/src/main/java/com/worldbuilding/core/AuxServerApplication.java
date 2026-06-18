@@ -80,6 +80,18 @@ public class AuxServerApplication {
             public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
                 HttpServletResponse res = (HttpServletResponse) response;
                 
+                // Cabeceras CORS Globales
+                res.setHeader("Access-Control-Allow-Origin", "*");
+                res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE, PUT");
+                res.setHeader("Access-Control-Max-Age", "3600");
+                res.setHeader("Access-Control-Allow-Headers", "x-requested-with, authorization, Content-Type, Authorization, credential, X-XSRF-TOKEN");
+                
+                // Interceptar preflight OPTIONS y responder OK inmediatamente
+                if (((javax.servlet.http.HttpServletRequest) request).getMethod().equalsIgnoreCase("OPTIONS")) {
+                    res.setStatus(HttpServletResponse.SC_OK);
+                    return;
+                }
+
                 // Cabeceras de aislamiento (Críticas para SQLite WASM)
                 res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
                 res.setHeader("Cross-Origin-Embedder-Policy", "credentialless");

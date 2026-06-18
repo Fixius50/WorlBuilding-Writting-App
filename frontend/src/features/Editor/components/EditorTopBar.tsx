@@ -258,9 +258,86 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                     Descargar como...
                   </div>
                   <button
-                    onClick={(): void => {
-                      onPrint ? onPrint() : window.print();
+                    onClick={async (): Promise<void> => {
                       setShowExportMenu(false);
+                      try {
+                        const htmlBody: string = editor.getHTML();
+                        const fullHtml: string = `
+                          <!DOCTYPE html>
+                          <html>
+                            <head>
+                              <meta charset="utf-8" />
+                              <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&amp;family=Outfit:wght@100..900&amp;display=swap" rel="stylesheet" />
+                              <style>
+                                @page {
+                                  size: A4;
+                                  margin: 2cm;
+                                }
+                                body {
+                                  font-family: 'Cormorant Garamond', serif;
+                                  font-size: 16px;
+                                  line-height: 1.5;
+                                  color: #000000;
+                                  margin: 0;
+                                  padding: 0;
+                                }
+                                h1 {
+                                  font-size: 32px;
+                                  font-family: 'Outfit', sans-serif;
+                                  font-weight: bold;
+                                  margin-bottom: 2rem;
+                                }
+                                p {
+                                  margin-bottom: 0.3em;
+                                  text-align: justify;
+                                }
+                                .mention {
+                                  font-weight: bold;
+                                  color: #000000;
+                                  text-decoration: none;
+                                }
+                                img {
+                                  display: block;
+                                  max-width: 100%;
+                                  height: auto;
+                                  margin: 1.5rem auto;
+                                }
+                              </style>
+                            </head>
+                            <body>
+                              <h1>${title || "Documento"}</h1>
+                              <div>${htmlBody}</div>
+                            </body>
+                          </html>
+                        `;
+
+                        const response: Response = await fetch("/api/editor/export-pdf", {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({ html: fullHtml, title }),
+                        });
+
+                        const isOk = response.ok;
+                        isOk
+                          ? await (async (): Promise<void> => {
+                              const blob: Blob = await response.blob();
+                              const downloadUrl: string = URL.createObjectURL(blob);
+                              const link: HTMLAnchorElement = document.createElement("a");
+                              link.href = downloadUrl;
+                              link.download = `${title || "documento"}.pdf`;
+                              link.click();
+                              URL.revokeObjectURL(downloadUrl);
+                            })()
+                          : (() => {
+                              console.error("Error al exportar PDF en backend, iniciando fallback");
+                              onPrint ? onPrint() : window.print();
+                            })();
+                      } catch (err) {
+                        console.error("Error de red al exportar PDF, usando fallback de impresión:", err);
+                        onPrint ? onPrint() : window.print();
+                      }
                     }}
                     className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors flex items-center gap-2 text-foreground/85 outline-none font-sans"
                   >

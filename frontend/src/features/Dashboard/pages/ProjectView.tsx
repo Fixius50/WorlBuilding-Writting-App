@@ -1,125 +1,131 @@
 import React from "react";
 import { useProjectView } from "./useProjectView";
+import "./ProjectView.css";
 
-interface ActionCardProps {
+interface VolumeCard {
   icon: string;
+  label: string;
   title: string;
   desc: string;
-  color: string;
-  onClick: () => void;
-  t: (key: string) => string;
+  path: string;
 }
-
-const ActionCard: React.FC<ActionCardProps> = ({
-  icon,
-  title,
-  desc,
-  color,
-  onClick,
-  t,
-}) => (
-  <div
-    onClick={onClick}
-    className="group relative p-8 rounded-[32px] monolithic-panel hover:border-primary/50 transition-all cursor-pointer flex flex-col h-full gap-6 hover:shadow-2xl"
-  >
-    <div
-      className={`size-14 rounded-none ${color} flex items-center justify-center text-primary-foreground shadow-lg group-hover:scale-110 transition-all duration-500`}
-    >
-      <span className="material-symbols-outlined text-3xl">{icon}</span>
-    </div>
-    <div className="space-y-4">
-      <h3 className="text-2xl font-bold text-foreground tracking-tight">
-        {title}
-      </h3>
-      <p className="text-foreground/60 text-sm leading-relaxed">{desc}</p>
-    </div>
-    <div className="mt-auto pt-6 border-t flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-foreground/50 group-hover:text-foreground transition-colors">
-      <span>{t("project.explore_tool")}</span>
-      <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">
-        arrow_forward
-      </span>
-    </div>
-  </div>
-);
 
 const ProjectView: React.FC = () => {
   const { projectName, navigate, t, user, baseUrl } = useProjectView();
 
-  return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-background">
-      {/* Content Area */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <div className="max-w-7xl mx-auto p-12 space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
-          {/* Welcome Section */}
-          <div className="space-y-2 max-w-2xl">
-            <h2 className="text-4xl font-black text-foreground tracking-tighter leading-tight">
-              {t("project.welcome")}{" "}
-              <span className="text-primary">
-                {user?.displayName || user?.username || t("common.architect")}
-              </span>
-              .
-            </h2>
-          </div>
+  const projectTitle: string = projectName || "Crónicas de Aethelgard";
+  const architectName: string = user?.displayName || user?.username || t("common.architect");
 
-          {/* Quick Access Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <ActionCard
-              icon="menu_book"
-              title={t("project.codex_title")}
-              desc={t("project.codex_desc")}
-              color="bg-indigo-600"
-              onClick={() => navigate(`${baseUrl}/bible`)}
-              t={t}
-            />
-            <ActionCard
-              icon="map"
-              title={t("project.atlas_title")}
-              desc={t("project.atlas_desc")}
-              color="bg-emerald-600"
-              onClick={() => navigate(`${baseUrl}/map`)}
-              t={t}
-            />
-            <ActionCard
-              icon="edit_note"
-              title={t("project.chronicles_title")}
-              desc={t("project.chronicles_desc")}
-              color="bg-amber-600"
-              onClick={() => navigate(`${baseUrl}/writing`)}
-              t={t}
-            />
-            <ActionCard
-              icon="hub"
-              title={t("project.graph_title")}
-              desc={t("project.graph_desc")}
-              color="bg-purple-600"
-              onClick={() => navigate(`${baseUrl}/graph`)}
-              t={t}
-            />
-            <ActionCard
-              icon="calendar_month"
-              title={t("project.timeline_title")}
-              desc={t("project.timeline_desc")}
-              color="bg-rose-600"
-              onClick={() => navigate(`${baseUrl}/timeline`)}
-              t={t}
-            />
-            <ActionCard
-              icon="translate"
-              title={t("project.linguistics_title")}
-              desc={t("project.linguistics_desc")}
-              color="bg-blue-600"
-              onClick={() => navigate(`${baseUrl}/linguistics`)}
-              t={t}
-            />
-            <ActionCard
-              icon="analytics"
-              title={t("project.analytics_title")}
-              desc={t("project.analytics_desc")}
-              color="bg-cyan-600"
-              onClick={() => navigate(`${baseUrl}/analytics`)}
-              t={t}
-            />
-          </div>
+  const volumes: VolumeCard[] = [
+    {
+      icon: "menu_book",
+      label: "Codex",
+      title: t("project.codex_title"),
+      desc: t("project.codex_desc"),
+      path: `${baseUrl}/bible`,
+    },
+    {
+      icon: "map",
+      label: "Atlas",
+      title: t("project.atlas_title"),
+      desc: t("project.atlas_desc"),
+      path: `${baseUrl}/map`,
+    },
+    {
+      icon: "edit_note",
+      label: "Crónicas",
+      title: t("project.chronicles_title"),
+      desc: t("project.chronicles_desc"),
+      path: `${baseUrl}/writing`,
+    },
+    {
+      icon: "hub",
+      label: "Conexión",
+      title: t("project.graph_title"),
+      desc: t("project.graph_desc"),
+      path: `${baseUrl}/graph`,
+    },
+    {
+      icon: "calendar_month",
+      label: "Cronos",
+      title: t("project.timeline_title"),
+      desc: t("project.timeline_desc"),
+      path: `${baseUrl}/timeline`,
+    },
+    {
+      icon: "translate",
+      label: "Verbo",
+      title: t("project.linguistics_title"),
+      desc: t("project.linguistics_desc"),
+      path: `${baseUrl}/linguistics`,
+    },
+    {
+      icon: "analytics",
+      label: "Esencia",
+      title: t("project.analytics_title"),
+      desc: t("project.analytics_desc"),
+      path: `${baseUrl}/analytics`,
+    },
+  ];
+
+  return (
+    <div className="flex-1 flex flex-col h-screen overflow-y-auto no-scrollbar bg-background text-foreground font-serif p-8 md:p-16 justify-start items-center">
+      {/* CONTENEDOR CENTRAL DE LA BIBLIOTECA */}
+      <div className="max-w-4xl w-full flex flex-col items-start">
+        
+        {/* CABECERA LITERARIA LIMPIA Y PRÓXIMA */}
+        <header className="mb-12 select-none w-full">
+          <h1 className="text-5xl md:text-6xl font-light italic tracking-wide text-zinc-300 underline underline-offset-[16px] decoration-foreground/10 decoration-1">
+            {projectTitle}
+          </h1>
+          <p className="text-[10px] text-foreground/45 font-mono mt-8 uppercase tracking-[0.2em] font-light">
+            {t("project.welcome")}{" "}
+            <span className="text-primary font-bold">
+              {architectName}
+            </span>
+          </p>
+        </header>
+
+        {/* LISTA DE LIBROS (FLEXBOX PURO - COMPRESIÓN DINÁMICA CON POSICIONES ALTERNADAS) */}
+        <div className="flex flex-col gap-6 items-start w-full">
+          {volumes.map((vol: VolumeCard, index: number) => {
+            const isLeft: boolean = index % 2 === 0;
+            return (
+              <div
+                key={vol.path}
+                onClick={() => navigate(vol.path)}
+                className={`book-card ${isLeft ? "book-card-left" : "book-card-right"} group`}
+              >
+                {/* Bloque Fijo (Símbolo de iconografía oficial y título) */}
+                <div className="book-symbol-block">
+                  <span className="material-symbols-outlined text-4xl font-light leading-none text-foreground/70 group-hover:text-primary transition-colors duration-300">
+                    {vol.icon}
+                  </span>
+                  <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-primary/70 mt-3 text-center">
+                    {vol.label}
+                  </span>
+                </div>
+                
+                {/* Bloque de Expansión Oculto */}
+                <div className="reveal-content">
+                  <div className="reveal-inner">
+                    <p className="font-sans text-xs text-foreground/50 italic font-light tracking-wide max-w-[13.5rem] whitespace-normal">
+                      {vol.desc}
+                    </p>
+                    <div className={`flex items-center gap-2 text-primary/70 hover:text-primary transition-colors shrink-0 ${isLeft ? "pr-6" : "pl-6"}`}>
+                      <span className="font-mono text-[9px] uppercase tracking-[0.2em] font-light">
+                        {t("project.explore_tool")}
+                      </span>
+                      {/* Flecha cinética deslizable adaptable */}
+                      <span className={`text-xs ${isLeft ? "arrow-slide" : "arrow-slide-left"}`}>
+                        {isLeft ? "→" : "←"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

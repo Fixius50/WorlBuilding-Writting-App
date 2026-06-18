@@ -1,0 +1,117 @@
+/* TOKENS DE DISEÑO ADAPTADOS A LA ICONOGRAFÍA Y TEMA DE LA APLICACIÓN */
+:root {
+  --card-collapsed-w: 8.5rem;
+  --card-h: 7.5rem;
+}
+
+/* TARJETA MONOLÍTICA BASE */
+.book-card {
+  display: flex;
+  align-items: center;
+  width: var(--card-collapsed-w);
+  height: var(--card-h);
+  background-color: hsl(var(--foreground) / 0.02);
+  backdrop-filter: blur(8px);
+  border: 0.0625rem solid hsl(var(--foreground) / 0.08);
+  padding: 1rem 0rem;
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, background-color 0.3s ease;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+/* ALINEACIÓN IZQUIERDA (Impares visuales) */
+.book-card-left {
+  align-self: flex-start;
+  flex-direction: row;
+  border-left: 0.1875rem solid hsl(var(--primary) / 0.5);
+}
+
+.book-card-left:hover {
+  width: 100%;
+  border-left-color: hsl(var(--primary));
+  border-right-color: hsl(var(--primary) / 0.2);
+  background-color: hsl(var(--foreground) / 0.04);
+}
+
+/* ALINEACIÓN DERECHA (Pares visuales) */
+.book-card-right {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+  border-right: 0.1875rem solid hsl(var(--primary) / 0.5);
+}
+
+.book-card-right:hover {
+  width: 100%;
+  border-right-color: hsl(var(--primary));
+  border-left-color: hsl(var(--primary) / 0.2);
+  background-color: hsl(var(--foreground) / 0.04);
+}
+
+/* BLOQUE IZQUIERDO/DERECHO FIJO */
+.book-symbol-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: var(--card-collapsed-w);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+/* CONTENEDOR DE EXPANSIÓN HORIZONTAL CINÉTICA FLEXIBLE */
+.reveal-content {
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  flex: 1;
+  overflow: hidden;
+}
+
+.book-card-left .reveal-content {
+  padding-left: 1.5rem;
+  border-left: 0.0625rem solid hsl(var(--foreground) / 0.08);
+}
+
+.book-card-right .reveal-content {
+  padding-right: 1.5rem;
+  border-right: 0.0625rem solid hsl(var(--foreground) / 0.08);
+}
+
+.book-card:hover .reveal-content {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Contenedor estable interno */
+.reveal-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* ANIMACIONES DE DESLIZAMIENTO DE FLECHA */
+.arrow-slide {
+  transform: translateX(1.5rem);
+  opacity: 0;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+}
+
+.book-card-left:hover .arrow-slide {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.arrow-slide-left {
+  transform: translateX(-1.5rem);
+  opacity: 0;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+}
+
+.book-card-right:hover .arrow-slide-left {
+  transform: translateX(0);
+  opacity: 1;
+}
