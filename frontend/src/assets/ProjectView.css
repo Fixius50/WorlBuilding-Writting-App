@@ -4,6 +4,22 @@
   --card-h: 7.5rem;
 }
 
+/* CONTENEDORES DE FILA ACTIVA PARA HOVER DESDE EL MEDIO */
+.book-row {
+  width: 100%;
+  display: flex;
+  cursor: pointer;
+  background: transparent;
+}
+
+.book-row-left {
+  justify-content: flex-start;
+}
+
+.book-row-right {
+  justify-content: flex-end;
+}
+
 /* TARJETA MONOLÍTICA BASE */
 .book-card {
   display: flex;
@@ -15,36 +31,34 @@
   border: 0.0625rem solid hsl(var(--foreground) / 0.08);
   padding: 1rem 0rem;
   transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, background-color 0.3s ease;
-  cursor: pointer;
   overflow: hidden;
+  pointer-events: none; /* Delegar la entrada de puntero a la fila */
 }
 
-/* ALINEACIÓN IZQUIERDA (Impares visuales) */
-.book-card-left {
-  align-self: flex-start;
-  flex-direction: row;
-  border-left: 0.1875rem solid hsl(var(--primary) / 0.5);
-}
-
-.book-card-left:hover {
+/* EFECTO DE HOVER A TRAVÉS DE LA FILA */
+.book-row:hover .book-card {
   width: 100%;
-  border-left-color: hsl(var(--primary));
-  border-right-color: hsl(var(--primary) / 0.2);
   background-color: hsl(var(--foreground) / 0.04);
 }
 
-/* ALINEACIÓN DERECHA (Pares visuales) */
-.book-card-right {
-  align-self: flex-end;
+/* DETALLE DE ACENTOS POR ORIENTACIÓN */
+.book-row-left .book-card {
+  border-left: 0.1875rem solid hsl(var(--primary) / 0.5);
+}
+
+.book-row-left:hover .book-card {
+  border-left-color: hsl(var(--primary));
+  border-right-color: hsl(var(--primary) / 0.2);
+}
+
+.book-row-right .book-card {
   flex-direction: row-reverse;
   border-right: 0.1875rem solid hsl(var(--primary) / 0.5);
 }
 
-.book-card-right:hover {
-  width: 100%;
+.book-row-right:hover .book-card {
   border-right-color: hsl(var(--primary));
   border-left-color: hsl(var(--primary) / 0.2);
-  background-color: hsl(var(--foreground) / 0.04);
 }
 
 /* BLOQUE IZQUIERDO/DERECHO FIJO */
@@ -69,17 +83,17 @@
   overflow: hidden;
 }
 
-.book-card-left .reveal-content {
+.book-row-left .reveal-content {
   padding-left: 1.5rem;
   border-left: 0.0625rem solid hsl(var(--foreground) / 0.08);
 }
 
-.book-card-right .reveal-content {
+.book-row-right .reveal-content {
   padding-right: 1.5rem;
   border-right: 0.0625rem solid hsl(var(--foreground) / 0.08);
 }
 
-.book-card:hover .reveal-content {
+.book-row:hover .reveal-content {
   opacity: 1;
   pointer-events: auto;
 }
@@ -100,7 +114,7 @@
   transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
 }
 
-.book-card-left:hover .arrow-slide {
+.book-row-left:hover .arrow-slide {
   transform: translateX(0);
   opacity: 1;
 }
@@ -111,7 +125,7 @@
   transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
 }
 
-.book-card-right:hover .arrow-slide-left {
+.book-row-right:hover .arrow-slide-left {
   transform: translateX(0);
   opacity: 1;
 }

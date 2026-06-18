@@ -1,6 +1,6 @@
 import React from "react";
 import { useProjectView } from "./useProjectView";
-import "./ProjectView.css";
+import "@assets/ProjectView.css";
 
 interface VolumeCard {
   icon: string;
@@ -94,32 +94,35 @@ const ProjectView: React.FC = () => {
               <div
                 key={vol.path}
                 onClick={() => navigate(vol.path)}
-                className={`book-card ${isLeft ? "book-card-left" : "book-card-right"} group`}
+                className={`book-row ${isLeft ? "book-row-left" : "book-row-right"}`}
               >
-                {/* Bloque Fijo (Símbolo de iconografía oficial y título) */}
-                <div className="book-symbol-block">
-                  <span className="material-symbols-outlined text-4xl font-light leading-none text-foreground/70 group-hover:text-primary transition-colors duration-300">
-                    {vol.icon}
-                  </span>
-                  <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-primary/70 mt-3 text-center">
-                    {vol.label}
-                  </span>
-                </div>
-                
-                {/* Bloque de Expansión Oculto */}
-                <div className="reveal-content">
-                  <div className="reveal-inner">
-                    <p className="font-sans text-xs text-foreground/50 italic font-light tracking-wide max-w-[13.5rem] whitespace-normal">
-                      {vol.desc}
-                    </p>
-                    <div className={`flex items-center gap-2 text-primary/70 hover:text-primary transition-colors shrink-0 ${isLeft ? "pr-6" : "pl-6"}`}>
-                      <span className="font-mono text-[9px] uppercase tracking-[0.2em] font-light">
-                        {t("project.explore_tool")}
-                      </span>
-                      {/* Flecha cinética deslizable adaptable */}
-                      <span className={`text-xs ${isLeft ? "arrow-slide" : "arrow-slide-left"}`}>
-                        {isLeft ? "→" : "←"}
-                      </span>
+                {/* Tarjeta Monolítica */}
+                <div className="book-card">
+                  {/* Bloque Fijo (Símbolo de iconografía oficial y título) */}
+                  <div className="book-symbol-block">
+                    <span className="material-symbols-outlined text-4xl font-light leading-none text-foreground/70 group-hover:text-primary transition-colors duration-300">
+                      {vol.icon}
+                    </span>
+                    <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-primary/70 mt-3 text-center">
+                      {vol.label}
+                    </span>
+                  </div>
+                  
+                  {/* Bloque de Expansión Oculto */}
+                  <div className="reveal-content">
+                    <div className="reveal-inner">
+                      <p className="font-sans text-xs text-foreground/50 italic font-light tracking-wide max-w-[13.5rem] whitespace-normal">
+                        {vol.desc}
+                      </p>
+                      <div className={`flex items-center gap-2 text-primary/70 hover:text-primary transition-colors shrink-0 ${isLeft ? "pr-6" : "pl-6"}`}>
+                        <span className="font-mono text-[9px] uppercase tracking-[0.2em] font-light">
+                          {t("project.explore_tool")}
+                        </span>
+                        {/* Flecha cinética deslizable adaptable */}
+                        <span className={`text-xs ${isLeft ? "arrow-slide" : "arrow-slide-left"}`}>
+                          {isLeft ? "→" : "←"}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
