@@ -315,7 +315,7 @@ const EditorMonolithicPanel: React.FC<EditorMonolithicPanelProps> = ({
   return (
     <div className="fixed inset-0 bg-background/95 z-[500] flex items-center justify-center p-4 sm:p-8 animate-in fade-in duration-200">
       {/* THE MONOLITHIC BOX */}
-      <div className="w-full max-w-6xl h-[85vh] bg-background border border-foreground/10 shadow-2xl flex flex-col md:flex-row relative overflow-hidden">
+      <div className="w-full max-w-6xl h-[75vh] bg-background border border-foreground/10 shadow-2xl flex flex-col md:flex-row relative overflow-hidden">
         <button
           onClick={onCancel}
           className="absolute top-4 right-4 text-foreground/40 hover:text-foreground z-20 p-2 bg-background border border-foreground/10 rounded-none transition-colors"

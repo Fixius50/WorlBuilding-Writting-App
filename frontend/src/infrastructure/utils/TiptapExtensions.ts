@@ -12,6 +12,7 @@ import suggestion from './suggestion'
 import slashSuggestion from './slashSuggestion'
 import { AnyExtension, Extension } from '@tiptap/core'
 import { Suggestion } from '@tiptap/suggestion'
+import Focus from '@tiptap/extension-focus'
 
 const SlashCommands = Extension.create({
   name: 'slashCommands',
@@ -39,6 +40,10 @@ const SlashCommands = Extension.create({
  */
 export const getZenExtensions = (placeholderText: string = 'Escribe tu historia aquí...'): AnyExtension[] => [
   StarterKit,
+  Focus.configure({
+    className: 'has-focus',
+    mode: 'all',
+  }),
   Placeholder.configure({
     placeholder: placeholderText,
   }),

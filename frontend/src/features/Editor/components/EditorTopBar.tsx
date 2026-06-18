@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { Editor } from "@tiptap/react";
 import { useEditorTopBar } from "../hooks/useEditorTopBar";
 
@@ -18,6 +18,8 @@ interface EditorTopBarProps {
   onToggleSidebar?: () => void;
   zoom?: number;
   onZoomChange?: (zoom: number) => void;
+  focusMode?: boolean;
+  onToggleFocusMode?: () => void;
 }
 
 const EditorTopBar: React.FC<EditorTopBarProps> = ({
@@ -35,6 +37,8 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
   onToggleSidebar,
   zoom = 100,
   onZoomChange = () => {},
+  focusMode = false,
+  onToggleFocusMode = () => {},
 }) => {
   const {
     showSnapshots,
@@ -169,6 +173,17 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
               </>
             )}
           </div>
+
+          {/* Toggle Focus Mode */}
+          <button
+            onClick={onToggleFocusMode}
+            className={`p-1 transition-colors flex items-center justify-center outline-none ${focusMode ? "text-primary" : "text-foreground/40 hover:text-foreground/75"}`}
+            title={focusMode ? "Desactivar modo enfoque" : "Activar modo enfoque"}
+          >
+            <span className="material-symbols-outlined text-lg">
+              {focusMode ? "visibility" : "visibility_off"}
+            </span>
+          </button>
 
           {/* Toggle Sidebar */}
           {onToggleSidebar && (

@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useLanguage } from "@context/LanguageContext";
 import { ZenEditor } from "@features/Editor";
 import { ConfirmModal } from "@components";
@@ -43,6 +43,8 @@ const WritingView = () => {
     setSidebarOpen,
     selectedEntity,
   } = useWritingView();
+
+  const [isCorkboardMode, setIsCorkboardMode] = useState(false);
 
   const renderProfilePreview = useCallback(() => {
     const type = selectedEntity
@@ -239,7 +241,7 @@ const WritingView = () => {
               <div className="flex flex-col h-full justify-between flex-grow">
                 <div className="flex-grow flex flex-col overflow-hidden">
                   {/* Buscador plano de Hojas */}
-                  <div className="p-3 border-b border-foreground/5">
+                  <div className="p-3 border-b border-foreground/5 flex flex-col gap-3">
                     <div className="relative">
                       <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-sm text-foreground/35">
                         search
@@ -252,10 +254,21 @@ const WritingView = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                       />
                     </div>
+                    <div className="flex items-center justify-between px-1">
+                      <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-foreground/40">
+                        Vista de Corcho
+                      </span>
+                      <button
+                        onClick={() => setIsCorkboardMode(!isCorkboardMode)}
+                        className={`w-8 h-4 rounded-full relative transition-colors ${isCorkboardMode ? "bg-primary" : "bg-foreground/20"}`}
+                      >
+                        <div className={`w-3 h-3 rounded-full bg-background absolute top-0.5 transition-all ${isCorkboardMode ? "left-4.5 translate-x-[14px]" : "left-0.5"}`} />
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Lista de páginas con anidamiento dinámico */}
-                  <div className="flex-grow overflow-y-auto p-3 space-y-1 custom-scrollbar">
+                  {/* Lista o Corcho de páginas con anidamiento dinámico */}
+                  <div className={`flex-grow overflow-y-auto p-3 custom-scrollbar ${isCorkboardMode ? "grid grid-cols-2 gap-2 content-start" : "flex flex-col space-y-1"}`}>
                     {filteredPages.map((page) => {
                       const globalIdx = pages.findIndex(
                         (p) => p.id === page.id,
@@ -270,6 +283,40 @@ const WritingView = () => {
                         (page.titulo || "")
                           .toLowerCase()
                           .startsWith("capitulo");
+
+                      if (isCorkboardMode) {
+                        return (
+                          <div key={page.id} className="group relative aspect-square">
+                            <button
+                              onClick={() => handlePageSelect(globalIdx)}
+                              className={`w-full h-full text-left p-3 rounded-md transition-all flex flex-col justify-start border overflow-hidden ${
+                                isSelected
+                                  ? "bg-primary/10 border-primary/30 shadow-[inset_0_0_10px_rgba(var(--primary-rgb),0.05)]"
+                                  : "bg-foreground/[0.02] border-foreground/10 hover:border-primary/20 hover:bg-foreground/[0.04]"
+                              }`}
+                            >
+                              <span className={`font-sans text-[11px] font-bold mb-2 truncate w-full ${isSelected ? "text-primary" : "text-foreground/80"}`}>
+                                {page.titulo || `Hoja ${globalIdx + 1}`}
+                              </span>
+                              <div className="text-[9px] text-foreground/50 font-serif leading-relaxed line-clamp-5 whitespace-pre-wrap break-words" dangerouslySetInnerHTML={{ __html: page.contenido?.replace(/<[^>]*>?/gm, '') || 'Sin contenido...' }} />
+                            </button>
+                            {/* Opciones de borrado rápidas */}
+                            <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 bg-background/80 backdrop-blur-sm rounded">
+                              <button
+                                onClick={(e) =>
+                                  deletePage(e, page.id, globalIdx)
+                                }
+                                className="p-1 rounded-sm text-foreground/35 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                                title="Eliminar"
+                              >
+                                <span className="material-symbols-outlined text-sm">
+                                  delete
+                                </span>
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      }
 
                       return (
                         <div key={page.id} className="group relative">
@@ -343,14 +390,35 @@ const WritingView = () => {
                               </button>
                             </div>
                           )}
-                        </div>
-                      );
-                    })}
+                        
+                        {/* Sub-índice de Headings (Solo si está seleccionada y no es corcho) */}
+                        {isSelected && !isCorkboardMode && (
+                          <div className="pl-6 pr-2 py-1 space-y-1">
+                            {(() => {
+                              const html = page.contenido || '';
+                              const matches = html.match(/<h[12][^>]*>(.*?)<\/h[12]>/g);
+                              if (!matches) return null;
+                              return matches.map((m, i) => {
+                                const isH1 = m.startsWith('<h1');
+                                const text = m.replace(/<[^>]+>/g, '').trim();
+                                if (!text) return null;
+                                return (
+                                  <div key={i} className={`text-[10px] truncate text-foreground/50 hover:text-primary cursor-pointer transition-colors ${isH1 ? 'font-bold' : 'ml-2'}`}>
+                                    {text}
+                                  </div>
+                                );
+                              });
+                            })()}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                   </div>
                 </div>
 
                 {/* Botón de añadir hoja en la parte inferior */}
-                <div className="p-3 bg-background border-t border-foreground/5 sticky bottom-0">
+                <div className="p-3 bg-background border-t border-foreground/5 shrink-0">
                   <button
                     onClick={handleCreatePage}
                     className="w-full py-3 bg-primary hover:bg-primary/95 text-foreground rounded-md text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.98] shadow-md shadow-primary/10"
@@ -360,6 +428,26 @@ const WritingView = () => {
                     </span>
                     <span>AÑADIR HOJA</span>
                   </button>
+                </div>
+
+                {/* Mitad inferior: Comentarios (Estilo VSCode Git) */}
+                <div className="h-1/3 min-h-[200px] border-t-2 border-foreground/10 bg-background/50 flex flex-col shrink-0">
+                  <div className="p-2 border-b border-foreground/5 flex items-center gap-2 bg-background sticky top-0">
+                    <span className="material-symbols-outlined text-sm text-foreground/40">
+                      forum
+                    </span>
+                    <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-foreground/60">
+                      Comentarios del Documento
+                    </span>
+                  </div>
+                  <div className="flex-grow overflow-y-auto p-3 custom-scrollbar flex flex-col gap-2">
+                    {/* Placeholder para los comentarios */}
+                    <div className="flex flex-col items-center justify-center h-full text-center p-4 opacity-50">
+                      <span className="material-symbols-outlined text-2xl mb-2">speaker_notes_off</span>
+                      <span className="text-[10px] font-sans">No hay comentarios en esta hoja.</span>
+                      <span className="text-[9px] font-sans mt-1">Selecciona texto para añadir una anotación.</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             ) : (

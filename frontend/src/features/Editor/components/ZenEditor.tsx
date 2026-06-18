@@ -1,4 +1,4 @@
-﻿import { EditorContent, BubbleMenu, Editor } from "@tiptap/react";
+import { EditorContent, BubbleMenu, Editor } from "@tiptap/react";
 import React from "react";
 import EditorTopBar from "./EditorTopBar";
 import { Hoja as HojaModel } from "@domain/database";
@@ -138,6 +138,19 @@ const PageContentEditor: React.FC<PageContentEditorProps> = ({
                         )}
                       </button>
                     ))}
+                    <div className="col-span-4 mt-1 border-t border-foreground/10 pt-1 flex justify-center">
+                      <label className="text-[10px] font-sans flex items-center gap-2 text-foreground/60 cursor-pointer hover:text-foreground">
+                        <span className="material-symbols-outlined text-sm">palette</span> Custom
+                        <input 
+                          type="color" 
+                          className="w-0 h-0 opacity-0 absolute"
+                          onChange={(e) => {
+                            editor.chain().focus().setColor(e.target.value).run();
+                            setShowTextColor(false);
+                          }}
+                        />
+                      </label>
+                    </div>
                   </div>
                 </>
               )}
@@ -206,6 +219,21 @@ const PageContentEditor: React.FC<PageContentEditorProps> = ({
                         )}
                       </button>
                     ))}
+                    <div className="col-span-3 mt-1 border-t border-foreground/10 pt-1 flex justify-center">
+                      <label className="text-[10px] font-sans flex items-center gap-2 text-foreground/60 cursor-pointer hover:text-foreground">
+                        <span className="material-symbols-outlined text-sm">palette</span> Custom
+                        <input 
+                          type="color" 
+                          className="w-0 h-0 opacity-0 absolute"
+                          onChange={(e) => {
+                            // We use hex format from color picker, so we append 4D (30% opacity) for highlight feeling
+                            const hex = e.target.value;
+                            editor.chain().focus().toggleHighlight({ color: hex + '4D' }).run();
+                            setShowHighlightColor(false);
+                          }}
+                        />
+                      </label>
+                    </div>
                   </div>
                 </>
               )}
@@ -256,7 +284,7 @@ const PageContentEditor: React.FC<PageContentEditorProps> = ({
                margin-bottom: 1.2em;
                text-align: justify;
             }
-            .prose-editor .ProseMirror p.is-editor-empty:first-child::before {
+             .prose-editor .ProseMirror p.is-editor-empty:first-child::before {
                content: attr(data-placeholder);
                float: left;
                color: var(--editor-placeholder);
@@ -265,7 +293,15 @@ const PageContentEditor: React.FC<PageContentEditorProps> = ({
                text-indent: 0;
                font-style: italic;
              }
-            /* Estilos de las menciones de Tiptap */
+             /* Focus Mode Styling */
+             .focus-mode-active .prose-editor .ProseMirror > * {
+                opacity: 0.3;
+                transition: opacity 0.3s ease;
+             }
+             .focus-mode-active .prose-editor .ProseMirror > .has-focus {
+                opacity: 1 !important;
+             }
+             /* Estilos de las menciones de Tiptap */
             .prose-editor .ProseMirror .mention {
               font-family: "Outfit", sans-serif;
               font-size: 15px;
@@ -370,6 +406,7 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
 }) => {
   const currentPage = pages[currentPageIndex];
   const [zoom, setZoom] = React.useState(100);
+  const [focusMode, setFocusMode] = React.useState(false);
 
   if (!currentPage) {
     return (
@@ -416,6 +453,8 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
         onToggleSidebar={onToggleSidebar}
         zoom={zoom}
         onZoomChange={setZoom}
+        focusMode={focusMode}
+        onToggleFocusMode={() => setFocusMode(!focusMode)}
       />
 
       <div className="flex-1 relative bg-editor-elevated overflow-y-auto custom-scrollbar flex justify-center py-16 px-6">
@@ -424,16 +463,18 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
           <input
             value={currentPage.titulo || ""}
             onChange={(e) => onTitleChange(currentPageIndex, e.target.value)}
-            className="w-full bg-transparent border-none text-foreground font-serif font-semibold text-[38px] outline-none focus:ring-0 placeholder:text-foreground/15 p-0"
+            className={`w-full bg-transparent border-none text-foreground font-serif font-semibold text-[38px] outline-none focus:ring-0 placeholder:text-foreground/15 p-0 transition-opacity duration-300 ${focusMode ? "opacity-30 hover:opacity-100" : "opacity-100"}`}
             placeholder={`Hoja ${currentPageIndex + 1}`}
           />
 
           {/* CUERPO DEL TEXTO */}
-          <PageContentEditor
-            editor={editor}
-            onMentionClick={onMentionClick}
-            zoom={zoom}
-          />
+          <div className={focusMode ? "focus-mode-active" : ""}>
+            <PageContentEditor
+              editor={editor}
+              onMentionClick={onMentionClick}
+              zoom={zoom}
+            />
+          </div>
         </div>
       </div>
     </div>
