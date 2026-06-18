@@ -4,6 +4,7 @@ import { Proyecto } from "@domain/database";
 import { useWorkspaceSelector } from "./useWorkspaceSelector";
 import { WorkspaceUseCase } from "@features/Workspaces";
 import { getModuleCache, setModuleCache } from "@utils/moduleCache";
+import { useCoverImageValidation } from "../hooks/useCoverImageValidation";
 
 // --- COMPONENTES ATÓMICOS ---
 
@@ -200,7 +201,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           <CarvedInput
             icon="language"
             value={currentUrl.startsWith("data:") ? "" : currentUrl}
-            onChange={(e) => onImageUpdate(e.target.value)}
+            onChange={(e) => onImageUpdate(e.target.value.trimStart())}
             placeholder="Ej: https://images.unsplash.com/..."
           />
           <p className="font-mono text-[9px] text-foreground/30 mt-2 tracking-widest uppercase">
@@ -289,6 +290,13 @@ const EditorMonolithicPanel: React.FC<EditorMonolithicPanelProps> = ({
   );
   const [tag, setTag] = useState(projectToEdit?.tag || "Fantasía");
   const [coverUrl, setCoverUrl] = useState(projectToEdit?.image_url || "");
+  const {
+    normalizedCoverUrl,
+    coverProbe,
+    setPreviewError,
+    isCoverUrlInvalid,
+    isSaveBlocked,
+  } = useCoverImageValidation(coverUrl);
 
   const handleSave = () => {
     if (!title.trim()) return;
@@ -296,7 +304,7 @@ const EditorMonolithicPanel: React.FC<EditorMonolithicPanelProps> = ({
       nombre: title,
       descripcion: description,
       tag: tag,
-      coverUrl: coverUrl,
+      coverUrl: normalizedCoverUrl,
     });
   };
 
@@ -319,11 +327,14 @@ const EditorMonolithicPanel: React.FC<EditorMonolithicPanelProps> = ({
         {/* --- COLUMNA IZQUIERDA: VISOR DE ARTE PRISTINO --- */}
         <div className="hidden md:flex w-1/2 border-r border-foreground/10 flex-col bg-foreground/5 relative">
           <div className="flex-1 relative overflow-hidden shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]">
-            {coverUrl ? (
+            {normalizedCoverUrl && !isCoverUrlInvalid ? (
               <img
-                src={coverUrl}
+                src={normalizedCoverUrl}
                 alt="Portada del proyecto"
                 className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+                onError={() => setPreviewError(true)}
+                onLoad={() => setPreviewError(false)}
               />
             ) : (
               <div className="absolute inset-0 flex flex-col items-center justify-center text-foreground/20 bg-background">
@@ -395,6 +406,22 @@ const EditorMonolithicPanel: React.FC<EditorMonolithicPanelProps> = ({
                 currentUrl={coverUrl}
                 onImageUpdate={setCoverUrl}
               />
+              <div className="mt-3 font-mono text-[9px] tracking-widest uppercase">
+                {coverProbe.status === "checking" && (
+                  <span className="text-primary/80">{coverProbe.message}</span>
+                )}
+                {coverProbe.status === "valid" && (
+                  <span className="text-emerald-400">{coverProbe.message}</span>
+                )}
+                {coverProbe.status === "invalid" && (
+                  <span className="text-red-400">{coverProbe.message}</span>
+                )}
+                {coverProbe.status === "empty" && (
+                  <span className="text-foreground/40">
+                    {coverProbe.message}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -405,7 +432,7 @@ const EditorMonolithicPanel: React.FC<EditorMonolithicPanelProps> = ({
             <PrimaryButton
               onClick={handleSave}
               icon="save"
-              disabled={!title.trim()}
+              disabled={!title.trim() || isSaveBlocked}
             >
               {isCreating ? "Inicializar Universo" : "Guardar Configuración"}
             </PrimaryButton>
@@ -445,6 +472,7 @@ const NotebookCard: React.FC<{
         src={displayImg}
         alt={data.nombre}
         className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-100 grayscale-[0.8] group-hover:grayscale-0 transition-all duration-700"
+        referrerPolicy="no-referrer"
       />
 
       <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-transparent to-transparent opacity-60"></div>

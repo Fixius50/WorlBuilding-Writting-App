@@ -40,7 +40,11 @@ export const projectService = {
       const result =
         await sql<Proyecto>`SELECT * FROM proyectos WHERE nombre = ${name} LIMIT 1`;
       // [LOG REMOVED]
-      emitUIRefresh({ operation: "create", scope: "project", id: result[0].id });
+      emitUIRefresh({
+        operation: "create",
+        scope: "project",
+        id: result[0].id,
+      });
       return result[0];
     } catch (err) {
       // [LOG REMOVED]
@@ -60,11 +64,17 @@ export const projectService = {
   },
 
   async update(id: number, data: Partial<Proyecto>): Promise<void> {
-    if (data.nombre) {
+    if (data.nombre !== undefined) {
       await sql`UPDATE proyectos SET nombre = ${data.nombre}, ultima_modificacion = CURRENT_TIMESTAMP WHERE id = ${id}`;
     }
-    if (data.descripcion) {
+    if (data.descripcion !== undefined) {
       await sql`UPDATE proyectos SET descripcion = ${data.descripcion}, ultima_modificacion = CURRENT_TIMESTAMP WHERE id = ${id}`;
+    }
+    if (data.tag !== undefined) {
+      await sql`UPDATE proyectos SET tag = ${data.tag}, ultima_modificacion = CURRENT_TIMESTAMP WHERE id = ${id}`;
+    }
+    if (data.image_url !== undefined) {
+      await sql`UPDATE proyectos SET image_url = ${data.image_url}, ultima_modificacion = CURRENT_TIMESTAMP WHERE id = ${id}`;
     }
     emitUIRefresh({ operation: "update", scope: "project", id });
   },
