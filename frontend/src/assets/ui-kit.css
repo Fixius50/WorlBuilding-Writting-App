@@ -40,6 +40,7 @@
     scrollbar-color: auto;
   }
 
+  /* CÓDIGO DE MAQUETACIÓN DE CUADERNOS HISTÓRICOS RESTAURADO */
   .workspace-cards-wrap {
     display: flex;
     flex-wrap: wrap;
@@ -53,6 +54,32 @@
     flex: 0 1 min(max(27vw, 30vh), 72vw);
     aspect-ratio: 4 / 5;
   }
+
+  /* CÓDIGO DE MAQUETACIÓN DE GRID ANTERIOR PRESERVADO (COMENTADO)
+  .workspace-cards-wrap {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1.25rem;
+    width: 100%;
+  }
+
+  @media (min-width: 640px) {
+    .workspace-cards-wrap {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .workspace-cards-wrap {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .workspace-card-shell {
+    width: 100%;
+    aspect-ratio: 1.6;
+  }
+  */
 
   @keyframes slide-in-right {
     from {

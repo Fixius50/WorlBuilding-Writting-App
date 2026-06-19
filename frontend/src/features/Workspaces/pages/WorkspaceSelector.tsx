@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { ConfirmationModal } from "@components";
 import { Proyecto } from "@domain/database";
 import { useWorkspaceSelector } from "./useWorkspaceSelector";
@@ -478,46 +478,46 @@ const NotebookCard: React.FC<{
       <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-transparent to-transparent opacity-60"></div>
 
       {/* ID Técnico y Género/Tag */}
-      <div className="absolute top-4 left-4 right-4 flex items-center gap-2 overflow-hidden z-20 opacity-40 group-hover:opacity-100 transition-opacity duration-300">
-        <span className="font-mono text-[9px] tracking-[0.2em] uppercase px-2 py-1 border border-foreground bg-foreground text-background rounded-none">
+      <div className="absolute top-3 left-3 right-3 flex items-center gap-1.5 overflow-hidden z-20 opacity-40 group-hover:opacity-100 transition-opacity duration-300">
+        <span className="font-mono text-[8px] tracking-[0.2em] uppercase px-1.5 py-0.5 border border-foreground bg-foreground text-background rounded-none">
           CN-{data.id}
         </span>
-        <span className="font-mono text-[0.65rem] tracking-[0.2em] uppercase px-2 py-1 border border-primary/30 bg-primary/10 text-primary rounded-none truncate">
+        <span className="font-mono text-[0.56rem] tracking-[0.2em] uppercase px-1.5 py-0.5 border border-primary/30 bg-primary/10 text-primary rounded-none truncate">
           {data.tag || "GENERAL"}
         </span>
       </div>
 
       {/* Bloque de Información y Acciones */}
-      <div className="absolute bottom-0 left-0 w-full p-4 flex items-stretch justify-between gap-2 z-20">
+      <div className="absolute bottom-0 left-0 w-full p-2.5 flex items-stretch justify-between gap-1.5 z-20">
         {/* Caja de Título */}
-        <div className="bg-background/95 border border-foreground/10 px-4 py-3 relative overflow-hidden flex-1 min-w-0 flex items-center">
+        <div className="bg-background/95 border border-foreground/10 px-3 py-1.5 relative overflow-hidden flex-1 min-w-0 flex items-center">
           <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary"></div>
-          <h3 className="font-serif text-xl text-foreground leading-tight truncate pl-1">
+          <h3 className="font-serif text-xs text-foreground leading-tight truncate pl-1">
             {data.nombre}
           </h3>
         </div>
 
         {/* Acciones en Hover */}
-        <div className="hidden group-hover:flex items-stretch gap-2 flex-shrink-0">
+        <div className="hidden group-hover:flex items-stretch gap-1.5 flex-shrink-0">
           <button
             onClick={(e) => {
               e.stopPropagation();
               onEdit(data);
             }}
-            className="flex items-center justify-center bg-background/95 border border-foreground/10 text-foreground/60 hover:text-foreground w-12 rounded-none transition-all"
+            className="flex items-center justify-center bg-background/95 border border-foreground/10 text-foreground/60 hover:text-foreground w-8 h-8 rounded-none transition-all"
             title="Editar Cuaderno"
           >
-            <Icon name="settings" className="text-lg" />
+            <Icon name="settings" className="text-sm" />
           </button>
           <button
             onClick={(e) => {
               e.stopPropagation();
               onDelete(data.id);
             }}
-            className="flex items-center justify-center bg-background/95 border border-foreground/10 text-foreground/40 hover:text-red-400 hover:border-red-500/30 w-12 rounded-none transition-all"
+            className="flex items-center justify-center bg-background/95 border border-foreground/10 text-foreground/40 hover:text-red-400 hover:border-red-500/30 w-8 h-8 rounded-none transition-all"
             title="Eliminar Cuaderno"
           >
-            <Icon name="delete" className="text-lg" />
+            <Icon name="delete" className="text-sm" />
           </button>
         </div>
       </div>
@@ -556,44 +556,17 @@ const WorkspaceSelector: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background relative flex flex-col selection:bg-primary/30 selection:text-foreground overflow-x-hidden">
-      {/* TopNav (Reducido, técnico, monolítico) */}
-      <header className="border-b border-foreground/10 px-8 py-4 bg-background flex justify-end items-center sticky top-0 z-30 flex-shrink-0">
-        <div className="flex items-center gap-4">
-          <GhostButton
-            onClick={handleExport}
-            icon="cloud_upload"
-            className="hidden md:flex"
-          >
-            Respaldar
-          </GhostButton>
-          <GhostButton
-            onClick={() => setImportConfirmOpen(true)}
-            icon="cloud_download"
-            className="hidden md:flex"
-          >
-            Importar
-          </GhostButton>
-          <GhostButton
-            onClick={() => navigate("/settings")}
-            icon="settings"
-            className="hidden md:flex"
-          >
-            Ajustes
-          </GhostButton>
-        </div>
-      </header>
-
       {/* Canvas Principal */}
       <main className="flex-1 p-8 overflow-y-auto">
         <div className="max-w-7xl mx-auto">
-          {/* Toolbar superior */}
+          {/* Toolbar superior (Unificado sin header superior) */}
           <div className="flex items-end gap-4 mb-8 border-b border-foreground/10 pb-4">
             <div className="flex-shrink-0">
               <h2 className="font-serif text-2xl text-foreground">
                 Mis proyectos
               </h2>
               <p className="font-mono text-[10px] text-foreground/40 uppercase tracking-widest mt-1">
-                {workspaces.length} Artefactos localizados
+                {workspaces.length} proyecto/s creado/s
               </p>
             </div>
             <div className="flex-1">
@@ -604,9 +577,73 @@ const WorkspaceSelector: React.FC = () => {
                 icon="search"
               />
             </div>
-            <PrimaryButton onClick={() => setIsCreating(true)} icon="add">
-              Nuevo Cuaderno
-            </PrimaryButton>
+            {/* Bloque cuádruple de acciones (Mini tarjetas en el Toolbar) */}
+            <div className="w-[24rem] h-[3.2rem] grid grid-cols-4 gap-1.5 flex-shrink-0">
+              {/* Botón 1: Nuevo Cuaderno */}
+              <button
+                onClick={() => setIsCreating(true)}
+                className="flex flex-col items-center justify-center gap-0.5 bg-foreground/5 border border-foreground/10 hover:border-primary hover:text-primary transition-all p-1 rounded-none group/btn text-foreground/75"
+                title="Inicializar Nuevo Universo"
+              >
+                <Icon name="add" className="text-base group-hover/btn:scale-110 transition-transform" />
+                <span className="font-mono text-[8px] tracking-wider uppercase">Nuevo</span>
+              </button>
+
+              {/* Botón 2: Respaldar */}
+              <button
+                onClick={handleExport}
+                className="flex flex-col items-center justify-center gap-0.5 bg-foreground/5 border border-foreground/10 hover:border-primary hover:text-primary transition-all p-1 rounded-none group/btn text-foreground/75"
+                title="Respaldar datos"
+              >
+                <Icon name="cloud_upload" className="text-base group-hover/btn:scale-110 transition-transform" />
+                <span className="font-mono text-[8px] tracking-wider uppercase">Respaldar</span>
+              </button>
+
+              {/* Botón 3: Importar */}
+              <button
+                onClick={() => setImportConfirmOpen(true)}
+                className="flex flex-col items-center justify-center gap-0.5 bg-foreground/5 border border-foreground/10 hover:border-primary hover:text-primary transition-all p-1 rounded-none group/btn text-foreground/75"
+                title="Importar respaldo"
+              >
+                <Icon name="cloud_download" className="text-base group-hover/btn:scale-110 transition-transform" />
+                <span className="font-mono text-[8px] tracking-wider uppercase">Importar</span>
+              </button>
+
+              {/* Botón 4: Ajustes */}
+              <button
+                onClick={() => navigate("/settings")}
+                className="flex flex-col items-center justify-center gap-0.5 bg-foreground/5 border border-foreground/10 hover:border-primary hover:text-primary transition-all p-1 rounded-none group/btn text-foreground/75"
+                title="Ajustes de sistema"
+              >
+                <Icon name="settings" className="text-base group-hover/btn:scale-110 transition-transform" />
+                <span className="font-mono text-[8px] tracking-wider uppercase">Ajustes</span>
+              </button>
+            </div>
+            {/* CÓDIGO ANTERIOR DE BOTONES SUPERIORES PRESERVADO
+            <div className="flex items-center gap-2">
+              <GhostButton
+                onClick={handleExport}
+                icon="cloud_upload"
+              >
+                Respaldar
+              </GhostButton>
+              <GhostButton
+                onClick={() => setImportConfirmOpen(true)}
+                icon="cloud_download"
+              >
+                Importar
+              </GhostButton>
+              <GhostButton
+                onClick={() => navigate("/settings")}
+                icon="settings"
+              >
+                Ajustes
+              </GhostButton>
+              <PrimaryButton onClick={() => setIsCreating(true)} icon="add">
+                Nuevo Cuaderno
+              </PrimaryButton>
+            </div>
+            */}
           </div>
 
           {loading ? (
@@ -623,18 +660,51 @@ const WorkspaceSelector: React.FC = () => {
                 {/* Tarjeta Especial: Añadir Nuevo */}
                 <div
                   onClick={() => setIsCreating(true)}
-                  className="workspace-card-shell border border-dashed border-foreground/20 bg-foreground/5 hover:bg-foreground/10 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] cursor-pointer flex flex-col items-center justify-center group rounded-none"
+                  className="workspace-card-shell border border-dashed border-foreground/20 bg-foreground/5 hover:bg-foreground/10 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] cursor-pointer flex flex-col items-center justify-center group rounded-none p-4"
                 >
-                  <div className="w-12 h-12 rounded-none bg-background border border-foreground/10 flex items-center justify-center mb-4 group-hover:border-primary group-hover:text-primary transition-colors">
-                    <Icon name="add" />
+                  <div className="w-8 h-8 rounded-none bg-background border border-foreground/10 flex items-center justify-center mb-2 group-hover:border-primary group-hover:text-primary transition-colors">
+                    <Icon name="add" className="text-sm" />
                   </div>
-                  <span className="font-mono text-xs tracking-[0.2em] uppercase text-foreground/60 group-hover:text-foreground">
+                  <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-foreground/60 group-hover:text-foreground">
                     Inicializar
                   </span>
-                  <span className="font-serif text-lg text-foreground/40 mt-1">
+                  <span className="font-serif text-sm text-foreground/40 mt-1">
                     Nuevo Universo
                   </span>
                 </div>
+
+                {/* PANEL DE CONTROL DE SEGUNDA PRUEBA PRESERVADO (COMENTADO)
+                <div className="workspace-card-shell grid grid-cols-2 grid-rows-2 gap-2 p-2 bg-foreground/5 border border-foreground/10 relative">
+                  <button
+                    onClick={() => setIsCreating(true)}
+                    className="flex flex-col items-center justify-center gap-1 bg-background border border-foreground/10 hover:border-primary hover:text-primary transition-all p-2 rounded-none group/btn text-foreground/75"
+                  >
+                    <Icon name="add" className="text-lg group-hover/btn:scale-110 transition-transform" />
+                    <span className="font-mono text-[9px] tracking-wider uppercase">Nuevo</span>
+                  </button>
+                  <button
+                    onClick={handleExport}
+                    className="flex flex-col items-center justify-center gap-1 bg-background border border-foreground/10 hover:border-primary hover:text-primary transition-all p-2 rounded-none group/btn text-foreground/75"
+                  >
+                    <Icon name="cloud_upload" className="text-lg group-hover/btn:scale-110 transition-transform" />
+                    <span className="font-mono text-[9px] tracking-wider uppercase">Respaldar</span>
+                  </button>
+                  <button
+                    onClick={() => setImportConfirmOpen(true)}
+                    className="flex flex-col items-center justify-center gap-1 bg-background border border-foreground/10 hover:border-primary hover:text-primary transition-all p-2 rounded-none group/btn text-foreground/75"
+                  >
+                    <Icon name="cloud_download" className="text-lg group-hover/btn:scale-110 transition-transform" />
+                    <span className="font-mono text-[9px] tracking-wider uppercase">Importar</span>
+                  </button>
+                  <button
+                    onClick={() => navigate("/settings")}
+                    className="flex flex-col items-center justify-center gap-1 bg-background border border-foreground/10 hover:border-primary hover:text-primary transition-all p-2 rounded-none group/btn text-foreground/75"
+                  >
+                    <Icon name="settings" className="text-lg group-hover/btn:scale-110 transition-transform" />
+                    <span className="font-mono text-[9px] tracking-wider uppercase">Ajustes</span>
+                  </button>
+                </div>
+                */}
 
                 {/* Tarjetas de Cuadernos */}
                 {filteredWorkspaces.map((ws) => (
