@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/linguistics")
+@RequestMapping("/linguistics")
 @CrossOrigin(origins = "*")
 public class LinguisticsFontController {
 
@@ -30,6 +30,7 @@ public class LinguisticsFontController {
 
     @PostMapping("/font/compile")
     public ResponseEntity<Resource> compileConlangFont(@RequestBody Map<String, Object> payload) {
+        ResponseEntity<Resource> response;
         try {
             @SuppressWarnings("unchecked")
             Map<String, Object> configMap = (Map<String, Object>) payload.get("config");
@@ -38,7 +39,7 @@ public class LinguisticsFontController {
 
             FontConfig config = new FontConfig();
             boolean hasConfig = configMap != null;
-            if (hasConfig && configMap != null) {
+            if (hasConfig) {
                 config.setFontFamily((String) configMap.get("fontFamily"));
                 config.setVersion((String) configMap.get("version"));
                 config.setCopyright((String) configMap.get("copyright"));
@@ -49,7 +50,7 @@ public class LinguisticsFontController {
 
             List<ConlangGlyph> glyphs = new ArrayList<>();
             boolean hasGlyphs = glyphsList != null;
-            if (hasGlyphs && glyphsList != null) {
+            if (hasGlyphs) {
                 for (Map<String, Object> gMap : glyphsList) {
                     ConlangGlyph glyph = new ConlangGlyph();
                     glyph.setCharRepresented((String) gMap.get("charRepresented"));
@@ -64,7 +65,6 @@ public class LinguisticsFontController {
             Path compiledFontPath = fontCompilerService.compileTrueTypeFont(config, glyphs);
             Resource resource = new UrlResource(compiledFontPath.toUri());
 
-            ResponseEntity<Resource> response;
             boolean isResourceValid = resource.exists();
             if (isResourceValid) {
                 MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
@@ -75,12 +75,12 @@ public class LinguisticsFontController {
             } else {
                 response = ResponseEntity.notFound().build();
             }
-            return response;
 
         } catch (MalformedURLException e) {
-            return ResponseEntity.badRequest().build();
+            response = ResponseEntity.badRequest().build();
         } catch (IOException e) {
-            return ResponseEntity.internalServerError().build();
+            response = ResponseEntity.internalServerError().build();
         }
+        return response;
     }
 }

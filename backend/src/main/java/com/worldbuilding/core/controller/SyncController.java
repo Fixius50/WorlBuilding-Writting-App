@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/sync")
+@RequestMapping("/sync")
 @CrossOrigin(origins = "*")
 public class SyncController {
 
@@ -39,17 +39,20 @@ public class SyncController {
             @PathVariable String projectName,
             @RequestBody Map<String, Object> payload
     ) {
-        if (!projectName.matches(SAFE_NAME_PATTERN)) {
-            return ResponseEntity.badRequest().body(buildResponse(false, "projectName inválido.", null));
-        }
+        ResponseEntity<Map<String, Object>> response;
 
-        try {
-            Path filePath = Paths.get(PROJECTS_DIR).resolve(projectName + ".sync.json").normalize();
-            objectMapper.writeValue(filePath.toFile(), payload);
-            return ResponseEntity.ok(buildResponse(true, "Payload archivado correctamente.", filePath.toString()));
-        } catch (IOException exception) {
-            return ResponseEntity.internalServerError().body(buildResponse(false, "No se pudo archivar payload: " + exception.getMessage(), null));
+        if (!projectName.matches(SAFE_NAME_PATTERN)) {
+            response = ResponseEntity.badRequest().body(buildResponse(false, "projectName inválido.", null));
+        } else {
+            try {
+                Path filePath = Paths.get(PROJECTS_DIR).resolve(projectName + ".sync.json").normalize();
+                objectMapper.writeValue(filePath.toFile(), payload);
+                response = ResponseEntity.ok(buildResponse(true, "Payload archivado correctamente.", filePath.toString()));
+            } catch (IOException exception) {
+                response = ResponseEntity.internalServerError().body(buildResponse(false, "No se pudo archivar payload: " + exception.getMessage(), null));
+            }
         }
+        return response;
     }
 
     private Map<String, Object> buildResponse(boolean success, String message, String filePath) {
