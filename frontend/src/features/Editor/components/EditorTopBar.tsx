@@ -1,6 +1,7 @@
 import React from "react";
 import { Editor } from "@tiptap/react";
 import { useEditorTopBar } from "../hooks/useEditorTopBar";
+import { runExportPipeline } from "../application/exportPipeline";
 
 interface EditorTopBarProps {
   editor: Editor | null;
@@ -267,86 +268,9 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                     onClick={async (): Promise<void> => {
                       setShowExportMenu(false);
                       try {
-                        const htmlBody: string = editor.getHTML();
-                        const fullHtml: string = `
-                          <!DOCTYPE html>
-                          <html>
-                            <head>
-                              <meta charset="utf-8" />
-                              <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&amp;family=Outfit:wght@100..900&amp;display=swap" rel="stylesheet" />
-                              <style>
-                                @page {
-                                  size: A4;
-                                  margin: 2cm;
-                                }
-                                body {
-                                  font-family: 'Cormorant Garamond', serif;
-                                  font-size: 16px;
-                                  line-height: 1.5;
-                                  color: #000000;
-                                  margin: 0;
-                                  padding: 0;
-                                }
-                                h1 {
-                                  font-size: 32px;
-                                  font-family: 'Outfit', sans-serif;
-                                  font-weight: bold;
-                                  margin-bottom: 2rem;
-                                }
-                                p {
-                                  margin-bottom: 0.3em;
-                                  text-align: justify;
-                                }
-                                .mention {
-                                  font-weight: bold;
-                                  color: #000000;
-                                  text-decoration: none;
-                                }
-                                img {
-                                  display: block;
-                                  max-width: 100%;
-                                  height: auto;
-                                  margin: 1.5rem auto;
-                                }
-                              </style>
-                            </head>
-                            <body>
-                              <h1>${title || "Documento"}</h1>
-                              <div>${htmlBody}</div>
-                            </body>
-                          </html>
-                        `;
-
-                        const response: Response = await fetch(
-                          "/api/editor/export-pdf",
-                          {
-                            method: "POST",
-                            headers: {
-                              "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify({ html: fullHtml, title }),
-                          },
+                        await runExportPipeline("pdf", { editor, title }, () =>
+                          onPrint ? onPrint() : window.print(),
                         );
-
-                        const isOk = response.ok;
-                        isOk
-                          ? await (async (): Promise<void> => {
-                              const blob: Blob = await response.blob();
-                              const downloadUrl: string =
-                                URL.createObjectURL(blob);
-                              const link: HTMLAnchorElement =
-                                document.createElement("a");
-                              link.href = downloadUrl;
-                              link.download = `${title || "documento"}.pdf`;
-                              link.click();
-                              URL.revokeObjectURL(downloadUrl);
-                            })()
-                          : (() => {
-                              console.error(
-                                "Error al exportar PDF en backend, iniciando fallback",
-                              );
-                              onPrint ? onPrint() : window.print();
-                            })();
                       } catch (err) {
                         console.error(
                           "Error de red al exportar PDF, usando fallback de impresión:",
@@ -364,17 +288,9 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                   </button>
                   <button
                     onClick={(): void => {
-                      const htmlContent: string = editor.getHTML();
-                      const blob: Blob = new Blob([htmlContent], {
-                        type: "text/html;charset=utf-8",
-                      });
-                      const url: string = URL.createObjectURL(blob);
-                      const link: HTMLAnchorElement =
-                        document.createElement("a");
-                      link.href = url;
-                      link.download = `${title || "documento"}.html`;
-                      link.click();
-                      URL.revokeObjectURL(url);
+                      runExportPipeline("html", { editor, title }, () =>
+                        onPrint ? onPrint() : window.print(),
+                      );
                       setShowExportMenu(false);
                     }}
                     className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors flex items-center gap-2 text-foreground/85 outline-none font-sans"
@@ -386,17 +302,9 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                   </button>
                   <button
                     onClick={(): void => {
-                      const textContent: string = editor.getText();
-                      const blob: Blob = new Blob([textContent], {
-                        type: "text/plain;charset=utf-8",
-                      });
-                      const url: string = URL.createObjectURL(blob);
-                      const link: HTMLAnchorElement =
-                        document.createElement("a");
-                      link.href = url;
-                      link.download = `${title || "documento"}.txt`;
-                      link.click();
-                      URL.revokeObjectURL(url);
+                      runExportPipeline("txt", { editor, title }, () =>
+                        onPrint ? onPrint() : window.print(),
+                      );
                       setShowExportMenu(false);
                     }}
                     className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors flex items-center gap-2 text-foreground/85 outline-none font-sans"
@@ -408,32 +316,9 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                   </button>
                   <button
                     onClick={(): void => {
-                      const htmlContent: string = editor.getHTML();
-                      // Convertidor ultra-ligero de HTML a Markdown
-                      const mdContent: string = htmlContent
-                        .replace(/<h1>(.*?)<\/h1>/gi, "# $1\n\n")
-                        .replace(/<h2>(.*?)<\/h2>/gi, "## $1\n\n")
-                        .replace(/<h3>(.*?)<\/h3>/gi, "### $1\n\n")
-                        .replace(/<strong>(.*?)<\/strong>/gi, "**$1**")
-                        .replace(/<b>(.*?)<\/b>/gi, "**$1**")
-                        .replace(/<em>(.*?)<\/em>/gi, "*$1*")
-                        .replace(/<i>(.*?)<\/i>/gi, "*$1*")
-                        .replace(/<p>(.*?)<\/p>/gi, "$1\n\n")
-                        .replace(/<li>(.*?)<\/li>/gi, "* $1\n")
-                        .replace(/<ul>(.*?)<\/ul>/gi, "$1\n")
-                        .replace(/<ol>(.*?)<\/ol>/gi, "$1\n")
-                        .replace(/<br\s*\/?>/gi, "\n")
-                        .replace(/<[^>]+>/g, "");
-                      const blob: Blob = new Blob([mdContent.trim()], {
-                        type: "text/markdown;charset=utf-8",
-                      });
-                      const url: string = URL.createObjectURL(blob);
-                      const link: HTMLAnchorElement =
-                        document.createElement("a");
-                      link.href = url;
-                      link.download = `${title || "documento"}.md`;
-                      link.click();
-                      URL.revokeObjectURL(url);
+                      runExportPipeline("md", { editor, title }, () =>
+                        onPrint ? onPrint() : window.print(),
+                      );
                       setShowExportMenu(false);
                     }}
                     className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors flex items-center gap-2 text-foreground/85 outline-none font-sans"
@@ -442,6 +327,34 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                       markdown
                     </span>
                     <span>Markdown (.md)</span>
+                  </button>
+                  <button
+                    onClick={async (): Promise<void> => {
+                      setShowExportMenu(false);
+                      await runExportPipeline("docx", { editor, title }, () =>
+                        onPrint ? onPrint() : window.print(),
+                      );
+                    }}
+                    className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors flex items-center gap-2 text-foreground/85 outline-none font-sans"
+                  >
+                    <span className="material-symbols-outlined text-sm">
+                      article
+                    </span>
+                    <span>Documento Word (.docx)</span>
+                  </button>
+                  <button
+                    onClick={async (): Promise<void> => {
+                      setShowExportMenu(false);
+                      await runExportPipeline("epub", { editor, title }, () =>
+                        onPrint ? onPrint() : window.print(),
+                      );
+                    }}
+                    className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors flex items-center gap-2 text-foreground/85 outline-none font-sans"
+                  >
+                    <span className="material-symbols-outlined text-sm">
+                      import_contacts
+                    </span>
+                    <span>Libro electrónico (.epub)</span>
                   </button>
                 </div>
               </>

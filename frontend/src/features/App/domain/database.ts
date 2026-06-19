@@ -119,9 +119,23 @@ export interface Cuaderno {
   id: number;
   titulo: string;
   genero: string | null;
+  metadata_json: string | null;
   image_url: string | null;
   project_id: number;
   created_at: string;
+}
+
+export interface HojaComentario {
+  id: number;
+  hoja_id: number;
+  parent_id: number | null;
+  texto: string;
+  seleccion_texto: string | null;
+  rango_inicio: number | null;
+  rango_fin: number | null;
+  estado: "open" | "resolved";
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Hoja {

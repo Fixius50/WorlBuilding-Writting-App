@@ -1,5 +1,5 @@
 import { sql } from "../client";
-import { Cuaderno, Hoja } from "@domain/database";
+import { Cuaderno, Hoja, HojaComentario } from "@domain/database";
 import { emitUIRefresh } from "@utils/uiRefresh";
 
 export const notebookService = {
@@ -17,18 +17,25 @@ export const notebookService = {
     projectId: number,
     titulo: string,
     genero: string = "Fantasy",
+    metadataJson: string = "",
     imageUrl: string = "",
   ): Promise<Cuaderno> {
-    await sql`INSERT INTO cuadernos (titulo, genero, image_url, project_id) VALUES (${titulo}, ${genero}, ${imageUrl}, ${projectId})`;
+    await sql`INSERT INTO cuadernos (titulo, genero, metadata_json, image_url, project_id) VALUES (${titulo}, ${genero}, ${metadataJson}, ${imageUrl}, ${projectId})`;
     const results =
       await sql<Cuaderno>`SELECT * FROM cuadernos WHERE project_id = ${projectId} ORDER BY id DESC LIMIT 1`;
-    emitUIRefresh({ operation: "create", scope: "notebook", id: results[0].id });
+    emitUIRefresh({
+      operation: "create",
+      scope: "notebook",
+      id: results[0].id,
+    });
     return results[0];
   },
 
   async update(
     id: number,
-    updates: Partial<Pick<Cuaderno, "titulo" | "genero" | "image_url">>,
+    updates: Partial<
+      Pick<Cuaderno, "titulo" | "genero" | "metadata_json" | "image_url">
+    >,
   ): Promise<void> {
     const current = await this.getById(id);
     if (current) {
@@ -37,6 +44,7 @@ export const notebookService = {
         SET 
           titulo = ${updates.titulo !== undefined ? updates.titulo : current.titulo},
           genero = ${updates.genero !== undefined ? updates.genero : current.genero},
+          metadata_json = ${updates.metadata_json !== undefined ? updates.metadata_json : current.metadata_json},
           image_url = ${updates.image_url !== undefined ? updates.image_url : current.image_url}
         WHERE id = ${id}
       `;
@@ -177,5 +185,77 @@ export const notebookService = {
         snippet,
       };
     });
+  },
+
+  // --- Comentarios de hoja ---
+  async getCommentsByPage(hojaId: number): Promise<HojaComentario[]> {
+    return await sql<HojaComentario>`
+      SELECT * FROM hojas_comentarios
+      WHERE hoja_id = ${hojaId}
+      ORDER BY created_at ASC, id ASC
+    `;
+  },
+
+  async createComment(input: {
+    hojaId: number;
+    texto: string;
+    parentId?: number | null;
+    selectedText?: string | null;
+    rangeStart?: number | null;
+    rangeEnd?: number | null;
+  }): Promise<HojaComentario> {
+    const parentId = input.parentId ?? null;
+    const selectedText = input.selectedText ?? null;
+    const rangeStart = input.rangeStart ?? null;
+    const rangeEnd = input.rangeEnd ?? null;
+
+    await sql`
+      INSERT INTO hojas_comentarios (
+        hoja_id,
+        parent_id,
+        texto,
+        seleccion_texto,
+        rango_inicio,
+        rango_fin,
+        estado
+      ) VALUES (
+        ${input.hojaId},
+        ${parentId},
+        ${input.texto},
+        ${selectedText},
+        ${rangeStart},
+        ${rangeEnd},
+        'open'
+      )
+    `;
+
+    const results = await sql<HojaComentario>`
+      SELECT * FROM hojas_comentarios
+      WHERE hoja_id = ${input.hojaId}
+      ORDER BY id DESC
+      LIMIT 1
+    `;
+
+    return results[0];
+  },
+
+  async resolveComment(commentId: number): Promise<void> {
+    await sql`
+      UPDATE hojas_comentarios
+      SET estado = 'resolved', updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${commentId}
+    `;
+  },
+
+  async reopenComment(commentId: number): Promise<void> {
+    await sql`
+      UPDATE hojas_comentarios
+      SET estado = 'open', updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${commentId}
+    `;
+  },
+
+  async deleteComment(commentId: number): Promise<void> {
+    await sql`DELETE FROM hojas_comentarios WHERE id = ${commentId}`;
   },
 };

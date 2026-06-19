@@ -125,6 +125,7 @@ export const initializeDatabase = async () => {
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   titulo TEXT NOT NULL,
   genero TEXT,
+  metadata_json TEXT,
   image_url TEXT,
   project_id INTEGER NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -156,6 +157,24 @@ export const initializeDatabase = async () => {
   )
   `;
 
+    // Tabla de comentarios por hoja
+    await sql`
+  CREATE TABLE IF NOT EXISTS hojas_comentarios (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  hoja_id INTEGER NOT NULL,
+  parent_id INTEGER,
+  texto TEXT NOT NULL,
+  seleccion_texto TEXT,
+  rango_inicio INTEGER,
+  rango_fin INTEGER,
+  estado TEXT NOT NULL DEFAULT 'open',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (hoja_id) REFERENCES hojas(id) ON DELETE CASCADE,
+  FOREIGN KEY (parent_id) REFERENCES hojas_comentarios(id) ON DELETE CASCADE
+  )
+  `;
+
     // Tabla de Configuraciones Globales de la aplicacion
     await sql`
   CREATE TABLE IF NOT EXISTS configuraciones (
@@ -181,6 +200,10 @@ export const initializeDatabase = async () => {
       await sql`ALTER TABLE cuadernos ADD COLUMN genero TEXT`.catch(() => {});
       // Añadir 'image_url' a 'cuadernos' si no existe
       await sql`ALTER TABLE cuadernos ADD COLUMN image_url TEXT`.catch(
+        () => {},
+      );
+      // Añadir metadatos a cuadernos si no existe
+      await sql`ALTER TABLE cuadernos ADD COLUMN metadata_json TEXT`.catch(
         () => {},
       );
       // Añadir 'orden' a 'hojas' si no existe
@@ -339,6 +362,13 @@ export const initializeDatabase = async () => {
       );
 
       // [LOG REMOVED]
+
+      await sql`CREATE INDEX IF NOT EXISTS idx_hojas_comentarios_hoja_id ON hojas_comentarios(hoja_id)`.catch(
+        () => {},
+      );
+      await sql`CREATE INDEX IF NOT EXISTS idx_hojas_comentarios_parent_id ON hojas_comentarios(parent_id)`.catch(
+        () => {},
+      );
     } catch (err) {
       // [LOG REMOVED]
     }

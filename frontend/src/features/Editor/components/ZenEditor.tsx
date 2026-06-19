@@ -19,6 +19,13 @@ interface ZenEditorProps {
   snapshots?: { id: number; timestamp: string }[];
   onRestoreSnapshot?: (id: number) => void;
   onMentionClick?: (id: string) => void;
+  onSelectionChange?: (
+    selection: {
+      text: string;
+      from: number;
+      to: number;
+    } | null,
+  ) => void;
   minimal?: boolean;
   notebookTitle?: string;
   sidebarOpen?: boolean;
@@ -35,6 +42,7 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
   snapshots = [],
   onRestoreSnapshot = () => {},
   onMentionClick,
+  onSelectionChange,
   minimal = false,
   notebookTitle,
   sidebarOpen = true,
@@ -59,14 +67,17 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
   const tippyInstanceRef = React.useRef<TippyInstance | null>(null);
 
   // Ref para romper la dependencia circular entre editor y onSuggestLink
-  const onSuggestLinkRef = React.useRef<((entity: Entidad, range: { from: number; to: number }) => void) | null>(null);
+  const onSuggestLinkRef = React.useRef<
+    ((entity: Entidad, range: { from: number; to: number }) => void) | null
+  >(null);
 
   const { editor } = usePageEditor({
-    content: currentPage ? (currentPage.contenido || "") : "",
+    content: currentPage ? currentPage.contenido || "" : "",
     onUpdate: (html) => onUpdate(html, currentPageIndex),
     autoFocus: true,
     onMentionClick,
     projectEntities,
+    onSelectionChange,
     onSuggestLink: (entity, range) =>
       onSuggestLinkRef.current ? onSuggestLinkRef.current(entity, range) : null,
   });
@@ -74,23 +85,25 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
   const onSuggestLink = React.useCallback(
     (entity: Entidad, range: { from: number; to: number }) => {
       const isEditorActive = editor && !editor.isDestroyed;
-      isEditorActive ? (() => {
-        const view = editor.view;
-        const startCoords = view.coordsAtPos(range.from);
-        const endCoords = view.coordsAtPos(range.to);
-        const rect = {
-          left: startCoords.left,
-          right: endCoords.right,
-          top: startCoords.top,
-          bottom: endCoords.bottom,
-          width: endCoords.right - startCoords.left,
-          height: endCoords.bottom - startCoords.top,
-          x: startCoords.left,
-          y: startCoords.top,
-          toJSON: () => {},
-        } as DOMRect;
-        setActiveLinkSuggestion({ entity, range, rect });
-      })() : null;
+      isEditorActive
+        ? (() => {
+            const view = editor.view;
+            const startCoords = view.coordsAtPos(range.from);
+            const endCoords = view.coordsAtPos(range.to);
+            const rect = {
+              left: startCoords.left,
+              right: endCoords.right,
+              top: startCoords.top,
+              bottom: endCoords.bottom,
+              width: endCoords.right - startCoords.left,
+              height: endCoords.bottom - startCoords.top,
+              x: startCoords.left,
+              y: startCoords.top,
+              toJSON: () => {},
+            } as DOMRect;
+            setActiveLinkSuggestion({ entity, range, rect });
+          })()
+        : null;
     },
     [editor],
   );
@@ -102,15 +115,17 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
   // Ocultar la sugerencia cuando el cursor se mueva en el editor
   React.useEffect(() => {
     const isEditorValid = editor && !editor.isDestroyed;
-    const cleanup = isEditorValid ? (() => {
-      const handleSelection = () => {
-        setActiveLinkSuggestion(null);
-      };
-      editor.on("selectionUpdate", handleSelection);
-      return () => {
-        editor.off("selectionUpdate", handleSelection);
-      };
-    })() : undefined;
+    const cleanup = isEditorValid
+      ? (() => {
+          const handleSelection = () => {
+            setActiveLinkSuggestion(null);
+          };
+          editor.on("selectionUpdate", handleSelection);
+          return () => {
+            editor.off("selectionUpdate", handleSelection);
+          };
+        })()
+      : undefined;
     return cleanup;
   }, [editor]);
 
@@ -123,7 +138,9 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
   // Sincronizar entidades si cambian en el proyecto
   React.useEffect(() => {
     const isEditorValid = editor && !editor.isDestroyed;
-    isEditorValid ? editor.commands.setAutoLinkerEntities(projectEntities) : null;
+    isEditorValid
+      ? editor.commands.setAutoLinkerEntities(projectEntities)
+      : null;
   }, [projectEntities, editor]);
 
   // Tippy/ReactRenderer para renderizar el tooltip de AutoLinkPrompt de forma virtual
@@ -131,43 +148,49 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
     const isEditorValid = editor && !editor.isDestroyed;
     const hasSuggestion = activeLinkSuggestion !== null && isEditorValid;
 
-    hasSuggestion ? (() => {
-      const suggestion = activeLinkSuggestion!;
-      const renderer = new ReactRenderer(AutoLinkPrompt, {
-        editor: editor!,
-        props: {
-          entity: suggestion.entity,
-          onConfirm: () => {
-            editor!.chain().focus().insertContentAt(suggestion.range, {
-              type: "mention",
-              attrs: {
-                id: suggestion.entity.id.toString(),
-                label: suggestion.entity.nombre,
+    hasSuggestion
+      ? (() => {
+          const suggestion = activeLinkSuggestion!;
+          const renderer = new ReactRenderer(AutoLinkPrompt, {
+            editor: editor!,
+            props: {
+              entity: suggestion.entity,
+              onConfirm: () => {
+                editor!
+                  .chain()
+                  .focus()
+                  .insertContentAt(suggestion.range, {
+                    type: "mention",
+                    attrs: {
+                      id: suggestion.entity.id.toString(),
+                      label: suggestion.entity.nombre,
+                    },
+                  })
+                  .run();
+                setActiveLinkSuggestion(null);
               },
-            }).run();
-            setActiveLinkSuggestion(null);
-          },
-          onDiscard: () => {
-            setActiveLinkSuggestion(null);
-          },
-        },
-      });
+              onDiscard: () => {
+                setActiveLinkSuggestion(null);
+              },
+            },
+          });
 
-      tippyInstanceRef.current = tippy(document.body, {
-        getReferenceClientRect: () => suggestion.rect,
-        content: renderer.element,
-        showOnCreate: true,
-        interactive: true,
-        trigger: "manual",
-        placement: "top",
-        onDestroy: () => {
-          renderer.destroy();
-        },
-      });
-    })() : (() => {
-      tippyInstanceRef.current?.destroy();
-      tippyInstanceRef.current = null;
-    })();
+          tippyInstanceRef.current = tippy(document.body, {
+            getReferenceClientRect: () => suggestion.rect,
+            content: renderer.element,
+            showOnCreate: true,
+            interactive: true,
+            trigger: "manual",
+            placement: "top",
+            onDestroy: () => {
+              renderer.destroy();
+            },
+          });
+        })()
+      : (() => {
+          tippyInstanceRef.current?.destroy();
+          tippyInstanceRef.current = null;
+        })();
 
     return () => {
       tippyInstanceRef.current?.destroy();
@@ -217,10 +240,7 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
       />
 
       <div className="flex-1 relative overflow-y-auto custom-scrollbar flex justify-center py-12 px-6 prose-editor-wrapper">
-        <div 
-          ref={printContainerRef}
-          className="editor-sheet"
-        >
+        <div ref={printContainerRef} className="editor-sheet">
           {/* TÍTULO EDITABLE EN EL PROPIO MANUSCRITO */}
           <input
             value={currentPage.titulo || ""}
