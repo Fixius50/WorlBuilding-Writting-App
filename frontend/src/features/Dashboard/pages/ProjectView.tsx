@@ -330,8 +330,8 @@ const ProjectView: React.FC = () => {
         {/* ESTRUCTURA DE DOS COLUMNAS */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 w-full items-start">
           
-          {/* COLUMNA IZQUIERDA: SELECTOR VERTICAL DE HERRAMIENTAS */}
-          <div className="lg:col-span-5 flex flex-col gap-3.5 w-full">
+          {/* COLUMNA IZQUIERDA: SELECTOR VERTICAL DE HERRAMIENTAS DE 3 COLUMNAS */}
+          <div className="lg:col-span-3 flex flex-col gap-2.5 w-full">
             {volumes.map((vol: VolumeCard, index: number) => {
               const isActive = index === activeVolIndex;
               return (
@@ -341,18 +341,18 @@ const ProjectView: React.FC = () => {
                   onClick={() => navigate(vol.path)}
                   className={`volume-selector-item ${isActive ? "active" : ""}`}
                 >
-                  <span className="material-symbols-outlined text-2xl font-light leading-none shrink-0">
+                  <span className="material-symbols-outlined text-[1.3rem] font-light leading-none shrink-0">
                     {vol.icon}
                   </span>
                   <div className="flex flex-col min-w-0 flex-1">
-                    <span className="font-serif text-[13px] tracking-wide font-medium leading-none text-foreground/90">
+                    <span className="font-serif text-[0.81rem] tracking-wide font-medium leading-none text-foreground/90">
                       {vol.title}
                     </span>
-                    <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-foreground/40 mt-1.5 leading-none">
+                    <span className="font-mono text-[0.56rem] uppercase tracking-[0.2em] text-foreground/40 mt-1.5 leading-none">
                       {vol.label}
                     </span>
                   </div>
-                  <span className="material-symbols-outlined text-xs text-foreground/30 opacity-0 group-hover:opacity-100 transition-opacity translate-x-1 group-hover:translate-x-0 transition-transform duration-300">
+                  <span className="material-symbols-outlined text-[0.68rem] text-foreground/30 opacity-0 group-hover:opacity-100 transition-opacity translate-x-1 group-hover:translate-x-0 transition-transform duration-300">
                     arrow_forward_ios
                   </span>
                 </div>
@@ -360,8 +360,8 @@ const ProjectView: React.FC = () => {
             })}
           </div>
 
-          {/* COLUMNA DERECHA: PANEL DE PREVISUALIZACIÓN EN TIEMPO REAL */}
-          <div className="lg:col-span-7 w-full h-[395px] flex flex-col">
+          {/* COLUMNA DERECHA: PANEL DE PREVISUALIZACIÓN DE 9 COLUMNAS Y ALTURA RELATIVA */}
+          <div className="lg:col-span-9 w-full h-[27.5rem] flex flex-col">
             <div className="volume-preview-panel">
               {/* Header del Panel */}
               <div className="flex items-start justify-between mb-4 border-b border-foreground/5 pb-4">
@@ -386,7 +386,7 @@ const ProjectView: React.FC = () => {
               {/* Footer con Acción */}
               <button 
                 onClick={() => navigate(activeVol.path)}
-                className="mt-4 w-full py-2.5 border border-foreground/10 hover:border-primary/40 bg-foreground/[0.01] hover:bg-primary/5 transition-all text-foreground/80 hover:text-primary font-mono text-[9px] uppercase tracking-widest flex items-center justify-center gap-2 group/btn"
+                className="mt-4 w-full py-2.5 border border-foreground/10 hover:border-primary/40 bg-foreground/[0.01] hover:bg-primary/5 transition-all text-foreground/80 hover:text-primary font-mono text-[0.56rem] uppercase tracking-widest flex items-center justify-center gap-2 group/btn"
               >
                 Ingresar al {activeVol.label}
                 <span className="material-symbols-outlined text-xs transition-transform duration-300 group-hover/btn:translate-x-1">
