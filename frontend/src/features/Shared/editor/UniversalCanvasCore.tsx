@@ -417,42 +417,59 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
     onNodeClick?.(id);
   };
 
-  // --- ALGORITMO BFS: Ruta más corta ---
-  const findShortestPath = (startId: string, endId: string) => {
-    let resultPath: string[] | null = null;
-    const queue: string[][] =
-      startId && endId && startId !== endId ? [[startId]] : [];
-    const visited = new Set<string>([startId]);
+  // --- ALGORITMO BFS: Todos los caminos más cortos ---
+  const findAllShortestPaths = (startId: string, endId: string): string[][] => {
+    const isStartAndEndValid = !!startId && !!endId && startId !== endId;
+    const allPaths: string[][] = [];
 
-    while (queue.length > 0 && !resultPath) {
-      const path = queue.shift()!;
-      const currentId = path[path.length - 1];
+    isStartAndEndValid ? (() => {
+      const queue: string[][] = [[startId]];
+      const visitedAtLevel = new Map<string, number>();
+      visitedAtLevel.set(startId, 0);
+      let shortestLength = Infinity;
 
-      switch (currentId === endId) {
-        case true:
-          resultPath = path;
-          break;
-        default: {
-          const neighbors: string[] = [];
-          filteredEdges.forEach((edge) => {
-            edge.from === currentId
-              ? neighbors.push(edge.to)
-              : edge.to === currentId
-                ? neighbors.push(edge.from)
-                : undefined;
-          });
+      while (queue.length > 0) {
+        const path = queue.shift()!;
+        const currentId = path[path.length - 1];
+        const currentLevel = path.length - 1;
 
-          for (const neighbor of neighbors) {
-            if (!visited.has(neighbor)) {
-              visited.add(neighbor);
-              queue.push([...path, neighbor]);
+        const exceededShortest = currentLevel > shortestLength;
+        exceededShortest ? undefined : (() => {
+          const reachedEnd = currentId === endId;
+          reachedEnd ? (() => {
+            shortestLength = currentLevel;
+            allPaths.push(path);
+          })() : (() => {
+            const neighbors: string[] = [];
+            filteredEdges.forEach((edge) => {
+              edge.from === currentId
+                ? neighbors.push(edge.to)
+                : edge.to === currentId
+                  ? neighbors.push(edge.from)
+                  : undefined;
+            });
+
+            for (const neighbor of neighbors) {
+              const neighborLevel = currentLevel + 1;
+              const notVisitedOrSameLevel =
+                !visitedAtLevel.has(neighbor) ||
+                visitedAtLevel.get(neighbor) === neighborLevel;
+
+              notVisitedOrSameLevel ? (() => {
+                visitedAtLevel.set(neighbor, neighborLevel);
+                queue.push([...path, neighbor]);
+              })() : undefined;
             }
-          }
+          })();
+        })();
+
+        if (exceededShortest) {
           break;
         }
       }
-    }
-    return resultPath;
+    })() : undefined;
+
+    return allPaths;
   };
 
   // --- CÁLCULO DE ESTADOS ACTIVOS ---
@@ -487,12 +504,12 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
 
     const hasDifferentSelection =
       !!pinnedNode && !!hoveredNode && pinnedNode !== hoveredNode;
-    switch (hasDifferentSelection) {
-      case true: {
-        const path = findShortestPath(pinnedNode!, hoveredNode!);
-        const hasPath = !!path;
-        hasPath ? path.forEach((id) => aNodes.add(id)) : undefined;
-        if (hasPath) {
+    hasDifferentSelection ? (() => {
+      const paths = findAllShortestPaths(pinnedNode!, hoveredNode!);
+      const hasPaths = paths.length > 0;
+      hasPaths ? (() => {
+        paths.forEach((path) => {
+          path.forEach((id) => aNodes.add(id));
           for (let i = 0; i < path.length - 1; i++) {
             const fromId = path[i];
             const toId = path[i + 1];
@@ -512,12 +529,9 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
               rEdges.add(edge.id);
             }
           }
-        }
-        break;
-      }
-      default:
-        break;
-    }
+        });
+      })() : undefined;
+    })() : undefined;
 
     return { activeNodes: aNodes, activeLinks: aEdges, routeLinks: rEdges };
   }, [pinnedNode, hoveredNode, filteredEdges]);

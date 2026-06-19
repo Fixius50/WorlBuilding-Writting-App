@@ -1,10 +1,11 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { useOutletContext, useParams } from "react-router-dom";
 import { MonolithicPanel } from "@components";
 import { GeneralGraphView as GraphView } from "@features/Graph";
 import { GenealogyView } from "@features/Genealogy";
+import NestedArchetypesView from "../components/NestedArchetypesView";
 
-type PlanningTab = "NETWORK" | "GENEALOGY";
+type PlanningTab = "NETWORK" | "GENEALOGY" | "NESTED_CIRCLES";
 
 const PlanningCenterView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<PlanningTab>("NETWORK");
@@ -16,6 +17,7 @@ const PlanningCenterView: React.FC = () => {
   const TABS = [
     { id: "NETWORK", label: "Red Neuronal", icon: "hub" },
     { id: "GENEALOGY", label: "Árbol de Linaje", icon: "account_tree" },
+    { id: "NESTED_CIRCLES", label: "Cosmología", icon: "motion_photos_on" },
   ];
 
   return (
@@ -65,6 +67,12 @@ const PlanningCenterView: React.FC = () => {
           className={`absolute inset-0 ${activeTab === "GENEALOGY" ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0"}`}
         >
           <GenealogyView />
+        </div>
+
+        <div
+          className={`absolute inset-0 ${activeTab === "NESTED_CIRCLES" ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0"}`}
+        >
+          <NestedArchetypesView projectId={projectId} />
         </div>
       </div>
     </div>

@@ -52,4 +52,3 @@ const GeneralGraphView: React.FC<GraphViewProps> = (props) => {
 };
 
 export default GeneralGraphView;
-

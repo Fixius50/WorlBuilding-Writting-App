@@ -657,7 +657,7 @@ const WorkspaceSelector: React.FC = () => {
             /* GRID DE CUADERNOS */
             <div className="workspace-scroll">
               <div className="workspace-cards-wrap">
-                {/* Tarjeta Especial: Añadir Nuevo */}
+                {/* TARJETA ESPECIAL DE AÑADIR NUEVO COMENTADA
                 <div
                   onClick={() => setIsCreating(true)}
                   className="workspace-card-shell border border-dashed border-foreground/20 bg-foreground/5 hover:bg-foreground/10 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] cursor-pointer flex flex-col items-center justify-center group rounded-none p-4"
@@ -672,6 +672,7 @@ const WorkspaceSelector: React.FC = () => {
                     Nuevo Universo
                   </span>
                 </div>
+                */}
 
                 {/* PANEL DE CONTROL DE SEGUNDA PRUEBA PRESERVADO (COMENTADO)
                 <div className="workspace-card-shell grid grid-cols-2 grid-rows-2 gap-2 p-2 bg-foreground/5 border border-foreground/10 relative">
