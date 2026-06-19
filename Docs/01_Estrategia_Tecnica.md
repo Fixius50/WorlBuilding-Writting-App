@@ -39,6 +39,7 @@ No todas las features deben tener todas las carpetas. Solo se crean cuando hay a
 5. **Sin capas globales legacy en `src/`:** Evitar reintroducir `src/application`, `src/store`, `src/domain` o `src/presentation` como centros de lógica transversal.
 6. **Sin imports profundos entre features:** Desde una feature no importar `@features/<OtraFeature>/(components|hooks|pages|application|domain|store)/*`; usar `@features/<OtraFeature>` (API pública).
 7. **Shared kernel limpio:** `src/features/Shared/*` no debe importar features de negocio directamente. Excepciones temporales solo dentro de `src/features/Shared/adapters/*`.
+8. **Capa de Infraestructura Obligatoria:** NUNCA realices consultas SQL directas (`sql` o `sqlocal`) dentro de los componentes o hooks de las `features`. Todo el acceso a datos debe orquestarse y encapsularse a través de la capa transversal de repositorios en `src/infrastructure/localDB/repositories/` (importando desde el alias `@repositories/*`).
 
 ## ALIAS Y RESOLUCIÓN DE RUTAS (ACTUAL)
 

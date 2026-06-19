@@ -4,7 +4,8 @@
   --card-h: 7.5rem;
 }
 
-/* CONTENEDORES DE FILA ACTIVA PARA HOVER DESDE EL MEDIO */
+/* CÓDIGO DE DISEÑO HISTÓRICO PRESERVADO SEGÚN DIRECTRICES DE DEUDA TÉCNICA */
+/* 
 .book-row {
   width: 100%;
   display: flex;
@@ -20,7 +21,6 @@
   justify-content: flex-end;
 }
 
-/* TARJETA MONOLÍTICA BASE */
 .book-card {
   display: flex;
   align-items: center;
@@ -32,16 +32,14 @@
   padding: 1rem 0rem;
   transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, background-color 0.3s ease;
   overflow: hidden;
-  pointer-events: none; /* Delegar la entrada de puntero a la fila */
+  pointer-events: none;
 }
 
-/* EFECTO DE HOVER A TRAVÉS DE LA FILA */
 .book-row:hover .book-card {
   width: 100%;
   background-color: hsl(var(--foreground) / 0.04);
 }
 
-/* DETALLE DE ACENTOS POR ORIENTACIÓN */
 .book-row-left .book-card {
   border-left: 0.1875rem solid hsl(var(--primary) / 0.5);
 }
@@ -61,7 +59,6 @@
   border-left-color: hsl(var(--primary) / 0.2);
 }
 
-/* BLOQUE IZQUIERDO/DERECHO FIJO */
 .book-symbol-block {
   display: flex;
   flex-direction: column;
@@ -72,7 +69,6 @@
   user-select: none;
 }
 
-/* CONTENEDOR DE EXPANSIÓN HORIZONTAL CINÉTICA FLEXIBLE */
 .reveal-content {
   display: flex;
   align-items: center;
@@ -98,7 +94,6 @@
   pointer-events: auto;
 }
 
-/* Contenedor estable interno */
 .reveal-inner {
   display: flex;
   align-items: center;
@@ -107,7 +102,6 @@
   flex-shrink: 0;
 }
 
-/* ANIMACIONES DE DESLIZAMIENTO DE FLECHA */
 .arrow-slide {
   transform: translateX(1.5rem);
   opacity: 0;
@@ -129,3 +123,67 @@
   transform: translateX(0);
   opacity: 1;
 }
+*/
+
+/* NUEVA INTERFAZ DE SELECTOR Y PREVISUALIZACIÓN MONOLÍTICA */
+
+.volume-selector-item {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.85rem 1.25rem;
+  background-color: hsl(var(--foreground) / 0.015);
+  border: 1px solid hsl(var(--foreground) / 0.08);
+  border-left: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.volume-selector-item:hover {
+  background-color: hsl(var(--foreground) / 0.035);
+  border-color: hsl(var(--primary) / 0.3);
+  padding-left: 1.5rem; /* Efecto micro-deslizamiento premium */
+}
+
+.volume-selector-item.active {
+  background-color: hsl(var(--primary) / 0.06);
+  border-color: hsl(var(--primary) / 0.5);
+  border-left-color: hsl(var(--primary));
+  padding-left: 1.5rem;
+}
+
+.volume-selector-item .material-symbols-outlined {
+  color: hsl(var(--foreground) / 0.5);
+  transition: color 0.3s ease;
+}
+
+.volume-selector-item:hover .material-symbols-outlined,
+.volume-selector-item.active .material-symbols-outlined {
+  color: hsl(var(--primary));
+}
+
+.volume-preview-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: hsl(var(--foreground) / 0.012);
+  border: 1px solid hsl(var(--foreground) / 0.08);
+  padding: 1.75rem;
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(12px);
+  transition: border-color 0.3s ease;
+}
+
+.volume-preview-panel:hover {
+  border-color: hsl(var(--foreground) / 0.12);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
