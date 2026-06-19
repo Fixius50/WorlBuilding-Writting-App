@@ -6,33 +6,11 @@ import {
   MapMarker,
   MapLayer,
   MapConnection,
-  MapAttributes,
+  AtlasLevel,
+  AtlasAnnotation,
+  AtlasAttributes,
 } from "@domain/maps";
 import { RelationshipUseCase } from "@features/Relationships";
-
-export interface AtlasLevel {
-  id: string;
-  name: string;
-}
-
-export interface AtlasAnnotation {
-  id: string;
-  levelId: string;
-  text: string;
-}
-
-export interface AtlasAttributes extends MapAttributes {
-  levels?: AtlasLevel[];
-  levelOpacities?: Record<string, number>;
-  canvasStates?: Record<string, string | null>;
-  levelBgImages?: Record<string, string | null>;
-  annotations?: AtlasAnnotation[];
-  backdropOpacity?: number;
-  brushColor?: string;
-  brushSize?: number;
-  drawTool?: "brush" | "eraser";
-  activeLevelId?: string;
-}
 
 /**
  * Hook useInteractiveMapView
@@ -167,8 +145,8 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
           return isMatched && isChar;
         });
         setMarkerCharacters(chars);
-      } catch (e) {
-        console.error(e);
+      } catch (_e) {
+        // Error de carga de personajes ignorado intencionadamente
       }
     },
     [availableEntities],
@@ -223,7 +201,7 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
     const url = currentImageUrl;
     const hasUrl = !!url;
     switch (hasUrl) {
-      case true:
+      case true: {
         const img = new Image();
         img.onload = () => {
           setActiveImageWidth(img.naturalWidth || 1920);
@@ -231,6 +209,7 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
         };
         img.src = url!;
         break;
+      }
       default:
         setActiveImageWidth(1920);
         setActiveImageHeight(1080);
@@ -267,9 +246,7 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
       { id: "l0", name: "Nivel 0: Planta Principal" },
     ];
     const initialActiveLevelId = baseAttrs.activeLevelId || "l0";
-    const initialOpacities = baseAttrs.levelOpacities || {
-      l0: 1.0,
-    };
+    const initialOpacities = baseAttrs.levelOpacities || { l0: 1.0 };
     const initialCanvasStates = baseAttrs.canvasStates || {};
     const initialLevelBgImages = baseAttrs.levelBgImages || {};
     const initialAnnotations = baseAttrs.annotations || [];
@@ -281,18 +258,10 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
     setLevelBgImages(initialLevelBgImages);
     setAnnotations(initialAnnotations);
 
-    if (baseAttrs.backdropOpacity !== undefined) {
-      setBackdropOpacity(baseAttrs.backdropOpacity);
-    }
-    if (baseAttrs.brushColor !== undefined) {
-      setBrushColor(baseAttrs.brushColor);
-    }
-    if (baseAttrs.brushSize !== undefined) {
-      setBrushSize(baseAttrs.brushSize);
-    }
-    if (baseAttrs.drawTool !== undefined) {
-      setDrawTool(baseAttrs.drawTool);
-    }
+    baseAttrs.backdropOpacity !== undefined ? setBackdropOpacity(baseAttrs.backdropOpacity) : undefined;
+    baseAttrs.brushColor !== undefined ? setBrushColor(baseAttrs.brushColor) : undefined;
+    baseAttrs.brushSize !== undefined ? setBrushSize(baseAttrs.brushSize) : undefined;
+    baseAttrs.drawTool !== undefined ? setDrawTool(baseAttrs.drawTool) : undefined;
   }, [map.id]);
 
   const hasPendingChangesRef = useRef<boolean>(false);
@@ -303,17 +272,12 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
       baseAttrs =
         typeof latestContenidoJsonRef.current === "string"
           ? JSON.parse(latestContenidoJsonRef.current)
-          : (latestContenidoJsonRef.current as unknown as AtlasAttributes) ||
-            {};
+          : (latestContenidoJsonRef.current as unknown as AtlasAttributes) || {};
     } catch {
       baseAttrs = {};
     }
 
-    const updatedContenido: AtlasAttributes = {
-      ...baseAttrs,
-      ...updates,
-    };
-
+    const updatedContenido: AtlasAttributes = { ...baseAttrs, ...updates };
     latestContenidoJsonRef.current = JSON.stringify(updatedContenido);
     hasPendingChangesRef.current = true;
   }, []);
@@ -321,19 +285,18 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
   const persistPendingChanges = useCallback(async () => {
     const hasChanges = hasPendingChangesRef.current;
     switch (hasChanges) {
-      case true:
+      case true: {
         const jsonStr = latestContenidoJsonRef.current;
         hasPendingChangesRef.current = false;
-        await EntityUseCase.update(map.id, {
-          contenido_json: jsonStr,
-        });
+        await EntityUseCase.update(map.id, { contenido_json: jsonStr });
         break;
+      }
       default:
         break;
     }
   }, [map.id]);
 
-  // --- Persistencia Persistente en SQLite ---
+  // --- Persistencia en SQLite ---
   const saveAtlasState = useCallback(
     async (updates: Partial<AtlasAttributes>) => {
       updateAtlasCache(updates);
@@ -357,19 +320,13 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
 
   // --- Guardar cambios al desmontar o cerrar ---
   useEffect(() => {
-    return () => {
-      persistPendingChanges();
-    };
+    return () => { persistPendingChanges(); };
   }, [persistPendingChanges]);
 
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      persistPendingChanges();
-    };
+    const handleBeforeUnload = () => { persistPendingChanges(); };
     window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
+    return () => { window.removeEventListener("beforeunload", handleBeforeUnload); };
   }, [persistPendingChanges]);
 
   // --- Eventos de teclado para la barra espaciadora ---
@@ -388,10 +345,7 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
       }
     };
     const handleKeyUp = (e: KeyboardEvent) => {
-      const isSpace = e.code === "Space";
-      if (isSpace) {
-        setSpacebarPanning(false);
-      }
+      if (e.code === "Space") { setSpacebarPanning(false); }
     };
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
@@ -403,18 +357,16 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
 
   // --- Convertir Coordenadas de Pantalla a Locales del Canvas ---
   const getCanvasCoords = useCallback(
-    (clientX: number, clientY: number, rect: DOMRect) => {
-      const x = (clientX - rect.left) / zoom;
-      const y = (clientY - rect.top) / zoom;
-      return { x, y };
-    },
+    (clientX: number, clientY: number, rect: DOMRect) => ({
+      x: (clientX - rect.left) / zoom,
+      y: (clientY - rect.top) / zoom,
+    }),
     [zoom],
   );
 
   // --- DIBUJO EN CANVAS 2D (Inicialización y carga del nivel) ---
   useEffect(() => {
-    const isEdit2D =
-      viewMode === "2D" && appMode === "EDIT" && canvasRef.current;
+    const isEdit2D = viewMode === "2D" && appMode === "EDIT" && canvasRef.current;
     if (isEdit2D) {
       const canvas = canvasRef.current!;
       const ctx = canvas.getContext("2d")!;
@@ -424,9 +376,7 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
         if (savedState !== lastSavedDataUrlRef.current) {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           const img = new Image();
-          img.onload = () => {
-            ctx.drawImage(img, 0, 0);
-          };
+          img.onload = () => { ctx.drawImage(img, 0, 0); };
           img.src = savedState;
           lastSavedDataUrlRef.current = savedState;
         }
@@ -474,10 +424,7 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
       if (isPanning) {
         const dx = e.clientX - panStartRef.current.x;
         const dy = e.clientY - panStartRef.current.y;
-        setPan({
-          x: panOffsetRef.current.x + dx,
-          y: panOffsetRef.current.y + dy,
-        });
+        setPan({ x: panOffsetRef.current.x + dx, y: panOffsetRef.current.y + dy });
       } else if (isDrawingRef.current && appMode === "EDIT") {
         const canvas = canvasRef.current;
         if (canvas) {
@@ -488,14 +435,8 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
             ctx.lineWidth = brushSize;
             ctx.lineCap = "round";
             ctx.lineJoin = "round";
-
-            if (drawTool === "eraser") {
-              ctx.globalCompositeOperation = "destination-out";
-            } else {
-              ctx.globalCompositeOperation = "source-over";
-              ctx.strokeStyle = brushColor;
-            }
-
+            ctx.globalCompositeOperation = drawTool === "eraser" ? "destination-out" : "source-over";
+            if (drawTool !== "eraser") { ctx.strokeStyle = brushColor; }
             ctx.lineTo(coords.x, coords.y);
             ctx.stroke();
           }
@@ -506,24 +447,13 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
         const canvas = canvasRef.current;
         if (canvas) {
           const rect = canvas.getBoundingClientRect();
-          const coords = getCanvasCoords(e.clientX, e.clientY, rect);
-          setEraserCursor(coords);
+          setEraserCursor(getCanvasCoords(e.clientX, e.clientY, rect));
         }
       } else {
-        if (eraserCursor !== null) {
-          setEraserCursor(null);
-        }
+        eraserCursor !== null ? setEraserCursor(null) : undefined;
       }
     },
-    [
-      isPanning,
-      appMode,
-      getCanvasCoords,
-      brushSize,
-      drawTool,
-      brushColor,
-      eraserCursor,
-    ],
+    [isPanning, appMode, getCanvasCoords, brushSize, drawTool, brushColor, eraserCursor],
   );
 
   const handleStopDrawing = useCallback(() => {
@@ -533,7 +463,6 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
       isDrawingRef.current = false;
       const canvas = canvasRef.current!;
       const dataUrl = canvas.toDataURL();
-
       lastSavedDataUrlRef.current = dataUrl;
       const updatedStates = { ...canvasStates, [activeLevelId]: dataUrl };
       setCanvasStates(updatedStates);
@@ -549,10 +478,7 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
 
       if (spacebarPanning || isMultiTouch) {
         setIsPanning(true);
-        panStartRef.current = {
-          x: e.touches[0].clientX,
-          y: e.touches[0].clientY,
-        };
+        panStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
         panOffsetRef.current = { ...pan };
       } else if (appMode === "EDIT" && isSingleTouch) {
         isDrawingRef.current = true;
@@ -578,10 +504,7 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
         const touch = e.touches[0];
         const dx = touch.clientX - panStartRef.current.x;
         const dy = touch.clientY - panStartRef.current.y;
-        setPan({
-          x: panOffsetRef.current.x + dx,
-          y: panOffsetRef.current.y + dy,
-        });
+        setPan({ x: panOffsetRef.current.x + dx, y: panOffsetRef.current.y + dy });
       } else if (isDrawingRef.current && appMode === "EDIT") {
         const canvas = canvasRef.current;
         if (canvas) {
@@ -593,14 +516,8 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
             ctx.lineWidth = brushSize;
             ctx.lineCap = "round";
             ctx.lineJoin = "round";
-
-            if (drawTool === "eraser") {
-              ctx.globalCompositeOperation = "destination-out";
-            } else {
-              ctx.globalCompositeOperation = "source-over";
-              ctx.strokeStyle = brushColor;
-            }
-
+            ctx.globalCompositeOperation = drawTool === "eraser" ? "destination-out" : "source-over";
+            if (drawTool !== "eraser") { ctx.strokeStyle = brushColor; }
             ctx.lineTo(coords.x, coords.y);
             ctx.stroke();
           }
@@ -621,15 +538,11 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
       const containerWidth = container.clientWidth || 800;
       const containerHeight = container.clientHeight || 600;
 
-      const fitZoom = Math.min(
-        containerWidth / imageWidth,
-        containerHeight / imageHeight,
-      );
+      const fitZoom = Math.min(containerWidth / imageWidth, containerHeight / imageHeight);
       const minZoom = Math.max(0.1, fitZoom);
 
       const nextZoom = isZoomIn ? zoom * zoomFactor : zoom / zoomFactor;
-      const clampedZoom = Math.max(minZoom, Math.min(5.0, nextZoom));
-      setZoom(clampedZoom);
+      setZoom(Math.max(minZoom, Math.min(5.0, nextZoom)));
     },
     [zoom, imageWidth, imageHeight],
   );
@@ -646,7 +559,7 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
     }
   }, [canvasStates, activeLevelId, updateAtlasCache]);
 
-  // Teletransporte
+  // Teletransporte al nivel indicado
   const handleTeleport = useCallback(
     (levelId: string) => {
       setActiveLevelId(levelId);
@@ -663,21 +576,14 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
       if (trimmed) {
         const newId = `l_${Date.now()}`;
         const newLvl: AtlasLevel = { id: newId, name: trimmed };
-
-        const nextLevels =
-          position === "above" ? [newLvl, ...levels] : [...levels, newLvl];
-
+        const nextLevels = position === "above" ? [newLvl, ...levels] : [...levels, newLvl];
         const nextOpacities = { ...levelOpacities, [newId]: 1.0 };
 
         setLevels(nextLevels);
         setLevelOpacities(nextOpacities);
         setActiveLevelId(newId);
 
-        updateAtlasCache({
-          levels: nextLevels,
-          levelOpacities: nextOpacities,
-          activeLevelId: newId,
-        });
+        updateAtlasCache({ levels: nextLevels, levelOpacities: nextOpacities, activeLevelId: newId });
         persistPendingChanges();
       }
     },
@@ -698,9 +604,7 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
     (id: string, newName: string) => {
       const trimmed = newName.trim();
       if (trimmed) {
-        const nextLevels = levels.map((l) =>
-          l.id === id ? { ...l, name: trimmed } : l,
-        );
+        const nextLevels = levels.map((l) => l.id === id ? { ...l, name: trimmed } : l);
         setLevels(nextLevels);
         updateAtlasCache({ levels: nextLevels });
         persistPendingChanges();
@@ -722,20 +626,10 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
         setActiveLevelId(nextActiveLevel);
       }
 
-      updateAtlasCache({
-        levels: nextLevels,
-        annotations: nextAnnotations,
-        activeLevelId: nextActiveLevel,
-      });
+      updateAtlasCache({ levels: nextLevels, annotations: nextAnnotations, activeLevelId: nextActiveLevel });
       persistPendingChanges();
     },
-    [
-      levels,
-      annotations,
-      activeLevelId,
-      updateAtlasCache,
-      persistPendingChanges,
-    ],
+    [levels, annotations, activeLevelId, updateAtlasCache, persistPendingChanges],
   );
 
   // --- CRUD ANOTACIONES ---
@@ -743,11 +637,7 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
     (text: string, levelId: string) => {
       const trimmed = text.trim();
       if (trimmed) {
-        const newAnn: AtlasAnnotation = {
-          id: `ann_${Date.now()}`,
-          levelId,
-          text: trimmed,
-        };
+        const newAnn: AtlasAnnotation = { id: `ann_${Date.now()}`, levelId, text: trimmed };
         const nextAnnotations = [...annotations, newAnn];
         setAnnotations(nextAnnotations);
         updateAtlasCache({ annotations: nextAnnotations });
@@ -787,26 +677,15 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
     const rawMarkers = mapAttributes.markers || [];
     return rawMarkers.filter((m) => {
       const isFiltered =
-        (!atlasFilters.cities &&
-          (m.label?.includes("Ciudad") || Number(m.id) % 3 === 0)) ||
-        (!atlasFilters.ruins &&
-          (m.label?.includes("Ruinas") || Number(m.id) % 5 === 0));
+        (!atlasFilters.cities && (m.label?.includes("Ciudad") || Number(m.id) % 3 === 0)) ||
+        (!atlasFilters.ruins && (m.label?.includes("Ruinas") || Number(m.id) % 5 === 0));
       return !isFiltered;
     });
   }, [mapAttributes.markers, atlasFilters]);
 
-  const layers = useMemo<MapLayer[]>(
-    () => mapAttributes.layers || [],
-    [mapAttributes],
-  );
-  const connections = useMemo<MapConnection[]>(
-    () => mapAttributes.connections || [],
-    [mapAttributes],
-  );
-  const features = useMemo<unknown>(
-    () => mapAttributes.features,
-    [mapAttributes],
-  );
+  const layers = useMemo<MapLayer[]>(() => mapAttributes.layers || [], [mapAttributes]);
+  const connections = useMemo<MapConnection[]>(() => mapAttributes.connections || [], [mapAttributes]);
+  const features = useMemo<unknown>(() => mapAttributes.features, [mapAttributes]);
   const is3D = useMemo(() => !!mapAttributes.is3D, [mapAttributes]);
 
   const handleMarkerClick = useCallback((marker: MapMarker) => {
@@ -835,7 +714,7 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
     mapImage,
     handleMarkerClick,
 
-    // --- Nuevas propiedades de Atlas ---
+    // --- Propiedades del Atlas ---
     levels,
     setLevels,
     activeLevelId,
@@ -868,7 +747,7 @@ export const useInteractiveMapView = (map: Entidad, onBack?: () => void) => {
     handleSaveEditAnnotation,
     handleDeleteAnnotation,
 
-    // --- Estados y manejadores de interacción movidos al hook ---
+    // --- Estados y manejadores de interacción ---
     zoom,
     setZoom,
     pan,

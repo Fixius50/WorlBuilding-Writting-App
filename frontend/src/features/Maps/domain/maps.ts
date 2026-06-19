@@ -49,3 +49,30 @@ export interface MapAttributes {
   };
   [key: string]: unknown;
 }
+
+// --- Tipos del Atlas (capas de dibujo) ---
+
+export interface AtlasLevel {
+  id: string;
+  name: string;
+}
+
+export interface AtlasAnnotation {
+  id: string;
+  levelId: string;
+  text: string;
+}
+
+export interface AtlasAttributes extends MapAttributes {
+  levels?: AtlasLevel[];
+  levelOpacities?: Record<string, number>;
+  canvasStates?: Record<string, string | null>;
+  levelBgImages?: Record<string, string | null>;
+  annotations?: AtlasAnnotation[];
+  backdropOpacity?: number;
+  brushColor?: string;
+  brushSize?: number;
+  drawTool?: "brush" | "eraser";
+  activeLevelId?: string;
+}
+

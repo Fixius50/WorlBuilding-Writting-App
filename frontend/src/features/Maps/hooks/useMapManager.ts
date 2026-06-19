@@ -66,8 +66,8 @@ export const useMapManager = (maps: Entidad[]) => {
         };
         await EntityUseCase.update(map.id, updated);
         window.dispatchEvent(new CustomEvent("map-updated"));
-      } catch (err) {
-        // Error handling
+      } catch (_err) {
+        // Error de actualización ignorado intencionadamente
       }
     },
     [],

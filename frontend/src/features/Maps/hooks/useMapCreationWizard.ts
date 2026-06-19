@@ -6,7 +6,7 @@ import React, { useState, useEffect } from 'react';
  */
 export const useMapCreationWizard = (
   onCreate: (
-    mapName: string, 
+    mapName: string,
     config: { bgImage: string; mapType: string; description: string; parentId?: number; is3D: boolean }
   ) => void,
   projectName: string
@@ -28,14 +28,14 @@ export const useMapCreationWizard = (
   useEffect(() => {
     const checkUrl = (): void => {
       const isEmpty = !bgImageUrl;
-      
+
       isEmpty ? (() => {
         setUrlError(null);
         setIsValidatingUrl(false);
       })() : (() => {
         setIsValidatingUrl(true);
         setUrlError(null);
- 
+
         const img = new Image();
         img.src = bgImageUrl;
         img.onload = () => {
@@ -45,11 +45,11 @@ export const useMapCreationWizard = (
         img.onerror = () => {
           const cleanUrl = bgImageUrl.toLowerCase().split('?')[0];
           const hasImageExtension = ['.jpg', '.jpeg', '.png', '.webp', '.svg', '.gif'].some(ext => cleanUrl.endsWith(ext));
-          
+
           const errorMsg = hasImageExtension
             ? null
             : "La URL no apunta a una imagen válida. Asegúrate de enlazar un archivo de imagen (.jpg, .png) y no una página web.";
-            
+
           setUrlError(errorMsg);
           setIsValidatingUrl(false);
         };
@@ -60,29 +60,29 @@ export const useMapCreationWizard = (
     return () => clearTimeout(timer);
   }, [bgImageUrl]);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0];
     if (file) {
       const isImage = file.type.startsWith('image/');
       const cleanName = file.name.toLowerCase();
-      const is3D = ['.glb', '.gltf', '.obj', '.fbx', '.stl'].some(ext => cleanName.endsWith(ext));
-      
-      if (isImage || is3D) {
+      const is3DFile = ['.glb', '.gltf', '.obj', '.fbx', '.stl'].some(ext => cleanName.endsWith(ext));
+
+      if (isImage || is3DFile) {
         setUploadedFile(file);
         setCanvasSource('upload');
       }
     }
   };
 
-  const handleUploadClick = () => {
+  const handleUploadClick = (): void => {
     fileInputRef.current?.click();
   };
 
-  const handleCreate = async () => {
+  const handleCreate = async (): Promise<void> => {
     setIsCreating(true);
     try {
       let finalBgImage = 'placeholder-map.png';
-      
+
       switch (canvasSource) {
         case 'upload':
           if (uploadedFile) {
@@ -90,12 +90,12 @@ export const useMapCreationWizard = (
             const formData = new FormData();
             formData.append('file', uploadedFile);
             formData.append('name', mapName);
-            
+
             const response = await fetch(`/api/mapeditor/assets/${projectName}/upload`, {
               method: 'POST',
               body: formData
             });
-            
+
             if (response.ok) {
               const asset = await response.json();
               finalBgImage = `/api/mapeditor/assets/${projectName}/download/${asset.fileName}`;
@@ -110,13 +110,13 @@ export const useMapCreationWizard = (
             const urlParams = new URLSearchParams();
             urlParams.append('name', mapName);
             urlParams.append('url', bgImageUrl);
-            
+
             const response = await fetch(`/api/mapeditor/assets/${projectName}/upload-url`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
               body: urlParams
             });
-            
+
             if (response.ok) {
               const asset = await response.json();
               finalBgImage = `/api/mapeditor/assets/${projectName}/download/${asset.fileName}`;
@@ -125,17 +125,17 @@ export const useMapCreationWizard = (
             }
           }
           break;
-        case 'blank':
+        case 'blank': {
           setCreationStatusText('Generando lienzo blanco en el servidor...');
           const blankParams = new URLSearchParams();
           blankParams.append('name', mapName);
-          
+
           const response = await fetch(`/api/mapeditor/assets/${projectName}/blank`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: blankParams
           });
-          
+
           if (response.ok) {
             const asset = await response.json();
             finalBgImage = `/api/mapeditor/assets/${projectName}/download/${asset.fileName}`;
@@ -143,10 +143,11 @@ export const useMapCreationWizard = (
             throw new Error('Error al crear el lienzo en blanco en el servidor.');
           }
           break;
+        }
         default:
           break;
       }
-      
+
       onCreate(mapName, {
         bgImage: finalBgImage,
         mapType,

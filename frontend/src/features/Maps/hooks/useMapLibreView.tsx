@@ -75,12 +75,9 @@ export const useMapLibreView = (
       currentLayers: MapLayer[],
     ) => {
       const primaryRgb = getThemePrimaryRgb();
-      const deckLayers: Array<
-        | PathLayer<ConnectionPath>
-        | GeoJsonLayer<GeoFeatureCollection>
-        | ScatterplotLayer<MapMarker>
-        | TextLayer<MapMarker>
-      > = [];
+      // Se usa unknown[] para evitar conflictos de tipos genéricos entre versiones de Deck.gl
+      const deckLayers: unknown[] = [];
+
 
       const connPaths: ConnectionPath[] = currentConnections
         .map((conn) => {
@@ -129,7 +126,7 @@ export const useMapLibreView = (
             deckLayers.push(
               new GeoJsonLayer({
                 id: `deck-geojson-${layer.id}`,
-                data: geojsonData,
+                data: geojsonData as unknown as ConstructorParameters<typeof GeoJsonLayer>[0]["data"],
                 getLineColor: [...rgb, Math.round((layer.opacity ?? 1) * 255)],
                 getFillColor: [
                   ...rgb,
@@ -299,7 +296,7 @@ export const useMapLibreView = (
   useEffect(() => {
     if (!deckOverlay.current) return;
     const newLayers = buildDeckLayers(markers, connections, features, layers);
-    deckOverlay.current.setProps({ layers: newLayers });
+    deckOverlay.current.setProps({ layers: newLayers as Parameters<typeof deckOverlay.current.setProps>[0]["layers"] });
   }, [markers, connections, features, layers, buildDeckLayers]);
 
   return {

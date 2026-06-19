@@ -1,7 +1,7 @@
-﻿import React from "react";
+import React from "react";
 import { MonolithicPanel } from "@components";
 import { Button } from "@components";
-import { useMapCreationWizard } from "./useMapCreationWizard";
+import { useMapCreationWizard } from "../hooks/useMapCreationWizard";
 
 interface MapCreationWizardProps {
   onCancel: () => void;

@@ -1,9 +1,9 @@
-﻿import React from "react";
+import React from "react";
 import { useLanguage } from "@context/LanguageContext";
 import { MonolithicPanel } from "@components";
 import { Button } from "@components";
 import { Entidad } from "@domain/database";
-import { useMapManager } from "./useMapManager";
+import { useMapManager } from "../hooks/useMapManager";
 
 interface MapManagerProps {
   maps: Entidad[];
