@@ -9,7 +9,17 @@ interface UsePageEditorProps {
   autoFocus?: boolean;
   onMentionClick?: (id: string) => void;
   projectEntities?: Entidad[];
-  onSuggestLink?: (entity: Entidad, range: { from: number; to: number }) => void;
+  onSuggestLink?: (
+    entity: Entidad,
+    range: { from: number; to: number },
+  ) => void;
+  onSelectionChange?: (
+    selection: {
+      text: string;
+      from: number;
+      to: number;
+    } | null,
+  ) => void;
 }
 
 /**
@@ -26,6 +36,7 @@ export const usePageEditor = ({
   onMentionClick,
   projectEntities = [],
   onSuggestLink,
+  onSelectionChange,
 }: UsePageEditorProps) => {
   const editor = useEditor({
     extensions: getZenExtensions("Empieza a escribir esta página...", {
@@ -36,10 +47,27 @@ export const usePageEditor = ({
     onUpdate: ({ editor }) => {
       onUpdate(editor.getHTML());
     },
+    onSelectionUpdate: ({ editor }) => {
+      const { from, to, empty } = editor.state.selection;
+      empty
+        ? onSelectionChange
+          ? onSelectionChange(null)
+          : null
+        : (() => {
+            const selectedText = editor.state.doc
+              .textBetween(from, to, " ")
+              .trim();
+            selectedText.length > 0
+              ? onSelectionChange
+                ? onSelectionChange({ text: selectedText, from, to })
+                : null
+              : onSelectionChange
+                ? onSelectionChange(null)
+                : null;
+          })();
+    },
     onCreate: ({ editor }) => {
-      autoFocus
-        ? setTimeout(() => editor.commands.focus("start"), 10)
-        : null;
+      autoFocus ? setTimeout(() => editor.commands.focus("start"), 10) : null;
     },
     editorProps: {
       attributes: {
@@ -63,9 +91,7 @@ export const usePageEditor = ({
 
   useEffect(() => {
     const shouldUpdate = editor && content !== editor.getHTML();
-    shouldUpdate && editor
-      ? editor.commands.setContent(content, false)
-      : null;
+    shouldUpdate && editor ? editor.commands.setContent(content, false) : null;
   }, [content, editor]);
 
   useEffect(() => {

@@ -6,6 +6,12 @@ interface WritingSidebarProps {
   // Tabs
   activeTab: "index" | "references";
   setActiveTab: (tab: "index" | "references") => void;
+  pageId: number | null;
+  commentSelection: {
+    text: string;
+    from: number;
+    to: number;
+  } | null;
 
   // Datos para PageListPanel
   pages: Hoja[];
@@ -44,6 +50,8 @@ interface WritingSidebarProps {
 const WritingSidebar: React.FC<WritingSidebarProps> = ({
   activeTab,
   setActiveTab,
+  pageId,
+  commentSelection,
   pages,
   filteredPages,
   currentPageIndex,
@@ -94,6 +102,8 @@ const WritingSidebar: React.FC<WritingSidebarProps> = ({
       <div className="flex-grow overflow-y-auto custom-scrollbar flex flex-col justify-between">
         {activeTab === "index" ? (
           <PageListPanel
+            pageId={pageId}
+            commentSelection={commentSelection}
             pages={pages}
             filteredPages={filteredPages}
             currentPageIndex={currentPageIndex}

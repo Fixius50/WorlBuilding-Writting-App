@@ -1,6 +1,13 @@
 import { notebookService } from "@repositories/notebookService";
 import { Cuaderno, Hoja } from "@domain/database";
 
+export interface NotebookMetadata {
+  status?: "idea" | "draft" | "review" | "done";
+  priority?: "low" | "medium" | "high";
+  audience?: string;
+  summary?: string;
+}
+
 export interface Snapshot {
   id: number;
   timestamp: string;
@@ -13,6 +20,19 @@ export interface MentionResult {
   cuaderno_titulo: string;
   cuaderno_id: number;
   snippet: string;
+}
+
+export interface WritingComment {
+  id: number;
+  hoja_id: number;
+  parent_id: number | null;
+  texto: string;
+  seleccion_texto: string | null;
+  rango_inicio: number | null;
+  rango_fin: number | null;
+  estado: "open" | "resolved";
+  created_at: string;
+  updated_at: string;
 }
 
 /**
@@ -48,10 +68,16 @@ export class WritingUseCase {
     projectId: number,
     title: string,
     genre: string,
+    metadata: NotebookMetadata = {},
   ): Promise<Cuaderno> {
     const trimmedTitle = title.trim();
     if (!trimmedTitle) throw new Error("El título no puede estar vacío");
-    return await notebookService.create(projectId, trimmedTitle, genre);
+    return await notebookService.create(
+      projectId,
+      trimmedTitle,
+      genre,
+      JSON.stringify(metadata),
+    );
   }
 
   /** Actualiza un cuaderno existente */
@@ -59,12 +85,14 @@ export class WritingUseCase {
     notebookId: number,
     title: string,
     genre: string,
+    metadata: NotebookMetadata = {},
   ): Promise<void> {
     const trimmedTitle = title.trim();
     if (!trimmedTitle) throw new Error("El título no puede estar vacío");
     await notebookService.update(notebookId, {
       titulo: trimmedTitle,
       genero: genre,
+      metadata_json: JSON.stringify(metadata),
     });
   }
 
@@ -121,5 +149,39 @@ export class WritingUseCase {
     query: string,
   ): Promise<MentionResult[]> {
     return await notebookService.getMentions(projectId, query);
+  }
+
+  static async getComments(pageId: number): Promise<WritingComment[]> {
+    return await notebookService.getCommentsByPage(pageId);
+  }
+
+  static async createComment(input: {
+    pageId: number;
+    text: string;
+    parentId?: number | null;
+    selectedText?: string | null;
+    rangeStart?: number | null;
+    rangeEnd?: number | null;
+  }): Promise<WritingComment> {
+    return await notebookService.createComment({
+      hojaId: input.pageId,
+      texto: input.text,
+      parentId: input.parentId,
+      selectedText: input.selectedText,
+      rangeStart: input.rangeStart,
+      rangeEnd: input.rangeEnd,
+    });
+  }
+
+  static async resolveComment(commentId: number): Promise<void> {
+    await notebookService.resolveComment(commentId);
+  }
+
+  static async reopenComment(commentId: number): Promise<void> {
+    await notebookService.reopenComment(commentId);
+  }
+
+  static async deleteComment(commentId: number): Promise<void> {
+    await notebookService.deleteComment(commentId);
   }
 }

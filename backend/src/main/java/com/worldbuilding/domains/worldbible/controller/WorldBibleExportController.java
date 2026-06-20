@@ -16,7 +16,7 @@ import java.nio.file.Path;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/worldbible")
+@RequestMapping("/worldbible")
 @CrossOrigin(origins = "*")
 public class WorldBibleExportController {
 
@@ -31,7 +31,7 @@ public class WorldBibleExportController {
             @PathVariable String projectName,
             @RequestParam("format") ExportFormat format,
             @RequestBody Map<String, Object> payload) {
-        
+        ResponseEntity<Resource> response;
         try {
             // Desestructuramos el cuerpo del JSON para extraer configuraciones y el árbol
             @SuppressWarnings("unchecked")
@@ -41,7 +41,7 @@ public class WorldBibleExportController {
 
             CompilationSettings settings = new CompilationSettings();
             boolean hasSettings = settingsMap != null;
-            if (hasSettings && settingsMap != null) {
+            if (hasSettings) {
                 settings.setTitle((String) settingsMap.get("title"));
                 settings.setAuthor((String) settingsMap.get("author"));
                 settings.setGenre((String) settingsMap.get("genre"));
@@ -55,7 +55,6 @@ public class WorldBibleExportController {
             Path exportedPath = compilerService.compileBook(projectName, format, settings, contentTree);
             Resource resource = new UrlResource(exportedPath.toUri());
 
-            ResponseEntity<Resource> response;
             boolean isResourceValid = resource.exists();
             if (isResourceValid) {
                 MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
@@ -66,12 +65,12 @@ public class WorldBibleExportController {
             } else {
                 response = ResponseEntity.notFound().build();
             }
-            return response;
 
         } catch (MalformedURLException e) {
-            return ResponseEntity.badRequest().build();
+            response = ResponseEntity.badRequest().build();
         } catch (IOException e) {
-            return ResponseEntity.internalServerError().build();
+            response = ResponseEntity.internalServerError().build();
         }
+        return response;
     }
 }

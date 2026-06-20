@@ -2,6 +2,38 @@ import { useState, useEffect, useCallback } from "react";
 import { Cuaderno } from "@domain/database";
 import { WritingUseCase } from "@features/Writing";
 
+interface NotebookMetadataForm {
+  status: "idea" | "draft" | "review" | "done";
+  priority: "low" | "medium" | "high";
+  audience: string;
+  summary: string;
+}
+
+const DEFAULT_METADATA: NotebookMetadataForm = {
+  status: "idea",
+  priority: "medium",
+  audience: "",
+  summary: "",
+};
+
+const parseNotebookMetadata = (
+  raw: string | null | undefined,
+): NotebookMetadataForm => {
+  try {
+    const parsed = raw
+      ? (JSON.parse(raw) as Partial<NotebookMetadataForm>)
+      : {};
+    return {
+      status: parsed.status || "idea",
+      priority: parsed.priority || "medium",
+      audience: parsed.audience || "",
+      summary: parsed.summary || "",
+    };
+  } catch {
+    return { ...DEFAULT_METADATA };
+  }
+};
+
 /**
  * Hook useWritingHub
  * Logic for managing the library of notebooks, including creation, editing, and searching.
@@ -21,6 +53,8 @@ export const useWritingHub = (
   // Form states
   const [title, setTitle] = useState("");
   const [genre, setGenre] = useState("");
+  const [metadata, setMetadata] =
+    useState<NotebookMetadataForm>(DEFAULT_METADATA);
 
   const loadNotebooks = useCallback(async () => {
     try {
@@ -42,6 +76,7 @@ export const useWritingHub = (
   const openCreateModal = useCallback(() => {
     setTitle("");
     setGenre("");
+    setMetadata({ ...DEFAULT_METADATA });
     setSubmitError(null);
     setNotebookToEdit(null);
     setIsCreating(true);
@@ -51,6 +86,7 @@ export const useWritingHub = (
     setNotebookToEdit(nb);
     setTitle(nb.titulo);
     setGenre(nb.genero || "");
+    setMetadata(parseNotebookMetadata(nb.metadata_json));
     setSubmitError(null);
     setIsCreating(true);
   }, []);
@@ -60,6 +96,7 @@ export const useWritingHub = (
     setNotebookToEdit(null);
     setTitle("");
     setGenre("");
+    setMetadata({ ...DEFAULT_METADATA });
     setSubmitError(null);
     setSaving(false);
   }, []);
@@ -73,11 +110,21 @@ export const useWritingHub = (
     setSaving(true);
     try {
       if (notebookToEdit) {
-        await WritingUseCase.updateNotebook(notebookToEdit.id, title, genre);
+        await WritingUseCase.updateNotebook(
+          notebookToEdit.id,
+          title,
+          genre,
+          metadata,
+        );
         setNotebooks((prev) =>
           prev.map((n) =>
             n.id === notebookToEdit.id
-              ? { ...n, titulo: title.trim(), genero: genre }
+              ? {
+                  ...n,
+                  titulo: title.trim(),
+                  genero: genre,
+                  metadata_json: JSON.stringify(metadata),
+                }
               : n,
           ),
         );
@@ -86,6 +133,7 @@ export const useWritingHub = (
           projectId,
           title,
           genre,
+          metadata,
         );
         setNotebooks((prev) => [nuevo, ...prev]);
       }
@@ -99,7 +147,7 @@ export const useWritingHub = (
     } finally {
       setSaving(false);
     }
-  }, [projectId, title, genre, notebookToEdit, closeModal]);
+  }, [projectId, title, genre, metadata, notebookToEdit, closeModal]);
 
   const handleDelete = useCallback(async (id: number) => {
     if (!window.confirm("¿Eliminar este archivador?")) return;
@@ -130,6 +178,8 @@ export const useWritingHub = (
     setTitle,
     genre,
     setGenre,
+    metadata,
+    setMetadata,
     openCreateModal,
     openEditModal,
     closeModal,

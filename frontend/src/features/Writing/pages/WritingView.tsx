@@ -42,19 +42,17 @@ const WritingView = () => {
     setSidebarOpen,
     selectedEntity,
     projectEntities,
+    commentSelection,
+    setCommentSelection,
   } = useWritingView();
 
-  const {
-    isCorkboardMode,
-    setIsCorkboardMode,
-    filteredPages,
-    deletePage,
-  } = usePageList({
-    pages,
-    searchTerm,
-    setPageToDelete,
-    setDeleteModalOpen,
-  });
+  const { isCorkboardMode, setIsCorkboardMode, filteredPages, deletePage } =
+    usePageList({
+      pages,
+      searchTerm,
+      setPageToDelete,
+      setDeleteModalOpen,
+    });
 
   const currentPage = pages[currentPageIndex];
 
@@ -186,6 +184,7 @@ const WritingView = () => {
               snapshots={snapshots}
               onRestoreSnapshot={handleRestoreSnapshot}
               onMentionClick={handleMentionClick}
+              onSelectionChange={setCommentSelection}
               notebookTitle={notebook?.titulo}
               sidebarOpen={sidebarOpen}
               onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
@@ -200,6 +199,8 @@ const WritingView = () => {
         <WritingSidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
+          pageId={currentPage ? currentPage.id : null}
+          commentSelection={commentSelection}
           pages={pages}
           filteredPages={filteredPages}
           currentPageIndex={currentPageIndex}

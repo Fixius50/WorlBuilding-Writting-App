@@ -1,6 +1,7 @@
 import React from "react";
 import { Editor } from "@tiptap/react";
 import { useEditorTopBar } from "../hooks/useEditorTopBar";
+import { runExportPipeline } from "../application/exportPipeline";
 
 interface EditorTopBarProps {
   editor: Editor | null;
@@ -182,7 +183,9 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
           <button
             onClick={onToggleFocusMode}
             className={`p-1 transition-colors flex items-center justify-center outline-none ${focusMode ? "text-primary" : "text-foreground/40 hover:text-foreground/75"}`}
-            title={focusMode ? "Desactivar modo enfoque" : "Activar modo enfoque"}
+            title={
+              focusMode ? "Desactivar modo enfoque" : "Activar modo enfoque"
+            }
           >
             <span className="material-symbols-outlined text-lg">
               {focusMode ? "visibility" : "visibility_off"}
@@ -233,7 +236,9 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
               className={buttonClass(showExportMenu)}
               title="Imprimir o Exportar documento"
             >
-              <span className="material-symbols-outlined text-[16px]">print</span>
+              <span className="material-symbols-outlined text-[16px]">
+                print
+              </span>
             </button>
 
             {showExportMenu && (
@@ -250,7 +255,9 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                     }}
                     className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors flex items-center gap-2 text-foreground/85 outline-none font-sans"
                   >
-                    <span className="material-symbols-outlined text-sm">print</span>
+                    <span className="material-symbols-outlined text-sm">
+                      print
+                    </span>
                     <span>Imprimir</span>
                   </button>
                   <div className="h-px bg-foreground/10 my-1" />
@@ -261,154 +268,93 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                     onClick={async (): Promise<void> => {
                       setShowExportMenu(false);
                       try {
-                        const htmlBody: string = editor.getHTML();
-                        const fullHtml: string = `
-                          <!DOCTYPE html>
-                          <html>
-                            <head>
-                              <meta charset="utf-8" />
-                              <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&amp;family=Outfit:wght@100..900&amp;display=swap" rel="stylesheet" />
-                              <style>
-                                @page {
-                                  size: A4;
-                                  margin: 2cm;
-                                }
-                                body {
-                                  font-family: 'Cormorant Garamond', serif;
-                                  font-size: 16px;
-                                  line-height: 1.5;
-                                  color: #000000;
-                                  margin: 0;
-                                  padding: 0;
-                                }
-                                h1 {
-                                  font-size: 32px;
-                                  font-family: 'Outfit', sans-serif;
-                                  font-weight: bold;
-                                  margin-bottom: 2rem;
-                                }
-                                p {
-                                  margin-bottom: 0.3em;
-                                  text-align: justify;
-                                }
-                                .mention {
-                                  font-weight: bold;
-                                  color: #000000;
-                                  text-decoration: none;
-                                }
-                                img {
-                                  display: block;
-                                  max-width: 100%;
-                                  height: auto;
-                                  margin: 1.5rem auto;
-                                }
-                              </style>
-                            </head>
-                            <body>
-                              <h1>${title || "Documento"}</h1>
-                              <div>${htmlBody}</div>
-                            </body>
-                          </html>
-                        `;
-
-                        const response: Response = await fetch("/api/editor/export-pdf", {
-                          method: "POST",
-                          headers: {
-                            "Content-Type": "application/json",
-                          },
-                          body: JSON.stringify({ html: fullHtml, title }),
-                        });
-
-                        const isOk = response.ok;
-                        isOk
-                          ? await (async (): Promise<void> => {
-                              const blob: Blob = await response.blob();
-                              const downloadUrl: string = URL.createObjectURL(blob);
-                              const link: HTMLAnchorElement = document.createElement("a");
-                              link.href = downloadUrl;
-                              link.download = `${title || "documento"}.pdf`;
-                              link.click();
-                              URL.revokeObjectURL(downloadUrl);
-                            })()
-                          : (() => {
-                              console.error("Error al exportar PDF en backend, iniciando fallback");
-                              onPrint ? onPrint() : window.print();
-                            })();
+                        await runExportPipeline("pdf", { editor, title }, () =>
+                          onPrint ? onPrint() : window.print(),
+                        );
                       } catch (err) {
-                        console.error("Error de red al exportar PDF, usando fallback de impresión:", err);
+                        console.error(
+                          "Error de red al exportar PDF, usando fallback de impresión:",
+                          err,
+                        );
                         onPrint ? onPrint() : window.print();
                       }
                     }}
                     className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors flex items-center gap-2 text-foreground/85 outline-none font-sans"
                   >
-                    <span className="material-symbols-outlined text-sm">picture_as_pdf</span>
+                    <span className="material-symbols-outlined text-sm">
+                      picture_as_pdf
+                    </span>
                     <span>Documento PDF (.pdf)</span>
                   </button>
                   <button
                     onClick={(): void => {
-                      const htmlContent: string = editor.getHTML();
-                      const blob: Blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
-                      const url: string = URL.createObjectURL(blob);
-                      const link: HTMLAnchorElement = document.createElement("a");
-                      link.href = url;
-                      link.download = `${title || "documento"}.html`;
-                      link.click();
-                      URL.revokeObjectURL(url);
+                      runExportPipeline("html", { editor, title }, () =>
+                        onPrint ? onPrint() : window.print(),
+                      );
                       setShowExportMenu(false);
                     }}
                     className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors flex items-center gap-2 text-foreground/85 outline-none font-sans"
                   >
-                    <span className="material-symbols-outlined text-sm">html</span>
+                    <span className="material-symbols-outlined text-sm">
+                      html
+                    </span>
                     <span>Página Web (.html)</span>
                   </button>
                   <button
                     onClick={(): void => {
-                      const textContent: string = editor.getText();
-                      const blob: Blob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
-                      const url: string = URL.createObjectURL(blob);
-                      const link: HTMLAnchorElement = document.createElement("a");
-                      link.href = url;
-                      link.download = `${title || "documento"}.txt`;
-                      link.click();
-                      URL.revokeObjectURL(url);
+                      runExportPipeline("txt", { editor, title }, () =>
+                        onPrint ? onPrint() : window.print(),
+                      );
                       setShowExportMenu(false);
                     }}
                     className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors flex items-center gap-2 text-foreground/85 outline-none font-sans"
                   >
-                    <span className="material-symbols-outlined text-sm">description</span>
+                    <span className="material-symbols-outlined text-sm">
+                      description
+                    </span>
                     <span>Texto Plano (.txt)</span>
                   </button>
                   <button
                     onClick={(): void => {
-                      const htmlContent: string = editor.getHTML();
-                      // Convertidor ultra-ligero de HTML a Markdown
-                      const mdContent: string = htmlContent
-                        .replace(/<h1>(.*?)<\/h1>/gi, '# $1\n\n')
-                        .replace(/<h2>(.*?)<\/h2>/gi, '## $1\n\n')
-                        .replace(/<h3>(.*?)<\/h3>/gi, '### $1\n\n')
-                        .replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
-                        .replace(/<b>(.*?)<\/b>/gi, '**$1**')
-                        .replace(/<em>(.*?)<\/em>/gi, '*$1*')
-                        .replace(/<i>(.*?)<\/i>/gi, '*$1*')
-                        .replace(/<p>(.*?)<\/p>/gi, '$1\n\n')
-                        .replace(/<li>(.*?)<\/li>/gi, '* $1\n')
-                        .replace(/<ul>(.*?)<\/ul>/gi, '$1\n')
-                        .replace(/<ol>(.*?)<\/ol>/gi, '$1\n')
-                        .replace(/<br\s*\/?>/gi, '\n')
-                        .replace(/<[^>]+>/g, '');
-                      const blob: Blob = new Blob([mdContent.trim()], { type: "text/markdown;charset=utf-8" });
-                      const url: string = URL.createObjectURL(blob);
-                      const link: HTMLAnchorElement = document.createElement("a");
-                      link.href = url;
-                      link.download = `${title || "documento"}.md`;
-                      link.click();
-                      URL.revokeObjectURL(url);
+                      runExportPipeline("md", { editor, title }, () =>
+                        onPrint ? onPrint() : window.print(),
+                      );
                       setShowExportMenu(false);
                     }}
                     className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors flex items-center gap-2 text-foreground/85 outline-none font-sans"
                   >
-                    <span className="material-symbols-outlined text-sm">markdown</span>
+                    <span className="material-symbols-outlined text-sm">
+                      markdown
+                    </span>
                     <span>Markdown (.md)</span>
+                  </button>
+                  <button
+                    onClick={async (): Promise<void> => {
+                      setShowExportMenu(false);
+                      await runExportPipeline("docx", { editor, title }, () =>
+                        onPrint ? onPrint() : window.print(),
+                      );
+                    }}
+                    className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors flex items-center gap-2 text-foreground/85 outline-none font-sans"
+                  >
+                    <span className="material-symbols-outlined text-sm">
+                      article
+                    </span>
+                    <span>Documento Word (.docx)</span>
+                  </button>
+                  <button
+                    onClick={async (): Promise<void> => {
+                      setShowExportMenu(false);
+                      await runExportPipeline("epub", { editor, title }, () =>
+                        onPrint ? onPrint() : window.print(),
+                      );
+                    }}
+                    className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors flex items-center gap-2 text-foreground/85 outline-none font-sans"
+                  >
+                    <span className="material-symbols-outlined text-sm">
+                      import_contacts
+                    </span>
+                    <span>Libro electrónico (.epub)</span>
                   </button>
                 </div>
               </>
@@ -444,17 +390,35 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
           {/* Tamaño de Letra */}
           <div className="flex items-center" title="Tamaño de letra">
             <select
-              value={(editor.getAttributes("textStyle").fontSize as string) || "20px"}
+              value={
+                (editor.getAttributes("textStyle").fontSize as string) || "20px"
+              }
               onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
                 editor.chain().focus().setFontSize(e.target.value).run();
               }}
               className={selectStyle}
             >
-              {["12px", "14px", "16px", "18px", "20px", "24px", "28px", "32px", "36px"].map((sz: string): React.JSX.Element => (
-                <option key={sz} value={sz} className="bg-background text-foreground text-xs">
-                  {sz}
-                </option>
-              ))}
+              {[
+                "12px",
+                "14px",
+                "16px",
+                "18px",
+                "20px",
+                "24px",
+                "28px",
+                "32px",
+                "36px",
+              ].map(
+                (sz: string): React.JSX.Element => (
+                  <option
+                    key={sz}
+                    value={sz}
+                    className="bg-background text-foreground text-xs"
+                  >
+                    {sz}
+                  </option>
+                ),
+              )}
             </select>
           </div>
 
@@ -462,7 +426,9 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
 
           {/* Alineaciones */}
           <button
-            onMouseDown={(e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault()}
+            onMouseDown={(e: React.MouseEvent<HTMLButtonElement>) =>
+              e.preventDefault()
+            }
             onClick={() => editor.chain().focus().setTextAlign("left").run()}
             className={buttonClass(editor.isActive({ textAlign: "left" }))}
             title="Alinear a la izquierda"
@@ -472,7 +438,9 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
             </span>
           </button>
           <button
-            onMouseDown={(e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault()}
+            onMouseDown={(e: React.MouseEvent<HTMLButtonElement>) =>
+              e.preventDefault()
+            }
             onClick={() => editor.chain().focus().setTextAlign("center").run()}
             className={buttonClass(editor.isActive({ textAlign: "center" }))}
             title="Centrar"
@@ -482,7 +450,9 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
             </span>
           </button>
           <button
-            onMouseDown={(e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault()}
+            onMouseDown={(e: React.MouseEvent<HTMLButtonElement>) =>
+              e.preventDefault()
+            }
             onClick={() => editor.chain().focus().setTextAlign("right").run()}
             className={buttonClass(editor.isActive({ textAlign: "right" }))}
             title="Alinear a la derecha"
@@ -492,7 +462,9 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
             </span>
           </button>
           <button
-            onMouseDown={(e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault()}
+            onMouseDown={(e: React.MouseEvent<HTMLButtonElement>) =>
+              e.preventDefault()
+            }
             onClick={() => editor.chain().focus().setTextAlign("justify").run()}
             className={buttonClass(editor.isActive({ textAlign: "justify" }))}
             title="Justificar"
@@ -526,29 +498,46 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                     { label: "1,15", value: "1.15" },
                     { label: "1,5", value: "1.5" },
                     { label: "Doble", value: "2.0" },
-                  ].map((opt: { label: string; value: string }): React.JSX.Element => {
-                    const attrs: Record<string, any> = editor.getAttributes("paragraph") || {};
-                    const isSel: boolean = (attrs.lineHeight as string || "1.5") === opt.value;
-                    return (
-                      <button
-                        key={opt.value}
-                        onClick={(): void => {
-                          editor.chain().focus().setLineHeight(opt.value).run();
-                          setShowLineHeight(false);
-                        }}
-                        className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors flex items-center justify-between text-xs outline-none"
-                      >
-                        <span className="text-foreground/80">{opt.label}</span>
-                        {isSel && (
-                          <span className="text-primary font-bold">✓</span>
-                        )}
-                      </button>
-                    );
-                  })}
+                  ].map(
+                    (opt: {
+                      label: string;
+                      value: string;
+                    }): React.JSX.Element => {
+                      const attrs: Record<string, any> =
+                        editor.getAttributes("paragraph") || {};
+                      const isSel: boolean =
+                        ((attrs.lineHeight as string) || "1.5") === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          onClick={(): void => {
+                            editor
+                              .chain()
+                              .focus()
+                              .setLineHeight(opt.value)
+                              .run();
+                            setShowLineHeight(false);
+                          }}
+                          className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors flex items-center justify-between text-xs outline-none"
+                        >
+                          <span className="text-foreground/80">
+                            {opt.label}
+                          </span>
+                          {isSel && (
+                            <span className="text-primary font-bold">✓</span>
+                          )}
+                        </button>
+                      );
+                    },
+                  )}
                   <div className="h-px bg-foreground/10 my-1" />
                   <button
                     onClick={(): void => {
-                      editor.chain().focus().setParagraphSpacing("1.0em", null).run();
+                      editor
+                        .chain()
+                        .focus()
+                        .setParagraphSpacing("1.0em", null)
+                        .run();
                       setShowLineHeight(false);
                     }}
                     className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors text-xs text-foreground/80 outline-none"
@@ -557,7 +546,11 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                   </button>
                   <button
                     onClick={(): void => {
-                      editor.chain().focus().setParagraphSpacing(null, "1.2em").run();
+                      editor
+                        .chain()
+                        .focus()
+                        .setParagraphSpacing(null, "1.2em")
+                        .run();
                       setShowLineHeight(false);
                     }}
                     className="w-full text-left px-3 py-1.5 hover:bg-primary/10 rounded-md transition-colors text-xs text-foreground/80 outline-none"
@@ -575,7 +568,9 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
           <div className="flex items-center" title="Zoom de página">
             <select
               value={zoom}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => onZoomChange(Number(e.target.value))}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>): void =>
+                onZoomChange(Number(e.target.value))
+              }
               className={selectStyle}
             >
               <option

@@ -16,7 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @RestController
-@RequestMapping("/api/mapeditor")
+@RequestMapping("/mapeditor")
 @CrossOrigin(origins = "*")
 public class MapEditorController {
 
@@ -51,12 +51,11 @@ public class MapEditorController {
     public ResponseEntity<Resource> downloadMapAsset(
             @PathVariable String projectName,
             @PathVariable String fileName) {
-        
+        ResponseEntity<Resource> response;
         try {
             Path filePath = Paths.get("maps_assets").resolve(projectName + "_" + fileName).normalize();
             Resource resource = new UrlResource(filePath.toUri());
 
-            ResponseEntity<Resource> response;
             boolean isResourceValid = resource.exists();
             if (isResourceValid) {
                 MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
@@ -67,11 +66,11 @@ public class MapEditorController {
             } else {
                 response = ResponseEntity.notFound().build();
             }
-            return response;
 
         } catch (MalformedURLException e) {
-            return ResponseEntity.badRequest().build();
+            response = ResponseEntity.badRequest().build();
         }
+        return response;
     }
 
     @PostMapping("/assets/{projectName}/upload-url")

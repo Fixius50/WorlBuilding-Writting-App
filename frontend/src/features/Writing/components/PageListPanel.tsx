@@ -4,6 +4,12 @@ import { Switch } from "@components";
 import WritingCommentsPanel from "./WritingCommentsPanel";
 
 interface PageListPanelProps {
+  pageId: number | null;
+  commentSelection: {
+    text: string;
+    from: number;
+    to: number;
+  } | null;
   pages: Hoja[];
   filteredPages: Hoja[];
   currentPageIndex: number;
@@ -30,6 +36,8 @@ interface PageListPanelProps {
  * Extraído de WritingView.tsx para separar responsabilidades.
  */
 const PageListPanel: React.FC<PageListPanelProps> = ({
+  pageId,
+  commentSelection,
   pages,
   filteredPages,
   currentPageIndex,
@@ -248,7 +256,7 @@ const PageListPanel: React.FC<PageListPanelProps> = ({
       </div>
 
       {/* Mitad inferior: Comentarios (Estilo VSCode Git) */}
-      <WritingCommentsPanel />
+      <WritingCommentsPanel pageId={pageId} selection={commentSelection} />
     </div>
   );
 };

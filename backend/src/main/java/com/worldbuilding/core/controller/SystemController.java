@@ -11,7 +11,7 @@ import java.util.Map;
  * Controlador REST para servicios del sistema.
  */
 @RestController
-@RequestMapping("/api/system")
+@RequestMapping("/system")
 public class SystemController {
 
     @GetMapping("/status")
