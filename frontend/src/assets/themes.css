@@ -102,7 +102,8 @@
 }
 
 .theme-deep_space,
-.theme-nebula {
+.theme-nebula,
+.theme-writer {
   --bible-card-image-blend: screen;
 }
 
@@ -229,5 +230,57 @@
   --color-cyan: 187 89% 48%;
   --color-cyan-foreground: 240 10% 4%;
   --color-destructive: 0 72% 51%;
+  --color-destructive-foreground: 0 0% 100%;
+}
+
+.theme-writer {
+  --background: 0 0% 3%;
+  --foreground: 0 0% 88%;
+  --primary: 0 0% 95%;
+  --primary-foreground: 0 0% 5%;
+
+  --color-indigo: 0 0% 60%;
+  --color-indigo-foreground: 0 0% 100%;
+  --color-emerald: 0 0% 70%;
+  --color-emerald-foreground: 0 0% 0%;
+  --color-red: 0 0% 50%;
+  --color-red-foreground: 0 0% 100%;
+  --color-amber: 0 0% 75%;
+  --color-amber-foreground: 0 0% 0%;
+  --color-purple: 0 0% 65%;
+  --color-purple-foreground: 0 0% 100%;
+  --color-orange: 0 0% 55%;
+  --color-orange-foreground: 0 0% 100%;
+  --color-blue: 0 0% 80%;
+  --color-blue-foreground: 0 0% 0%;
+  --color-cyan: 0 0% 85%;
+  --color-cyan-foreground: 0 0% 0%;
+  --color-destructive: 0 0% 50%;
+  --color-destructive-foreground: 0 0% 100%;
+}
+
+.theme-writer_light {
+  --background: 0 0% 98%;
+  --foreground: 0 0% 12%;
+  --primary: 0 0% 0%;
+  --primary-foreground: 0 0% 100%;
+
+  --color-indigo: 0 0% 40%;
+  --color-indigo-foreground: 0 0% 100%;
+  --color-emerald: 0 0% 30%;
+  --color-emerald-foreground: 0 0% 100%;
+  --color-red: 0 0% 50%;
+  --color-red-foreground: 0 0% 100%;
+  --color-amber: 0 0% 25%;
+  --color-amber-foreground: 0 0% 100%;
+  --color-purple: 0 0% 35%;
+  --color-purple-foreground: 0 0% 100%;
+  --color-orange: 0 0% 45%;
+  --color-orange-foreground: 0 0% 100%;
+  --color-blue: 0 0% 20%;
+  --color-blue-foreground: 0 0% 100%;
+  --color-cyan: 0 0% 15%;
+  --color-cyan-foreground: 0 0% 100%;
+  --color-destructive: 0 0% 50%;
   --color-destructive-foreground: 0 0% 100%;
 }

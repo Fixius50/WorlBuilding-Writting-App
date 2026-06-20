@@ -3,11 +3,13 @@ import React from "react";
 interface ComingSoonWrapperProps {
   children: React.ReactNode;
   enabled?: boolean;
+  tooltipText?: string;
 }
 
 const ComingSoonWrapper: React.FC<ComingSoonWrapperProps> = ({
   children,
   enabled = true,
+  tooltipText,
 }) => {
   if (!enabled) return <>{children}</>;
 
@@ -24,6 +26,13 @@ const ComingSoonWrapper: React.FC<ComingSoonWrapperProps> = ({
       </div>
 
       <div className="absolute inset-0 z-20 bg-transparent"></div>
+
+      {tooltipText ? (
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-background border border-foreground/10 text-[9px] font-black uppercase tracking-wider text-foreground rounded-none shadow-2xl opacity-0 scale-95 pointer-events-none group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 z-50 text-center">
+          {tooltipText}
+          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-foreground/10"></div>
+        </div>
+      ) : null}
     </div>
   );
 };

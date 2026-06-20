@@ -42,7 +42,7 @@ interface SettingsState {
 }
 
 const defaultSettings: AppSettings = {
-  theme: "deep_space",
+  theme: "writer",
   font: "Outfit",
   fontSize: 16,
   panelMode: "classic",

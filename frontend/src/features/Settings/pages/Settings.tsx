@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { MonolithicPanel } from "@components";
 import { Button } from "@components";
 import ComingSoonWrapper from "@features/Settings/components/ComingSoonWrapper";
@@ -31,6 +31,7 @@ const Settings = () => {
   ];
 
   const themes = [
+    { id: "writer", label: "Escritor", color: "#1a1a1a" },
     { id: "deep_space", label: "Deep Space", color: "#0f172a" },
     { id: "nebula", label: "Nebula", color: "#7c3aed" },
   ];
@@ -42,7 +43,7 @@ const Settings = () => {
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-4">
             <div
-              className="size-10 rounded-none flex items-center justify-center text-foreground shadow-lg"
+              className="size-10 rounded-none flex items-center justify-center text-primary-foreground shadow-lg"
               style={{
                 backgroundColor: "hsl(var(--primary) / 0.8)",
               }}
@@ -60,7 +61,7 @@ const Settings = () => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-none text-xs font-bold transition-all ${
                   activeTab === tab.id
-                    ? "bg-primary text-foreground shadow-lg"
+                    ? "bg-primary text-primary-foreground shadow-lg"
                     : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
                 }`}
               >
@@ -98,7 +99,7 @@ const Settings = () => {
                 <div className="flex items-center gap-6 p-6 bg-foreground/5 rounded-none border border-foreground/10 group relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
                   <div className="relative">
-                    <div className="size-20 rounded-full bg-primary flex items-center justify-center text-foreground text-3xl font-black shadow-2xl border-4 border-foreground/40 overflow-hidden">
+                    <div className="size-20 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-3xl font-black shadow-2xl border-4 border-foreground/40 overflow-hidden">
                       {user?.avatarUrl ? (
                         <img
                           src={user.avatarUrl}
@@ -111,7 +112,7 @@ const Settings = () => {
                         "AR"
                       )}
                     </div>
-                    <label className="absolute -bottom-1 -right-1 size-8 bg-primary rounded-full flex items-center justify-center text-foreground cursor-pointer hover:scale-110 transition-all border-4 border-background shadow-lg">
+                    <label className="absolute -bottom-1 -right-1 size-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground cursor-pointer hover:scale-110 transition-all border-4 border-background shadow-lg">
                       <span className="material-symbols-outlined text-sm">
                         photo_camera
                       </span>
@@ -177,7 +178,7 @@ const Settings = () => {
                       </span>
                       Exportar (ZIP)
                     </button>
-                    <ComingSoonWrapper>
+                    <ComingSoonWrapper tooltipText="Sincronización con la nube (proximamente)">
                       <button
                         onClick={handleDownloadBackup}
                         className="flex items-center gap-2 px-5 py-2.5 monolithic-panel hover:bg-primary/10 text-primary rounded-none text-[10px] font-black uppercase tracking-widest transition-all shadow-sm"
@@ -211,7 +212,7 @@ const Settings = () => {
                         updateSetting("autoBackup", e.target.checked)
                       }
                     />
-                    <div className="w-11 h-6 bg-foreground/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-foreground/30 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    <div className="w-11 h-6 bg-foreground/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white peer-checked:after:bg-[hsl(var(--primary-foreground))] after:border-foreground/30 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                   </label>
                 </div>
 
@@ -291,7 +292,7 @@ const Settings = () => {
                           <button
                             onClick={() => updateSetting("theme", theme.id)}
                             className={`flex-1 py-1.5 flex items-center justify-center gap-1 text-[9px] font-black uppercase tracking-widest transition-all
-                              ${isSelected && !isLight ? "bg-primary text-white shadow-inner" : "bg-transparent text-foreground/50 hover:bg-foreground/5"}
+                              ${isSelected && !isLight ? "bg-primary text-primary-foreground shadow-inner" : "bg-transparent text-foreground/50 hover:bg-foreground/5"}
                             `}
                           >
                             <span className="material-symbols-outlined text-[11px]">
