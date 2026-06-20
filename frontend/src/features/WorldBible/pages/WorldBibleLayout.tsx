@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { useLanguage } from "@context/LanguageContext";
 import { Outlet, useOutletContext } from "react-router-dom";
 import BibleTableView from "../components/BibleTableView";
@@ -61,12 +61,12 @@ const WorldBibleLayout: React.FC = () => {
       <main className="flex-1 overflow-y-auto custom-scrollbar relative bg-gradient-to-br from-background-dark to-surface-dark/20 text-foreground flex flex-col">
         {!isEditorView && (
           <header className="pt-12 pb-8 flex flex-col items-center justify-center text-center px-8 z-[100] shrink-0 animate-in fade-in slide-in-from-top-4 duration-700">
-            <div className="flex items-center gap-3 text-[0.63rem] font-black uppercase tracking-[0.3em] text-[hsl(var(--primary))] italic mb-4">
+            {/* <div className="flex items-center gap-3 text-[0.63rem] font-black uppercase tracking-[0.3em] text-[hsl(var(--primary))] italic mb-4">
               <span className="material-symbols-outlined text-sm">
                 auto_stories
               </span>
               {t("nav.bible")}
-            </div>
+            </div> */}
             <div className="w-full max-w-xl space-y-6">
               <div className="flex items-center gap-0 bg-[hsl(var(--foreground)/0.02)] border border-[hsl(var(--foreground)/0.1)] focus-within:border-[hsl(var(--primary)/0.5)] transition-all group">
                 <div className="relative flex-1 flex items-center">
@@ -187,7 +187,7 @@ const WorldBibleLayout: React.FC = () => {
                       add_circle
                     </span>
                     <span className="text-[10px] font-black uppercase tracking-[0.2em]">
-                      Nuevo Nodo
+                      Nuevo Arquetipo
                     </span>
                   </button>
                 </div>

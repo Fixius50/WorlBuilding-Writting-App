@@ -138,7 +138,7 @@ const BibleGridView = () => {
 
           <div className="mt-1 text-center relative z-10">
             <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-[color:var(--bible-card-meta-color)] group-hover:text-[color:var(--bible-card-meta-color-hover)]">
-              {isInsideFolder ? "NUEVO NODO" : "NUEVA CARPETA"}
+              {isInsideFolder ? "NUEVO ARQUETIPO" : "NUEVA CARPETA"}
             </span>
           </div>
         </div>
