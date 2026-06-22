@@ -131,41 +131,16 @@ const MapAtlasSidebar: React.FC<MapAtlasSidebarProps> = ({
                     return (
                       <div
                         key={lvl.id}
-                        className={`group relative w-full py-2 px-3 border rounded text-[12px] flex items-center justify-between transition-all overflow-visible ${levelNameClass}`}
+                        className={`group relative w-full border rounded text-[12px] flex flex-col transition-all overflow-visible ${levelNameClass}`}
+                        onMouseEnter={() => setHoveredLevelOpacityId(lvl.id)}
+                        onMouseLeave={() => setHoveredLevelOpacityId(null)}
                       >
-                        {/* Icono de Opacidad (Hover lateral) */}
+                        <div className="flex items-center justify-between w-full py-2 px-3">
+                          {/* Icono de Opacidad (Hover lateral) */}
                         <div
                           className="relative mr-2 flex items-center justify-center cursor-pointer text-foreground/45 hover:text-primary z-20 py-1"
-                          onMouseEnter={() => setHoveredLevelOpacityId(lvl.id)}
-                          onMouseLeave={() => setHoveredLevelOpacityId(null)}
                         >
                           <span className="material-symbols-outlined text-[16px]">opacity</span>
-
-                          {hoveredLevelOpacityId === lvl.id && (
-                            <div
-                              className="absolute right-full top-1/2 -translate-y-1/2 mr-3 bg-background border border-foreground/15 rounded p-3 shadow-2xl z-[999] flex items-center gap-3 w-48 text-foreground lateral-slider-bubble"
-                              onMouseEnter={() => setHoveredLevelOpacityId(lvl.id)}
-                              onMouseLeave={() => setHoveredLevelOpacityId(null)}
-                            >
-                              <span className="material-symbols-outlined text-[14px] text-primary">opacity</span>
-                              <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={Math.round((levelOpacities[lvl.id] ?? 1) * 100)}
-                                onChange={(e) => {
-                                  const val = parseFloat(e.target.value) / 100;
-                                  const nextOpacities = { ...levelOpacities, [lvl.id]: val };
-                                  setLevelOpacities(nextOpacities);
-                                  updateAtlasCache({ levelOpacities: nextOpacities });
-                                }}
-                                className="w-full accent-primary bg-foreground/10 h-1 rounded cursor-pointer appearance-none outline-none"
-                              />
-                              <span className="font-mono text-[10px] text-foreground/70 min-w-[24px]">
-                                {Math.round((levelOpacities[lvl.id] ?? 1) * 100)}%
-                              </span>
-                            </div>
-                          )}
                         </div>
 
                         {editingLevelId === lvl.id ? (
@@ -219,9 +194,35 @@ const MapAtlasSidebar: React.FC<MapAtlasSidebarProps> = ({
                           </button>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
+                      
+                      {/* INLINE OPACITY SLIDER (Aparece debajo al hacer hover en el icono de opacidad) */}
+                      {hoveredLevelOpacityId === lvl.id && (
+                        <div
+                          className="px-3 pb-3 pt-1 flex items-center gap-3 w-full bg-foreground/[0.02] border-t border-foreground/5"
+                        >
+                          <span className="material-symbols-outlined text-[14px] text-primary">opacity</span>
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={Math.round((levelOpacities[lvl.id] ?? 1) * 100)}
+                            onChange={(e) => {
+                              const val = parseFloat(e.target.value) / 100;
+                              const nextOpacities = { ...levelOpacities, [lvl.id]: val };
+                              setLevelOpacities(nextOpacities);
+                              updateAtlasCache({ levelOpacities: nextOpacities });
+                            }}
+                            className="flex-1 accent-primary bg-foreground/10 h-1.5 rounded cursor-pointer appearance-none outline-none"
+                          />
+                          <span className="font-mono text-[10px] text-foreground/70 min-w-[24px]">
+                            {Math.round((levelOpacities[lvl.id] ?? 1) * 100)}%
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
 
                 <div className="flex flex-col gap-2 pt-2 border-t border-foreground/5 bg-transparent">
                   <div className="flex gap-2">

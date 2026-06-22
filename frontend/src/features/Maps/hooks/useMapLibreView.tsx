@@ -51,6 +51,7 @@ export const useMapLibreView = (
     levelSpacing = 100,
     overlayAllLayers = false,
     gridMode = "none",
+    levelOpacities = {},
   }: {
     mapImage: string | null;
     markers: MapMarker[];
@@ -69,6 +70,7 @@ export const useMapLibreView = (
     levelSpacing?: number;
     overlayAllLayers?: boolean;
     gridMode?: "none" | "square" | "isometric" | "dots";
+    levelOpacities?: Record<string, number>;
   },
 ) => {
   const map = useRef<maplibregl.Map | null>(null);
@@ -108,29 +110,33 @@ export const useMapLibreView = (
       currentSpacing: number,
       currentOverlayAllLayers: boolean,
       currentGridMode: "none" | "square" | "isometric" | "dots",
+      currentLevelOpacities: Record<string, number>,
     ) => {
       const primaryRgb = getThemePrimaryRgb();
       const deckLayers: unknown[] = [];
 
       const getLevelZ = (levelId?: string | null): number => {
         if (!currentIs3D) return 0;
-        if (!levelId) return 0;
-        const level = currentLevels.find((l) => l.id === levelId);
-        const zIndex = level?.z_index ?? currentLevels.findIndex((l) => l.id === levelId);
+        const normId = (!levelId || levelId === "main") ? "l0" : levelId;
+        const level = currentLevels.find((l) => l.id === normId);
+        const zIndex = level?.z_index ?? currentLevels.findIndex((l) => l.id === normId);
         const validZIndex = zIndex === -1 ? 0 : zIndex;
         return validZIndex * currentSpacing;
       };
 
       const isLevelVisible = (levelId?: string | null): boolean => {
         if (currentIs3D) return true;
-        if (!levelId) return true;
-        return levelId === currentActiveLevelId || currentOverlayAllLayers;
+        const normId = (!levelId || levelId === "main") ? "l0" : levelId;
+        return normId === currentActiveLevelId || currentOverlayAllLayers;
       };
 
       const getLevelOpacity = (levelId?: string | null): number => {
         if (currentIs3D) return 1;
-        if (!levelId) return 1;
-        return levelId === currentActiveLevelId ? 1 : (currentOverlayAllLayers ? 0.3 : 0);
+        const normId = (!levelId || levelId === "main") ? "l0" : levelId;
+        const baseOpacity = currentLevelOpacities[normId] !== undefined
+          ? currentLevelOpacities[normId]
+          : 1;
+        return normId === currentActiveLevelId ? baseOpacity : (currentOverlayAllLayers ? baseOpacity * 0.3 : 0);
       };
 
       // 1. Fondos de Nivel (BitmapLayers)
@@ -345,6 +351,10 @@ export const useMapLibreView = (
               lineJointRounded: true,
               lineCapRounded: true,
               pickable: false,
+              updateTriggers: {
+                getLineColor: [currentActiveLevelId, currentOverlayAllLayers, currentLevelOpacities],
+                getFillColor: [currentActiveLevelId, currentOverlayAllLayers, currentLevelOpacities],
+              },
             })
           );
         }
@@ -369,6 +379,10 @@ export const useMapLibreView = (
             stroked: true,
             filled: true,
             pickable: false,
+            updateTriggers: {
+              getFillColor: [currentActiveLevelId, currentOverlayAllLayers, currentLevelOpacities],
+              getLineColor: [currentActiveLevelId, currentOverlayAllLayers, currentLevelOpacities],
+            },
           })
         );
 
@@ -385,6 +399,9 @@ export const useMapLibreView = (
             highlightColor: [...primaryRgb, 255],
             onClick: (info: any) => {
               if (info.object) onMarkerClickRef.current(info.object);
+            },
+            updateTriggers: {
+              getFillColor: [currentActiveLevelId, currentOverlayAllLayers, currentLevelOpacities],
             },
           })
         );
@@ -404,6 +421,10 @@ export const useMapLibreView = (
             getBackgroundColor: (d: MapMarker) => [15, 15, 25, Math.round(180 * getLevelOpacity(d.layerId))],
             backgroundPadding: [4, 2, 4, 2],
             pickable: false,
+            updateTriggers: {
+              getColor: [currentActiveLevelId, currentOverlayAllLayers, currentLevelOpacities],
+              getBackgroundColor: [currentActiveLevelId, currentOverlayAllLayers, currentLevelOpacities],
+            },
           })
         );
       }
@@ -497,7 +518,8 @@ export const useMapLibreView = (
       is3D,
       levelSpacing,
       overlayAllLayers,
-      gridMode
+      gridMode,
+      levelOpacities
     );
     deckOverlay.current.setProps({ layers: newLayers as Parameters<typeof deckOverlay.current.setProps>[0]["layers"] });
   }, [
@@ -512,6 +534,7 @@ export const useMapLibreView = (
     levelSpacing,
     overlayAllLayers,
     gridMode,
+    levelOpacities,
     buildDeckLayers,
   ]);
 

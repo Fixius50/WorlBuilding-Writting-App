@@ -98,6 +98,7 @@ const MapEditor: React.FC = () => {
     brushSize,
     setBrushSize,
     brushColor,
+    mapBgColor,
     setBrushColor,
     gridMode,
     setGridMode,
@@ -150,6 +151,7 @@ const MapEditor: React.FC = () => {
     levelSpacing,
     overlayAllLayers,
     gridMode,
+    levelOpacities,
   });
 
   // Cursor Sync with MapLibre Canvas
@@ -380,6 +382,7 @@ const MapEditor: React.FC = () => {
       {/* MAPA CONTENEDOR */}
       <main 
         className={`flex-1 relative ${drawMode !== "none" ? "cursor-crosshair" : "cursor-grab active:cursor-grabbing"}`}
+        style={{ backgroundColor: mapBgColor }}
         onMouseDownCapture={(e) => {
           if (!mapInstanceRef.current || spacebarPanning || drawMode === "none" || is3D) return;
           const rect = mapContainerRef.current?.getBoundingClientRect();
