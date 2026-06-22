@@ -193,8 +193,8 @@ export const useMapEditor = (
           setActiveLevelId((attrs.activeLevelId as string) || "l0");
           setLevelBgImages((attrs.levelBgImages as Record<string, string | null>) || (attrs.bgImage ? { "l0": attrs.bgImage as string } : {}));
           setLevelSpacing(attrs.levelSpacing ?? 100);
-          
           setIs3D(!!attrs.is3D);
+          setGridMode(attrs.gridMode || "none");
           if (attrs.mapSettings) {
             setViewState((prev) => ({
               ...prev,
@@ -258,6 +258,7 @@ export const useMapEditor = (
         levelBgImages,
         levelSpacing,
         is3D,
+        gridMode,
         mapSettings: {
           zoom: viewState.zoom,
           center: [viewState.longitude, viewState.latitude],
@@ -276,7 +277,7 @@ export const useMapEditor = (
         if (onSave) await onSave();
         else navigate(-1);
       } else {
-        await MapUseCase.updateMap(Number(entityId), {
+        await MapUseCase.updateMap(mapEntity.id, {
           nombre: mapEntity.nombre,
           carpeta_id: targetFolderId,
           contenido_json: JSON.stringify(updatedContent),
@@ -289,25 +290,8 @@ export const useMapEditor = (
     mapEntity, markers, features, levels, activeLevelId, levelBgImages, levelSpacing, is3D, viewState, mode, entityId, projectId, targetFolderId, onSave, navigate,
   ]);
 
-  const addSprayPoint = useCallback(
-    (lng: number, lat: number) => {
-      setFeatures((prev: GeoFeatureCollection) => ({
-        ...prev,
-        features: [
-          ...prev.features,
-          {
-            type: "Feature" as const,
-            geometry: { type: "Point", coordinates: [lng, lat] },
-            properties: { levelId: activeLevelId, color: brushColor, width: brushSize, type: "spray" },
-          },
-        ],
-      }));
-    },
-    [activeLevelId, brushColor, brushSize],
-  );
-
   const addLinePoint = useCallback(
-    (lng: number, lat: number, forceNew: boolean = false) => {
+    (lng: number, lat: number, forceNew: boolean = false, type: string = "line") => {
       setFeatures((prev: GeoFeatureCollection) => {
         const fts = [...prev.features];
         const lastIdx = fts.length - 1;
@@ -317,7 +301,8 @@ export const useMapEditor = (
           last.geometry.type === "LineString" &&
           last.properties?.levelId === activeLevelId &&
           last.properties?.color === brushColor &&
-          last.properties?.width === brushSize;
+          last.properties?.width === brushSize &&
+          last.properties?.type === type;
           
         const shouldAppend = !forceNew && hasCurrentLine;
 
@@ -336,13 +321,20 @@ export const useMapEditor = (
           fts.push({
             type: "Feature",
             geometry: { type: "LineString", coordinates: [[lng, lat]] },
-            properties: { levelId: activeLevelId, color: brushColor, width: brushSize, type: "line", timestamp: Date.now() },
+            properties: { levelId: activeLevelId, color: brushColor, width: brushSize, type, timestamp: Date.now() },
           });
         }
         return { ...prev, features: fts };
       });
     },
     [activeLevelId, brushColor, brushSize],
+  );
+
+  const addSprayPoint = useCallback(
+    (lng: number, lat: number, forceNew: boolean = false) => {
+      addLinePoint(lng, lat, forceNew, "spray");
+    },
+    [addLinePoint],
   );
 
   const eraseFeatures = useCallback(

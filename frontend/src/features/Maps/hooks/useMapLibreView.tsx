@@ -162,22 +162,22 @@ export const useMapLibreView = (
       // 1.5 Rejilla de Referencia (Grid Overlay)
       if (currentGridMode !== "none") {
         const gridZ = getLevelZ(currentActiveLevelId) + 1; // Just above background
-        const gridOpacity = 0.15;
-        const gridColor: [number, number, number, number] = [255, 255, 255, Math.round(gridOpacity * 255)];
-        const spacing = 2; // Degrees spacing
+        const gridOpacity = 0.6;
+        const gridColor: [number, number, number, number] = [0, 255, 255, Math.round(gridOpacity * 255)];
+        const spacing = 1; // Degrees spacing
 
         if (currentGridMode === "square" || currentGridMode === "isometric") {
           const gridLines: { path: [number, number, number][]; color: [number, number, number, number] }[] = [];
           
           if (currentGridMode === "square") {
-             for(let x = -180; x <= 180; x += spacing) {
+             for(let x = -179.9; x <= 179.9; x += spacing) {
                 gridLines.push({ path: [[x, -85, gridZ], [x, 85, gridZ]], color: gridColor });
              }
              for(let y = -85; y <= 85; y += spacing) {
-                gridLines.push({ path: [[-180, y, gridZ], [180, y, gridZ]], color: gridColor });
+                gridLines.push({ path: [[-179.9, y, gridZ], [179.9, y, gridZ]], color: gridColor });
              }
           } else if (currentGridMode === "isometric") {
-             for(let x = -360; x <= 360; x += spacing * 2) {
+             for(let x = -359.8; x <= 359.8; x += spacing * 2) {
                 gridLines.push({ path: [[x, -85, gridZ], [x + 170, 85, gridZ]], color: gridColor });
                 gridLines.push({ path: [[x, -85, gridZ], [x - 170, 85, gridZ]], color: gridColor });
              }
@@ -189,9 +189,10 @@ export const useMapLibreView = (
               data: gridLines,
               getPath: (d) => d.path,
               getColor: (d) => d.color,
-              getWidth: 1,
+              getWidth: 2,
               widthUnits: "pixels",
               pickable: false,
+              parameters: { depthTest: false },
             })
           );
         } else if (currentGridMode === "dots") {
@@ -210,6 +211,7 @@ export const useMapLibreView = (
               radiusUnits: "pixels",
               getFillColor: gridColor,
               pickable: false,
+              parameters: { depthTest: false },
             })
           );
         }
@@ -405,7 +407,7 @@ export const useMapLibreView = (
       center: [0, 0],
       zoom: 1,
       maxZoom: 7,
-      minZoom: -2,
+      minZoom: 0,
       maxBounds: [[-179.9, -85], [179.9, 85]],
       renderWorldCopies: false,
       pitchWithRotate: is3D,

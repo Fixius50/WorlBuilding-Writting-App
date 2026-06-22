@@ -24,6 +24,7 @@ export const useInteractiveMapView = (initialMap?: Entidad) => {
   const [overlayAllLayers, setOverlayAllLayers] = useState<boolean>(true);
   
   const [is3D, setIs3D] = useState(false);
+  const [gridMode, setGridMode] = useState<"none" | "square" | "isometric" | "dots">("none");
   const [mapBgColor, setMapBgColor] = useState("hsl(var(--background))");
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   
@@ -55,6 +56,7 @@ export const useInteractiveMapView = (initialMap?: Entidad) => {
       setLevelBgImages((attrs.levelBgImages as Record<string, string | null>) || (attrs.bgImage ? { "l0": attrs.bgImage as string } : {}));
       setLevelSpacing(attrs.levelSpacing ?? 100);
       setIs3D(!!attrs.is3D);
+      setGridMode(attrs.gridMode || "none");
       
       if (attrs.mapSettings) {
         setViewState((prev) => ({
@@ -102,6 +104,7 @@ export const useInteractiveMapView = (initialMap?: Entidad) => {
     selectedMarkerId,
     setSelectedMarkerId,
     searchQuery,
-    setSearchQuery
+    setSearchQuery,
+    gridMode,
   };
 };

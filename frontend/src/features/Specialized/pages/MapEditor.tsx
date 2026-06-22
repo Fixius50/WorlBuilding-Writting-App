@@ -370,7 +370,7 @@ const MapEditor: React.FC = () => {
               break;
             }
             case "spray": {
-              addSprayPoint(lngLat.lng, lngLat.lat);
+              addSprayPoint(lngLat.lng, lngLat.lat, true);
               break;
             }
             case "eraser": {

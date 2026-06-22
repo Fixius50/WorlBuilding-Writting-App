@@ -77,5 +77,6 @@ export interface AtlasAttributes extends MapAttributes {
   drawTool?: "brush" | "eraser";
   activeLevelId?: string;
   levelSpacing?: number;
+  gridMode?: "none" | "square" | "isometric" | "dots";
 }
 
