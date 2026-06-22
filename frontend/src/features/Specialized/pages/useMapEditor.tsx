@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapRef, MapMouseEvent } from "react-map-gl/maplibre";
 import { MapUseCase } from "@features/Maps";
 import { Entidad } from "@domain/database";
-import { MapMarker, MapLayer, MapAttributes } from "@domain/maps";
+import { MapMarker, AtlasLevel, AtlasAttributes } from "@domain/maps";
 
 export type DrawMode = "none" | "spray" | "line" | "marker" | "eraser";
 
@@ -19,38 +19,19 @@ type GeoFeatureCollection = {
   features: GeoFeature[];
 };
 
-const DEFAULT_LAYERS: MapLayer[] = [
-  {
-    id: "base",
-    name: "Mapa Base",
-    visible: true,
-    opacity: 1,
-    type: "image",
-    url: "",
-  },
-  {
-    id: "clima",
-    name: "Clima",
-    visible: true,
-    opacity: 0.8,
-    type: "spray",
-    color: "hsl(var(--color-emerald))",
-  },
-  {
-    id: "fronteras",
-    name: "Fronteras",
-    visible: true,
-    opacity: 1.0,
-    type: "vector",
-    color: "hsl(var(--color-red))",
-  },
-];
-
 const INITIAL_VIEW_STATE = { longitude: 0, latitude: 0, zoom: 1 };
+
+const DEFAULT_LEVELS: AtlasLevel[] = [
+  { id: "l_2", name: "Nivel 2", z_index: 2 },
+  { id: "l_1", name: "Nivel 1", z_index: 1 },
+  { id: "l0", name: "Nivel 0: Principal", z_index: 0 },
+  { id: "l_-1", name: "Nivel -1", z_index: -1 },
+  { id: "l_-2", name: "Nivel -2", z_index: -2 },
+];
 
 /**
  * Hook useMapEditor
- * Logic for managing atlas/map editing, drawing, and persistence.
+ * Logic for managing atlas/map editing, drawing, and persistence with Multilevel 3D support.
  */
 export const useMapEditor = (
   mode: "create" | "edit",
@@ -62,10 +43,6 @@ export const useMapEditor = (
   const navigate = useNavigate();
   const [mapEntity, setMapEntity] = useState<Entidad | null>(null);
   const [markers, setMarkers] = useState<MapMarker[]>([]);
-  const [layers, setLayers] = useState<MapLayer[]>(DEFAULT_LAYERS);
-  const [selectedLayerId, setSelectedLayerId] = useState<string>(
-    DEFAULT_LAYERS[1].id,
-  );
   const [features, setFeatures] = useState<GeoFeatureCollection>({
     type: "FeatureCollection",
     features: [],
@@ -74,57 +51,43 @@ export const useMapEditor = (
   const [targetFolderId, setTargetFolderId] = useState<number | null>(
     folderId ? Number(folderId) : null,
   );
+  
+  // Tool Modes
   const [drawMode, setDrawMode] = useState<DrawMode>("none");
   const [isDrawing, setIsDrawing] = useState(false);
   const [spacebarPanning, setSpacebarPanning] = useState(false);
   const [mapBgColor, setMapBgColor] = useState("hsl(var(--background))");
   const [is3D, setIs3D] = useState(false);
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
-  const [brushSize, setBrushSize] = useState(20);
+  const [gridMode, setGridMode] = useState<"none" | "square" | "isometric" | "dots">("none");
+  
+  // Brush Options
+  const [brushSize, setBrushSize] = useState(10);
+  const [brushColor, setBrushColor] = useState("#22c55e");
   const [lineContinuous, setLineContinuous] = useState(true);
-  const [eraserPoint, setEraserPoint] = useState<{
-    lng: number;
-    lat: number;
-  } | null>(null);
+  const [eraserPoint, setEraserPoint] = useState<{ lng: number; lat: number } | null>(null);
+  
+  // Multilevel 3D Stack Options
+  const [levels, setLevels] = useState<AtlasLevel[]>(DEFAULT_LEVELS);
+  const [activeLevelId, setActiveLevelId] = useState<string>("l0");
+  const [levelBgImages, setLevelBgImages] = useState<Record<string, string | null>>({});
+  const [levelSpacing, setLevelSpacing] = useState<number>(100);
+  const [overlayAllLayers, setOverlayAllLayers] = useState<boolean>(true);
+
+  // Entities & UI
   const [allEntities, setAllEntities] = useState<Entidad[]>([]);
   const [showEntityPicker, setShowEntityPicker] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [linkingMarkerId, setLinkingMarkerId] = useState<string | null>(null);
-  const [showConfirmDelete, setShowConfirmDelete] = useState<string | null>(
-    null,
-  );
+  const [showConfirmDelete, setShowConfirmDelete] = useState<string | null>(null);
 
-  const [history, setHistory] = useState<
-    { markers: MapMarker[]; features: GeoFeatureCollection }[]
-  >([]);
-  const [future, setFuture] = useState<
-    { markers: MapMarker[]; features: GeoFeatureCollection }[]
-  >([]);
-  const historyRef = useRef<
-    { markers: MapMarker[]; features: GeoFeatureCollection }[]
-  >([]);
-  const futureRef = useRef<
-    { markers: MapMarker[]; features: GeoFeatureCollection }[]
-  >([]);
+  // History Undo/Redo
+  const [history, setHistory] = useState<{ markers: MapMarker[]; features: GeoFeatureCollection }[]>([]);
+  const [future, setFuture] = useState<{ markers: MapMarker[]; features: GeoFeatureCollection }[]>([]);
+  const historyRef = useRef<{ markers: MapMarker[]; features: GeoFeatureCollection }[]>([]);
+  const futureRef = useRef<{ markers: MapMarker[]; features: GeoFeatureCollection }[]>([]);
   const actionSavedRef = useRef(false);
 
-  const [resolvedUrls, setResolvedUrls] = useState<Record<string, string>>({});
-  const [processingLayers, setProcessingLayers] = useState<Set<string>>(
-    new Set(),
-  );
-  const [errorLayers, setErrorLayers] = useState<Set<string>>(new Set());
-
-  const openPanel = (_mode: string, _id?: number, _title?: string) => {
-    // Panel derecho eliminado: antes abría inspector contextual del mapa.
-  };
-  const setCustomContent = (_content: unknown, _title?: unknown) => {
-    // Panel derecho eliminado: antes inyectaba herramientas contextuales.
-  };
-  const closePanel = () => {
-    // Panel derecho eliminado: antes cerraba herramientas contextuales.
-  };
   const mapRef = useRef<MapRef>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getHistorySnapshot = useCallback(
     () => ({
@@ -214,39 +177,23 @@ export const useMapEditor = (
   const loadMap = useCallback(
     async (idOrSlug: string | number) => {
       try {
-        const entity = await MapUseCase.getMapByIdOrSlug(
-          idOrSlug,
-          Number(projectId),
-        );
+        const entity = await MapUseCase.getMapByIdOrSlug(idOrSlug, Number(projectId));
         if (entity) {
           setMapEntity(entity);
           setTargetFolderId(entity.carpeta_id);
-          const attrs: MapAttributes =
+          const attrs: AtlasAttributes =
             typeof entity.contenido_json === "string"
               ? JSON.parse(entity.contenido_json)
               : entity.contenido_json || {};
+              
           setMarkers(attrs.markers || []);
-
-          let loadedLayers =
-            attrs.layers && attrs.layers.length > 0
-              ? attrs.layers
-              : DEFAULT_LAYERS;
-          const bgImg =
-            typeof attrs.bgImage === "string"
-              ? attrs.bgImage
-              : typeof attrs.snapshotUrl === "string"
-                ? attrs.snapshotUrl
-                : undefined;
-          if (bgImg) {
-            loadedLayers = loadedLayers.map(
-              (l): MapLayer =>
-                l.id === "base" && !l.url ? { ...l, url: bgImg } : l,
-            );
-          }
-          setLayers(loadedLayers);
-
-          if (attrs.features)
-            setFeatures(attrs.features as GeoFeatureCollection);
+          if (attrs.features) setFeatures((attrs.features as GeoFeatureCollection) || { type: "FeatureCollection", features: [] });
+          
+          setLevels((attrs.levels as AtlasLevel[]) || [{ id: 'l0', name: 'Nivel Principal', z_index: 0 }]);
+          setActiveLevelId((attrs.activeLevelId as string) || "l0");
+          setLevelBgImages((attrs.levelBgImages as Record<string, string | null>) || (attrs.bgImage ? { "l0": attrs.bgImage as string } : {}));
+          setLevelSpacing(attrs.levelSpacing ?? 100);
+          
           setIs3D(!!attrs.is3D);
           if (attrs.mapSettings) {
             setViewState((prev) => ({
@@ -268,18 +215,20 @@ export const useMapEditor = (
     } else if (mode === "create") {
       setMapEntity({
         id: 0,
-        nombre: "Nuevo Atlas",
+        nombre: "Nuevo Atlas Multinivel",
         tipo: "Map",
         descripcion: "",
-        slug: "nuevo-atlas",
+        slug: "nuevo-atlas-multinivel",
         folder_slug: "",
         imagen_url: "",
         contenido_json: JSON.stringify({
-          layers: DEFAULT_LAYERS,
+          levels: DEFAULT_LEVELS,
+          activeLevelId: "l0",
           markers: [],
           features: { type: "FeatureCollection", features: [] },
           mapSettings: INITIAL_VIEW_STATE,
           is3D: false,
+          levelSpacing: 100,
         }),
         project_id: Number(projectId) || 0,
         carpeta_id: targetFolderId,
@@ -290,54 +239,7 @@ export const useMapEditor = (
       setIs3D(false);
     }
     loadAllEntities();
-  }, [entityId, mode, projectId, loadMap, loadAllEntities]);
-
-  useEffect(() => {
-    const validateImageLayers = (): void => {
-      layers.forEach((layer) => {
-        const isImgLayer =
-          (layer.type === "base" || layer.type === "image") && !!layer.url;
-
-        isImgLayer
-          ? (() => {
-              const img = new Image();
-              img.src = layer.url!;
-              img.onload = () => {
-                setErrorLayers((prev) => {
-                  const hasId = prev.has(layer.id);
-                  let next: Set<string> = prev;
-
-                  hasId
-                    ? (() => {
-                        next = new Set(prev);
-                        next.delete(layer.id);
-                      })()
-                    : null;
-
-                  return next;
-                });
-              };
-              img.onerror = () => {
-                setErrorLayers((prev) => {
-                  const hasId = prev.has(layer.id);
-                  let next: Set<string> = prev;
-
-                  !hasId
-                    ? (() => {
-                        next = new Set(prev);
-                        next.add(layer.id);
-                      })()
-                    : null;
-
-                  return next;
-                });
-              };
-            })()
-          : null;
-      });
-    };
-    validateImageLayers();
-  }, [layers]);
+  }, [entityId, mode, projectId, loadMap, loadAllEntities, targetFolderId]);
 
   const handleSaveMap = useCallback(async () => {
     if (!mapEntity) return;
@@ -347,26 +249,22 @@ export const useMapEditor = (
           ? JSON.parse(mapEntity.contenido_json)
           : mapEntity.contenido_json || {};
 
-      const baseImageLayer = layers.find(
-        (l) => (l.type === "base" || l.type === "image") && l.url && l.visible,
-      );
-      const snapshotUrl =
-        baseImageLayer?.url || currentContent.snapshotUrl || "";
-
-      const updatedContent: MapAttributes = {
+      const updatedContent: AtlasAttributes = {
         ...currentContent,
         markers,
-        layers,
         features,
+        levels,
+        activeLevelId,
+        levelBgImages,
+        levelSpacing,
         is3D,
-        snapshotUrl,
-        bgImage: snapshotUrl,
         mapSettings: {
           zoom: viewState.zoom,
           center: [viewState.longitude, viewState.latitude],
         },
         lastEdited: new Date().toISOString(),
       };
+      
       if (mode === "create" || !entityId) {
         await MapUseCase.createMap({
           nombre: mapEntity.nombre,
@@ -388,18 +286,7 @@ export const useMapEditor = (
       }
     } catch {}
   }, [
-    mapEntity,
-    layers,
-    markers,
-    features,
-    is3D,
-    viewState,
-    mode,
-    entityId,
-    projectId,
-    targetFolderId,
-    onSave,
-    navigate,
+    mapEntity, markers, features, levels, activeLevelId, levelBgImages, levelSpacing, is3D, viewState, mode, entityId, projectId, targetFolderId, onSave, navigate,
   ]);
 
   const addSprayPoint = useCallback(
@@ -411,12 +298,12 @@ export const useMapEditor = (
           {
             type: "Feature" as const,
             geometry: { type: "Point", coordinates: [lng, lat] },
-            properties: { layerId: selectedLayerId },
+            properties: { levelId: activeLevelId, color: brushColor, width: brushSize, type: "spray" },
           },
         ],
       }));
     },
-    [selectedLayerId],
+    [activeLevelId, brushColor, brushSize],
   );
 
   const addLinePoint = useCallback(
@@ -425,10 +312,13 @@ export const useMapEditor = (
         const fts = [...prev.features];
         const lastIdx = fts.length - 1;
         const last = lastIdx >= 0 ? fts[lastIdx] : null;
-        const hasCurrentLine =
-          last &&
+        
+        const hasCurrentLine = last &&
           last.geometry.type === "LineString" &&
-          last.properties?.layerId === selectedLayerId;
+          last.properties?.levelId === activeLevelId &&
+          last.properties?.color === brushColor &&
+          last.properties?.width === brushSize;
+          
         const shouldAppend = !forceNew && hasCurrentLine;
 
         if (shouldAppend && last) {
@@ -446,61 +336,54 @@ export const useMapEditor = (
           fts.push({
             type: "Feature",
             geometry: { type: "LineString", coordinates: [[lng, lat]] },
-            properties: { layerId: selectedLayerId, timestamp: Date.now() },
+            properties: { levelId: activeLevelId, color: brushColor, width: brushSize, type: "line", timestamp: Date.now() },
           });
         }
         return { ...prev, features: fts };
       });
     },
-    [selectedLayerId],
+    [activeLevelId, brushColor, brushSize],
   );
 
   const eraseFeatures = useCallback(
-    (lng: number, lat: number) => {
-      if (!mapRef.current) return;
-      const map = mapRef.current.getMap();
-      const cursorPx = map.project([lng, lat]);
+    (lng: number, lat: number, mapInstance?: maplibregl.Map | null) => {
+      if (!mapInstance) return;
+      const cursorPx = mapInstance.project([lng, lat]);
       const radius = brushSize;
 
       setFeatures((prev: GeoFeatureCollection) => {
         const newFeatures = (prev.features || []).flatMap((f: GeoFeature) => {
-          if (f.properties?.layerId !== selectedLayerId) return [f];
+          if (f.properties?.levelId !== activeLevelId) return [f];
+          
           if (f.geometry.type === "Point") {
             const coords = f.geometry.coordinates as [number, number];
-            const featPx = map.project(coords);
-            const dist = Math.hypot(
-              cursorPx.x - featPx.x,
-              cursorPx.y - featPx.y,
-            );
+            const featPx = mapInstance.project(coords);
+            const dist = Math.hypot(cursorPx.x - featPx.x, cursorPx.y - featPx.y);
             return dist > radius ? [f] : [];
           }
           if (f.geometry.type === "LineString") {
             const segments: GeoFeature[][] = [];
             let currentPart: [number, number][] = [];
             (f.geometry.coordinates as [number, number][]).forEach((coord) => {
-              const ptPx = map.project(coord);
+              const ptPx = mapInstance.project(coord);
               const dist = Math.hypot(cursorPx.x - ptPx.x, cursorPx.y - ptPx.y);
               if (dist > radius) currentPart.push(coord);
               else {
                 if (currentPart.length >= 2)
-                  segments.push(
-                    currentPart.map((c) => ({
+                  segments.push(currentPart.map((c) => ({
                       ...f,
                       id: `${f.id}-seg`,
                       geometry: { ...f.geometry, coordinates: [c] },
-                    })),
-                  );
+                    })));
                 currentPart = [];
               }
             });
             if (currentPart.length >= 2)
-              segments.push(
-                currentPart.map((c) => ({
+              segments.push(currentPart.map((c) => ({
                   ...f,
                   id: `${f.id}-seg2`,
                   geometry: { ...f.geometry, coordinates: [c] },
-                })),
-              );
+                })));
             return segments.flatMap((s) => s);
           }
           return [f];
@@ -508,7 +391,7 @@ export const useMapEditor = (
         return { ...prev, features: newFeatures };
       });
     },
-    [brushSize, selectedLayerId],
+    [brushSize, activeLevelId],
   );
 
   return {
@@ -516,10 +399,16 @@ export const useMapEditor = (
     setMapEntity,
     markers,
     setMarkers,
-    layers,
-    setLayers,
-    selectedLayerId,
-    setSelectedLayerId,
+    levels,
+    setLevels,
+    activeLevelId,
+    setActiveLevelId,
+    levelBgImages,
+    setLevelBgImages,
+    levelSpacing,
+    setLevelSpacing,
+    overlayAllLayers,
+    setOverlayAllLayers,
     features,
     setFeatures,
     viewState,
@@ -538,6 +427,10 @@ export const useMapEditor = (
     setSelectedMarkerId,
     brushSize,
     setBrushSize,
+    brushColor,
+    setBrushColor,
+    gridMode,
+    setGridMode,
     lineContinuous,
     setLineContinuous,
     eraserPoint,
@@ -547,8 +440,6 @@ export const useMapEditor = (
     setShowEntityPicker,
     searchQuery,
     setSearchQuery,
-    linkingMarkerId,
-    setLinkingMarkerId,
     showConfirmDelete,
     setShowConfirmDelete,
     history,
@@ -561,14 +452,6 @@ export const useMapEditor = (
     addSprayPoint,
     addLinePoint,
     eraseFeatures,
-    resolvedUrls,
-    setResolvedUrls,
-    processingLayers,
-    errorLayers,
     mapRef,
-    fileInputRef,
-    openPanel,
-    setCustomContent,
-    closePanel,
   };
 };

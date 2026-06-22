@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   useParams,
   useNavigate,
@@ -18,6 +18,23 @@ import {
   MapAggregateService,
   MapCreationConfig,
 } from "../domain/MapAggregateService";
+
+const MapViewerWrapper = ({ maps, projectName }: { maps: Entidad[]; projectName: string }) => {
+  const { mapId } = useParams();
+  const navigate = useNavigate();
+  const map = MapAggregateService.resolveMapByIdOrSlug(maps, mapId);
+  const content = !map ? (
+    <div className="p-10 text-foreground/50 uppercase text-[10px] font-black">
+      Cargando mapa...
+    </div>
+  ) : (
+    <InteractiveMapView
+      map={map}
+      onBack={() => navigate(`/local/${projectName}/map`)}
+    />
+  );
+  return content;
+};
 
 const MapRouter = () => {
   const outletContext = useOutletContext<unknown>();
@@ -80,49 +97,38 @@ const MapRouter = () => {
   const handleCreateMap = async (
     mapName: string,
     config: MapCreationConfig,
-  ) => {
-    if (!projectId) return;
-    try {
-      const folders = await WorkspaceUseCase.getRootFolders(projectId);
-      const defaultFolder =
-        folders.find((f) => f.nombre.toLowerCase().includes("map")) ||
-        folders[0];
-      if (!defaultFolder) return;
+  ): Promise<void> => {
+    projectId ? await (async (): Promise<void> => {
+      try {
+        const folders = await WorkspaceUseCase.getRootFolders(projectId);
+        let defaultFolder =
+          folders.find((f) => f.nombre.toLowerCase().includes("map")) ||
+          folders[0];
 
-      const payload = MapAggregateService.buildMapPayload(
-        mapName,
-        projectId,
-        defaultFolder.id,
-        config,
-      );
-      const newEntity = await EntityUseCase.create(payload);
-      await loadMaps();
-      navigate(
-        `/local/${projectName}/map/editor/${newEntity.slug || newEntity.id}`,
-      );
-    } catch (_err) {
-      // [LOG REMOVED]
-    }
-  };
+        const hasFolder = !!defaultFolder;
+        defaultFolder = hasFolder ? defaultFolder : await WorkspaceUseCase.createFolder(
+          "Mapas",
+          projectId,
+          null,
+          "FOLDER"
+        );
 
-  const MapViewerWrapper = () => {
-    const { mapId } = useParams();
-    const map = MapAggregateService.resolveMapByIdOrSlug(maps, mapId);
-    const content = !map ? (
-      <div className="p-10 text-foreground/50 uppercase text-[10px] font-black">
-        Cargando mapa...
-      </div>
-    ) : (
-      <InteractiveMapView
-        map={map}
-        onBack={() => navigate(`/local/${projectName}/map`)}
-      />
-    );
-    return content;
-  };
-
-  const MapEditorWrapper = () => {
-    return <MapEditor />;
+        const payload = MapAggregateService.buildMapPayload(
+          mapName,
+          projectId,
+          defaultFolder.id,
+          config,
+        );
+        const newEntity = await EntityUseCase.create(payload);
+        await loadMaps();
+        navigate(
+          `/local/${projectName}/map/editor/${newEntity.slug || newEntity.id}`,
+        );
+      } catch (_err) {
+        // [LOG REMOVED]
+        throw _err;
+      }
+    })() : null;
   };
 
   return (
@@ -134,7 +140,7 @@ const MapRouter = () => {
             <MapManager
               maps={maps}
               onSelectMap={(map: Entidad) =>
-                navigate(`viewer/${map.slug || map.id}`)
+                navigate(`editor/${map.slug || map.id}`)
               }
               onCreateMap={() => navigate(`wizard`)}
               onDuplicateMap={handleDuplicateMap}
@@ -145,8 +151,8 @@ const MapRouter = () => {
             />
           }
         />
-        <Route path="viewer/:mapId" element={<MapViewerWrapper />} />
-        <Route path="editor/:entityId" element={<MapEditorWrapper />} />
+        <Route path="viewer/:mapId" element={<MapViewerWrapper maps={maps} projectName={projectName || ""} />} />
+        <Route path="editor/:entityId" element={<MapEditor />} />
         <Route
           path="wizard"
           element={

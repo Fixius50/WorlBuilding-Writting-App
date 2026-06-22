@@ -1,26 +1,17 @@
-import React, { useEffect, useCallback, useMemo } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useNavigate, useOutletContext } from "react-router-dom";
-import {
-  Map,
-  NavigationControl,
-  Source,
-  Layer,
-  Marker,
-  Popup,
-  MapMouseEvent,
-} from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { Feature, Geometry } from "geojson";
-import { MonolithicPanel } from "@components";
 import { Button } from "@components";
 import { useMapEditor, DrawMode } from "./useMapEditor";
+import { useMapLibreView } from "../../Maps/hooks/useMapLibreView";
+import MapAtlasSidebar from "../../Maps/components/MapAtlasSidebar";
 
 const DRAW_MODE_LABELS: Record<DrawMode, string> = {
   none: "Navegar",
-  marker: "Marcador",
-  line: "Trayecto",
-  spray: "Spray",
-  eraser: "Borrador",
+  marker: "Punto de Interés (POI)",
+  line: "Trazar Línea / Muro",
+  spray: "Pintar Área",
+  eraser: "Borrador de Trazos",
 };
 
 const DRAW_MODE_ICONS: Record<DrawMode, string> = {
@@ -31,54 +22,52 @@ const DRAW_MODE_ICONS: Record<DrawMode, string> = {
   eraser: "ink_eraser",
 };
 
-type LayerFeature = Feature<Geometry, { layerId?: string }>;
+const BRUSH_COLORS = [
+  "#22c55e", "#ef4444", "#3b82f6", "#eab308", "#a855f7", "#ec4899", "#ffffff", "#000000"
+];
 
 const MapEditor: React.FC = () => {
   const navigate = useNavigate();
   const { entityId, folderId } = useParams();
-  const outletCtx = (useOutletContext<{ projectId?: number } | null>() ||
-    {}) as { projectId?: number };
+  const outletCtx = (useOutletContext<{ projectId?: number } | null>() || {}) as { projectId?: number };
   const { projectId } = outletCtx;
 
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+
+  const editorState = useMapEditor("edit", entityId, projectId, folderId);
+  
   const {
     mapEntity,
     setMapEntity,
     markers,
     setMarkers,
-    layers,
-    setLayers,
-    selectedLayerId,
-    setSelectedLayerId,
+    levels,
+    setLevels,
+    activeLevelId,
+    setActiveLevelId,
+    levelBgImages,
+    setLevelBgImages,
+    levelSpacing,
+    setLevelSpacing,
+    overlayAllLayers,
+    setOverlayAllLayers,
     features,
-    viewState,
-    setViewState,
     drawMode,
     setDrawMode,
     isDrawing,
+    setIsDrawing,
     spacebarPanning,
     setSpacebarPanning,
-    mapBgColor,
-    setMapBgColor,
     is3D,
     setIs3D,
     selectedMarkerId,
     setSelectedMarkerId,
     brushSize,
     setBrushSize,
-    lineContinuous,
-    eraserPoint,
-    setEraserPoint,
-    allEntities,
-    showEntityPicker,
-    setShowEntityPicker,
-    searchQuery,
-    setSearchQuery,
-    linkingMarkerId,
-    setLinkingMarkerId,
-    showConfirmDelete,
-    setShowConfirmDelete,
-    history,
-    future,
+    brushColor,
+    setBrushColor,
+    gridMode,
+    setGridMode,
     handleUndo,
     handleRedo,
     saveHistorySnapshot,
@@ -87,451 +76,398 @@ const MapEditor: React.FC = () => {
     addSprayPoint,
     addLinePoint,
     eraseFeatures,
-    resolvedUrls,
-    setResolvedUrls,
-    mapRef,
-    setCustomContent,
-  } = useMapEditor("edit", entityId, projectId, folderId);
+  } = editorState;
 
-  const resolveImageUrl = async (
-    url: string,
-    layerId: string,
-  ): Promise<string> => {
-    if (!url) return "";
-    const cleanUrl = url.toLowerCase().split("?")[0];
-    const isSvg =
-      cleanUrl.endsWith(".svg") || url.startsWith("data:image/svg+xml");
-    if (!isSvg) return url;
+  const [activeSidebarTab, setActiveSidebarTab] = useState<"levels" | "notes" | "info" | null>("levels");
+  const [isToolMenuOpen, setIsToolMenuOpen] = useState(false);
+  const [isColorMenuOpen, setIsColorMenuOpen] = useState(false);
+  
+  // States required for MapAtlasSidebar (Dummy functions since we manage it in useMapEditor partially)
+  const [hoveredLevelOpacityId, setHoveredLevelOpacityId] = useState<string | null>(null);
+  const [levelOpacities, setLevelOpacities] = useState<Record<string, number>>({});
+  const [editingLevelId, setEditingLevelId] = useState<string | null>(null);
+  const [levelInputText, setLevelInputText] = useState("");
+  const [newLevelName, setNewLevelName] = useState("");
 
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const width = img.naturalWidth || 2000;
-        const height = img.naturalHeight || 1000;
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          try {
-            resolve(canvas.toDataURL("image/png"));
-          } catch (e) {
-            resolve(url);
-          }
-        } else {
-          resolve(url);
-        }
-      };
-      img.onerror = () => resolve(url);
-      img.src = url;
-    });
-  };
+  const handleUploadLevelBgImage = useCallback((levelId: string, dataUrl: string) => {
+    setLevelBgImages(prev => ({ ...prev, [levelId]: dataUrl }));
+  }, [setLevelBgImages]);
 
-  useEffect(() => {
-    const processImageLayers = async () => {
-      const imageLayers = layers.filter(
-        (l) => (l.type === "base" || l.type === "image") && l.url,
-      );
-      for (const layer of imageLayers) {
-        const isSvg =
-          layer.url?.toLowerCase().endsWith(".svg") ||
-          layer.url?.startsWith("data:image/svg+xml");
-        const currentResolved = resolvedUrls[layer.id];
-        if (
-          isSvg &&
-          (!currentResolved ||
-            (layer.url !== currentResolved &&
-              !currentResolved.startsWith("data:image/png")))
-        ) {
-          const resolved = await resolveImageUrl(layer.url!, layer.id);
-          setResolvedUrls((prev) => ({ ...prev, [layer.id]: resolved }));
-        }
+  // Hook 3D View integration
+  const { map: mapInstanceRef } = useMapLibreView(mapContainerRef, {
+    mapImage: null,
+    markers,
+    layers: [],
+    connections: [],
+    features,
+    onMarkerClick: (marker: unknown) => {
+      const m = marker as { id: string };
+      setSelectedMarkerId(m.id);
+    },
+    onMapClick: (lng: number, lat: number) => {
+      const canDeselect = drawMode === "none" || spacebarPanning;
+      if (canDeselect) {
+        setSelectedMarkerId(null);
       }
-    };
-    processImageLayers();
-  }, [layers, resolvedUrls, setResolvedUrls]);
+    },
+    is3D,
+    levels,
+    levelBgImages,
+    activeLevelId,
+    levelSpacing,
+    overlayAllLayers,
+    gridMode,
+  });
 
+  // Cursor Sync with MapLibre Canvas
   useEffect(() => {
-    const updateBg = () => {
-      const bgVar = getComputedStyle(document.body)
-        .getPropertyValue("--background")
-        .trim();
-      if (bgVar) setMapBgColor(`hsl(${bgVar})`);
-    };
-    updateBg();
-    const observer = new MutationObserver(updateBg);
-    observer.observe(document.body, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
+    if (mapInstanceRef.current) {
+      const canvas = mapInstanceRef.current.getCanvas();
+      if (canvas) {
+        canvas.style.cursor = spacebarPanning ? "grabbing" : drawMode !== "none" ? "crosshair" : "grab";
+      }
+    }
+  }, [drawMode, spacebarPanning, mapInstanceRef]);
 
+  // Manage map interactions (disable dragPan while drawing)
+  useEffect(() => {
+    const mapInstance = mapInstanceRef.current;
+    if (mapInstance) {
+      const canPan = spacebarPanning || drawMode === "none" || is3D;
+      if (canPan) {
+        mapInstance.dragPan.enable();
+      } else {
+        mapInstance.dragPan.disable();
+      }
+    }
+  }, [drawMode, spacebarPanning, is3D, mapInstanceRef]);
+
+  // Reset drawMode when entering 3D mode
+  useEffect(() => {
+    if (is3D) {
+      setDrawMode("none");
+    }
+  }, [is3D, setDrawMode]);
+
+  // Stop drawing when mouse is released globally
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      setIsDrawing(false);
+      endCurrentAction();
+    };
+    window.addEventListener("mouseup", handleGlobalMouseUp);
+    return () => {
+      window.removeEventListener("mouseup", handleGlobalMouseUp);
+    };
+  }, [setIsDrawing, endCurrentAction]);
+
+  /*
+  // Eventos de ratón pasados al contenedor (en lugar de MapLibre React)
+  const handleContainerMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (spacebarPanning) return;
+    if (["spray", "line", "eraser"].includes(drawMode)) {
+      setIsDrawing(true);
+      saveHistorySnapshot();
+      // Esto requeriría projectar pixeles a LngLat. Como MapLibre consume el evento,
+      // la estrategia de "draw" la dejaremos manejada por onMapClick para lineas.
+      // O bien podemos instanciar mapInstance.on("mousedown") dentro de useMapLibreView.
+    }
+  }, [spacebarPanning, drawMode, saveHistorySnapshot, setIsDrawing]);
+  */
+
+  // Keyboard Shortcuts
+  useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement).tagName;
-      if (
-        e.code === "Space" &&
-        !e.repeat &&
-        tag !== "INPUT" &&
-        tag !== "TEXTAREA"
-      ) {
+      const isSpace = e.code === "Space" && !e.repeat && tag !== "INPUT" && tag !== "TEXTAREA";
+      if (isSpace) {
         e.preventDefault();
         setSpacebarPanning(true);
         endCurrentAction();
-        return;
+      } else {
+        const isUndo = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z";
+        if (isUndo) {
+          e.preventDefault();
+          const isRedo = e.shiftKey;
+          if (isRedo) {
+            handleRedo();
+          } else {
+            handleUndo();
+          }
+        }
+        const isRedoKey = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y";
+        if (isRedoKey) {
+          e.preventDefault();
+          handleRedo();
+        }
+        const isEscape = e.code === "Escape";
+        if (isEscape) {
+          setDrawMode("none");
+        }
       }
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
-        e.preventDefault();
-        e.shiftKey ? handleRedo() : handleUndo();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
-        e.preventDefault();
-        handleRedo();
-      }
-      if (e.code === "Escape") setDrawMode("none");
     };
     const onKeyUp = (e: KeyboardEvent) => {
-      if (e.code === "Space") setSpacebarPanning(false);
+      const isSpace = e.code === "Space";
+      if (isSpace) {
+        setSpacebarPanning(false);
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
     return () => {
-      observer.disconnect();
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
     };
-  }, [
-    handleUndo,
-    handleRedo,
-    setDrawMode,
-    setSpacebarPanning,
-    endCurrentAction,
-    setMapBgColor,
-  ]);
-
-  const mapStyle = useMemo(
-    () => ({
-      version: 8 as const,
-      sources: {},
-      layers: [
-        {
-          id: "bg",
-          type: "background" as const,
-          paint: { "background-color": mapBgColor },
-        },
-      ],
-    }),
-    [mapBgColor],
-  );
-
-  const renderImageLayers = useMemo(
-    () =>
-      layers
-        .filter((l) => (l.type === "base" || l.type === "image") && l.visible)
-        .map((layer) => (
-          <Source
-            key={`src-${layer.id}`}
-            id={`src-${layer.id}`}
-            type="image"
-            url={resolvedUrls[layer.id] || layer.url || ""}
-            coordinates={[
-              [-180, 85.0511],
-              [180, 85.0511],
-              [180, -85.0511],
-              [-180, -85.0511],
-            ]}
-          >
-            <Layer
-              id={`lay-${layer.id}`}
-              type="raster"
-              paint={{ "raster-opacity": layer.opacity }}
-            />
-          </Source>
-        )),
-    [layers, resolvedUrls],
-  );
-
-  const featuresByLayer = useMemo(() => {
-    const map: Record<string, LayerFeature[]> = {};
-    (features.features || []).forEach((f) => {
-      const lid = f.properties?.layerId as string | undefined;
-      if (lid) {
-        if (!map[lid]) map[lid] = [];
-        map[lid].push(f as unknown as LayerFeature);
-      }
-    });
-    return map;
-  }, [features]);
-
-  const renderDrawLayers = layers
-    .filter((l) => l.type !== "base" && l.type !== "image" && l.visible)
-    .map((layer) => {
-      const layerFeats = featuresByLayer[layer.id] || [];
-      return (
-        <Source
-          key={`draw-src-${layer.id}`}
-          id={`draw-src-${layer.id}`}
-          type="geojson"
-          data={{ type: "FeatureCollection", features: layerFeats }}
-        >
-          <Layer
-            id={`line-${layer.id}`}
-            type="line"
-            paint={{
-              "line-color": layer.color || "hsl(var(--color-red))",
-              "line-width": 3,
-              "line-opacity": layer.opacity ?? 1,
-            }}
-            layout={{ "line-join": "round", "line-cap": "round" }}
-            filter={["==", "$type", "LineString"]}
-          />
-          <Layer
-            id={`point-${layer.id}`}
-            type="circle"
-            paint={{
-              "circle-color": layer.color || "hsl(var(--color-emerald))",
-              "circle-radius": layer.type === "spray" ? brushSize / 2 : 4,
-              "circle-blur": layer.type === "spray" ? 0.7 : 0,
-              "circle-opacity": (layer.opacity ?? 1) * 0.85,
-            }}
-            filter={["==", "$type", "Point"]}
-          />
-        </Source>
-      );
-    });
-
-  const onMapClick = useCallback(
-    (e: MapMouseEvent) => {
-      if (spacebarPanning || drawMode === "none") {
-        setSelectedMarkerId(null);
-        return;
-      }
-      const { lng, lat } = e.lngLat;
-      if (drawMode === "marker") {
-        saveHistorySnapshot();
-        const id = `m-${Date.now()}`;
-        setMarkers((prev) => [...prev, { id, lng, lat, label: "Punto" }]);
-        setSelectedMarkerId(id);
-      } else if (drawMode === "line") {
-        saveHistorySnapshot();
-        addLinePoint(
-          lng,
-          lat,
-          !lineContinuous || (e.originalEvent?.shiftKey ?? false),
-        );
-      }
-    },
-    [
-      drawMode,
-      addLinePoint,
-      saveHistorySnapshot,
-      spacebarPanning,
-      lineContinuous,
-      setSelectedMarkerId,
-      setMarkers,
-    ],
-  );
-
-  const onMouseDown = useCallback(
-    (e: MapMouseEvent) => {
-      if (spacebarPanning) return;
-      if (["spray", "line", "eraser"].includes(drawMode)) {
-        saveHistorySnapshot();
-        const { lng, lat } = e.lngLat;
-        if (drawMode === "spray") addSprayPoint(lng, lat);
-        else if (drawMode === "line") addLinePoint(lng, lat, true);
-        else if (drawMode === "eraser") eraseFeatures(lng, lat);
-      }
-    },
-    [
-      drawMode,
-      addSprayPoint,
-      addLinePoint,
-      eraseFeatures,
-      saveHistorySnapshot,
-      spacebarPanning,
-    ],
-  );
-
-  const onMouseMove = useCallback(
-    (e: MapMouseEvent) => {
-      if (drawMode === "eraser") setEraserPoint(e.lngLat);
-      if (!isDrawing) return;
-      const { lng, lat } = e.lngLat;
-      if (drawMode === "spray") addSprayPoint(lng, lat);
-      else if (drawMode === "line") addLinePoint(lng, lat, false);
-      else if (drawMode === "eraser") eraseFeatures(lng, lat);
-    },
-    [
-      isDrawing,
-      drawMode,
-      addSprayPoint,
-      addLinePoint,
-      eraseFeatures,
-      setEraserPoint,
-    ],
-  );
-
-  const renderSidebar = useCallback(
-    () => (
-      <div className="flex flex-col h-full bg-background text-foreground animate-in slide-in-from-right duration-500 border-l border-foreground/10">
-        <div className="flex-1 p-6 space-y-8 overflow-y-auto custom-scrollbar">
-          <div className="space-y-2">
-            <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
-              <span className="material-symbols-outlined text-sm">
-                settings
-              </span>{" "}
-              Configuración del Atlas
-            </h3>
-            <input
-              type="text"
-              value={mapEntity?.nombre || ""}
-              onChange={(e) =>
-                setMapEntity((prev) =>
-                  prev ? { ...prev, nombre: e.target.value } : null,
-                )
-              }
-              className="w-full border border-foreground/10 bg-foreground/5 p-4 font-serif text-lg font-black text-foreground outline-none"
-            />
-          </div>
-          <MonolithicPanel title="Capas de Información" icon="layers">
-            <div className="space-y-2">
-              {layers.map((layer) => (
-                <div
-                  key={layer.id}
-                  className={`p-3 monolithic-panel ${selectedLayerId === layer.id ? "border-primary/40 bg-primary/5" : ""}`}
-                  onClick={() => setSelectedLayerId(layer.id)}
-                >
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setLayers((prev) =>
-                          prev.map((l) =>
-                            l.id === layer.id
-                              ? { ...l, visible: !l.visible }
-                              : l,
-                          ),
-                        );
-                      }}
-                      className="material-symbols-outlined text-sm"
-                    >
-                      {layer.visible ? "visibility" : "visibility_off"}
-                    </button>
-                    <span className="text-[11px] font-black uppercase flex-1">
-                      {layer.name}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </MonolithicPanel>
-        </div>
-        <div className="p-6 border-t border-foreground/10 bg-background sticky bottom-0">
-          <Button
-            variant="primary"
-            className="w-full py-4"
-            icon="save"
-            onClick={handleSaveMap}
-          >
-            Guardar Atlas
-          </Button>
-        </div>
-      </div>
-    ),
-    [
-      layers,
-      selectedLayerId,
-      mapEntity,
-      handleSaveMap,
-      setLayers,
-      setSelectedLayerId,
-      setMapEntity,
-    ],
-  );
-
-  useEffect(() => {
-    setCustomContent(renderSidebar());
-  }, [renderSidebar, setCustomContent]);
+  }, [handleUndo, handleRedo, setDrawMode, setSpacebarPanning, endCurrentAction]);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background text-foreground overflow-hidden relative">
-      <div className="absolute top-6 left-6 z-[50] flex flex-col gap-4">
-        <button
-          onClick={() => navigate(-2)}
-          className="p-3 bg-background/90 shadow-2xl border border-foreground/10 text-foreground/60 hover:text-primary hover:border-primary transition-all duration-300 flex items-center justify-center monolithic-panel"
-          title="Volver a Mapas"
-        >
-          <span className="material-symbols-outlined text-xl font-bold">
-            arrow_back
-          </span>
-        </button>
-        <div className="monolithic-panel p-2 flex flex-col gap-1 bg-background/90 shadow-2xl border border-foreground/10">
-          {(Object.entries(DRAW_MODE_LABELS) as [DrawMode, string][]).map(
-            ([m, label]) => (
+      
+      {/* TOOLBAR SUPERIOR FLOTANTE */}
+      <div className="absolute top-6 left-6 z-[50] flex gap-4">
+        <div className="flex bg-background/90 shadow-2xl border border-foreground/10 monolithic-panel overflow-hidden">
+          <button
+            onClick={() => navigate(-2)}
+            className="p-3 text-foreground/60 hover:text-primary hover:bg-primary/10 border-r border-foreground/10 transition-all duration-300 flex items-center justify-center"
+            title="Volver a Mapas"
+          >
+            <span className="material-symbols-outlined text-xl font-bold">arrow_back</span>
+          </button>
+          
+          <button
+            onClick={() => navigate(`../viewer/${mapEntity?.slug || mapEntity?.id || entityId}`)}
+            className="p-3 text-foreground/60 hover:text-primary hover:bg-primary/10 transition-all duration-300 flex items-center justify-center"
+            title="Alternar a Modo Visor"
+          >
+            <span className="material-symbols-outlined text-xl font-bold">visibility</span>
+          </button>
+        </div>
+
+        <div className="monolithic-panel px-2 flex gap-1 bg-background/90 shadow-2xl border border-foreground/10 items-center">
+          {/* Tool Dropdown */}
+          {!is3D && (
+            <div className="relative">
               <button
-                key={m}
-                onClick={() => setDrawMode(m)}
-                className={`p-3 ${drawMode === m ? "bg-primary text-primary-foreground" : "text-foreground/40"}`}
+                onClick={() => setIsToolMenuOpen(!isToolMenuOpen)}
+                title={DRAW_MODE_LABELS[drawMode]}
+                className="p-3 rounded transition-colors text-primary bg-primary/10 hover:bg-primary/20 flex items-center gap-1"
               >
-                <span className="material-symbols-outlined text-xl">
-                  {DRAW_MODE_ICONS[m]}
-                </span>
+                <span className="material-symbols-outlined text-xl">{DRAW_MODE_ICONS[drawMode]}</span>
+                <span className="material-symbols-outlined text-sm">arrow_drop_down</span>
               </button>
-            ),
+              {isToolMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-[90]" onClick={() => setIsToolMenuOpen(false)} />
+                  <div className="absolute top-full left-0 mt-1 flex flex-col bg-background border border-foreground/10 shadow-2xl rounded p-1 z-[100]">
+                    {(Object.entries(DRAW_MODE_LABELS) as [DrawMode, string][]).map(([m, label]) => (
+                      <button
+                        key={m}
+                        onClick={() => { setDrawMode(m as DrawMode); setIsToolMenuOpen(false); }}
+                        title={label}
+                        className={`p-2 rounded flex items-center gap-3 whitespace-nowrap transition-colors ${drawMode === m ? "bg-primary/20 text-primary font-bold" : "text-foreground/60 hover:bg-foreground/5"}`}
+                      >
+                        <span className="material-symbols-outlined text-xl">{DRAW_MODE_ICONS[m as DrawMode]}</span>
+                        <span className="text-sm">{label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           )}
+          
+          {!is3D && <div className="w-px h-6 bg-foreground/10 mx-2" />}
+
+          {/* Color Dropdown */}
+          {!is3D && (
+            <div className="relative">
+              <button
+                onClick={() => setIsColorMenuOpen(!isColorMenuOpen)}
+                title="Color de Pincel"
+                className="p-2 rounded transition-colors hover:bg-foreground/5 flex items-center gap-1"
+              >
+                <div className="size-6 rounded-full border-2 border-foreground/20" style={{ backgroundColor: brushColor }} />
+                <span className="material-symbols-outlined text-sm text-foreground/40">arrow_drop_down</span>
+              </button>
+              {isColorMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-[90]" onClick={() => setIsColorMenuOpen(false)} />
+                  <div className="absolute top-full left-0 mt-1 flex flex-wrap w-32 gap-2 bg-background border border-foreground/10 shadow-2xl rounded p-2 z-[100]">
+                    {BRUSH_COLORS.map(c => (
+                      <button
+                        key={c}
+                        onClick={() => { setBrushColor(c); setIsColorMenuOpen(false); }}
+                        className={`size-6 rounded-full border-2 transition-all ${brushColor === c ? 'border-primary scale-110' : 'border-transparent hover:scale-105 hover:border-foreground/20'}`}
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+                    {/* Custom Color Picker */}
+                    <label className="size-6 rounded-full border-2 border-dashed border-foreground/40 cursor-pointer flex items-center justify-center hover:border-primary transition-colors overflow-hidden relative">
+                      <span className="material-symbols-outlined text-[14px] text-foreground/60 pointer-events-none absolute">add</span>
+                      <input 
+                        type="color" 
+                        value={brushColor}
+                        onChange={(e) => setBrushColor(e.target.value)}
+                        className="opacity-0 w-10 h-10 absolute cursor-pointer"
+                      />
+                    </label>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {!is3D && <div className="w-px h-6 bg-foreground/10 mx-2" />}
+
+          {/* Grid Mode Selector */}
+          <button
+            onClick={() => setGridMode(prev => prev === "none" ? "square" : prev === "square" ? "isometric" : prev === "isometric" ? "dots" : "none")}
+            title={`Modo de Rejilla: ${gridMode}`}
+            className={`px-2 py-1.5 flex items-center justify-center rounded transition-colors ${gridMode !== "none" ? "bg-primary/20 text-primary border border-primary/40 font-bold" : "text-foreground/40 hover:text-foreground border border-transparent"}`}
+          >
+            <span className="material-symbols-outlined text-lg">
+              {gridMode === "none" ? "grid_off" : gridMode === "square" ? "grid_on" : gridMode === "isometric" ? "apps" : "grain"}
+            </span>
+          </button>
+
+          <div className="w-px h-6 bg-foreground/10 mx-2" />
+
+          {/* Toggle 3D */}
+          <button
+            onClick={() => setIs3D(!is3D)}
+            title="Activar vista 3D Multinivel"
+            className={`px-3 py-1.5 flex items-center gap-2 rounded transition-colors ${is3D ? "bg-primary/20 text-primary border border-primary/40 font-bold" : "text-foreground/40 hover:text-foreground border border-transparent"}`}
+          >
+            <span className="material-symbols-outlined text-lg">{is3D ? "view_in_ar" : "map"}</span>
+            {is3D ? "3D Activo" : "Modo 2D"}
+          </button>
         </div>
       </div>
-      <main className="flex-1 relative cursor-crosshair">
-        <Map
-          ref={mapRef}
-          {...viewState}
-          onMove={(e) => setViewState(e.viewState)}
-          mapStyle={mapStyle}
-          onClick={onMapClick}
-          onMouseDown={onMouseDown}
-          onMouseMove={onMouseMove}
-          onMouseUp={endCurrentAction}
-          dragPan={!isDrawing || spacebarPanning}
-          pitch={is3D ? 45 : 0}
-        >
-          <NavigationControl position="bottom-right" />
-          {renderImageLayers}
-          {renderDrawLayers}
-          {markers.map((marker) => (
-            <Marker
-              key={marker.id}
-              longitude={marker.lng ?? 0}
-              latitude={marker.lat ?? 0}
-              anchor="bottom"
-              onClick={(e) => {
-                e.originalEvent.stopPropagation();
-                setSelectedMarkerId(marker.id);
-              }}
-            >
-              <div className="size-6 flex items-center justify-center rounded-full bg-background border-2 border-primary/40">
-                <span className="material-symbols-outlined text-sm text-primary">
-                  location_on
-                </span>
-              </div>
-            </Marker>
-          ))}
-          {selectedMarkerId && (
-            <Popup
-              className="canvas-map-popup"
-              longitude={
-                markers.find((m) => m.id === selectedMarkerId)?.lng ?? 0
-              }
-              latitude={
-                markers.find((m) => m.id === selectedMarkerId)?.lat ?? 0
-              }
-              onClose={() => setSelectedMarkerId(null)}
-            >
-              <div className="p-2 text-xs">Punto seleccionado</div>
-            </Popup>
-          )}
-        </Map>
+
+      {/* MAPA CONTENEDOR */}
+      <main 
+        className={`flex-1 relative ${drawMode !== "none" ? "cursor-crosshair" : "cursor-grab active:cursor-grabbing"}`}
+        onMouseDownCapture={(e) => {
+          if (!mapInstanceRef.current || spacebarPanning || drawMode === "none" || is3D) return;
+          const rect = mapContainerRef.current?.getBoundingClientRect();
+          if (!rect) return;
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const lngLat = mapInstanceRef.current.unproject([x, y]);
+          
+          setIsDrawing(true);
+          saveHistorySnapshot();
+
+          switch (drawMode) {
+            case "marker": {
+              const id = `m-${Date.now()}`;
+              setMarkers((prev) => [...prev, { id, lng: lngLat.lng, lat: lngLat.lat, label: "Nuevo POI", layerId: activeLevelId }]);
+              setSelectedMarkerId(id);
+              break;
+            }
+            case "line": {
+              addLinePoint(lngLat.lng, lngLat.lat, true);
+              break;
+            }
+            case "spray": {
+              addSprayPoint(lngLat.lng, lngLat.lat);
+              break;
+            }
+            case "eraser": {
+              eraseFeatures(lngLat.lng, lngLat.lat, mapInstanceRef.current);
+              break;
+            }
+            default:
+              break;
+          }
+        }}
+        onMouseMoveCapture={(e) => {
+          if (!isDrawing || !mapInstanceRef.current || spacebarPanning || drawMode === "none" || is3D) return;
+          const rect = mapContainerRef.current?.getBoundingClientRect();
+          if (!rect) return;
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const lngLat = mapInstanceRef.current.unproject([x, y]);
+
+          switch (drawMode) {
+            case "line": {
+              addLinePoint(lngLat.lng, lngLat.lat, false);
+              break;
+            }
+            case "spray": {
+              addSprayPoint(lngLat.lng, lngLat.lat);
+              break;
+            }
+            case "eraser": {
+              eraseFeatures(lngLat.lng, lngLat.lat, mapInstanceRef.current);
+              break;
+            }
+            default:
+              break;
+          }
+        }}
+        onMouseUpCapture={() => {
+          if (isDrawing) {
+            setIsDrawing(false);
+            endCurrentAction();
+          }
+        }}
+        onMouseLeave={() => {
+          if (isDrawing) {
+            setIsDrawing(false);
+            endCurrentAction();
+          }
+        }}
+      >
+        <div ref={mapContainerRef} className="absolute inset-0 z-10" />
       </main>
+
+      {/* PANEL LATERAL (Niveles, Notas) */}
+      <MapAtlasSidebar 
+          activeSidebarTab={activeSidebarTab}
+          setActiveSidebarTab={setActiveSidebarTab}
+          levels={levels}
+          annotations={[]}
+          activeLevelId={activeLevelId}
+          levelOpacities={levelOpacities}
+          hoveredLevelOpacityId={hoveredLevelOpacityId}
+          map={mapEntity!}
+          editingLevelId={editingLevelId}
+          levelInputText={levelInputText}
+          newLevelName={newLevelName}
+          editingAnnotationId={null}
+          annotationInputText={""}
+          annotationInputLevelId={""}
+          newAnnotationText={""}
+          newAnnotationLevelId={""}
+          setHoveredLevelOpacityId={setHoveredLevelOpacityId}
+          setLevelOpacities={setLevelOpacities}
+          setEditingLevelId={setEditingLevelId}
+          setLevelInputText={setLevelInputText}
+          setNewLevelName={setNewLevelName}
+          setEditingAnnotationId={() => {}}
+          setAnnotationInputText={() => {}}
+          setAnnotationInputLevelId={() => {}}
+          setNewAnnotationText={() => {}}
+          setNewAnnotationLevelId={() => {}}
+          handleTeleport={(id: string) => setActiveLevelId(id)}
+          handleSaveEditLevel={(id: string, name: string) => setLevels(levels.map(l => l.id === id ? { ...l, name } : l))}
+          handleDeleteLevel={(id: string) => setLevels(levels.filter(l => l.id !== id))}
+          handleUploadLevelBgImage={handleUploadLevelBgImage}
+          handleAddLevel={(name: string, pos: string) => {
+             const z = pos === "above" ? Math.max(...levels.map(l => l.z_index || 0)) + 1 : Math.min(...levels.map(l => l.z_index || 0)) - 1;
+             setLevels([{ id: `l-${Date.now()}`, name: name || "Nuevo", z_index: z }, ...levels]);
+          }}
+          handleAddAnnotation={() => {}}
+          handleSaveEditAnnotation={() => {}}
+          handleDeleteAnnotation={() => {}}
+          updateAtlasCache={() => {}}
+          brushSize={brushSize}
+          setBrushSize={setBrushSize}
+          levelSpacing={levelSpacing}
+          setLevelSpacing={setLevelSpacing}
+          is3D={is3D}
+      />
     </div>
   );
 };

@@ -1,160 +1,121 @@
-import React from "react";
-import MapLibreView from "../components/MapLibreView";
-import MapAtlasCanvas from "../components/MapAtlasCanvas";
-import MapAtlasControlBar from "../components/MapAtlasControlBar";
-import MapAtlasSidebar from "../components/MapAtlasSidebar";
-import { useInteractiveMapView } from "../hooks/useInteractiveMapView";
+import React, { useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Entidad } from "@domain/database";
+import { useInteractiveMapView } from "../hooks/useInteractiveMapView";
+import { useMapLibreView } from "../hooks/useMapLibreView";
+import MapSearchBox from "../components/MapSearchBox";
 
 const InteractiveMapView: React.FC<{
   map: Entidad;
   onBack?: () => void;
 }> = ({ map, onBack }) => {
-  const hook = useInteractiveMapView(map, onBack);
+  const hook = useInteractiveMapView(map);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
-  // Estado local de la barra de control no enlazado al hook
-  const [newLevelPosition]              = React.useState<"above" | "below">("above");
-  const [overlayAllLayers, setOverlayAllLayers] = React.useState<boolean>(true);
+  // Integración de Deck.gl / MapLibre en modo Solo Lectura
+  useMapLibreView(mapContainerRef, {
+    mapImage: null, // Si hubiese background de mapLibre no raster, sino, se maneja por layers
+    markers: hook.markers,
+    layers: hook.layers,
+    connections: hook.connections,
+    features: hook.features as any,
+    onMarkerClick: (m) => hook.setSelectedMarkerId(m.id),
+    onMapClick: () => hook.setSelectedMarkerId(null),
+    is3D: hook.is3D,
+    levels: hook.levels,
+    levelBgImages: hook.levelBgImages,
+    activeLevelId: hook.activeLevelId,
+    levelSpacing: hook.levelSpacing,
+    overlayAllLayers: hook.overlayAllLayers,
+  });
 
   return (
     <div className="relative w-full h-full bg-background text-foreground overflow-hidden select-none">
-      {/* --- LIENZO PRINCIPAL --- */}
-      <div
-        className="absolute inset-0 bg-background border border-foreground/10 overflow-hidden z-0 shadow-2xl"
-        onWheel={hook.handleWheel}
-      >
-        {hook.viewMode === "2D" ? (
-          <MapAtlasCanvas
-            imageWidth={hook.imageWidth}
-            imageHeight={hook.imageHeight}
-            appMode={hook.appMode}
-            viewMode={hook.viewMode}
-            pan={hook.pan}
-            zoom={hook.zoom}
-            spacebarPanning={hook.spacebarPanning}
-            isPanning={hook.isPanning}
-            mapImage={hook.mapImage}
-            levels={hook.levels}
-            activeLevelId={hook.activeLevelId}
-            canvasStates={hook.canvasStates}
-            levelOpacities={hook.levelOpacities}
-            levelBgImages={hook.levelBgImages}
-            backdropOpacity={hook.backdropOpacity}
-            overlayAllLayers={overlayAllLayers}
-            drawTool={hook.drawTool}
-            brushSize={hook.brushSize}
-            eraserCursor={hook.eraserCursor}
-            canvasRef={hook.canvasRef}
-            onWheel={hook.handleWheel}
-            onMouseDown={hook.handleStartDrawing}
-            onMouseMove={hook.handleDrawing}
-            onMouseUp={hook.handleStopDrawing}
-            onTouchStart={hook.handleTouchStart}
-            onTouchMove={hook.handleTouchMove}
-          />
-        ) : (
-          /* MODO 3D: Visor MapLibreView */
-          <div className="w-full h-full relative z-0">
-            {hook.mapImage ? (
-              <MapLibreView
-                mapImage={hook.mapImage}
-                markers={hook.markers}
-                layers={hook.layers}
-                connections={hook.connections}
-                features={
-                  hook.features as
-                    | {
-                        type: string;
-                        features: Array<{
-                          properties?: Record<string, unknown>;
-                          geometry: { type: string; coordinates: unknown };
-                        }>;
-                      }
-                    | undefined
-                }
-                onMarkerClick={hook.handleMarkerClick}
-                imageWidth={hook.imageWidth}
-                imageHeight={hook.imageHeight}
-                is3D={true}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-foreground/40">
-                <div className="text-center space-y-2">
-                  <span className="material-symbols-outlined text-5xl">cloud_off</span>
-                  <div className="text-xs uppercase font-bold tracking-widest">Sin Cartografía Base para 3D</div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+      
+      {/* BARRA SUPERIOR E INFO */}
+      <div className="absolute top-6 left-6 z-[50] flex flex-col gap-4">
+        <div className="flex gap-4">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="p-3 bg-background/90 shadow-2xl border border-foreground/10 text-foreground/60 hover:text-primary transition-all duration-300 flex items-center justify-center rounded"
+              title="Volver"
+            >
+              <span className="material-symbols-outlined text-xl font-bold">arrow_back</span>
+            </button>
+          )}
+          
+          <div className="bg-background/90 shadow-2xl border border-foreground/10 px-4 py-2 flex items-center gap-4 rounded">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black uppercase text-primary tracking-widest">
+                {hook.levels.find(l => l.id === hook.activeLevelId)?.name || 'Nivel Principal'}
+              </span>
+              <span className="text-xs text-foreground/60">
+                {hook.mapEntity?.nombre || map.nombre || "Atlas"}
+              </span>
+            </div>
+            
+            <div className="w-px h-6 bg-foreground/10" />
+            
+            <button
+              onClick={() => hook.setIs3D(!hook.is3D)}
+              title={hook.is3D ? "Cambiar a vista 2D" : "Activar modo Multinivel 3D"}
+              className={`p-2 flex items-center justify-center rounded transition-colors ${hook.is3D ? 'bg-primary/20 text-primary border border-primary/20' : 'text-foreground/40 hover:text-foreground border border-transparent'}`}
+            >
+              <span className="material-symbols-outlined text-xl">{hook.is3D ? "view_in_ar" : "map"}</span>
+            </button>
 
-        {/* --- PANEL LATERAL (Solo en modo EDITAR) --- */}
-        {hook.appMode === "EDIT" && (
-          <MapAtlasSidebar
-            activeSidebarTab={hook.activeSidebarTab}
-            setActiveSidebarTab={hook.setActiveSidebarTab}
-            levels={hook.levels}
-            annotations={hook.annotations}
-            activeLevelId={hook.activeLevelId}
-            levelOpacities={hook.levelOpacities}
-            hoveredLevelOpacityId={hook.hoveredLevelOpacityId}
-            map={map}
-            editingLevelId={hook.editingLevelId}
-            levelInputText={hook.levelInputText}
-            newLevelName={hook.newLevelName}
-            editingAnnotationId={hook.editingAnnotationId}
-            annotationInputText={hook.annotationInputText}
-            annotationInputLevelId={hook.annotationInputLevelId}
-            newAnnotationText={hook.newAnnotationText}
-            newAnnotationLevelId={hook.newAnnotationLevelId}
-            setHoveredLevelOpacityId={hook.setHoveredLevelOpacityId}
-            setLevelOpacities={hook.setLevelOpacities}
-            setEditingLevelId={hook.setEditingLevelId}
-            setLevelInputText={hook.setLevelInputText}
-            setNewLevelName={hook.setNewLevelName}
-            setEditingAnnotationId={hook.setEditingAnnotationId}
-            setAnnotationInputText={hook.setAnnotationInputText}
-            setAnnotationInputLevelId={hook.setAnnotationInputLevelId}
-            setNewAnnotationText={hook.setNewAnnotationText}
-            setNewAnnotationLevelId={hook.setNewAnnotationLevelId}
-            handleTeleport={hook.handleTeleport}
-            handleSaveEditLevel={hook.handleSaveEditLevel}
-            handleDeleteLevel={hook.handleDeleteLevel}
-            handleUploadLevelBgImage={hook.handleUploadLevelBgImage}
-            handleAddLevel={hook.handleAddLevel}
-            handleAddAnnotation={hook.handleAddAnnotation}
-            handleSaveEditAnnotation={hook.handleSaveEditAnnotation}
-            handleDeleteAnnotation={hook.handleDeleteAnnotation}
-            updateAtlasCache={hook.updateAtlasCache}
-          />
+            <div className="w-px h-6 bg-foreground/10" />
+
+            <button
+              onClick={() => navigate(`../editor/${map.slug || map.id}`)}
+              title="Alternar a Modo Edición"
+              className="p-2 flex items-center justify-center rounded transition-colors text-foreground/40 hover:text-primary hover:bg-primary/10 border border-transparent"
+            >
+              <span className="material-symbols-outlined text-xl">edit</span>
+            </button>
+          </div>
+        </div>
+
+        {/* SELECTOR RÁPIDO DE NIVEL */}
+        {hook.levels.length > 1 && (
+          <div className="bg-background/90 shadow-2xl border border-foreground/10 rounded flex flex-col p-1 w-48">
+             <span className="text-[9px] uppercase font-bold text-foreground/40 tracking-wider px-3 pt-2 pb-1">
+               Selector de Piso
+             </span>
+             {hook.levels.map((lvl) => (
+               <button
+                 key={lvl.id}
+                 onClick={() => hook.setActiveLevelId(lvl.id)}
+                 className={`px-3 py-2 text-xs text-left rounded transition-colors ${hook.activeLevelId === lvl.id ? 'bg-primary/10 text-primary font-bold' : 'text-foreground/70 hover:bg-foreground/5'}`}
+               >
+                 {lvl.name}
+               </button>
+             ))}
+          </div>
         )}
       </div>
 
-      {/* --- BARRA DE CONTROL SUPERIOR --- */}
-      <MapAtlasControlBar
-        viewMode={hook.viewMode}
-        setViewMode={hook.setViewMode}
-        appMode={hook.appMode}
-        setAppMode={hook.setAppMode}
-        activeLevelId={hook.activeLevelId}
-        levels={hook.levels}
-        overlayAllLayers={overlayAllLayers}
-        setOverlayAllLayers={setOverlayAllLayers}
-        activeMenu={hook.activeMenu}
-        setActiveMenu={hook.setActiveMenu}
-        drawTool={hook.drawTool}
-        setDrawTool={hook.setDrawTool}
-        brushColor={hook.brushColor}
-        setBrushColor={hook.setBrushColor}
-        brushSize={hook.brushSize}
-        setBrushSize={hook.setBrushSize}
-        backdropOpacity={hook.backdropOpacity}
-        setBackdropOpacity={hook.setBackdropOpacity}
-        handleTeleport={hook.handleTeleport}
-        handleBack={hook.handleBack}
-        handleClearCanvas={hook.handleClearCanvas}
-        saveAtlasState={hook.saveAtlasState}
-      />
+      {/* BUSCADOR */}
+      <div className="absolute top-6 right-6 z-[50]">
+        <MapSearchBox 
+          onSearch={hook.setSearchQuery} 
+          onFilterChange={() => {}} 
+          availableMarkers={hook.markers.map(m => ({ label: m.label || "Sin nombre", lat: m.lat || 0, lng: m.lng || 0 }))} 
+          filters={{ cities: true, ruins: true, events: true }} 
+        />
+      </div>
+
+      {/* MAP CONTENEDOR */}
+      <div ref={mapContainerRef} className="absolute inset-0 z-0" />
+
+      {/* OVERLAY DE CARGA */}
+      {!hook.mapEntity && (
+        <div className="absolute inset-0 z-[100] flex items-center justify-center bg-background/50 backdrop-blur-sm">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      )}
     </div>
   );
 };

@@ -243,7 +243,7 @@ export const initializeDatabase = async () => {
       await sql`ALTER TABLE entidades ADD COLUMN imagen_url TEXT`.catch(
         () => {},
       );
-      await sql`ALTER TABLE entidades ADD COLUMN fecha_actualizacion DATETIME DEFAULT CURRENT_TIMESTAMP`.catch(
+      await sql`ALTER TABLE entidades ADD COLUMN fecha_actualizacion DATETIME`.catch(
         () => {},
       );
       await sql`UPDATE entidades SET fecha_actualizacion = fecha_creacion WHERE fecha_actualizacion IS NULL`.catch(

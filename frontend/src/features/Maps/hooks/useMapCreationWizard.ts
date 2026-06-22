@@ -8,7 +8,7 @@ export const useMapCreationWizard = (
   onCreate: (
     mapName: string,
     config: { bgImage: string; mapType: string; description: string; parentId?: number; is3D: boolean }
-  ) => void,
+  ) => Promise<void> | void,
   projectName: string
 ) => {
   const [mapType, setMapType] = useState('TERRITORY');
@@ -148,7 +148,7 @@ export const useMapCreationWizard = (
           break;
       }
 
-      onCreate(mapName, {
+      await onCreate(mapName, {
         bgImage: finalBgImage,
         mapType,
         description,

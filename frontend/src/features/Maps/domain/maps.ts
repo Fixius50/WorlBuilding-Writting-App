@@ -23,6 +23,7 @@ export interface MapMarker {
   type?: string;
   entityId?: number | string | null;
   layerId?: string;
+  targetLevelId?: string | null;
 }
 
 export interface MapConnection {
@@ -55,6 +56,7 @@ export interface MapAttributes {
 export interface AtlasLevel {
   id: string;
   name: string;
+  z_index?: number;
 }
 
 export interface AtlasAnnotation {
@@ -74,5 +76,6 @@ export interface AtlasAttributes extends MapAttributes {
   brushSize?: number;
   drawTool?: "brush" | "eraser";
   activeLevelId?: string;
+  levelSpacing?: number;
 }
 

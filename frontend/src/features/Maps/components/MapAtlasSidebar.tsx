@@ -44,6 +44,11 @@ interface MapAtlasSidebarProps {
   handleSaveEditAnnotation: (id: string, text: string, levelId: string) => void;
   handleDeleteAnnotation: (id: string) => void;
   updateAtlasCache: (updates: Record<string, unknown>) => void;
+  brushSize?: number;
+  setBrushSize?: (size: number) => void;
+  levelSpacing?: number;
+  setLevelSpacing?: (spacing: number) => void;
+  is3D?: boolean;
 }
 
 // Panel lateral colapsable estilo VS Code con las pestañas Niveles, Notas e Info
@@ -83,6 +88,11 @@ const MapAtlasSidebar: React.FC<MapAtlasSidebarProps> = ({
   handleSaveEditAnnotation,
   handleDeleteAnnotation,
   updateAtlasCache,
+  brushSize = 10,
+  setBrushSize,
+  levelSpacing = 100,
+  setLevelSpacing,
+  is3D = false,
 }) => {
   const [newLevelPosition, setNewLevelPosition] = React.useState<"above" | "below">("above");
 
@@ -246,6 +256,21 @@ const MapAtlasSidebar: React.FC<MapAtlasSidebarProps> = ({
                       </button>
                     </div>
                   </div>
+
+                  {!is3D && setBrushSize && (
+                    <div className="flex items-center gap-3 mt-3 pt-3 border-t border-foreground/5 text-xs text-foreground/60 px-1">
+                      <span className="material-symbols-outlined text-sm">line_weight</span>
+                      <input type="range" min="2" max="40" value={brushSize} onChange={e => setBrushSize(parseInt(e.target.value))} className="flex-1 accent-primary" title="Tamaño de Pincel/Borrador" />
+                      <span className="w-5 font-mono text-right">{brushSize}</span>
+                    </div>
+                  )}
+                  {setLevelSpacing && (
+                    <div className="flex items-center gap-3 mt-1 text-xs text-foreground/60 px-1">
+                      <span className="material-symbols-outlined text-sm">layers</span>
+                      <input type="range" min="10" max="300" value={levelSpacing} onChange={e => setLevelSpacing(parseInt(e.target.value))} className="flex-1 accent-primary" title="Separación 3D entre niveles" />
+                      <span className="w-5 font-mono text-right">{levelSpacing}</span>
+                    </div>
+                  )}
                 </div>
               </>
             )}
