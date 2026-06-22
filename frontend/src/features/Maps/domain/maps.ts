@@ -12,6 +12,18 @@ export interface MapLayer {
   attribution?: string;
 }
 
+export type GeoFeature = {
+  id?: string | number;
+  type: "Feature";
+  geometry: { type: string; coordinates: unknown };
+  properties?: Record<string, unknown>;
+};
+
+export type GeoFeatureCollection = {
+  type: "FeatureCollection";
+  features: GeoFeature[];
+};
+
 export interface MapMarker {
   id: string;
   x?: number;

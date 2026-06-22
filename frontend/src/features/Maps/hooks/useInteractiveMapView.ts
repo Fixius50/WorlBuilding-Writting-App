@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { MapUseCase } from "@features/Maps";
 import { MapMarker, AtlasLevel, AtlasAttributes, MapLayer, MapConnection } from "@domain/maps";
 import { Entidad } from "@domain/database";
+import { useMapStore } from "../../Maps/store/useMapStore";
 
 const INITIAL_VIEW_STATE = { longitude: 0, latitude: 0, zoom: 1 };
 
@@ -10,67 +11,37 @@ export const useInteractiveMapView = (initialMap?: Entidad) => {
   const { entityId, mapId, projectId } = useParams();
   const targetId = entityId || mapId || initialMap?.id;
   
-  const [mapEntity, setMapEntity] = useState<Entidad | null>(initialMap || null);
-  const [markers, setMarkers] = useState<MapMarker[]>([]);
-  const [layers, setLayers] = useState<MapLayer[]>([]);
-  const [connections, setConnections] = useState<MapConnection[]>([]);
-  const [features, setFeatures] = useState<{ type: string; features: any[] }>({ type: "FeatureCollection", features: [] });
+  const {
+    mapEntity,
+    markers,
+    features,
+    levels,
+    activeLevelId,
+    levelBgImages,
+    levelSpacing,
+    is3D,
+    gridMode,
+    viewState,
+    loadMap,
+    updateCache,
+  } = useMapStore();
   
-  // Multilevel States
-  const [levels, setLevels] = useState<AtlasLevel[]>([]);
-  const [activeLevelId, setActiveLevelId] = useState<string>("l0");
-  const [levelBgImages, setLevelBgImages] = useState<Record<string, string | null>>({});
-  const [levelSpacing, setLevelSpacing] = useState<number>(100);
   const [overlayAllLayers, setOverlayAllLayers] = useState<boolean>(true);
-  
-  const [is3D, setIs3D] = useState(false);
-  const [gridMode, setGridMode] = useState<"none" | "square" | "isometric" | "dots">("none");
   const [mapBgColor, setMapBgColor] = useState("hsl(var(--background))");
-  const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-
-  const loadMap = useCallback(async () => {
-    let entity = initialMap;
-    if (!entity && targetId) {
-      try {
-        const fetched = await MapUseCase.getMapByIdOrSlug(targetId, Number(projectId));
-        if (fetched) entity = fetched;
-      } catch {}
-    }
-    if (!entity) return;
-    setMapEntity(entity);
-      
-      const attrs: AtlasAttributes = typeof entity.contenido_json === "string" 
-        ? JSON.parse(entity.contenido_json) 
-        : entity.contenido_json || {};
-        
-      setMarkers(attrs.markers || []);
-      setFeatures((attrs.features as { type: string; features: any[] }) || { type: "FeatureCollection", features: [] });
-      setLayers((attrs.layers as MapLayer[]) || []);
-      setConnections((attrs.connections as MapConnection[]) || []);
-      
-      setLevels((attrs.levels as AtlasLevel[]) || [{ id: 'l0', name: 'Nivel Principal', z_index: 0 }]);
-      setActiveLevelId((attrs.activeLevelId as string) || "l0");
-      setLevelBgImages((attrs.levelBgImages as Record<string, string | null>) || (attrs.bgImage ? { "l0": attrs.bgImage as string } : {}));
-      setLevelSpacing(attrs.levelSpacing ?? 100);
-      setIs3D(!!attrs.is3D);
-      setGridMode(attrs.gridMode || "none");
-      
-      if (attrs.mapSettings) {
-        setViewState((prev) => ({
-          ...prev,
-          zoom: attrs.mapSettings?.zoom ?? 1,
-          longitude: attrs.mapSettings?.center?.[0] ?? 0,
-          latitude: attrs.mapSettings?.center?.[1] ?? 0,
-        }));
-      }
-  }, [targetId, projectId, initialMap]);
+  
+  // Dummy setters to maintain interface compatibility with InteractiveMapView
+  const setViewState = (state: any) => updateCache({ viewState: typeof state === "function" ? state(viewState) : state });
+  const setActiveLevelId = (id: string) => updateCache({ activeLevelId: id });
+  const setIs3D = (v: boolean) => updateCache({ is3D: v });
 
   useEffect(() => {
-    loadMap();
-  }, [loadMap]);
+    if (targetId) {
+      loadMap(targetId, Number(projectId));
+    }
+  }, [targetId, projectId, loadMap]);
 
   useEffect(() => {
     const updateBg = () => {
@@ -86,25 +57,31 @@ export const useInteractiveMapView = (initialMap?: Entidad) => {
   return {
     mapEntity,
     markers,
-    layers,
-    connections,
+    layers: [],
+    connections: [],
     features,
+    setFeatures: (f: any) => updateCache({ features: typeof f === "function" ? f(features) : f }),
     levels,
+    setLevels: (l: any) => updateCache({ levels: typeof l === "function" ? l(levels) : l }),
     activeLevelId,
     setActiveLevelId,
     levelBgImages,
+    setLevelBgImages: (bg: any) => updateCache({ levelBgImages: typeof bg === "function" ? bg(levelBgImages) : bg }),
     levelSpacing,
+    setLevelSpacing: (s: any) => updateCache({ levelSpacing: typeof s === "function" ? s(levelSpacing) : s }),
     overlayAllLayers,
     setOverlayAllLayers,
     is3D,
     setIs3D,
+    gridMode,
     mapBgColor,
+    setMapBgColor,
     viewState,
     setViewState,
+    loadMap: () => loadMap(targetId as string, Number(projectId)),
     selectedMarkerId,
     setSelectedMarkerId,
     searchQuery,
     setSearchQuery,
-    gridMode,
   };
 };

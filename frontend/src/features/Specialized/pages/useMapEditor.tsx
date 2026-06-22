@@ -4,6 +4,7 @@ import { MapRef, MapMouseEvent } from "react-map-gl/maplibre";
 import { MapUseCase } from "@features/Maps";
 import { Entidad } from "@domain/database";
 import { MapMarker, AtlasLevel, AtlasAttributes } from "@domain/maps";
+import { useMapStore } from "../../Maps/store/useMapStore";
 
 export type DrawMode = "none" | "spray" | "line" | "marker" | "eraser";
 
@@ -41,13 +42,52 @@ export const useMapEditor = (
   onSave?: () => Promise<void>,
 ) => {
   const navigate = useNavigate();
-  const [mapEntity, setMapEntity] = useState<Entidad | null>(null);
-  const [markers, setMarkers] = useState<MapMarker[]>([]);
-  const [features, setFeatures] = useState<GeoFeatureCollection>({
-    type: "FeatureCollection",
-    features: [],
-  });
-  const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
+  const {
+    mapEntity,
+    markers,
+    features,
+    levels,
+    activeLevelId,
+    levelBgImages,
+    levelSpacing,
+    is3D,
+    gridMode,
+    viewState,
+    loadMap,
+    updateCache,
+    saveToSql,
+  } = useMapStore();
+
+  const setMapEntity = (mapEntity: Entidad | null) => updateCache({ mapEntity });
+  
+  const setMarkers = useCallback((action: React.SetStateAction<MapMarker[]>) => {
+    updateCache({ markers: typeof action === "function" ? action(useMapStore.getState().markers) : action });
+  }, [updateCache]);
+
+  const setFeatures = useCallback((action: React.SetStateAction<GeoFeatureCollection>) => {
+    updateCache({ features: typeof action === "function" ? action(useMapStore.getState().features as GeoFeatureCollection) : action });
+  }, [updateCache]);
+
+  const setLevels = useCallback((action: React.SetStateAction<AtlasLevel[]>) => {
+    updateCache({ levels: typeof action === "function" ? action(useMapStore.getState().levels as AtlasLevel[]) : action });
+  }, [updateCache]);
+
+  const setActiveLevelId = (id: string) => updateCache({ activeLevelId: id });
+  
+  const setLevelBgImages = useCallback((action: React.SetStateAction<Record<string, string | null>>) => {
+    updateCache({ levelBgImages: typeof action === "function" ? action(useMapStore.getState().levelBgImages) as Record<string, string> : action as Record<string, string> });
+  }, [updateCache]);
+
+  const setLevelSpacing = (s: number) => updateCache({ levelSpacing: s });
+  const setIs3D = (v: boolean) => updateCache({ is3D: v });
+  const setGridMode = useCallback((action: React.SetStateAction<"none" | "square" | "isometric" | "dots">) => {
+    updateCache({ gridMode: typeof action === "function" ? action(useMapStore.getState().gridMode) : action });
+  }, [updateCache]);
+  
+  const setViewState = useCallback((action: React.SetStateAction<typeof INITIAL_VIEW_STATE>) => {
+    updateCache({ viewState: typeof action === "function" ? action(useMapStore.getState().viewState as typeof INITIAL_VIEW_STATE) : action });
+  }, [updateCache]);
+
   const [targetFolderId, setTargetFolderId] = useState<number | null>(
     folderId ? Number(folderId) : null,
   );
@@ -57,9 +97,7 @@ export const useMapEditor = (
   const [isDrawing, setIsDrawing] = useState(false);
   const [spacebarPanning, setSpacebarPanning] = useState(false);
   const [mapBgColor, setMapBgColor] = useState("hsl(var(--background))");
-  const [is3D, setIs3D] = useState(false);
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
-  const [gridMode, setGridMode] = useState<"none" | "square" | "isometric" | "dots">("none");
   
   // Brush Options
   const [brushSize, setBrushSize] = useState(10);
@@ -67,11 +105,7 @@ export const useMapEditor = (
   const [lineContinuous, setLineContinuous] = useState(true);
   const [eraserPoint, setEraserPoint] = useState<{ lng: number; lat: number } | null>(null);
   
-  // Multilevel 3D Stack Options
-  const [levels, setLevels] = useState<AtlasLevel[]>(DEFAULT_LEVELS);
-  const [activeLevelId, setActiveLevelId] = useState<string>("l0");
-  const [levelBgImages, setLevelBgImages] = useState<Record<string, string | null>>({});
-  const [levelSpacing, setLevelSpacing] = useState<number>(100);
+  // Multilevel Options (Overlay only, rest is in store)
   const [overlayAllLayers, setOverlayAllLayers] = useState<boolean>(true);
 
   // Entities & UI
@@ -174,44 +208,9 @@ export const useMapEditor = (
     } catch {}
   }, [projectId]);
 
-  const loadMap = useCallback(
-    async (idOrSlug: string | number) => {
-      try {
-        const entity = await MapUseCase.getMapByIdOrSlug(idOrSlug, Number(projectId));
-        if (entity) {
-          setMapEntity(entity);
-          setTargetFolderId(entity.carpeta_id);
-          const attrs: AtlasAttributes =
-            typeof entity.contenido_json === "string"
-              ? JSON.parse(entity.contenido_json)
-              : entity.contenido_json || {};
-              
-          setMarkers(attrs.markers || []);
-          if (attrs.features) setFeatures((attrs.features as GeoFeatureCollection) || { type: "FeatureCollection", features: [] });
-          
-          setLevels((attrs.levels as AtlasLevel[]) || [{ id: 'l0', name: 'Nivel Principal', z_index: 0 }]);
-          setActiveLevelId((attrs.activeLevelId as string) || "l0");
-          setLevelBgImages((attrs.levelBgImages as Record<string, string | null>) || (attrs.bgImage ? { "l0": attrs.bgImage as string } : {}));
-          setLevelSpacing(attrs.levelSpacing ?? 100);
-          setIs3D(!!attrs.is3D);
-          setGridMode(attrs.gridMode || "none");
-          if (attrs.mapSettings) {
-            setViewState((prev) => ({
-              ...prev,
-              zoom: attrs.mapSettings?.zoom ?? 1,
-              longitude: attrs.mapSettings?.center?.[0] ?? 0,
-              latitude: attrs.mapSettings?.center?.[1] ?? 0,
-            }));
-          }
-        }
-      } catch {}
-    },
-    [projectId],
-  );
-
   useEffect(() => {
     if (entityId && mode === "edit") {
-      loadMap(entityId);
+      loadMap(entityId, Number(projectId));
     } else if (mode === "create") {
       setMapEntity({
         id: 0,
@@ -242,53 +241,10 @@ export const useMapEditor = (
   }, [entityId, mode, projectId, loadMap, loadAllEntities, targetFolderId]);
 
   const handleSaveMap = useCallback(async () => {
-    if (!mapEntity) return;
-    try {
-      const currentContent =
-        typeof mapEntity.contenido_json === "string"
-          ? JSON.parse(mapEntity.contenido_json)
-          : mapEntity.contenido_json || {};
-
-      const updatedContent: AtlasAttributes = {
-        ...currentContent,
-        markers,
-        features,
-        levels,
-        activeLevelId,
-        levelBgImages,
-        levelSpacing,
-        is3D,
-        gridMode,
-        mapSettings: {
-          zoom: viewState.zoom,
-          center: [viewState.longitude, viewState.latitude],
-        },
-        lastEdited: new Date().toISOString(),
-      };
-      
-      if (mode === "create" || !entityId) {
-        await MapUseCase.createMap({
-          nombre: mapEntity.nombre,
-          project_id: projectId || 0,
-          carpeta_id: targetFolderId,
-          contenido_json: JSON.stringify(updatedContent),
-          imagen_url: "",
-        });
-        if (onSave) await onSave();
-        else navigate(-1);
-      } else {
-        await MapUseCase.updateMap(mapEntity.id, {
-          nombre: mapEntity.nombre,
-          carpeta_id: targetFolderId,
-          contenido_json: JSON.stringify(updatedContent),
-        });
-        if (onSave) await onSave();
-        else navigate(-1);
-      }
-    } catch {}
-  }, [
-    mapEntity, markers, features, levels, activeLevelId, levelBgImages, levelSpacing, is3D, viewState, mode, entityId, projectId, targetFolderId, onSave, navigate,
-  ]);
+    await saveToSql();
+    if (onSave) await onSave();
+    else navigate(-1);
+  }, [saveToSql, onSave, navigate]);
 
   const addLinePoint = useCallback(
     (lng: number, lat: number, forceNew: boolean = false, type: string = "line") => {

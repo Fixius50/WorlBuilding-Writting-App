@@ -26,6 +26,7 @@ interface GeoFeatureCollection {
   }>;
 }
 
+export const GRID_SPACING = 1; // Degrees spacing
 /**
  * 🧠 useMapLibreView
  * Encapsulates the complex MapLibre + Deck.gl integration logic for Multilevel 3D Stack maps.
@@ -164,22 +165,40 @@ export const useMapLibreView = (
         const gridZ = getLevelZ(currentActiveLevelId) + 1; // Just above background
         const gridOpacity = 0.6;
         const gridColor: [number, number, number, number] = [0, 255, 255, Math.round(gridOpacity * 255)];
-        const spacing = 1; // Degrees spacing
+
+        const step = GRID_SPACING * Math.PI / 180;
+        const mercatorToLat = (mercY: number) => (Math.atan(Math.exp(mercY)) - Math.PI / 4) * 2 * 180 / Math.PI;
+        const mercatorToLng = (mercX: number) => mercX * 180 / Math.PI;
 
         if (currentGridMode === "square" || currentGridMode === "isometric") {
           const gridLines: { path: [number, number, number][]; color: [number, number, number, number] }[] = [];
           
           if (currentGridMode === "square") {
-             for(let x = -179.9; x <= 179.9; x += spacing) {
-                gridLines.push({ path: [[x, -85, gridZ], [x, 85, gridZ]], color: gridColor });
+             for(let x = -Math.PI; x <= Math.PI; x += step) {
+                const lng = mercatorToLng(x);
+                gridLines.push({ path: [[lng, -85.0511, gridZ], [lng, 85.0511, gridZ]], color: gridColor });
              }
-             for(let y = -85; y <= 85; y += spacing) {
-                gridLines.push({ path: [[-179.9, y, gridZ], [179.9, y, gridZ]], color: gridColor });
+             for(let y = -Math.PI; y <= Math.PI; y += step) {
+                const lat = mercatorToLat(y);
+                gridLines.push({ path: [[-180, lat, gridZ], [180, lat, gridZ]], color: gridColor });
              }
           } else if (currentGridMode === "isometric") {
-             for(let x = -359.8; x <= 359.8; x += spacing * 2) {
-                gridLines.push({ path: [[x, -85, gridZ], [x + 170, 85, gridZ]], color: gridColor });
-                gridLines.push({ path: [[x, -85, gridZ], [x - 170, 85, gridZ]], color: gridColor });
+             for (let x0 = -2 * Math.PI; x0 <= 2 * Math.PI; x0 += step * 2) {
+                // Line 1: slope 1
+                let x1 = x0 - Math.PI, y1 = -Math.PI, x2 = x0 + Math.PI, y2 = Math.PI;
+                if (x1 < -Math.PI) { y1 += (-Math.PI - x1); x1 = -Math.PI; }
+                if (x2 > Math.PI) { y2 += (Math.PI - x2); x2 = Math.PI; }
+                if (x1 <= Math.PI && x2 >= -Math.PI) {
+                  gridLines.push({ path: [[mercatorToLng(x1), mercatorToLat(y1), gridZ], [mercatorToLng(x2), mercatorToLat(y2), gridZ]], color: gridColor });
+                }
+
+                // Line 2: slope -1
+                x1 = x0 + Math.PI; y1 = -Math.PI; x2 = x0 - Math.PI; y2 = Math.PI;
+                if (x1 > Math.PI) { y1 -= (Math.PI - x1); x1 = Math.PI; }
+                if (x2 < -Math.PI) { y2 -= (-Math.PI - x2); x2 = -Math.PI; }
+                if (x1 >= -Math.PI && x2 <= Math.PI) {
+                  gridLines.push({ path: [[mercatorToLng(x1), mercatorToLat(y1), gridZ], [mercatorToLng(x2), mercatorToLat(y2), gridZ]], color: gridColor });
+                }
              }
           }
           
@@ -197,9 +216,9 @@ export const useMapLibreView = (
           );
         } else if (currentGridMode === "dots") {
           const dots: { pos: [number, number, number] }[] = [];
-          for(let x = -180; x <= 180; x += spacing) {
-             for(let y = -85; y <= 85; y += spacing) {
-                dots.push({ pos: [x, y, gridZ] });
+          for(let x = -Math.PI; x <= Math.PI; x += step) {
+             for(let y = -Math.PI; y <= Math.PI; y += step) {
+                dots.push({ pos: [mercatorToLng(x), mercatorToLat(y), gridZ] });
              }
           }
           deckLayers.push(
@@ -500,4 +519,3 @@ export const useMapLibreView = (
     map,
   };
 };
-

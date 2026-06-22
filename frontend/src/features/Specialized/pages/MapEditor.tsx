@@ -3,7 +3,7 @@ import { useParams, useNavigate, useOutletContext } from "react-router-dom";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Button } from "@components";
 import { useMapEditor, DrawMode } from "./useMapEditor";
-import { useMapLibreView } from "../../Maps/hooks/useMapLibreView";
+import { useMapLibreView, GRID_SPACING } from "../../Maps/hooks/useMapLibreView";
 import MapAtlasSidebar from "../../Maps/components/MapAtlasSidebar";
 
 const DRAW_MODE_LABELS: Record<DrawMode, string> = {
@@ -25,6 +25,39 @@ const DRAW_MODE_ICONS: Record<DrawMode, string> = {
 const BRUSH_COLORS = [
   "#22c55e", "#ef4444", "#3b82f6", "#eab308", "#a855f7", "#ec4899", "#ffffff", "#000000"
 ];
+
+const snapLngLat = (lng: number, lat: number, gridMode: string, spacing: number): { lng: number; lat: number } => {
+  if (gridMode === "none") return { lng, lat };
+  
+  const step = spacing * Math.PI / 180;
+  const mercY = Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI / 180) / 2));
+  const mercX = lng * Math.PI / 180;
+
+  const mercatorToLat = (y: number) => (Math.atan(Math.exp(y)) - Math.PI / 4) * 2 * 180 / Math.PI;
+  const mercatorToLng = (x: number) => x * 180 / Math.PI;
+  
+  if (gridMode === "square" || gridMode === "dots") {
+    const snappedX = Math.round(mercX / step) * step;
+    const snappedY = Math.round(mercY / step) * step;
+    return {
+      lng: mercatorToLng(snappedX),
+      lat: mercatorToLat(snappedY),
+    };
+  }
+
+  if (gridMode === "isometric") {
+    const u = mercX + mercY;
+    const v = mercX - mercY;
+    const snappedU = Math.round(u / (step * 2)) * (step * 2);
+    const snappedV = Math.round(v / (step * 2)) * (step * 2);
+    return {
+      lng: mercatorToLng((snappedU + snappedV) / 2),
+      lat: mercatorToLat((snappedU - snappedV) / 2),
+    };
+  }
+  
+  return { lng, lat };
+};
 
 const MapEditor: React.FC = () => {
   const navigate = useNavigate();
@@ -353,7 +386,8 @@ const MapEditor: React.FC = () => {
           if (!rect) return;
           const x = e.clientX - rect.left;
           const y = e.clientY - rect.top;
-          const lngLat = mapInstanceRef.current.unproject([x, y]);
+          const rawLngLat = mapInstanceRef.current.unproject([x, y]);
+          const snapped = snapLngLat(rawLngLat.lng, rawLngLat.lat, gridMode, GRID_SPACING);
           
           setIsDrawing(true);
           saveHistorySnapshot();
@@ -361,20 +395,20 @@ const MapEditor: React.FC = () => {
           switch (drawMode) {
             case "marker": {
               const id = `m-${Date.now()}`;
-              setMarkers((prev) => [...prev, { id, lng: lngLat.lng, lat: lngLat.lat, label: "Nuevo POI", layerId: activeLevelId }]);
+              setMarkers((prev) => [...prev, { id, lng: snapped.lng, lat: snapped.lat, label: "Nuevo POI", layerId: activeLevelId }]);
               setSelectedMarkerId(id);
               break;
             }
             case "line": {
-              addLinePoint(lngLat.lng, lngLat.lat, true);
+              addLinePoint(snapped.lng, snapped.lat, true);
               break;
             }
             case "spray": {
-              addSprayPoint(lngLat.lng, lngLat.lat, true);
+              addSprayPoint(snapped.lng, snapped.lat, true);
               break;
             }
             case "eraser": {
-              eraseFeatures(lngLat.lng, lngLat.lat, mapInstanceRef.current);
+              eraseFeatures(snapped.lng, snapped.lat, mapInstanceRef.current);
               break;
             }
             default:
@@ -387,19 +421,20 @@ const MapEditor: React.FC = () => {
           if (!rect) return;
           const x = e.clientX - rect.left;
           const y = e.clientY - rect.top;
-          const lngLat = mapInstanceRef.current.unproject([x, y]);
+          const rawLngLat = mapInstanceRef.current.unproject([x, y]);
+          const snapped = snapLngLat(rawLngLat.lng, rawLngLat.lat, gridMode, GRID_SPACING);
 
           switch (drawMode) {
             case "line": {
-              addLinePoint(lngLat.lng, lngLat.lat, false);
+              addLinePoint(snapped.lng, snapped.lat, false);
               break;
             }
             case "spray": {
-              addSprayPoint(lngLat.lng, lngLat.lat);
+              addSprayPoint(snapped.lng, snapped.lat);
               break;
             }
             case "eraser": {
-              eraseFeatures(lngLat.lng, lngLat.lat, mapInstanceRef.current);
+              eraseFeatures(snapped.lng, snapped.lat, mapInstanceRef.current);
               break;
             }
             default:

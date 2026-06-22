@@ -18,6 +18,7 @@ import {
   MapAggregateService,
   MapCreationConfig,
 } from "../domain/MapAggregateService";
+import { useMapStore } from "../store/useMapStore";
 
 const MapViewerWrapper = ({ maps, projectName }: { maps: Entidad[]; projectName: string }) => {
   const { mapId } = useParams();
@@ -48,7 +49,13 @@ const MapRouter = () => {
     projectId ? loadMaps() : null;
     const handleRefresh = () => loadMaps();
     window.addEventListener("map-updated", handleRefresh);
-    return () => window.removeEventListener("map-updated", handleRefresh);
+    
+    return () => {
+      window.removeEventListener("map-updated", handleRefresh);
+      useMapStore.getState().saveToSql().finally(() => {
+        useMapStore.getState().clearCache();
+      });
+    };
   }, [projectId]);
 
   const loadMaps = async () => {
