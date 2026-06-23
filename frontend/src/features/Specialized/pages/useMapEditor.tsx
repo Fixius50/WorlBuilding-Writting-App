@@ -6,7 +6,7 @@ import { Entidad } from "@domain/database";
 import { MapMarker, AtlasLevel, AtlasAttributes } from "@domain/maps";
 import { useMapStore } from "../../Maps/store/useMapStore";
 
-export type DrawMode = "none" | "spray" | "line" | "marker" | "eraser";
+export type DrawMode = "none" | "spray" | "line" | "rectangle" | "circle" | "fill" | "marker" | "eraser";
 
 type GeoFeature = {
   id?: string | number;
@@ -342,6 +342,219 @@ export const useMapEditor = (
     [brushSize, activeLevelId],
   );
 
+  const addGeometricFeature = useCallback(
+    (
+      id: string,
+      type: "rectangle" | "circle",
+      startCoords: { lng: number; lat: number },
+      currentCoords: { lng: number; lat: number },
+      isTemp: boolean = false
+    ) => {
+      setFeatures((prev: GeoFeatureCollection) => {
+        const fts = [...prev.features];
+        const existingIdx = fts.findIndex((f) => f.id === id);
+        
+        let coords: [number, number][][] = [[]];
+        const x1 = startCoords.lng;
+        const y1 = startCoords.lat;
+        const x2 = currentCoords.lng;
+        const y2 = currentCoords.lat;
+
+        const buildRectangle = (): [number, number][][] => [[
+          [x1, y1],
+          [x2, y1],
+          [x2, y2],
+          [x1, y2],
+          [x1, y1]
+        ]];
+
+        const buildCircle = (): [number, number][][] => {
+          const radius = Math.hypot(x2 - x1, y2 - y1);
+          const circlePoints: [number, number][] = [];
+          for (let i = 0; i <= 64; i++) {
+            const angle = (i / 64) * 2 * Math.PI;
+            circlePoints.push([
+              x1 + radius * Math.cos(angle),
+              y1 + radius * Math.sin(angle)
+            ]);
+          }
+          return [circlePoints];
+        };
+
+        coords = type === "rectangle" ? buildRectangle() : buildCircle();
+
+        const newFeature: GeoFeature = {
+          id,
+          type: "Feature",
+          geometry: { type: "Polygon", coordinates: coords },
+          properties: {
+            levelId: activeLevelId,
+            color: brushColor,
+            width: brushSize,
+            type,
+            isTemp,
+            timestamp: Date.now()
+          }
+        };
+
+        const hasExisting = existingIdx >= 0;
+        hasExisting
+          ? (fts[existingIdx] = newFeature)
+          : fts.push(newFeature);
+
+        return { ...prev, features: fts };
+      });
+    },
+    [activeLevelId, brushColor, brushSize, setFeatures]
+  );
+
+  const consolidateGeometricFeature = useCallback(
+    (id: string) => {
+      setFeatures((prev: GeoFeatureCollection) => {
+        const fts = prev.features.map((f) => {
+          const isTarget = f.id === id;
+          return isTarget
+            ? {
+                ...f,
+                properties: {
+                  ...f.properties,
+                  isTemp: false
+                }
+              }
+            : f;
+        });
+        return { ...prev, features: fts };
+      });
+    },
+    [setFeatures]
+  );
+
+  const removeFeature = useCallback(
+    (id: string) => {
+      setFeatures((prev: GeoFeatureCollection) => ({
+        ...prev,
+        features: prev.features.filter((f) => f.id !== id)
+      }));
+    },
+    [setFeatures]
+  );
+
+  const handleFloodFill = useCallback(
+    (clickLng: number, clickLat: number) => {
+      const GRID_SPACING = 1;
+      const spacing = gridMode !== "none" ? GRID_SPACING : 0.05;
+
+      const currentLevelMuros = features.features.filter((f) => {
+        const isLine = f.geometry.type === "LineString";
+        const isSameLevel = f.properties?.levelId === activeLevelId;
+        return isLine && isSameLevel;
+      });
+
+      const segments: { p1: [number, number]; p2: [number, number] }[] = [];
+      currentLevelMuros.forEach((muro) => {
+        const coords = muro.geometry.coordinates as [number, number][];
+        coords.forEach((c, i) => {
+          const hasNext = i < coords.length - 1;
+          hasNext
+            ? segments.push({ p1: c, p2: coords[i + 1] })
+            : undefined;
+        });
+      });
+
+      const ccw = (p1: [number, number], p2: [number, number], p3: [number, number]): boolean => {
+        return (p3[1] - p1[1]) * (p2[0] - p1[0]) > (p2[1] - p1[1]) * (p3[0] - p1[0]);
+      };
+
+      const intersect = (
+        p1: [number, number], p2: [number, number],
+        p3: [number, number], p4: [number, number]
+      ): boolean => {
+        const isCcw1 = ccw(p1, p3, p4) !== ccw(p2, p3, p4);
+        const isCcw2 = ccw(p1, p2, p3) !== ccw(p1, p2, p4);
+        return isCcw1 && isCcw2;
+      };
+
+      const cx0 = Math.round(clickLng / spacing) * spacing;
+      const cy0 = Math.round(clickLat / spacing) * spacing;
+
+      const queue: [number, number][] = [[cx0, cy0]];
+      const visited = new Set<string>();
+      visited.add(`${cx0},${cy0}`);
+      const filledCells: [number, number][] = [[cx0, cy0]];
+
+      const maxCells = 800;
+      let cellCount = 0;
+
+      while (queue.length > 0 && cellCount < maxCells) {
+        const curr = queue.shift()!;
+        cellCount++;
+        const [cx, cy] = curr;
+
+        const directions: [number, number][] = [
+          [cx + spacing, cy],
+          [cx - spacing, cy],
+          [cx, cy + spacing],
+          [cx, cy - spacing]
+        ];
+
+        directions.forEach(([nx, ny]) => {
+          const key = `${nx},${ny}`;
+          const isVisited = visited.has(key);
+          
+          isVisited
+            ? undefined
+            : (() => {
+                let blocked = false;
+                segments.forEach((seg) => {
+                  const isBlocked = intersect([cx, cy], [nx, ny], seg.p1, seg.p2);
+                  isBlocked ? (blocked = true) : undefined;
+                });
+
+                blocked
+                  ? undefined
+                  : (() => {
+                      visited.add(key);
+                      queue.push([nx, ny]);
+                      filledCells.push([nx, ny]);
+                    })();
+              })();
+        });
+      }
+
+      const half = spacing / 2;
+      const polyCoords = filledCells.map(([cx, cy]) => [
+        [
+          [cx - half, cy - half],
+          [cx + half, cy - half],
+          [cx + half, cy + half],
+          [cx - half, cy + half],
+          [cx - half, cy - half]
+        ]
+      ]);
+
+      const fillFeature = {
+        type: "Feature" as const,
+        geometry: {
+          type: "MultiPolygon" as const,
+          coordinates: polyCoords
+        },
+        properties: {
+          levelId: activeLevelId,
+          color: brushColor,
+          width: brushSize,
+          type: "fill",
+          timestamp: Date.now()
+        }
+      };
+
+      setFeatures((prev: GeoFeatureCollection) => ({
+        ...prev,
+        features: [...prev.features, fillFeature]
+      }));
+    },
+    [features, activeLevelId, brushColor, brushSize, gridMode, setFeatures]
+  );
+
   return {
     mapEntity,
     setMapEntity,
@@ -400,6 +613,10 @@ export const useMapEditor = (
     addSprayPoint,
     addLinePoint,
     eraseFeatures,
-    mapRef,
+    addGeometricFeature,
+    consolidateGeometricFeature,
+    removeFeature,
+    handleFloodFill,
+    mapRef
   };
 };

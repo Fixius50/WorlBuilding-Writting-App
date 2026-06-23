@@ -607,7 +607,12 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   ]);
 
   // Cálculo para grid infinito simulado
-  const BACKGROUND_GRID_SIZE = 50;
+  let BACKGROUND_GRID_SIZE = 50;
+  if (scale < 0.2) {
+    BACKGROUND_GRID_SIZE = 250;
+  } else if (scale < 0.5) {
+    BACKGROUND_GRID_SIZE = 100;
+  }
   const startX =
     Math.floor(-position.x / scale / BACKGROUND_GRID_SIZE) *
       BACKGROUND_GRID_SIZE -

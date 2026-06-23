@@ -9,8 +9,11 @@ import MapAtlasSidebar from "../../Maps/components/MapAtlasSidebar";
 const DRAW_MODE_LABELS: Record<DrawMode, string> = {
   none: "Navegar",
   marker: "Punto de Interés (POI)",
-  line: "Trazar Línea / Muro",
+  line: "Línea / Muro",
+  rectangle: "Rectángulo",
+  circle: "Círculo",
   spray: "Pintar Área",
+  fill: "Rellenar Área",
   eraser: "Borrador de Trazos",
 };
 
@@ -18,8 +21,37 @@ const DRAW_MODE_ICONS: Record<DrawMode, string> = {
   none: "pan_tool",
   marker: "location_on",
   line: "draw",
+  rectangle: "crop_square",
+  circle: "circle",
   spray: "brush",
+  fill: "format_color_fill",
   eraser: "ink_eraser",
+};
+
+const GEOM_MODE_LABELS = {
+  line: "Línea / Muro",
+  rectangle: "Rectángulo",
+  circle: "Círculo",
+};
+
+const GEOM_MODE_ICONS = {
+  line: "draw",
+  rectangle: "crop_square",
+  circle: "circle",
+};
+
+const GRID_MODE_LABELS = {
+  none: "Sin Rejilla",
+  square: "Rejilla Cuadrada",
+  isometric: "Rejilla Isométrica",
+  dots: "Rejilla de Puntos",
+};
+
+const GRID_MODE_ICONS = {
+  none: "grid_off",
+  square: "grid_on",
+  isometric: "apps",
+  dots: "grain",
 };
 
 const BRUSH_COLORS = [
@@ -110,11 +142,21 @@ const MapEditor: React.FC = () => {
     addSprayPoint,
     addLinePoint,
     eraseFeatures,
+    addGeometricFeature,
+    consolidateGeometricFeature,
+    removeFeature,
+    handleFloodFill,
   } = editorState;
+
+  const dragStartRef = useRef<{ lng: number; lat: number } | null>(null);
+  const tempFeatureIdRef = useRef<string | null>(null);
+  const [activeGeomType, setActiveGeomType] = useState<"line" | "rectangle" | "circle">("line");
+  const [isGeomMenuOpen, setIsGeomMenuOpen] = useState(false);
 
   const [activeSidebarTab, setActiveSidebarTab] = useState<"levels" | "notes" | "info" | null>("levels");
   const [isToolMenuOpen, setIsToolMenuOpen] = useState(false);
   const [isColorMenuOpen, setIsColorMenuOpen] = useState(false);
+  const [isGridMenuOpen, setIsGridMenuOpen] = useState(false);
   
   // States required for MapAtlasSidebar (Dummy functions since we manage it in useMapEditor partially)
   const [hoveredLevelOpacityId, setHoveredLevelOpacityId] = useState<string | null>(null);
@@ -285,23 +327,71 @@ const MapEditor: React.FC = () => {
               <button
                 onClick={() => setIsToolMenuOpen(!isToolMenuOpen)}
                 title={DRAW_MODE_LABELS[drawMode]}
-                className="p-3 rounded transition-colors text-primary bg-primary/10 hover:bg-primary/20 flex items-center gap-1"
+                className={`p-3 rounded transition-colors flex items-center gap-1 ${
+                  ["none", "marker", "spray", "fill", "eraser"].includes(drawMode)
+                    ? "bg-primary/10 text-primary font-bold"
+                    : "text-foreground/60 hover:bg-foreground/5"
+                }`}
               >
-                <span className="material-symbols-outlined text-xl">{DRAW_MODE_ICONS[drawMode]}</span>
-                <span className="material-symbols-outlined text-sm">arrow_drop_down</span>
+                <span className="material-symbols-outlined text-xl">{DRAW_MODE_ICONS[drawMode] || DRAW_MODE_ICONS["none"]}</span>
+                <span className="material-symbols-outlined text-sm">expand_more</span>
               </button>
               {isToolMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-[90]" onClick={() => setIsToolMenuOpen(false)} />
                   <div className="absolute top-full left-0 mt-1 flex flex-col bg-background border border-foreground/10 shadow-2xl rounded p-1 z-[100]">
-                    {(Object.entries(DRAW_MODE_LABELS) as [DrawMode, string][]).map(([m, label]) => (
+                    {(Object.entries(DRAW_MODE_LABELS) as [DrawMode, string][])
+                      .filter(([m]) => ["none", "marker", "spray", "fill", "eraser"].includes(m))
+                      .map(([m, label]) => (
+                        <button
+                          key={m}
+                          onClick={() => { setDrawMode(m as DrawMode); setIsToolMenuOpen(false); }}
+                          title={label}
+                          className={`p-2 rounded flex items-center gap-3 whitespace-nowrap transition-colors ${drawMode === m ? "bg-primary/20 text-primary font-bold" : "text-foreground/60 hover:bg-foreground/5"}`}
+                        >
+                          <span className="material-symbols-outlined text-xl">{DRAW_MODE_ICONS[m as DrawMode]}</span>
+                          <span className="text-sm">{label}</span>
+                        </button>
+                      ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+          
+          {!is3D && <div className="w-px h-6 bg-foreground/10 mx-2" />}
+
+          {/* Geometry Dropdown */}
+          {!is3D && (
+            <div className="relative">
+              <button
+                onClick={() => setIsGeomMenuOpen(!isGeomMenuOpen)}
+                title={`Forma Geométrica: ${GEOM_MODE_LABELS[activeGeomType]}`}
+                className={`p-3 rounded transition-colors flex items-center gap-1 ${
+                  ["line", "rectangle", "circle"].includes(drawMode)
+                    ? "bg-primary/10 text-primary border border-primary/20 font-bold"
+                    : "text-foreground/60 hover:bg-foreground/5"
+                }`}
+              >
+                <span className="material-symbols-outlined text-xl">{GEOM_MODE_ICONS[activeGeomType]}</span>
+                <span className="material-symbols-outlined text-sm">expand_more</span>
+              </button>
+              {isGeomMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-[90]" onClick={() => setIsGeomMenuOpen(false)} />
+                  <div className="absolute top-full left-0 mt-1 flex flex-col bg-background border border-foreground/10 shadow-2xl rounded p-1 z-[100]">
+                    {(Object.entries(GEOM_MODE_LABELS) as [keyof typeof GEOM_MODE_LABELS, string][]).map(([m, label]) => (
                       <button
                         key={m}
-                        onClick={() => { setDrawMode(m as DrawMode); setIsToolMenuOpen(false); }}
+                        onClick={() => {
+                          setActiveGeomType(m);
+                          setDrawMode(m);
+                          setIsGeomMenuOpen(false);
+                        }}
                         title={label}
                         className={`p-2 rounded flex items-center gap-3 whitespace-nowrap transition-colors ${drawMode === m ? "bg-primary/20 text-primary font-bold" : "text-foreground/60 hover:bg-foreground/5"}`}
                       >
-                        <span className="material-symbols-outlined text-xl">{DRAW_MODE_ICONS[m as DrawMode]}</span>
+                        <span className="material-symbols-outlined text-xl">{GEOM_MODE_ICONS[m]}</span>
                         <span className="text-sm">{label}</span>
                       </button>
                     ))}
@@ -322,7 +412,7 @@ const MapEditor: React.FC = () => {
                 className="p-2 rounded transition-colors hover:bg-foreground/5 flex items-center gap-1"
               >
                 <div className="size-6 rounded-full border-2 border-foreground/20" style={{ backgroundColor: brushColor }} />
-                <span className="material-symbols-outlined text-sm text-foreground/40">arrow_drop_down</span>
+                <span className="material-symbols-outlined text-sm text-foreground/40">expand_more</span>
               </button>
               {isColorMenuOpen && (
                 <>
@@ -354,16 +444,40 @@ const MapEditor: React.FC = () => {
 
           {!is3D && <div className="w-px h-6 bg-foreground/10 mx-2" />}
 
-          {/* Grid Mode Selector */}
-          <button
-            onClick={() => setGridMode(prev => prev === "none" ? "square" : prev === "square" ? "isometric" : prev === "isometric" ? "dots" : "none")}
-            title={`Modo de Rejilla: ${gridMode}`}
-            className={`px-2 py-1.5 flex items-center justify-center rounded transition-colors ${gridMode !== "none" ? "bg-primary/20 text-primary border border-primary/40 font-bold" : "text-foreground/40 hover:text-foreground border border-transparent"}`}
-          >
-            <span className="material-symbols-outlined text-lg">
-              {gridMode === "none" ? "grid_off" : gridMode === "square" ? "grid_on" : gridMode === "isometric" ? "apps" : "grain"}
-            </span>
-          </button>
+          {/* Grid Mode Selector Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setIsGridMenuOpen(!isGridMenuOpen)}
+              title={`Modo de Rejilla: ${GRID_MODE_LABELS[gridMode as "none" | "square" | "isometric" | "dots"]}`}
+              className={`p-2.5 rounded transition-colors flex items-center gap-1 ${gridMode !== "none" ? "bg-primary/10 text-primary border border-primary/20 font-bold" : "text-foreground/40 hover:bg-foreground/5"}`}
+            >
+              <span className="material-symbols-outlined text-xl">
+                {GRID_MODE_ICONS[gridMode as "none" | "square" | "isometric" | "dots"]}
+              </span>
+              <span className="material-symbols-outlined text-sm">expand_more</span>
+            </button>
+            {isGridMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-[90]" onClick={() => setIsGridMenuOpen(false)} />
+                <div className="absolute top-full left-0 mt-1 flex flex-col bg-background border border-foreground/10 shadow-2xl rounded p-1 z-[100]">
+                  {(Object.entries(GRID_MODE_LABELS) as ["none" | "square" | "isometric" | "dots", string][]).map(([m, label]) => (
+                    <button
+                      key={m}
+                      onClick={() => {
+                        setGridMode(m);
+                        setIsGridMenuOpen(false);
+                      }}
+                      title={label}
+                      className={`p-2 rounded flex items-center gap-3 whitespace-nowrap transition-colors ${gridMode === m ? "bg-primary/20 text-primary font-bold" : "text-foreground/60 hover:bg-foreground/5"}`}
+                    >
+                      <span className="material-symbols-outlined text-xl">{GRID_MODE_ICONS[m]}</span>
+                      <span className="text-sm">{label}</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
 
           <div className="w-px h-6 bg-foreground/10 mx-2" />
 
@@ -384,77 +498,129 @@ const MapEditor: React.FC = () => {
         className={`flex-1 relative ${drawMode !== "none" ? "cursor-crosshair" : "cursor-grab active:cursor-grabbing"}`}
         style={{ backgroundColor: mapBgColor }}
         onMouseDownCapture={(e) => {
-          if (!mapInstanceRef.current || spacebarPanning || drawMode === "none" || is3D) return;
-          const rect = mapContainerRef.current?.getBoundingClientRect();
-          if (!rect) return;
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          const rawLngLat = mapInstanceRef.current.unproject([x, y]);
-          const snapped = snapLngLat(rawLngLat.lng, rawLngLat.lat, gridMode, GRID_SPACING);
-          
-          setIsDrawing(true);
-          saveHistorySnapshot();
+          const canInteract = mapInstanceRef.current && !spacebarPanning && drawMode !== "none" && !is3D;
+          canInteract
+            ? (() => {
+                const rect = mapContainerRef.current?.getBoundingClientRect();
+                rect
+                  ? (() => {
+                      const x = e.clientX - rect.left;
+                      const y = e.clientY - rect.top;
+                      const rawLngLat = mapInstanceRef.current!.unproject([x, y]);
+                      const snapped = snapLngLat(rawLngLat.lng, rawLngLat.lat, gridMode, GRID_SPACING);
+                      
+                      setIsDrawing(true);
+                      saveHistorySnapshot();
 
-          switch (drawMode) {
-            case "marker": {
-              const id = `m-${Date.now()}`;
-              setMarkers((prev) => [...prev, { id, lng: snapped.lng, lat: snapped.lat, label: "Nuevo POI", layerId: activeLevelId }]);
-              setSelectedMarkerId(id);
-              break;
-            }
-            case "line": {
-              addLinePoint(snapped.lng, snapped.lat, true);
-              break;
-            }
-            case "spray": {
-              addSprayPoint(snapped.lng, snapped.lat, true);
-              break;
-            }
-            case "eraser": {
-              eraseFeatures(snapped.lng, snapped.lat, mapInstanceRef.current);
-              break;
-            }
-            default:
-              break;
-          }
+                      switch (drawMode) {
+                        case "marker": {
+                          const id = `m-${Date.now()}`;
+                          setMarkers((prev) => [...prev, { id, lng: snapped.lng, lat: snapped.lat, label: "Nuevo POI", layerId: activeLevelId }]);
+                          setSelectedMarkerId(id);
+                          break;
+                        }
+                        case "line": {
+                          addLinePoint(snapped.lng, snapped.lat, true);
+                          break;
+                        }
+                        case "rectangle":
+                        case "circle": {
+                          dragStartRef.current = { lng: snapped.lng, lat: snapped.lat };
+                          const id = `temp-${Date.now()}`;
+                          tempFeatureIdRef.current = id;
+                          addGeometricFeature(id, drawMode, dragStartRef.current, dragStartRef.current, true);
+                          break;
+                        }
+                        case "spray": {
+                          addSprayPoint(snapped.lng, snapped.lat, true);
+                          break;
+                        }
+                        case "fill": {
+                          handleFloodFill(snapped.lng, snapped.lat);
+                          break;
+                        }
+                        case "eraser": {
+                          eraseFeatures(snapped.lng, snapped.lat, mapInstanceRef.current);
+                          break;
+                        }
+                        default:
+                          break;
+                      }
+                    })()
+                  : undefined;
+              })()
+            : undefined;
         }}
         onMouseMoveCapture={(e) => {
-          if (!isDrawing || !mapInstanceRef.current || spacebarPanning || drawMode === "none" || is3D) return;
-          const rect = mapContainerRef.current?.getBoundingClientRect();
-          if (!rect) return;
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          const rawLngLat = mapInstanceRef.current.unproject([x, y]);
-          const snapped = snapLngLat(rawLngLat.lng, rawLngLat.lat, gridMode, GRID_SPACING);
+          const canInteract = isDrawing && mapInstanceRef.current && !spacebarPanning && drawMode !== "none" && !is3D;
+          canInteract
+            ? (() => {
+                const rect = mapContainerRef.current?.getBoundingClientRect();
+                rect
+                  ? (() => {
+                      const x = e.clientX - rect.left;
+                      const y = e.clientY - rect.top;
+                      const rawLngLat = mapInstanceRef.current!.unproject([x, y]);
+                      const snapped = snapLngLat(rawLngLat.lng, rawLngLat.lat, gridMode, GRID_SPACING);
 
-          switch (drawMode) {
-            case "line": {
-              addLinePoint(snapped.lng, snapped.lat, false);
-              break;
-            }
-            case "spray": {
-              addSprayPoint(snapped.lng, snapped.lat);
-              break;
-            }
-            case "eraser": {
-              eraseFeatures(snapped.lng, snapped.lat, mapInstanceRef.current);
-              break;
-            }
-            default:
-              break;
-          }
+                      switch (drawMode) {
+                        case "line": {
+                          addLinePoint(snapped.lng, snapped.lat, false);
+                          break;
+                        }
+                        case "rectangle":
+                        case "circle": {
+                          const hasStart = dragStartRef.current && tempFeatureIdRef.current;
+                          hasStart
+                            ? addGeometricFeature(tempFeatureIdRef.current!, drawMode, dragStartRef.current!, snapped, true)
+                            : undefined;
+                          break;
+                        }
+                        case "spray": {
+                          addSprayPoint(snapped.lng, snapped.lat);
+                          break;
+                        }
+                        case "eraser": {
+                          eraseFeatures(snapped.lng, snapped.lat, mapInstanceRef.current);
+                          break;
+                        }
+                        default:
+                          break;
+                      }
+                    })()
+                  : undefined;
+              })()
+            : undefined;
         }}
         onMouseUpCapture={() => {
-          if (isDrawing) {
-            setIsDrawing(false);
-            endCurrentAction();
-          }
+          isDrawing
+            ? (() => {
+                const isGeometric = (drawMode === "rectangle" || drawMode === "circle") && tempFeatureIdRef.current;
+                isGeometric
+                  ? consolidateGeometricFeature(tempFeatureIdRef.current!)
+                  : undefined;
+                
+                dragStartRef.current = null;
+                tempFeatureIdRef.current = null;
+                setIsDrawing(false);
+                endCurrentAction();
+              })()
+            : undefined;
         }}
         onMouseLeave={() => {
-          if (isDrawing) {
-            setIsDrawing(false);
-            endCurrentAction();
-          }
+          isDrawing
+            ? (() => {
+                const isGeometric = (drawMode === "rectangle" || drawMode === "circle") && tempFeatureIdRef.current;
+                isGeometric
+                  ? consolidateGeometricFeature(tempFeatureIdRef.current!)
+                  : undefined;
+                
+                dragStartRef.current = null;
+                tempFeatureIdRef.current = null;
+                setIsDrawing(false);
+                endCurrentAction();
+              })()
+            : undefined;
         }}
       >
         <div ref={mapContainerRef} className="absolute inset-0 z-10" />

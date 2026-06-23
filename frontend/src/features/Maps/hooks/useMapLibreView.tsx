@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import maplibregl from "maplibre-gl";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import type { PickingInfo } from "@deck.gl/core";
@@ -73,6 +73,7 @@ export const useMapLibreView = (
     levelOpacities?: Record<string, number>;
   },
 ) => {
+  const [zoom, setZoom] = useState(1);
   const map = useRef<maplibregl.Map | null>(null);
   const deckOverlay = useRef<MapboxOverlay | null>(null);
   const onMarkerClickRef = useRef(onMarkerClick);
@@ -111,6 +112,7 @@ export const useMapLibreView = (
       currentOverlayAllLayers: boolean,
       currentGridMode: "none" | "square" | "isometric" | "dots",
       currentLevelOpacities: Record<string, number>,
+      currentZoom: number,
     ) => {
       const primaryRgb = getThemePrimaryRgb();
       const deckLayers: unknown[] = [];
@@ -336,16 +338,24 @@ export const useMapLibreView = (
                 const feat = f as { properties?: Record<string, unknown> };
                 const c = typeof feat.properties?.color === 'string' ? hexToRgb(feat.properties.color) : primaryRgb;
                 const lId = (feat.properties?.levelId || feat.properties?.layerId) as string | undefined;
-                return [c[0], c[1], c[2], Math.round(getLevelOpacity(lId) * 180)] as [number, number, number, number];
+                const isFill = feat.properties?.type === 'fill';
+                const opacityFactor = isFill ? 90 : 120;
+                return [c[0], c[1], c[2], Math.round(getLevelOpacity(lId) * opacityFactor)] as [number, number, number, number];
               },
               getPointRadius: (f: unknown) => {
                 const feat = f as { properties?: Record<string, unknown> };
-                return feat.properties?.type === 'spray' ? (typeof feat.properties?.width === 'number' ? feat.properties.width / 2 : 6) : 3;
+                const baseRadius = feat.properties?.type === 'spray' ? (typeof feat.properties?.width === 'number' ? feat.properties.width / 2 : 6) : 3;
+                const scaleFactor = currentZoom < 1 ? Math.pow(2, currentZoom - 1) : 1;
+                return Math.max(1, baseRadius * scaleFactor);
               },
               pointRadiusUnits: "pixels",
               getLineWidth: (f: unknown) => {
                 const feat = f as { properties?: Record<string, unknown> };
-                return typeof feat.properties?.width === 'number' ? feat.properties.width : 3;
+                const baseWidth = typeof feat.properties?.width === 'number' ? feat.properties.width : 3;
+                const isFill = feat.properties?.type === 'fill';
+                const width = isFill ? 0 : baseWidth;
+                const scaleFactor = currentZoom < 1 ? Math.pow(2, currentZoom - 1) : 1;
+                return Math.max(0.5, width * scaleFactor);
               },
               lineWidthUnits: "pixels",
               lineJointRounded: true,
@@ -354,6 +364,8 @@ export const useMapLibreView = (
               updateTriggers: {
                 getLineColor: [currentActiveLevelId, currentOverlayAllLayers, currentLevelOpacities],
                 getFillColor: [currentActiveLevelId, currentOverlayAllLayers, currentLevelOpacities],
+                getPointRadius: [currentZoom],
+                getLineWidth: [currentZoom]
               },
             })
           );
@@ -499,6 +511,10 @@ export const useMapLibreView = (
       }
     });
 
+    mapInstance.on("zoom", () => {
+      setZoom(mapInstance.getZoom());
+    });
+
     return () => {
       overlay.finalize();
       mapInstance.remove();
@@ -519,7 +535,8 @@ export const useMapLibreView = (
       levelSpacing,
       overlayAllLayers,
       gridMode,
-      levelOpacities
+      levelOpacities,
+      zoom
     );
     deckOverlay.current.setProps({ layers: newLayers as Parameters<typeof deckOverlay.current.setProps>[0]["layers"] });
   }, [
@@ -535,6 +552,7 @@ export const useMapLibreView = (
     overlayAllLayers,
     gridMode,
     levelOpacities,
+    zoom,
     buildDeckLayers,
   ]);
 
