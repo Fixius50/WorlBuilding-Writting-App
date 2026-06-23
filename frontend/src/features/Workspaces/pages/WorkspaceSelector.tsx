@@ -458,6 +458,7 @@ const NotebookCard: React.FC<{
   onEdit: (project: Proyecto) => void;
   onDelete: (id: number) => void;
 }> = ({ data, onSelect, onEdit, onDelete }) => {
+  const [showDesc, setShowDesc] = useState(false);
   const displayImg =
     data.image_url ||
     "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800";
@@ -478,14 +479,53 @@ const NotebookCard: React.FC<{
       <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-transparent to-transparent opacity-60"></div>
 
       {/* ID Técnico y Género/Tag */}
-      <div className="absolute top-3 left-3 right-3 flex items-center gap-1.5 overflow-hidden z-20 opacity-40 group-hover:opacity-100 transition-opacity duration-300">
-        <span className="font-mono text-[8px] tracking-[0.2em] uppercase px-1.5 py-0.5 border border-foreground bg-foreground text-background rounded-none">
-          CN-{data.id}
-        </span>
-        <span className="font-mono text-[0.56rem] tracking-[0.2em] uppercase px-1.5 py-0.5 border border-primary/30 bg-primary/10 text-primary rounded-none truncate">
-          {data.tag || "GENERAL"}
-        </span>
+      <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-20">
+        <div className="flex items-center gap-1.5 overflow-hidden opacity-40 group-hover:opacity-100 transition-opacity duration-300">
+          <span className="font-mono text-[8px] tracking-[0.2em] uppercase px-1.5 py-0.5 border border-foreground/15 bg-background/90 text-foreground/80 rounded-none shadow-sm">
+            CN-{data.id}
+          </span>
+          <span className="font-mono text-[0.56rem] tracking-[0.2em] uppercase px-1.5 py-0.5 border border-primary/30 bg-background/90 text-primary rounded-none truncate shadow-sm">
+            {data.tag || "GENERAL"}
+          </span>
+        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowDesc(!showDesc);
+          }}
+          className="w-5 h-5 rounded-full bg-background/80 hover:bg-background border border-foreground/20 hover:border-primary text-foreground/75 hover:text-primary flex items-center justify-center font-mono text-[10px] font-bold transition-all shadow-md z-30"
+          title="Ver Descripción del Universo"
+        >
+          ?
+        </button>
       </div>
+
+      {/* Bocadillo de Descripción del Universo */}
+      {showDesc && (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="absolute top-10 right-3 left-3 bg-background/95 border border-foreground/15 p-3.5 shadow-2xl z-30 animate-in fade-in zoom-in-95 duration-200 flex flex-col gap-2 rounded-none"
+          style={{ height: "calc(100% - 3.5rem)" }}
+        >
+          <div className="flex items-center justify-between border-b border-foreground/10 pb-1.5 flex-shrink-0">
+            <span className="font-mono text-[9px] tracking-widest text-primary uppercase font-bold">
+              Descripción del Universo
+            </span>
+            <button
+              onClick={() => setShowDesc(false)}
+              className="text-foreground/40 hover:text-foreground flex items-center justify-center transition-colors"
+              title="Cerrar"
+            >
+              <Icon name="close" className="text-sm" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
+            <p className="font-serif text-[11px] leading-relaxed text-foreground/80 whitespace-pre-wrap">
+              {data.descripcion || "Sin descripción registrada para este universo."}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Bloque de Información y Acciones */}
       <div className="absolute bottom-0 left-0 w-full p-2.5 flex items-stretch justify-between gap-1.5 z-20">
