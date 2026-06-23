@@ -438,6 +438,21 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
     const allPaths: string[][] = [];
 
     isStartAndEndValid ? (() => {
+      // Precalcular lista de adyacencia
+      const adjList = new Map<string, string[]>();
+      filteredEdges.forEach((edge) => {
+        const from = edge.from.toString();
+        const to = edge.to.toString();
+        if (!adjList.has(from)) {
+          adjList.set(from, []);
+        }
+        if (!adjList.has(to)) {
+          adjList.set(to, []);
+        }
+        adjList.get(from)!.push(to);
+        adjList.get(to)!.push(from);
+      });
+
       const queue: string[][] = [[startId]];
       const visitedAtLevel = new Map<string, number>();
       visitedAtLevel.set(startId, 0);
@@ -455,14 +470,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
             shortestLength = currentLevel;
             allPaths.push(path);
           })() : (() => {
-            const neighbors: string[] = [];
-            filteredEdges.forEach((edge) => {
-              edge.from === currentId
-                ? neighbors.push(edge.to)
-                : edge.to === currentId
-                  ? neighbors.push(edge.from)
-                  : undefined;
-            });
+            const neighbors = adjList.get(currentId) || [];
 
             for (const neighbor of neighbors) {
               const neighborLevel = currentLevel + 1;
@@ -553,7 +561,6 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
 
   const hasInteraction = pinnedNode !== null || hoveredNode !== null;
 
-  // Estilos de los enlaces precalculados
   const edgeStyles = React.useMemo(() => {
     const styles: Record<
       string,
@@ -564,35 +571,24 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
         dash?: number[];
       }
     > = {};
-    filteredEdges.forEach((edge) => {
+    filteredEdges.forEach((edge: CanvasEdge) => {
       const isLinkActive = activeLinks.has(edge.id);
       const isRoute = routeLinks.has(edge.id);
       const isAnimated = isRoute || (isLinkActive && pinnedNode !== null);
-
-      const isOutbound =
-        pinnedNode !== null
-          ? edge.from === pinnedNode
-          : hoveredNode !== null
-            ? edge.from === hoveredNode
-            : false;
-
       const opacity = hasInteraction
-        ? isRoute
+        ? (isRoute
           ? 1
-          : isLinkActive
+          : (isLinkActive
             ? 0.6
-            : 0.05
+            : 0.05))
         : 0.25;
-      const strokeWidth = isRoute ? 4 : isLinkActive ? 2.5 : 1.5;
-
+      const strokeWidth = isRoute ? 4 : (isLinkActive ? 2.5 : 1.5);
       const strokeColor = isRoute
         ? "#3b82f6"
-        : isLinkActive
+        : (isLinkActive
           ? themeEdgeColor
-          : "#d1d5db";
-
+          : "#d1d5db");
       const dash = isAnimated ? [10, 5] : undefined;
-
       styles[edge.id] = { strokeColor, strokeWidth, opacity, dash };
     });
     return styles;
@@ -605,6 +601,18 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
     hasInteraction,
     themeEdgeColor,
   ]);
+
+  // Viewport visible bounds
+  const vx1 = -position.x / scale;
+  const vy1 = -position.y / scale;
+  const vx2 = vx1 + dimensions.width / scale;
+  const vy2 = vy1 + dimensions.height / scale;
+
+  const isNodeVisible = (node: CanvasNode): boolean => {
+    const margin = 100;
+    return node.x >= vx1 - margin && node.x <= vx2 + margin &&
+           node.y >= vy1 - margin && node.y <= vy2 + margin;
+  };
 
   // Cálculo para grid infinito simulado
   let BACKGROUND_GRID_SIZE = 50;
@@ -893,12 +901,13 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
 
         <Layer id="edges" ref={edgesLayerRef}>
           {/* 1. Dibujar líneas de conexión */}
-          {filteredEdges.map((edge) => {
-            const fromNode = filteredNodes.find((n) => n.id === edge.from);
-            const toNode = filteredNodes.find((n) => n.id === edge.to);
+          {filteredEdges.map((edge: CanvasEdge) => {
+            const fromNode = filteredNodes.find((n: CanvasNode) => n.id === edge.from);
+            const toNode = filteredNodes.find((n: CanvasNode) => n.id === edge.to);
             const hasNodes = !!fromNode && !!toNode;
+            const isVisible = hasNodes ? (isNodeVisible(fromNode!) || isNodeVisible(toNode!)) : false;
 
-            return hasNodes ? (
+            return hasNodes && isVisible ? (
               <Line
                 key={`line-${edge.id}`}
                 points={[fromNode!.x, fromNode!.y, toNode!.x, toNode!.y]}
@@ -913,14 +922,17 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
           })}
 
           {/* 2. Dibujar etiquetas de relación sobre las líneas */}
-          {filteredEdges.map((edge) => {
-            const fromNode = filteredNodes.find((n) => n.id === edge.from);
-            const toNode = filteredNodes.find((n) => n.id === edge.to);
+          {filteredEdges.map((edge: CanvasEdge) => {
+            const fromNode = filteredNodes.find((n: CanvasNode) => n.id === edge.from);
+            const toNode = filteredNodes.find((n: CanvasNode) => n.id === edge.to);
             const hasNodes = !!fromNode && !!toNode;
 
             const isLinkActive = activeLinks.has(edge.id);
             const isRoute = routeLinks.has(edge.id);
             const relationText = edge.relation || "";
+            const isVisible = hasNodes && isLinkActive && relationText
+              ? (isNodeVisible(fromNode!) || isNodeVisible(toNode!))
+              : false;
 
             const factor = 0.33;
             const midX = hasNodes
@@ -959,7 +971,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
                 ? "#f0f9ff"
                 : "#ffffff";
 
-            return hasNodes && isLinkActive && relationText ? (
+            return isVisible ? (
               <Group key={`label-${edge.id}`} opacity={isRoute ? 1 : 0.8}>
                 <Rect
                   x={midX - rectWidth / 2}
@@ -988,7 +1000,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
         </Layer>
 
         <Layer id="nodes">
-          {filteredNodes.map((node) => {
+          {filteredNodes.filter(isNodeVisible).map((node: CanvasNode) => {
             const { type, color } = getArchetypeTypeAndColor(node.tipo);
             const isNodeActive = !hasInteraction || activeNodes.has(node.id);
             const isPinned = pinnedNode === node.id;
