@@ -68,7 +68,7 @@ Docs/logs/
 *.tar
 
 ### Backend###
-backend/projects/*
-backend/map_assets/*
-backend/exports/*
-backend/compiled_fonts/*
+# backend/projects/*
+# backend/map_assets/*
+# backend/exports/*
+# backend/compiled_fonts/*
