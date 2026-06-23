@@ -1,8 +1,8 @@
 import React from "react";
-import { AtlasLevel, AtlasAnnotation } from "@domain/maps";
+import { AtlasLevel, AtlasAnnotation, MapMarker } from "@domain/maps";
 import { Entidad } from "@domain/database";
 
-type SidebarTab = "levels" | "notes" | "info" | null;
+type SidebarTab = "levels" | "notes" | "info" | "marker" | null;
 
 interface MapAtlasSidebarProps {
   activeSidebarTab: SidebarTab;
@@ -49,6 +49,12 @@ interface MapAtlasSidebarProps {
   levelSpacing?: number;
   setLevelSpacing?: (spacing: number) => void;
   is3D?: boolean;
+  // Marker Details Props
+  selectedMarkerId?: string | null;
+  setSelectedMarkerId?: (id: string | null) => void;
+  markers?: MapMarker[];
+  setMarkers?: React.Dispatch<React.SetStateAction<MapMarker[]>>;
+  allEntities?: Entidad[];
 }
 
 // Panel lateral colapsable estilo VS Code con las pestañas Niveles, Notas e Info
@@ -93,6 +99,11 @@ const MapAtlasSidebar: React.FC<MapAtlasSidebarProps> = ({
   levelSpacing = 100,
   setLevelSpacing,
   is3D = false,
+  selectedMarkerId = null,
+  setSelectedMarkerId,
+  markers = [],
+  setMarkers,
+  allEntities = [],
 }) => {
   const [newLevelPosition, setNewLevelPosition] = React.useState<"above" | "below">("above");
 
@@ -107,6 +118,7 @@ const MapAtlasSidebar: React.FC<MapAtlasSidebarProps> = ({
               {activeSidebarTab === "levels" && "Niveles del Atlas"}
               {activeSidebarTab === "notes" && "Anotaciones de Lore"}
               {activeSidebarTab === "info" && "Detalles del Atlas"}
+              {activeSidebarTab === "marker" && "Detalle del Marcador"}
             </h3>
             <button
               onClick={() => setActiveSidebarTab(null)}
@@ -396,6 +408,90 @@ const MapAtlasSidebar: React.FC<MapAtlasSidebarProps> = ({
                 </div>
               </div>
             )}
+
+            {/* --- TAB: MARCADOR (DETAIL) --- */}
+            {activeSidebarTab === "marker" && (() => {
+              const selectedMarker = markers.find((m) => m.id === selectedMarkerId);
+              return selectedMarker ? (
+                <div className="space-y-4">
+                  <div>
+                    <label className="font-mono text-[9px] tracking-[0.25em] text-foreground/45 uppercase block mb-1">
+                      Etiqueta del Marcador
+                    </label>
+                    <input
+                      type="text"
+                      value={selectedMarker.label || ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setMarkers ? setMarkers((prev) => prev.map((m) => m.id === selectedMarker.id ? { ...m, label: val } : m)) : undefined;
+                      }}
+                      className="w-full bg-foreground/[0.03] text-foreground border border-foreground/10 rounded px-3 py-2 font-sans text-xs outline-none focus:border-primary/50 transition-colors"
+                      placeholder="Nombre del punto de interés..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-mono text-[9px] tracking-[0.25em] text-foreground/45 uppercase block mb-1">
+                      Descripción / Lore
+                    </label>
+                    <textarea
+                      value={selectedMarker.description || ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setMarkers ? setMarkers((prev) => prev.map((m) => m.id === selectedMarker.id ? { ...m, description: val } : m)) : undefined;
+                      }}
+                      className="w-full bg-foreground/[0.03] text-foreground border border-foreground/10 rounded px-3 py-2 font-sans text-xs outline-none focus:border-primary/50 transition-colors h-24 resize-none leading-relaxed"
+                      placeholder="Información relevante o historia de este lugar..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-mono text-[9px] tracking-[0.25em] text-foreground/45 uppercase block mb-1">
+                      Vincular a la Biblia (Entidad)
+                    </label>
+                    <select
+                      value={selectedMarker.entityId || ""}
+                      onChange={(e) => {
+                        const val = e.target.value ? Number(e.target.value) : null;
+                        setMarkers ? setMarkers((prev) => prev.map((m) => m.id === selectedMarker.id ? { ...m, entityId: val } : m)) : undefined;
+                      }}
+                      className="w-full bg-background text-foreground border border-foreground/10 rounded px-3 py-2 font-sans text-xs outline-none focus:border-primary/50 transition-colors cursor-pointer"
+                    >
+                      <option value="">-- Sin vincular --</option>
+                      {allEntities.map((ent) => (
+                        <option key={ent.id} value={ent.id}>
+                          {ent.nombre} ({ent.tipo})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMarkers ? setMarkers((prev) => prev.filter((m) => m.id !== selectedMarker.id)) : undefined;
+                        setSelectedMarkerId ? setSelectedMarkerId(null) : undefined;
+                        setActiveSidebarTab("levels");
+                      }}
+                      className="w-full py-2 bg-red-500/10 border border-red-500/20 hover:bg-red-500 hover:text-white text-red-400 font-sans text-xs rounded transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">delete</span>
+                      Eliminar Marcador
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 px-4 text-center border border-dashed border-foreground/10 rounded-xl bg-foreground/[0.01]">
+                  <span className="material-symbols-outlined text-[32px] text-foreground/20 mb-2">
+                    pin_drop
+                  </span>
+                  <p className="font-serif text-[12px] italic text-foreground/40 leading-relaxed">
+                    Selecciona un marcador en el mapa para editar sus detalles y vincularlo a elementos de la Biblia de lore.
+                  </p>
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}
@@ -405,6 +501,7 @@ const MapAtlasSidebar: React.FC<MapAtlasSidebarProps> = ({
         {[
           { tab: "levels" as SidebarTab, icon: "layers", label: "Niveles del Atlas" },
           { tab: "notes"  as SidebarTab, icon: "description", label: "Anotaciones de Lore" },
+          { tab: "marker" as SidebarTab, icon: "pin_drop", label: "Detalle del Marcador" },
         ].map(({ tab, icon, label }) => (
           <div key={tab} className="relative group flex items-center justify-center">
             <button

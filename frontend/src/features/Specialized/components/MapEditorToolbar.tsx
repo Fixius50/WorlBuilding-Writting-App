@@ -15,7 +15,7 @@ export const DRAW_MODE_LABELS: Record<DrawMode, string> = {
 };
 
 export const DRAW_MODE_ICONS: Record<DrawMode, string> = {
-  none: "pan_tool",
+  none: "near_me",
   spray: "brush",
   line: "polyline",
   rectangle: "rectangle",
@@ -116,19 +116,38 @@ export const MapEditorToolbar: React.FC<MapEditorToolbarProps> = ({
       </div>
 
       <div className="monolithic-panel px-2 flex gap-1 bg-background/90 shadow-2xl border border-foreground/10 items-center">
+        {/* Select / Move Tool (Always accessible) */}
+        {!is3D && (
+          <button
+            onClick={() => setDrawMode("none")}
+            title={DRAW_MODE_LABELS["none"]}
+            className={`p-3 rounded transition-colors flex items-center justify-center ${
+              drawMode === "none"
+                ? "bg-primary/20 text-primary font-bold"
+                : "text-foreground/60 hover:bg-foreground/5"
+            }`}
+          >
+            <span className="material-symbols-outlined text-xl">{DRAW_MODE_ICONS["none"]}</span>
+          </button>
+        )}
+
+        {!is3D && <div className="w-px h-6 bg-foreground/10 mx-1" />}
+
         {/* Tool Dropdown */}
         {!is3D && (
           <div className="relative">
             <button
               onClick={() => setIsToolMenuOpen(!isToolMenuOpen)}
-              title={DRAW_MODE_LABELS[drawMode] || "Herramienta"}
+              title={["marker", "spray", "fill", "eraser"].includes(drawMode) ? DRAW_MODE_LABELS[drawMode] : "Herramientas de Dibujo"}
               className={`p-3 rounded transition-colors flex items-center gap-1 ${
-                ["none", "marker", "spray", "fill", "eraser"].includes(drawMode)
+                ["marker", "spray", "fill", "eraser"].includes(drawMode)
                   ? "bg-primary/10 text-primary font-bold"
                   : "text-foreground/60 hover:bg-foreground/5"
               }`}
             >
-              <span className="material-symbols-outlined text-xl">{DRAW_MODE_ICONS[drawMode] || DRAW_MODE_ICONS["none"]}</span>
+              <span className="material-symbols-outlined text-xl">
+                {["marker", "spray", "fill", "eraser"].includes(drawMode) ? DRAW_MODE_ICONS[drawMode] : "brush"}
+              </span>
               <span className="material-symbols-outlined text-sm">expand_more</span>
             </button>
             {isToolMenuOpen && (
@@ -136,7 +155,7 @@ export const MapEditorToolbar: React.FC<MapEditorToolbarProps> = ({
                 <div className="fixed inset-0 z-[90]" onClick={() => setIsToolMenuOpen(false)} />
                 <div className="absolute top-full left-0 mt-1 flex flex-col bg-background border border-foreground/10 shadow-2xl rounded p-1 z-[100]">
                   {(Object.entries(DRAW_MODE_LABELS) as [DrawMode, string][])
-                    .filter(([m]) => ["none", "marker", "spray", "fill", "eraser"].includes(m))
+                    .filter(([m]) => ["marker", "spray", "fill", "eraser"].includes(m))
                     .map(([m, label]) => (
                       <button
                         key={m}

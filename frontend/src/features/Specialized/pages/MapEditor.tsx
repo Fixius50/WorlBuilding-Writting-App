@@ -64,6 +64,7 @@ const MapEditor: React.FC = () => {
     consolidateGeometricFeature,
     removeFeature,
     handleFloodFill,
+    allEntities,
   } = editorState;
 
   const dragStartRef = useRef<{ lng: number; lat: number } | null>(null);
@@ -77,7 +78,7 @@ const MapEditor: React.FC = () => {
     return `url('data:image/svg+xml;utf8,${svg}') ${size/2} ${size/2}, auto`;
   }, [brushSize]);
 
-  const [activeSidebarTab, setActiveSidebarTab] = useState<"levels" | "notes" | "info" | null>("levels");
+  const [activeSidebarTab, setActiveSidebarTab] = useState<"levels" | "notes" | "info" | "marker" | null>("levels");
   // States required for MapAtlasSidebar (Dummy functions since we manage it in useMapEditor partially)
   const [hoveredLevelOpacityId, setHoveredLevelOpacityId] = useState<string | null>(null);
   const [levelOpacities, setLevelOpacities] = useState<Record<string, number>>({});
@@ -99,6 +100,7 @@ const MapEditor: React.FC = () => {
     onMarkerClick: (marker: unknown) => {
       const m = marker as { id: string };
       setSelectedMarkerId(m.id);
+      setActiveSidebarTab("marker");
     },
     onMapClick: (lng: number, lat: number) => {
       const canDeselect = drawMode === "none" || spacebarPanning;
@@ -122,13 +124,10 @@ const MapEditor: React.FC = () => {
     if (mapInstance) {
       const canvas = mapInstance.getCanvas();
       if (canvas) {
-        canvas.style.cursor = spacebarPanning
-          ? "grabbing"
-          : drawMode === "eraser"
-            ? eraserCursor
-            : drawMode !== "none"
-              ? "crosshair"
-              : "grab";
+        const isDefaultOrGrab = drawMode === "none" || spacebarPanning;
+        isDefaultOrGrab
+          ? canvas.style.removeProperty("cursor")
+          : canvas.style.setProperty("cursor", drawMode === "eraser" ? eraserCursor : "crosshair");
       }
     }
   }, [drawMode, spacebarPanning, mapInstanceRef, eraserCursor]);
@@ -241,9 +240,21 @@ const MapEditor: React.FC = () => {
         is3D={is3D}
         setIs3D={setIs3D}
       />
+      {/* CSS overrides for MapLibre Canvas cursors in Select/Pan modes */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        .map-mode-select .maplibregl-canvas:not([style*="cursor: pointer"]) {
+          cursor: default !important;
+        }
+        .map-mode-select .maplibregl-canvas:active:not([style*="cursor: pointer"]) {
+          cursor: grabbing !important;
+        }
+        .map-mode-grabbing .maplibregl-canvas {
+          cursor: grabbing !important;
+        }
+      `}} />
       {/* MAPA CONTENEDOR */}
       <main 
-        className="flex-1 relative"
+        className={`flex-1 relative ${drawMode === "none" ? "map-mode-select" : ""} ${spacebarPanning ? "map-mode-grabbing" : ""}`}
         style={{ 
           backgroundColor: mapBgColor,
           cursor: spacebarPanning
@@ -252,7 +263,7 @@ const MapEditor: React.FC = () => {
               ? eraserCursor
               : drawMode !== "none"
                 ? "crosshair"
-                : "grab"
+                : "default"
         }}
         onMouseDownCapture={(e) => {
           const canInteract = mapInstanceRef.current && !spacebarPanning && drawMode !== "none" && !is3D;
@@ -428,6 +439,11 @@ const MapEditor: React.FC = () => {
           levelSpacing={levelSpacing}
           setLevelSpacing={setLevelSpacing}
           is3D={is3D}
+          selectedMarkerId={selectedMarkerId}
+          setSelectedMarkerId={setSelectedMarkerId}
+          markers={markers}
+          setMarkers={setMarkers}
+          allEntities={allEntities}
       />
     </div>
   );
