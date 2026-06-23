@@ -282,6 +282,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<Konva.Stage>(null);
   const minimapCanvasRef = useRef<HTMLCanvasElement>(null);
+  const edgesLayerRef = useRef<Konva.Layer>(null);
   const isDraggingMinimap = useRef<boolean>(false);
 
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
@@ -294,7 +295,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
   // Estados de Interacción
   const [pinnedNode, setPinnedNode] = useState<string | null>(null);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-  const [dashOffset, setDashOffset] = useState(0);
+  // const [dashOffset, setDashOffset] = useState(0); // REMOVED FOR PERFORMANCE
 
   useEffect(() => {
     setNodes(initialNodes);
@@ -304,20 +305,34 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
     setEdges(initialEdges);
   }, [initialEdges]);
 
-  // Loop de animación para las líneas activas (flujo de datos)
+  // Animación nativa de Konva para las líneas activas (flujo de datos) sin re-renders de React
   useEffect(() => {
+    const layer = edgesLayerRef.current;
+    if (!layer) return;
+
+    const anim = new Konva.Animation((frame) => {
+      if (!frame) return;
+      const time = frame.time;
+      const offset = -Math.floor(time / 20) % 30;
+
+      const lines = layer.find("Line");
+      lines.forEach((node) => {
+        const line = node as Konva.Line;
+        if (line.dash()) {
+          line.dashOffset(offset);
+        }
+      });
+    }, layer);
+
     const hasActiveAnimation = pinnedNode !== null || hoveredNode !== null;
-    let animId: number;
-
-    const tick = () => {
-      setDashOffset((prev) => (prev - 1) % 30);
-      animId = requestAnimationFrame(tick);
-    };
-
-    hasActiveAnimation ? (animId = requestAnimationFrame(tick)) : undefined;
+    if (hasActiveAnimation) {
+      anim.start();
+    } else {
+      anim.stop();
+    }
 
     return () => {
-      hasActiveAnimation ? cancelAnimationFrame(animId) : undefined;
+      anim.stop();
     };
   }, [pinnedNode, hoveredNode]);
 
@@ -871,7 +886,7 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
           ))}
         </Layer>
 
-        <Layer id="edges">
+        <Layer id="edges" ref={edgesLayerRef}>
           {/* 1. Dibujar líneas de conexión */}
           {filteredEdges.map((edge) => {
             const fromNode = filteredNodes.find((n) => n.id === edge.from);
@@ -886,7 +901,6 @@ const UniversalCanvas: React.FC<UniversalCanvasProps> = ({
                 strokeWidth={edgeStyles[edge.id].strokeWidth}
                 opacity={edgeStyles[edge.id].opacity}
                 dash={edgeStyles[edge.id].dash}
-                dashOffset={dashOffset}
                 onClick={() => onEdgeClick?.(edge.id)}
                 onTap={() => onEdgeClick?.(edge.id)}
               />

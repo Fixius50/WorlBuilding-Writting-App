@@ -63,17 +63,31 @@ export const useNestedArchetypes = ({ projectId }: UseNestedArchetypesProps): Us
   // Fondo blanco fijo (el resto de temas se lee de CSS en otros componentes)
   const themeCanvasBackground = "#ffffff";
 
-  // Redimensionar Stage al cambiar tamaño de ventana
+  // Redimensionar Stage al cambiar tamaño de ventana o del propio contenedor
   useEffect(() => {
-    const handleResize = () => {
-      containerRef.current
-        ? setDimensions({ width: containerRef.current.offsetWidth, height: containerRef.current.offsetHeight })
-        : undefined;
+    const container = containerRef.current;
+    if (!container) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) {
+        const { width, height } = entry.contentRect;
+        if (width > 0 && height > 0) {
+          setDimensions({ width, height });
+        }
+      }
+    });
+
+    resizeObserver.observe(container);
+
+    if (container.offsetWidth > 0 && container.offsetHeight > 0) {
+      setDimensions({ width: container.offsetWidth, height: container.offsetHeight });
+    }
+
+    return () => {
+      resizeObserver.disconnect();
     };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [loading]);
 
   // Cargar datos de la red de relaciones
   useEffect(() => {
@@ -193,7 +207,7 @@ export const useNestedArchetypes = ({ projectId }: UseNestedArchetypesProps): Us
 
   // Centrar vista en un nodo al hacer clic en el panel de control
   const handleFocusNode = (nodeId: number): void => {
-    const pNode = findPositionedNode(hierarchyRoots, nodeId);
+    const pNode = flatCircles.find((c) => c.node.id === nodeId);
     pNode
       ? (() => {
           setSelectedNodeId(nodeId);
