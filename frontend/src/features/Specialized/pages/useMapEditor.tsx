@@ -2,7 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapRef, MapMouseEvent } from "react-map-gl/maplibre";
 import { MapUseCase } from "@features/Maps";
-import { Entidad } from "@domain/database";
+import { Entidad, Carpeta } from "@domain/database";
+import { folderService } from "@repositories/folderService";
 import { MapMarker, AtlasLevel, AtlasAttributes } from "@domain/maps";
 import { useMapStore } from "../../Maps/store/useMapStore";
 
@@ -100,6 +101,7 @@ export const useMapEditor = (
 
   // Entities & UI
   const [allEntities, setAllEntities] = useState<Entidad[]>([]);
+  const [allFolders, setAllFolders] = useState<Carpeta[]>([]);
   const [showEntityPicker, setShowEntityPicker] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showConfirmDelete, setShowConfirmDelete] = useState<string | null>(null);
@@ -117,8 +119,12 @@ export const useMapEditor = (
 
   const loadAllEntities = useCallback(async () => {
     try {
-      const entities = await MapUseCase.getAllEntities(Number(projectId));
+      const [entities, folders] = await Promise.all([
+        MapUseCase.getAllEntities(Number(projectId)),
+        folderService.getByProject(Number(projectId)),
+      ]);
       setAllEntities(entities);
+      setAllFolders(folders);
     } catch {}
   }, [projectId]);
 
@@ -211,6 +217,7 @@ export const useMapEditor = (
     eraserPoint,
     setEraserPoint,
     allEntities,
+    allFolders,
     showEntityPicker,
     setShowEntityPicker,
     searchQuery,

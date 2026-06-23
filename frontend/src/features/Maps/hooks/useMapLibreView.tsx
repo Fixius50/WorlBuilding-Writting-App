@@ -423,7 +423,10 @@ export const useMapLibreView = (
             lineWidthMinPixels: 2,
             stroked: true,
             filled: true,
-            pickable: false,
+            pickable: true,
+            onClick: (info: any) => {
+              if (info.object) onMarkerClickRef.current(info.object);
+            },
             updateTriggers: {
               getFillColor: [currentActiveLevelId, currentOverlayAllLayers, currentLevelOpacities],
               getLineColor: [currentActiveLevelId, currentOverlayAllLayers, currentLevelOpacities],
@@ -439,12 +442,7 @@ export const useMapLibreView = (
             getRadius: 4,
             radiusUnits: "pixels",
             getFillColor: (d: MapMarker) => [255, 255, 255, Math.round(240 * getLevelOpacity(d.layerId))],
-            pickable: true,
-            autoHighlight: true,
-            highlightColor: [...primaryRgb, 255],
-            onClick: (info: any) => {
-              if (info.object) onMarkerClickRef.current(info.object);
-            },
+            pickable: false,
             updateTriggers: {
               getFillColor: [currentActiveLevelId, currentOverlayAllLayers, currentLevelOpacities],
             },

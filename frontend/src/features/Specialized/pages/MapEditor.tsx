@@ -65,10 +65,12 @@ const MapEditor: React.FC = () => {
     removeFeature,
     handleFloodFill,
     allEntities,
+    allFolders,
   } = editorState;
 
   const dragStartRef = useRef<{ lng: number; lat: number } | null>(null);
   const tempFeatureIdRef = useRef<string | null>(null);
+  const lastMarkerClickRef = useRef<number>(0);
   const [activeGeomType, setActiveGeomType] = useState<"line" | "rectangle" | "circle">("line");
   const [isGeomMenuOpen, setIsGeomMenuOpen] = useState(false);
 
@@ -101,12 +103,12 @@ const MapEditor: React.FC = () => {
       const m = marker as { id: string };
       setSelectedMarkerId(m.id);
       setActiveSidebarTab("marker");
+      lastMarkerClickRef.current = Date.now();
     },
     onMapClick: (lng: number, lat: number) => {
-      const canDeselect = drawMode === "none" || spacebarPanning;
-      if (canDeselect) {
-        setSelectedMarkerId(null);
-      }
+      const isRecent = Date.now() - lastMarkerClickRef.current < 50;
+      const canDeselect = !isRecent && (drawMode === "none" || spacebarPanning);
+      canDeselect ? setSelectedMarkerId(null) : undefined;
     },
     is3D,
     levels,
@@ -285,6 +287,7 @@ const MapEditor: React.FC = () => {
                           const id = `m-${Date.now()}`;
                           setMarkers((prev) => [...prev, { id, lng: snapped.lng, lat: snapped.lat, label: "Nuevo POI", layerId: activeLevelId }]);
                           setSelectedMarkerId(id);
+                          setActiveSidebarTab("marker");
                           break;
                         }
                         case "line": {
@@ -444,6 +447,7 @@ const MapEditor: React.FC = () => {
           markers={markers}
           setMarkers={setMarkers}
           allEntities={allEntities}
+          allFolders={allFolders}
       />
     </div>
   );

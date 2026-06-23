@@ -1,6 +1,6 @@
 import React from "react";
 import { AtlasLevel, AtlasAnnotation, MapMarker } from "@domain/maps";
-import { Entidad } from "@domain/database";
+import { Entidad, Carpeta } from "@domain/database";
 
 type SidebarTab = "levels" | "notes" | "info" | "marker" | null;
 
@@ -55,6 +55,7 @@ interface MapAtlasSidebarProps {
   markers?: MapMarker[];
   setMarkers?: React.Dispatch<React.SetStateAction<MapMarker[]>>;
   allEntities?: Entidad[];
+  allFolders?: Carpeta[];
 }
 
 // Panel lateral colapsable estilo VS Code con las pestañas Niveles, Notas e Info
@@ -104,8 +105,41 @@ const MapAtlasSidebar: React.FC<MapAtlasSidebarProps> = ({
   markers = [],
   setMarkers,
   allEntities = [],
+  allFolders = [],
 }) => {
   const [newLevelPosition, setNewLevelPosition] = React.useState<"above" | "below">("above");
+  const [bibleSearch, setBibleSearch] = React.useState("");
+  const [expandedFolders, setExpandedFolders] = React.useState<Record<number, boolean>>({});
+
+  const toggleFolder = (folderId: number) => {
+    setExpandedFolders(prev => ({ ...prev, [folderId]: !prev[folderId] }));
+  };
+
+  const getIconForType = (type?: string) => {
+    switch (type?.toLowerCase()) {
+      case "character":
+      case "entidadindividual":
+        return "person";
+      case "magia":
+      case "hechizo":
+        return "auto_awesome";
+      case "location":
+      case "zona":
+      case "construccion":
+        return "location_on";
+      case "culture":
+      case "entidadcolectiva":
+      case "claseprofesion":
+        return "groups";
+      case "universe":
+      case "galaxy":
+      case "system":
+      case "planet":
+        return "public";
+      default:
+        return "description";
+    }
+  };
 
   return (
     <div className="absolute top-3 right-4 h-[calc(100%-24px)] z-20 flex items-stretch gap-2.5 pointer-events-none select-none">
@@ -395,7 +429,7 @@ const MapAtlasSidebar: React.FC<MapAtlasSidebarProps> = ({
                 </div>
                 <div className="pt-4 border-t border-foreground/10 space-y-3 bg-transparent">
                   <span className="font-sans text-[11px] font-bold text-foreground/45 block">Estadísticas Rápidas</span>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     <div className="bg-foreground/[0.02] border border-foreground/5 p-3 rounded-lg text-center">
                       <span className="font-mono text-lg font-bold text-primary">{levels.length}</span>
                       <span className="text-[9px] uppercase tracking-wider text-foreground/40 block mt-0.5">Niveles</span>
@@ -403,6 +437,10 @@ const MapAtlasSidebar: React.FC<MapAtlasSidebarProps> = ({
                     <div className="bg-foreground/[0.02] border border-foreground/5 p-3 rounded-lg text-center">
                       <span className="font-mono text-lg font-bold text-primary">{annotations.length}</span>
                       <span className="text-[9px] uppercase tracking-wider text-foreground/40 block mt-0.5">Notas</span>
+                    </div>
+                    <div className="bg-foreground/[0.02] border border-foreground/5 p-3 rounded-lg text-center">
+                      <span className="font-mono text-lg font-bold text-primary">{markers.length}</span>
+                      <span className="text-[9px] uppercase tracking-wider text-foreground/40 block mt-0.5">Indicadores</span>
                     </div>
                   </div>
                 </div>
@@ -446,24 +484,190 @@ const MapAtlasSidebar: React.FC<MapAtlasSidebarProps> = ({
                   </div>
 
                   <div>
-                    <label className="font-mono text-[9px] tracking-[0.25em] text-foreground/45 uppercase block mb-1">
-                      Vincular a la Biblia (Entidad)
+                    <label className="font-mono text-[9px] tracking-[0.25em] text-foreground/45 uppercase block mb-1.5">
+                      Vincular a la Biblia (Codex)
                     </label>
-                    <select
-                      value={selectedMarker.entityId || ""}
-                      onChange={(e) => {
-                        const val = e.target.value ? Number(e.target.value) : null;
-                        setMarkers ? setMarkers((prev) => prev.map((m) => m.id === selectedMarker.id ? { ...m, entityId: val } : m)) : undefined;
-                      }}
-                      className="w-full bg-background text-foreground border border-foreground/10 rounded px-3 py-2 font-sans text-xs outline-none focus:border-primary/50 transition-colors cursor-pointer"
-                    >
-                      <option value="">-- Sin vincular --</option>
-                      {allEntities.map((ent) => (
-                        <option key={ent.id} value={ent.id}>
-                          {ent.nombre} ({ent.tipo})
-                        </option>
-                      ))}
-                    </select>
+                    
+                    {/* Caja de Búsqueda de Biblia */}
+                    <div className="relative mb-2">
+                      <input
+                        type="text"
+                        value={bibleSearch}
+                        onChange={(e) => setBibleSearch(e.target.value)}
+                        placeholder="Buscar en el Codex..."
+                        className="w-full bg-foreground/[0.03] text-foreground border border-foreground/10 rounded pl-8 pr-3 py-1.5 font-sans text-xs outline-none focus:border-primary/50 transition-colors"
+                      />
+                      <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-xs text-foreground/30">
+                        search
+                      </span>
+                      {bibleSearch && (
+                        <button
+                          type="button"
+                          onClick={() => setBibleSearch("")}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground flex items-center justify-center cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-[12px]">close</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Previsualización del Árbol de Carpetas/Entidades */}
+                    <div className="border border-foreground/10 rounded-lg bg-foreground/[0.01] max-h-48 overflow-y-auto p-2 space-y-1 text-xs custom-scrollbar">
+                      {/* Mostrar Entidad actualmente vinculada */}
+                      {selectedMarker.entityId ? (() => {
+                        const linkedEnt = allEntities.find((e) => e.id === selectedMarker.entityId);
+                        return linkedEnt ? (
+                          <div className="flex items-center justify-between bg-primary/10 border border-primary/20 rounded p-1.5 mb-2 font-bold text-primary">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="material-symbols-outlined text-[14px] shrink-0">
+                                {getIconForType(linkedEnt.tipo)}
+                              </span>
+                              <span className="truncate">{linkedEnt.nombre}</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setMarkers ? setMarkers((prev) => prev.map((m) => m.id === selectedMarker.id ? { ...m, entityId: null } : m)) : undefined;
+                              }}
+                              className="text-[10px] text-red-400 hover:text-red-500 font-sans cursor-pointer uppercase font-black"
+                            >
+                              Desvincular
+                            </button>
+                          </div>
+                        ) : null;
+                      })() : (
+                        <div className="text-[10px] text-foreground/40 italic mb-2">Ninguna entidad vinculada.</div>
+                      )}
+
+                      {/* Renderizado de Búsqueda Flat o Árbol Jerárquico */}
+                      {bibleSearch ? (() => {
+                        const filtered = allEntities.filter((e) => e.nombre.toLowerCase().includes(bibleSearch.toLowerCase()));
+                        return filtered.length > 0 ? (
+                          <div className="space-y-0.5">
+                            {filtered.map((ent) => (
+                              <button
+                                key={ent.id}
+                                type="button"
+                                onClick={() => {
+                                  setMarkers ? setMarkers((prev) => prev.map((m) => m.id === selectedMarker.id ? { ...m, label: ent.nombre, entityId: ent.id } : m)) : undefined;
+                                }}
+                                className="w-full text-left flex items-center gap-2 p-1 rounded hover:bg-primary/5 transition-colors cursor-pointer text-foreground/80 hover:text-foreground"
+                              >
+                                <span className="material-symbols-outlined text-[14px] opacity-60">
+                                  {getIconForType(ent.tipo)}
+                                </span>
+                                <span className="truncate flex-1 font-medium">{ent.nombre}</span>
+                              </button>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-4 text-[10px] text-foreground/35 uppercase font-black italic">Sin coincidencias</div>
+                        );
+                      })() : (() => {
+                        // Renderizado de árbol jerárquico recursivo
+                        const renderNode = (parentFolderId: number | null, depth = 0): React.ReactNode => {
+                          const levelFolders = allFolders.filter((f) => f.padre_id === parentFolderId);
+                          const levelEntities = allEntities.filter((e) => e.carpeta_id === parentFolderId);
+
+                          const hasItems = levelFolders.length > 0 || levelEntities.length > 0;
+                          return hasItems ? (
+                            <div className="space-y-1">
+                              {/* Carpetas */}
+                              {levelFolders.map((folder) => {
+                                const isExpanded = !!expandedFolders[folder.id];
+                                return (
+                                  <div key={folder.id} style={{ marginLeft: `${depth * 6}px` }}>
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleFolder(folder.id)}
+                                      style={{ position: "sticky", top: `${depth * 24}px`, zIndex: 10 - depth, backgroundColor: "hsl(var(--background))" }}
+                                      className="w-full text-left flex items-center gap-1.5 p-1 rounded hover:bg-foreground/5 transition-colors cursor-pointer text-foreground/70"
+                                    >
+                                      <span className={`material-symbols-outlined text-[14px] transition-transform ${isExpanded ? "rotate-90 text-primary" : "opacity-40"}`}>
+                                        chevron_right
+                                      </span>
+                                      <span className="material-symbols-outlined text-[14px] text-yellow-500/80">
+                                        folder
+                                      </span>
+                                      <span className="truncate flex-1 font-bold">{folder.nombre}</span>
+                                    </button>
+                                    {isExpanded && renderNode(folder.id, depth + 1)}
+                                  </div>
+                                );
+                              })}
+                              {/* Entidades directas del nivel */}
+                              {levelEntities.map((ent) => (
+                                <button
+                                  key={ent.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setMarkers ? setMarkers((prev) => prev.map((m) => m.id === selectedMarker.id ? { ...m, label: ent.nombre, entityId: ent.id } : m)) : undefined;
+                                  }}
+                                  style={{ marginLeft: `${(depth + 1) * 8}px` }}
+                                  className="w-full text-left flex items-center gap-2 p-1 rounded hover:bg-primary/5 transition-colors cursor-pointer text-foreground/80 hover:text-foreground"
+                                >
+                                  <span className="material-symbols-outlined text-[14px] opacity-60">
+                                    {getIconForType(ent.tipo)}
+                                  </span>
+                                  <span className="truncate flex-1 font-medium">{ent.nombre}</span>
+                                </button>
+                              ))}
+                            </div>
+                          ) : null;
+                        };
+
+                        // Iniciar con las carpetas raíz (padre_id es null o indefinido) y entidades raíz (carpeta_id es null o indefinido)
+                        const rootFolders = allFolders.filter((f) => !f.padre_id);
+                        const rootEntities = allEntities.filter((e) => !e.carpeta_id);
+                        const hasRootItems = rootFolders.length > 0 || rootEntities.length > 0;
+
+                        return hasRootItems ? (
+                          <div className="space-y-1">
+                            {/* Carpetas Raíz */}
+                            {rootFolders.map((folder) => {
+                              const isExpanded = !!expandedFolders[folder.id];
+                              return (
+                                <div key={folder.id}>
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleFolder(folder.id)}
+                                    style={{ position: "sticky", top: "0px", zIndex: 10, backgroundColor: "hsl(var(--background))" }}
+                                    className="w-full text-left flex items-center gap-1.5 p-1 rounded hover:bg-foreground/5 transition-colors cursor-pointer text-foreground/70"
+                                  >
+                                    <span className={`material-symbols-outlined text-[14px] transition-transform ${isExpanded ? "rotate-90 text-primary" : "opacity-40"}`}>
+                                      chevron_right
+                                    </span>
+                                    <span className="material-symbols-outlined text-[14px] text-yellow-500/80">
+                                      folder
+                                    </span>
+                                    <span className="truncate flex-1 font-bold">{folder.nombre}</span>
+                                  </button>
+                                  {isExpanded && renderNode(folder.id, 1)}
+                                </div>
+                              );
+                            })}
+                            {/* Entidades Raíz */}
+                            {rootEntities.map((ent) => (
+                              <button
+                                key={ent.id}
+                                type="button"
+                                onClick={() => {
+                                  setMarkers ? setMarkers((prev) => prev.map((m) => m.id === selectedMarker.id ? { ...m, label: ent.nombre, entityId: ent.id } : m)) : undefined;
+                                }}
+                                className="w-full text-left flex items-center gap-2 p-1 rounded hover:bg-primary/5 transition-colors cursor-pointer text-foreground/80 hover:text-foreground pl-4"
+                              >
+                                <span className="material-symbols-outlined text-[14px] opacity-60">
+                                  {getIconForType(ent.tipo)}
+                                </span>
+                                <span className="truncate flex-1 font-medium">{ent.nombre}</span>
+                              </button>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-4 text-[10px] text-foreground/35 uppercase font-black italic">Vacío</div>
+                        );
+                      })()}
+                    </div>
                   </div>
 
                   <div className="pt-2">
