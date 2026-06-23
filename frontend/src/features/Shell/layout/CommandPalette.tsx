@@ -54,7 +54,7 @@ const CommandPalette = ({
   const navCommands: CommandItem[] = [
     {
       id: "nav-bible",
-      label: "Ir a la Biblia del Mundo",
+      label: "Ir al Códice",
       icon: "auto_stories",
       group: "Navegación",
       action: () => closeAndNavigate(`${base}/bible`),

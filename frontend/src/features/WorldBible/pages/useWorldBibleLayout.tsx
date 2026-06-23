@@ -90,7 +90,7 @@ export const useWorldBibleLayout = (architectContext: ArchitectContext) => {
   }, [location.pathname]);
 
   const dynamicTitle = useMemo(() => {
-    if (isRoot) return "Biblia del Mundo";
+    if (isRoot) return "Códice";
 
     if (location.pathname.includes("/timeline")) {
       return currentFolder

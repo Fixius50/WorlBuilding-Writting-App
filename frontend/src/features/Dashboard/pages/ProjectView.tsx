@@ -48,15 +48,15 @@ const ProjectView: React.FC = () => {
     {
       icon: "menu_book",
       label: "Codex",
-      title: t("project.codex_title") || "Biblia del Mundo",
+      title: t("project.codex_title") || "Códice",
       desc: t("project.codex_desc") || "El compendio histórico y enciclopedia de tu universo.",
       path: `${baseUrl}/bible`,
     },
     {
       icon: "map",
       label: "Atlas",
-      title: t("project.atlas_title") || "Atlas y Mapas",
-      desc: t("project.atlas_desc") || "Cartografía interactiva y geografía política de tus reinos.",
+      title: t("project.atlas_title") || "Planos y Mapas",
+      desc: t("project.atlas_desc") || "Cartografía interactiva y planos detallados de tus reinos.",
       path: `${baseUrl}/map`,
     },
     {

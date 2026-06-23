@@ -174,9 +174,9 @@ export const useArchitectLayout = () => {
 
     switch (true) {
       case isBible:
-        return t("nav.bible") || "Biblia del Mundo";
+        return t("nav.bible") || "Códice";
       case isExplorador: {
-        const baseName = t("nav.bible") || "Biblia del Mundo";
+        const baseName = t("nav.bible") || "Códice";
         const folderMatch = path.match(/\/bible\/folder\/(\w+)/);
         const folderIdStr = folderMatch ? folderMatch[1] : null;
         const entityMatch = path.match(/\/entity\/(\d+)/);
@@ -214,7 +214,7 @@ export const useArchitectLayout = () => {
         return `${baseName}${folderName}${entityName}`;
       }
       case isMap:
-        return t("nav.atlas") || "Atlas";
+        return t("nav.atlas") || "Planos";
       case isTimeline:
         return t("nav.chronology") || "Cronologia";
       case isTime:

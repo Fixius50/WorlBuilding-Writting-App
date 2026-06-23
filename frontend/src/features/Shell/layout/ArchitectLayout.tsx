@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet, NavLink, Link } from "react-router-dom";
 import { useLanguage } from "@context/LanguageContext";
 import GlobalRightPanel from "./GlobalRightPanel";
@@ -367,7 +367,7 @@ const ArchitectLayout: React.FC = () => {
                   <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">
                     menu_book
                   </span>
-                  <span className="font-bold">Biblia del Mundo</span>
+                  <span className="font-bold">Códice</span>
                 </Link>
                 <Link
                   to={`${baseUrl}/planning`}
@@ -419,7 +419,7 @@ const ArchitectLayout: React.FC = () => {
                   <span className="material-symbols-outlined text-xs text-indigo-400 font-bold">
                     map
                   </span>
-                  <span className="font-bold">Atlas y Mapas</span>
+                  <span className="font-bold">Planos y Mapas</span>
                 </Link>
                 <Link
                   to={`${baseUrl}/timeline`}
