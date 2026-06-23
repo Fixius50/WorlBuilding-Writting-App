@@ -536,7 +536,7 @@ const MapEditor: React.FC = () => {
                           break;
                         }
                         case "fill": {
-                          handleFloodFill(snapped.lng, snapped.lat);
+                          handleFloodFill(rawLngLat.lng, rawLngLat.lat, mapInstanceRef.current);
                           break;
                         }
                         case "eraser": {

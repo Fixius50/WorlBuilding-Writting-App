@@ -440,119 +440,264 @@ export const useMapEditor = (
   );
 
   const handleFloodFill = useCallback(
-    (clickLng: number, clickLat: number) => {
-      const GRID_SPACING = 1;
-      const spacing = gridMode !== "none" ? GRID_SPACING : 0.05;
+    (clickLng: number, clickLat: number, mapInstance?: maplibregl.Map | null) => {
+      // Límites de pantalla por defecto o del viewport activo
+      let minLng = -180;
+      let maxLng = 180;
+      let minLat = -85;
+      let maxLat = 85;
 
-      const currentLevelMuros = features.features.filter((f) => {
-        const isLine = f.geometry.type === "LineString";
+      mapInstance
+        ? (() => {
+            const bounds = mapInstance.getBounds();
+            minLng = bounds.getWest();
+            maxLng = bounds.getEast();
+            minLat = bounds.getSouth();
+            maxLat = bounds.getNorth();
+          })()
+        : undefined;
+
+      const currentLevelObstacles = features.features.filter((f) => {
         const isSameLevel = f.properties?.levelId === activeLevelId;
-        return isLine && isSameLevel;
+        const isLineOrPoly = f.geometry.type === "LineString" || f.geometry.type === "Polygon";
+        return isSameLevel && isLineOrPoly;
       });
 
-      const segments: { p1: [number, number]; p2: [number, number] }[] = [];
-      currentLevelMuros.forEach((muro) => {
-        const coords = muro.geometry.coordinates as [number, number][];
-        coords.forEach((c, i) => {
-          const hasNext = i < coords.length - 1;
-          hasNext
-            ? segments.push({ p1: c, p2: coords[i + 1] })
-            : undefined;
-        });
-      });
+      // RASTERIZACIÓN VIRTUAL EN MEMORIA DE LOS MUROS
+      let width = 800;
+      let height = 600;
+      let pixelData = new Uint8ClampedArray(width * height * 4);
+      
+      mapInstance
+        ? (() => {
+            const canvasElement = mapInstance.getCanvas();
+            width = canvasElement.clientWidth || 800;
+            height = canvasElement.clientHeight || 600;
 
-      const ccw = (p1: [number, number], p2: [number, number], p3: [number, number]): boolean => {
-        return (p3[1] - p1[1]) * (p2[0] - p1[0]) > (p2[1] - p1[1]) * (p3[0] - p1[0]);
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d")!;
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.strokeStyle = "#000000";
+            // Aumentamos ligeramente el grosor del obstáculo virtual para evitar fugas entre uniones
+            ctx.lineWidth = Math.max(3, brushSize);
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+
+            currentLevelObstacles.forEach((obs) => {
+              const isLine = obs.geometry.type === "LineString";
+              isLine
+                ? (() => {
+                    const coords = obs.geometry.coordinates as [number, number][];
+                    ctx.beginPath();
+                    coords.forEach((coord, index) => {
+                      const pt = mapInstance.project(coord);
+                      index === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y);
+                    });
+                    ctx.stroke();
+                  })()
+                : (() => {
+                    const rings = obs.geometry.coordinates as [number, number][][];
+                    rings.forEach((ring) => {
+                      ctx.fillStyle = "#000000";
+                      ctx.beginPath();
+                      ring.forEach((coord, index) => {
+                        const pt = mapInstance.project(coord);
+                        index === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y);
+                      });
+                      ctx.closePath();
+                      ctx.fill();
+                      ctx.stroke();
+                    });
+                  })();
+            });
+
+            const imgData = ctx.getImageData(0, 0, width, height);
+            pixelData = imgData.data;
+          })()
+        : undefined;
+
+      const isBlockedPixel = (lng: number, lat: number): boolean => {
+        const hasInstance = !!mapInstance;
+        return hasInstance
+          ? (() => {
+              const pt = mapInstance!.project([lng, lat]);
+              const px = Math.round(pt.x);
+              const py = Math.round(pt.y);
+              const inside = px >= 0 && px < width && py >= 0 && py < height;
+              return inside
+                ? pixelData[(py * width + px) * 4] < 128
+                : false;
+            })()
+          : false;
       };
 
-      const intersect = (
-        p1: [number, number], p2: [number, number],
-        p3: [number, number], p4: [number, number]
-      ): boolean => {
-        const isCcw1 = ccw(p1, p3, p4) !== ccw(p2, p3, p4);
-        const isCcw2 = ccw(p1, p2, p3) !== ccw(p1, p2, p4);
-        return isCcw1 && isCcw2;
-      };
+      // Inundación sobre una rejilla ortogonal adaptada a la pantalla visible
+      const cols = 250;
+      const rows = 250;
+      const spacingLng = (maxLng - minLng) / cols;
+      const spacingLat = (maxLat - minLat) / rows;
 
-      const cx0 = Math.round(clickLng / spacing) * spacing;
-      const cy0 = Math.round(clickLat / spacing) * spacing;
+      const startI = Math.floor((clickLng - minLng) / spacingLng);
+      const startJ = Math.floor((clickLat - minLat) / spacingLat);
 
-      const queue: [number, number][] = [[cx0, cy0]];
-      const visited = new Set<string>();
-      visited.add(`${cx0},${cy0}`);
-      const filledCells: [number, number][] = [[cx0, cy0]];
+      const insideStart = startI >= 0 && startI < cols && startJ >= 0 && startJ < rows;
 
-      const maxCells = 800;
-      let cellCount = 0;
+      if (insideStart) {
+        const queue: [number, number][] = [[startI, startJ]];
+        const visited = new Set<string>();
+        visited.add(`${startI},${startJ}`);
+        const filledCells: [number, number][] = [[startI, startJ]];
 
-      while (queue.length > 0 && cellCount < maxCells) {
-        const curr = queue.shift()!;
-        cellCount++;
-        const [cx, cy] = curr;
+        const checkBlocked = (i: number, j: number, ni: number, nj: number): boolean => {
+          const pMid = [
+            minLng + ((i + ni) / 2 + 0.5) * spacingLng,
+            minLat + ((j + nj) / 2 + 0.5) * spacingLat
+          ] as [number, number];
+          const pDest = [
+            minLng + (ni + 0.5) * spacingLng,
+            minLat + (nj + 0.5) * spacingLat
+          ] as [number, number];
+          return isBlockedPixel(pMid[0], pMid[1]) || isBlockedPixel(pDest[0], pDest[1]);
+        };
 
-        const directions: [number, number][] = [
-          [cx + spacing, cy],
-          [cx - spacing, cy],
-          [cx, cy + spacing],
-          [cx, cy - spacing]
-        ];
+        while (queue.length > 0) {
+          const curr = queue.shift()!;
+          const [ci, cj] = curr;
 
-        directions.forEach(([nx, ny]) => {
-          const key = `${nx},${ny}`;
-          const isVisited = visited.has(key);
-          
-          isVisited
-            ? undefined
-            : (() => {
-                let blocked = false;
-                segments.forEach((seg) => {
-                  const isBlocked = intersect([cx, cy], [nx, ny], seg.p1, seg.p2);
-                  isBlocked ? (blocked = true) : undefined;
-                });
+          const directions: [number, number][] = [
+            [ci + 1, cj],
+            [ci - 1, cj],
+            [ci, cj + 1],
+            [ci, cj - 1]
+          ];
 
-                blocked
-                  ? undefined
-                  : (() => {
-                      visited.add(key);
-                      queue.push([nx, ny]);
-                      filledCells.push([nx, ny]);
-                    })();
-              })();
-        });
-      }
-
-      const half = spacing / 2;
-      const polyCoords = filledCells.map(([cx, cy]) => [
-        [
-          [cx - half, cy - half],
-          [cx + half, cy - half],
-          [cx + half, cy + half],
-          [cx - half, cy + half],
-          [cx - half, cy - half]
-        ]
-      ]);
-
-      const fillFeature = {
-        type: "Feature" as const,
-        geometry: {
-          type: "MultiPolygon" as const,
-          coordinates: polyCoords
-        },
-        properties: {
-          levelId: activeLevelId,
-          color: brushColor,
-          width: brushSize,
-          type: "fill",
-          timestamp: Date.now()
+          directions.forEach(([ni, nj]) => {
+            const key = `${ni},${nj}`;
+            if (ni >= 0 && ni < cols && nj >= 0 && nj < rows && !visited.has(key)) {
+              if (!checkBlocked(ci, cj, ni, nj)) {
+                visited.add(key);
+                queue.push([ni, nj]);
+                filledCells.push([ni, nj]);
+              }
+            }
+          });
         }
-      };
 
-      setFeatures((prev: GeoFeatureCollection) => ({
-        ...prev,
-        features: [...prev.features, fillFeature]
-      }));
+        // EXTRAER SÓLO LAS ARISTAS FRONTERA EXTERIORES utilizando índices enteros de esquinas
+        const boundaryEdges: { p1: [number, number]; p2: [number, number] }[] = [];
+
+        filledCells.forEach(([i, j]) => {
+          const c0: [number, number] = [i, j];
+          const c1: [number, number] = [i + 1, j];
+          const c2: [number, number] = [i + 1, j + 1];
+          const c3: [number, number] = [i, j + 1];
+
+          const edges = [
+            { p1: c0, p2: c1, neighborKey: `${i},${j - 1}` },
+            { p1: c1, p2: c2, neighborKey: `${i + 1},${j}` },
+            { p1: c2, p2: c3, neighborKey: `${i},${j + 1}` },
+            { p1: c3, p2: c0, neighborKey: `${i - 1},${j}` }
+          ];
+
+          edges.forEach((edge) => {
+            const isNeighborFilled = visited.has(edge.neighborKey);
+            if (!isNeighborFilled) {
+              boundaryEdges.push({ p1: edge.p1, p2: edge.p2 });
+            }
+          });
+        });
+
+        // CONECTAR LAS ARISTAS EN UNO O MÁS CAMINOS CERRADOS en tiempo O(E) usando mapa de adyacencia
+        const adjMap = new Map<string, { to: [number, number]; edgeId: number }[]>();
+        boundaryEdges.forEach((edge, index) => {
+          const k1 = `${edge.p1[0]},${edge.p1[1]}`;
+          const k2 = `${edge.p2[0]},${edge.p2[1]}`;
+          
+          if (!adjMap.has(k1)) {
+            adjMap.set(k1, []);
+          }
+          if (!adjMap.has(k2)) {
+            adjMap.set(k2, []);
+          }
+          adjMap.get(k1)!.push({ to: edge.p2, edgeId: index });
+          adjMap.get(k2)!.push({ to: edge.p1, edgeId: index });
+        });
+
+        const usedEdges = new Set<number>();
+        const polygons: [number, number][][] = [];
+
+        boundaryEdges.forEach((startEdge, index) => {
+          const isUsed = usedEdges.has(index);
+          if (!isUsed) {
+            usedEdges.add(index);
+            const currentPath: [number, number][] = [startEdge.p1, startEdge.p2];
+            let lastPt = startEdge.p2;
+            let foundNext = true;
+
+            while (foundNext) {
+              foundNext = false;
+              const lastKey = `${lastPt[0]},${lastPt[1]}`;
+              const neighbors = adjMap.get(lastKey) || [];
+              
+              let nextNeighbor: { to: [number, number]; edgeId: number } | null = null;
+              for (let k = 0; k < neighbors.length; k++) {
+                const n = neighbors[k];
+                if (!usedEdges.has(n.edgeId)) {
+                  nextNeighbor = n;
+                  break;
+                }
+              }
+
+              if (nextNeighbor) {
+                usedEdges.add(nextNeighbor.edgeId);
+                currentPath.push(nextNeighbor.to);
+                lastPt = nextNeighbor.to;
+                foundNext = true;
+              }
+            }
+
+            if (currentPath.length >= 3) {
+              polygons.push(currentPath);
+            }
+          }
+        });
+
+        // Convertir esquinas de rejilla a coordenadas geográficas
+        const polyCoords = polygons.map((poly) => {
+          const coords = poly.map(([x, y]) => {
+            const lng = minLng + x * spacingLng;
+            const lat = minLat + y * spacingLat;
+            return [lng, lat] as [number, number];
+          });
+          return [coords];
+        });
+
+        const fillFeature: GeoFeature = {
+          type: "Feature" as const,
+          geometry: {
+            type: "MultiPolygon" as const,
+            coordinates: polyCoords
+          },
+          properties: {
+            levelId: activeLevelId,
+            color: brushColor,
+            width: brushSize,
+            type: "fill",
+            timestamp: Date.now()
+          }
+        };
+
+        setFeatures((prev: GeoFeatureCollection) => ({
+          ...prev,
+          features: [...prev.features, fillFeature]
+        }));
+      }
     },
-    [features, activeLevelId, brushColor, brushSize, gridMode, setFeatures]
+    [features, activeLevelId, brushColor, brushSize, setFeatures]
   );
 
   return {

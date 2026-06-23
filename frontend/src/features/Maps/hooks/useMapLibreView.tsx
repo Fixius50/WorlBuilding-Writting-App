@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useCallback, useState, useMemo } from "react";
 import maplibregl from "maplibre-gl";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import type { PickingInfo } from "@deck.gl/core";
@@ -18,12 +18,16 @@ type ConnectionPath = {
   width: number;
 };
 
+type GeoFeature = {
+  id?: string | number;
+  type: "Feature";
+  geometry: { type: string; coordinates: unknown };
+  properties?: Record<string, unknown>;
+};
+
 interface GeoFeatureCollection {
   type: string;
-  features: Array<{
-    properties?: Record<string, unknown>;
-    geometry: { type: string; coordinates: unknown };
-  }>;
+  features: GeoFeature[];
 }
 
 export const GRID_SPACING = 1; // Degrees spacing
@@ -98,11 +102,69 @@ export const useMapLibreView = (
       : getThemePrimaryRgb();
   };
 
+  const getLevelZ = useCallback(
+    (levelId?: string | null): number =>
+      is3D
+        ? (() => {
+            const normId = !levelId || levelId === "main" ? "l0" : levelId;
+            const level = levels.find((l) => l.id === normId);
+            const zIndex = level?.z_index ?? levels.findIndex((l) => l.id === normId);
+            const validZIndex = zIndex === -1 ? 0 : zIndex;
+            return validZIndex * levelSpacing;
+          })()
+        : 0,
+    [is3D, levels, levelSpacing]
+  );
+
+  const projectedFeatures = useMemo(
+    (): GeoFeature[] =>
+      features?.features?.length
+        ? features.features.map((f: GeoFeature) => {
+            const levelId = (f.properties?.levelId || f.properties?.layerId) as string | undefined;
+            const z = getLevelZ(levelId);
+
+            const injectZ = (coords: unknown): unknown =>
+              Array.isArray(coords)
+                ? typeof coords[0] === "number"
+                  ? [coords[0], coords[1], z]
+                  : coords.map(injectZ)
+                : coords;
+
+            return {
+              ...f,
+              geometry: {
+                ...f.geometry,
+                coordinates: injectZ(f.geometry.coordinates),
+              },
+            };
+          })
+        : [],
+    [features, getLevelZ]
+  );
+
+  const visibleFeatures = useMemo(
+    (): GeoFeature[] => {
+      const isLevelVisible = (levelId?: string | null): boolean =>
+        is3D
+          ? true
+          : (() => {
+              const normId = !levelId || levelId === "main" ? "l0" : levelId;
+              return normId === activeLevelId || overlayAllLayers;
+            })();
+
+      return projectedFeatures.filter((f: GeoFeature) => {
+        const levelId = (f.properties?.levelId || f.properties?.layerId) as string | undefined;
+        return isLevelVisible(levelId);
+      });
+    },
+    [projectedFeatures, is3D, activeLevelId, overlayAllLayers]
+  );
+
   const buildDeckLayers = useCallback(
     (
       currentMarkers: MapMarker[],
       currentConnections: MapConnection[],
-      currentFeatures: GeoFeatureCollection | undefined,
+      currentVisibleFeatures: GeoFeature[],
       currentLayers: MapLayer[],
       currentLevels: AtlasLevel[],
       currentActiveLevelId: string,
@@ -117,29 +179,35 @@ export const useMapLibreView = (
       const primaryRgb = getThemePrimaryRgb();
       const deckLayers: unknown[] = [];
 
-      const getLevelZ = (levelId?: string | null): number => {
-        if (!currentIs3D) return 0;
-        const normId = (!levelId || levelId === "main") ? "l0" : levelId;
-        const level = currentLevels.find((l) => l.id === normId);
-        const zIndex = level?.z_index ?? currentLevels.findIndex((l) => l.id === normId);
-        const validZIndex = zIndex === -1 ? 0 : zIndex;
-        return validZIndex * currentSpacing;
-      };
+      const getLevelZ = (levelId?: string | null): number =>
+        currentIs3D
+          ? (() => {
+              const normId = !levelId || levelId === "main" ? "l0" : levelId;
+              const level = currentLevels.find((l) => l.id === normId);
+              const zIndex = level?.z_index ?? currentLevels.findIndex((l) => l.id === normId);
+              const validZIndex = zIndex === -1 ? 0 : zIndex;
+              return validZIndex * currentSpacing;
+            })()
+          : 0;
 
-      const isLevelVisible = (levelId?: string | null): boolean => {
-        if (currentIs3D) return true;
-        const normId = (!levelId || levelId === "main") ? "l0" : levelId;
-        return normId === currentActiveLevelId || currentOverlayAllLayers;
-      };
+      const isLevelVisible = (levelId?: string | null): boolean =>
+        currentIs3D
+          ? true
+          : (() => {
+              const normId = !levelId || levelId === "main" ? "l0" : levelId;
+              return normId === currentActiveLevelId || currentOverlayAllLayers;
+            })();
 
-      const getLevelOpacity = (levelId?: string | null): number => {
-        if (currentIs3D) return 1;
-        const normId = (!levelId || levelId === "main") ? "l0" : levelId;
-        const baseOpacity = currentLevelOpacities[normId] !== undefined
-          ? currentLevelOpacities[normId]
-          : 1;
-        return normId === currentActiveLevelId ? baseOpacity : (currentOverlayAllLayers ? baseOpacity * 0.3 : 0);
-      };
+      const getLevelOpacity = (levelId?: string | null): number =>
+        currentIs3D
+          ? 1
+          : (() => {
+              const normId = !levelId || levelId === "main" ? "l0" : levelId;
+              const baseOpacity = currentLevelOpacities[normId] !== undefined
+                ? currentLevelOpacities[normId]
+                : 1;
+              return normId === currentActiveLevelId ? baseOpacity : (currentOverlayAllLayers ? baseOpacity * 0.3 : 0);
+            })();
 
       // 1. Fondos de Nivel (BitmapLayers)
       const renderLevels = currentLevels.length > 0 ? currentLevels : [{ id: currentActiveLevelId || "l0", name: "Default" }];
@@ -289,87 +357,52 @@ export const useMapLibreView = (
       }
 
       // 3. Dibujos Vectoriales GeoJSON
-      if (currentFeatures?.features?.length) {
-        const visibleFeatures = currentFeatures.features.filter(f => {
-          const levelId = (f.properties?.levelId || f.properties?.layerId) as string | undefined;
-          return isLevelVisible(levelId);
-        });
-
-        const projectedFeatures = visibleFeatures.map(f => {
-          const levelId = (f.properties?.levelId || f.properties?.layerId) as string | undefined;
-          const z = getLevelZ(levelId);
-          
-          const injectZ = (coords: unknown): unknown => {
-            if (Array.isArray(coords) && typeof coords[0] === 'number') {
-              return [coords[0], coords[1], z];
-            }
-            if (Array.isArray(coords)) {
-              return coords.map(injectZ);
-            }
-            return coords;
-          };
-
-          return {
-            ...f,
-            geometry: {
-              ...f.geometry,
-              coordinates: injectZ(f.geometry.coordinates)
-            }
-          };
-        });
-
-        if (projectedFeatures.length > 0) {
-          const geojsonData: GeoFeatureCollection = {
-            type: "FeatureCollection",
-            features: projectedFeatures,
-          };
-
-          deckLayers.push(
-            new GeoJsonLayer({
-              id: `deck-geojson-drawings`,
-              data: geojsonData as any,
-              getLineColor: (f: unknown) => {
-                const feat = f as { properties?: Record<string, unknown> };
-                const c = typeof feat.properties?.color === 'string' ? hexToRgb(feat.properties.color) : primaryRgb;
-                const lId = (feat.properties?.levelId || feat.properties?.layerId) as string | undefined;
-                return [c[0], c[1], c[2], Math.round(getLevelOpacity(lId) * 255)] as [number, number, number, number];
-              },
-              getFillColor: (f: unknown) => {
-                const feat = f as { properties?: Record<string, unknown> };
-                const c = typeof feat.properties?.color === 'string' ? hexToRgb(feat.properties.color) : primaryRgb;
-                const lId = (feat.properties?.levelId || feat.properties?.layerId) as string | undefined;
-                const isFill = feat.properties?.type === 'fill';
-                const opacityFactor = isFill ? 90 : 120;
-                return [c[0], c[1], c[2], Math.round(getLevelOpacity(lId) * opacityFactor)] as [number, number, number, number];
-              },
-              getPointRadius: (f: unknown) => {
-                const feat = f as { properties?: Record<string, unknown> };
-                const baseRadius = feat.properties?.type === 'spray' ? (typeof feat.properties?.width === 'number' ? feat.properties.width / 2 : 6) : 3;
-                const scaleFactor = currentZoom < 1 ? Math.pow(2, currentZoom - 1) : 1;
-                return Math.max(1, baseRadius * scaleFactor);
-              },
-              pointRadiusUnits: "pixels",
-              getLineWidth: (f: unknown) => {
-                const feat = f as { properties?: Record<string, unknown> };
-                const baseWidth = typeof feat.properties?.width === 'number' ? feat.properties.width : 3;
-                const isFill = feat.properties?.type === 'fill';
-                const width = isFill ? 0 : baseWidth;
-                const scaleFactor = currentZoom < 1 ? Math.pow(2, currentZoom - 1) : 1;
-                return Math.max(0.5, width * scaleFactor);
-              },
-              lineWidthUnits: "pixels",
-              lineJointRounded: true,
-              lineCapRounded: true,
-              pickable: false,
-              updateTriggers: {
-                getLineColor: [currentActiveLevelId, currentOverlayAllLayers, currentLevelOpacities],
-                getFillColor: [currentActiveLevelId, currentOverlayAllLayers, currentLevelOpacities],
-                getPointRadius: [currentZoom],
-                getLineWidth: [currentZoom]
-              },
-            })
-          );
-        }
+      if (currentVisibleFeatures.length > 0) {
+        deckLayers.push(
+          new GeoJsonLayer({
+            id: `deck-geojson-drawings`,
+            data: currentVisibleFeatures as any,
+            getLineColor: (f: unknown) => {
+              const feat = f as { properties?: Record<string, unknown> };
+              const c = typeof feat.properties?.color === 'string' ? hexToRgb(feat.properties.color) : primaryRgb;
+              const lId = (feat.properties?.levelId || feat.properties?.layerId) as string | undefined;
+              return [c[0], c[1], c[2], Math.round(getLevelOpacity(lId) * 255)] as [number, number, number, number];
+            },
+            getFillColor: (f: unknown) => {
+              const feat = f as { properties?: Record<string, unknown> };
+              const c = typeof feat.properties?.color === 'string' ? hexToRgb(feat.properties.color) : primaryRgb;
+              const lId = (feat.properties?.levelId || feat.properties?.layerId) as string | undefined;
+              const isFill = feat.properties?.type === 'fill';
+              const opacityFactor = isFill ? 90 : 120;
+              return [c[0], c[1], c[2], Math.round(getLevelOpacity(lId) * opacityFactor)] as [number, number, number, number];
+            },
+            getPointRadius: (f: unknown) => {
+              const feat = f as { properties?: Record<string, unknown> };
+              const baseRadius = feat.properties?.type === 'spray' ? (typeof feat.properties?.width === 'number' ? feat.properties.width / 2 : 6) : 3;
+              const scaleFactor = currentZoom < 1 ? Math.pow(2, currentZoom - 1) : 1;
+              return Math.max(1, baseRadius * scaleFactor);
+            },
+            pointRadiusUnits: "pixels",
+            getLineWidth: (f: unknown) => {
+              const feat = f as { properties?: Record<string, unknown> };
+              const baseWidth = typeof feat.properties?.width === 'number' ? feat.properties.width : 3;
+              const isFill = feat.properties?.type === 'fill';
+              const width = isFill ? 0 : baseWidth;
+              const scaleFactor = currentZoom < 1 ? Math.pow(2, currentZoom - 1) : 1;
+              return Math.max(0.5, width * scaleFactor);
+            },
+            lineWidthUnits: "pixels",
+            lineJointRounded: true,
+            lineCapRounded: true,
+            pickable: false,
+            updateTriggers: {
+              getLineColor: [currentActiveLevelId, currentOverlayAllLayers, currentLevelOpacities],
+              getFillColor: [currentActiveLevelId, currentOverlayAllLayers, currentLevelOpacities],
+              getPointRadius: [currentZoom],
+              getLineWidth: [currentZoom]
+            },
+          })
+        );
       }
 
       // 4. Marcadores / POIs
@@ -526,7 +559,7 @@ export const useMapLibreView = (
     const newLayers = buildDeckLayers(
       markers,
       connections,
-      features,
+      visibleFeatures,
       layers,
       levels,
       activeLevelId,
@@ -542,7 +575,7 @@ export const useMapLibreView = (
   }, [
     markers,
     connections,
-    features,
+    visibleFeatures,
     layers,
     levels,
     activeLevelId,
