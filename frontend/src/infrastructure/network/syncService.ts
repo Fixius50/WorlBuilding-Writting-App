@@ -33,16 +33,31 @@ export const syncService = {
     projectName: string,
   ): Promise<{ success: boolean; message: string }> {
     try {
+      const encodedProjectName = encodeURIComponent(projectName);
       // Obtenemos el archivo .sqlite actual de SQLocal (OPFS)
       const dbFile = await sqlocal.getDatabaseFile();
 
       const formData = new FormData();
       formData.append("file", dbFile, `${projectName}.sqlite`);
 
-      const response = await fetch(`/api/db/upload/${projectName}`, {
-        method: "POST",
-        body: formData,
-      });
+      let response = await fetch(
+        `/api/db/upload?projectName=${encodedProjectName}`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+
+      // Compatibilidad con backend antiguo.
+      if (
+        !response.ok &&
+        (response.status === 404 || response.status === 405)
+      ) {
+        response = await fetch(`/api/db/upload/${encodedProjectName}`, {
+          method: "POST",
+          body: formData,
+        });
+      }
 
       if (!response.ok) {
         throw new Error(`Upload failed: ${response.statusText}`);
@@ -70,10 +85,14 @@ export const syncService = {
     projectName: string,
   ): Promise<{ success: boolean; message: string }> {
     try {
-      const response = await fetch(`/api/db/download/${projectName}`, {
-        method: "GET",
-        headers: { "Cache-Control": "no-cache" },
-      });
+      const encodedProjectName = encodeURIComponent(projectName);
+      const response = await fetch(
+        `/api/db/download?projectName=${encodedProjectName}`,
+        {
+          method: "GET",
+          headers: { "Cache-Control": "no-cache" },
+        },
+      );
 
       if (!response.ok) {
         throw new Error(
@@ -164,6 +183,49 @@ export const syncService = {
     return result;
   },
 
+  async buildRealtimeSnapshotFromProject(project: Proyecto): Promise<{
+    success: boolean;
+    message: string;
+    payload?: SyncRealtimePayload;
+  }> {
+    let result: {
+      success: boolean;
+      message: string;
+      payload?: SyncRealtimePayload;
+    };
+
+    try {
+      const [folders, entities, relationships] = await Promise.all([
+        folderService.getByProject(project.id),
+        entityService.getAllByProject(project.id),
+        relationshipService.getByProject(project.id),
+      ]);
+
+      result = {
+        success: true,
+        message: "Snapshot real generado correctamente.",
+        payload: {
+          schemaVersion: 1,
+          exportedAt: new Date().toISOString(),
+          project,
+          folders,
+          entities,
+          relationships,
+        },
+      };
+    } catch (error) {
+      result = {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Error desconocido al construir snapshot.",
+      };
+    }
+
+    return result;
+  },
+
   /**
    * Aplica en local un payload real recibido por sincronización P2P.
    */
@@ -202,7 +264,7 @@ export const syncService = {
             ${folder.id},
             ${folder.nombre},
             ${folder.project_id},
-            ${folder.padre_id},
+            ${null},
             ${folder.tipo},
             ${folder.slug},
             ${toNumberBoolean(folder.borrado)}
@@ -214,6 +276,15 @@ export const syncService = {
             tipo = excluded.tipo,
             slug = excluded.slug,
             borrado = excluded.borrado
+        `;
+      }
+
+      // Segunda pasada: restablecer jerarquía de padres una vez insertadas todas las carpetas.
+      for (const folder of payload.folders) {
+        await sql`
+          UPDATE carpetas
+          SET padre_id = ${folder.padre_id}
+          WHERE id = ${folder.id}
         `;
       }
 

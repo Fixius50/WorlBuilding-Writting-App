@@ -19,16 +19,31 @@ import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import java.util.EnumSet;
+import java.util.concurrent.Executor;
  
 @Configuration
 @ComponentScan(basePackages = {"com.worldbuilding.core", "com.worldbuilding.domains"})
 @EnableWebMvc
+@EnableAsync
 public class AuxServerApplication {
  
     @Bean(name = "multipartResolver")
     public MultipartResolver multipartResolver() {
         return new StandardServletMultipartResolver();
+    }
+
+    @Bean(name = "dbTaskExecutor")
+    public Executor dbTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(6);
+        executor.setQueueCapacity(200);
+        executor.setThreadNamePrefix("db-import-");
+        executor.initialize();
+        return executor;
     }
  
     public static void main(String[] args) throws Exception {

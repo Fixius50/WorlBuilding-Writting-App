@@ -521,7 +521,8 @@ const NotebookCard: React.FC<{
           </div>
           <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
             <p className="font-serif text-[11px] leading-relaxed text-foreground/80 whitespace-pre-wrap">
-              {data.descripcion || "Sin descripción registrada para este universo."}
+              {data.descripcion ||
+                "Sin descripción registrada para este universo."}
             </p>
           </div>
         </div>
@@ -572,6 +573,9 @@ const WorkspaceSelector: React.FC = () => {
     navigate,
     workspaces,
     loading,
+    loadingProgress,
+    loadingMessage,
+    projectProgress,
     error,
     searchTerm,
     setSearchTerm,
@@ -589,6 +593,7 @@ const WorkspaceSelector: React.FC = () => {
     handleSaveWorkspace,
     handleDeleteConfirm,
     handleExport,
+    prepareServerImport,
     executeImport,
     handleStatusAcknowledge,
     filteredWorkspaces,
@@ -597,8 +602,14 @@ const WorkspaceSelector: React.FC = () => {
   return (
     <div className="min-h-screen bg-background relative flex flex-col selection:bg-primary/30 selection:text-foreground overflow-x-hidden">
       {/* Canvas Principal */}
-      <main className="flex-1 p-8 overflow-y-auto">
-        <div className="max-w-7xl mx-auto">
+      <main className="flex-1 p-8 overflow-hidden">
+        <div className="max-w-7xl mx-auto h-full flex flex-col min-h-0">
+          {error && (
+            <div className="mb-4 px-4 py-3 bg-red-500/20 border border-red-500/30 text-red-200 rounded-none text-xs font-bold shadow-2xl">
+              {error}
+            </div>
+          )}
+
           {/* Toolbar superior (Unificado sin header superior) */}
           <div className="flex items-end gap-4 mb-8 border-b border-foreground/10 pb-4">
             <div className="flex-shrink-0">
@@ -625,8 +636,13 @@ const WorkspaceSelector: React.FC = () => {
                 className="flex flex-col items-center justify-center gap-0.5 bg-foreground/5 border border-foreground/10 hover:border-primary hover:text-primary transition-all p-1 rounded-none group/btn text-foreground/75"
                 title="Inicializar Nuevo Universo"
               >
-                <Icon name="add" className="text-base group-hover/btn:scale-110 transition-transform" />
-                <span className="font-mono text-[8px] tracking-wider uppercase">Nuevo</span>
+                <Icon
+                  name="add"
+                  className="text-base group-hover/btn:scale-110 transition-transform"
+                />
+                <span className="font-mono text-[8px] tracking-wider uppercase">
+                  Nuevo
+                </span>
               </button>
 
               {/* Botón 2: Respaldar */}
@@ -635,18 +651,28 @@ const WorkspaceSelector: React.FC = () => {
                 className="flex flex-col items-center justify-center gap-0.5 bg-foreground/5 border border-foreground/10 hover:border-primary hover:text-primary transition-all p-1 rounded-none group/btn text-foreground/75"
                 title="Respaldar datos"
               >
-                <Icon name="cloud_upload" className="text-base group-hover/btn:scale-110 transition-transform" />
-                <span className="font-mono text-[8px] tracking-wider uppercase">Respaldar</span>
+                <Icon
+                  name="cloud_upload"
+                  className="text-base group-hover/btn:scale-110 transition-transform"
+                />
+                <span className="font-mono text-[8px] tracking-wider uppercase">
+                  Respaldar
+                </span>
               </button>
 
-              {/* Botón 3: Importar */}
+              {/* Botón 3: Importar Todo */}
               <button
-                onClick={() => setImportConfirmOpen(true)}
+                onClick={prepareServerImport}
                 className="flex flex-col items-center justify-center gap-0.5 bg-foreground/5 border border-foreground/10 hover:border-primary hover:text-primary transition-all p-1 rounded-none group/btn text-foreground/75"
-                title="Importar respaldo"
+                title="Importar todos los respaldos del servidor"
               >
-                <Icon name="cloud_download" className="text-base group-hover/btn:scale-110 transition-transform" />
-                <span className="font-mono text-[8px] tracking-wider uppercase">Importar</span>
+                <Icon
+                  name="cloud_download"
+                  className="text-base group-hover/btn:scale-110 transition-transform"
+                />
+                <span className="font-mono text-[8px] tracking-wider uppercase">
+                  Importar Todo
+                </span>
               </button>
 
               {/* Botón 4: Ajustes */}
@@ -655,8 +681,13 @@ const WorkspaceSelector: React.FC = () => {
                 className="flex flex-col items-center justify-center gap-0.5 bg-foreground/5 border border-foreground/10 hover:border-primary hover:text-primary transition-all p-1 rounded-none group/btn text-foreground/75"
                 title="Ajustes de sistema"
               >
-                <Icon name="settings" className="text-base group-hover/btn:scale-110 transition-transform" />
-                <span className="font-mono text-[8px] tracking-wider uppercase">Ajustes</span>
+                <Icon
+                  name="settings"
+                  className="text-base group-hover/btn:scale-110 transition-transform"
+                />
+                <span className="font-mono text-[8px] tracking-wider uppercase">
+                  Ajustes
+                </span>
               </button>
             </div>
             {/* CÓDIGO ANTERIOR DE BOTONES SUPERIORES PRESERVADO
@@ -686,18 +717,84 @@ const WorkspaceSelector: React.FC = () => {
             */}
           </div>
 
-          {loading ? (
-            <div className="flex flex-col items-center justify-center gap-6 py-20 opacity-20">
-              <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-none animate-spin"></div>
-              <p className="font-mono text-[10px] uppercase tracking-widest">
-                Accediendo al Sector Local...
-              </p>
-            </div>
-          ) : (
-            /* GRID DE CUADERNOS */
-            <div className="workspace-scroll">
-              <div className="workspace-cards-wrap">
-                {/* TARJETA ESPECIAL DE AÑADIR NUEVO COMENTADA
+          <div className="flex-1 min-h-0">
+            {loading ? (
+              <div className="h-full flex flex-col items-center justify-center gap-5">
+                <div className="w-full max-w-2xl border border-foreground/20 bg-foreground/5 p-4 rounded-none">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-foreground/70">
+                      {loadingMessage || "Cargando..."}
+                    </p>
+                    <span className="font-mono text-[10px] text-primary font-bold">
+                      {Math.max(0, Math.min(100, Math.round(loadingProgress)))}%
+                    </span>
+                  </div>
+                  <div className="h-2 w-full bg-foreground/10 overflow-hidden rounded-none">
+                    <div
+                      className="h-full bg-primary transition-all duration-300"
+                      style={{
+                        width: `${Math.max(0, Math.min(100, Math.round(loadingProgress)))}%`,
+                      }}
+                    />
+                  </div>
+
+                  {projectProgress.length > 0 && (
+                    <div className="mt-4 space-y-2 border-t border-foreground/15 pt-3">
+                      {projectProgress.map((item) => (
+                        <div key={item.key} className="space-y-1">
+                          <div className="flex items-center justify-between text-[10px]">
+                            <span className="font-mono text-foreground/75 truncate pr-2">
+                              {item.label}
+                            </span>
+                            <span
+                              className={`font-mono uppercase tracking-wider ${
+                                item.status === "error"
+                                  ? "text-red-300"
+                                  : item.status === "updated"
+                                    ? "text-amber-300"
+                                    : item.status === "completed"
+                                      ? "text-emerald-300"
+                                      : item.status === "running"
+                                        ? "text-primary"
+                                        : "text-foreground/50"
+                              }`}
+                            >
+                              {item.status}
+                            </span>
+                          </div>
+                          <div className="h-1.5 w-full bg-foreground/10 overflow-hidden rounded-none">
+                            <div
+                              className={`h-full transition-all duration-300 ${
+                                item.status === "error"
+                                  ? "bg-red-400"
+                                  : item.status === "updated"
+                                    ? "bg-amber-400"
+                                    : item.status === "completed"
+                                      ? "bg-emerald-400"
+                                      : "bg-primary"
+                              }`}
+                              style={{
+                                width: `${Math.max(
+                                  0,
+                                  Math.min(100, Math.round(item.progress)),
+                                )}%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <p className="font-mono text-[10px] uppercase tracking-widest text-foreground/40">
+                  Procesando datos del universo...
+                </p>
+              </div>
+            ) : (
+              /* GRID DE CUADERNOS */
+              <div className="workspace-scroll">
+                <div className="workspace-cards-wrap">
+                  {/* TARJETA ESPECIAL DE AÑADIR NUEVO COMENTADA
                 <div
                   onClick={() => setIsCreating(true)}
                   className="workspace-card-shell border border-dashed border-foreground/20 bg-foreground/5 hover:bg-foreground/10 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] cursor-pointer flex flex-col items-center justify-center group rounded-none p-4"
@@ -714,7 +811,7 @@ const WorkspaceSelector: React.FC = () => {
                 </div>
                 */}
 
-                {/* PANEL DE CONTROL DE SEGUNDA PRUEBA PRESERVADO (COMENTADO)
+                  {/* PANEL DE CONTROL DE SEGUNDA PRUEBA PRESERVADO (COMENTADO)
                 <div className="workspace-card-shell grid grid-cols-2 grid-rows-2 gap-2 p-2 bg-foreground/5 border border-foreground/10 relative">
                   <button
                     onClick={() => setIsCreating(true)}
@@ -747,19 +844,20 @@ const WorkspaceSelector: React.FC = () => {
                 </div>
                 */}
 
-                {/* Tarjetas de Cuadernos */}
-                {filteredWorkspaces.map((ws) => (
-                  <NotebookCard
-                    key={ws.id}
-                    data={ws}
-                    onSelect={handleSelect}
-                    onEdit={(proj) => setProjectToEdit(proj)}
-                    onDelete={(id) => setProjectToDelete(id)}
-                  />
-                ))}
+                  {/* Tarjetas de Cuadernos */}
+                  {filteredWorkspaces.map((ws) => (
+                    <NotebookCard
+                      key={ws.id}
+                      data={ws}
+                      onSelect={handleSelect}
+                      onEdit={(proj) => setProjectToEdit(proj)}
+                      onDelete={(id) => setProjectToDelete(id)}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </main>
 
@@ -795,9 +893,9 @@ const WorkspaceSelector: React.FC = () => {
           setImportConfirmOpen(false);
           executeImport();
         }}
-        title="¿Importar respaldo del servidor?"
-        message="Esto sobrescribirá los datos actuales del universo con la versión respaldada."
-        confirmText="Sí, importar"
+        title="¿Importar todos los respaldos del servidor?"
+        message="Se procesarán todos los .sqlite de la carpeta del servidor y se intentará fusionar sus proyectos en local."
+        confirmText="Sí, importar todo"
         cancelText="Cancelar"
         type="warning"
       />
@@ -812,12 +910,6 @@ const WorkspaceSelector: React.FC = () => {
         cancelText="Cerrar"
         type="warning"
       />
-
-      {error && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-red-500/20 border border-red-500/30 text-red-200 rounded-none text-xs font-bold shadow-2xl animate-bounce z-[600]">
-          {error}
-        </div>
-      )}
     </div>
   );
 };

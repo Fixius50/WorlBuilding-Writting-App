@@ -1,25 +1,24 @@
-import { projectService } from '@repositories/projectService';
-import { folderService } from '@repositories/folderService';
-import { entityService } from '@repositories/entityService';
-import { syncService } from '@network/syncService';
-import { settingsService } from '@repositories/settingsService';
-import { Proyecto, Carpeta, Entidad, FolderType } from '@domain/database';
+import { projectService } from "@repositories/projectService";
+import { folderService } from "@repositories/folderService";
+import { entityService } from "@repositories/entityService";
+import { syncService } from "@network/syncService";
+import { settingsService } from "@repositories/settingsService";
+import { Proyecto, Carpeta, Entidad, FolderType } from "@domain/database";
 
 /**
  * 🏢 WORKSPACE USE CASE (Capa de Aplicación)
- * 
+ *
  * ORÍGENES DE LA REFACTORIZACIÓN:
  * Extraído desde:
  * - src/presentation/pages/WorkspaceSelector.tsx
  * - src/presentation/layout/ArchitectLayout.tsx
  * - src/presentation/layout/GlobalNotes.tsx
- * 
+ *
  * PROPÓSITO:
  * Gestionar a alto nivel los Proyectos (Cuadernos), copias de seguridad (Sincronización),
  * ajustes globales y la estructura raíz de las carpetas/entidades para la UI general.
  */
 export class WorkspaceUseCase {
-  
   // ==========================================
   // GESTIÓN DE PROYECTOS (CUADERNOS)
   // ==========================================
@@ -35,12 +34,20 @@ export class WorkspaceUseCase {
   }
 
   /** Crea un nuevo proyecto */
-  static async createProject(name: string, title: string, genre: string, imageUrl?: string): Promise<Proyecto> {
+  static async createProject(
+    name: string,
+    title: string,
+    genre: string,
+    imageUrl?: string,
+  ): Promise<Proyecto> {
     return await projectService.create(name, title, genre, imageUrl);
   }
 
   /** Actualiza la configuración de un proyecto */
-  static async updateProject(projectId: number, data: Partial<Proyecto>): Promise<void> {
+  static async updateProject(
+    projectId: number,
+    data: Partial<Proyecto>,
+  ): Promise<void> {
     await projectService.update(projectId, data);
   }
 
@@ -59,12 +66,21 @@ export class WorkspaceUseCase {
   }
 
   /** Crea una nueva carpeta rápida */
-  static async createFolder(name: string, projectId: number, parentId: number | null, type: FolderType): Promise<Carpeta> {
+  static async createFolder(
+    name: string,
+    projectId: number,
+    parentId: number | null,
+    type: FolderType,
+  ): Promise<Carpeta> {
     return await folderService.create(name, projectId, parentId, type);
   }
 
   /** Renombra una carpeta */
-  static async renameFolder(folderId: number, newName: string, projectId: number): Promise<void> {
+  static async renameFolder(
+    folderId: number,
+    newName: string,
+    projectId: number,
+  ): Promise<void> {
     await folderService.update(folderId, newName, projectId);
   }
 
@@ -89,7 +105,12 @@ export class WorkspaceUseCase {
   }
 
   /** Crea una entidad rápida desde el layout */
-  static async createQuickEntity(data: Omit<Entidad, 'id' | 'created_at' | 'fecha_creacion' | 'fecha_actualizacion' | 'borrado'>): Promise<Entidad> {
+  static async createQuickEntity(
+    data: Omit<
+      Entidad,
+      "id" | "created_at" | "fecha_creacion" | "fecha_actualizacion" | "borrado"
+    >,
+  ): Promise<Entidad> {
     return await entityService.create(data);
   }
 
@@ -110,6 +131,11 @@ export class WorkspaceUseCase {
   /** Importa y restaura una instantánea desde el servidor de backup */
   static async importBackup(identifier: string) {
     return await syncService.importFromDisk(identifier);
+  }
+
+  /** Lista respaldos disponibles en el servidor local */
+  static async listAvailableBackups(): Promise<string[]> {
+    return await syncService.listAvailableBackups();
   }
 
   // ==========================================

@@ -67,7 +67,7 @@ export const useSettings = () => {
   );
 
   const handleExportZip = useCallback(async () => {
-    const targetProject = projectName || "worldbuilding_master";
+    const targetProject = projectName || "worldbuilding_backup";
     addNotification("Generando paquete ZIP del universo...", "info");
     window.location.href = `/api/db/export/${targetProject}`;
   }, [projectName, addNotification]);

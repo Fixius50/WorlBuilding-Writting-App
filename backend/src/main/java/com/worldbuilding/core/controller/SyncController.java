@@ -22,15 +22,25 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class SyncController {
 
-    private static final String PROJECTS_DIR = "projects";
+    private static final String BACKUPS_DIR = "backup";
     private static final String SAFE_NAME_PATTERN = "^[a-zA-Z0-9._-]+$";
     private final ObjectMapper objectMapper;
 
+    private Path resolvePrimaryBackupDir() {
+        return Paths.get(BACKUPS_DIR);
+    }
+
     public SyncController() {
         this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-        File dir = new File(PROJECTS_DIR);
-        if (!dir.exists()) {
-            dir.mkdirs();
+        Path[] dirsToPrepare = new Path[]{
+            resolvePrimaryBackupDir()
+        };
+
+        for (Path dirPath : dirsToPrepare) {
+            File dir = dirPath.toFile();
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
         }
     }
 
@@ -45,7 +55,7 @@ public class SyncController {
             response = ResponseEntity.badRequest().body(buildResponse(false, "projectName inválido.", null));
         } else {
             try {
-                Path filePath = Paths.get(PROJECTS_DIR).resolve(projectName + ".sync.json").normalize();
+                Path filePath = resolvePrimaryBackupDir().resolve(projectName + ".sync.json").normalize();
                 objectMapper.writeValue(filePath.toFile(), payload);
                 response = ResponseEntity.ok(buildResponse(true, "Payload archivado correctamente.", filePath.toString()));
             } catch (IOException exception) {
