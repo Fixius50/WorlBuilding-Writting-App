@@ -137,11 +137,11 @@ const MentionList = forwardRef<MentionListRef, MentionListProps>(
     };
 
     return (
-      <div className="relative flex items-start gap-0 animate-in zoom-in-95 duration-200">
+      <div className="relative inline-flex animate-in zoom-in-95 duration-200">
         <div
           className={`items bg-background border border-foreground/10 shadow-2xl overflow-hidden min-w-[240px] p-1 ${props.items.length && activeGroup ? "rounded-l-lg rounded-r-none" : "rounded-lg"}`}
         >
-          <div className="overflow-y-auto max-h-[320px] space-y-0.5">
+          <div className="max-h-[320px] overflow-y-auto space-y-0.5">
             {props.items.length ? (
               groups.map((group) => (
                 <div key={group.key}>{renderGroupHeader(group)}</div>
@@ -155,8 +155,8 @@ const MentionList = forwardRef<MentionListRef, MentionListProps>(
         </div>
 
         {props.items.length && activeGroup ? (
-          <div className="items bg-background border border-foreground/10 border-l-0 rounded-r-lg rounded-l-none shadow-2xl overflow-hidden min-w-[300px] p-1">
-            <div className="overflow-y-auto max-h-[320px] flex flex-col gap-0.5">
+          <div className="items absolute left-full top-0 z-10 bg-background border border-foreground/10 border-l-0 rounded-r-lg rounded-l-none shadow-2xl overflow-hidden min-w-[300px]">
+            <div className="max-h-[320px] overflow-y-auto flex flex-col gap-0.5">
               {visibleItems.length ? (
                 visibleItems.map((item, index) => {
                   const itemIsSelected = selectedItemId === item.id;

@@ -99,27 +99,34 @@ export default {
     ];
 
     const cleanQuery = query.toLowerCase().trim();
-    let result = rawItems;
-
-    if (cleanQuery) {
-      const flattened: typeof rawItems = [];
-      rawItems.forEach((item) => {
-        if (item.subItems) {
-          item.subItems.forEach((sub) => {
-            if (sub.title.toLowerCase().includes(cleanQuery)) {
-              flattened.push(sub);
-            }
-          });
-        } else {
-          if (item.title.toLowerCase().includes(cleanQuery)) {
-            flattened.push(item);
-          }
-        }
-      });
-      result = flattened;
+    if (!cleanQuery) {
+      return rawItems;
     }
 
-    return result;
+    return rawItems
+      .map((item) => {
+        const itemMatches = item.title.toLowerCase().includes(cleanQuery);
+
+        if (!item.subItems || item.subItems.length === 0) {
+          return itemMatches ? item : null;
+        }
+
+        if (itemMatches) {
+          return item;
+        }
+
+        const matchedSubItems = item.subItems.filter((sub) =>
+          sub.title.toLowerCase().includes(cleanQuery),
+        );
+
+        return matchedSubItems.length > 0
+          ? {
+              ...item,
+              subItems: matchedSubItems,
+            }
+          : null;
+      })
+      .filter(Boolean);
   },
 
   command: ({

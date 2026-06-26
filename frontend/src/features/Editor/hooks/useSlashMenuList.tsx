@@ -22,63 +22,40 @@ export const useSlashMenuList = (
   command: (item: SlashMenuItem) => void,
   ref: React.ForwardedRef<SlashMenuHandle>,
 ) => {
-  const [activeSubItems, setActiveSubItems] = useState<SlashMenuItem[] | null>(
-    null,
-  );
   const [selectedIndex, setSelectedIndex] = useState(0);
-
-  // Determinar los ítems a renderizar actualmente
-  const currentItems = activeSubItems
-    ? [{ title: "Volver atrás", label: "⬅" }, ...activeSubItems]
-    : items;
 
   const selectItem = useCallback(
     (index: number) => {
-      const item = currentItems[index];
-      if (item) {
-        if (activeSubItems && index === 0) {
-          setActiveSubItems(null);
-          setSelectedIndex(0);
-        } else if (item.subItems) {
-          setActiveSubItems(item.subItems);
-          setSelectedIndex(0);
-        } else {
-          command(item);
-        }
+      const item = items[index];
+      if (item && item.command) {
+        command(item);
       }
     },
-    [currentItems, activeSubItems, command],
+    [items, command],
   );
 
   useEffect(() => {
-    setActiveSubItems(null);
     setSelectedIndex(0);
   }, [items]);
 
   useImperativeHandle(ref, () => ({
     onKeyDown: ({ event }: { event: KeyboardEvent }) => {
+      if (items.length === 0) {
+        return false;
+      }
+
       let handled = false;
 
       if (event.key === "ArrowUp") {
-        setSelectedIndex(
-          (prev) => (prev + currentItems.length - 1) % currentItems.length,
-        );
+        setSelectedIndex((prev) => (prev + items.length - 1) % items.length);
         handled = true;
       } else if (event.key === "ArrowDown") {
-        setSelectedIndex((prev) => (prev + 1) % currentItems.length);
+        setSelectedIndex((prev) => (prev + 1) % items.length);
         handled = true;
       } else if (event.key === "Enter") {
         event.preventDefault();
         event.stopPropagation();
         selectItem(selectedIndex);
-        handled = true;
-      } else if (
-        (event.key === "Backspace" || event.key === "ArrowLeft") &&
-        activeSubItems
-      ) {
-        event.preventDefault();
-        setActiveSubItems(null);
-        setSelectedIndex(0);
         handled = true;
       }
 
@@ -89,6 +66,5 @@ export const useSlashMenuList = (
   return {
     selectedIndex,
     selectItem,
-    currentItems,
   };
 };
