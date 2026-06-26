@@ -8,6 +8,7 @@ import "react-image-crop/dist/ReactCrop.css";
 interface BubbleToolbarProps {
   editor: Editor | null;
   onMentionClick?: (id: string) => void;
+  onRequestComment?: () => void;
   zoom: number;
 }
 
@@ -21,6 +22,7 @@ interface BubbleToolbarProps {
  */
 const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
   editor,
+  onRequestComment,
   zoom,
 }) => {
   const [showTextColor, setShowTextColor] = React.useState(false);
@@ -36,6 +38,7 @@ const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
   );
   const [cropImageSrc, setCropImageSrc] = React.useState<string | null>(null);
   const [cropTargetPos, setCropTargetPos] = React.useState<number | null>(null);
+  const [cropAnchorRect, setCropAnchorRect] = React.useState<DOMRect | null>(null);
   const [cropSelection, setCropSelection] = React.useState<Crop>({
     unit: "%",
     x: 10,
@@ -74,6 +77,7 @@ const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
     editor?.getAttributes("textStyle").color || "hsl(var(--foreground))";
   const currentHighlightColor =
     editor?.getAttributes("highlight").color || "transparent";
+  const isCropping = !!cropImageSrc;
 
   const logImageSyncError = React.useCallback(
     (stage: string, error: unknown) => {
@@ -124,6 +128,11 @@ const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
     if (isImageNodeSelection) {
       const imagePos = selection.from;
       const imageSrc = String(selection.node.attrs?.src || "");
+      const originalSrcAttr = selection.node.attrs?.originalSrc;
+      const imageOriginalSrc =
+        typeof originalSrcAttr === "string" && originalSrcAttr.trim().length > 0
+          ? originalSrcAttr
+          : null;
       const imageWidth =
         typeof selection.node.attrs?.width === "string" &&
         selection.node.attrs.width.trim().length > 0
@@ -133,34 +142,13 @@ const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
       return {
         pos: imagePos,
         src: imageSrc,
+        originalSrc: imageOriginalSrc,
         width: imageWidth,
       };
     }
 
-    const hasSelectedImage = !!selectedImage;
-    if (!hasSelectedImage) {
-      return null;
-    }
-
-    const fallbackNode = editor.state.doc.nodeAt(selectedImage.pos);
-    const hasFallbackImage = !!fallbackNode && fallbackNode.type.name === "image";
-
-    if (!hasFallbackImage) {
-      return null;
-    }
-
-    const fallbackWidth =
-      typeof fallbackNode.attrs?.width === "string" &&
-      fallbackNode.attrs.width.trim().length > 0
-        ? fallbackNode.attrs.width
-        : null;
-
-    return {
-      pos: selectedImage.pos,
-      src: String(fallbackNode.attrs?.src || selectedImage.src || ""),
-      width: fallbackWidth,
-    };
-  }, [editor, selectedImage]);
+    return null;
+  }, [editor]);
 
   React.useEffect(() => {
     const hasEditor = !!editor;
@@ -239,6 +227,27 @@ const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
     };
   }, [editor, selectedImage?.pos, getCurrentImageContext, getImageRectAtPos]);
 
+  React.useEffect(() => {
+    const shouldHandleOutsideClick = !!selectedImage && !isCropping && !previewImageSrc;
+
+    if (!shouldHandleOutsideClick) {
+      return;
+    }
+
+    const handleOutsideClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isInsideImageMenu = !!target?.closest('[data-wb-image-menu="true"]');
+      const isInsideEditorImage = !!target?.closest(".ProseMirror img");
+
+      if (!isInsideImageMenu && !isInsideEditorImage) {
+        setSelectedImage(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick, true);
+    return () => document.removeEventListener("mousedown", handleOutsideClick, true);
+  }, [isCropping, previewImageSrc, selectedImage]);
+
   const handleViewImage = React.useCallback(() => {
     selectedImage ? setPreviewImageSrc(selectedImage.src) : null;
   }, [selectedImage]);
@@ -246,6 +255,7 @@ const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
   const closeCropModal = React.useCallback(() => {
     setCropImageSrc(null);
     setCropTargetPos(null);
+    setCropAnchorRect(null);
     setCompletedCrop(null);
     setCropSelection({
       unit: "%",
@@ -344,8 +354,40 @@ const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
       return;
     }
 
-    setCropImageSrc(imageContext.src);
+    const hasOriginalSource =
+      typeof imageContext.originalSrc === "string" &&
+      imageContext.originalSrc.trim().length > 0;
+    const currentSrc = String(imageContext.src || "");
+    const sourceForCrop = hasOriginalSource ? imageContext.originalSrc! : currentSrc;
+
+    if (!hasOriginalSource && currentSrc.trim().length > 0) {
+      try {
+        const imageNode = editor.state.doc.nodeAt(imageContext.pos);
+        const hasImageNode = !!imageNode && imageNode.type.name === "image";
+
+        if (hasImageNode && imageNode) {
+          const attrs = {
+            ...imageNode.attrs,
+            originalSrc: currentSrc,
+          };
+
+          const transaction = editor.state.tr.setNodeMarkup(
+            imageContext.pos,
+            imageNode.type,
+            attrs,
+            imageNode.marks,
+          );
+          transaction.setMeta("wb:imageMutation", true);
+          editor.view.dispatch(transaction);
+        }
+      } catch (error: unknown) {
+        logImageSyncError("cropImageBackfillOriginal", error);
+      }
+    }
+
+    setCropImageSrc(sourceForCrop);
     setCropTargetPos(imageContext.pos);
+    setCropAnchorRect(getImageRectAtPos(imageContext.pos));
     setCompletedCrop(null);
     setCropSelection({
       unit: "%",
@@ -354,7 +396,7 @@ const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
       width: 80,
       height: 80,
     });
-  }, [editor, getCurrentImageContext]);
+  }, [editor, getCurrentImageContext, getImageRectAtPos]);
 
   const applyCropFromModal = React.useCallback(async () => {
     const hasEditor = !!editor;
@@ -410,9 +452,18 @@ const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
       const hasImageNode = !!imageNode && imageNode.type.name === "image";
 
       if (hasImageNode) {
+        const currentOriginalAttr = imageNode.attrs?.originalSrc;
+        const currentOriginalSrc =
+          typeof currentOriginalAttr === "string" &&
+          currentOriginalAttr.trim().length > 0
+            ? currentOriginalAttr
+            : null;
+        const sourceForFutureRecrops = currentOriginalSrc || String(imageNode.attrs?.src || "");
+
         const attrs = {
           ...imageNode.attrs,
           src: croppedSrc,
+          originalSrc: sourceForFutureRecrops,
         };
 
         const transaction = editor.state.tr.setNodeMarkup(
@@ -438,6 +489,53 @@ const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
     editor,
     logImageSyncError,
   ]);
+
+  const restoreOriginalFromCrop = React.useCallback(() => {
+    const hasEditor = !!editor;
+    const hasTargetPos = cropTargetPos !== null;
+
+    if (!hasEditor || !hasTargetPos) {
+      return;
+    }
+
+    try {
+      const imageNode = editor.state.doc.nodeAt(cropTargetPos);
+      const hasImageNode = !!imageNode && imageNode.type.name === "image";
+
+      if (!hasImageNode || !imageNode) {
+        return;
+      }
+
+      const originalAttr = imageNode.attrs?.originalSrc;
+      const originalSrc =
+        typeof originalAttr === "string" && originalAttr.trim().length > 0
+          ? originalAttr
+          : null;
+
+      if (!originalSrc) {
+        window.alert("No hay una versión original guardada para esta imagen.");
+        return;
+      }
+
+      const attrs = {
+        ...imageNode.attrs,
+        src: originalSrc,
+        originalSrc,
+      };
+
+      const transaction = editor.state.tr.setNodeMarkup(
+        cropTargetPos,
+        imageNode.type,
+        attrs,
+        imageNode.marks,
+      );
+      transaction.setMeta("wb:imageMutation", true);
+      editor.view.dispatch(transaction);
+      closeCropModal();
+    } catch (error: unknown) {
+      logImageSyncError("restoreOriginal", error);
+    }
+  }, [closeCropModal, cropTargetPos, editor, logImageSyncError]);
 
   React.useEffect(() => {
     const hasAnyModal = !!previewImageSrc || !!cropImageSrc;
@@ -469,47 +567,39 @@ const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
       }
     : null;
 
-  const cropPanelStyle: React.CSSProperties | null = cropImageSrc
+  const cropInlineStyle: React.CSSProperties | null = cropImageSrc
     ? (() => {
-        const panelWidth = Math.min(620, Math.max(320, window.innerWidth - 24));
-        const defaultLeft = Math.max(12, Math.round((window.innerWidth - panelWidth) / 2));
-        const anchorRect = selectedImage?.rect || null;
-        const estimatedPanelHeight = 500;
+        const anchorRect = cropAnchorRect || selectedImage?.rect || null;
 
-        const left = anchorRect
-          ? Math.min(
-              Math.max(12, Math.round(anchorRect.left + anchorRect.width / 2 - panelWidth / 2)),
-              Math.max(12, window.innerWidth - panelWidth - 12),
-            )
-          : defaultLeft;
+        if (!anchorRect) {
+          return null;
+        }
 
-        const preferBottomTop = anchorRect
-          ? Math.round(anchorRect.bottom + 12)
-          : Math.max(16, Math.round(window.innerHeight * 0.12));
-        const fallbackTop = anchorRect
-          ? Math.max(12, Math.round(anchorRect.top - estimatedPanelHeight - 12))
-          : 16;
-        const top =
-          preferBottomTop + estimatedPanelHeight <= window.innerHeight - 12
-            ? preferBottomTop
-            : fallbackTop;
+        const safeWidth = Math.max(120, Math.round(anchorRect.width));
+        const safeHeight = Math.max(120, Math.round(anchorRect.height));
+        const safeLeft = Math.max(8, Math.min(Math.round(anchorRect.left), window.innerWidth - safeWidth - 8));
+        const safeTop = Math.max(8, Math.min(Math.round(anchorRect.top), window.innerHeight - safeHeight - 8));
 
         return {
           position: "fixed",
-          top,
-          left,
-          width: panelWidth,
-          maxHeight: "min(78vh, 680px)",
-          zIndex: 90,
+          top: safeTop,
+          left: safeLeft,
+          width: safeWidth,
+          height: safeHeight,
+          zIndex: 95,
         };
       })()
     : null;
 
   return (
     <div className="flex-1 w-full relative">
-      {selectedImage && imageMenuStyle
+      {selectedImage && imageMenuStyle && !isCropping
         ? createPortal(
-            <div style={imageMenuStyle} className="pointer-events-auto">
+            <div
+              style={imageMenuStyle}
+              className="pointer-events-auto"
+              data-wb-image-menu="true"
+            >
               <div className="flex items-center gap-1.5 px-2 py-1 rounded-full border border-foreground/15 bg-background/95 shadow-2xl backdrop-blur-sm">
                 <button
                   type="button"
@@ -555,7 +645,7 @@ const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
               selection.node.type.name === "image";
             const isTextSelection = selection instanceof TextSelection;
 
-            return !isImageSelection && isTextSelection && !selection.empty;
+            return !isCropping && !isImageSelection && isTextSelection && !selection.empty;
           }}
         >
           <div className="flex items-center gap-1 p-1 bg-background border border-foreground/10 rounded-md shadow-2xl">
@@ -785,6 +875,17 @@ const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
             >
               <span className="material-symbols-outlined text-lg">link</span>
             </button>
+
+            <button
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => {
+                onRequestComment ? onRequestComment() : null;
+              }}
+              className="p-1.5 rounded-md hover:bg-foreground/5 transition-colors text-foreground/60"
+              title="Comentar selección"
+            >
+              <span className="material-symbols-outlined text-lg">add_comment</span>
+            </button>
           </div>
         </BubbleMenu>
       )}
@@ -822,57 +923,46 @@ const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
 
       {cropImageSrc
         ? createPortal(
-            <div style={cropPanelStyle || undefined} className="pointer-events-auto">
-              <div className="rounded-xl border border-white/10 bg-background/95 shadow-2xl overflow-hidden">
-                <div className="px-4 py-3 border-b border-foreground/10 flex items-center justify-between">
-                  <h3 className="text-sm font-black uppercase tracking-[0.16em] text-foreground/80">
-                    Recortar imagen
-                  </h3>
+            <div style={cropInlineStyle || undefined} className="pointer-events-auto">
+              <div className="relative w-full h-full rounded-md overflow-hidden">
+                <ReactCrop
+                  crop={cropSelection}
+                  onChange={(nextCrop: Crop) => setCropSelection(nextCrop)}
+                  onComplete={(pixelCrop: PixelCrop) => setCompletedCrop(pixelCrop)}
+                  keepSelection
+                  ruleOfThirds
+                  className="w-full h-full"
+                >
+                  <img
+                    ref={cropImageRef}
+                    src={cropImageSrc}
+                    alt="Recorte"
+                    className="w-full h-full select-none"
+                  />
+                </ReactCrop>
+
+                <div className="absolute top-2 right-2 z-20 flex items-center gap-2">
                   <button
                     type="button"
-                    className="text-xs font-black uppercase tracking-[0.16em] text-foreground/60 hover:text-foreground"
-                    onClick={closeCropModal}
+                    onClick={restoreOriginalFromCrop}
+                    className="px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-white/90 hover:text-white rounded-full bg-black/55 border border-white/20"
                   >
-                    Cerrar
+                    Original
                   </button>
-                </div>
-
-                <div className="p-4">
-                  <div className="relative w-full max-h-[52vh] overflow-auto rounded-lg border border-foreground/10 bg-black/40">
-                    <ReactCrop
-                      crop={cropSelection}
-                      onChange={(nextCrop: Crop) => setCropSelection(nextCrop)}
-                      onComplete={(pixelCrop: PixelCrop) =>
-                        setCompletedCrop(pixelCrop)
-                      }
-                      keepSelection
-                      ruleOfThirds
-                    >
-                      <img
-                        ref={cropImageRef}
-                        src={cropImageSrc}
-                        alt="Recorte"
-                        className="max-w-full h-auto select-none"
-                      />
-                    </ReactCrop>
-                  </div>
-
-                  <div className="mt-4 flex items-center justify-end gap-2">
-                    <button
-                      type="button"
-                      onClick={closeCropModal}
-                      className="px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-foreground/70 hover:text-foreground border border-foreground/20 rounded-full"
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={applyCropFromModal}
-                      className="px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-black bg-primary rounded-full hover:opacity-90"
-                    >
-                      Aplicar recorte
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={closeCropModal}
+                    className="px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-white/90 hover:text-white rounded-full bg-black/55 border border-white/20"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={applyCropFromModal}
+                    className="px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-black rounded-full bg-primary border border-primary/60 hover:opacity-90"
+                  >
+                    Aplicar
+                  </button>
                 </div>
               </div>
             </div>,

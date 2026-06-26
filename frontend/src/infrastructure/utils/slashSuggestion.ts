@@ -1,10 +1,25 @@
 import { ReactRenderer } from "@tiptap/react";
-import type { Editor } from "@tiptap/core";
+import type { Editor, Range } from "@tiptap/core";
 import tippy, { Instance as TippyInstance } from "tippy.js";
 import { SlashMenuList } from "@features/Editor";
-import { SuggestionProps } from "@tiptap/suggestion";
+import { SuggestionOptions, SuggestionProps } from "@tiptap/suggestion";
 
-export default {
+type SlashItem = {
+  title: string;
+  label: string;
+  command?: ({ editor }: { editor: Editor }) => void;
+  subItems?: Array<{
+    title: string;
+    label: string;
+    command: ({ editor }: { editor: Editor }) => void;
+  }>;
+};
+
+type SlashCommandProps = {
+  command: (args: { editor: Editor; range: Range }) => void;
+};
+
+const slashSuggestion: Omit<SuggestionOptions<SlashItem | null, SlashCommandProps>, "editor"> = {
   items: ({ query }: { query: string }) => {
     const rawItems = [
       {
@@ -129,15 +144,7 @@ export default {
       .filter(Boolean);
   },
 
-  command: ({
-    editor,
-    range,
-    props,
-  }: SuggestionProps & {
-    props: {
-      command: (args: Pick<SuggestionProps, "editor" | "range">) => void;
-    };
-  }) => {
+  command: ({ editor, range, props }) => {
     // Usamos una transacción única para borrar y ejecutar, evitando saltos de línea
     editor.chain().focus().deleteRange(range).run();
 
@@ -193,14 +200,14 @@ export default {
           return true;
         }
 
-        let result: boolean | undefined = false;
+        let result = false;
         if (props.event.key === "Escape") {
           if (popup) popup[0].hide();
           result = true;
         } else {
           result = (
             component?.ref as { onKeyDown?: (p: unknown) => boolean } | null
-          )?.onKeyDown?.(props);
+          )?.onKeyDown?.(props) ?? false;
         }
         return result;
       },
@@ -212,3 +219,5 @@ export default {
     };
   },
 };
+
+export default slashSuggestion;

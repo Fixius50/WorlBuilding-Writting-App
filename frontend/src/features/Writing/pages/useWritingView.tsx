@@ -5,6 +5,7 @@ import { WritingUseCase } from "@features/Writing";
 import { EntityUseCase } from "@features/Entities";
 import { TemplateUseCase } from "@features/Settings";
 import { useSettingsStore } from "@features/Settings";
+import { CommentAnchorRange } from "@utils/commentAnchors";
 
 /**
  * Hook useWritingView
@@ -47,6 +48,8 @@ export const useWritingView = () => {
     from: number;
     to: number;
   } | null>(null);
+  const [commentComposeRequestKey, setCommentComposeRequestKey] = useState(0);
+  const [commentAnchors, setCommentAnchors] = useState<CommentAnchorRange[]>([]);
 
   useEffect(() => {
     pagesRef.current = pages;
@@ -280,9 +283,23 @@ export const useWritingView = () => {
         if (cp) await savePage(cp);
       }
       setCurrentPageIndex(index);
+      setCommentAnchors([]);
       loadSnapshots(pagesRef.current[index].id);
     },
     [savePage, loadSnapshots],
+  );
+
+  const handleRequestCommentFromSelection = useCallback(() => {
+    setActiveTab("index");
+    setSidebarOpen(true);
+    setCommentComposeRequestKey((prev) => prev + 1);
+  }, []);
+
+  const handleCommentAnchorsChange = useCallback(
+    (anchors: CommentAnchorRange[]) => {
+      setCommentAnchors(anchors);
+    },
+    [],
   );
 
   const confirmDeletePage = useCallback(async () => {
@@ -344,5 +361,9 @@ export const useWritingView = () => {
     setProjectEntities,
     commentSelection,
     setCommentSelection,
+    commentComposeRequestKey,
+    handleRequestCommentFromSelection,
+    commentAnchors,
+    handleCommentAnchorsChange,
   };
 };

@@ -159,6 +159,35 @@
    color: inherit;
 }
 
+/* Anclajes visuales de comentarios (no interactivos y sin ocupar espacio) */
+.prose-editor .ProseMirror .comment-anchor-range {
+  background: hsl(var(--primary) / 0.1);
+  border-bottom: 1px dashed hsl(var(--primary) / 0.5);
+}
+
+.prose-editor .ProseMirror .comment-anchor-range.resolved {
+  opacity: 0.55;
+}
+
+.prose-editor .ProseMirror .comment-anchor-widget {
+  position: relative;
+  display: inline-block;
+  width: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.prose-editor .ProseMirror .comment-anchor-widget::before {
+  content: "▸";
+  position: absolute;
+  left: -0.72em;
+  top: -0.02em;
+  font-size: 0.7em;
+  font-weight: 700;
+  line-height: 1;
+  color: hsl(var(--primary) / 0.85);
+}
+
 /* Estilos de las menciones de Tiptap */
 .prose-editor .ProseMirror .mention {
   font-family: "Outfit", sans-serif;

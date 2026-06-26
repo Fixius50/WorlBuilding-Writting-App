@@ -2,6 +2,7 @@ import { useEditor } from "@tiptap/react";
 import { useRef, useEffect } from "react";
 import { getZenExtensions } from "@utils/TiptapExtensions";
 import { Hoja, Entidad } from "@domain/database";
+import { CommentAnchorRange } from "@utils/commentAnchors";
 
 interface UsePageEditorProps {
   content: string;
@@ -20,6 +21,7 @@ interface UsePageEditorProps {
       to: number;
     } | null,
   ) => void;
+  commentAnchors?: CommentAnchorRange[];
 }
 
 /**
@@ -37,13 +39,19 @@ export const usePageEditor = ({
   projectEntities = [],
   onSuggestLink,
   onSelectionChange,
+  commentAnchors = [],
 }: UsePageEditorProps) => {
   const skipExternalSyncUntilRef = useRef<number>(0);
   const knownHtmlRef = useRef<string>(content);
+  const onUpdateRef = useRef<(html: string) => void>(onUpdate);
 
   useEffect(() => {
     knownHtmlRef.current = content;
   }, [content]);
+
+  useEffect(() => {
+    onUpdateRef.current = onUpdate;
+  }, [onUpdate]);
 
   const editor = useEditor({
     extensions: getZenExtensions("Empieza a escribir esta página...", {
@@ -54,7 +62,7 @@ export const usePageEditor = ({
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
       knownHtmlRef.current = html;
-      onUpdate(html);
+      onUpdateRef.current(html);
     },
     onSelectionUpdate: ({ editor }) => {
       const { from, to, empty } = editor.state.selection;
@@ -147,6 +155,10 @@ export const usePageEditor = ({
       ? editor.commands.focus("start")
       : null;
   }, [autoFocus, editor]);
+
+  useEffect(() => {
+    editor ? editor.commands.setCommentAnchors(commentAnchors) : null;
+  }, [commentAnchors, editor]);
 
   return { editor };
 };

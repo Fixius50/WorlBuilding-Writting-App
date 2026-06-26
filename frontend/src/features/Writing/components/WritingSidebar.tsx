@@ -1,6 +1,7 @@
 import React from "react";
 import { Hoja } from "@domain/database";
 import PageListPanel from "./PageListPanel";
+import { CommentAnchorRange } from "@utils/commentAnchors";
 
 interface WritingSidebarProps {
   // Tabs
@@ -12,6 +13,8 @@ interface WritingSidebarProps {
     from: number;
     to: number;
   } | null;
+  commentComposeRequestKey: number;
+  onCommentAnchorsChange: (anchors: CommentAnchorRange[]) => void;
 
   // Datos para PageListPanel
   pages: Hoja[];
@@ -52,6 +55,8 @@ const WritingSidebar: React.FC<WritingSidebarProps> = ({
   setActiveTab,
   pageId,
   commentSelection,
+  commentComposeRequestKey,
+  onCommentAnchorsChange,
   pages,
   filteredPages,
   currentPageIndex,
@@ -104,6 +109,8 @@ const WritingSidebar: React.FC<WritingSidebarProps> = ({
           <PageListPanel
             pageId={pageId}
             commentSelection={commentSelection}
+            commentComposeRequestKey={commentComposeRequestKey}
+            onCommentAnchorsChange={onCommentAnchorsChange}
             pages={pages}
             filteredPages={filteredPages}
             currentPageIndex={currentPageIndex}

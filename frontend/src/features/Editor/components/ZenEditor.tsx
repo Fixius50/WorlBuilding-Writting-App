@@ -7,6 +7,7 @@ import BubbleToolbar from "./BubbleToolbar";
 import AutoLinkPrompt from "./AutoLinkPrompt";
 import { Hoja as HojaModel, Entidad } from "@domain/database";
 import { usePageEditor } from "../hooks/usePageEditor";
+import { CommentAnchorRange } from "@utils/commentAnchors";
 
 interface ZenEditorProps {
   pages: HojaModel[];
@@ -26,6 +27,8 @@ interface ZenEditorProps {
       to: number;
     } | null,
   ) => void;
+  onRequestComment?: () => void;
+  commentAnchors?: CommentAnchorRange[];
   minimal?: boolean;
   notebookTitle?: string;
   sidebarOpen?: boolean;
@@ -43,6 +46,8 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
   onRestoreSnapshot = () => {},
   onMentionClick,
   onSelectionChange,
+  onRequestComment,
+  commentAnchors = [],
   minimal = false,
   notebookTitle,
   sidebarOpen = true,
@@ -80,6 +85,7 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
     onSelectionChange,
     onSuggestLink: (entity, range) =>
       onSuggestLinkRef.current ? onSuggestLinkRef.current(entity, range) : null,
+    commentAnchors,
   });
 
   const onSuggestLink = React.useCallback(
@@ -254,6 +260,7 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
             <BubbleToolbar
               editor={editor}
               onMentionClick={onMentionClick}
+              onRequestComment={onRequestComment}
               zoom={zoom}
             />
           </div>

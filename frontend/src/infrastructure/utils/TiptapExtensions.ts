@@ -13,6 +13,7 @@ import slashSuggestion from './slashSuggestion';
 import { AnyExtension, Extension, Node, CommandProps } from '@tiptap/core';
 import { Suggestion } from '@tiptap/suggestion';
 import { SelectionHighlight } from './selectionHighlight';
+import { CommentAnchors } from './commentAnchors';
 import { AutoLinker } from './autoLinker';
 import { Entidad } from '@domain/database';
 import { PagePaginationPlugin } from '@features/Editor/utils/PagePaginationPlugin';
@@ -178,6 +179,13 @@ export const CustomImage: Node = Node.create({
       title: {
         default: null,
       },
+      originalSrc: {
+        default: null,
+        parseHTML: (element: HTMLElement): string | null => {
+          const original = element.getAttribute('data-original-src');
+          return original && original.trim().length > 0 ? original : null;
+        },
+      },
       width: {
         default: null,
         parseHTML: (element: HTMLElement): string | null => {
@@ -201,22 +209,31 @@ export const CustomImage: Node = Node.create({
   },
 
   renderHTML({ HTMLAttributes }: { HTMLAttributes: Record<string, any> }) {
-    const { width, style, ...rest } = HTMLAttributes;
+    const { width, style, originalSrc, ...rest } = HTMLAttributes;
     const baseStyle = typeof style === 'string' ? style : '';
     const widthStyle = width ? `width: ${width}; ` : '';
     const responsiveStyle = 'max-width: 100%; height: auto;';
     const mergedStyle = `${baseStyle}${baseStyle ? '; ' : ''}${widthStyle}${responsiveStyle}`.trim();
 
-    return ['img', { ...rest, style: mergedStyle }];
+    const domAttrs = originalSrc
+      ? { ...rest, style: mergedStyle, 'data-original-src': originalSrc }
+      : { ...rest, style: mergedStyle };
+
+    return ['img', domAttrs];
   },
 
   addCommands() {
     return {
       setImage: (options: { src: string; alt?: string; title?: string; width?: string }) => ({ chain }: CommandProps) => {
+        const attrs = {
+          ...options,
+          originalSrc: options.src,
+        };
+
         return chain()
           .insertContent({
             type: this.name,
-            attrs: options,
+            attrs,
           })
           .run();
       },
@@ -235,11 +252,13 @@ const SlashCommands: Extension = Extension.create({
     };
   },
   addProseMirrorPlugins() {
+    const suggestionOptions = {
+      editor: this.editor,
+      ...this.options.suggestion,
+    } as unknown as Parameters<typeof Suggestion>[0];
+
     return [
-      Suggestion({
-        editor: this.editor,
-        ...this.options.suggestion,
-      }),
+      Suggestion(suggestionOptions),
     ];
   },
 });
@@ -292,6 +311,7 @@ export const getZenExtensions = (
   SelectionHighlight.configure({
     active: false,
   }),
+  CommentAnchors,
   AutoLinker.configure({
     entities: options?.entities || [],
     onSuggestLink: options?.onSuggestLink,

@@ -2,6 +2,7 @@ import React from "react";
 import { Hoja } from "@domain/database";
 import { Switch } from "@components";
 import WritingCommentsPanel from "./WritingCommentsPanel";
+import { CommentAnchorRange } from "@utils/commentAnchors";
 
 interface PageListPanelProps {
   pageId: number | null;
@@ -10,6 +11,8 @@ interface PageListPanelProps {
     from: number;
     to: number;
   } | null;
+  commentComposeRequestKey: number;
+  onCommentAnchorsChange: (anchors: CommentAnchorRange[]) => void;
   pages: Hoja[];
   filteredPages: Hoja[];
   currentPageIndex: number;
@@ -38,6 +41,8 @@ interface PageListPanelProps {
 const PageListPanel: React.FC<PageListPanelProps> = ({
   pageId,
   commentSelection,
+  commentComposeRequestKey,
+  onCommentAnchorsChange,
   pages,
   filteredPages,
   currentPageIndex,
@@ -80,7 +85,7 @@ const PageListPanel: React.FC<PageListPanelProps> = ({
 
         {/* Lista o Corcho de páginas con anidamiento dinámico */}
         <div
-          className={`flex-grow overflow-y-auto p-3 custom-scrollbar ${isCorkboardMode ? "grid grid-cols-2 gap-2 content-start" : "flex flex-col space-y-1"}`}
+          className={`flex-grow overflow-y-auto p-2 custom-scrollbar ${isCorkboardMode ? "grid grid-cols-2 gap-2 content-start" : "flex flex-col space-y-0.5"}`}
         >
           {filteredPages.map((page) => {
             const globalIdx = pages.findIndex((p) => p.id === page.id);
@@ -104,7 +109,9 @@ const PageListPanel: React.FC<PageListPanelProps> = ({
                     }`}
                   >
                     <span
-                      className={`font-sans text-[11px] font-bold mb-2 truncate w-full ${isSelected ? "text-primary" : "text-foreground/80"}`}
+                      className={`font-sans text-[11px] font-bold mb-2 truncate w-full ${
+                        isSelected ? "font-bold" : "font-medium"
+                      }`}
                     >
                       {page.titulo || `Hoja ${globalIdx + 1}`}
                     </span>
@@ -138,12 +145,12 @@ const PageListPanel: React.FC<PageListPanelProps> = ({
               <div key={page.id} className="group relative">
                 <button
                   onClick={() => handlePageSelect(globalIdx)}
-                  className={`w-full text-left px-4 py-3 rounded-md transition-all flex flex-col justify-center border ${
-                    isChapter ? "" : "ml-4 max-w-[calc(100%-1rem)]"
+                  className={`w-full text-left px-2 py-1.5 rounded-sm transition-colors ${
+                    isChapter ? "" : "ml-3"
                   } ${
                     isSelected
-                      ? "bg-primary/15 border-primary/20 text-primary font-bold shadow-[inset_0_0_10px_rgba(var(--primary-rgb),0.05)]"
-                      : "bg-transparent border-transparent hover:bg-foreground/[0.03] text-foreground/75"
+                      ? "text-primary bg-primary/10"
+                      : "text-foreground/70 hover:text-foreground hover:bg-foreground/[0.04]"
                   }`}
                 >
                   {editingPageId === page.id ? (
@@ -166,8 +173,8 @@ const PageListPanel: React.FC<PageListPanelProps> = ({
                     <span
                       className={`font-sans text-[12px] truncate w-full ${
                         isChapter
-                          ? "font-bold text-foreground/90"
-                          : "font-medium text-foreground/60"
+                          ? "font-bold"
+                          : "font-medium"
                       }`}
                     >
                       {page.titulo || `Hoja ${globalIdx + 1}`}
@@ -256,7 +263,12 @@ const PageListPanel: React.FC<PageListPanelProps> = ({
       </div>
 
       {/* Mitad inferior: Comentarios (Estilo VSCode Git) */}
-      <WritingCommentsPanel pageId={pageId} selection={commentSelection} />
+      <WritingCommentsPanel
+        pageId={pageId}
+        selection={commentSelection}
+        composeRequestKey={commentComposeRequestKey}
+        onAnchorsChange={onCommentAnchorsChange}
+      />
     </div>
   );
 };

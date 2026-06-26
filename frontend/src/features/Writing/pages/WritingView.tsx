@@ -44,6 +44,10 @@ const WritingView = () => {
     projectEntities,
     commentSelection,
     setCommentSelection,
+    commentComposeRequestKey,
+    handleRequestCommentFromSelection,
+    commentAnchors,
+    handleCommentAnchorsChange,
   } = useWritingView();
 
   const { isCorkboardMode, setIsCorkboardMode, filteredPages, deletePage } =
@@ -185,6 +189,8 @@ const WritingView = () => {
               onRestoreSnapshot={handleRestoreSnapshot}
               onMentionClick={handleMentionClick}
               onSelectionChange={setCommentSelection}
+              onRequestComment={handleRequestCommentFromSelection}
+              commentAnchors={commentAnchors}
               notebookTitle={notebook?.titulo}
               sidebarOpen={sidebarOpen}
               onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
@@ -201,6 +207,8 @@ const WritingView = () => {
           setActiveTab={setActiveTab}
           pageId={currentPage ? currentPage.id : null}
           commentSelection={commentSelection}
+          commentComposeRequestKey={commentComposeRequestKey}
+          onCommentAnchorsChange={handleCommentAnchorsChange}
           pages={pages}
           filteredPages={filteredPages}
           currentPageIndex={currentPageIndex}

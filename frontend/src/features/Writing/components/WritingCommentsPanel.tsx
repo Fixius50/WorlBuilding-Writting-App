@@ -1,5 +1,6 @@
 import React from "react";
 import { WritingUseCase, WritingComment } from "@features/Writing";
+import { CommentAnchorRange } from "@utils/commentAnchors";
 
 /**
  * 📝 WritingCommentsPanel
@@ -15,11 +16,15 @@ interface WritingCommentsPanelProps {
     from: number;
     to: number;
   } | null;
+  composeRequestKey?: number;
+  onAnchorsChange?: (anchors: CommentAnchorRange[]) => void;
 }
 
 const WritingCommentsPanel: React.FC<WritingCommentsPanelProps> = ({
   pageId,
   selection,
+  composeRequestKey = 0,
+  onAnchorsChange,
 }) => {
   const [comments, setComments] = React.useState<WritingComment[]>([]);
   const [newComment, setNewComment] = React.useState("");
@@ -27,6 +32,7 @@ const WritingCommentsPanel: React.FC<WritingCommentsPanelProps> = ({
     {},
   );
   const [loading, setLoading] = React.useState(false);
+  const commentInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const loadComments = React.useCallback(async () => {
     if (!pageId) {
@@ -38,16 +44,38 @@ const WritingCommentsPanel: React.FC<WritingCommentsPanelProps> = ({
     try {
       const data = await WritingUseCase.getComments(pageId);
       setComments(data);
+
+      const anchors: CommentAnchorRange[] = data
+        .filter((comment) => comment.rango_inicio !== null && comment.rango_fin !== null)
+        .map((comment) => ({
+          id: comment.id,
+          from: Number(comment.rango_inicio),
+          to: Number(comment.rango_fin),
+          resolved: comment.estado === "resolved",
+        }));
+
+      onAnchorsChange ? onAnchorsChange(anchors) : null;
     } catch {
       setComments([]);
+      onAnchorsChange ? onAnchorsChange([]) : null;
     } finally {
       setLoading(false);
     }
-  }, [pageId]);
+  }, [onAnchorsChange, pageId]);
 
   React.useEffect(() => {
     loadComments();
   }, [loadComments]);
+
+  React.useEffect(() => {
+    const canFocus = !!pageId && composeRequestKey > 0;
+
+    canFocus
+      ? window.requestAnimationFrame(() => {
+          commentInputRef.current ? commentInputRef.current.focus() : null;
+        })
+      : null;
+  }, [composeRequestKey, pageId]);
 
   const rootComments = comments.filter((comment) => comment.parent_id === null);
 
@@ -117,6 +145,7 @@ const WritingCommentsPanel: React.FC<WritingCommentsPanelProps> = ({
       <div className="flex-grow overflow-y-auto p-3 custom-scrollbar flex flex-col gap-2">
         <div className="flex gap-2">
           <input
+            ref={commentInputRef}
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             onKeyDown={(e) => {
