@@ -57,9 +57,8 @@ const notifyMentionError = (): void => {
 };
 
 const getProjectId = async (): Promise<number | null> => {
-  const selectedProjectId = useAppStore.getState().selectedProject?.id;
   const lastProjectId = useAppStore.getState().lastProjectId;
-  let projectId = selectedProjectId ?? lastProjectId ?? null;
+  const projectId = lastProjectId ?? null;
 
   if (projectId) {
     return Number(projectId);
@@ -224,6 +223,17 @@ const suggestion: Omit<SuggestionOptions, "editor"> = {
       },
 
       onKeyDown(props: { event: KeyboardEvent }): boolean {
+        const isArrowKey = props.event.key.startsWith("Arrow");
+        const isArrowMovementCombo =
+          isArrowKey &&
+          (props.event.ctrlKey || props.event.metaKey || props.event.altKey || props.event.shiftKey);
+
+        if (isArrowMovementCombo) {
+          props.event.preventDefault();
+          props.event.stopPropagation();
+          return true;
+        }
+
         if (props.event.key === "Escape") {
           if (popup) {
             popup[0].hide();

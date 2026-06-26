@@ -201,6 +201,24 @@
    color: hsl(var(--primary) / 0.8) !important;
 }
 
+/* Imágenes en hoja: bloque estable + selección visible */
+.prose-editor .ProseMirror img {
+  display: block;
+  float: left;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  clear: none;
+  margin: 0.2em 0.75em 0.35em 0;
+  border-radius: 6px;
+}
+
+.prose-editor .ProseMirror img.ProseMirror-selectednode {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px hsl(var(--primary) / 0.16);
+}
+
 /* Listas */
 .prose-editor .ProseMirror ul {
    list-style-type: disc !important;

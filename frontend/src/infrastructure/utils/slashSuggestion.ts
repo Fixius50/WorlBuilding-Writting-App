@@ -182,6 +182,17 @@ export default {
       },
 
       onKeyDown(props: { event: KeyboardEvent }) {
+        const isArrowKey = props.event.key.startsWith("Arrow");
+        const isArrowMovementCombo =
+          isArrowKey &&
+          (props.event.ctrlKey || props.event.metaKey || props.event.altKey || props.event.shiftKey);
+
+        if (isArrowMovementCombo) {
+          props.event.preventDefault();
+          props.event.stopPropagation();
+          return true;
+        }
+
         let result: boolean | undefined = false;
         if (props.event.key === "Escape") {
           if (popup) popup[0].hide();

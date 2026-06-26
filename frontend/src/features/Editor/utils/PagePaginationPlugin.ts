@@ -42,9 +42,11 @@ const calculateDecorations = (view: EditorView): Decoration[] => {
 
     Array.from(domElements).forEach((childNode: Element) => {
       const child: HTMLElement = childNode as HTMLElement;
+      const isDetached: boolean = !child.isConnected;
+      const isDirectChild: boolean = child.parentElement === view.dom;
       const isPageBreak: boolean = child.classList.contains("virtual-page-break");
 
-      if (!isPageBreak) {
+      if (!isPageBreak && !isDetached && isDirectChild) {
         const childHeight: number = child.offsetHeight;
         const style: CSSStyleDeclaration = window.getComputedStyle(child);
         const marginTop: number = parseFloat(style.marginTop || "0");
@@ -75,6 +77,19 @@ const calculateDecorations = (view: EditorView): Decoration[] => {
   })() : [];
 };
 
+const hasImageNodes = (state: EditorState): boolean => {
+  let foundImage: boolean = false;
+  state.doc.descendants((node) => {
+    const isImage = node.type.name === "image";
+    if (isImage) {
+      foundImage = true;
+      return false;
+    }
+    return true;
+  });
+  return foundImage;
+};
+
 /**
  * 📃 PagePaginationPlugin
  * Plugin de ProseMirror que implementa la simulación visual interactiva
@@ -102,9 +117,10 @@ export const PagePaginationPlugin = (): Plugin => {
         const isDestroyed: boolean = editorView.isDestroyed;
 
         if (!isDestroyed) {
+          const shouldSuspendPagination: boolean = hasImageNodes(editorView.state);
           const decs: DecorationSet = DecorationSet.create(
             editorView.state.doc,
-            calculateDecorations(editorView)
+            shouldSuspendPagination ? [] : calculateDecorations(editorView)
           );
 
           const currentDecs: DecorationSet | undefined = pagePaginationPluginKey.getState(editorView.state);
@@ -113,11 +129,15 @@ export const PagePaginationPlugin = (): Plugin => {
 
           const shouldUpdate: boolean = currentCount !== newCount || newCount > 0;
           if (shouldUpdate) {
-            editorView.dispatch(
-              editorView.state.tr.setMeta(pagePaginationPluginKey, {
-                decorations: decs,
-              })
-            );
+            try {
+              editorView.dispatch(
+                editorView.state.tr.setMeta(pagePaginationPluginKey, {
+                  decorations: decs,
+                })
+              );
+            } catch (_error: unknown) {
+              // Evita que errores transitorios del DOM en decoraciones derriben la UI.
+            }
           }
         }
       };

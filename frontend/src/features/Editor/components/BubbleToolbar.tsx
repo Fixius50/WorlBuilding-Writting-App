@@ -1,5 +1,9 @@
 import { EditorContent, BubbleMenu, Editor } from "@tiptap/react";
 import React from "react";
+import { createPortal } from "react-dom";
+import { NodeSelection, TextSelection } from "prosemirror-state";
+import ReactCrop, { type Crop, type PixelCrop } from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
 
 interface BubbleToolbarProps {
   editor: Editor | null;
@@ -21,6 +25,28 @@ const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
 }) => {
   const [showTextColor, setShowTextColor] = React.useState(false);
   const [showHighlightColor, setShowHighlightColor] = React.useState(false);
+  const [selectedImage, setSelectedImage] = React.useState<{
+    pos: number;
+    src: string;
+    width: string | null;
+    rect: DOMRect;
+  } | null>(null);
+  const [previewImageSrc, setPreviewImageSrc] = React.useState<string | null>(
+    null,
+  );
+  const [cropImageSrc, setCropImageSrc] = React.useState<string | null>(null);
+  const [cropTargetPos, setCropTargetPos] = React.useState<number | null>(null);
+  const [cropSelection, setCropSelection] = React.useState<Crop>({
+    unit: "%",
+    x: 10,
+    y: 10,
+    width: 80,
+    height: 80,
+  });
+  const [completedCrop, setCompletedCrop] = React.useState<PixelCrop | null>(
+    null,
+  );
+  const cropImageRef = React.useRef<HTMLImageElement | null>(null);
   const textColorInputRef = React.useRef<HTMLInputElement>(null);
   const highlightColorInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -49,10 +75,489 @@ const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
   const currentHighlightColor =
     editor?.getAttributes("highlight").color || "transparent";
 
+  const logImageSyncError = React.useCallback(
+    (stage: string, error: unknown) => {
+      const selection = editor?.state.selection;
+      const message = error instanceof Error ? error.message : String(error);
+
+      console.error("[EditorImageSyncError]", {
+        stage,
+        message,
+        selectionFrom: selection?.from,
+        selectionTo: selection?.to,
+        selectionType: selection ? selection.constructor.name : "none",
+      });
+    },
+    [editor],
+  );
+
+  const getImageRectAtPos = React.useCallback(
+    (pos: number): DOMRect | null => {
+      const hasEditor = !!editor;
+
+      if (!hasEditor) {
+        return null;
+      }
+
+      try {
+        const nodeDom = editor.view.nodeDOM(pos) as HTMLElement | null;
+        return nodeDom ? nodeDom.getBoundingClientRect() : null;
+      } catch {
+        return null;
+      }
+    },
+    [editor],
+  );
+
+  const getCurrentImageContext = React.useCallback(() => {
+    const hasEditor = !!editor;
+
+    if (!hasEditor) {
+      return null;
+    }
+
+    const selection = editor.state.selection;
+    const isImageNodeSelection =
+      selection instanceof NodeSelection &&
+      selection.node.type.name === "image";
+
+    if (isImageNodeSelection) {
+      const imagePos = selection.from;
+      const imageSrc = String(selection.node.attrs?.src || "");
+      const imageWidth =
+        typeof selection.node.attrs?.width === "string" &&
+        selection.node.attrs.width.trim().length > 0
+          ? selection.node.attrs.width
+          : null;
+
+      return {
+        pos: imagePos,
+        src: imageSrc,
+        width: imageWidth,
+      };
+    }
+
+    const hasSelectedImage = !!selectedImage;
+    if (!hasSelectedImage) {
+      return null;
+    }
+
+    const fallbackNode = editor.state.doc.nodeAt(selectedImage.pos);
+    const hasFallbackImage = !!fallbackNode && fallbackNode.type.name === "image";
+
+    if (!hasFallbackImage) {
+      return null;
+    }
+
+    const fallbackWidth =
+      typeof fallbackNode.attrs?.width === "string" &&
+      fallbackNode.attrs.width.trim().length > 0
+        ? fallbackNode.attrs.width
+        : null;
+
+    return {
+      pos: selectedImage.pos,
+      src: String(fallbackNode.attrs?.src || selectedImage.src || ""),
+      width: fallbackWidth,
+    };
+  }, [editor, selectedImage]);
+
+  React.useEffect(() => {
+    const hasEditor = !!editor;
+    if (!hasEditor) {
+      setSelectedImage(null);
+      return;
+    }
+
+    const updateSelectedImage = () => {
+      const imageContext = getCurrentImageContext();
+
+      if (!imageContext) {
+        setSelectedImage(null);
+      } else {
+        const rect = getImageRectAtPos(imageContext.pos);
+        const canShowImageMenu = imageContext.src.length > 0 && rect !== null;
+
+        if (!canShowImageMenu) {
+          setSelectedImage(null);
+        } else {
+          setSelectedImage({
+            pos: imageContext.pos,
+            src: imageContext.src,
+            width: imageContext.width,
+            rect: rect!,
+          });
+        }
+      }
+    };
+
+    editor.on("selectionUpdate", updateSelectedImage);
+    editor.on("update", updateSelectedImage);
+    updateSelectedImage();
+
+    return () => {
+      editor.off("selectionUpdate", updateSelectedImage);
+      editor.off("update", updateSelectedImage);
+    };
+  }, [editor, getCurrentImageContext, getImageRectAtPos]);
+
+  React.useEffect(() => {
+    const hasEditor = !!editor;
+    const hasSelectedImage = !!selectedImage;
+
+    if (!hasEditor || !hasSelectedImage) {
+      return;
+    }
+
+    const refreshImageRect = () => {
+      const imageContext = getCurrentImageContext();
+      const rect = imageContext ? getImageRectAtPos(imageContext.pos) : null;
+
+      if (rect) {
+        setSelectedImage((prev) =>
+          prev
+            ? {
+                ...prev,
+                pos: imageContext ? imageContext.pos : prev.pos,
+                src: imageContext ? imageContext.src : prev.src,
+                width: imageContext ? imageContext.width : prev.width,
+                rect,
+              }
+            : prev,
+        );
+      } else {
+        setSelectedImage(null);
+      }
+    };
+
+    window.addEventListener("scroll", refreshImageRect, true);
+    window.addEventListener("resize", refreshImageRect);
+
+    return () => {
+      window.removeEventListener("scroll", refreshImageRect, true);
+      window.removeEventListener("resize", refreshImageRect);
+    };
+  }, [editor, selectedImage?.pos, getCurrentImageContext, getImageRectAtPos]);
+
+  const handleViewImage = React.useCallback(() => {
+    selectedImage ? setPreviewImageSrc(selectedImage.src) : null;
+  }, [selectedImage]);
+
+  const closeCropModal = React.useCallback(() => {
+    setCropImageSrc(null);
+    setCropTargetPos(null);
+    setCompletedCrop(null);
+    setCropSelection({
+      unit: "%",
+      x: 10,
+      y: 10,
+      width: 80,
+      height: 80,
+    });
+  }, []);
+
+  const handleDeleteImage = React.useCallback(() => {
+    const hasEditor = !!editor;
+    const imageContext = getCurrentImageContext();
+    const hasSelectedImage = !!imageContext;
+
+    if (hasEditor && hasSelectedImage) {
+      const imageNode = editor.state.doc.nodeAt(imageContext.pos);
+      const hasImageNode = !!imageNode && imageNode.type.name === "image";
+
+      if (hasImageNode) {
+        const from = imageContext.pos;
+        const to = from + imageNode.nodeSize;
+        try {
+          const transaction = editor.state.tr.delete(from, to);
+          transaction.setMeta("wb:imageMutation", true);
+          editor.view.dispatch(transaction);
+        } catch (error: unknown) {
+          logImageSyncError("deleteImage", error);
+          setSelectedImage(null);
+        }
+      }
+      setSelectedImage(null);
+    }
+  }, [editor, getCurrentImageContext]);
+
+  const updateImageWidth = React.useCallback(
+    (nextWidth: string | null) => {
+      const hasEditor = !!editor;
+      const imageContext = getCurrentImageContext();
+      const hasSelectedImage = !!imageContext;
+
+      if (hasEditor && hasSelectedImage) {
+        const imageNode = editor.state.doc.nodeAt(imageContext.pos);
+        const hasImageNode = !!imageNode && imageNode.type.name === "image";
+
+        if (hasImageNode) {
+          const attrs = {
+            ...imageNode.attrs,
+            width: nextWidth,
+          };
+          try {
+            const transaction = editor.state.tr.setNodeMarkup(
+              imageContext.pos,
+              imageNode.type,
+              attrs,
+              imageNode.marks,
+            );
+            transaction.setMeta("wb:imageMutation", true);
+            editor.view.dispatch(transaction);
+          } catch (error: unknown) {
+            logImageSyncError("setImageWidth", error);
+            setSelectedImage(null);
+          }
+        }
+      }
+    },
+    [editor, getCurrentImageContext],
+  );
+
+  const handleDecreaseImageSize = React.useCallback(() => {
+    const hasSelectedImage = !!selectedImage;
+
+    if (hasSelectedImage) {
+      const currentWidth = Math.max(96, Math.round(selectedImage.rect.width));
+      const nextWidth = Math.max(96, Math.round(currentWidth * 0.85));
+      updateImageWidth(`${nextWidth}px`);
+    }
+  }, [selectedImage, updateImageWidth]);
+
+  const handleIncreaseImageSize = React.useCallback(() => {
+    const hasSelectedImage = !!selectedImage;
+
+    if (hasSelectedImage) {
+      const currentWidth = Math.max(96, Math.round(selectedImage.rect.width));
+      const nextWidth = Math.min(1600, Math.round(currentWidth * 1.15));
+      updateImageWidth(`${nextWidth}px`);
+    }
+  }, [selectedImage, updateImageWidth]);
+
+  const handleCropImage = React.useCallback(() => {
+    const hasEditor = !!editor;
+    const imageContext = getCurrentImageContext();
+    const hasSelectedImage = !!imageContext;
+
+    if (!hasEditor || !hasSelectedImage) {
+      return;
+    }
+
+    setCropImageSrc(imageContext.src);
+    setCropTargetPos(imageContext.pos);
+    setCompletedCrop(null);
+    setCropSelection({
+      unit: "%",
+      x: 10,
+      y: 10,
+      width: 80,
+      height: 80,
+    });
+  }, [editor, getCurrentImageContext]);
+
+  const applyCropFromModal = React.useCallback(async () => {
+    const hasEditor = !!editor;
+    const hasTargetPos = cropTargetPos !== null;
+    const hasCompletedCrop = !!completedCrop;
+    const hasCropImage = !!cropImageRef.current;
+
+    if (!hasEditor || !hasTargetPos || !hasCompletedCrop || !hasCropImage) {
+      return;
+    }
+
+    const pixelCrop = completedCrop as PixelCrop;
+    const cropHasArea = pixelCrop.width > 0 && pixelCrop.height > 0;
+
+    if (!cropHasArea) {
+      window.alert("Selecciona un área válida para recortar.");
+      return;
+    }
+
+    try {
+      const img = cropImageRef.current as HTMLImageElement;
+      const scaleX = img.naturalWidth / img.width;
+      const scaleY = img.naturalHeight / img.height;
+
+      const sourceX = Math.floor(pixelCrop.x * scaleX);
+      const sourceY = Math.floor(pixelCrop.y * scaleY);
+      const sourceWidth = Math.floor(pixelCrop.width * scaleX);
+      const sourceHeight = Math.floor(pixelCrop.height * scaleY);
+
+      const canvas = document.createElement("canvas");
+      canvas.width = sourceWidth;
+      canvas.height = sourceHeight;
+
+      const context = canvas.getContext("2d");
+      if (!context) {
+        return;
+      }
+
+      context.drawImage(
+        img,
+        sourceX,
+        sourceY,
+        sourceWidth,
+        sourceHeight,
+        0,
+        0,
+        sourceWidth,
+        sourceHeight,
+      );
+
+      const croppedSrc = canvas.toDataURL("image/png", 0.92);
+      const imageNode = editor.state.doc.nodeAt(cropTargetPos);
+      const hasImageNode = !!imageNode && imageNode.type.name === "image";
+
+      if (hasImageNode) {
+        const attrs = {
+          ...imageNode.attrs,
+          src: croppedSrc,
+        };
+
+        const transaction = editor.state.tr.setNodeMarkup(
+          cropTargetPos,
+          imageNode.type,
+          attrs,
+          imageNode.marks,
+        );
+        transaction.setMeta("wb:imageMutation", true);
+        editor.view.dispatch(transaction);
+        closeCropModal();
+      }
+    } catch (error: unknown) {
+      logImageSyncError("cropImageApply", error);
+      window.alert(
+        "No se pudo recortar la imagen seleccionada. Verifica que la imagen sea local o accesible.",
+      );
+    }
+  }, [
+    closeCropModal,
+    completedCrop,
+    cropTargetPos,
+    editor,
+    logImageSyncError,
+  ]);
+
+  React.useEffect(() => {
+    const hasAnyModal = !!previewImageSrc || !!cropImageSrc;
+
+    if (!hasAnyModal) {
+      return;
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      const isEscape = event.key === "Escape";
+
+      if (isEscape) {
+        cropImageSrc ? closeCropModal() : null;
+        previewImageSrc ? setPreviewImageSrc(null) : null;
+      }
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [closeCropModal, cropImageSrc, previewImageSrc]);
+
+  const imageMenuStyle: React.CSSProperties | null = selectedImage
+    ? {
+        position: "fixed",
+        top: Math.max(12, selectedImage.rect.top - 48),
+        left: selectedImage.rect.left + selectedImage.rect.width / 2,
+        transform: "translateX(-50%)",
+        zIndex: 70,
+      }
+    : null;
+
+  const cropPanelStyle: React.CSSProperties | null = cropImageSrc
+    ? (() => {
+        const panelWidth = Math.min(620, Math.max(320, window.innerWidth - 24));
+        const defaultLeft = Math.max(12, Math.round((window.innerWidth - panelWidth) / 2));
+        const anchorRect = selectedImage?.rect || null;
+        const estimatedPanelHeight = 500;
+
+        const left = anchorRect
+          ? Math.min(
+              Math.max(12, Math.round(anchorRect.left + anchorRect.width / 2 - panelWidth / 2)),
+              Math.max(12, window.innerWidth - panelWidth - 12),
+            )
+          : defaultLeft;
+
+        const preferBottomTop = anchorRect
+          ? Math.round(anchorRect.bottom + 12)
+          : Math.max(16, Math.round(window.innerHeight * 0.12));
+        const fallbackTop = anchorRect
+          ? Math.max(12, Math.round(anchorRect.top - estimatedPanelHeight - 12))
+          : 16;
+        const top =
+          preferBottomTop + estimatedPanelHeight <= window.innerHeight - 12
+            ? preferBottomTop
+            : fallbackTop;
+
+        return {
+          position: "fixed",
+          top,
+          left,
+          width: panelWidth,
+          maxHeight: "min(78vh, 680px)",
+          zIndex: 90,
+        };
+      })()
+    : null;
+
   return (
     <div className="flex-1 w-full relative">
+      {selectedImage && imageMenuStyle
+        ? createPortal(
+            <div style={imageMenuStyle} className="pointer-events-auto">
+              <div className="flex items-center gap-1.5 px-2 py-1 rounded-full border border-foreground/15 bg-background/95 shadow-2xl backdrop-blur-sm">
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={handleViewImage}
+                  className="px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-foreground/80 hover:text-foreground hover:bg-foreground/10 rounded-full transition-colors"
+                  title="Ver imagen"
+                >
+                  Ver
+                </button>
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={handleCropImage}
+                  className="px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-foreground/80 hover:text-foreground hover:bg-foreground/10 rounded-full transition-colors"
+                  title="Recortar imagen"
+                >
+                  Recortar
+                </button>
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={handleDeleteImage}
+                  className="px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-red-300 hover:text-red-200 hover:bg-red-500/10 rounded-full transition-colors"
+                  title="Eliminar imagen"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
+
       {editor && (
-        <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
+        <BubbleMenu
+          editor={editor}
+          tippyOptions={{ duration: 100 }}
+          shouldShow={({ editor: currentEditor }) => {
+            const selection = currentEditor.state.selection;
+            const isImageSelection =
+              selection instanceof NodeSelection &&
+              selection.node.type.name === "image";
+            const isTextSelection = selection instanceof TextSelection;
+
+            return !isImageSelection && isTextSelection && !selection.empty;
+          }}
+        >
           <div className="flex items-center gap-1 p-1 bg-background border border-foreground/10 rounded-md shadow-2xl">
             <button
               onClick={() => editor.chain().focus().toggleBold().run()}
@@ -290,6 +795,90 @@ const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
           "--editor-zoom-font-size": `${20 * (zoom / 100)}px` 
         } as React.CSSProperties}
       />
+
+      {previewImageSrc
+        ? createPortal(
+            <div
+              className="fixed inset-0 z-[80] bg-black/70 backdrop-blur-sm flex items-center justify-center p-6"
+              onClick={() => setPreviewImageSrc(null)}
+            >
+              <button
+                type="button"
+                className="absolute top-5 right-5 text-white/80 hover:text-white text-xs font-black uppercase tracking-[0.2em]"
+                onClick={() => setPreviewImageSrc(null)}
+              >
+                Cerrar
+              </button>
+              <img
+                src={previewImageSrc}
+                alt="Vista previa"
+                className="max-w-[90vw] max-h-[85vh] object-contain rounded-md border border-white/20 shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>,
+            document.body,
+          )
+        : null}
+
+      {cropImageSrc
+        ? createPortal(
+            <div style={cropPanelStyle || undefined} className="pointer-events-auto">
+              <div className="rounded-xl border border-white/10 bg-background/95 shadow-2xl overflow-hidden">
+                <div className="px-4 py-3 border-b border-foreground/10 flex items-center justify-between">
+                  <h3 className="text-sm font-black uppercase tracking-[0.16em] text-foreground/80">
+                    Recortar imagen
+                  </h3>
+                  <button
+                    type="button"
+                    className="text-xs font-black uppercase tracking-[0.16em] text-foreground/60 hover:text-foreground"
+                    onClick={closeCropModal}
+                  >
+                    Cerrar
+                  </button>
+                </div>
+
+                <div className="p-4">
+                  <div className="relative w-full max-h-[52vh] overflow-auto rounded-lg border border-foreground/10 bg-black/40">
+                    <ReactCrop
+                      crop={cropSelection}
+                      onChange={(nextCrop: Crop) => setCropSelection(nextCrop)}
+                      onComplete={(pixelCrop: PixelCrop) =>
+                        setCompletedCrop(pixelCrop)
+                      }
+                      keepSelection
+                      ruleOfThirds
+                    >
+                      <img
+                        ref={cropImageRef}
+                        src={cropImageSrc}
+                        alt="Recorte"
+                        className="max-w-full h-auto select-none"
+                      />
+                    </ReactCrop>
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={closeCropModal}
+                      className="px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-foreground/70 hover:text-foreground border border-foreground/20 rounded-full"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={applyCropFromModal}
+                      className="px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-black bg-primary rounded-full hover:opacity-90"
+                    >
+                      Aplicar recorte
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 };

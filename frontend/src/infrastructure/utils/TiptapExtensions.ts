@@ -31,7 +31,7 @@ declare module '@tiptap/core' {
       setParagraphSpacing: (marginTop: string | null, marginBottom: string | null) => ReturnType;
     };
     image: {
-      setImage: (options: { src: string; alt?: string; title?: string }) => ReturnType;
+      setImage: (options: { src: string; alt?: string; title?: string; width?: string }) => ReturnType;
     };
   }
 }
@@ -161,9 +161,11 @@ export const ParagraphSpacing: Extension = Extension.create({
 export const CustomImage: Node = Node.create({
   name: 'image',
   group: 'block',
+  atom: true,
   defining: true,
   selectable: true,
   draggable: true,
+  isolating: true,
 
   addAttributes() {
     return {
@@ -175,6 +177,17 @@ export const CustomImage: Node = Node.create({
       },
       title: {
         default: null,
+      },
+      width: {
+        default: null,
+        parseHTML: (element: HTMLElement): string | null => {
+          const styleWidth = element.style.width;
+          const attrWidth = element.getAttribute('width');
+          const hasStyleWidth = !!styleWidth && styleWidth.trim().length > 0;
+          const hasAttrWidth = !!attrWidth && attrWidth.trim().length > 0;
+
+          return hasStyleWidth ? styleWidth : (hasAttrWidth ? attrWidth : null);
+        },
       },
     };
   },
@@ -188,12 +201,18 @@ export const CustomImage: Node = Node.create({
   },
 
   renderHTML({ HTMLAttributes }: { HTMLAttributes: Record<string, any> }) {
-    return ['img', HTMLAttributes];
+    const { width, style, ...rest } = HTMLAttributes;
+    const baseStyle = typeof style === 'string' ? style : '';
+    const widthStyle = width ? `width: ${width}; ` : '';
+    const responsiveStyle = 'max-width: 100%; height: auto;';
+    const mergedStyle = `${baseStyle}${baseStyle ? '; ' : ''}${widthStyle}${responsiveStyle}`.trim();
+
+    return ['img', { ...rest, style: mergedStyle }];
   },
 
   addCommands() {
     return {
-      setImage: (options: { src: string; alt?: string; title?: string }) => ({ chain }: CommandProps) => {
+      setImage: (options: { src: string; alt?: string; title?: string; width?: string }) => ({ chain }: CommandProps) => {
         return chain()
           .insertContent({
             type: this.name,
@@ -231,6 +250,8 @@ const PagePagination: Extension = Extension.create({
     return [PagePaginationPlugin()];
   }
 });
+
+const ENABLE_PAGE_PAGINATION = false;
 
 /**
  * Colección centralizada de extensiones para el editor Tiptap (ZenEditor).
@@ -275,7 +296,7 @@ export const getZenExtensions = (
     entities: options?.entities || [],
     onSuggestLink: options?.onSuggestLink,
   }),
-  PagePagination,
+  ...(ENABLE_PAGE_PAGINATION ? [PagePagination] : []),
   CustomImage,
   FontSize,
   LineHeight,

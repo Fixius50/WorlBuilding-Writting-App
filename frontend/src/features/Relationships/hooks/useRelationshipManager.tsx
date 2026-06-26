@@ -31,6 +31,28 @@ export const useRelationshipManager = (
   const [relType, setRelType] = useState("");
   const [description, setDescription] = useState("");
   const [fetchingTargets, setFetchingTargets] = useState(false);
+  const [resolvedProjectId, setResolvedProjectId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const resolveProjectId = async () => {
+      const numericEntityId = Number(entityId);
+      const shouldResolve = Number.isFinite(numericEntityId) && numericEntityId > 0;
+
+      if (shouldResolve) {
+        try {
+          const currentEntity = await RelationshipUseCase.getEntityDetails(numericEntityId);
+          const currentProjectId = currentEntity ? currentEntity.project_id : null;
+          setResolvedProjectId(currentProjectId);
+        } catch {
+          setResolvedProjectId(null);
+        }
+      } else {
+        setResolvedProjectId(null);
+      }
+    };
+
+    resolveProjectId();
+  }, [entityId]);
 
   const loadRelationships = useCallback(async () => {
     if (!entityId) return;
@@ -72,21 +94,28 @@ export const useRelationshipManager = (
   const fetchTargets = useCallback(async (type: string) => {
     setFetchingTargets(true);
     try {
-      const { entities: all } = await RelationshipUseCase.getFullNetwork(1); // Placeholder project_id
+      const projectIdForQuery = resolvedProjectId;
+      const hasProjectId = projectIdForQuery !== null;
+
+      if (!hasProjectId) {
+        setTargetItems([]);
+      } else {
+        const { entities: all } = await RelationshipUseCase.getFullNetwork(projectIdForQuery);
       const filtered =
         type === "All"
           ? all
           : all.filter(
               (e) => (e.tipo || "").toLowerCase() === type.toLowerCase(),
             );
-      setTargetItems(filtered || []);
+        setTargetItems(filtered || []);
+      }
     } catch (error) {
       console.error("Error fetching targets:", error);
       setTargetItems([]);
     } finally {
       setFetchingTargets(false);
     }
-  }, []);
+  }, [resolvedProjectId]);
 
   useEffect(() => {
     if (isAdding && targetType) {
@@ -103,7 +132,9 @@ export const useRelationshipManager = (
   }, []);
 
   const handleSave = useCallback(async () => {
-    if (!selectedTargetId || !relType) return;
+    const hasRequiredData = !!selectedTargetId && !!relType && resolvedProjectId !== null;
+
+    if (!hasRequiredData) return;
 
     try {
       await RelationshipUseCase.createRelationship({
@@ -111,7 +142,7 @@ export const useRelationshipManager = (
         destino_id: selectedTargetId,
         tipo: relType,
         descripcion: description,
-        project_id: 1, // Placeholder
+        project_id: resolvedProjectId,
       });
       setIsAdding(false);
       resetForm();
@@ -125,6 +156,7 @@ export const useRelationshipManager = (
     relType,
     entityId,
     description,
+    resolvedProjectId,
     resetForm,
     loadRelationships,
   ]);

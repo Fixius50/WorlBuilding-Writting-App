@@ -38,6 +38,13 @@ export const usePageEditor = ({
   onSuggestLink,
   onSelectionChange,
 }: UsePageEditorProps) => {
+  const skipExternalSyncUntilRef = useRef<number>(0);
+  const knownHtmlRef = useRef<string>(content);
+
+  useEffect(() => {
+    knownHtmlRef.current = content;
+  }, [content]);
+
   const editor = useEditor({
     extensions: getZenExtensions("Empieza a escribir esta página...", {
       entities: projectEntities,
@@ -45,7 +52,9 @@ export const usePageEditor = ({
     }),
     content: content,
     onUpdate: ({ editor }) => {
-      onUpdate(editor.getHTML());
+      const html = editor.getHTML();
+      knownHtmlRef.current = html;
+      onUpdate(html);
     },
     onSelectionUpdate: ({ editor }) => {
       const { from, to, empty } = editor.state.selection;
@@ -68,6 +77,17 @@ export const usePageEditor = ({
     },
     onCreate: ({ editor }) => {
       autoFocus ? setTimeout(() => editor.commands.focus("start"), 10) : null;
+
+      const originalDispatch = editor.view.dispatch.bind(editor.view);
+      editor.view.dispatch = (tr) => {
+        const isImageMutation = !!tr.getMeta("wb:imageMutation");
+
+        if (isImageMutation) {
+          skipExternalSyncUntilRef.current = Date.now() + 220;
+        }
+
+        originalDispatch(tr);
+      };
     },
     editorProps: {
       attributes: {
@@ -90,9 +110,37 @@ export const usePageEditor = ({
   });
 
   useEffect(() => {
-    const shouldUpdate = editor && content !== editor.getHTML();
+    const hasEditor = !!editor;
+    const isBlockedByRecentImageMutation =
+      Date.now() < skipExternalSyncUntilRef.current;
+    const shouldUpdate =
+      hasEditor &&
+      content !== knownHtmlRef.current &&
+      content !== editor.getHTML() &&
+      !isBlockedByRecentImageMutation;
+
     shouldUpdate && editor ? editor.commands.setContent(content, false) : null;
   }, [content, editor]);
+
+  useEffect(() => {
+    const onWindowError = (event: ErrorEvent) => {
+      const message = String(event.message || "");
+      const isInsertBeforeError = message.includes("insertBefore");
+
+      if (isInsertBeforeError && editor) {
+        const selection = editor.state.selection;
+        console.error("[EditorRuntimeError:insertBefore]", {
+          message,
+          selectionFrom: selection.from,
+          selectionTo: selection.to,
+          selectionType: selection.constructor.name,
+        });
+      }
+    };
+
+    window.addEventListener("error", onWindowError);
+    return () => window.removeEventListener("error", onWindowError);
+  }, [editor]);
 
   useEffect(() => {
     autoFocus && editor && !editor.isFocused
