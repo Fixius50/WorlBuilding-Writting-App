@@ -51,13 +51,7 @@ export const useMapStore = create<MapState>((set, get) => ({
   hasUnsavedChanges: false,
 
   loadMap: async (idOrSlug: string | number, projectId: number) => {
-    const currentState = get();
-    // Si ya tenemos este mapa cargado, no hacemos un re-fetch (usamos la caché)
-    // Esto asume que idOrSlug es consistente, para ser seguros resolvemos la entidad primero o asumimos cache hit
-    if (currentState.mapEntity && (currentState.mapEntity.id === Number(idOrSlug) || currentState.mapEntity.slug === idOrSlug)) {
-        return; 
-    }
-
+    // Siempre re-cargar desde SQL para garantizar consistencia entre vista y edición
     const entity = await MapUseCase.getMapByIdOrSlug(idOrSlug, projectId);
     if (!entity) return;
 

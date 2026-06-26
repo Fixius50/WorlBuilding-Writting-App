@@ -28,7 +28,7 @@ const InteractiveMapView: React.FC<{
     activeLevelId: hook.activeLevelId,
     levelSpacing: hook.levelSpacing,
     overlayAllLayers: hook.overlayAllLayers,
-    gridMode: hook.gridMode,
+    gridMode: "none",
   });
 
   return (

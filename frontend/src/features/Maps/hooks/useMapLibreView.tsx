@@ -379,7 +379,8 @@ export const useMapLibreView = (
             getPointRadius: (f: unknown) => {
               const feat = f as { properties?: Record<string, unknown> };
               const baseRadius = feat.properties?.type === 'spray' ? (typeof feat.properties?.width === 'number' ? feat.properties.width / 2 : 6) : 3;
-              const scaleFactor = currentZoom < 1 ? Math.pow(2, currentZoom - 1) : 1;
+              // Reducir grosor proporcionalmente al alejar, mantener tamaño original al acercar
+              const scaleFactor = Math.min(1, Math.pow(2, currentZoom - 2));
               return Math.max(1, baseRadius * scaleFactor);
             },
             pointRadiusUnits: "pixels",
@@ -388,7 +389,8 @@ export const useMapLibreView = (
               const baseWidth = typeof feat.properties?.width === 'number' ? feat.properties.width : 3;
               const isFill = feat.properties?.type === 'fill';
               const width = isFill ? 0 : baseWidth;
-              const scaleFactor = currentZoom < 1 ? Math.pow(2, currentZoom - 1) : 1;
+              // Reducir grosor proporcionalmente al alejar, mantener tamaño original al acercar
+              const scaleFactor = Math.min(1, Math.pow(2, currentZoom - 2));
               return Math.max(0.5, width * scaleFactor);
             },
             lineWidthUnits: "pixels",
@@ -474,7 +476,7 @@ export const useMapLibreView = (
 
       return deckLayers;
     },
-    [],
+    [mapImage],
   );
 
   useEffect(() => {
