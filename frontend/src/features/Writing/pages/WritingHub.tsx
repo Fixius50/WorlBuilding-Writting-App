@@ -44,10 +44,10 @@ const statusLabelMap: Record<NotebookCardMetadata["status"], string> = {
 };
 
 const statusClassMap: Record<NotebookCardMetadata["status"], string> = {
-  idea: "bg-sky-500/10 text-sky-300 border-sky-400/30",
-  draft: "bg-amber-500/10 text-amber-300 border-amber-400/30",
-  review: "bg-violet-500/10 text-violet-300 border-violet-400/30",
-  done: "bg-emerald-500/10 text-emerald-300 border-emerald-400/30",
+  idea: "bg-[hsl(var(--color-blue)/0.12)] text-[hsl(var(--color-blue))] border-[hsl(var(--color-blue)/0.35)]",
+  draft: "bg-[hsl(var(--color-amber)/0.12)] text-[hsl(var(--color-amber))] border-[hsl(var(--color-amber)/0.35)]",
+  review: "bg-[hsl(var(--color-purple)/0.12)] text-[hsl(var(--color-purple))] border-[hsl(var(--color-purple)/0.35)]",
+  done: "bg-[hsl(var(--color-emerald)/0.12)] text-[hsl(var(--color-emerald))] border-[hsl(var(--color-emerald)/0.35)]",
 };
 
 const priorityLabelMap: Record<NotebookCardMetadata["priority"], string> = {
@@ -57,9 +57,9 @@ const priorityLabelMap: Record<NotebookCardMetadata["priority"], string> = {
 };
 
 const priorityClassMap: Record<NotebookCardMetadata["priority"], string> = {
-  low: "bg-foreground/10 text-foreground/70 border-white/10",
-  medium: "bg-yellow-500/10 text-yellow-300 border-yellow-400/30",
-  high: "bg-red-500/10 text-red-300 border-red-400/30",
+  low: "bg-foreground/10 text-foreground/70 border-foreground/10",
+  medium: "bg-[hsl(var(--color-amber)/0.12)] text-[hsl(var(--color-amber))] border-[hsl(var(--color-amber)/0.35)]",
+  high: "bg-[hsl(var(--color-destructive)/0.12)] text-[hsl(var(--color-destructive))] border-[hsl(var(--color-destructive)/0.35)]",
 };
 
 const WritingHub = () => {
@@ -125,7 +125,7 @@ const WritingHub = () => {
 
         {/* Buscador Dinámico Centrado */}
         <div className="w-full max-w-[min(100%,38rem)] relative group">
-          <div className="relative flex items-center bg-background border border-white/10 group-focus-within:border-primary/40 transition-all">
+          <div className="relative flex items-center bg-background border border-foreground/10 group-focus-within:border-primary/40 transition-all">
             <span className="material-symbols-outlined ml-[clamp(0.6rem,1.2vw,1rem)] text-foreground/20 group-focus-within:text-primary transition-colors">
               search
             </span>
@@ -153,7 +153,7 @@ const WritingHub = () => {
           {/* Siempre mostramos la tarjeta de creación al principio */}
           <div
             onClick={openCreateModal}
-            className="group relative h-[clamp(12.5rem,28vh,15rem)] border-[0.14rem] border-dashed border-white/5 flex flex-col items-center justify-center gap-[clamp(0.45rem,1.2vw,0.8rem)] text-foreground/20 hover:text-primary/60 hover:border-primary/40 cursor-pointer transition-all bg-background"
+            className="group relative h-[clamp(12.5rem,28vh,15rem)] border-[0.14rem] border-dashed border-foreground/10 flex flex-col items-center justify-center gap-[clamp(0.45rem,1.2vw,0.8rem)] text-foreground/20 hover:text-primary/60 hover:border-primary/40 cursor-pointer transition-all bg-background"
           >
             <div className="size-[clamp(2.5rem,5.8vw,3.6rem)] rounded-none bg-primary/5 border border-primary/10 flex items-center justify-center text-primary/40 group-hover:text-primary group-hover:scale-110 group-hover:border-primary/30 transition-all duration-500">
               <span className="material-symbols-outlined text-[clamp(1.35rem,3.6vw,2.1rem)]">
@@ -180,7 +180,7 @@ const WritingHub = () => {
 
                     <div className="space-y-4">
                       <div className="flex justify-between items-start">
-                        <div className="size-[clamp(2.1rem,4.2vw,2.7rem)] bg-background border border-white/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform shadow-xl">
+                        <div className="size-[clamp(2.1rem,4.2vw,2.7rem)] bg-background border border-foreground/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform shadow-xl">
                           <span className="material-symbols-outlined text-[clamp(1rem,2.1vw,1.35rem)]">
                             auto_stories
                           </span>
@@ -191,7 +191,7 @@ const WritingHub = () => {
                               e.stopPropagation();
                               openEditModal(nb);
                             }}
-                            className="p-1.5 bg-background border border-white/5 text-foreground/40 hover:text-primary hover:border-primary/30 transition-all opacity-0 group-hover:opacity-100"
+                            className="p-1.5 bg-background border border-foreground/10 text-foreground/40 hover:text-primary hover:border-primary/30 transition-all opacity-0 group-hover:opacity-100"
                           >
                             <span className="material-symbols-outlined text-sm">
                               edit
@@ -202,7 +202,7 @@ const WritingHub = () => {
                               e.stopPropagation();
                               handleDelete(nb.id);
                             }}
-                            className="p-1.5 bg-background border border-white/5 text-foreground/40 hover:text-red-400 hover:border-red-400/30 transition-all opacity-0 group-hover:opacity-100"
+                            className="p-1.5 bg-background border border-foreground/10 text-foreground/40 hover:text-[hsl(var(--color-destructive))] hover:border-[hsl(var(--color-destructive)/0.35)] transition-all opacity-0 group-hover:opacity-100"
                           >
                             <span className="material-symbols-outlined text-sm">
                               delete
@@ -247,7 +247,7 @@ const WritingHub = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 pt-4 border-t border-white/5 opacity-40 group-hover:opacity-100 transition-all duration-500">
+                    <div className="flex items-center gap-2 pt-4 border-t border-foreground/10 opacity-40 group-hover:opacity-100 transition-all duration-500">
                       <span className="material-symbols-outlined text-sm text-primary animate-pulse">
                         menu_book
                       </span>
@@ -271,7 +271,7 @@ const WritingHub = () => {
             if (e.target === e.currentTarget) closeModal();
           }}
         >
-          <MonolithicPanel className="p-[clamp(1rem,2.6vw,2.25rem)] w-full max-w-[min(96vw,42rem)] max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl animate-in zoom-in-95 duration-500 border-white/10">
+          <MonolithicPanel className="p-[clamp(1rem,2.6vw,2.25rem)] w-full max-w-[min(96vw,42rem)] max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl animate-in zoom-in-95 duration-500 border-foreground/10">
             <div className="flex items-center gap-[clamp(0.8rem,1.8vw,1.35rem)] mb-[clamp(1rem,2vw,1.75rem)]">
               <div className="size-14 bg-primary flex items-center justify-center text-foreground shadow-2xl">
                 <span className="material-symbols-outlined text-3xl">
@@ -297,7 +297,7 @@ const WritingHub = () => {
                 </label>
                 <input
                   autoFocus
-                  className="w-full bg-background border border-white/10 px-[clamp(0.8rem,1.6vw,1.25rem)] py-[clamp(0.75rem,1.4vw,1rem)] text-foreground text-[clamp(1rem,1.5vw,1.15rem)] outline-none focus:border-primary/50 transition-all placeholder:text-foreground/20 font-serif"
+                  className="w-full bg-background border border-foreground/10 px-[clamp(0.8rem,1.6vw,1.25rem)] py-[clamp(0.75rem,1.4vw,1rem)] text-foreground text-[clamp(1rem,1.5vw,1.15rem)] outline-none focus:border-primary/50 transition-all placeholder:text-foreground/20 font-serif"
                   placeholder="Ej: Crónicas de Aethelgard"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
@@ -318,7 +318,7 @@ const WritingHub = () => {
                   Etiquetas (separadas por coma)
                 </label>
                 <input
-                  className="w-full bg-background border border-white/10 px-[clamp(0.8rem,1.6vw,1.25rem)] py-[clamp(0.65rem,1.2vw,0.9rem)] text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-foreground/20 text-sm font-mono"
+                  className="w-full bg-background border border-foreground/10 px-[clamp(0.8rem,1.6vw,1.25rem)] py-[clamp(0.65rem,1.2vw,0.9rem)] text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-foreground/20 text-sm font-mono"
                   placeholder="Fantasía, Oscuro, Épico..."
                   value={genre}
                   onChange={(e) => setGenre(e.target.value)}
@@ -345,7 +345,7 @@ const WritingHub = () => {
                           | "done",
                       }))
                     }
-                    className="w-full bg-background border border-white/10 px-4 py-3 text-foreground outline-none focus:border-primary/50 transition-all text-sm"
+                    className="w-full bg-background border border-foreground/10 px-4 py-3 text-foreground outline-none focus:border-primary/50 transition-all text-sm"
                   >
                     <option value="idea">Idea</option>
                     <option value="draft">Borrador</option>
@@ -366,7 +366,7 @@ const WritingHub = () => {
                         priority: e.target.value as "low" | "medium" | "high",
                       }))
                     }
-                    className="w-full bg-background border border-white/10 px-4 py-3 text-foreground outline-none focus:border-primary/50 transition-all text-sm"
+                    className="w-full bg-background border border-foreground/10 px-4 py-3 text-foreground outline-none focus:border-primary/50 transition-all text-sm"
                   >
                     <option value="low">Baja</option>
                     <option value="medium">Media</option>
@@ -380,7 +380,7 @@ const WritingHub = () => {
                   Audiencia
                 </label>
                 <input
-                  className="w-full bg-background border border-white/10 px-[clamp(0.8rem,1.6vw,1.25rem)] py-[clamp(0.65rem,1.2vw,0.9rem)] text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-foreground/20 text-sm font-mono"
+                  className="w-full bg-background border border-foreground/10 px-[clamp(0.8rem,1.6vw,1.25rem)] py-[clamp(0.65rem,1.2vw,0.9rem)] text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-foreground/20 text-sm font-mono"
                   placeholder="Ej: lector beta, editor, publicación"
                   value={metadata.audience}
                   onChange={(e) =>
@@ -398,7 +398,7 @@ const WritingHub = () => {
                 </label>
                 <textarea
                   rows={3}
-                  className="w-full bg-background border border-white/10 px-[clamp(0.8rem,1.6vw,1.25rem)] py-[clamp(0.65rem,1.2vw,0.9rem)] text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-foreground/20 text-sm"
+                  className="w-full bg-background border border-foreground/10 px-[clamp(0.8rem,1.6vw,1.25rem)] py-[clamp(0.65rem,1.2vw,0.9rem)] text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-foreground/20 text-sm"
                   placeholder="Resumen corto para contexto editorial"
                   value={metadata.summary}
                   onChange={(e) =>
@@ -412,7 +412,7 @@ const WritingHub = () => {
 
               {/* Error state visible */}
               {submitError && (
-                <div className="px-4 py-3 bg-red-500/10 border border-red-500/30 text-red-400 text-[10px] font-bold uppercase tracking-widest">
+                <div className="px-4 py-3 bg-[hsl(var(--color-destructive)/0.12)] border border-[hsl(var(--color-destructive)/0.35)] text-[hsl(var(--color-destructive))] text-[10px] font-bold uppercase tracking-widest">
                   ⚠ {submitError}
                 </div>
               )}

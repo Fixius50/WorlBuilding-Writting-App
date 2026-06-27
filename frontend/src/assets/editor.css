@@ -39,7 +39,7 @@
 
 /* --- Tiptap Editor Overrides --- */
 .tiptap p.is-editor-empty:first-child::before {
-  color: #4b5563;
+  color: hsl(var(--foreground) / 0.45);
   content: attr(data-placeholder);
   float: left;
   height: 0;
@@ -51,7 +51,7 @@
 .prose h1,
 .prose h2,
 .prose h3 {
-  @apply text-white font-black tracking-tight mt-8 mb-4;
+  @apply text-foreground font-black tracking-tight mt-8 mb-4;
   font-family: 'Outfit', sans-serif !important;
 }
 
@@ -61,17 +61,19 @@
 }
 
 .prose strong {
-  @apply text-indigo-400 font-black;
+  @apply font-black;
+  color: hsl(var(--color-indigo) / 0.9);
 }
 
 .prose-slate strong {
-  @apply text-indigo-700 font-black;
+  @apply font-black;
+  color: hsl(var(--color-indigo) / 0.85);
 }
 
 .prose-slate h1,
 .prose-slate h2,
 .prose-slate h3 {
-  @apply text-slate-900 !important;
+  @apply text-foreground !important;
 }
 
 .zen-editor-container {
@@ -84,7 +86,7 @@
    ===================================================== */
 
 .prose-editor-wrapper {
-  background-color: hsl(var(--background-dark, 240 10% 3.9%)) !important;
+  background-color: hsl(var(--background)) !important;
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -95,8 +97,8 @@
 .editor-sheet {
   width: 21cm !important;
   max-width: 90vw !important;
-  background-color: hsl(var(--surface-dark, 240 10% 6%)) !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  background-color: hsl(var(--editor-elevated-bg)) !important;
+  box-shadow: 0 10px 30px hsl(var(--foreground) / 0.22);
   box-sizing: border-box !important;
   border-radius: 4px;
   display: flex;
@@ -331,7 +333,7 @@
 
 .virtual-page-break .page-footer {
   width: 100%;
-  background-color: hsl(var(--surface-dark, 240 10% 6%)) !important;
+  background-color: hsl(var(--editor-elevated-bg)) !important;
   color: hsl(var(--foreground) / 0.35);
   font-family: "Outfit", sans-serif;
   font-size: 10px;
@@ -350,7 +352,7 @@
 
 .virtual-page-break .page-break-line-wrapper {
   height: 48px;
-  background-color: hsl(var(--background-dark, 240 10% 3.9%)) !important;
+  background-color: hsl(var(--background)) !important;
   position: relative;
   display: flex;
   align-items: center;
@@ -363,12 +365,12 @@
 .virtual-page-break .page-break-line {
   width: 100%;
   height: 1px;
-  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  border-top: 1px dashed hsl(var(--foreground) / 0.16);
 }
 
 .virtual-page-break .page-header {
   width: 100%;
-  background-color: hsl(var(--surface-dark, 240 10% 6%)) !important;
+  background-color: hsl(var(--editor-elevated-bg)) !important;
   color: hsl(var(--foreground) / 0.35);
   font-family: "Outfit", sans-serif;
   font-size: 10px;

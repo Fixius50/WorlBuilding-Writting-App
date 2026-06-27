@@ -4,6 +4,8 @@ import { Switch } from "@components";
 import WritingCommentsPanel from "./WritingCommentsPanel";
 import { CommentAnchorRange } from "@utils/commentAnchors";
 
+type SectionKey = "pages" | "comments";
+
 interface PageListPanelProps {
   pageId: number | null;
   commentSelection: {
@@ -57,9 +59,88 @@ const PageListPanel: React.FC<PageListPanelProps> = ({
   handleCreatePage,
   deletePage,
 }) => {
-  return (
-    <div className="flex flex-col h-full justify-between flex-grow">
-      <div className="flex-grow flex flex-col overflow-hidden">
+  const [sectionOrder, setSectionOrder] = React.useState<SectionKey[]>([
+    "pages",
+    "comments",
+  ]);
+  const [collapsedSections, setCollapsedSections] = React.useState<
+    Record<SectionKey, boolean>
+  >({
+    pages: false,
+    comments: false,
+  });
+  const [splitRatio, setSplitRatio] = React.useState<number>(0.62);
+  const [isResizing, setIsResizing] = React.useState<boolean>(false);
+  const sectionsContainerRef = React.useRef<HTMLDivElement | null>(null);
+
+  const toggleSection = (section: SectionKey): void => {
+    setCollapsedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
+
+  const moveSection = (section: SectionKey, direction: "up" | "down"): void => {
+    const currentIndex = sectionOrder.indexOf(section);
+    const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+    const canMove = targetIndex >= 0 && targetIndex < sectionOrder.length;
+
+    canMove
+      ? setSectionOrder((prev) => {
+          const next = [...prev];
+          const temp = next[currentIndex];
+          next[currentIndex] = next[targetIndex];
+          next[targetIndex] = temp;
+          return next;
+        })
+      : null;
+  };
+
+  const sectionTitle: Record<SectionKey, string> = {
+    pages: "Índice",
+    comments: "Comentarios",
+  };
+
+  const topSection = sectionOrder[0];
+  const bottomSection = sectionOrder[1];
+  const topCollapsed = collapsedSections[topSection];
+  const bottomCollapsed = collapsedSections[bottomSection];
+  const bothExpanded = !topCollapsed && !bottomCollapsed;
+
+  const handleResizeStart = (event: React.MouseEvent<HTMLDivElement>): void => {
+    event.preventDefault();
+    const container = sectionsContainerRef.current;
+
+    container
+      ? (() => {
+          setIsResizing(true);
+          document.body.style.cursor = "row-resize";
+          document.body.style.userSelect = "none";
+
+          const onMouseMove = (moveEvent: MouseEvent): void => {
+            const rect = container.getBoundingClientRect();
+            const rawRatio = (moveEvent.clientY - rect.top) / rect.height;
+            const clampedRatio = Math.min(0.8, Math.max(0.2, rawRatio));
+            setSplitRatio(clampedRatio);
+          };
+
+          const onMouseUp = (): void => {
+            setIsResizing(false);
+            document.body.style.cursor = "";
+            document.body.style.userSelect = "";
+            window.removeEventListener("mousemove", onMouseMove);
+            window.removeEventListener("mouseup", onMouseUp);
+          };
+
+          window.addEventListener("mousemove", onMouseMove);
+          window.addEventListener("mouseup", onMouseUp);
+        })()
+      : null;
+  };
+
+  const renderPagesSection = (): React.ReactNode => {
+    return (
+      <>
         {/* Buscador plano de Hojas */}
         <div className="p-3 border-b border-foreground/5 flex flex-col gap-3">
           <div className="relative">
@@ -74,18 +155,25 @@ const PageListPanel: React.FC<PageListPanelProps> = ({
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div className="flex items-center justify-between px-1">
+          <div className="flex items-center justify-between px-1 gap-2">
             <Switch
               checked={isCorkboardMode}
               onChange={setIsCorkboardMode}
               label="Vista de Corcho"
             />
+            <button
+              onClick={handleCreatePage}
+              className="px-3 py-1.5 bg-primary hover:bg-primary/95 text-primary-foreground rounded-md text-[9px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all hover:scale-[1.01] active:scale-[0.98] shadow-sm shadow-primary/10"
+            >
+              <span className="material-symbols-outlined text-sm">add</span>
+              <span>Añadir hoja</span>
+            </button>
           </div>
         </div>
 
         {/* Lista o Corcho de páginas con anidamiento dinámico */}
         <div
-          className={`flex-grow overflow-y-auto p-2 custom-scrollbar ${isCorkboardMode ? "grid grid-cols-2 gap-2 content-start" : "flex flex-col space-y-0.5"}`}
+          className={`flex-grow overflow-y-auto overflow-x-hidden p-2 custom-scrollbar ${isCorkboardMode ? "grid grid-cols-2 gap-2 content-start" : "flex flex-col space-y-0.5"}`}
         >
           {filteredPages.map((page) => {
             const globalIdx = pages.findIndex((p) => p.id === page.id);
@@ -104,7 +192,7 @@ const PageListPanel: React.FC<PageListPanelProps> = ({
                     onClick={() => handlePageSelect(globalIdx)}
                     className={`w-full h-full text-left p-3 rounded-md transition-all flex flex-col justify-start border overflow-hidden ${
                       isSelected
-                        ? "bg-primary/10 border-primary/30 shadow-[inset_0_0_10px_rgba(var(--primary-rgb),0.05)]"
+                        ? "bg-primary/10 border-primary/30 shadow-[inset_0_0_10px_hsl(var(--primary)/0.12)]"
                         : "bg-foreground/[0.02] border-foreground/10 hover:border-primary/20 hover:bg-foreground/[0.04]"
                     }`}
                   >
@@ -128,7 +216,7 @@ const PageListPanel: React.FC<PageListPanelProps> = ({
                   <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 bg-background/80 backdrop-blur-sm rounded">
                     <button
                       onClick={(e) => deletePage(e, page.id, globalIdx)}
-                      className="p-1 rounded-sm text-foreground/35 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                      className="p-1 rounded-sm text-foreground/35 hover:text-[hsl(var(--color-destructive))] hover:bg-[hsl(var(--color-destructive)/0.12)] transition-colors"
                       title="Eliminar"
                     >
                       <span className="material-symbols-outlined text-sm">
@@ -172,9 +260,7 @@ const PageListPanel: React.FC<PageListPanelProps> = ({
                   ) : (
                     <span
                       className={`font-sans text-[12px] truncate w-full ${
-                        isChapter
-                          ? "font-bold"
-                          : "font-medium"
+                        isChapter ? "font-bold" : "font-medium"
                       }`}
                     >
                       {page.titulo || `Hoja ${globalIdx + 1}`}
@@ -199,7 +285,7 @@ const PageListPanel: React.FC<PageListPanelProps> = ({
                     </button>
                     <button
                       onClick={(e) => deletePage(e, page.id, globalIdx)}
-                      className="p-1 rounded-sm text-foreground/35 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                      className="p-1 rounded-sm text-foreground/35 hover:text-[hsl(var(--color-destructive))] hover:bg-[hsl(var(--color-destructive)/0.12)] transition-colors"
                       title="Eliminar"
                     >
                       <span className="material-symbols-outlined text-sm">
@@ -249,26 +335,124 @@ const PageListPanel: React.FC<PageListPanelProps> = ({
             );
           })}
         </div>
-      </div>
+      </>
+    );
+  };
 
-      {/* Botón de añadir hoja en la parte inferior */}
-      <div className="p-3 bg-background border-t border-foreground/5 shrink-0">
-        <button
-          onClick={handleCreatePage}
-          className="w-full py-3 bg-primary hover:bg-primary/95 text-foreground rounded-md text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.98] shadow-md shadow-primary/10"
+  const renderCommentsSection = (): React.ReactNode => {
+    return (
+      <div className="h-full min-h-0">
+        <WritingCommentsPanel
+          pageId={pageId}
+          selection={commentSelection}
+          composeRequestKey={commentComposeRequestKey}
+          onAnchorsChange={onCommentAnchorsChange}
+          embedded={true}
+          showHeader={false}
+        />
+      </div>
+    );
+  };
+
+  const renderSectionBody = (section: SectionKey): React.ReactNode => {
+    switch (section) {
+      case "pages":
+        return renderPagesSection();
+      case "comments":
+        return renderCommentsSection();
+      default:
+        return null;
+    }
+  };
+
+  const sectionStyle = (section: SectionKey): React.CSSProperties => {
+    const isTopSection = section === topSection;
+
+    return bothExpanded
+      ? isTopSection
+        ? { flex: `0 0 ${Math.round(splitRatio * 100)}%` }
+        : { flex: "1 1 auto" }
+      : collapsedSections[section]
+        ? { flex: "0 0 auto" }
+        : { flex: "1 1 auto" };
+  };
+
+  const renderSection = (section: SectionKey): React.ReactNode => {
+    const isCollapsed = collapsedSections[section];
+    const index = sectionOrder.indexOf(section);
+    const canMoveUp = index > 0;
+    const canMoveDown = index < sectionOrder.length - 1;
+
+    return (
+      <section
+        key={section}
+        className="min-h-0 flex flex-col overflow-hidden"
+        style={sectionStyle(section)}
+      >
+        <div className="h-9 px-2 flex items-center justify-between bg-foreground/[0.04] border-b border-foreground/15">
+          <button
+            onClick={() => toggleSection(section)}
+            className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-foreground/80 hover:text-foreground transition-colors"
+          >
+            <span className="material-symbols-outlined text-sm">
+              {isCollapsed ? "chevron_right" : "expand_more"}
+            </span>
+            <span>{sectionTitle[section]}</span>
+          </button>
+
+          <div className="flex items-center gap-0.5">
+            <button
+              onClick={() => moveSection(section, "up")}
+              disabled={!canMoveUp}
+              className="p-1 rounded-sm text-foreground/55 hover:text-foreground hover:bg-foreground/12 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              title="Mover arriba"
+            >
+              <span className="material-symbols-outlined text-sm">
+                arrow_upward
+              </span>
+            </button>
+            <button
+              onClick={() => moveSection(section, "down")}
+              disabled={!canMoveDown}
+              className="p-1 rounded-sm text-foreground/55 hover:text-foreground hover:bg-foreground/12 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              title="Mover abajo"
+            >
+              <span className="material-symbols-outlined text-sm">
+                arrow_downward
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {!isCollapsed ? (
+          <div className="flex-1 min-h-0 overflow-hidden">
+            {renderSectionBody(section)}
+          </div>
+        ) : null}
+      </section>
+    );
+  };
+
+  return (
+    <div
+      ref={sectionsContainerRef}
+      className="flex flex-col h-full flex-grow overflow-hidden"
+    >
+      {renderSection(topSection)}
+
+      {bothExpanded ? (
+        <div
+          onMouseDown={handleResizeStart}
+          className={`h-2 flex items-center justify-center bg-foreground/[0.04] hover:bg-primary/10 transition-colors ${isResizing ? "cursor-row-resize" : "cursor-row-resize"}`}
+          title="Arrastra para ajustar el tamaño"
         >
-          <span className="material-symbols-outlined text-sm">add</span>
-          <span>AÑADIR HOJA</span>
-        </button>
-      </div>
+          <div className="w-full h-px bg-foreground/30" />
+        </div>
+      ) : (
+        <div className="h-px bg-foreground/20" />
+      )}
 
-      {/* Mitad inferior: Comentarios (Estilo VSCode Git) */}
-      <WritingCommentsPanel
-        pageId={pageId}
-        selection={commentSelection}
-        composeRequestKey={commentComposeRequestKey}
-        onAnchorsChange={onCommentAnchorsChange}
-      />
+      {renderSection(bottomSection)}
     </div>
   );
 };

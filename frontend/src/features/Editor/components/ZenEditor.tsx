@@ -234,7 +234,7 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
         onManualSnapshot={() => onSnapshot(currentPage.contenido || "")}
         snapshots={snapshots}
         onRestoreSnapshot={onRestoreSnapshot}
-        minimal={minimal}
+        minimal={minimal || focusMode}
         notebookTitle={notebookTitle}
         sidebarOpen={sidebarOpen}
         onToggleSidebar={onToggleSidebar}
@@ -245,13 +245,15 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
         onPrint={handlePrint}
       />
 
-      <div className="flex-1 relative overflow-y-auto custom-scrollbar flex justify-center py-12 px-6 prose-editor-wrapper">
+      <div
+        className={`flex-1 relative overflow-y-auto custom-scrollbar flex justify-center prose-editor-wrapper ${focusMode ? "py-6 px-3" : "py-12 px-6"}`}
+      >
         <div ref={printContainerRef} className="editor-sheet">
           {/* TÍTULO EDITABLE EN EL PROPIO MANUSCRITO */}
           <input
             value={currentPage.titulo || ""}
             onChange={(e) => onTitleChange(currentPageIndex, e.target.value)}
-            className={`w-full bg-transparent border-none text-foreground font-serif font-semibold text-[38px] outline-none focus:ring-0 placeholder:text-foreground/15 transition-opacity duration-300 px-[2.5cm] pt-[2.5cm] pb-4 editor-title-input ${focusMode ? "opacity-30 hover:opacity-100" : "opacity-100"}`}
+            className="w-full bg-transparent border-none text-foreground font-serif font-semibold text-[38px] outline-none focus:ring-0 placeholder:text-foreground/15 transition-opacity duration-300 px-[2.5cm] pt-[2.5cm] pb-4 editor-title-input opacity-100"
             placeholder={`Hoja ${currentPageIndex + 1}`}
           />
 

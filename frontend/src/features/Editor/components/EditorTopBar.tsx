@@ -94,9 +94,47 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
 
         {/* LADO DERECHO: Palabras, Guardado, Snapshots y Toggle Sidebar */}
         <div className="flex items-center gap-6 shrink-0">
-          <span className="text-[12px] text-foreground/50 font-medium">
-            {wordCount} palabras
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[12px] text-foreground/50 font-medium">
+              {wordCount} palabras
+            </span>
+            <div className="relative group">
+              <button
+                type="button"
+                className="p-0.5 rounded text-foreground/45 hover:text-foreground/80 hover:bg-foreground/10 transition-colors outline-none"
+                title="Ayuda de comandos"
+                aria-label="Ayuda de comandos"
+              >
+                <span className="material-symbols-outlined text-[15px]">help</span>
+              </button>
+              <div className="pointer-events-none absolute top-full right-0 mt-2 w-72 rounded-md border border-foreground/15 bg-background px-3 py-2 text-[10px] leading-relaxed text-foreground/80 shadow-xl opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:opacity-100 group-focus-within:translate-y-0 transition-all z-50">
+                <div className="font-black uppercase tracking-wider text-foreground/65 mb-1">
+                  Atajos Writing
+                </div>
+                <div>
+                  <span className="font-black text-foreground">@</span> abre el selector de menciones para enlazar entidades.
+                </div>
+                <div className="mt-1">
+                  <span className="font-black text-foreground">/</span> abre el menú de comandos rápidos del editor.
+                </div>
+                <div className="mt-1">
+                  <span className="font-black text-foreground">Ctrl+Z</span> deshacer, <span className="font-black text-foreground">Ctrl+Y</span> rehacer.
+                </div>
+                <div className="mt-1">
+                  <span className="font-black text-foreground">Ctrl+D</span> aplica formato a la siguiente coincidencia.
+                </div>
+                <div className="mt-1">
+                  <span className="font-black text-foreground">Ctrl+Shift+D</span> aplica formato a todas las coincidencias.
+                </div>
+                <div className="mt-1">
+                  Alternativas: <span className="font-black text-foreground">Ctrl+Shift+L</span> o <span className="font-black text-foreground">Ctrl+Alt+D</span>.
+                </div>
+                <div className="mt-2 pt-1 border-t border-foreground/10 text-foreground/55">
+                  Los atajos funcionan con el cursor dentro del editor.
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div className="flex items-center gap-1.5 text-[12px] text-foreground/40 font-medium">
             {saving ? (
@@ -210,7 +248,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
       </header>
 
       {/* FILA INFERIOR: Barra de herramientas con Historial y Zoom de Página */}
-      {editor && (
+      {editor && !focusMode && (
         <div className="flex items-center gap-1 py-1.5 px-6 border-b border-foreground/5 bg-background select-none overflow-visible shrink-0">
           {/* Historial, Impresión e Imagen */}
           <button

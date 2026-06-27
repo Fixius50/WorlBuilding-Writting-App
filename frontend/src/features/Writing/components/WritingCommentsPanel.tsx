@@ -18,6 +18,8 @@ interface WritingCommentsPanelProps {
   } | null;
   composeRequestKey?: number;
   onAnchorsChange?: (anchors: CommentAnchorRange[]) => void;
+  embedded?: boolean;
+  showHeader?: boolean;
 }
 
 const WritingCommentsPanel: React.FC<WritingCommentsPanelProps> = ({
@@ -25,6 +27,8 @@ const WritingCommentsPanel: React.FC<WritingCommentsPanelProps> = ({
   selection,
   composeRequestKey = 0,
   onAnchorsChange,
+  embedded = false,
+  showHeader = true,
 }) => {
   const [comments, setComments] = React.useState<WritingComment[]>([]);
   const [newComment, setNewComment] = React.useState("");
@@ -133,15 +137,23 @@ const WritingCommentsPanel: React.FC<WritingCommentsPanelProps> = ({
   };
 
   return (
-    <div className="h-1/3 min-h-[200px] border-t-2 border-foreground/10 bg-background/50 flex flex-col shrink-0">
-      <div className="p-2 border-b border-foreground/5 flex items-center gap-2 bg-background sticky top-0">
-        <span className="material-symbols-outlined text-sm text-foreground/40">
-          forum
-        </span>
-        <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-foreground/60">
-          Comentarios del Documento
-        </span>
-      </div>
+    <div
+      className={
+        embedded
+          ? "h-full min-h-0 bg-transparent flex flex-col"
+          : "h-1/3 min-h-[200px] border-t-2 border-foreground/10 bg-background/50 flex flex-col shrink-0"
+      }
+    >
+      {showHeader ? (
+        <div className="p-2 border-b border-foreground/5 flex items-center gap-2 bg-background sticky top-0">
+          <span className="material-symbols-outlined text-sm text-foreground/40">
+            forum
+          </span>
+          <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-foreground/60">
+            Comentarios del Documento
+          </span>
+        </div>
+      ) : null}
       <div className="flex-grow overflow-y-auto p-3 custom-scrollbar flex flex-col gap-2">
         <div className="flex gap-2">
           <input
@@ -160,7 +172,7 @@ const WritingCommentsPanel: React.FC<WritingCommentsPanelProps> = ({
           <button
             onClick={addComment}
             disabled={!pageId || !newComment.trim()}
-            className="px-3 py-2 rounded-md text-[10px] uppercase font-bold tracking-wider bg-primary/90 text-foreground disabled:opacity-40"
+            className="px-3 py-2 rounded-md text-[10px] uppercase font-bold tracking-wider bg-primary/90 text-primary-foreground disabled:opacity-40"
           >
             Añadir
           </button>
@@ -225,7 +237,7 @@ const WritingCommentsPanel: React.FC<WritingCommentsPanelProps> = ({
                   </button>
                   <button
                     onClick={() => removeComment(comment.id)}
-                    className="text-[9px] uppercase font-bold tracking-wider text-red-400"
+                    className="text-[9px] uppercase font-bold tracking-wider text-[hsl(var(--color-destructive))]"
                   >
                     Borrar
                   </button>
