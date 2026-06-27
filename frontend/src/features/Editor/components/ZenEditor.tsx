@@ -79,6 +79,7 @@ const ZenEditor: React.FC<ZenEditorProps> = ({
   const { editor } = usePageEditor({
     content: currentPage ? currentPage.contenido || "" : "",
     onUpdate: (html) => onUpdate(html, currentPageIndex),
+    focusMode,
     autoFocus: true,
     onMentionClick,
     projectEntities,

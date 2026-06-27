@@ -4,6 +4,7 @@ import { getZenExtensions } from "@utils/TiptapExtensions";
 import { Hoja, Entidad } from "@domain/database";
 import { CommentAnchorRange } from "@utils/commentAnchors";
 import { TextSelection, EditorState } from "@tiptap/pm/state";
+import { Mark } from "@tiptap/pm/model";
 
 const findNextMatch = (
   state: EditorState,
@@ -67,9 +68,124 @@ const findAllMatches = (
   return matches;
 };
 
+const isApplyAllShortcut = (event: KeyboardEvent | React.KeyboardEvent): boolean => {
+  const isCtrlOrCmd = event.ctrlKey || event.metaKey;
+  const keyLower = event.key.toLowerCase();
+  const isKeyD = event.code === "KeyD" || keyLower === "d";
+  const isKeyL = event.code === "KeyL" || keyLower === "l";
+
+  const isApplyAllByPrimaryD =
+    isCtrlOrCmd && !event.shiftKey && !event.altKey && isKeyD;
+  const isApplyAllByShiftD = isCtrlOrCmd && event.shiftKey && isKeyD;
+  const isApplyAllByShiftL = isCtrlOrCmd && event.shiftKey && isKeyL;
+
+  return isApplyAllByPrimaryD || isApplyAllByShiftD || isApplyAllByShiftL;
+};
+
+const isApplyNextShortcut = (event: KeyboardEvent | React.KeyboardEvent): boolean => {
+  const isCtrlOrCmd = event.ctrlKey || event.metaKey;
+  const keyLower = event.key.toLowerCase();
+  const isKeyD = event.code === "KeyD" || keyLower === "d";
+  return isCtrlOrCmd && event.altKey && !event.shiftKey && isKeyD;
+};
+
+const handleWritingShortcut = (
+  state: EditorState,
+  event: KeyboardEvent | React.KeyboardEvent,
+): { handled: boolean; tr?: EditorState["tr"] } => {
+  const getMarksFromSelection = (): Mark[] => {
+    const { from, to } = state.selection;
+    const selectedMarksMap = new Map<string, Mark>();
+
+    state.doc.nodesBetween(from, to, (node) => {
+      if (!node.isText) {
+        return true;
+      }
+
+      node.marks.forEach((mark) => {
+        const key = `${mark.type.name}:${JSON.stringify(mark.attrs || {})}`;
+        selectedMarksMap.set(key, mark);
+      });
+
+      return true;
+    });
+
+    const marks = Array.from(selectedMarksMap.values());
+    const storedMarks = state.storedMarks ? [...state.storedMarks] : [];
+    return marks.length > 0 ? marks : storedMarks;
+  };
+
+  if (isApplyAllShortcut(event)) {
+    const { from, to, empty } = state.selection;
+
+    if (empty) {
+      return { handled: true };
+    }
+
+    const selectedText = state.doc.textBetween(from, to, " ").trim();
+    if (selectedText.length === 0) {
+      return { handled: true };
+    }
+
+    const marksToApply = getMarksFromSelection();
+
+    if (marksToApply.length === 0) {
+      return { handled: true };
+    }
+
+    const matches = findAllMatches(state, selectedText);
+    if (matches.length === 0) {
+      return { handled: true };
+    }
+
+    const tr = matches.reduce((acc, match) => {
+      marksToApply.forEach((mark) => {
+        acc.addMark(match.from, match.to, mark);
+      });
+      return acc;
+    }, state.tr);
+
+    return { handled: true, tr };
+  }
+
+  if (isApplyNextShortcut(event)) {
+    const { from, to, empty } = state.selection;
+
+    if (empty) {
+      return { handled: true };
+    }
+
+    const selectedText = state.doc.textBetween(from, to, " ").trim();
+    if (selectedText.length === 0) {
+      return { handled: true };
+    }
+
+    const marksToApply = getMarksFromSelection();
+
+    const nextMatch = findNextMatch(state, selectedText, from);
+    if (!nextMatch) {
+      return { handled: true };
+    }
+
+    const withMarks = marksToApply.reduce((acc, mark) => {
+      acc.addMark(nextMatch.from, nextMatch.to, mark);
+      return acc;
+    }, state.tr);
+
+    const tr = withMarks.setSelection(
+      TextSelection.create(state.doc, nextMatch.from, nextMatch.to),
+    );
+
+    return { handled: true, tr };
+  }
+
+  return { handled: false };
+};
+
 interface UsePageEditorProps {
   content: string;
   onUpdate: (html: string) => void;
+  focusMode?: boolean;
   autoFocus?: boolean;
   onMentionClick?: (id: string) => void;
   projectEntities?: Entidad[];
@@ -97,6 +213,7 @@ interface UsePageEditorProps {
 export const usePageEditor = ({
   content,
   onUpdate,
+  focusMode = false,
   autoFocus = false,
   onMentionClick,
   projectEntities = [],
@@ -165,112 +282,79 @@ export const usePageEditor = ({
         const target = event.target as HTMLElement;
         const mention = target.closest(".mention");
         const id = mention ? mention.getAttribute("data-id") : null;
+        const anchor = target.closest("a[href]") as HTMLAnchorElement | null;
+
+        if (anchor) {
+          const href = (anchor.getAttribute("href") || "").trim();
+          if (href.length > 0) {
+            const hasProtocol = /^https?:\/\//i.test(href);
+            const targetUrl = hasProtocol ? href : `https://${href}`;
+            window.open(targetUrl, "_blank", "noopener,noreferrer");
+            return true;
+          }
+        }
 
         return mention && id && onMentionClick
           ? (onMentionClick(id), true)
           : false;
       },
       handleKeyDown: (view, event) => {
-        const isCtrlOrCmd = event.ctrlKey || event.metaKey;
-        const keyLower = event.key.toLowerCase();
-        const isKeyD = event.code === "KeyD" || keyLower === "d";
-        const isKeyL = event.code === "KeyL" || keyLower === "l";
-        const isApplyAllByShiftD = isCtrlOrCmd && event.shiftKey && isKeyD;
-        const isApplyAllByShiftL = isCtrlOrCmd && event.shiftKey && isKeyL;
-        const isApplyAllByAltD = isCtrlOrCmd && event.altKey && isKeyD;
-        const isApplyAllMatchesShortcut =
-          isApplyAllByShiftD || isApplyAllByShiftL || isApplyAllByAltD;
-        const isSelectNextShortcut =
-          isCtrlOrCmd && !event.shiftKey && !event.altKey && isKeyD;
+        const isWritingShortcut =
+          isApplyAllShortcut(event) || isApplyNextShortcut(event);
 
-        if (isApplyAllMatchesShortcut) {
-          const { state } = view;
-          const { from, to, empty } = state.selection;
-
-          if (empty) {
-            return false;
-          }
-
-          const selectedText = state.doc.textBetween(from, to, " ").trim();
-          if (selectedText.length === 0) {
-            return false;
-          }
-
-          const selectionMarks =
-            state.selection.$from.marksAcross(state.selection.$to) ||
-            state.selection.$from.marks();
-          const marksToApply =
-            selectionMarks.length > 0
-              ? selectionMarks
-              : state.storedMarks || [];
-
-          if (marksToApply.length === 0) {
-            event.preventDefault();
-            return true;
-          }
-
-          const matches = findAllMatches(state, selectedText);
-          if (matches.length === 0) {
-            event.preventDefault();
-            return true;
-          }
-
-          const tr = matches.reduce((acc, match) => {
-            marksToApply.forEach((mark) => {
-              acc.addMark(match.from, match.to, mark);
-            });
-            return acc;
-          }, state.tr);
-
-          view.dispatch(tr.scrollIntoView());
-          event.preventDefault();
-          return true;
-        }
-
-        if (!isSelectNextShortcut) {
+        if (!focusMode && isWritingShortcut) {
           return false;
         }
 
-        const { state } = view;
-        const { from, to, empty } = state.selection;
-
-        if (empty) {
+        if (!isWritingShortcut) {
           return false;
         }
 
-        const selectedText = state.doc.textBetween(from, to, " ").trim();
-        if (selectedText.length === 0) {
-          return false;
-        }
-
-        const selectionMarks =
-          state.selection.$from.marksAcross(state.selection.$to) ||
-          state.selection.$from.marks();
-        const marksToApply =
-          selectionMarks.length > 0
-            ? selectionMarks
-            : state.storedMarks || [];
-
-        const nextMatch = findNextMatch(state, selectedText, from);
-        if (!nextMatch) {
-          event.preventDefault();
-          return true;
-        }
-
-        const withMarks = marksToApply.reduce((acc, mark) => {
-          acc.addMark(nextMatch.from, nextMatch.to, mark);
-          return acc;
-        }, state.tr);
-
-        const tr = withMarks.setSelection(
-          TextSelection.create(state.doc, nextMatch.from, nextMatch.to),
-        );
-        view.dispatch(tr.scrollIntoView());
+        const result = handleWritingShortcut(view.state, event);
+        result.tr ? view.dispatch(result.tr.scrollIntoView()) : null;
         event.preventDefault();
-        return true;
+        return result.handled;
       },
     },
   });
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+
+    const onGlobalKeyDown = (event: KeyboardEvent): void => {
+      if (!focusMode) {
+        return;
+      }
+
+      if (!editor.isFocused) {
+        return;
+      }
+
+      const isWritingShortcut =
+        isApplyAllShortcut(event) || isApplyNextShortcut(event);
+
+      if (!isWritingShortcut) {
+        return;
+      }
+
+      const result = handleWritingShortcut(editor.state, event);
+      if (result.tr) {
+        editor.view.dispatch(result.tr.scrollIntoView());
+      }
+
+      if (result.handled) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+
+    window.addEventListener("keydown", onGlobalKeyDown, true);
+    return () => {
+      window.removeEventListener("keydown", onGlobalKeyDown, true);
+    };
+  }, [editor, focusMode]);
 
   useEffect(() => {
     const hasEditor = !!editor;

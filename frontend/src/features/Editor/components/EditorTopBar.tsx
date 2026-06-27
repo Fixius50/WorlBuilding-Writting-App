@@ -121,16 +121,16 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                   <span className="font-black text-foreground">Ctrl+Z</span> deshacer, <span className="font-black text-foreground">Ctrl+Y</span> rehacer.
                 </div>
                 <div className="mt-1">
-                  <span className="font-black text-foreground">Ctrl+D</span> aplica formato a la siguiente coincidencia.
+                  <span className="font-black text-foreground">Ctrl+D</span> aplica formato a todas las coincidencias.
                 </div>
                 <div className="mt-1">
-                  <span className="font-black text-foreground">Ctrl+Shift+D</span> aplica formato a todas las coincidencias.
+                  <span className="font-black text-foreground">Ctrl+Alt+D</span> aplica formato paso a paso a la siguiente coincidencia.
                 </div>
                 <div className="mt-1">
-                  Alternativas: <span className="font-black text-foreground">Ctrl+Shift+L</span> o <span className="font-black text-foreground">Ctrl+Alt+D</span>.
+                  Alternativa multi: <span className="font-black text-foreground">Ctrl+Shift+L</span>.
                 </div>
                 <div className="mt-2 pt-1 border-t border-foreground/10 text-foreground/55">
-                  Los atajos funcionan con el cursor dentro del editor.
+                  Los atajos avanzados funcionan en modo enfoque y con el cursor dentro del editor.
                 </div>
               </div>
             </div>

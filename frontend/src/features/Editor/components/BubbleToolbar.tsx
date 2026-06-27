@@ -27,6 +27,12 @@ const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
 }) => {
   const [showTextColor, setShowTextColor] = React.useState(false);
   const [showHighlightColor, setShowHighlightColor] = React.useState(false);
+  const [hoveredLink, setHoveredLink] = React.useState<{
+    pos: number;
+    rect: DOMRect;
+    href: string;
+  } | null>(null);
+  const hideHoveredLinkTimeoutRef = React.useRef<number | null>(null);
   const [selectedImage, setSelectedImage] = React.useState<{
     pos: number;
     src: string;
@@ -557,6 +563,81 @@ const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
     return () => window.removeEventListener("keydown", handleEscape);
   }, [closeCropModal, cropImageSrc, previewImageSrc]);
 
+  React.useEffect(() => {
+    if (!editor) {
+      return;
+    }
+
+    const editorDom = editor.view.dom as HTMLElement;
+
+    const handleMouseMove = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      const anchor = target?.closest("a[href]") as HTMLAnchorElement | null;
+
+      if (!anchor) {
+        if (hideHoveredLinkTimeoutRef.current) {
+          window.clearTimeout(hideHoveredLinkTimeoutRef.current);
+        }
+        hideHoveredLinkTimeoutRef.current = window.setTimeout(() => {
+          setHoveredLink(null);
+        }, 1500);
+        return;
+      }
+
+      if (hideHoveredLinkTimeoutRef.current) {
+        window.clearTimeout(hideHoveredLinkTimeoutRef.current);
+        hideHoveredLinkTimeoutRef.current = null;
+      }
+
+      const href = (anchor.getAttribute("href") || "").trim();
+      if (href.length === 0) {
+        setHoveredLink(null);
+        return;
+      }
+
+      const pos = editor.view.posAtDOM(anchor, 0);
+      const rect = anchor.getBoundingClientRect();
+
+      setHoveredLink({ pos, rect, href });
+    };
+
+    const clearHoveredLink = () => {
+      if (hideHoveredLinkTimeoutRef.current) {
+        window.clearTimeout(hideHoveredLinkTimeoutRef.current);
+      }
+      hideHoveredLinkTimeoutRef.current = window.setTimeout(() => {
+        setHoveredLink(null);
+      }, 1500);
+    };
+
+    editorDom.addEventListener("mousemove", handleMouseMove);
+    editorDom.addEventListener("mouseleave", clearHoveredLink);
+
+    return () => {
+      editorDom.removeEventListener("mousemove", handleMouseMove);
+      editorDom.removeEventListener("mouseleave", clearHoveredLink);
+      if (hideHoveredLinkTimeoutRef.current) {
+        window.clearTimeout(hideHoveredLinkTimeoutRef.current);
+      }
+    };
+  }, [editor]);
+
+  const handleUnsetHoveredLink = React.useCallback(() => {
+    if (!editor || !hoveredLink) {
+      return;
+    }
+
+    editor
+      .chain()
+      .focus()
+      .setTextSelection(hoveredLink.pos)
+      .extendMarkRange("link")
+      .unsetLink()
+      .run();
+
+    setHoveredLink(null);
+  }, [editor, hoveredLink]);
+
   const imageMenuStyle: React.CSSProperties | null = selectedImage
     ? {
         position: "fixed",
@@ -855,23 +936,20 @@ const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
             <button
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => {
-                const isLinkActive = editor.isActive("link");
-                const url = isLinkActive
-                  ? null
-                  : window.prompt("Introduce la URL del enlace:", "https://");
+                const url = window.prompt(
+                  "Introduce la URL del enlace:",
+                  "",
+                );
+                const normalizedUrl = (url || "").trim();
+                const isOnlyProtocol =
+                  normalizedUrl === "http://" || normalizedUrl === "https://";
 
-                const applyLink = () => {
-                  url && editor.chain().focus().setLink({ href: url }).run();
-                };
-
-                const removeLink = () => {
-                  editor.chain().focus().unsetLink().run();
-                };
-
-                isLinkActive ? removeLink() : applyLink();
+                !isOnlyProtocol && normalizedUrl.length > 0
+                  ? editor.chain().focus().setLink({ href: normalizedUrl }).run()
+                  : null;
               }}
               className={`p-1.5 rounded-md hover:bg-foreground/5 transition-colors ${editor.isActive("link") ? "text-primary bg-primary/10" : "text-foreground/60"}`}
-              title="Insertar enlace"
+              title={editor.isActive("link") ? "Editar enlace" : "Insertar enlace"}
             >
               <span className="material-symbols-outlined text-lg">link</span>
             </button>
@@ -896,6 +974,44 @@ const BubbleToolbar: React.FC<BubbleToolbarProps> = ({
           "--editor-zoom-font-size": `${20 * (zoom / 100)}px` 
         } as React.CSSProperties}
       />
+
+      {hoveredLink
+        ? createPortal(
+            <button
+              type="button"
+              onMouseEnter={() => {
+                if (hideHoveredLinkTimeoutRef.current) {
+                  window.clearTimeout(hideHoveredLinkTimeoutRef.current);
+                  hideHoveredLinkTimeoutRef.current = null;
+                }
+              }}
+              onMouseLeave={() => {
+                if (hideHoveredLinkTimeoutRef.current) {
+                  window.clearTimeout(hideHoveredLinkTimeoutRef.current);
+                }
+                hideHoveredLinkTimeoutRef.current = window.setTimeout(() => {
+                  setHoveredLink(null);
+                }, 1500);
+              }}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleUnsetHoveredLink();
+              }}
+              className="fixed z-[85] p-1 rounded-md bg-background border border-foreground/15 text-[hsl(var(--color-destructive))] hover:bg-[hsl(var(--color-destructive)/0.12)] shadow-xl transition-colors"
+              style={{
+                left: hoveredLink.rect.left + hoveredLink.rect.width / 2,
+                top: hoveredLink.rect.top - 6,
+                transform: "translate(-50%, -100%)",
+              }}
+              title="Quitar enlace"
+            >
+              <span className="material-symbols-outlined text-sm">link_off</span>
+            </button>,
+            document.body,
+          )
+        : null}
 
       {previewImageSrc
         ? createPortal(

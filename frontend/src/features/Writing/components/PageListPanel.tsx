@@ -6,6 +6,34 @@ import { CommentAnchorRange } from "@utils/commentAnchors";
 
 type SectionKey = "pages" | "comments";
 
+interface OutlineHeading {
+  level: number;
+  text: string;
+}
+
+interface OutlineImage {
+  src: string;
+  alt: string;
+}
+
+interface ImagePreviewState {
+  src: string;
+  alt: string;
+  x: number;
+  y: number;
+}
+
+interface OutlineLink {
+  href: string;
+  text: string;
+}
+
+interface PageOutline {
+  headings: OutlineHeading[];
+  images: OutlineImage[];
+  links: OutlineLink[];
+}
+
 interface PageListPanelProps {
   pageId: number | null;
   commentSelection: {
@@ -71,6 +99,9 @@ const PageListPanel: React.FC<PageListPanelProps> = ({
   });
   const [splitRatio, setSplitRatio] = React.useState<number>(0.62);
   const [isResizing, setIsResizing] = React.useState<boolean>(false);
+  const [expandedPages, setExpandedPages] = React.useState<Record<number, boolean>>({});
+  const [expandedGroups, setExpandedGroups] = React.useState<Record<string, boolean>>({});
+  const [imagePreview, setImagePreview] = React.useState<ImagePreviewState | null>(null);
   const sectionsContainerRef = React.useRef<HTMLDivElement | null>(null);
 
   const toggleSection = (section: SectionKey): void => {
@@ -99,6 +130,88 @@ const PageListPanel: React.FC<PageListPanelProps> = ({
   const sectionTitle: Record<SectionKey, string> = {
     pages: "Índice",
     comments: "Comentarios",
+  };
+
+  const pageOutlineMap = React.useMemo<Record<number, PageOutline>>(() => {
+    const parser = typeof window !== "undefined" ? new DOMParser() : null;
+
+    return pages.reduce<Record<number, PageOutline>>((acc, page) => {
+      const html = page.contenido || "";
+
+      if (!parser || html.trim().length === 0) {
+        acc[page.id] = { headings: [], images: [], links: [] };
+        return acc;
+      }
+
+      const doc = parser.parseFromString(html, "text/html");
+
+      const headings = Array.from(
+        doc.querySelectorAll("h1, h2, h3, h4, h5, h6"),
+      ).map((el) => ({
+        level: Number(el.tagName.replace("H", "")),
+        text: (el.textContent || "").trim(),
+      }))
+        .filter((item) => item.text.length > 0);
+
+      const images = Array.from(doc.querySelectorAll("img"))
+        .map((el) => ({
+          src: (el.getAttribute("src") || "").trim(),
+          alt: (el.getAttribute("alt") || "").trim(),
+        }))
+        .filter((item) => item.src.length > 0);
+
+      const links = Array.from(doc.querySelectorAll("a[href]"))
+        .map((el) => ({
+          href: (el.getAttribute("href") || "").trim(),
+          text: (el.textContent || "").trim(),
+        }))
+        .filter((item) => item.href.length > 0);
+
+      acc[page.id] = { headings, images, links };
+      return acc;
+    }, {});
+  }, [pages]);
+
+  const togglePageNode = (pageId: number): void => {
+    setExpandedPages((prev) => ({
+      ...prev,
+      [pageId]: !prev[pageId],
+    }));
+  };
+
+  const toggleGroupNode = (groupKey: string): void => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [groupKey]: !prev[groupKey],
+    }));
+  };
+
+  const handleImagePreviewEnter = (
+    event: React.MouseEvent<HTMLDivElement>,
+    image: OutlineImage,
+  ): void => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const previewWidth = 220;
+    const spaceRight = window.innerWidth - rect.right;
+    const placeRight = spaceRight > previewWidth + 20;
+
+    setImagePreview({
+      src: image.src,
+      alt: image.alt,
+      x: placeRight ? rect.right + 12 : rect.left - previewWidth - 12,
+      y: rect.top + rect.height / 2,
+    });
+  };
+
+  const handleImagePreviewLeave = (): void => {
+    setImagePreview(null);
+  };
+
+  const openExternalLink = (href: string): void => {
+    const trimmed = href.trim();
+    const hasProtocol = /^https?:\/\//i.test(trimmed);
+    const targetUrl = hasProtocol ? trimmed : `https://${trimmed}`;
+    window.open(targetUrl, "_blank", "noopener,noreferrer");
   };
 
   const topSection = sectionOrder[0];
@@ -231,106 +344,226 @@ const PageListPanel: React.FC<PageListPanelProps> = ({
             // --- MODO LISTA ---
             return (
               <div key={page.id} className="group relative">
-                <button
-                  onClick={() => handlePageSelect(globalIdx)}
-                  className={`w-full text-left px-2 py-1.5 rounded-sm transition-colors ${
-                    isChapter ? "" : "ml-3"
-                  } ${
-                    isSelected
-                      ? "text-primary bg-primary/10"
-                      : "text-foreground/70 hover:text-foreground hover:bg-foreground/[0.04]"
-                  }`}
-                >
-                  {editingPageId === page.id ? (
-                    <input
-                      autoFocus
-                      onBlur={() => setEditingPageId(null)}
-                      onKeyDown={(e) => {
-                        e.key === "Enter" ? setEditingPageId(null) : null;
-                        e.stopPropagation();
-                      }}
-                      onClick={(e) => e.stopPropagation()}
-                      className="bg-background border-b border-primary font-sans font-bold text-xs outline-none w-full px-1 text-foreground"
-                      value={page.titulo || ""}
-                      onChange={(e) =>
-                        handleTitleChangeInternal(globalIdx, e.target.value)
-                      }
-                      placeholder={`Hoja ${globalIdx + 1}`}
-                    />
-                  ) : (
-                    <span
-                      className={`font-sans text-[12px] truncate w-full ${
-                        isChapter ? "font-bold" : "font-medium"
-                      }`}
-                    >
-                      {page.titulo || `Hoja ${globalIdx + 1}`}
-                    </span>
-                  )}
-                </button>
+                {(() => {
+                  const isExpanded = expandedPages[page.id] ?? isSelected;
+                  const outline = pageOutlineMap[page.id] || {
+                    headings: [],
+                    images: [],
+                    links: [],
+                  };
 
-                {/* Opciones de edición y borrado rápidas */}
-                {!editingPageId && (
-                  <div className="absolute top-1/2 -translate-y-1/2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEditingPageId(page.id);
-                      }}
-                      className="p-1 rounded-sm text-foreground/35 hover:text-primary hover:bg-primary/10 transition-colors"
-                      title="Renombrar"
-                    >
-                      <span className="material-symbols-outlined text-sm">
-                        edit
-                      </span>
-                    </button>
-                    <button
-                      onClick={(e) => deletePage(e, page.id, globalIdx)}
-                      className="p-1 rounded-sm text-foreground/35 hover:text-[hsl(var(--color-destructive))] hover:bg-[hsl(var(--color-destructive)/0.12)] transition-colors"
-                      title="Eliminar"
-                    >
-                      <span className="material-symbols-outlined text-sm">
-                        delete
-                      </span>
-                    </button>
-                  </div>
-                )}
+                  const structureKey = `page:${page.id}:structure`;
+                  const imagesKey = `page:${page.id}:images`;
+                  const linksKey = `page:${page.id}:links`;
 
-                {/* Sub-índice de Headings (Solo si está seleccionada y no es corcho) */}
-                {isSelected && !isCorkboardMode && (
-                  <div className="pl-6 pr-2 py-1 space-y-1">
-                    {(() => {
-                      const html = page.contenido || "";
-                      const matches = [
-                        ...html.matchAll(/<h([1-6])[^>]*>(.*?)<\/h\1>/g),
-                      ];
-                      const hasMatches = matches.length > 0;
+                  const structureOpen = expandedGroups[structureKey] ?? true;
+                  const imagesOpen = expandedGroups[imagesKey] ?? true;
+                  const linksOpen = expandedGroups[linksKey] ?? true;
 
-                      const result = hasMatches
-                        ? matches.map((match, i) => {
-                            const level = parseInt(match[1], 10);
-                            const text = match[2]
-                              .replace(/<[^>]+>/g, "")
-                              .trim();
-                            const hasText = text.length > 0;
-                            const paddingLeft = `${(level - 1) * 8}px`;
-                            const isH1 = level === 1;
+                  return (
+                    <>
+                      <div
+                        className={`w-full px-2 py-1.5 rounded-sm transition-colors flex items-center gap-1.5 ${
+                          isChapter ? "" : "ml-1"
+                        } ${
+                          isSelected
+                            ? "text-primary bg-primary/10"
+                            : "text-foreground/70 hover:text-foreground hover:bg-foreground/[0.04]"
+                        }`}
+                      >
+                        <button
+                          onClick={() => handlePageSelect(globalIdx)}
+                          className="min-w-0 max-w-[70%] text-left"
+                        >
+                          {editingPageId === page.id ? (
+                            <input
+                              autoFocus
+                              onBlur={() => setEditingPageId(null)}
+                              onKeyDown={(e) => {
+                                e.key === "Enter" ? setEditingPageId(null) : null;
+                                e.stopPropagation();
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                              className="bg-background border-b border-primary font-sans font-bold text-xs outline-none w-full px-1 text-foreground"
+                              value={page.titulo || ""}
+                              onChange={(e) =>
+                                handleTitleChangeInternal(globalIdx, e.target.value)
+                              }
+                              placeholder={`Hoja ${globalIdx + 1}`}
+                            />
+                          ) : (
+                            <span
+                              className={`font-sans text-[12px] truncate block ${
+                                isChapter ? "font-bold" : "font-medium"
+                              }`}
+                            >
+                              {page.titulo || `Hoja ${globalIdx + 1}`}
+                            </span>
+                          )}
+                        </button>
 
-                            const element = hasText ? (
-                              <div
-                                key={i}
-                                className={`text-[10px] truncate text-foreground/50 hover:text-primary cursor-pointer transition-colors ${isH1 ? "font-bold" : ""}`}
-                                style={{ paddingLeft }}
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => togglePageNode(page.id)}
+                            className="p-0.5 rounded-sm hover:bg-foreground/10 transition-colors"
+                            title={isExpanded ? "Plegar hoja" : "Desplegar hoja"}
+                          >
+                            <span className="material-symbols-outlined text-sm">
+                              {isExpanded ? "expand_more" : "chevron_right"}
+                            </span>
+                          </button>
+
+                          {!editingPageId ? (
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingPageId(page.id);
+                                }}
+                                className="p-1 rounded-sm text-foreground/35 hover:text-primary hover:bg-primary/10 transition-colors"
+                                title="Renombrar"
                               >
-                                {text}
-                              </div>
-                            ) : null;
-                            return element;
-                          })
-                        : null;
-                      return result;
-                    })()}
-                  </div>
-                )}
+                                <span className="material-symbols-outlined text-sm">
+                                  edit
+                                </span>
+                              </button>
+                              <button
+                                onClick={(e) => deletePage(e, page.id, globalIdx)}
+                                className="p-1 rounded-sm text-foreground/35 hover:text-[hsl(var(--color-destructive))] hover:bg-[hsl(var(--color-destructive)/0.12)] transition-colors"
+                                title="Eliminar"
+                              >
+                                <span className="material-symbols-outlined text-sm">
+                                  delete
+                                </span>
+                              </button>
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+
+                      {isExpanded ? (
+                        <div className="pl-6 pr-2 py-1 space-y-1">
+                          <div className="text-[9px] text-foreground/45 uppercase tracking-wider font-bold">
+                            Árbol de contenido
+                          </div>
+
+                          <div className="space-y-1">
+                            <button
+                              onClick={() => toggleGroupNode(structureKey)}
+                              className="w-full flex items-center gap-1.5 text-[10px] text-foreground/65 hover:text-foreground transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-sm">
+                                {structureOpen ? "expand_more" : "chevron_right"}
+                              </span>
+                              <span className="material-symbols-outlined text-sm">segment</span>
+                              <span>Estructura ({outline.headings.length})</span>
+                            </button>
+                            {structureOpen ? (
+                              outline.headings.length > 0 ? (
+                                outline.headings.map((heading, i) => (
+                                  <div
+                                    key={`${structureKey}-${i}`}
+                                    className="flex items-center gap-1.5 text-[10px] text-foreground/55 hover:text-primary transition-colors"
+                                    style={{ paddingLeft: `${heading.level * 8}px` }}
+                                  >
+                                    <span className="material-symbols-outlined text-xs">
+                                      {heading.level <= 2 ? "title" : "subtitles"}
+                                    </span>
+                                    <span className="truncate">
+                                      H{heading.level}: {heading.text}
+                                    </span>
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="pl-9 text-[10px] text-foreground/35 italic">
+                                  Sin encabezados
+                                </div>
+                              )
+                            ) : null}
+                          </div>
+
+                          <div className="space-y-1">
+                            <button
+                              onClick={() => toggleGroupNode(imagesKey)}
+                              className="w-full flex items-center gap-1.5 text-[10px] text-foreground/65 hover:text-foreground transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-sm">
+                                {imagesOpen ? "expand_more" : "chevron_right"}
+                              </span>
+                              <span className="material-symbols-outlined text-sm">image</span>
+                              <span>Imágenes ({outline.images.length})</span>
+                            </button>
+                            {imagesOpen ? (
+                              outline.images.length > 0 ? (
+                                outline.images.map((image, i) => (
+                                  <div
+                                    key={`${imagesKey}-${i}`}
+                                    className="pl-9 flex items-center gap-1.5 text-[10px] text-foreground/55 hover:text-primary transition-colors"
+                                    onMouseEnter={(event) =>
+                                      handleImagePreviewEnter(event, image)
+                                    }
+                                    onMouseLeave={handleImagePreviewLeave}
+                                  >
+                                    <span className="material-symbols-outlined text-xs">photo</span>
+                                    <span className="truncate">
+                                      {image.alt || `Imagen ${i + 1}`}
+                                    </span>
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="pl-9 text-[10px] text-foreground/35 italic">
+                                  Sin imágenes
+                                </div>
+                              )
+                            ) : null}
+                          </div>
+
+                          <div className="space-y-1">
+                            <button
+                              onClick={() => toggleGroupNode(linksKey)}
+                              className="w-full flex items-center gap-1.5 text-[10px] text-foreground/65 hover:text-foreground transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-sm">
+                                {linksOpen ? "expand_more" : "chevron_right"}
+                              </span>
+                              <span className="material-symbols-outlined text-sm">link</span>
+                              <span>Enlaces ({outline.links.length})</span>
+                            </button>
+                            {linksOpen ? (
+                              outline.links.length > 0 ? (
+                                outline.links.map((link, i) => (
+                                  <button
+                                    key={`${linksKey}-${i}`}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      openExternalLink(link.href);
+                                    }}
+                                    className="w-full pl-9 pr-1 flex items-center gap-1.5 text-[10px] text-foreground/55 hover:text-primary transition-colors group/link text-left"
+                                    title={link.href}
+                                  >
+                                    <span className="material-symbols-outlined text-xs">north_east</span>
+                                    <span className="truncate flex-1 min-w-0">
+                                      {link.text || link.href}
+                                    </span>
+                                    <span className="material-symbols-outlined text-xs opacity-0 group-hover/link:opacity-100 text-foreground/35 transition-opacity">
+                                      link_off
+                                    </span>
+                                  </button>
+                                ))
+                              ) : (
+                                <div className="pl-9 text-[10px] text-foreground/35 italic">
+                                  Sin enlaces
+                                </div>
+                              )
+                            ) : null}
+                          </div>
+                        </div>
+                      ) : null}
+                    </>
+                  );
+                })()}
+
+                
               </div>
             );
           })}
@@ -453,6 +686,30 @@ const PageListPanel: React.FC<PageListPanelProps> = ({
       )}
 
       {renderSection(bottomSection)}
+
+      {imagePreview ? (
+        <div
+          className="fixed z-[80] pointer-events-none"
+          style={{
+            left: imagePreview.x,
+            top: imagePreview.y,
+            transform: "translateY(-50%)",
+          }}
+        >
+          <div className="w-[220px] p-2 rounded-md border border-foreground/15 bg-background shadow-2xl">
+            <div className="w-full h-[120px] overflow-hidden rounded-sm bg-foreground/5 flex items-center justify-center">
+              <img
+                src={imagePreview.src}
+                alt={imagePreview.alt || "Vista previa"}
+                className="max-w-full max-h-full object-contain"
+              />
+            </div>
+            <div className="mt-1.5 text-[10px] text-foreground/70 truncate">
+              {imagePreview.alt || "Imagen insertada"}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };
