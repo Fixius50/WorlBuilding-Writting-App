@@ -52,7 +52,6 @@ data/*
 .env.local
 
 Docs/Referencias_visuales/
-.github
 src/main/resources/data/*.db
 Docs/Priototipo_IDE/
 Docs/logs/
