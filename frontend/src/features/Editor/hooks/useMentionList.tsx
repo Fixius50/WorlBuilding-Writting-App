@@ -63,6 +63,20 @@ export const useMentionList = (
     selectItem(selectedIndex);
   }, [selectItem, selectedIndex]);
 
+  const homeHandler = useCallback(() => {
+    if (items.length === 0) {
+      return;
+    }
+    setSelectedIndex(0);
+  }, [items.length]);
+
+  const endHandler = useCallback(() => {
+    if (items.length === 0) {
+      return;
+    }
+    setSelectedIndex(items.length - 1);
+  }, [items.length]);
+
   useEffect(() => {
     setSelectedIndex(0);
   }, [items]);
@@ -77,7 +91,16 @@ export const useMentionList = (
           downHandler();
           return true;
         case "Enter":
+        case "Tab":
           enterHandler();
+          return true;
+        case "Home":
+          homeHandler();
+          return true;
+        case "End":
+          endHandler();
+          return true;
+        case "Escape":
           return true;
         default:
           return false;

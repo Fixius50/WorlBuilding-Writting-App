@@ -3,6 +3,11 @@ import { Editor } from "@tiptap/react";
 import { useEditorTopBar } from "../hooks/useEditorTopBar";
 import { runExportPipeline } from "../application/exportPipeline";
 
+const MIN_ZOOM_PERCENT = 1;
+const MIN_FONT_SIZE_PX = 1;
+const FONT_SIZE_PRESETS_PX = [12, 14, 16, 18, 20, 24, 28, 32, 36];
+const ZOOM_PRESETS_PERCENT = [80, 100, 120, 150];
+
 interface EditorTopBarProps {
   editor: Editor | null;
   title: string;
@@ -54,9 +59,21 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
   const [updateTick, setUpdateTick] = React.useState(0);
   const [showLineHeight, setShowLineHeight] = React.useState(false);
   const [showExportMenu, setShowExportMenu] = React.useState(false);
+  const [zoomInputValue, setZoomInputValue] = React.useState<string>(
+    String(zoom),
+  );
+  const [fontSizeInputValue, setFontSizeInputValue] =
+    React.useState<string>("20");
+  const selectionRangeRef = React.useRef<{ from: number; to: number } | null>(
+    null,
+  );
 
   React.useEffect(() => {
     const handleTransaction = () => {
+      if (editor) {
+        const { from, to } = editor.state.selection;
+        selectionRangeRef.current = { from, to };
+      }
       setUpdateTick((prev) => prev + 1);
     };
     editor?.on("transaction", handleTransaction);
@@ -64,6 +81,107 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
       editor?.off("transaction", handleTransaction);
     };
   }, [editor]);
+
+  React.useEffect(() => {
+    if (editor) {
+      const { from, to } = editor.state.selection;
+      selectionRangeRef.current = { from, to };
+    }
+  }, [editor]);
+
+  const captureSelectionRange = React.useCallback((): void => {
+    if (!editor) {
+      return;
+    }
+
+    const { from, to } = editor.state.selection;
+    selectionRangeRef.current = { from, to };
+  }, [editor]);
+
+  React.useEffect(() => {
+    setZoomInputValue(String(zoom));
+  }, [zoom]);
+
+  React.useEffect(() => {
+    const rawFontSize =
+      ((editor?.getAttributes("textStyle").fontSize as string) || "20px").trim();
+    const parsedFontSize = Number(rawFontSize.replace("px", ""));
+    const safeFontSize =
+      Number.isFinite(parsedFontSize) && parsedFontSize > 0
+        ? Math.round(parsedFontSize)
+        : 20;
+    setFontSizeInputValue(String(safeFontSize));
+  }, [editor, updateTick]);
+
+  const applyZoomInput = React.useCallback(
+    (rawValue: string): void => {
+      const normalizedRaw = rawValue.replace("%", "").trim();
+      const parsed = Number(normalizedRaw);
+      const fallback = Number.isFinite(zoom) ? Math.round(zoom) : 100;
+      const safe =
+        Number.isFinite(parsed) && normalizedRaw.length > 0
+          ? Math.max(MIN_ZOOM_PERCENT, Math.round(parsed))
+          : Math.max(MIN_ZOOM_PERCENT, fallback);
+
+      onZoomChange(safe);
+      setZoomInputValue(String(safe));
+    },
+    [onZoomChange, zoom],
+  );
+
+  const applyFontSizeInput = React.useCallback(
+    (rawValue: string): void => {
+      if (!editor) {
+        return;
+      }
+
+      const normalizedRaw = rawValue.replace("px", "").trim();
+      const parsed = Number(normalizedRaw);
+      const rawFontSize =
+        ((editor.getAttributes("textStyle").fontSize as string) || "20px").trim();
+      const fallbackParsed = Number(rawFontSize.replace("px", ""));
+      const fallback =
+        Number.isFinite(fallbackParsed) && fallbackParsed > 0
+          ? Math.round(fallbackParsed)
+          : 20;
+      const safe =
+        Number.isFinite(parsed) && normalizedRaw.length > 0
+          ? Math.max(MIN_FONT_SIZE_PX, Math.round(parsed))
+          : Math.max(MIN_FONT_SIZE_PX, fallback);
+
+      const rememberedSelection = selectionRangeRef.current;
+      const shouldRestoreSelection =
+        !!rememberedSelection && rememberedSelection.from <= rememberedSelection.to;
+
+      shouldRestoreSelection
+        ? editor
+            .chain()
+            .focus()
+            .setTextSelection({
+              from: rememberedSelection.from,
+              to: rememberedSelection.to,
+            })
+            .setFontSize(`${safe}px`)
+            .run()
+        : editor.chain().focus().setFontSize(`${safe}px`).run();
+
+      setFontSizeInputValue(String(safe));
+    },
+    [editor],
+  );
+
+  const isLeftAlignActive = React.useMemo(() => {
+    if (!editor) {
+      return true;
+    }
+
+    const isLeft = editor.isActive({ textAlign: "left" });
+    const isCenter = editor.isActive({ textAlign: "center" });
+    const isRight = editor.isActive({ textAlign: "right" });
+    const isJustify = editor.isActive({ textAlign: "justify" });
+
+    return isLeft || (!isCenter && !isRight && !isJustify);
+  }, [editor, updateTick]);
 
   const buttonClass = (isActive: boolean) =>
     `p-1 rounded hover:bg-foreground/5 transition-all duration-150 flex items-center justify-center ${
@@ -426,37 +544,46 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
           <div className="w-px h-4 bg-foreground/10 mx-1 shrink-0" />
 
           {/* Tamaño de Letra */}
-          <div className="flex items-center" title="Tamaño de letra">
-            <select
-              value={
-                (editor.getAttributes("textStyle").fontSize as string) || "20px"
-              }
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
-                editor.chain().focus().setFontSize(e.target.value).run();
+          <div className="flex items-center gap-1" title="Tamaño de letra">
+            <input
+              type="text"
+              inputMode="numeric"
+              value={fontSizeInputValue}
+              onMouseDown={(): void => captureSelectionRange()}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+                setFontSizeInputValue(e.target.value.replace(/[^\d]/g, ""));
               }}
-              className={selectStyle}
+              onBlur={(): void => applyFontSizeInput(fontSizeInputValue)}
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
+                if (e.key === "Enter") {
+                  applyFontSizeInput(fontSizeInputValue);
+                }
+              }}
+              className={`${selectStyle} w-12 text-right`}
+              aria-label="Tamaño de letra en píxeles"
+            />
+            <span className="text-[11px] text-foreground/55 font-sans">px</span>
+            <select
+              value=""
+              onMouseDown={(): void => captureSelectionRange()}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
+                applyFontSizeInput(e.target.value);
+              }}
+              className={`${selectStyle} w-16`}
+              aria-label="Presets de tamaño de letra"
             >
-              {[
-                "12px",
-                "14px",
-                "16px",
-                "18px",
-                "20px",
-                "24px",
-                "28px",
-                "32px",
-                "36px",
-              ].map(
-                (sz: string): React.JSX.Element => (
-                  <option
-                    key={sz}
-                    value={sz}
-                    className="bg-background text-foreground text-xs"
-                  >
-                    {sz}
-                  </option>
-                ),
-              )}
+              <option value="" className="bg-background text-foreground text-xs">
+                Preset
+              </option>
+              {FONT_SIZE_PRESETS_PX.map((preset) => (
+                <option
+                  key={preset}
+                  value={String(preset)}
+                  className="bg-background text-foreground text-xs"
+                >
+                  {preset}px
+                </option>
+              ))}
             </select>
           </div>
 
@@ -468,7 +595,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
               e.preventDefault()
             }
             onClick={() => editor.chain().focus().setTextAlign("left").run()}
-            className={buttonClass(editor.isActive({ textAlign: "left" }))}
+            className={buttonClass(isLeftAlignActive)}
             title="Alinear a la izquierda"
           >
             <span className="material-symbols-outlined text-[16px]">
@@ -603,38 +730,44 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
           <div className="w-px h-4 bg-foreground/10 mx-1 shrink-0" />
 
           {/* Zoom */}
-          <div className="flex items-center" title="Zoom de página">
+          <div className="flex items-center gap-1" title="Zoom de página">
+            <input
+              type="text"
+              inputMode="numeric"
+              value={zoomInputValue}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+                setZoomInputValue(e.target.value.replace(/[^\d]/g, ""));
+              }}
+              onBlur={(): void => applyZoomInput(zoomInputValue)}
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
+                if (e.key === "Enter") {
+                  applyZoomInput(zoomInputValue);
+                }
+              }}
+              className={`${selectStyle} w-12 text-right`}
+              aria-label="Zoom en porcentaje"
+            />
+            <span className="text-[11px] text-foreground/55 font-sans">%</span>
             <select
-              value={zoom}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>): void =>
-                onZoomChange(Number(e.target.value))
-              }
-              className={selectStyle}
+              value=""
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
+                applyZoomInput(e.target.value);
+              }}
+              className={`${selectStyle} w-16`}
+              aria-label="Presets de zoom"
             >
-              <option
-                value={80}
-                className="bg-background text-foreground text-xs"
-              >
-                80%
+              <option value="" className="bg-background text-foreground text-xs">
+                Preset
               </option>
-              <option
-                value={100}
-                className="bg-background text-foreground text-xs"
-              >
-                100%
-              </option>
-              <option
-                value={120}
-                className="bg-background text-foreground text-xs"
-              >
-                120%
-              </option>
-              <option
-                value={150}
-                className="bg-background text-foreground text-xs"
-              >
-                150%
-              </option>
+              {ZOOM_PRESETS_PERCENT.map((preset) => (
+                <option
+                  key={preset}
+                  value={String(preset)}
+                  className="bg-background text-foreground text-xs"
+                >
+                  {preset}%
+                </option>
+              ))}
             </select>
           </div>
         </div>

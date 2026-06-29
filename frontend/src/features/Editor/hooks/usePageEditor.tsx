@@ -6,6 +6,58 @@ import { CommentAnchorRange } from "@utils/commentAnchors";
 import { TextSelection, EditorState } from "@tiptap/pm/state";
 import { Mark } from "@tiptap/pm/model";
 
+const CARET_SAFE_MARGIN_PX = 180;
+const CARET_HEADER_GUARD_SCROLL_TOP_PX = 140;
+const CARET_MIN_DYNAMIC_MARGIN_PX = 72;
+const CARET_SCROLL_PADDING_PX = 18;
+
+const keepCaretVisibleWithMargin = (editorInstance: {
+  state: EditorState;
+  view: {
+    dom: HTMLElement;
+    coordsAtPos: (pos: number) => { top: number; bottom: number };
+  };
+}): void => {
+  const scrollContainer = editorInstance.view.dom.closest(
+    ".prose-editor-wrapper",
+  ) as HTMLElement | null;
+
+  if (!scrollContainer) {
+    return;
+  }
+
+  window.requestAnimationFrame(() => {
+    const anchorPos = editorInstance.state.selection.$anchor.pos;
+    const coords = editorInstance.view.coordsAtPos(anchorPos);
+    const containerRect = scrollContainer.getBoundingClientRect();
+    const maxAllowedMargin = Math.max(
+      CARET_MIN_DYNAMIC_MARGIN_PX,
+      Math.floor(containerRect.height / 2) - 80,
+    );
+    const effectiveMargin = Math.min(CARET_SAFE_MARGIN_PX, maxAllowedMargin);
+    const safeTop = containerRect.top + effectiveMargin;
+    const safeBottom = containerRect.bottom - effectiveMargin;
+
+    const shouldProtectHeaderZone =
+      scrollContainer.scrollTop < CARET_HEADER_GUARD_SCROLL_TOP_PX;
+
+    if (shouldProtectHeaderZone && coords.top < safeTop) {
+      return;
+    }
+
+    if (coords.top < safeTop) {
+      const delta = safeTop - coords.top + CARET_SCROLL_PADDING_PX;
+      scrollContainer.scrollTop = Math.max(0, scrollContainer.scrollTop - delta);
+      return;
+    }
+
+    if (coords.bottom > safeBottom) {
+      const delta = coords.bottom - safeBottom + CARET_SCROLL_PADDING_PX;
+      scrollContainer.scrollTop = scrollContainer.scrollTop + delta;
+    }
+  });
+};
+
 const findNextMatch = (
   state: EditorState,
   query: string,
@@ -239,9 +291,11 @@ export const usePageEditor = ({
       const html = editor.getHTML();
       knownHtmlRef.current = html;
       onUpdateRef.current(html);
+      keepCaretVisibleWithMargin(editor);
     },
     onSelectionUpdate: ({ editor }) => {
       const { from, to, empty } = editor.state.selection;
+      keepCaretVisibleWithMargin(editor);
       empty
         ? onSelectionChange
           ? onSelectionChange(null)
@@ -276,7 +330,7 @@ export const usePageEditor = ({
     editorProps: {
       attributes: {
         class: `prose prose-invert max-w-none focus:outline-none text-foreground/90 leading-relaxed text-lg`,
-        style: `font-family: "Cormorant Garamond", serif; font-size: 18px;`,
+        style: `font-family: "Cormorant Garamond", serif;`,
       },
       handleClick: (view, pos, event) => {
         const target = event.target as HTMLElement;

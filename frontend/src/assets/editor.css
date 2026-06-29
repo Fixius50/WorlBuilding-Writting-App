@@ -130,7 +130,7 @@
 /* --- Tiptap Editor Content Styling --- */
 .prose-editor .ProseMirror p {
    margin-bottom: 0.3em !important; /* Separación de párrafos muy estrecha, estilo libro */
-   text-align: justify;
+  text-align: left;
 }
 
 .prose-editor .ProseMirror p.is-editor-empty:first-child::before {

@@ -189,6 +189,42 @@ const suggestion: Omit<SuggestionOptions, "editor"> = {
   render: () => {
     let component: ReactRenderer | null = null;
     let popup: Instance<Props>[] | null = null;
+    let documentKeydownHandler: ((event: KeyboardEvent) => void) | null = null;
+
+    const handleMentionKeyDown = (event: KeyboardEvent): boolean => {
+      const isArrowKey = event.key.startsWith("Arrow");
+      const isArrowMovementCombo =
+        isArrowKey &&
+        (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey);
+
+      if (isArrowMovementCombo) {
+        event.preventDefault();
+        event.stopPropagation();
+        return true;
+      }
+
+      if (event.key === "Escape") {
+        if (popup) {
+          popup[0].hide();
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        return true;
+      }
+
+      const handledByComponent =
+        (
+          component?.ref as { onKeyDown?: (p: unknown) => boolean } | null
+        )?.onKeyDown?.({ event }) ?? false;
+
+      if (handledByComponent) {
+        event.preventDefault();
+        event.stopPropagation();
+        return true;
+      }
+
+      return false;
+    };
 
     return {
       onStart: (props: SuggestionProps) => {
@@ -196,6 +232,15 @@ const suggestion: Omit<SuggestionOptions, "editor"> = {
           props,
           editor: props.editor,
         });
+
+        documentKeydownHandler = (event: KeyboardEvent) => {
+          if (event.defaultPrevented) {
+            return;
+          }
+
+          handleMentionKeyDown(event);
+        };
+        document.addEventListener("keydown", documentKeydownHandler, true);
 
         if (props.clientRect) {
           popup = tippy("body", {
@@ -223,32 +268,15 @@ const suggestion: Omit<SuggestionOptions, "editor"> = {
       },
 
       onKeyDown(props: { event: KeyboardEvent }): boolean {
-        const isArrowKey = props.event.key.startsWith("Arrow");
-        const isArrowMovementCombo =
-          isArrowKey &&
-          (props.event.ctrlKey || props.event.metaKey || props.event.altKey || props.event.shiftKey);
-
-        if (isArrowMovementCombo) {
-          props.event.preventDefault();
-          props.event.stopPropagation();
-          return true;
-        }
-
-        if (props.event.key === "Escape") {
-          if (popup) {
-            popup[0].hide();
-          }
-          return true;
-        }
-
-        return (
-          (
-            component?.ref as { onKeyDown?: (p: unknown) => boolean } | null
-          )?.onKeyDown?.(props) ?? false
-        );
+        return handleMentionKeyDown(props.event);
       },
 
       onExit() {
+        if (documentKeydownHandler) {
+          document.removeEventListener("keydown", documentKeydownHandler, true);
+          documentKeydownHandler = null;
+        }
+
         if (popup && popup[0]) {
           popup[0].destroy();
         }
