@@ -1,6 +1,6 @@
 # AI Governance In This Repo
 
-Este repositorio centraliza la configuración para agentes y análisis de IA en `.github`.
+.github solo para gobernanza de agentes e instrucciones operativas.
 
 ## Estructura oficial
 - `.github/agents/`: definición de agentes y modos (ej. `CEREBRO.agent.md`).
